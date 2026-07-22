@@ -120,6 +120,45 @@ public sealed class DirectLendingServiceTests
     }
 
     [Fact]
+    public async Task PostDailyAccrualAsync_WithPikToggled_ShouldCapitalizeInterestIntoPrincipal()
+    {
+        var service = new InMemoryDirectLendingService();
+        var detail = await service.CreateLoanAsync(BuildCreateRequest());
+
+        await service.ActivateLoanAsync(detail.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await service.BookDrawdownAsync(detail.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-pik"));
+        await service.TogglePikAsync(detail.LoanId, new TogglePikRequest(EnablePik: true, new DateOnly(2026, 3, 23), "Borrower elected PIK"));
+
+        var accrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        // Fixed 8% on 250,000 principal, Act/360: one day accrues 20,000 / 360,
+        // capitalized into principal instead of the cash-interest receivable.
+        var expectedPik = 20_000m / 360m;
+        accrual.Should().NotBeNull();
+        accrual!.InterestAmount.Should().Be(0m);
+        accrual.PikInterestAmount.Should().BeApproximately(expectedPik, 0.000000001m);
+
+        var servicing = await service.GetServicingStateAsync(detail.LoanId);
+        servicing.Should().NotBeNull();
+        servicing!.Balances.PrincipalOutstanding.Should().BeApproximately(250_000m + expectedPik, 0.000000001m);
+        servicing.Balances.InterestAccruedUnpaid.Should().Be(0m);
+        servicing.IsPikToggled.Should().BeTrue();
+
+        // Event replay must reproduce the capitalized balance.
+        var rebuilt = await service.RebuildStateFromHistoryAsync(detail.LoanId);
+        rebuilt.Should().NotBeNull();
+        rebuilt!.Servicing.Balances.PrincipalOutstanding.Should().BeApproximately(250_000m + expectedPik, 0.000000001m);
+        rebuilt.Servicing.Balances.InterestAccruedUnpaid.Should().Be(0m);
+
+        // After PIK is switched off, cash interest accrues on the grown principal.
+        await service.TogglePikAsync(detail.LoanId, new TogglePikRequest(EnablePik: false, new DateOnly(2026, 3, 24), "PIK period ended"));
+        var cashAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 25)));
+        cashAccrual.Should().NotBeNull();
+        cashAccrual!.PikInterestAmount.Should().Be(0m);
+        cashAccrual.InterestAmount.Should().BeApproximately((250_000m + expectedPik) * 0.08m / 360m, 0.000000001m);
+    }
+
+    [Fact]
     public async Task AmendTermsAndPrincipalPayment_ShouldPreserveHistoryAndFreeCommitment()
     {
         var service = new InMemoryDirectLendingService();

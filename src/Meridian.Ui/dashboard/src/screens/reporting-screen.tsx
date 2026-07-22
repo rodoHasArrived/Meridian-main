@@ -1,57 +1,46 @@
-import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
-import { Select } from "@/components/ui/select";
-import { SeverityBadge } from "@/components/operations";
-import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
-import {
-  encodeViewStateEnvelope,
-  readViewStateFromSearch,
-  stripViewStateFromSearch,
-  VIEW_STATE_QUERY_KEY
-} from "@/lib/view-state-envelope";
+import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
-import { StatStrip } from "@/components/meridian/stat-strip";
-import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import {
-  apiPostJson,
   approveReportTemplateDraft,
-  deliverReportPack,
-  generateReportPack,
   pauseReportingSchedule,
-  previewReportPack,
   provisionReportingStarterKit,
-  recordReportPackDeliveryFailure,
   rejectReportTemplateDraft,
   resumeReportingSchedule,
-  runDueReportingSchedules,
-  runReportingNow,
   runReportingScheduleNow,
   saveReportingSchedule,
   submitReportTemplateDraft
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
-import { todayIsoDate } from "@/lib/reporting-periods";
-import { buildReportingHubModel } from "@/lib/reporting-hub";
+import { buildReportingHubModel, formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import { workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  hasRetainedReportingAsOfDate,
+  presentReportingAsOfDate,
+  presentReportingIdentifier,
+  presentReportingRunStatusLabel,
+  presentReportingStatusLabel,
+  resolveReportingRunSeverityStatus,
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
   type ReportingProfileRow,
   type ReportingExportStatusState,
-  type ReportingRunActionRow,
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
-  type ReportingStarterKitPanelViewModel,
   type ReportingTemplateLifecycleActionRow,
   type ReportingTemplateRow,
   type ReportingWriterGridRow,
@@ -65,12 +54,13 @@ import {
   type ReportBrandingDraftField,
   type ReportBrandingDraftState
 } from "@/screens/reporting-screen.branding-access";
+import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.exports-runner";
 import {
-  ExportsReportRunner,
-  type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState,
-  type RestatementTargetSelection
-} from "@/screens/reporting-screen.exports-runner";
+  buildDefaultReportRunParameterDraft,
+  validateAndBuildReportingRunParameters,
+  type ReportRunParameterDraftField,
+  type ReportRunParameterDraftState
+} from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
   ReportWriterDesignerGrid,
@@ -89,10 +79,12 @@ import {
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
   type ReportingScheduleDraftTarget,
+  type ReportingScheduleRecipientPrincipalKind,
   type ReportingScheduleManagementModel
 } from "@/screens/reporting-screen.schedule-management";
 import { TemplateLifecycleActionIcon } from "@/screens/reporting-screen.template-lifecycle";
-import { ReportingGeneratedGridExportLinks, ReportingRunVersionFields } from "@/screens/reporting-screen.run-status-modules";
+import { ReportingRunAuditDisclosure } from "@/screens/reporting-screen.run-status-modules";
+import { ReportingStarterKitChooser } from "@/screens/reporting-screen.starter-kit";
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
@@ -105,16 +97,13 @@ import {
 import type {
   AccountingWorkspaceResponse,
   GovernanceReportArtifactFormat,
-  ReportBrandingTheme,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
+  ReportingRunParameters,
   ReportingRunRequest,
   RenderReportTemplateRequest,
-  ReportingScheduleUpsertRequest,
-  ReportingWorkflowEvidenceLink
+  ReportingScheduleUpsertRequest
 } from "@/types";
 import {
   buildReportAccessPolicy,
@@ -154,103 +143,6 @@ const reportingStatusFromVariant: Record<
   research: "Info"
 };
 
-function ReportingStarterKitChooser({
-  panel,
-  status,
-  runningStarterKitId,
-  onProvision
-}: {
-  panel: ReportingStarterKitPanelViewModel;
-  status: ReportingCommandStatus | null;
-  runningStarterKitId: string | null;
-  onProvision: (kitId: string, title: string) => void | Promise<void>;
-}) {
-  if (!panel.hasCards) {
-    return null;
-  }
-
-  return (
-    <section
-      role="region"
-      aria-label={panel.title}
-      className="panel-surface space-y-4 px-4 py-4"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Starter desk</div>
-          <h2 className="mt-2 text-lg font-semibold text-foreground">{panel.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{panel.description}</p>
-        </div>
-        <Badge variant={panel.statusVariant}>{panel.statusLabel}</Badge>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {panel.cards.map((card) => {
-          const busyId = `starter-kit:${card.id}`;
-          return (
-            <Card key={card.id} className="border-border/70 bg-background/45">
-              <CardHeader className="space-y-2">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="outline">{card.defaultPeriodLabel}</Badge>
-                  <Badge variant="outline">{card.seedScheduleSummary}</Badge>
-                </div>
-                <CardTitle className="text-base">{card.title}</CardTitle>
-                <CardDescription>{card.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <dl className="grid gap-2 text-xs sm:grid-cols-2">
-                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                    <dt className="uppercase text-muted-foreground">Templates</dt>
-                    <dd className="mt-1 font-medium text-foreground">{card.templateSummary}</dd>
-                  </div>
-                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                    <dt className="uppercase text-muted-foreground">Hub layout</dt>
-                    <dd className="mt-1 break-all font-mono text-foreground">{card.layoutLabel}</dd>
-                  </div>
-                </dl>
-                <div className="flex flex-wrap gap-1.5" aria-label={`${card.title} templates`}>
-                  {card.templateNames.map((name) => (
-                    <Badge key={name} variant="outline">{name}</Badge>
-                  ))}
-                </div>
-                <div className="space-y-1.5" aria-label={`${card.title} draft schedules`}>
-                  {card.seedSchedules.map((schedule) => (
-                    <div key={schedule.id} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="outline">{schedule.cadence}</Badge>
-                        <span className="font-medium text-foreground">{schedule.stateLabel}</span>
-                      </div>
-                      <p className="mt-1 text-muted-foreground">{schedule.description}</p>
-                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{schedule.deliveryTargetSummary}</p>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="w-full justify-center"
-                  aria-label={card.actionAriaLabel}
-                  busy={runningStarterKitId === busyId}
-                  busyLabel="Provisioning"
-                  disabled={Boolean(runningStarterKitId)}
-                  onClick={() => void onProvision(card.id, card.title)}
-                >
-                  <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                  {card.actionLabel}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {status ? (
-        <ReportingCommandStatusView status={status} />
-      ) : null}
-    </section>
-  );
-}
-
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
 // The report-run live chip renders in the "Live" state whenever the SSE channel is healthy,
@@ -264,9 +156,12 @@ export const REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS = 15_000;
 function isStreamableReportingRun(run: ReportingRunStatusRow): boolean {
   return !run.id.startsWith("report-pack:");
 }
+
+function normalizeReportingStatus(status: string): string {
+  return status.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 const defaultExportsReportRunRequester = "browser-workstation";
-const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
-const exportsViewReflectDebounceMs = 300;
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
@@ -274,7 +169,6 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
     render: (profile) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{profile.name}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{profile.id}</span>
       </span>
     )
   },
@@ -312,7 +206,6 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
   const { pathname, search } = useLocation();
-  const navigate = useNavigate();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
@@ -331,19 +224,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     run.id === watchedRunId && watchedRunStreamHealthy && watchedRunStreamStatus !== null;
   const resolveRowStatus = (run: ReportingRunStatusRow): string =>
     isWatchedRunLive(run) && watchedRunStreamStatus ? watchedRunStreamStatus.status : run.status;
+  const resolveRowStatusLabel = (run: ReportingRunStatusRow): string =>
+    presentReportingRunStatusLabel(resolveRowStatus(run), run.asOfDateLabel);
+  const resolveRowSeverityStatus = (run: ReportingRunStatusRow): string =>
+    resolveReportingRunSeverityStatus(resolveRowStatus(run), run.asOfDateLabel);
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
-  const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
-  const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [starterKitStatus, setStarterKitStatus] = useState<ReportingCommandStatus | null>(null);
-  const [deliveryFailureStatus, setDeliveryFailureStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
-  const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
-  const [templateRunDatasetSourceId, setTemplateRunDatasetSourceId] = useState(() => buildDefaultReportWriterDatasetSourceId(data?.reporting ?? null));
-  const [templateRunAsOfDate, setTemplateRunAsOfDate] = useState<string>(() => todayIsoDate());
-  const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
@@ -382,25 +272,81 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const livePortfolioRefreshInFlight = useRef(false);
   const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
   const shouldAutoRefreshLivePortfolioViews = livePortfolioViews.some((view) => view.isMarketTickLinked || view.state === "LiveLinked");
-  const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
-  const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
   const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
   const runningStarterKitId = starterKitStatus?.state === "running" ? starterKitStatus.id : null;
-  const runningDeliveryFailureId = deliveryFailureStatus?.state === "running" ? deliveryFailureStatus.id : null;
-  const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
-  const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
-  const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
   const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
+  const isSchedulesTaskMode = vm.taskMode.id === "schedules";
   const isRunStatusTaskMode = vm.taskMode.id === "run-status";
   const isDeliveryEvidenceTaskMode = vm.taskMode.id === "delivery-evidence" || vm.taskMode.id === "report-pack-approval";
   const isExportsTaskMode = vm.taskMode.id === "exports";
   const isGovernanceTaskMode = vm.taskMode.id === "governance";
+  const reportBuilderSearchParams = useMemo(() => new URLSearchParams(search), [search]);
+  const requestedReportBuilderTemplateId = reportBuilderSearchParams.get("templateId")?.trim() ?? "";
+  const requestedReportBuilderFamily = (
+    reportBuilderSearchParams.get("family")
+    ?? reportBuilderSearchParams.get("report")
+    ?? ""
+  ).trim();
+  const focusedReportBuilderTemplate = useMemo(
+    () => requestedReportBuilderTemplateId
+      ? vm.templateRows.find((template) => (
+          template.id === requestedReportBuilderTemplateId
+          || template.templateName === requestedReportBuilderTemplateId
+        )) ?? null
+      : null,
+    [requestedReportBuilderTemplateId, vm.templateRows]
+  );
+  const reportBuilderFamilyTemplates = useMemo(() => {
+    if (!requestedReportBuilderFamily) {
+      return [];
+    }
+    const familyToken = normalizeReportBuilderContextToken(requestedReportBuilderFamily);
+    return vm.templateRows.filter((template) => normalizeReportBuilderContextToken(template.family) === familyToken);
+  }, [requestedReportBuilderFamily, vm.templateRows]);
+  const reportBuilderTemplateRows = useMemo(() => {
+    const prioritized = focusedReportBuilderTemplate
+      ? [focusedReportBuilderTemplate]
+      : reportBuilderFamilyTemplates;
+    if (prioritized.length === 0) {
+      return vm.templateRows;
+    }
+    const prioritizedIds = new Set(prioritized.map((template) => template.id));
+    return [...prioritized, ...vm.templateRows.filter((template) => !prioritizedIds.has(template.id))];
+  }, [focusedReportBuilderTemplate, reportBuilderFamilyTemplates, vm.templateRows]);
+  const writerTemplateRows = focusedReportBuilderTemplate
+    ? [focusedReportBuilderTemplate]
+    : reportBuilderFamilyTemplates.length > 0
+      ? reportBuilderFamilyTemplates
+      : vm.templateRows;
+  const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
+  const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
+  const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
+  const reportPackWorkflowRecord = [...(data?.reporting.workflowRecords ?? [])]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
+  const reportPackPeriodToken = reportPackWorkflowRecord?.period.match(/^\d{4}-\d{2}/)?.[0] ?? null;
+  const reportPackWorkflowRun = reportPackWorkflowRecord
+    ? [...vm.runStatusRows]
+        .filter((run) => (
+          run.templateId === reportPackWorkflowRecord.templateId.name
+          && (!reportPackPeriodToken || run.asOfDateLabel.startsWith(reportPackPeriodToken))
+        ))
+        .sort((left, right) => (
+          Number(right.isLatestGenerated) - Number(left.isLatestGenerated)
+          || right.asOfDateLabel.localeCompare(left.asOfDateLabel)
+          || right.runAttemptOrdinal - left.runAttemptOrdinal
+        ))[0] ?? null
+    : null;
+  const reportPackWorkflowStatusLabel = presentReportingStatusLabel(
+    reportPackWorkflowRun
+      ? resolveRowStatus(reportPackWorkflowRun)
+      : reportPackWorkflowRecord?.state.trim() || vm.workflowTaskPanel?.statusLabel || "Report pack review"
+  );
   const showStarterKitChooser =
-    isReportBuilderTaskMode &&
+    isDailyReportingCockpitLanding &&
     vm.starterKitPanel.showChooser &&
     starterKitStatus?.state !== "success";
   const scheduleModel: ReportingScheduleManagementModel = {
@@ -415,12 +361,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     scheduleDeliveryPlanListLabel: vm.scheduleDeliveryPlanListLabel,
     scheduleDeliveryPlanEmptyText: vm.scheduleDeliveryPlanEmptyText
   };
-  const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
-  const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
-  const selectedExportsTemplate = useMemo(
-    () => resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft),
-    [exportsRunDraft.templateRowId, templateRowsKey, vm.templateRows]
-  );
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -446,93 +386,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     return () => window.clearInterval(timer);
   }, [onRefreshLivePortfolioViews, shouldAutoRefreshLivePortfolioViews]);
 
-  useEffect(() => {
-    if (!data?.reporting) {
-      return;
-    }
-
-    setExportsRunDraft((current) => {
-      if (current.templateRowId && vm.templateRows.some((template) => template.id === current.templateRowId)) {
-        return current;
-      }
-
-      return buildDefaultExportsReportRunDraft(data.reporting);
-    });
-  }, [data?.reporting, templateRowsKey]);
-
-  const exportsViewHydratedRef = useRef(false);
-  useEffect(() => {
-    if (exportsViewHydratedRef.current || vm.templateRows.length === 0) {
-      return;
-    }
-
-    exportsViewHydratedRef.current = true;
-    const envelope = readViewStateFromSearch(search, EXPORTS_VIEW_STATE_SCREEN);
-    if (!envelope) {
-      return;
-    }
-
-    const templateRowId = typeof envelope.state.selectedExportsTemplateId === "string"
-      ? envelope.state.selectedExportsTemplateId
-      : null;
-    const asOfDate = typeof envelope.state.asOfDate === "string" ? envelope.state.asOfDate : null;
-    const template = templateRowId ? vm.templateRows.find((row) => row.id === templateRowId) : null;
-    if (!template || !template.canRunOnDemand) {
-      return;
-    }
-
-    setExportsRunDraft((current) => ({
-      ...current,
-      templateRowId: template.id,
-      asOfDate: asOfDate ?? current.asOfDate
-    }));
-  }, [search, templateRowsKey, vm.templateRows]);
-
-  const reflectExportsViewTimer = useRef<number | null>(null);
-  const shouldReflectExportsViewState = useRef(false);
-  const reflectExportsViewState = useCallback((nextDraft: ExportsReportRunDraftState) => {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-
-    reflectExportsViewTimer.current = window.setTimeout(() => {
-      reflectExportsViewTimer.current = null;
-      const template = resolveSelectedExportsTemplate(vm.templateRows, nextDraft);
-      const token = template
-        ? encodeViewStateEnvelope({
-            v: 1,
-            screen: EXPORTS_VIEW_STATE_SCREEN,
-            state: { selectedExportsTemplateId: template.id, asOfDate: nextDraft.asOfDate }
-          })
-        : null;
-
-      // When the state cannot encode, strip any carried token so a stale view
-      // param never lingers in the shareable URL.
-      const params = new URLSearchParams(stripViewStateFromSearch(search));
-      if (token) {
-        params.set(VIEW_STATE_QUERY_KEY, token);
-      }
-
-      const nextSearch = params.toString();
-      navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
-    }, exportsViewReflectDebounceMs);
-  }, [navigate, pathname, search, vm.templateRows]);
-
-  useEffect(() => () => {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!shouldReflectExportsViewState.current) {
-      return;
-    }
-
-    shouldReflectExportsViewState.current = false;
-    reflectExportsViewState(exportsRunDraft);
-  }, [exportsRunDraft, reflectExportsViewState]);
-
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
     if (!command) {
@@ -544,194 +397,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     vm.selectAdjacentReportPackProfile(command);
   }
 
-  async function handleRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow) {
-    if (!action.isEnabled || action.method !== "POST" || runningRunActionId) {
-      return;
-    }
-
-    if (action.kind === "restatement") {
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: "Restatement requires changed-line evidence before it can be submitted.",
-        details: ["Open the report-pack workflow and attach changed report lines with retained evidence."]
-      });
-      return;
-    }
-
-    setRunActionStatus({
-      id: action.id,
-      label: action.label,
-      state: "running",
-      message: `${action.label} is running.`,
-      details: []
-    });
-
-    try {
-      await executeRunAction(run, action);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "success",
-        message: `${action.label} completed.`,
-        details: []
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${action.label} failed.`);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleTemplateRun(template: ReportingTemplateRow) {
-    if (!template.canRunOnDemand || runningTemplateRunId) {
-      return;
-    }
-
-    await executeTemplateRun(template, {
-      templateId: template.templateName,
-      asOfDate: templateRunAsOfDate,
-      maxRetries: 0,
-      datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
-    }, template.runActionLabel);
-  }
-
-  function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
-    shouldReflectExportsViewState.current = true;
-    setExportsRunDraft((current) => {
-      return { ...current, [field]: value };
-    });
-  }
-
-  function updateExportsReportRestatementTarget(target: RestatementTargetSelection | null) {
-    setExportsRunDraft((current) => ({
-      ...current,
-      restatementTargetRunId: target?.runId ?? "",
-      restatementTemplateId: target?.templateId ?? "",
-      restatementJobId: target?.jobId ?? "",
-      restatementAsOfDate: target?.asOfDate ?? "",
-      restatementDatasetSourceId: target?.datasetSourceId ?? "",
-      // Clear any carried reason when the operator cancels the restatement.
-      retryReason: target ? current.retryReason : ""
-    }));
-  }
-
-  async function handleExportsReportRun() {
-    if (runningTemplateRunId) {
-      return;
-    }
-
-    // Restatement runs from the selected released run's identity, independent of the current
-    // template selection (which may be empty or gated); an ordinary run needs a runnable template.
-    if (exportsRunDraft.restatementTargetRunId.trim().length > 0) {
-      await executeTemplateRun(
-        { id: exportsRunDraft.restatementTargetRunId, name: `Restatement of ${exportsRunDraft.restatementTargetRunId}` },
-        buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
-        "Exports report run"
-      );
-      return;
-    }
-
-    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand) {
-      return;
-    }
-
-    await executeTemplateRun(
-      selectedExportsTemplate,
-      buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
-      "Exports report run"
-    );
-  }
-
-  const handleExportsReportRunRef = useRef(handleExportsReportRun);
-  handleExportsReportRunRef.current = handleExportsReportRun;
-
-  const selectedExportsTemplateId = selectedExportsTemplate?.id ?? null;
-  const selectedExportsTemplateName = selectedExportsTemplate?.name ?? null;
-  const selectedExportsTemplateCanRun = selectedExportsTemplate?.canRunOnDemand ?? false;
-  const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
-
-  useEffect(() => {
-    if (!isExportsTaskMode || !selectedExportsTemplateId || !selectedExportsTemplateName) {
-      return;
-    }
-
-    const disabled = !selectedExportsTemplateCanRun || Boolean(runningTemplateRunId);
-    return registerCommandPaletteActions("reporting-screen", [
-      {
-        id: "reporting-run-exports",
-        verbLabel: `Run exports report: ${selectedExportsTemplateName}`,
-        description: "Start the selected on-demand exports report run with the drafted as-of date.",
-        keywords: ["report", "export", "run"],
-        confirm: true,
-        disabled,
-        disabledReason: runningTemplateRunId
-          ? "A template run is already in progress."
-          : selectedExportsTemplateRunDisabledReason,
-        run: async () => {
-          await handleExportsReportRunRef.current();
-          return {
-            title: `${selectedExportsTemplateName} run requested.`,
-            detail: "Track progress under Reporting exports run status.",
-            tone: "success" as const
-          };
-        }
-      }
-    ]);
-  }, [
-    isExportsTaskMode,
-    runningTemplateRunId,
-    selectedExportsTemplateCanRun,
-    selectedExportsTemplateId,
-    selectedExportsTemplateName,
-    selectedExportsTemplateRunDisabledReason
-  ]);
-
-  async function executeTemplateRun(
-    identity: { id: string; name: string },
-    request: ReportingRunRequest,
-    statusLabel: string
-  ) {
-    setTemplateRunStatus({
-      id: identity.id,
-      label: statusLabel,
-      state: "running",
-      message: `${identity.name} is running.`,
-      details: []
-    });
-
-    try {
-      const result = await runReportingNow(request);
-      setTemplateRunStatus({
-        id: identity.id,
-        label: statusLabel,
-        state: "success",
-        message: `${identity.name} run created.`,
-        details: buildReportRunResultDetails(result.run)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${identity.name} run failed.`);
-      setTemplateRunStatus({
-        id: identity.id,
-        label: statusLabel,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
   async function handleTemplateLifecycleAction(
     template: ReportingTemplateRow,
     action: ReportingTemplateLifecycleActionRow
   ) {
-    if (!action.isEnabled || runningTemplateLifecycleActionId) {
+    if (governanceScopeUnavailable || !action.isEnabled || runningTemplateLifecycleActionId) {
       return;
     }
 
@@ -903,10 +573,43 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateScheduleDraft(field: ReportingScheduleDraftField, value: string) {
+    setScheduleDraft((current) => {
+      const next = {
+        ...current,
+        [field]: field === "deliveryMode"
+          ? normalizeReportingScheduleDeliveryMode(value)
+          : field === "recipientPrincipalKind"
+            ? normalizeReportingScheduleRecipientPrincipalKind(value)
+            : value
+      } as ReportingScheduleDraftState;
+      if (field === "cronExpression" || field === "nextAsOfDate") {
+        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
+      }
+      if (field === "nextAsOfDate") {
+        next.runParameters = {
+          ...next.runParameters,
+          periodId: value.slice(0, 7)
+        };
+      }
+      if (field === "templateId") {
+        const selectedTemplate = vm.templateRows.find((template) => template.id === value && template.canRunOnDemand);
+        if (selectedTemplate) {
+          next.templateId = selectedTemplate.templateName;
+          next.templateVersion = selectedTemplate.versionNumber;
+        }
+      }
+      return next;
+    });
+  }
+
+  function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
     setScheduleDraft((current) => ({
       ...current,
-      [field]: field === "deliveryMode" ? normalizeReportingScheduleDeliveryMode(value) : value
-    } as ReportingScheduleDraftState));
+      runParameters: {
+        ...current.runParameters,
+        [field]: value
+      } as ReportRunParameterDraftState
+    }));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
@@ -920,6 +623,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function stageScheduleDraftDeliveryTarget() {
+    if (!scheduleDraft.recipientPrincipalId.trim() || !scheduleDraft.recipientPrincipalKind) {
+      setScheduleActionStatus({
+        id: "schedule-draft:target",
+        label: "Stage reporting schedule recipient",
+        state: "error",
+        message: "Select a recipient kind and enter its explicit principal ID before staging this target.",
+        details: ["Scheduled delivery audiences must retain an exact User, Group, or Company principal."]
+      });
+      return;
+    }
+
     setScheduleDraft((current) => {
       const target = buildCurrentScheduleDraftTarget(current);
       return {
@@ -945,7 +659,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return;
     }
 
-    const request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft);
+    let request: ReportingScheduleUpsertRequest;
+    try {
+      request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft, vm.templateRows);
+    } catch (error) {
+      const display = describeApiError(error, "The reporting schedule parameters are incomplete.");
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+      return;
+    }
     const targets = request.deliveryTargets ?? [];
     if (targets.some((target) => (target.formats ?? []).length === 0)) {
       setScheduleActionStatus({
@@ -977,7 +704,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         details: [
           `Template: ${result.templateId}`,
           savedTargets.length > 0
-            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
+            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} to ${target.recipientPrincipalKind ?? "Unknown"}:${target.recipientPrincipalId ?? "missing principal"} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
             : "Delivery targets: none",
           `Formats: ${savedTargets.map((target) => `${target.distributionId}=${(target.formats ?? []).join("/")}`).join("; ")}`,
           result.brandingThemeOverride
@@ -1039,267 +766,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     }
   }
 
-  async function handleRunDueSchedules() {
-    const statusId = "schedule-due:run";
-    if (runningScheduleActionId) {
-      return;
-    }
-
-    setScheduleActionStatus({
-      id: statusId,
-      label: "Run due reporting schedules",
-      state: "running",
-      message: "Due reporting schedules are running.",
-      details: []
-    });
-
-    try {
-      const result = await runDueReportingSchedules();
-      const deliveryCount = result.runs.reduce((total, run) => total + (run.deliveryAttempts?.length ?? 0), 0);
-      const warningDetails = result.runs.flatMap((run) => run.deliveryWarnings ?? []);
-      setScheduleActionStatus({
-        id: statusId,
-        label: "Run due reporting schedules",
-        state: "success",
-        message: `Due schedule run completed for ${result.runs.length} schedule${result.runs.length === 1 ? "" : "s"}.`,
-        details: [
-          `Evaluated: ${result.evaluatedAtUtc}`,
-          `Deliveries: ${deliveryCount}`,
-          ...warningDetails.map((warning) => `Delivery warning: ${warning}`)
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, "Run due reporting schedules failed.");
-      setScheduleActionStatus({
-        id: statusId,
-        label: "Run due reporting schedules",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleRecordDeliveryFailure(attempt: ReportPackDeliveryAttempt) {
-    const statusId = `${attempt.attemptId}:delivery-failure`;
-    if (runningDeliveryFailureId || attempt.state === "Failed") {
-      return;
-    }
-
-    const label = `Record ${attempt.recipient} delivery failure`;
-    setDeliveryFailureStatus({
-      id: statusId,
-      label,
-      state: "running",
-      message: `${label} is running.`,
-      details: [`Attempt: ${attempt.attemptId}`, `Distribution: ${attempt.distributionId}`]
-    });
-
-    try {
-      const result = await recordReportPackDeliveryFailure(attempt.reportId, buildReportPackDeliveryFailureRequest(attempt));
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "success",
-        message: `${attempt.recipient} delivery failure recorded.`,
-        details: [
-          `Attempt ID: ${result.attemptId}`,
-          `State: ${result.state}`,
-          `Reason: ${result.failureReason ?? "Delivery failure recorded from Reporting workspace."}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${label} failed.`);
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleGenerateBrandedPack(theme: ReportBrandingTheme) {
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: theme.themeId,
-      label: "Generate branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeId: theme.themeId,
-        decisionRationale: `Generated from Reporting branding theme ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewBrandedPack(theme: ReportBrandingTheme) {
-    const statusId = `${theme.themeId}:preview`;
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeId: theme.themeId
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
   function updateBrandingDraft(field: ReportBrandingDraftField, value: string) {
     setBrandingDraft((current) => ({
       ...current,
       [field]: value
     }));
-  }
-
-  async function handleGenerateCustomBrandedPack() {
-    const statusId = "custom-branding-override";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Generate custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeOverride: theme,
-        decisionRationale: `Generated from custom Reporting branding override ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewCustomBrandedPack() {
-    const statusId = "custom-branding-override:preview";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeOverride: theme
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
   }
 
   if (!data) {
@@ -1333,10 +804,30 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   return (
     <div className="space-y-5">
       <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} />
-
-      {isDailyReportingCockpitLanding ? (
-        <ReportingHub model={hubModel} />
-      ) : null}
+      <OperationalTrustSummary
+        source={{ value: "Governed Reporting service", tone: "ready" }}
+        scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
+        freshness={{
+          value: latestRetainedAsOfDate ? presentReportingAsOfDate(latestRetainedAsOfDate) : "No as-of date retained",
+          detail: latestRetainedAsOfDate
+            ? "Latest retained reporting period"
+            : vm.runStatusRows.length > 0
+              ? "Loaded runs do not retain an as-of date; confirm the reporting period before release"
+              : "Generate a report to establish freshness",
+          tone: latestRetainedAsOfDate ? "ready" : "review"
+        }}
+        completeness={{
+          value: `${vm.templateRows.length} templates · ${vm.runStatusRows.length} runs`,
+          detail: "Caller-visible Reporting records",
+          tone: vm.templateRows.length > 0 ? "ready" : "review"
+        }}
+        blocker={governanceScopeUnavailable ? {
+          value: "Access scope unavailable",
+          detail: "Template lifecycle decisions are disabled until caller scope can be verified.",
+          tone: "blocked"
+        } : undefined}
+        label="Reporting data confidence"
+      />
 
       {showStarterKitChooser ? (
         <ReportingStarterKitChooser
@@ -1345,16 +836,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           runningStarterKitId={runningStarterKitId}
           onProvision={handleProvisionStarterKit}
         />
-      ) : isReportBuilderTaskMode && starterKitStatus ? (
+      ) : isDailyReportingCockpitLanding && starterKitStatus ? (
         <ReportingCommandStatusView status={starterKitStatus} />
+      ) : null}
+
+      {isDailyReportingCockpitLanding ? (
+        <ReportingHub model={hubModel} />
       ) : null}
 
       {isDailyReportingCockpitLanding ? null : (
         <>
-      {isRunStatusTaskMode && data.metrics.length > 0 ? (
-        <StatStrip metrics={data.metrics} label="Reporting run-status metrics" />
-      ) : null}
-
       {isGovernanceTaskMode ? (
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
@@ -1367,14 +858,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <span className="flex flex-wrap items-center gap-1.5">
                 <Badge variant={vm.accessAudit.postureVariant}>{vm.accessAudit.postureLabel}</Badge>
                 <Badge variant="outline">{vm.accessAudit.evaluationScope}</Badge>
-                <Badge variant="outline">{vm.accessAudit.hiddenTotalLabel}</Badge>
+                {vm.accessAudit.isAvailable ? <Badge variant="outline">{vm.accessAudit.hiddenTotalLabel}</Badge> : null}
               </span>
             </div>
             <CardDescription>{vm.accessAudit.summary}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            {vm.accessAudit.isAvailable ? (
+            <>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-[11px] uppercase text-muted-foreground">Matched principal scopes</div>
+              <div className="text-xs font-medium text-muted-foreground">Matched principal scopes</div>
               <div className="mt-1 break-words font-mono text-xs text-foreground">{vm.accessAudit.scopeLabel}</div>
             </div>
             <div role="list" aria-label="Reporting access visible and hidden counts" className="grid gap-2 md:grid-cols-5">
@@ -1388,6 +881,12 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 </div>
               ))}
             </div>
+            </>
+            ) : (
+              <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm leading-6 text-warning">
+                Access counts are unavailable. Refresh Reporting or ask an administrator to verify the caller-scoped access audit before relying on visibility totals.
+              </p>
+            )}
             {vm.accessAudit.hasDenialReasons ? (
               <ul aria-label="Reporting access denial reasons" className="grid gap-1.5 text-xs leading-5 text-muted-foreground">
                 {vm.accessAudit.denialReasons.map((reason) => (
@@ -1908,18 +1407,44 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isReportBuilderTaskMode && (requestedReportBuilderTemplateId || requestedReportBuilderFamily) ? (
+        <section
+          role="status"
+          aria-label="Report builder route context"
+          className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3"
+        >
+          <div className="eyebrow-label">Builder context</div>
+          <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-foreground">
+                {focusedReportBuilderTemplate
+                  ? `Review ${focusedReportBuilderTemplate.name}`
+                  : requestedReportBuilderTemplateId
+                    ? `${presentReportingIdentifier(requestedReportBuilderTemplateId.split(":", 1)[0], "Requested template")} is unavailable`
+                    : `Set up ${formatReportingFamilyLabel(requestedReportBuilderFamily)}`}
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {focusedReportBuilderTemplate
+                  ? `Template v${focusedReportBuilderTemplate.version} and its report-writer controls are prioritized below.`
+                  : requestedReportBuilderTemplateId
+                    ? "The requested template is no longer available to this operator. Choose another governed template below."
+                    : reportBuilderFamilyTemplates.length > 0
+                      ? `${reportBuilderFamilyTemplates.length} existing ${formatReportingFamilyLabel(requestedReportBuilderFamily)} template version${reportBuilderFamilyTemplates.length === 1 ? " is" : "s are"} prioritized below.`
+                      : "No governed template exists for this family yet. Use the available builder controls and templates below as the starting point."}
+              </p>
+            </div>
+            <Badge variant={focusedReportBuilderTemplate || reportBuilderFamilyTemplates.length > 0 ? "success" : "warning"}>
+              {focusedReportBuilderTemplate ? "Template selected" : reportBuilderFamilyTemplates.length > 0 ? "Family selected" : "Setup required"}
+            </Badge>
+          </div>
+        </section>
+      ) : null}
+
       {isReportBuilderTaskMode ? (
       <ReportingBrandingAccessPanel
         themes={data.reporting.brandingThemes ?? []}
         draft={brandingDraft}
-        status={brandingPackStatus}
-        runningBrandingThemeId={runningBrandingThemeId}
-        reportingFundProfileId={reportingFundProfileId}
         onDraftChange={updateBrandingDraft}
-        onPreviewTheme={handlePreviewBrandedPack}
-        onGenerateTheme={handleGenerateBrandedPack}
-        onPreviewCustom={handlePreviewCustomBrandedPack}
-        onGenerateCustom={handleGenerateCustomBrandedPack}
       />
       ) : null}
 
@@ -1969,80 +1494,71 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </ReportingReportWriterSection>
       ) : null}
 
-      {isExportsTaskMode ? (
-      <ExportsReportRunner
-        draft={exportsRunDraft}
-        templates={vm.templateRows}
-        selectedTemplate={selectedExportsTemplate}
-        datasetSources={reportWriterDatasetSources}
-        recentRuns={exportsRunRows}
-        status={templateRunStatus}
-        runningTemplateRunId={runningTemplateRunId}
-        defaultRequester={defaultExportsReportRunRequester}
-        onDraftChange={updateExportsReportRunDraft}
-        onRestatementTargetChange={updateExportsReportRestatementTarget}
-        onRun={() => void handleExportsReportRun()}
-      />
-      ) : null}
-
       {isReportBuilderTaskMode || isRunStatusTaskMode || isGovernanceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         {isReportBuilderTaskMode || isGovernanceTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">Template families</div>
-            <CardTitle>Governed report templates</CardTitle>
-            <CardDescription>Investor statements, SEC packets, and shadow NAV packs share the same run contract.</CardDescription>
+            <div className="eyebrow-label">{isGovernanceTaskMode ? "Template governance" : "Template families"}</div>
+            <CardTitle>{isGovernanceTaskMode ? "Template lifecycle and access" : "Governed report templates"}</CardTitle>
+            <CardDescription>
+              {isGovernanceTaskMode
+                ? "Review template access, validation, approval lineage, and the next permitted lifecycle decision."
+                : "Design reusable report templates, review versions, and open the governed authoring surface. Run operations remain in Report Parameters."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <ReportingPeriodSwitcher
-              asOfDate={templateRunAsOfDate}
-              onSelect={setTemplateRunAsOfDate}
-              disabled={Boolean(runningTemplateRunId)}
-            />
-            <p className="text-[11px] leading-4 text-muted-foreground">
-              On-demand template runs use this as-of period. Switch periods to regenerate the same report for a prior month, quarter, or year.
-            </p>
-            {vm.templateRows.map((template) => (
-              <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+            {(isReportBuilderTaskMode ? reportBuilderTemplateRows : vm.templateRows).map((template) => (
+              <div
+                key={template.id}
+                aria-current={focusedReportBuilderTemplate?.id === template.id ? "true" : undefined}
+                className={cn(
+                  "rounded-md border bg-secondary/20 px-3 py-2",
+                  focusedReportBuilderTemplate?.id === template.id ? "border-primary/50 bg-primary/5" : "border-border/70"
+                )}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{template.name}</span>
                   <span className="flex flex-wrap items-center gap-1.5">
                     <SeverityBadge status={reportingStatusFromVariant[template.statusVariant]} label={template.statusLabel} />
                     <Badge variant="outline">{template.sourceLabel}</Badge>
-                    <Badge variant="outline">{template.family}</Badge>
-                    <Badge variant="outline">{template.accessMode}</Badge>
+                    <Badge variant="outline">{presentReportingIdentifier(template.family, "Report")}</Badge>
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {template.version} · {template.sectionSummary} · <span className="font-mono">{template.id}</span>
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{template.version} · {template.sectionSummary}</p>
+                {isGovernanceTaskMode ? (
+                <>
+                <details className="mt-2 rounded-md border border-border/60 bg-background/25">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                    Version, validation, and audit details
+                  </summary>
                 <div
                   role="group"
                   aria-label={`${template.name} template audit and version lineage`}
-                  className="mt-2 grid gap-2 rounded-md border border-border/60 bg-background/25 px-2 py-2 text-xs md:grid-cols-2"
+                  className="grid gap-3 border-t border-border/60 px-3 py-3 text-xs md:grid-cols-2"
                 >
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Version</span>
+                    <span className="block font-medium text-muted-foreground">Version</span>
                     <span className="mt-1 block break-words text-foreground">{template.versionLineageSummary}</span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Audit</span>
+                    <span className="block font-medium text-muted-foreground">Audit</span>
                     <span className="mt-1 block break-words text-foreground">
                       {template.auditTrailSummary} · {template.lastAuditSummary}
                     </span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Approval</span>
+                    <span className="block font-medium text-muted-foreground">Approval</span>
                     <span className="mt-1 block break-words text-foreground">
                       {template.latestApprovedLabel} · {template.decisionSummary}
                     </span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Validation</span>
+                    <span className="block font-medium text-muted-foreground">Validation</span>
                     <span className="mt-1 block break-words text-foreground">{template.validationSummary}</span>
                   </span>
                 </div>
+                </details>
                 <div
                   role="group"
                   aria-label={template.accessGovernance.ariaLabel}
@@ -2054,43 +1570,35 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                       <Badge variant="outline">{template.accessGovernance.scopeLabel}</Badge>
                       <Badge variant={template.accessGovernance.postureVariant}>{template.accessGovernance.postureLabel}</Badge>
                     </span>
-                    <span className="break-all font-mono text-[11px] text-muted-foreground">{template.accessMode}</span>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{template.accessGovernance.detail}</p>
                 </div>
+                </>
+                ) : null}
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
                     <span className="block">{template.approvalSummary}</span>
                     <span className="block">{template.accessSummary}</span>
                   </p>
                   <span className="flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-label={template.runActionAriaLabel}
-                      disabled={!template.canRunOnDemand || Boolean(runningTemplateRunId)}
-                      disabledReason={template.runDisabledReason}
-                      busy={runningTemplateRunId === template.id}
-                      busyLabel="Running"
-                      onClick={() => void handleTemplateRun(template)}
-                    >
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                      {template.runActionLabel}
-                    </Button>
+                    {isReportBuilderTaskMode ? (
                     <Button asChild variant="outline" size="sm">
                       <a href={template.authoringHref} target="_blank" rel="noreferrer" aria-label={template.actionAriaLabel}>
                         <PencilLine className="h-4 w-4" aria-hidden="true" />
                         {template.actionLabel}
                       </a>
                     </Button>
-                    {template.lifecycleActions.map((action) => (
+                    ) : null}
+                    {isGovernanceTaskMode ? template.lifecycleActions.map((action) => (
                       <Button
                         key={action.id}
                         variant={action.kind === "reject" ? "ghost" : "outline"}
                         size="sm"
                         aria-label={action.ariaLabel}
-                        disabled={!action.isEnabled || Boolean(runningTemplateLifecycleActionId)}
-                        disabledReason={action.disabledReason}
+                        disabled={governanceScopeUnavailable || !action.isEnabled || Boolean(runningTemplateLifecycleActionId)}
+                        disabledReason={governanceScopeUnavailable
+                          ? "Access scope is unavailable. Refresh Reporting or ask an administrator before approving or rejecting a template."
+                          : action.disabledReason}
                         busy={runningTemplateLifecycleActionId === action.id}
                         busyLabel={buildTemplateLifecycleBusyLabel(action.kind)}
                         onClick={() => void handleTemplateLifecycleAction(template, action)}
@@ -2098,32 +1606,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         <TemplateLifecycleActionIcon action={action.kind} />
                         {action.label}
                       </Button>
-                    ))}
+                    )) : null}
                   </span>
                 </div>
-                {template.hasWriterGrids && reportWriterDatasetSources.length > 0 ? (
-                  <label className="mt-2 block space-y-1">
-                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Run dataset</span>
-                    <Select
-                      value={templateRunDatasetSourceId}
-                      onChange={(event) => setTemplateRunDatasetSourceId(event.target.value)}
-                      aria-label={`${template.name} on-demand report-writer dataset source`}
-                    >
-                      <option value="">Default retained dataset</option>
-                      {reportWriterDatasetSources.map((source) => (
-                        <option key={source.sourceId} value={source.sourceId}>
-                          {source.label} ({source.rowCount})
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
+                {isGovernanceTaskMode && governanceScopeUnavailable && template.lifecycleActions.length > 0 ? (
+                  <p role="alert" className="mt-2 rounded-sm border border-danger/30 bg-danger/10 px-2.5 py-2 text-xs leading-5 text-danger">
+                    Approval and rejection are disabled because caller access scope could not be verified. Refresh Reporting or ask an administrator to restore the access audit.
+                  </p>
                 ) : null}
               </div>
             ))}
-            {templateRunStatus && templateRunStatus.label !== "Exports report run" ? (
-              <ReportingCommandStatusView status={templateRunStatus} />
-            ) : null}
-            {templateLifecycleStatus ? (
+            {isGovernanceTaskMode && templateLifecycleStatus ? (
               <ReportingCommandStatusView status={templateLifecycleStatus} />
             ) : null}
           </CardContent>
@@ -2141,7 +1634,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             {vm.hasRunStatusRows ? vm.runStatusRows.map((run) => (
               <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-sm text-foreground">{run.id}</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-foreground">{run.templateLabel}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {presentReportingIdentifier(run.family, "Report")} · {hasRetainedReportingAsOfDate(run.asOfDateLabel)
+                        ? `As of ${presentReportingAsOfDate(run.asOfDateLabel)}`
+                        : presentReportingAsOfDate(run.asOfDateLabel)}
+                    </span>
+                  </span>
                   <div className="flex items-center gap-2">
                     {isWatchedRunLive(run) ? (
                       <FreshnessChip
@@ -2151,117 +1651,41 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         staleBudgetMs={REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS}
                       />
                     ) : null}
-                    <SeverityBadge status={resolveRowStatus(run)} label={resolveRowStatus(run)} />
+                    <SeverityBadge status={resolveRowSeverityStatus(run)} label={resolveRowStatusLabel(run)} />
                   </div>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
+                  {humanizeStatus(run.trigger)} run · {run.attemptLabel} · {run.comparisonSummary}
                 </p>
+                {resolveRowStatusLabel(run) === "Period confirmation required" ? (
+                  <p role="status" className="mt-2 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs leading-5 text-warning">
+                    The workflow state is retained, but this run has no as-of date. Confirm the report period before treating the output as approved or published.
+                  </p>
+                ) : null}
                 {isWatchedRunLive(run) && watchedRunStreamStatus ? (
                   <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="report-run-live-status">
                     Live · attempt {watchedRunStreamStatus.attemptCount} · streamed ahead of the 30s poll
                   </p>
                 ) : null}
-                <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${run.id} audit metadata`}>
-                    <div>
-                      <dt className="text-[11px] uppercase text-muted-foreground">Run ID</dt>
-                      <dd className="break-all font-mono text-foreground">{run.runIdLabel}</dd>
-                    </div>
-                      <ReportingRunVersionFields run={run} />
-                      <div>
-                        <dt className="text-[11px] uppercase text-muted-foreground">Template</dt>
-                        <dd className="break-all font-mono text-foreground">{run.templateLabel}</dd>
-                    </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">As of</dt>
-                    <dd className="font-mono text-foreground">{run.asOfDateLabel}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">Trigger</dt>
-                    <dd className="text-foreground">{run.trigger}</dd>
-                  </div>
-                    <div>
-                      <dt className="text-[11px] uppercase text-muted-foreground">Attempts</dt>
-                      <dd className="text-foreground">{run.attemptLabel}</dd>
-                    </div>
-                      <div>
-                        <dt className="text-[11px] uppercase text-muted-foreground">Sections</dt>
-                        <dd className="text-foreground">{run.sectionLabel}</dd>
-                      </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">Lineage</dt>
-                    <dd className="text-foreground">{run.lineageLabel}</dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Artifacts</dt>
-                    <dd className="break-all font-mono text-foreground">
-                      {run.hasArtifacts ? `${run.artifactLabel}: ${run.artifactNames.join(", ")}` : run.artifactLabel}
-                    </dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Dataset source</dt>
-                    <dd className="break-all font-mono text-foreground">{run.datasetSourceLabel}</dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Generated grids</dt>
-                    <dd className="break-all font-mono text-foreground">
-                      {run.hasGeneratedGrids ? `${run.generatedGridLabel}: ${run.generatedGridNames.join(", ")}` : run.generatedGridLabel}
-                    </dd>
-                      <ReportingGeneratedGridExportLinks run={run} />
-                    </div>
-                </dl>
+                <ReportingRunAuditDisclosure run={run} />
                 {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
-                {run.hasDrilldownLinks ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} drilldown links`}>
-                    {run.drilldownLinks.map((link) => link.isBrowserNavigable ? (
-                      <a
-                        key={link.id}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={link.ariaLabel}
-                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground hover:bg-secondary/55 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      >
-                        <Badge variant="outline">{link.kind}</Badge>
-                        <span className="truncate">{link.label}</span>
-                      </a>
-                    ) : (
-                      <span
-                        key={link.id}
-                        role="group"
-                        aria-label={link.ariaLabel}
-                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
-                      >
-                        <Badge variant="outline">{link.kind}</Badge>
-                        <span className="truncate">{link.label}</span>
-                      </span>
-                    ))}
-                  </div>
+                {normalizeReportingStatus(resolveRowStatus(run)) === "awaitingapproval" ? (
+                  <Button asChild size="sm" variant="outline" className="mt-2">
+                    <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
+                      Review approval details
+                    </a>
+                  </Button>
                 ) : null}
                 {run.hasNextActions ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} next actions`}>
-                    {run.nextActions.map((action) => (
-                      <Button
-                        key={action.id}
-                        aria-label={action.ariaLabel}
-                        disabled={!action.isEnabled || action.method !== "POST" || action.kind === "restatement" || Boolean(runningRunActionId)}
-                        busy={runningRunActionId === action.id}
-                        busyLabel="Running"
-                        disabledReason={action.disabledReason ?? (action.kind === "restatement" ? "Restatement requires changed-line evidence." : null)}
-                        onClick={() => void handleRunAction(run, action)}
-                        size="sm"
-                        variant={action.isEnabled ? "outline" : "ghost"}
-                        className={cn(
-                          "min-w-0 justify-start px-2 py-1 text-[11px]",
-                          action.isEnabled
-                            ? "border-primary/35 bg-primary/10 text-primary hover:bg-primary/15"
-                            : "border-border/60 bg-secondary/20 text-muted-foreground"
-                        )}
-                      >
-                        <Badge variant="outline">{action.method}</Badge>
-                        <span className="truncate">{action.label}</span>
-                      </Button>
-                    ))}
+                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
+                    <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
+                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                    </p>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
+                        Open governed run
+                      </a>
+                    </Button>
                   </div>
                 ) : null}
               </div>
@@ -2270,9 +1694,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 No report runs have been generated yet.
               </p>
             )}
-            {runActionStatus ? (
-              <ReportingCommandStatusView status={runActionStatus} />
-            ) : null}
           </CardContent>
         </Card>
         ) : null}
@@ -2283,33 +1704,31 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         <ReportingPrivateCapitalReadinessPanel data={data} />
       ) : null}
 
-      {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        {isReportBuilderTaskMode ? (
+      {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
+      <section className="grid items-start gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {isSchedulesTaskMode ? (
         <ReportingScheduleManagementPanel
           model={scheduleModel}
           scheduleDraft={scheduleDraft}
           distributionOptions={scheduleDistributionOptions}
           datasetSources={reportWriterDatasetSources}
+          templates={vm.templateRows}
           status={scheduleActionStatus}
           runningScheduleActionId={runningScheduleActionId}
           onDraftChange={updateScheduleDraft}
+          onRunParameterChange={updateScheduleRunParameters}
           onToggleFormat={toggleScheduleDraftFormat}
           onStageTarget={stageScheduleDraftDeliveryTarget}
           onRemoveTarget={removeScheduleDraftDeliveryTarget}
           onSaveDraft={saveScheduleDraft}
-          onRunDue={handleRunDueSchedules}
           onScheduleAction={handleScheduleAction}
           onSchedulePlanRun={handleSchedulePlanRun}
         />
         ) : null}
 
-        {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
+        {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
           deliveryAttempts={data.reporting.deliveryAttempts ?? []}
-          deliveryFailureStatus={deliveryFailureStatus}
-          runningDeliveryFailureId={runningDeliveryFailureId}
-          onRecordDeliveryFailure={handleRecordDeliveryFailure}
         />
         ) : null}
       </section>
@@ -2330,10 +1749,21 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.description}
                 </p>
               </div>
-              <SeverityBadge
-                status={reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
-                label={vm.workflowTaskPanel.statusLabel}
-              />
+              <span className="flex flex-wrap items-center gap-2">
+                <SeverityBadge
+                  status={reportPackWorkflowRecord || reportPackWorkflowRun
+                    ? reportPackWorkflowStatusLabel
+                    : reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
+                  label={reportPackWorkflowStatusLabel}
+                />
+                {reportPackWorkflowRun ? (
+                  <Button asChild size="sm">
+                    <a href={workstationRouteWithQuery("reportingRunDetail", { runId: reportPackWorkflowRun.id })}>
+                      Open governed run
+                    </a>
+                  </Button>
+                ) : null}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {vm.workflowTaskPanel.chips.map((chip) => (
@@ -2368,18 +1798,21 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.publicationReview.summaryText}
               </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <details className="mt-3 rounded-md border border-border/60 bg-background/25">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  Publication evidence, provenance, and retained identifiers
+                  <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
+                </summary>
+              <div className="space-y-3 border-t border-border/60 px-3 py-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {vm.workflowTaskPanel.publicationReview.fields.map((field) => (
                   <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
-                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className="block text-xs font-medium text-muted-foreground">{field.label}</span>
                     <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-3">
-                <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.evidenceLinksLabel}</div>
                 <Badge variant="outline">
                   {vm.workflowTaskPanel.publicationReview.evidenceLinks.length} link{vm.workflowTaskPanel.publicationReview.evidenceLinks.length === 1 ? "" : "s"}
@@ -2469,6 +1902,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.publicationReview.lineProvenanceEmptyText}
                 </p>
               )}
+              </div>
+              </details>
             </div>
             <div
               role="region"
@@ -2490,10 +1925,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.restatementReview.summaryText}
               </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <details className="mt-3 rounded-md border border-border/60 bg-background/25">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  Changed lines and restatement evidence
+                  <Badge variant="outline">{vm.workflowTaskPanel.restatementReview.evidenceSummary}</Badge>
+                </summary>
+              <div className="space-y-3 border-t border-border/60 px-3 py-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {vm.workflowTaskPanel.restatementReview.fields.map((field) => (
                   <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
-                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className="block text-xs font-medium text-muted-foreground">{field.label}</span>
                     <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
                   </div>
                 ))}
@@ -2534,6 +1975,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.restatementReview.emptyText}
                 </p>
               )}
+              </div>
+              </details>
             </div>
             <div>
               <div className="eyebrow-label">Actions</div>
@@ -2632,12 +2075,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   </p>
                 )}
               </div>
-              <div>
-                <div className="eyebrow-label">Export service</div>
+              <TechnicalDetails
+                label="System service references"
+                description="Endpoint paths and service actions are retained for diagnostics and audit support."
+              >
                 <div
                   id={vm.workflowTaskPanel.backendPanelId}
                   aria-label={vm.workflowTaskPanel.backendLinksLabel}
-                  className="mt-2 grid gap-2"
+                  className="grid gap-2"
                 >
                   {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
                     <a
@@ -2661,7 +2106,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     </div>
                   ))}
                 </div>
-              </div>
+              </TechnicalDetails>
             </div>
           </div>
           <div>
@@ -2804,12 +2249,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                       <span>Last sent: {target.lastSentLabel}</span>
                     </div>
                     <a
-                      className="mt-2 inline-flex break-all font-mono text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                      className="mt-2 inline-flex min-h-9 items-center text-xs font-medium text-primary underline-offset-2 hover:underline"
                       href={target.href}
                       aria-label={`Open ${target.label} report-pack distribution route`}
                     >
-                      {target.href}
+                      Open recipient workflow
                     </a>
+                    <TechnicalDetails label="Recipient route details" className="mt-2">
+                      <p className="break-all font-mono text-xs text-muted-foreground">{target.href}</p>
+                    </TechnicalDetails>
                   </div>
                 ))}
               </div>
@@ -2894,15 +2342,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <h3 className="text-sm font-semibold text-foreground">
                 {vm.selectedProfile?.title ?? vm.statusTitle}
               </h3>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">
-                {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {vm.selectedProfile ? vm.selectedProfile.subtitle : vm.nextAction}
               </p>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
             {vm.exportStatus ? (
               <ReportingExportStatusPanel status={vm.exportStatus} className="mt-3" />
             ) : null}
-            <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{vm.nextAction}</p>
             {vm.selectedProfile ? (
               <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
                 <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
@@ -3012,7 +2460,7 @@ function ReportingExportStatusPanel({
               key={field.label}
               className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
             >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              <dt className="text-xs font-medium text-muted-foreground">
                 {field.label}
               </dt>
               <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
@@ -3036,7 +2484,7 @@ function ReportingExportStatusPanel({
         >
           {status.artifacts.map((artifact) => (
             <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              <dt className="text-xs font-medium text-muted-foreground">
                 {artifact.label}
               </dt>
               <dd className={cn("break-words font-mono text-xs", artifact.className)}>
@@ -3053,7 +2501,7 @@ function ReportingExportStatusPanel({
 function ReportingCutMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
@@ -3075,39 +2523,10 @@ function buildStructuredExportDownloadHref(
   return queryString ? `${path}?${queryString}` : path;
 }
 
-function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ExportsReportRunDraftState {
-  const template = reporting?.templates?.find((item) => (item.isAccessible ?? true) && (item.lifecycleStatus ?? "Approved") === "Approved")
-    ?? reporting?.templates?.[0]
-    ?? null;
-
-  return {
-    templateRowId: template ? `${template.templateId}:${template.version}` : "",
-    asOfDate: new Date().toISOString().slice(0, 10),
-    maxRetries: "0",
-    requestedBy: defaultExportsReportRunRequester,
-    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting),
-    retryReason: "",
-    restatementTargetRunId: "",
-    restatementTemplateId: "",
-    restatementJobId: "",
-    restatementAsOfDate: "",
-    restatementDatasetSourceId: ""
-  };
-}
-
-function resolveSelectedExportsTemplate(
-  templates: ReportingTemplateRow[],
-  draft: ExportsReportRunDraftState
-): ReportingTemplateRow | null {
-  return templates.find((template) => template.id === draft.templateRowId)
-    ?? templates.find((template) => template.canRunOnDemand)
-    ?? templates[0]
-    ?? null;
-}
-
 export function buildExportsReportRunRequest(
   template: ReportingTemplateRow | null,
-  draft: ExportsReportRunDraftState
+  draft: ExportsReportRunDraftState,
+  parameters?: ReportingRunParameters | null
 ): ReportingRunRequest {
   // Authorized restatement targets a specific released run's series: reuse its job id and as-of
   // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
@@ -3133,21 +2552,21 @@ export function buildExportsReportRunRequest(
 
   return {
     templateId: template.templateName,
+    template: {
+      name: template.templateName,
+      version: template.versionNumber
+    },
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
+    parameters: parameters ?? null
   };
 }
 
 function parseExportsReportMaxRetries(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-}
-
-export function isExportsOnDemandRun(run: ReportingRunStatusRow): boolean {
-  const trigger = run.trigger.trim().toLowerCase().replace(/[^a-z]/g, "");
-  return trigger === "adhoc" || trigger === "ondemand" || trigger === "manual";
 }
 
 export function buildReportRunResultDetails(run: {
@@ -3159,9 +2578,13 @@ export function buildReportRunResultDetails(run: {
   reportWriterDatasetSourceId?: string | null;
   reportWriterDatasetRowCount?: number | null;
 }): string[] {
-  const details = [`Run ID: ${run.runId}`, `Status: ${run.status}`, `Trigger: ${run.trigger}`];
+  const details = [
+    "Run retained for audit review",
+    `Status: ${presentReportingStatusLabel(run.status)}`,
+    `Trigger: ${presentReportingStatusLabel(run.trigger)}`
+  ];
   if (run.asOfDate) {
-    details.push(`As of: ${run.asOfDate}`);
+    details.push(`As of: ${presentReportingAsOfDate(run.asOfDate)}`);
   }
 
   const source = run.reportWriterDatasetSourceLabel?.trim() || run.reportWriterDatasetSourceId?.trim();
@@ -3185,6 +2608,10 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
   const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
+  const retainedTemplate = schedule?.template
+    ?? (template
+      ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
+      : { name: templateId, version: 1 });
 
   return {
     scheduleId,
@@ -3198,9 +2625,17 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     datasetSourceId: normalizeOptionalDatasetSourceId(schedule?.datasetSourceId ?? buildDefaultReportWriterDatasetSourceId(reporting)) ?? "",
     distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(firstTarget?.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(firstTarget?.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
     formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget)
+    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    templateVersion: retainedTemplate.version,
+    runParameters: buildDefaultReportRunParameterDraft({
+      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+      asOfDate: nextAsOfDate,
+      parameters: schedule?.runParameters
+    })
   };
 }
 
@@ -3213,15 +2648,90 @@ function normalizeOptionalDatasetSourceId(sourceId: string | null | undefined): 
   return normalized ? normalized : null;
 }
 
+function normalizeReportBuilderContextToken(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+export function resolveReportingScheduleDueAtUtc(
+  nextAsOfDate: string,
+  cronExpression: string,
+  currentDueAtUtc: string
+): string {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
+  const cronFields = cronExpression.trim().split(/\s+/);
+  const minute = Number.parseInt(cronFields[0] ?? "", 10);
+  const hour = Number.parseInt(cronFields[1] ?? "", 10);
+  if (!dateMatch || !Number.isInteger(minute) || minute < 0 || minute > 59 || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+    return currentDueAtUtc;
+  }
+
+  const year = Number.parseInt(dateMatch[1], 10);
+  const monthIndex = Number.parseInt(dateMatch[2], 10) - 1;
+  const day = Number.parseInt(dateMatch[3], 10);
+  let dueDate = new Date(Date.UTC(year, monthIndex, day));
+  if (
+    dueDate.getUTCFullYear() !== year
+    || dueDate.getUTCMonth() !== monthIndex
+    || dueDate.getUTCDate() !== day
+  ) {
+    return currentDueAtUtc;
+  }
+
+  const normalizedCron = cronFields.join(" ");
+  if (normalizedCron === "0 8 * * 1-5") {
+    while (dueDate.getUTCDay() === 0 || dueDate.getUTCDay() === 6) {
+      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
+    }
+  } else if (normalizedCron === "0 8 * * 1") {
+    while (dueDate.getUTCDay() !== 1) {
+      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
+    }
+  } else if (normalizedCron === "0 8 1 * *") {
+    if (dueDate.getUTCDate() !== 1) {
+      dueDate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth() + 1, 1));
+    }
+  } else if (normalizedCron === "0 8 1 1,4,7,10 *") {
+    const quarterlyMonths = new Set([0, 3, 6, 9]);
+    let candidate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), 1));
+    if (candidate < dueDate || !quarterlyMonths.has(candidate.getUTCMonth())) {
+      do {
+        candidate = new Date(Date.UTC(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, 1));
+      } while (!quarterlyMonths.has(candidate.getUTCMonth()));
+    }
+    dueDate = candidate;
+  }
+
+  const dueYear = dueDate.getUTCFullYear().toString().padStart(4, "0");
+  const dueMonth = (dueDate.getUTCMonth() + 1).toString().padStart(2, "0");
+  const dueDay = dueDate.getUTCDate().toString().padStart(2, "0");
+  return `${dueYear}-${dueMonth}-${dueDay}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00Z`;
+}
+
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
-  brandingDraft: ReportBrandingDraftState
+  brandingDraft: ReportBrandingDraftState,
+  templates: ReportingTemplateRow[]
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
   const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
+  const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
+  if (!parameterValidation.parameters) {
+    throw new Error(parameterValidation.issues.join(" "));
+  }
+  const exactTemplate = templates.find((template) =>
+    template.templateName === templateId && template.versionNumber === draft.templateVersion)
+    ?? templates
+      .filter((template) => template.templateName === templateId && template.canRunOnDemand)
+      .reduce<ReportingTemplateRow | null>(
+        (latest, template) => !latest || template.versionNumber > latest.versionNumber ? template : latest,
+        null
+      );
+  if (!exactTemplate) {
+    throw new Error("Select an approved reporting template version before saving the schedule.");
+  }
 
   return {
     scheduleId,
@@ -3236,7 +2746,12 @@ function buildReportingScheduleUpsertRequest(
     deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote),
     datasetSourceId: normalizeOptionalDatasetSourceId(draft.datasetSourceId),
     brandingThemeId: brandingThemeOverride.themeId,
-    brandingThemeOverride
+    brandingThemeOverride,
+    template: {
+      name: exactTemplate.templateName,
+      version: exactTemplate.versionNumber
+    },
+    runParameters: parameterValidation.parameters
   };
 }
 
@@ -3247,11 +2762,18 @@ function buildReportingScheduleDeliveryTargets(
   const targets = new Map<string, NonNullable<ReportingScheduleUpsertRequest["deliveryTargets"]>[number]>();
   for (const target of [...draft.deliveryTargets, buildCurrentScheduleDraftTarget(draft)]) {
     const distributionId = normalizeIdentifierToken(target.distributionId, "board-reporting-committee");
+    const recipientPrincipalId = target.recipientPrincipalId.trim();
+    const recipientPrincipalKind = normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind);
+    if (!recipientPrincipalId || !recipientPrincipalKind) {
+      throw new Error("Every scheduled delivery target requires an explicit User, Group, or Company recipient principal and ID.");
+    }
     const note = target.distributionId === draft.distributionId
       ? currentDeliveryNote
       : normalizeDraftText(target.deliveryNote, "");
     targets.set(distributionId, {
       distributionId,
+      recipientPrincipalId,
+      recipientPrincipalKind,
       deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
       formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
       note: note || null
@@ -3265,6 +2787,8 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
   return normalizeScheduleDraftTarget({
     distributionId: draft.distributionId,
     deliveryMode: draft.deliveryMode,
+    recipientPrincipalId: draft.recipientPrincipalId,
+    recipientPrincipalKind: draft.recipientPrincipalKind,
     note: draft.deliveryNote,
     formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
   });
@@ -3273,12 +2797,16 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
 function normalizeScheduleDraftTarget(target: {
   distributionId: string;
   deliveryMode?: ReportPackDeliveryMode | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: string | null;
   note?: string | null;
   formats?: readonly GovernanceReportArtifactFormat[] | null;
 }): ReportingScheduleDraftTarget {
   return {
     distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(target.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(target.note, ""),
     formats: buildScheduleFormatSelection(target.formats)
   };
@@ -3308,6 +2836,12 @@ function normalizeReportingScheduleDeliveryMode(value: string | null | undefined
     : "SecurePortal";
 }
 
+function normalizeReportingScheduleRecipientPrincipalKind(
+  value: string | null | undefined
+): ReportingScheduleRecipientPrincipalKind | "" {
+  return value === "User" || value === "Group" || value === "Company" ? value : "";
+}
+
 function parseScheduleMaxRetries(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 1;
@@ -3315,29 +2849,9 @@ function parseScheduleMaxRetries(value: string): number {
 
 function formatReportingScheduleRunDetails(result: Awaited<ReturnType<typeof runReportingScheduleNow>>): string[] {
   return [
-    `Run ID: ${result.run.runId}`,
+    "Run retained for audit review",
     `Deliveries: ${result.deliveryAttempts?.length ?? 0}`,
     ...(result.deliveryWarnings ?? []).map((warning) => `Delivery warning: ${warning}`)
-  ];
-}
-
-function formatReportPackPreviewDetails(result: Awaited<ReturnType<typeof previewReportPack>>): string[] {
-  const assetClasses = result.assetClassSections
-    .map((section) => `${section.assetClass}: ${formatReportingMoney(section.total, result.currency)}`)
-    .join("; ");
-
-  return [
-    `Preview ID: ${result.reportId}`,
-    `Fund: ${result.displayName}`,
-    `Report kind: ${result.reportKind}`,
-    `As of: ${result.asOf}`,
-    `Total net assets: ${formatReportingMoney(result.totalNetAssets, result.currency)}`,
-    `Trial balance lines: ${result.trialBalanceLineCount}`,
-    `Asset-class sections: ${result.assetClassSectionCount}`,
-    result.brandingTheme
-      ? `Branding: ${result.brandingTheme.name} · ${result.brandingTheme.firmName} · ${result.brandingTheme.themeId}`
-      : "Branding: default theme",
-    assetClasses ? `Asset classes: ${assetClasses}` : "Asset classes: none"
   ];
 }
 
@@ -3405,54 +2919,6 @@ function formatHeatMapWidth(value: number): string {
   return `${Math.min(100, Math.max(2, value))}%`;
 }
 
-function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["reporting"] | null): string | null {
-  const direct = reporting?.fundProfileId?.trim() || reporting?.selectedFundProfileId?.trim();
-  if (direct) {
-    return direct;
-  }
-
-  return reporting?.workflowRecords
-    ?.map((record) => record.fundProfileId?.trim())
-    .find((fundProfileId): fundProfileId is string => Boolean(fundProfileId)) ?? null;
-}
-
-async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow): Promise<void> {
-  if (action.kind.startsWith("delivery:")) {
-    const reportId = extractReportPackId(run, action);
-    const distributionId = action.kind.slice("delivery:".length);
-    await deliverReportPack(reportId, {
-      distributionId,
-      note: "Delivered from browser Reporting workspace.",
-      formats: ["Pdf", "Xlsx", "Csv"],
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "approval-reject") {
-    await apiPostJson<unknown>(action.href, {
-      reason: "Returned from browser Reporting workspace.",
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "publication") {
-    const reportId = extractReportPackId(run, action);
-    await apiPostJson<unknown>(action.href, {
-      signedOffBy: "server-authenticated-actor",
-      evidenceHash: `sha256:${normalizeEvidenceToken(run.id)}`,
-      manifestId: `browser-${normalizeEvidenceToken(reportId)}`,
-      retainedManifestPath: `workstation/reporting/${normalizeEvidenceToken(reportId)}/manifest.json`,
-      evidenceLinks: buildEvidenceLinksFromRun(run),
-      note: "Published from browser Reporting workspace."
-    });
-    return;
-  }
-
-  await apiPostJson<unknown>(action.href);
-}
-
 function buildReportTemplateDecisionRequest(
   template: ReportingTemplateRow,
   action: ReportingTemplateLifecycleActionRow
@@ -3501,64 +2967,4 @@ function buildTemplateLifecycleBusyLabel(action: ReportingTemplateLifecycleActio
   }
 
   return "Submitting";
-}
-
-function extractReportPackId(run: ReportingRunStatusRow, action: ReportingRunActionRow): string {
-  const hrefMatch = action.href.match(/\/reporting\/packs\/([0-9a-fA-F-]{36})(?:\/|$)/);
-  if (hrefMatch?.[1]) {
-    return hrefMatch[1];
-  }
-
-  if (run.id.startsWith("report-pack:")) {
-    return run.id.slice("report-pack:".length);
-  }
-
-  return run.id;
-}
-
-function buildEvidenceLinksFromRun(run: ReportingRunStatusRow): ReportingWorkflowEvidenceLink[] {
-  const links = run.drilldownLinks
-    .filter((link) => link.kind.includes("evidence") || link.href.includes("/evidence"))
-    .map((link) => ({
-      evidenceId: normalizeEvidenceToken(link.id),
-      label: link.label,
-      route: link.href,
-      source: link.source || "reporting",
-      capturedAtUtc: null
-    }));
-
-  if (links.length > 0) {
-    return links;
-  }
-
-  return [{
-    evidenceId: normalizeEvidenceToken(run.id),
-    label: `${run.templateId} report run`,
-    route: null,
-    source: "reporting",
-    capturedAtUtc: null
-  }];
-}
-
-function buildReportPackDeliveryFailureRequest(attempt: ReportPackDeliveryAttempt): ReportPackDeliveryFailureRequest {
-  return {
-    distributionId: attempt.distributionId,
-    deliveryReference: `delivery-failure:${normalizeEvidenceToken(attempt.attemptId)}`,
-    note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`,
-    failureReason: `Operator recorded delivery failure for ${attempt.recipient} after attempt ${attempt.attemptNumber}.`,
-    evidenceLinks: [
-      {
-        evidenceId: normalizeEvidenceToken(attempt.attemptId),
-        label: `${attempt.recipient} delivery attempt ${attempt.attemptNumber}`,
-        route: attempt.package?.portalRoute ?? attempt.package?.secureLink ?? null,
-        source: "report-pack-delivery",
-        capturedAtUtc: attempt.attemptedAtUtc
-      }
-    ]
-  };
-}
-
-function normalizeEvidenceToken(value: string): string {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
-  return normalized || "reporting-evidence";
 }

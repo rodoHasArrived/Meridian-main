@@ -1,11 +1,15 @@
 # Development Guides
 
-**Owner:** Core Team
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
 **Scope:** Engineering and contributor-facing guidance
-**Last Reviewed:** 2026-04-16
 **Review Cadence:** As tooling, workflows, or implementation conventions evolve
 
-This directory is the working index for Meridian developer guidance. Use it when you need to understand how the repository is organized, how to extend or test the platform, how desktop development works, or which automation and CI documents are authoritative.
+This supporting directory contains detailed implementation guides reached through the canonical
+[Engineering](../engineering/README.md) lane. Use it for repository organization, extension and
+test patterns, desktop development, and automation detail; keep the shortest current command path
+in Engineering and Start.
 
 ## Start Here
 
@@ -40,9 +44,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 ## What Does Not Belong Here
 
 - Architecture narratives and rationale belong in [architecture/](../architecture/README.md)
-- Operational runbooks and deployment steps belong in [operations/](../operations/README.md)
+- Operational runbooks and deployment steps belong in [Operators](../operators/README.md)
 - Historical evaluations, proposals, and option analysis belong in the [assessment archive](../../archive/docs/assessments/README.md); active findings belong in the owning canonical lane.
-- Active roadmap and delivery tracking belong in [status/](../status/README.md)
+- Active roadmap and delivery tracking belong in the [Roadmap Registry](../roadmap/README.md);
+  automation-owned reports remain under [Status](../status/README.md)
 
 ## Guide Map
 
@@ -50,7 +55,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Start](../start/README.md) | bootstrap the local checkout at `D:\Meridian-main` |
+| [Start](../start/README.md) | bootstrap a fresh checkout from the repository root |
 | [Engineering](../engineering/README.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
 | [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md) | review historical standalone publish guidance |

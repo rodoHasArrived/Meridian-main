@@ -526,6 +526,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             {
                 pos.Quantity = adjustment.AdjustedQuantity;
                 pos.CostBasis = adjustment.AdjustedCostBasis;
+
+                // Rescale the lot book by the same factors so lots stay consistent with the
+                // aggregate; otherwise the next lot-consuming fill falls into the shortfall
+                // fallback and mis-states realized P&L (e.g. selling through a post-split
+                // position priced at pre-split lot costs).
+                var quantityFactor = originalQuantity == 0m
+                    ? 1m
+                    : adjustment.AdjustedQuantity / originalQuantity;
+                var priceFactor = originalCostBasis == 0m
+                    ? 1m
+                    : adjustment.AdjustedCostBasis / originalCostBasis;
+                pos.RescaleLots(quantityFactor, priceFactor);
             }
         }
     }
@@ -1024,6 +1036,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
     }
 
+    /// <summary>
+    /// Rescales every open lot by the corporate-action factors applied to the aggregate
+    /// position, preserving lot identity and open time. Keeping the lot book in step with
+    /// <see cref="Quantity"/>/<see cref="CostBasis"/> is required for lot consumption: a
+    /// desynced book would push post-split sells into the shortfall fallback and fabricate
+    /// cost basis at the aggregate average.
+    /// </summary>
+    public void RescaleLots(decimal quantityFactor, decimal priceFactor)
+    {
+        if (quantityFactor == 1m && priceFactor == 1m)
+        {
+            return;
+        }
+
+        var rescaled = _lots
+            .Select(lot => new PositionLot(
+                lot.LotId,
+                lot.OpenQuantity * quantityFactor,
+                lot.EntryPrice * priceFactor,
+                lot.OpenedAt))
+            .Where(static lot => lot.OpenQuantity != 0m)
+            .ToList();
+
+        _lots.Clear();
+        _lots.AddRange(rescaled);
+    }
+
     public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
     {
         if (quantity <= 0m)
@@ -1031,35 +1070,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return 0m;
         }
 
-        var remaining = quantity;
+        var consumption = LotConsumption.Consume(
+            OrderLots(method, isCoveringShort),
+            quantity,
+            static lot => Math.Abs(lot.OpenQuantity));
+
         var removedCostBasis = 0m;
-
-        while (remaining > 0m)
+        foreach (var slice in consumption.Slices)
         {
-            var lot = SelectNextLot(method, isCoveringShort);
-            if (lot is null)
+            removedCostBasis += slice.Quantity * slice.Lot.EntryPrice;
+
+            if (slice.ClosesLot)
             {
-                removedCostBasis += remaining * CostBasis;
-                break;
-            }
-
-            var lotAvailable = Math.Abs(lot.OpenQuantity);
-            var consumed = Math.Min(remaining, lotAvailable);
-            removedCostBasis += consumed * lot.EntryPrice;
-            remaining -= consumed;
-
-            var newOpenQty = lot.OpenQuantity > 0m
-                ? lot.OpenQuantity - consumed
-                : lot.OpenQuantity + consumed;
-
-            if (newOpenQty == 0m)
-            {
-                _lots.Remove(lot);
+                _lots.Remove(slice.Lot);
             }
             else
             {
-                lot.OpenQuantity = newOpenQty;
+                slice.Lot.OpenQuantity = slice.Lot.OpenQuantity > 0m
+                    ? slice.Lot.OpenQuantity - slice.Quantity
+                    : slice.Lot.OpenQuantity + slice.Quantity;
             }
+        }
+
+        if (consumption.Shortfall > 0m)
+        {
+            // No matching lot records remain; carry the unmatched remainder at the
+            // position-level average cost (legacy positions without lot history).
+            removedCostBasis += consumption.Shortfall * CostBasis;
         }
 
         CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
@@ -1083,7 +1120,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         return remainingNotional / remainingQuantity;
     }
 
-    private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
+    private IEnumerable<PositionLot> OrderLots(PositionLotSelectionMethod method, bool isCoveringShort)
     {
         var candidates = isCoveringShort
             ? _lots.Where(static lot => lot.OpenQuantity < 0m)
@@ -1091,10 +1128,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
         return method switch
         {
-            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            _ => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt),
+            _ => candidates.OrderBy(static lot => lot.OpenedAt),
         };
     }
 

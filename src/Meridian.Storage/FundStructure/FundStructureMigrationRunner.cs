@@ -1,46 +1,28 @@
-using Npgsql;
+using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.FundStructure;
 
 public sealed class FundStructureMigrationRunner
 {
-    private readonly FundStructureStoreOptions _options;
+    private readonly PostgresMigrationRunner _runner;
 
     public FundStructureMigrationRunner(FundStructureStoreOptions options)
     {
-        _options = options;
-    }
-
-    public async Task EnsureMigratedAsync(CancellationToken ct = default)
-    {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        foreach (var scriptPath in GetMigrationScripts())
+        ArgumentNullException.ThrowIfNull(options);
+        _runner = new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
         {
-            var sql = await File.ReadAllTextAsync(scriptPath, ct).ConfigureAwait(false);
-            var rendered = sql.Replace("__SCHEMA__", _options.Schema, StringComparison.Ordinal);
-            await using var command = connection.CreateCommand();
-            command.CommandText = rendered;
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
+            ConnectionString = options.ConnectionString,
+            Schema = options.Schema,
+            ScriptsSubdirectory = Path.Combine("FundStructure", "Migrations"),
+            DisplayName = "Fund structure",
+            LockScopeName = "fund_structure",
+            ConnectionStringSettingName = $"{nameof(FundStructureStoreOptions)}.{nameof(options.ConnectionString)}",
+            // Feature-prefixed ledger so a shared schema can never collide with another
+            // feature's migration table layout.
+            LedgerTableName = "fund_structure_schema_migrations",
+            DriftPolicy = MigrationDriftPolicy.Reapply,
+        });
     }
 
-    private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-            throw new InvalidOperationException("FundStructureStoreOptions.ConnectionString is not configured.");
-        var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
-    }
-
-    private static IEnumerable<string> GetMigrationScripts()
-    {
-        var baseDirectory = AppContext.BaseDirectory;
-        var migrationDirectory = Path.Combine(baseDirectory, "FundStructure", "Migrations");
-        if (!Directory.Exists(migrationDirectory))
-            throw new DirectoryNotFoundException($"Fund structure migration directory was not found at '{migrationDirectory}'.");
-        return Directory
-            .GetFiles(migrationDirectory, "*.sql", SearchOption.TopDirectoryOnly)
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
-    }
+    public Task EnsureMigratedAsync(CancellationToken ct = default) => _runner.EnsureMigratedAsync(ct);
 }

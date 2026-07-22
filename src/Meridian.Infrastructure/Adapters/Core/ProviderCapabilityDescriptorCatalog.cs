@@ -25,11 +25,18 @@ public static class ProviderCapabilityDescriptorCatalog
 {
     public static IReadOnlyList<ProviderCapabilityDescriptor> Descriptors { get; } =
     [
-        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway),
+        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProvider), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
-        new("ib", Historical: typeof(IBHistoricalDataProvider),
+        new("ib", Streaming: typeof(IBMarketDataClient),
+            InstrumentTypes:
+            [
+                InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
+                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
+                InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
+            ]),
+        new("ibkr", Historical: typeof(IBHistoricalDataProvider),
             InstrumentTypes:
             [
                 InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
@@ -54,7 +61,7 @@ public static class ProviderCapabilityDescriptorCatalog
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Crypto]),
         new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index]),
-        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored), CorporateActions: typeof(FinnhubCorporateActionProvider),
+        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProvider), CorporateActions: typeof(FinnhubCorporateActionProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto]),
         new("stooq", Historical: typeof(StooqHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index]),

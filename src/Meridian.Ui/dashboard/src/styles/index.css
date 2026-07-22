@@ -1052,6 +1052,10 @@
   }
 
   .plottool-chart-shell {
+    --foreground: 210 24% 92%;
+    --muted-foreground: 212 11% 70%;
+    --border: 211 14% 32%;
+    --secondary: 212 18% 17%;
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-xl);
     background: #05101b;
@@ -1079,15 +1083,15 @@
   .plottool-legend-card {
     min-width: 0;
     padding: 0.75rem 0.875rem;
-    border: 1px solid rgba(31, 52, 76, 0.9);
+    border: 1px solid var(--ws-border);
     border-radius: var(--radius-lg);
-    background: rgba(8, 16, 26, 0.55);
+    background: var(--ws-surface-subtle);
     transition: border-color 120ms ease, background 120ms ease;
   }
 
   .plottool-legend-card:hover {
-    border-color: var(--border-hi);
-    background: rgba(27, 42, 60, 0.65);
+    border-color: var(--ws-border-strong);
+    background: var(--ws-surface-raised);
   }
 
   .plottool-overlay-list li {

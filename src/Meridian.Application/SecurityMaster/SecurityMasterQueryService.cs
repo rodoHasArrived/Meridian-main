@@ -3,7 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+public sealed class SecurityMasterQueryService :
+    ISecurityMasterQueryService,
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
+    ISecurityMasterReportingQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
@@ -26,6 +29,18 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     {
         var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
         var asOfProjection = await _rebuilder.RebuildAsOfAsync(securityId, asOfUtc, current, ct).ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
+    }
+
+    public async Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        var asOfProjection = await _rebuilder
+            .RebuildRecordedAsOfAsync(securityId, asOfUtc, current, ct)
+            .ConfigureAwait(false);
         return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
     }
 
@@ -91,6 +106,62 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         return await _rebuilder.RebuildEconomicDefinitionAsync(securityId, projection, ct).ConfigureAwait(false);
     }
 
+    public async Task<SecurityMasterReportingReference?> GetReportingReferenceByIdentifierAsOfAsync(
+        SecurityIdentifierKind identifierKind,
+        string identifierValue,
+        string? provider,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        var detail = await GetByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                ct,
+                asOfUtc)
+            .ConfigureAwait(false);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var events = await _eventStore.LoadAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        if (events.Count == 0)
+        {
+            var currentEconomicDefinition = await GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
+                .ConfigureAwait(false);
+            return new SecurityMasterReportingReference(
+                detail,
+                currentEconomicDefinition,
+                asOfUtc,
+                SecurityMasterReportingResolutionMode.CurrentProjectionFallback);
+        }
+
+        var sourceEvent = events.LastOrDefault(@event => @event.EventTimestamp <= asOfUtc);
+        if (sourceEvent is null)
+        {
+            return null;
+        }
+
+        var currentProjection = await _store.GetProjectionAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        var historicalProjection = await _rebuilder
+            .RebuildAsOfAsync(detail.SecurityId, asOfUtc, currentProjection, ct)
+            .ConfigureAwait(false);
+        if (historicalProjection is null)
+        {
+            return null;
+        }
+
+        return new SecurityMasterReportingReference(
+            SecurityMasterMapping.ToDetail(historicalProjection),
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(historicalProjection),
+            asOfUtc,
+            SecurityMasterReportingResolutionMode.HistoricalEvent,
+            sourceEvent.GlobalSequence,
+            sourceEvent.StreamVersion,
+            sourceEvent.EventTimestamp);
+    }
+
     public async Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
     {
         var detail = await _store.GetDetailAsync(securityId, ct).ConfigureAwait(false);
@@ -101,13 +172,22 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
         return new TradingParametersDto(
             SecurityId: securityId,
-            LotSize: ReadDecimal(common, "lotSize"),
-            TickSize: ReadDecimal(common, "tickSize"),
+            LotSize: ReadDecimal(common, "lotSize") ?? ReadDecimal(common, "minimumTradeIncrement"),
+            TickSize: ReadDecimal(common, "tickSize") ?? ReadDecimal(common, "priceIncrement"),
             ContractMultiplier: ReadDecimal(common, "contractMultiplier"),
             MarginRequirementPct: ReadDecimal(common, "marginRequirementPct"),
             TradingHoursUtc: ReadString(common, "tradingHoursUtc"),
             CircuitBreakerThresholdPct: ReadDecimal(common, "circuitBreakerThresholdPct"),
-            AsOf: asOf);
+            AsOf: asOf)
+        {
+            IsMarginable = ReadBool(common, "isMarginable"),
+            IsShortable = ReadBool(common, "isShortable"),
+            IsEasyToBorrow = ReadBool(common, "isEasyToBorrow"),
+            IsFractionable = ReadBool(common, "isFractionable"),
+            MinimumOrderSize = ReadDecimal(common, "minimumOrderSize"),
+            MinimumTradeIncrement = ReadDecimal(common, "minimumTradeIncrement"),
+            PriceIncrement = ReadDecimal(common, "priceIncrement")
+        };
     }
 
     private static decimal? ReadDecimal(System.Text.Json.JsonElement element, string propertyName)

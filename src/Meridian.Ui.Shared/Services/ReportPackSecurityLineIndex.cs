@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Application.Composition;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -45,6 +46,8 @@ public interface IReportPackSecurityLineIndex
 /// persisted workflow records on construction. A single lock guards both maps so an <see cref="Upsert"/>
 /// (remove-then-add) is atomic against concurrent lookups.
 /// </summary>
+[ProductionSafeImplementation(
+    "This is a derived cache rebuilt from persisted report-pack workflow records and carries no source-of-truth state.")]
 public sealed class InMemoryReportPackSecurityLineIndex : IReportPackSecurityLineIndex
 {
     private readonly object _gate = new();

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Contracts
@@ -24,7 +24,14 @@ or provider implementations.
 
 ## Key folders and files
 
-- `Workstation/` - workstation and operator workflow DTOs.
+- `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
+  supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+- `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
+  case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
+  or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
+  actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted
+  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
@@ -230,6 +237,19 @@ multiple accounting bases, ledger books, periods, policies, and dimension scopes
 governed posting candidate for each target without creating posted ledger facts. Approved generated
 candidate posting uses a separate request/result contract so clients cannot confuse preview with
 durable append.
+`AssetAccountingEventSpineDto` provides the canonical Acquisition, Capitalization, Valuation,
+Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal lifecycle envelope.
+It keeps Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct and allows
+posted impact only when the response identifies the immutable journal, book, period, accounting
+basis, Posted status, currency, balanced amounts, and journal lines. `RetainedEvidenceIdentityDto`
+is the shared fail-closed evidence shape; a URI or operator rationale without identity, SHA-256,
+source reference, accepted review, effective date, positive version, retention metadata, and subject
+scope does not satisfy canonical asset posting or production-readiness gates.
+Drafted authority retains the full candidate intent/result and canonical fingerprints, including
+all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
+instruction. Typed correction lineage identifies the exact earlier event version and posted journal
+(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
+asset account and cost authority; other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -258,8 +278,9 @@ evidence instead of relying on account or run names.
 `AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle,
 close/reporting, close-plan configuration, external GL, reconciliation, direct-lending, and
 strategy-ledger-read controls as complete only when the certification flag is paired with retained
-ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
-certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
+ledger-book-scoped typed evidence for that specific workflow lane. Legacy string links and full-token
+certification packets remain navigation metadata and cannot establish readiness. The retained
+evidence URI must use an explicit `ledger-book:<id>`,
 `ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and
 `ledgerBookId/<id>` accepted for route-shaped evidence; incidental bare GUID references and generic
 evidence links do not certify every workflow lane by implication.
@@ -268,9 +289,8 @@ persistence, trial-balance dimension filters, period reports, cross-period repor
 dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
 Each dimensional control requires evidence for that specific ledger/query/report/export lane and a
-`dimension-scope` or `ledger-dimension-set` marker on the same ledger-book-scoped artifact, unless
-the artifact is an explicit full dimensional or production certification packet with that same
-dimension-scope proof. This keeps one generic ledger-book evidence link, incidental bare GUID
+`dimension-scope` or `ledger-dimension-set` marker on the same complete typed retained artifact.
+This keeps one generic ledger-book evidence link, incidental bare GUID
 reference, or split support artifact from certifying all dimensional reporting controls by
 implication, and keeps ledger-book proof separate from proof that fund, entity, sleeve, strategy,
 investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL
@@ -439,50 +459,26 @@ payloads carry operator-safe issue codes and required evidence labels so no-code
 unresolved canonical mappings, missing approval evidence, and production-write capabilities that
 are not backed by a certified provider adapter.
 
-Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
-`Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
-retained manifest path, retained evidence links, report-line provenance, create requests, publish
-requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
-actor/role, and optional evidence-link metadata, workflow action-origin requests for material
-report-pack state changes, and restatement requests with approver, prior-version, changed-line,
-evidence-link, and action-origin metadata. The same shared contracts also carry
-report-pack delivery attempts, delivery failure attempts, delivery history, operator-managed
-reporting schedules, schedule delivery targets, due-schedule run results with delivery
-attempts/warnings, ad-hoc report-run requests/results, and HTML/PDF rendered-statement artifact
-formats so browser, WPF, endpoints, and host bootstrap payloads consume the same reporting command
-and history shape.
-Workflow action, restatement, publish, and delivery request DTOs carry `OperationsActionOriginDto`;
-services must reject assistant or automation-origin approval, restatement, archival, publication,
-delivery-package creation, and delivery-failure recording before any retained output, report-line
-edit, or stakeholder package is written.
-Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
-delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
-formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
-publication evidence hash used for package integrity summaries, optional publication manifest
-metadata, publication evidence links, retained line provenance, and publication-approved branding
-metadata. Generated reporting-run packages also retain run id, template id, schedule id,
-as-of date, trigger, status, attempt count, section count, lineage count, selected schedule
-branding theme metadata, and source-artifact metadata so PDF/XLSX/CSV artifact bytes, checksums,
-and byte sizes can be reconstructed consistently after package-store reloads. Delivery packages also carry contract-owned access,
-channel, and download summaries plus `ReportPackDeliveryAccessLinkDto` rows for the primary
-email-link/secure-portal/evidence-vault/internal route, operator route, retained manifest, and
-token-gated artifact downloads, so clients can explain package access and retained outputs without
-parsing token URLs locally. Delivery packages also carry `ReportPackDeliveryNotificationDto`
-rows that preserve the recipient, channel, subject, body, token-gated href, status, and expiry for
-email-link and secure-portal package notifications, so clients can show what was sent or published
-without fabricating outbox state from the secure URL. Token-gated email-link and secure-portal
-packages also carry an access-expiry timestamp plus access and channel summaries so clients can display and enforce
-package availability from the shared contract. Keep those package fields shared so email-link, secure portal, evidence-vault, and
-internal-route distribution clients do not infer report package output or integrity from
-delivery-reference strings. The shared route catalog
-includes both the token-gated package manifest URL under
-`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package` and the
-secure-portal package URL under `/portal/reporting/packages/{packageId}`. Package artifacts can
-also carry token-gated `DownloadRoute` values under
-`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`
-so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
-building artifact URLs locally; downloaded artifacts include package identity, publication manifest
-fields, publication evidence links, and report-line provenance for downstream audit review.
+Canonical governed reporting uses `Draft`, `Validated`, `InReview`, `Approved`, and terminal
+`Released` states from `Meridian.Reporting`. `Meridian.Contracts.Reporting` publishes the thin HTTP
+commands and projections for immutable tenant/organization/company/fund/book/access snapshots,
+normalized run parameters, point-in-time source and reconciliation hashes, maker-checker receipts,
+server-owned action availability, release artifacts, series history, and governed restatement.
+Callers supply only business rationale and optimistic versions; actor, permissions, evidence,
+snapshot identity, and release authority remain server-owned.
+
+Secure distribution contracts retain non-secret delivery and access-grant state. Delivery DTOs
+include governed run/package/release identity, immutable payload metadata, retry state, provider
+message reference, receipts, and failure detail. Grant issue returns an opaque fragment link once;
+grant list/detail DTOs contain only audience, artifact scope, expiry/use, and revocation state.
+`UiApiRoutes` owns the canonical `/api/fund-structure/reporting/distribution/*`, authenticated
+`/portal/reporting/secure/packages/{runId}`, and token-safe
+`/portal/reporting/access-grants/{grantId}/exchange` paths. Legacy query-token package and artifact
+routes are retired with `410 Gone` and must not be emitted by browser, WPF, or shared read models.
+
+Older `ReportPack*` workflow/delivery DTOs remain readable only for tenant-filtered historical
+compatibility. Their `Published` lifecycle and delivery-link fields are not an authoritative
+mutation, release, or recipient-access contract.
 `WorkstationReportingPayload` and `FundReportingSummaryDto` also carry
 `reportWriterDatasetSources` for no-code report-writer authoring. Each source includes a stable
 source id, label, description, row count, field catalog, retained source rows, tags, certification
@@ -528,10 +524,12 @@ also owns the retained grid artifact route at
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` so browser and desktop
 clients build JSON/CSV/XLSX links from the same route contract.
 `ReportPackDeliveryPackageDto` preserves the same generated grid rows and report-writer dataset
-source evidence for reporting-run delivery packages plus optional `renderedReportWriterGrids` rows,
-columns, warnings, lineage, data-dictionary fields, and validation checks so
-token-gated PDF/XLSX/CSV artifact downloads can be rebuilt byte-stably from the persisted package
-manifest. `ReportingRunRequestDto` and `ReportingScheduleRecordDto` can also carry optional
+source evidence for historical reporting-run delivery packages plus optional
+`renderedReportWriterGrids` rows, columns, warnings, lineage, data-dictionary fields, and validation
+checks. It is a compatibility read shape, not the authority for rebuilding or downloading governed
+artifacts. Canonical PDF/XLSX/CSV artifacts are retained once by the governed run artifact store and
+downloaded only through a released package plus a scoped distribution grant.
+`ReportingRunRequestDto` and `ReportingScheduleRecordDto` can also carry optional
 dataset rows for approved report-writer grids; clients should only provide rows from a governed
 dataset snapshot and should treat missing rows as an explicit no-data render, not as permission to
 fabricate portfolio values. Shared services may resolve omitted ad-hoc or scheduled run rows from
@@ -605,12 +603,12 @@ download summary, access-expiry timestamp, package access/channel summaries, not
 report-writer dataset/grid summaries, and entitlement scope from the package evidence packet so clients can show whether the latest
 scheduled no-code package was generated from a retained dataset and whether its pivot/Top-N/formula grids were rendered,
 as well as whether it was company-wide, private, or restricted to specific user/group/company
-principals. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
-retained XLSX workbook artifacts; it is a token-gated `format=xls` route that returns the canonical
-XLSX workbook bytes and MIME type rather than a separate legacy workbook artifact.
-Email-link and secure-portal package links resolve to token-gated HTML views for recipient-facing
-access, while `format=json` on the same routes returns the retained package manifest for API
-clients.
+principals. Legacy delivery package `accessLinks`, including `artifact-xls`, are retained only as
+historical compatibility data and must not be used for new recipient access. Governed recipient
+access uses an opaque, expiring, revocable grant whose bearer is returned once in a URL fragment,
+exchanged in a no-store POST body, and never included in list/detail DTOs. Artifact retrieval is
+bound to the released run, immutable package and artifact scope, tenant, audience, expiry, maximum
+uses, and exact retained-byte integrity.
 `ReportingRunAuditTrailDto` exposes retained generic Reporting run lineage with run/template/as-of
 metadata plus timestamped actor/action/notes rows, letting browser, WPF, and export consumers inspect
 the same audit trail persisted by the orchestration store instead of relying on collapsed action
@@ -892,6 +890,10 @@ links with break id, route, status, priority, reason, and suggested next action 
 Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
 and WPF clients can deep-link into the exact casework opened by the statement run without relying on
 parallel arrays.
+The same additive contract family carries persisted statement-fetch schedule and upsert payloads.
+Schedules expose an explicit `SourceKind` (`broker` or `custodian`) so background imports preserve
+the same reconciliation classification as file imports; omitted values on older upsert clients and
+persisted snapshots default to `broker` for compatibility.
 Direct Lending servicer statement intake contracts live under
 `DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
 result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained
@@ -1368,6 +1370,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

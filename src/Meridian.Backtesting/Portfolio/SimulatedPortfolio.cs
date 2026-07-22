@@ -1,3 +1,5 @@
+using Meridian.Ledger;
+
 namespace Meridian.Backtesting.Portfolio;
 
 /// <summary>
@@ -850,8 +852,9 @@ internal sealed class SimulatedPortfolio
     /// Realizes P&amp;L for a long position close using the account's configured lot selection method.
     /// <para>
     /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
-    /// which re-implements the same FIFO lot logic for attribution. If you change this method,
-    /// update the metrics counterpart in parallel.
+    /// which re-derives realized P&amp;L from the fill stream (honoring the same lot-selection
+    /// method) for attribution. If you change this method, update the metrics counterpart in
+    /// parallel.
     /// </para>
     /// </summary>
     private static decimal RealiseLots(
@@ -868,35 +871,30 @@ internal sealed class SimulatedPortfolio
 
         // Build an ordered sequence of lot nodes according to the selection method.
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
+        var consumption = LotConsumption.Consume(ordered, closeQty, static node => node.Value.Quantity);
 
         var realised = 0m;
-        var remaining = closeQty;
 
-        foreach (var node in ordered)
+        foreach (var slice in consumption.Slices)
         {
-            if (remaining <= 0)
-                break;
-
+            var node = slice.Lot;
             var lot = node.Value;
-            if (lot.Quantity <= remaining)
+            var quantity = (long)slice.Quantity;
+
+            realised += quantity * (sellPrice - lot.EntryPrice);
+            account.ClosedLots.Add(new ClosedLot(
+                lot.LotId, symbol, quantity, lot.EntryPrice, lot.OpenedAt,
+                lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
+
+            if (slice.ClosesLot)
             {
-                realised += lot.Quantity * (sellPrice - lot.EntryPrice);
-                remaining -= lot.Quantity;
-                account.ClosedLots.Add(new ClosedLot(
-                    lot.LotId, symbol, lot.Quantity, lot.EntryPrice, lot.OpenedAt,
-                    lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
                 lots.Remove(node);
             }
             else
             {
-                realised += remaining * (sellPrice - lot.EntryPrice);
-                account.ClosedLots.Add(new ClosedLot(
-                    lot.LotId, symbol, remaining, lot.EntryPrice, lot.OpenedAt,
-                    lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
                 // Replace lot with reduced quantity, preserve original LotId.
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - remaining });
+                lots.AddBefore(node, lot with { Quantity = lot.Quantity - quantity });
                 lots.Remove(node);
-                remaining = 0;
             }
         }
 
@@ -917,18 +915,16 @@ internal sealed class SimulatedPortfolio
             return (0m, coverQty * coverPrice);
 
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
+        var consumption = LotConsumption.Consume(ordered, coverQty, static node => node.Value.Quantity);
 
         var realised = 0m;
         var shortSaleProceeds = 0m;
-        var remaining = coverQty;
 
-        foreach (var node in ordered)
+        foreach (var slice in consumption.Slices)
         {
-            if (remaining <= 0)
-                break;
-
+            var node = slice.Lot;
             var lot = node.Value;
-            var lotClose = Math.Min(lot.Quantity, remaining);
+            var lotClose = (long)slice.Quantity;
             var lotProceeds = lotClose * lot.EntryPrice;
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;
@@ -937,16 +933,14 @@ internal sealed class SimulatedPortfolio
                 lot.LotId, symbol, lotClose, lot.EntryPrice, lot.OpenedAt,
                 lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true));
 
-            if (lot.Quantity <= remaining)
+            if (slice.ClosesLot)
             {
-                remaining -= lot.Quantity;
                 lots.Remove(node);
             }
             else
             {
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - remaining });
+                lots.AddBefore(node, lot with { Quantity = lot.Quantity - lotClose });
                 lots.Remove(node);
-                remaining = 0;
             }
         }
 

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -1008,7 +1009,47 @@ public sealed record ReportingScheduleDeliveryTargetDto(
     string DistributionId,
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
     ReportPackDeliveryModeDto? DeliveryMode = null,
-    string? Note = null);
+    string? Note = null,
+    string? RecipientPrincipalId = null,
+    ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduledReleaseHandoffStateDto>))]
+public enum ReportingScheduledReleaseHandoffStateDto
+{
+    PendingRelease = 0,
+    Enqueued = 1
+}
+
+/// <summary>
+/// Durable, token-free handoff from scheduled generation to the canonical post-release secure
+/// distribution queue. Package identities and bearer grants are intentionally derived only after
+/// governance release and are never retained here.
+/// </summary>
+public sealed record ReportingScheduledReleaseHandoffDto(
+    string HandoffId,
+    string TenantId,
+    string CompanyId,
+    string ScheduleId,
+    string RunId,
+    string TemplateId,
+    string DistributionId,
+    string TargetDistributionId,
+    string TransportId,
+    string? RecipientPrincipalId,
+    string Destination,
+    string Subject,
+    string Body,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? RequestedFormats,
+    IReadOnlyList<string>? ArtifactIds,
+    int? GrantLifetimeSeconds,
+    int? GrantMaxUses,
+    int MaxAttempts,
+    DateTimeOffset CreatedAtUtc,
+    ReportingScheduledReleaseHandoffStateDto State = ReportingScheduledReleaseHandoffStateDto.PendingRelease,
+    string? EnqueuedDeliveryJobId = null,
+    DateTimeOffset? EnqueuedAtUtc = null,
+    string? RecipientPrincipalKind = null,
+    string? DeliveryTargetsSnapshotHash = null);
 
 public sealed record ReportingScheduleDeliveryPlanDto(
     string PlanId,
@@ -1115,7 +1156,16 @@ public sealed record ReportingScheduleRecordDto(
     IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
     string? DatasetSourceId = null,
     string? BrandingThemeId = null,
-    ReportBrandingThemeDto? BrandingThemeOverride = null);
+    ReportBrandingThemeDto? BrandingThemeOverride = null,
+    VersionedReportTemplateIdDto? Template = null,
+    ReportingRunParametersDto? RunParameters = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    ReportAccessPolicyDto? AccessPolicySnapshot = null,
+    ReportingRunReadinessDto? LastReadiness = null,
+    IReadOnlyList<ReportingScheduledReleaseHandoffDto>? ReleaseDeliveryHandoffs = null,
+    string? AccessPolicySnapshotHash = null,
+    string? DeliveryTargetsSnapshotHash = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -1131,7 +1181,9 @@ public sealed record ReportingScheduleUpsertRequestDto(
     IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
     string? DatasetSourceId = null,
     string? BrandingThemeId = null,
-    ReportBrandingThemeDto? BrandingThemeOverride = null);
+    ReportBrandingThemeDto? BrandingThemeOverride = null,
+    VersionedReportTemplateIdDto? Template = null,
+    ReportingRunParametersDto? RunParameters = null);
 
 public sealed record ReportingScheduleRunResultDto(
     ReportingScheduleRecordDto Schedule,
@@ -1143,6 +1195,115 @@ public sealed record ReportingDueScheduleRunResultDto(
     DateTimeOffset EvaluatedAtUtc,
     IReadOnlyList<ReportingScheduleRunResultDto> Runs);
 
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingEntityScopeKindDto>))]
+public enum ReportingEntityScopeKindDto
+{
+    AllEntities = 0,
+    Entity = 1,
+    Portfolio = 2,
+    Investor = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingAccountingBasisDto>))]
+public enum ReportingAccountingBasisDto
+{
+    Gaap = 0,
+    Tax = 1,
+    Management = 2,
+    Cash = 3,
+    Statutory = 4
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingConsolidationLevelDto>))]
+public enum ReportingConsolidationLevelDto
+{
+    Fund = 0,
+    Entity = 1,
+    Portfolio = 2,
+    Investor = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingOutputFormatDto>))]
+public enum ReportingOutputFormatDto
+{
+    Pdf = 0,
+    Xlsx = 1,
+    Csv = 2,
+    EvidenceVault = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingFinalityDto>))]
+public enum ReportingFinalityDto
+{
+    Draft = 0,
+    Final = 1
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingRunReadinessStatusDto>))]
+public enum ReportingRunReadinessStatusDto
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2,
+    Unavailable = 3
+}
+
+public sealed record ReportingRunScopeDto(
+    string FundProfileId,
+    ReportingEntityScopeKindDto EntityScopeKind = ReportingEntityScopeKindDto.AllEntities,
+    string? EntityId = null,
+    string? PortfolioId = null,
+    string? InvestorId = null,
+    LedgerDimensionSetDto? Dimensions = null);
+
+public sealed record ReportingLedgerBookSelectionDto(
+    Guid? LedgerBookId = null,
+    string? LedgerBookCode = null);
+
+public sealed record ReportingRunParametersDto(
+    ReportingRunScopeDto Scope,
+    string PeriodId,
+    DateOnly AsOfDate,
+    ReportingLedgerBookSelectionDto LedgerBook,
+    ReportingAccountingBasisDto AccountingBasis,
+    string PresentationCurrency,
+    ReportingConsolidationLevelDto ConsolidationLevel,
+    ReportingOutputFormatDto OutputFormat,
+    ReportingFinalityDto Finality,
+    bool IncludeSupportingSchedules,
+    bool IncludeEvidenceAppendix,
+    IReadOnlyDictionary<string, string>? TemplateParameters = null)
+{
+    public IReadOnlyDictionary<string, string> TemplateParameters { get; init; } =
+        TemplateParameters ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed record ReportingRunReadinessCheckDto(
+    string CheckId,
+    string Label,
+    ReportingRunReadinessStatusDto Status,
+    string Summary,
+    int IssueCount,
+    bool BlocksDraft,
+    bool BlocksFinal,
+    string? Route = null,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } = EvidenceReferences ?? [];
+}
+
+public sealed record ReportingRunReadinessDto(
+    string EvaluationId,
+    DateTimeOffset EvaluatedAtUtc,
+    VersionedReportTemplateIdDto ResolvedTemplate,
+    ReportingRunParametersDto ResolvedParameters,
+    ReportingRunReadinessStatusDto Status,
+    bool CanGenerateDraft,
+    bool CanGenerateFinal,
+    IReadOnlyList<ReportingRunReadinessCheckDto> Checks,
+    IReadOnlyList<string> BlockingReasons,
+    string EvidenceHash);
+
 public sealed record ReportingRunRequestDto(
     string TemplateId,
     DateOnly? AsOfDate = null,
@@ -1152,7 +1313,9 @@ public sealed record ReportingRunRequestDto(
     IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
     string? DatasetSourceId = null,
     string? RetryReason = null,
-    bool AllowRestatement = false);
+    bool AllowRestatement = false,
+    VersionedReportTemplateIdDto? Template = null,
+    ReportingRunParametersDto? Parameters = null);
 
 public sealed record ReportingRunResultDto(
     WorkstationReportingRunPayload Run);
@@ -1174,7 +1337,10 @@ public sealed record ReportingRunAuditTrailDto(
     IReadOnlyList<ReportingRunAuditEntryDto> Entries,
     string? ReportWriterDatasetSourceId = null,
     string? ReportWriterDatasetSourceLabel = null,
-    int? ReportWriterDatasetRowCount = null);
+    int? ReportWriterDatasetRowCount = null,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null);
 
 /// <summary>
 /// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
@@ -1506,7 +1672,9 @@ public sealed record ReportTemplateGovernanceRecordDto(
     DateTimeOffset? RejectedAt = null,
     string? DecisionRationale = null,
     string? ApprovalReference = null,
-    VersionedReportTemplateIdDto? BasedOnTemplateId = null);
+    VersionedReportTemplateIdDto? BasedOnTemplateId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record ReportTemplateDraftRequestDto(
     string Name,
@@ -1618,4 +1786,7 @@ public sealed record ReportPackWorkflowRecordDto(
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
     ReportPackPublicationManifestDto? Publication = null,
     ReportPackRejectionMetadataDto? Rejection = null,
-    ReportAccessPolicyDto? AccessPolicy = null);
+    ReportAccessPolicyDto? AccessPolicy = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? AccessPolicySnapshotHash = null);

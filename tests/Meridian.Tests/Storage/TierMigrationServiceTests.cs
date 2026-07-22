@@ -120,6 +120,82 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Scenario_ParquetTierRequest_FailsClosedInsteadOfRelabelingJsonlBytes()
+    {
+        // The old behaviour renamed the target to .parquet without converting the payload, then
+        // (with DeleteSource) destroyed the only correct copy. The migration must fail closed.
+        var parquetTierService = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "parquet", Compression = CompressionCodec.None }
+                ]
+            }
+        });
+
+        var sourceDirectory = Path.Combine(_hot, "alpaca", "AAPL", "Trade");
+        Directory.CreateDirectory(sourceDirectory);
+        var sourceFile = Path.Combine(sourceDirectory, "session.jsonl");
+        await File.WriteAllTextAsync(sourceFile, "{\"symbol\":\"AAPL\",\"price\":213.45}");
+
+        var result = await parquetTierService.MigrateAsync(
+            sourceFile,
+            StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+        result.Success.Should().BeFalse();
+        result.FilesFailed.Should().Be(1);
+        result.Errors.Should().ContainSingle().Which.Should().Contain("parquet");
+        File.Exists(sourceFile).Should().BeTrue("a failed migration must never delete the source");
+        Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories)
+            .Should().BeEmpty("no mislabeled .parquet file may be written");
+    }
+
+    [Theory]
+    [InlineData(CompressionCodec.Zstd)]
+    [InlineData(CompressionCodec.LZ4)]
+    public async Task Scenario_UnimplementedCodecTier_FailsClosedInsteadOfWritingPlainBytesUnderCompressedExtension(CompressionCodec codec)
+    {
+        // Only Gzip compression is implemented; Zstd/LZ4 previously produced an uncompressed
+        // copy under a .zst/.lz4 extension that still "verified" and then deleted the source.
+        var codecTierService = new TierMigrationService(new StorageOptions
+        {
+            RootPath = _root,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = codec }
+                ]
+            }
+        });
+
+        var sourceDirectory = Path.Combine(_hot, "polygon", "SPY", "Trade");
+        Directory.CreateDirectory(sourceDirectory);
+        var sourceFile = Path.Combine(sourceDirectory, "session.jsonl");
+        await File.WriteAllTextAsync(sourceFile, "{\"symbol\":\"SPY\",\"price\":500.12}");
+
+        var result = await codecTierService.MigrateAsync(
+            sourceFile,
+            StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+        result.Success.Should().BeFalse();
+        result.FilesFailed.Should().Be(1);
+        result.Errors.Should().ContainSingle().Which.Should().Contain(codec.ToString());
+        File.Exists(sourceFile).Should().BeTrue("a failed migration must never delete the source");
+        Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories)
+            .Should().BeEmpty("no mislabeled compressed file may be written");
+    }
+
+    [Fact]
     public async Task Scenario_RetentionPlanning_AgedHotBackfillFilesProduceWarmMigrationActions()
     {
         var sourceDirectory = Path.Combine(_hot, "polygon", "MSFT", "HistoricalBar");
@@ -214,6 +290,34 @@ public sealed class TierMigrationServiceTests : IDisposable
         result.Errors.Should().ContainSingle(error => error.Contains("ParallelFiles must be at least 1", StringComparison.Ordinal));
         File.Exists(sourceFile).Should().BeTrue("operator misconfiguration must not delete hot-tier evidence");
         Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Scenario_SourceOutsideStorageRoot_IsRefusedWithoutReadingOrDeletingTheFile()
+    {
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"meridian-outside-root-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        try
+        {
+            var outsideFile = Path.Combine(outsideDirectory, "secrets.jsonl");
+            await File.WriteAllTextAsync(outsideFile, "{\"symbol\":\"AAPL\",\"price\":213.45}");
+            var traversalSource = Path.Combine(_root, "hot", "..", "..", Path.GetFileName(outsideDirectory), "secrets.jsonl");
+
+            var result = await _sut.MigrateAsync(
+                traversalSource,
+                StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(0);
+            result.Errors.Should().ContainSingle(error => error.Contains("outside the storage root", StringComparison.Ordinal));
+            File.Exists(outsideFile).Should().BeTrue("a refused out-of-root migration must not delete the source");
+            Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
     }
 
     [Fact]

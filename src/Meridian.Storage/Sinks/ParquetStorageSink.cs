@@ -8,6 +8,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Policies;
 using Meridian.Storage.Services;
 using Parquet;
 using Parquet.Data;
@@ -21,6 +22,14 @@ namespace Meridian.Storage.Sinks;
 /// Apache Parquet storage sink for high-performance columnar storage.
 /// Provides 10-20x better compression than JSONL and optimized for analytics.
 ///
+/// Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink's persistent
+/// append streams): Parquet's footer-at-end format means a persistently open writer leaves an
+/// unreadable, footerless file after a crash, violating the published-artifact readability
+/// invariant that copy-plus-rename guarantees; part-file compaction would change the
+/// one-file-per-day contract query/export paths consume. Row-group flushes are batched and
+/// lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost.
+/// Revisit only with a measured need.
+///
 /// Based on: https://github.com/aloneguid/parquet-dotnet (MIT)
 /// Reference: docs/open-source-references.md #20
 /// </summary>
@@ -31,6 +40,7 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly ILogger _log = LoggingSetup.ForContext<ParquetStorageSink>();
     private readonly StorageOptions _options;
     private readonly ParquetStorageOptions _parquetOptions;
+    private readonly IStoragePolicy _policy;
     private readonly Func<string, Func<Stream, Task>, CancellationToken, Task> _writeAtomicallyAsync;
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Task _flushLoopTask;
@@ -93,18 +103,26 @@ public sealed class ParquetStorageSink : IStorageSink
         new DataField<string>("Source")
     );
 
-    public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null)
-        : this(options, parquetOptions, WriteAtomicallyAsync)
+    public ParquetStorageSink(
+        StorageOptions options,
+        ParquetStorageOptions? parquetOptions = null,
+        IStoragePolicy? policy = null)
+        : this(options, parquetOptions, WriteAtomicallyAsync, policy)
     {
     }
 
     internal ParquetStorageSink(
         StorageOptions options,
         ParquetStorageOptions? parquetOptions,
-        Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync)
+        Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync,
+        IStoragePolicy? policy = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
+        // Directory layout is owned by the shared storage policy so a composite JSONL + Parquet sink
+        // converges on one directory tree for every naming convention. Falling back to a policy built
+        // from the same options keeps existing single-argument construction (and tests) working.
+        _policy = policy ?? new JsonlStoragePolicy(_options);
         _writeAtomicallyAsync = writeAtomicallyAsync ?? throw new ArgumentNullException(nameof(writeAtomicallyAsync));
 
         _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
@@ -563,6 +581,9 @@ public sealed class ParquetStorageSink : IStorageSink
             }
 
             using var groupWriter = await ParquetWriter.CreateAsync(schema, tempStream, append: appendToExisting).ConfigureAwait(false);
+            // Honour the configured compression method (previously ignored, so every file was written
+            // with the Parquet default regardless of ParquetStorageOptions.CompressionMethod).
+            groupWriter.CompressionMethod = _parquetOptions.CompressionMethod;
             using var rowGroupWriter = groupWriter.CreateRowGroup();
 
             foreach (var column in columns)
@@ -628,23 +649,29 @@ public sealed class ParquetStorageSink : IStorageSink
 
     private string GetBufferKey(MarketEvent evt)
     {
-        return $"{evt.EffectiveSymbol}_{evt.Type}_{evt.Timestamp.Date:yyyyMMdd}";
+        // Key each buffer by its full destination path so every event in a buffer maps to exactly
+        // one output file. Keying only by symbol/type/date would co-mingle events the policy routes
+        // to different directories (BySource/ByAssetClass/Hierarchical/Canonical); the flush writes
+        // the whole drained buffer to GetFilePath(events[0]), so those events would be misplaced
+        // into the first event's directory and diverge from the JSONL layout.
+        return GetFilePath(evt);
     }
 
     private string GetFilePath(MarketEvent evt)
     {
         var date = evt.Timestamp.Date;
         var typeName = evt.Type.ToString().ToLowerInvariant();
-        var effectiveSymbol = evt.EffectiveSymbol;
-        var fileName = $"{effectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
+        var fileName = $"{evt.EffectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
 
-        return _options.NamingConvention switch
-        {
-            FileNamingConvention.BySymbol => Path.Combine(_options.RootPath, effectiveSymbol, fileName),
-            FileNamingConvention.ByDate => Path.Combine(_options.RootPath, $"{date:yyyy}", $"{date:MM}", $"{date:dd}", fileName),
-            FileNamingConvention.ByType => Path.Combine(_options.RootPath, typeName, fileName),
-            _ => Path.Combine(_options.RootPath, fileName)
-        };
+        // Delegate the directory layout to the shared storage policy so every naming convention is
+        // honored identically to the JSONL sink. Previously only BySymbol/ByDate/ByType were handled
+        // and the remaining conventions (BySource, ByAssetClass, Hierarchical, Canonical) silently
+        // collapsed to a flat root, diverging from a co-located JSONL sink. The Parquet-specific
+        // file name and .parquet extension are retained; only the directory comes from the policy.
+        var directory = Path.GetDirectoryName(_policy.GetPath(evt));
+        return string.IsNullOrEmpty(directory)
+            ? Path.Combine(_options.RootPath, fileName)
+            : Path.Combine(directory, fileName);
     }
 
     public async ValueTask DisposeAsync()
@@ -709,11 +736,6 @@ public sealed class ParquetStorageOptions
     /// Compression method for Parquet files.
     /// </summary>
     public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;
-
-    /// <summary>
-    /// Row group size for Parquet files.
-    /// </summary>
-    public int RowGroupSize { get; init; } = 50000;
 
     public static ParquetStorageOptions Default => new();
 

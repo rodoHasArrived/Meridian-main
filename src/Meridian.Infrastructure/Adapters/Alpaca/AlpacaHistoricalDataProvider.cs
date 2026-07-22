@@ -198,7 +198,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             try
             {
                 using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-                HandleHttpResponse(response, symbol, "bars");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 var data = DeserializeResponse<AlpacaBarsResponse>(json, symbol);
@@ -310,7 +310,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             try
             {
                 using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-                HandleHttpResponse(response, symbolList.First(), "quotes");
+                await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "quotes", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 var data = DeserializeResponse<AlpacaQuotesResponse>(json, symbolList.First());
@@ -427,7 +427,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             try
             {
                 using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-                HandleHttpResponse(response, symbolList.First(), "trades");
+                await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "trades", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 var data = DeserializeResponse<AlpacaTradesResponse>(json, symbolList.First());
@@ -539,7 +539,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
             try
             {
                 using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-                HandleHttpResponse(response, symbolList.First(), "auctions");
+                await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "auctions", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 var data = DeserializeResponse<AlpacaAuctionsResponse>(json, symbolList.First());

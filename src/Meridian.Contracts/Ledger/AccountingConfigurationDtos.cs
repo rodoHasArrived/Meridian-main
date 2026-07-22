@@ -752,7 +752,8 @@ public sealed record TreasuryLedgerContextDto(
     string? CapitalAccountId = null,
     string? InvestorId = null,
     string? PaymentIntentId = null,
-    string? SettlementReference = null);
+    string? SettlementReference = null,
+    string? BatchCorrelationId = null);
 
 public sealed record ManualJournalEntryDraftDto(
     Guid JournalEntryId,
@@ -795,7 +796,8 @@ public sealed record ManualJournalEntryDraftDto(
     JournalEntryReversalDto? Reversal = null,
     JournalEntryRebookDto? Rebook = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    AutomatedJournalEvidenceAssessmentDto? AutomationEvidenceAssessment = null)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
@@ -874,6 +876,12 @@ public sealed record PostingRuleJournalCandidateRequestDto(
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 
+    /// <summary>
+    /// Verified retained evidence. String links remain for wire compatibility and navigation only;
+    /// they do not establish posting readiness.
+    /// </summary>
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+
     public AccountingBookContextDto? BookContext { get; init; }
 
     public Guid? BookPositionId { get; init; }
@@ -883,6 +891,14 @@ public sealed record PostingRuleJournalCandidateRequestDto(
     public ProjectionLineageDto? ProjectionLineage { get; init; }
 
     public AccountingRulePackReferenceDto? RulePackReference { get; init; }
+
+    /// <summary>
+    /// Authoritative asset-lot consequence resolved by the Asset Accounting Event Spine.
+    /// Generic callers cannot use this property to bypass server-side event authority.
+    /// </summary>
+    public AssetLotMutationInstructionDto? AssetLotMutation { get; init; }
+
+    public long? ExpectedPeriodVersion { get; init; }
 }
 
 public sealed record PostingRuleJournalCandidateIssueDto(
@@ -943,12 +959,24 @@ public sealed record PostPostingRuleJournalCandidateRequestDto(
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    /// <summary>
+    /// Verified retained approval evidence. Navigation links cannot substitute for this envelope.
+    /// </summary>
+    public IReadOnlyList<RetainedEvidenceIdentityDto> ApprovalEvidence { get; init; } = [];
 }
 
 public sealed record PostedPostingRuleJournalCandidateResultDto(
     PostingRuleJournalCandidateResultDto Candidate,
     PostedLedgerJournalEntryResultDto PostedJournal,
-    bool WasReplay = false);
+    bool WasReplay = false)
+{
+    public PostedJournalImpactDto? JournalImpact { get; init; }
+
+    public Guid? TaxLotMutationBatchId { get; init; }
+
+    public IReadOnlyList<AssetAccountingStageEvidenceDto> LifecycleStages { get; init; } = [];
+}
 
 public sealed record AccountingBasisProjectionTargetDto(
     AccountingBasisKindDto AccountingBasis,

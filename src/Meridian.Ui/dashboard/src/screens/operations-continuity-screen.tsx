@@ -18,7 +18,18 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { readinessToneToBadgeVariant, readinessToneToPanelClass } from "@/lib/shared-tone-mappings";
+import {
+  buildReopenWorkflowFormDisabledReason,
+  formatApprovalDecisionCommandError,
+  formatApprovalSubmitCommandError,
+  formatBreakCommandError,
+  formatChecklistCommandError,
+  formatCloseWorkflowCommandError,
+  formatReopenWorkflowCommandError,
+  type ReopenWorkflowFormState
+} from "@/screens/operations-continuity-screen.command-state";
 import {
   useOperationsContinuityScreenViewModel,
   type FinancialOperationsCommandSpineRow,
@@ -100,10 +111,15 @@ const gateColumns: DenseDataTableColumn<OperationsContinuityGateRow>[] = [
     id: "completed",
     label: "Completion",
     render: (row) => (
-      <span className="block text-xs leading-5">
+      <div className="text-xs leading-5">
         <span className="block text-foreground">{row.blockerCountLabel}</span>
         <span className="block text-muted-foreground">{row.completedLabel}</span>
-      </span>
+        {row.completedByTechnicalLabel ? (
+          <TechnicalDetails label="Completion identity" className="mt-1" contentClassName="py-2">
+            <p className="font-mono text-xs text-muted-foreground">Actor ID: {row.completedByTechnicalLabel}</p>
+          </TechnicalDetails>
+        ) : null}
+      </div>
     )
   }
 ];
@@ -342,11 +358,16 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
     id: "work-item",
     label: "Work item",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="min-w-0">
         <span className="eyebrow-label">{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-      </span>
+        {row.technicalCode ? (
+          <TechnicalDetails label="System details" className="mt-2" contentClassName="py-2">
+            <p className="font-mono text-xs text-muted-foreground">Rule code: {row.technicalCode}</p>
+          </TechnicalDetails>
+        ) : null}
+      </div>
     )
   },
   {
@@ -583,13 +604,6 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
 
 type BreakCommandKind = "assign" | "resolve";
 type ApprovalDecisionKind = "approve" | "reject";
-
-interface ReopenWorkflowFormState {
-  incidentId: string;
-  justification: string;
-  approvalReference: string;
-  impactSummary: string;
-}
 
 interface BreakCaseColumnOptions {
   pendingBreakCommand: { breakId: string; kind: BreakCommandKind } | null;
@@ -1523,6 +1537,13 @@ export function OperationsContinuityScreen() {
     [approvalDecisionCommand.pending, runApprovalDecisionCommand]
   );
 
+  const selectedWorkflowOperationalMetadata = vm.selectedDetail?.metadata.filter(
+    (field) => !["Workflow", "Fund account", "Version", "Security Master", "Report pack", "Close package", "Latest audit"].includes(field.label)
+  ) ?? [];
+  const selectedWorkflowTechnicalMetadata = vm.selectedDetail?.metadata.filter(
+    (field) => ["Workflow", "Fund account", "Version", "Security Master", "Report pack", "Close package", "Latest audit"].includes(field.label)
+  ) ?? [];
+
   return (
     <div className="space-y-6">
       <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
@@ -1592,7 +1613,11 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
 
-        <Card className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}>
+        <Card
+          className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}
+          role="region"
+          aria-label="Recommended next action"
+        >
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1603,7 +1628,7 @@ export function OperationsContinuityScreen() {
                 <CardDescription>{vm.nextAction.detail}</CardDescription>
               </div>
               <Badge variant={readinessToneToBadgeVariant(vm.nextAction.statusTone)}>
-                {vm.nextAction.disabled ? "Unavailable" : "Ready"}
+                {vm.nextAction.statusLabel}
               </Badge>
             </div>
           </CardHeader>
@@ -1641,7 +1666,7 @@ export function OperationsContinuityScreen() {
               description={vm.selectedDetail.description}
               ariaLabel={vm.selectedDetail.ariaLabel}
               status={<Badge variant={readinessToneToBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
-              fields={vm.selectedDetail.metadata}
+              fields={selectedWorkflowOperationalMetadata}
             />
             <div className="px-4 pb-4">
               {vm.detailErrorText ? (
@@ -1649,6 +1674,18 @@ export function OperationsContinuityScreen() {
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   {vm.detailErrorText}
                 </p>
+              ) : null}
+              {selectedWorkflowTechnicalMetadata.length > 0 ? (
+                <TechnicalDetails label="Workflow system details" className="mt-3">
+                  <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
+                    {selectedWorkflowTechnicalMetadata.map((field) => (
+                      <div key={field.label}>
+                        <dt className="eyebrow-label">{field.label}</dt>
+                        <dd className="break-words font-mono text-foreground">{field.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
               ) : null}
             </div>
           </div>
@@ -2415,72 +2452,4 @@ export function OperationsContinuityScreen() {
       </section>
     </div>
   );
-}
-
-function formatChecklistCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Checklist acknowledgement command failed.";
-}
-
-function formatBreakCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Break command failed.";
-}
-
-function formatApprovalSubmitCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Approval submission command failed.";
-}
-
-function formatApprovalDecisionCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Approval decision command failed.";
-}
-
-function formatCloseWorkflowCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Close package publication command failed.";
-}
-
-function buildReopenWorkflowFormDisabledReason(form: ReopenWorkflowFormState): string | null {
-  if (!form.incidentId.trim()) {
-    return "Incident id is required before governed reopen.";
-  }
-
-  if (!form.approvalReference.trim()) {
-    return "Approval reference is required before governed reopen.";
-  }
-
-  if (!form.justification.trim()) {
-    return "Justification is required before governed reopen.";
-  }
-
-  if (!form.impactSummary.trim()) {
-    return "Impact summary is required before governed reopen.";
-  }
-
-  return null;
-}
-
-function formatReopenWorkflowCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Governed reopen command failed.";
 }

@@ -1,12 +1,12 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Events;
 using Xunit;
 using ContractPayload = Meridian.Contracts.Domain.Events.MarketEventPayload;
-using Meridian.Core.Monitoring;
 
 namespace Meridian.Tests.DataIntegration.Monitoring;
 
@@ -23,7 +23,6 @@ public sealed class SchemaValidationServiceTests : IAsyncDisposable
         _service = new SchemaValidationService(
             new SchemaValidationOptions
             {
-                EnableVersionTracking = true,
                 MaxFilesToCheck = 10
             },
             _tempDir);
@@ -34,13 +33,6 @@ public sealed class SchemaValidationServiceTests : IAsyncDisposable
     {
         // Assert
         SchemaValidationService.CurrentSchemaVersion.Should().Be(EventSchemaValidator.CurrentSchemaVersion);
-    }
-
-    [Fact]
-    public void CurrentSemanticVersion_ShouldFollowPattern()
-    {
-        // Assert
-        SchemaValidationService.CurrentSemanticVersion.Should().Be($"{EventSchemaValidator.CurrentSchemaVersion}.0.0");
     }
 
     [Fact]
@@ -222,30 +214,6 @@ public sealed class SchemaValidationServiceTests : IAsyncDisposable
         // Assert - should pass because check was skipped
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("Already completed");
-    }
-
-    [Fact]
-    public void GetVersionManager_WhenEnabled_ShouldReturnInstance()
-    {
-        // Act
-        var versionManager = _service.GetVersionManager();
-
-        // Assert
-        versionManager.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task GetVersionManager_WhenDisabled_ShouldReturnNull()
-    {
-        // Arrange
-        await using var serviceWithoutTracking = new SchemaValidationService(
-            new SchemaValidationOptions { EnableVersionTracking = false });
-
-        // Act
-        var versionManager = serviceWithoutTracking.GetVersionManager();
-
-        // Assert
-        versionManager.Should().BeNull();
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
@@ -29,6 +31,7 @@ import type {
   StrategyPlotStudyItem,
   StrategyPlotWorkspaceState,
   StrategyPromotionHistoryRow,
+  StrategyRunLibraryState,
   StrategyRunTableRow
 } from "@/screens/strategy-screen.view-model";
 import type { StrategyWorkspaceResponse } from "@/types";
@@ -221,7 +224,7 @@ export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId 
 const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Strategy overview",
-    description: "PlotTool analytics and the retained run library. Promotions and the lab have focused routes."
+    description: "Review strategy posture, then open the focused builder, lab, run, and promotion workspaces."
   },
   promotions: {
     title: "Promotions",
@@ -239,8 +242,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const { pathname, search } = useLocation();
   const routeView = resolveStrategyRouteView(pathname);
   const routeCopy = strategyRouteViewCopy[routeView];
-  const showLab = routeView === "overview" || routeView === "lab";
-  const showRuns = routeView === "overview" || routeView === "promotions";
+  const showLab = routeView === "lab";
+  const showRuns = routeView === "promotions";
   const routeTabs = strategyRouteTabs.map((tab) => ({
     id: tab.id,
     label: tab.label,
@@ -454,8 +457,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
         />
       </section>
 
-      {showLab ? (
+      {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
+
+      {showLab || showRuns ? (
       <Card>
+        {showLab ? (
         <CardHeader>
           <div className="eyebrow-label">{vm.plotTool.workspace.eyebrow}</div>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -502,7 +508,16 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             </div>
           </div>
         </CardHeader>
+        ) : (
+          <CardHeader>
+            <div className="eyebrow-label">Run decisions</div>
+            <CardTitle>Comparison and promotion controls</CardTitle>
+            <CardDescription>Select retained runs below, then compare, diff, or evaluate a paper promotion.</CardDescription>
+          </CardHeader>
+        )}
         <CardContent className="space-y-4">
+          {showRuns ? (
+          <>
           <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="eyebrow-label">Selection</div>
@@ -726,8 +741,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               )}
             </div>
           )}
+          </>
+          ) : null}
 
-          {vm.activePlotToolView === "workspace" ? (
+          {showLab ? (vm.activePlotToolView === "workspace" ? (
             <PlotToolWorkspacePanel
               vm={vm.plotTool.workspace}
               studies={vm.plotTool.studies}
@@ -738,7 +755,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             />
           ) : (
             <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />
-          )}
+          )) : null}
         </CardContent>
       </Card>
       ) : null}
@@ -785,7 +802,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               caption={vm.runTable.caption}
             />
             {vm.inspectedRunDetail ? (
-              <div id={vm.inspectedRunDetail.panelId} className="min-w-0">
+              <div id={vm.inspectedRunDetail.panelId} className="min-w-0 space-y-3">
                 <EntitySummary
                   eyebrow={vm.inspectedRunDetail.eyebrow}
                   title={vm.inspectedRunDetail.title}
@@ -813,6 +830,19 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     </>
                   )}
                 />
+                <TechnicalDetails
+                  label="Run references"
+                  description="Stable identifiers for support, audit, and API tracing."
+                >
+                  <dl className="grid gap-2">
+                    {vm.inspectedRunDetail.technicalFields.map((field) => (
+                      <div key={field.id} className="grid gap-1 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline">
+                        <dt className="text-xs font-medium text-muted-foreground">{field.label}</dt>
+                        <dd className="break-all font-mono text-xs text-foreground">{field.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
               </div>
             ) : (
               <div
@@ -1067,10 +1097,27 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               ))}
             </section>
 
+            <TechnicalDetails
+              label="Run references"
+              description="Stable identifiers for support, audit, and API tracing."
+              className="mt-4"
+            >
+              <dl className="grid gap-2">
+                {vm.selectedRunDetail.technicalRows.map((row) => (
+                  <div key={row.id} className="grid gap-1 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline">
+                    <dt className="text-xs font-medium text-muted-foreground">{row.label}</dt>
+                    <dd className="break-all font-mono text-xs text-foreground">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </TechnicalDetails>
+
             <section className="mt-4 rounded-md border border-border/70 bg-background/45 px-4 py-3">
               <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
             </section>
+
+            <BiasDisclosurePanel disclosure={vm.selectedRunDetail.biasDisclosure} className="mt-4" />
           </DialogContent>
         )}
       </Dialog>
@@ -1130,6 +1177,47 @@ function PlotToolWorkspacePanel({
   onStudySelect: (id: string) => void;
 }) {
   const notebookVm = useQuantNotebookViewModel();
+  const hasPlotToolPayload = studies.length > 0 || vm.scatterChart.points.length > 0;
+
+  if (!hasPlotToolPayload) {
+    return (
+      <section
+        id="plottool-workspace-panel"
+        role="tabpanel"
+        aria-labelledby="plottool-workspace-tab"
+        className="space-y-4"
+      >
+        <EntitySummary
+          eyebrow={vm.eyebrow}
+          title={vm.title}
+          subtitle={vm.metaItems.join(" · ")}
+          description={vm.description}
+          status={<Badge variant={vm.statusBadgeVariant}>{vm.statusBadgeLabel}</Badge>}
+          fields={vm.studySummary.map((field) => ({ label: field.label, value: field.value }))}
+          ariaLabel="PlotTool study brief"
+        />
+        <Card className="border-border/70 bg-background/35">
+          <CardContent className="py-6">
+            <div
+              className="flex flex-col items-center justify-center rounded-md border border-dashed border-border/70 bg-secondary/15 px-6 py-10 text-center"
+              role="status"
+              aria-label="PlotTool scatter observations unavailable"
+            >
+              <ChartScatter className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+              <div className="mt-3 font-semibold text-foreground">No PlotTool observations yet</div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{vm.studyTableEmptyText}</p>
+              <Button asChild variant="outline" size="sm" className="mt-4">
+                <Link to="/settings/providers" aria-label="Review provider connections for PlotTool">
+                  Review provider connections
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
   const studyColumns: DenseDataTableColumn<StrategyPlotStudyItem>[] = [
     {
       id: "study",
@@ -1255,6 +1343,33 @@ function PlotToolWorkspacePanel({
                 chart={vm.scatterChart}
               />
             </div>
+            {vm.scatterChart.points.length > 0 ? (
+              <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
+                <summary className="cursor-pointer text-sm font-semibold text-foreground">
+                  View observation table
+                </summary>
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full text-left text-xs" aria-label="PlotTool scatter observations">
+                    <thead>
+                      <tr className="border-b border-border/60 text-muted-foreground">
+                        <th scope="col" className="px-2 py-2">Observation</th>
+                        <th scope="col" className="px-2 py-2">X position</th>
+                        <th scope="col" className="px-2 py-2">Y position</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vm.scatterChart.points.map((point, index) => (
+                        <tr key={point.id} className="border-b border-border/40 last:border-0" aria-label={point.ariaLabel}>
+                          <th scope="row" className="px-2 py-2 font-medium">{index + 1}</th>
+                          <td className="px-2 py-2 font-mono">{point.x}</td>
+                          <td className="px-2 py-2 font-mono">{point.y}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            ) : null}
             <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
               {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
             </div>
@@ -1509,6 +1624,27 @@ function PlotToolScatterChart({
 }) {
   const hasObservations = chart.points.length > 0;
 
+  if (!hasObservations) {
+    return (
+      <div
+        className="flex min-h-[320px] flex-col items-center justify-center rounded-md border border-dashed border-border/70 bg-secondary/15 px-6 text-center"
+        role="status"
+        aria-label="PlotTool scatter observations unavailable"
+      >
+        <ChartScatter className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+        <div className="mt-3 font-semibold text-foreground">No PlotTool observations yet</div>
+        <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+          Connect a governed Strategy analytics source to load retained notebooks, scatter observations, and statistical evidence.
+        </p>
+        <Button asChild variant="outline" size="sm" className="mt-4">
+          <Link to="/settings/providers" aria-label="Review provider connections for PlotTool">
+            Review provider connections
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <svg
       viewBox={chart.viewBox}
@@ -1614,6 +1750,139 @@ function PlotToolScatterChart({
         </>
       ) : null}
     </svg>
+  );
+}
+
+const strategyHubRoutes = [
+  {
+    id: "designer",
+    title: "Design strategies",
+    description: "Compose cells, inspect field vocabulary, and review backtest proof.",
+    href: "/strategy/designer",
+    action: "Open Designer"
+  },
+  {
+    id: "lab",
+    title: "Inspect PlotTool",
+    description: "Review retained notebooks, scatter observations, and statistical evidence.",
+    href: "/strategy/lab",
+    action: "Open Strategy Lab"
+  },
+  {
+    id: "promotions",
+    title: "Review retained runs",
+    description: "Compare candidates and review paper-promotion evidence.",
+    href: "/strategy/promotions",
+    action: "Open Promotions"
+  },
+  {
+    id: "quant-lab",
+    title: "Run Quant Lab",
+    description: "Compile scripts against governed price, statistics, and backtest APIs.",
+    href: "/strategy/quant-lab",
+    action: "Open Quant Lab"
+  },
+  {
+    id: "covered-call",
+    title: "Model covered calls",
+    description: "Configure a chain preview and review backtest payoff evidence.",
+    href: "/strategy/covered-call",
+    action: "Open Covered Call"
+  }
+] as const;
+
+function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
+  const latestRun = vm.runs[0] ?? null;
+  const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== "NOT CONNECTED";
+
+  return (
+    <section aria-labelledby="strategy-overview-hub-title" className="space-y-4">
+      <Card className="border-border/80 bg-secondary/15">
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Strategy command center</div>
+              <CardTitle id="strategy-overview-hub-title" className="mt-2">Choose the next strategy task</CardTitle>
+              <CardDescription className="mt-2 max-w-3xl">
+                The overview summarizes run and analytics posture. Detailed authoring, analysis, comparison, and promotion evidence stay in focused workspaces.
+              </CardDescription>
+            </div>
+            <div className="rounded-md border border-border/70 bg-background/45 px-3 py-3 text-sm lg:max-w-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-semibold text-foreground">PlotTool analytics</span>
+                <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
+              </div>
+              {plotToolConnected ? (
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">Retained PlotTool studies are available in Strategy Lab.</p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Run history remains available, but PlotTool analytics needs a governed provider connection.
+                  </p>
+                  <Link
+                    to="/settings/providers"
+                    className="inline-flex text-xs font-semibold text-primary underline-offset-4 hover:underline"
+                    aria-label="Review provider connections for PlotTool analytics"
+                  >
+                    Review provider connections
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section aria-label={vm.runHistorySummary.ariaLabel} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {vm.runHistorySummary.cards.map((card) => (
+              <div key={card.id} className="rounded-md border border-border/70 bg-background/45 px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="eyebrow-label">{card.label}</div>
+                    <div className="mt-2 font-mono text-lg font-semibold text-foreground">{card.value}</div>
+                  </div>
+                  <Badge variant={card.badgeVariant}>{card.badgeLabel}</Badge>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+              </div>
+            ))}
+          </section>
+          <div className="rounded-md border border-border/70 bg-background/35 px-3 py-3 text-sm">
+            <div className="eyebrow-label">Latest retained run</div>
+            {latestRun ? (
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-foreground">{latestRun.strategyName}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {latestRun.mode} · {latestRun.status} · updated {latestRun.lastUpdated}
+                  </div>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/strategy/promotions">Review run library</Link>
+                </Button>
+              </div>
+            ) : (
+              <p className="mt-2 text-muted-foreground">No retained runs are available yet. Open a focused lab to create or inspect strategy evidence.</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Strategy task routes">
+        {strategyHubRoutes.map((route) => (
+          <Card key={route.id} className="h-full border-border/70">
+            <CardHeader>
+              <CardTitle className="text-base">{route.title}</CardTitle>
+              <CardDescription>{route.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to={route.href}>{route.action}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
   );
 }
 

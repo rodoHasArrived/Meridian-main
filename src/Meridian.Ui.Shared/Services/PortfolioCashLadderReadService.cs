@@ -15,7 +15,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
 {
     private const int MaxSecurities = 500;
     private const int ProjectionBatchSize = 16;
-    private const string DefaultBaseCurrency = "USD";
+    private const string UnknownBaseCurrency = "UNAVAILABLE";
 
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
@@ -50,6 +50,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
 
         var (positions, loadNotices) = await LoadPositionsAsync(asOfDate, ct).ConfigureAwait(false);
         var positionNotices = new List<string>(loadNotices);
+        var decisionBlockers = new List<string>(loadNotices);
 
         // The slice computes a portfolio-wide ladder; it does not yet filter by fund account. When a
         // fund-account scope is requested, say so explicitly rather than returning a global ladder
@@ -61,6 +62,8 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             positionNotices.Add(
                 $"Fund-account scope '{query.FundAccountId}' is not yet applied: the ladder is portfolio-wide, "
                 + "so these figures are not filtered to the selected fund account.");
+            decisionBlockers.Add(
+                $"Fund-account scope '{query.FundAccountId}' cannot be certified because the holdings source is not fund-account scoped.");
         }
 
         var cashBalances = _cashBalanceProvider is null
@@ -70,12 +73,48 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             ? (IReadOnlyList<PortfolioCapitalActivityDto>)[]
             : await _capitalScheduleProvider.GetCapitalActivityAsync(asOfDate, windowEnd, ct).ConfigureAwait(false);
 
-        var baseCurrency = cashBalances.Count > 0
-            ? cashBalances
-                .GroupBy(static balance => balance.Currency, StringComparer.OrdinalIgnoreCase)
-                .OrderByDescending(static group => group.Count())
-                .First().Key
-            : DefaultBaseCurrency;
+        if (_cashBalanceProvider is null)
+        {
+            decisionBlockers.Add("No authoritative cash-balance provider is registered.");
+        }
+        else if (cashBalances.Count == 0)
+        {
+            decisionBlockers.Add("The authoritative cash-balance provider returned no opening balances.");
+        }
+
+        var cashCurrencies = cashBalances
+            .Select(static balance => balance.Currency)
+            .Where(static currency => !string.IsNullOrWhiteSpace(currency))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var baseCurrency = cashCurrencies.Length == 1 ? cashCurrencies[0] : UnknownBaseCurrency;
+        if (cashCurrencies.Length > 1)
+        {
+            decisionBlockers.Add(
+                $"Cash balances span {string.Join(", ", cashCurrencies)} but no authoritative FX conversion source is registered.");
+        }
+
+        if (cashCurrencies.Length == 0 && cashBalances.Count > 0)
+        {
+            decisionBlockers.Add("Cash balances do not identify a base currency.");
+        }
+
+        if (baseCurrency != UnknownBaseCurrency)
+        {
+            var foreignFlowCurrencies = positions
+                .SelectMany(static position => position.Operations.ProjectedCashFlows)
+                .Select(static flow => flow.Currency)
+                .Concat(capitalActivity.Select(static row => row.Currency))
+                .Where(currency => !string.IsNullOrWhiteSpace(currency) &&
+                    !string.Equals(currency, baseCurrency, StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (foreignFlowCurrencies.Length > 0)
+            {
+                decisionBlockers.Add(
+                    $"Projected flows include {string.Join(", ", foreignFlowCurrencies)} while the base currency is {baseCurrency}; no authoritative FX conversion source is registered.");
+            }
+        }
 
         var inputs = new PortfolioCashLadderInputs(
             asOfDate,
@@ -87,7 +126,8 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             query.MinimumCashThreshold ?? 0m,
             Math.Max(1, query.BucketDays))
         {
-            PositionSourceNotices = positionNotices
+            PositionSourceNotices = positionNotices,
+            DecisionBlockers = decisionBlockers
         };
 
         return PortfolioCashLadderEngine.Build(inputs, query.ScenarioId);
@@ -99,13 +139,11 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
     {
         if (_assetOperationsQueryService is null)
         {
-            return ([], []);
+            return ([], ["No authoritative asset-operations projection service is registered."]);
         }
 
-        // Prefer actual holdings: forecast flows only for held securities and scale
-        // them by the real position quantity. Fall back to enumerating active Security
-        // Master subjects at unit quantity only when no holdings source is wired, and
-        // make that overstatement visible rather than silent.
+        // Forecast only actual holdings scaled by authoritative quantities. Active Security Master
+        // subjects at unit quantity are not a financial fact and are never used as a fallback.
         var notices = new List<string>();
         if (_holdingsSource is not null)
         {
@@ -121,36 +159,10 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
 
         if (_securityMasterQueryService is null)
         {
-            return ([], notices);
+            return ([], ["No authoritative holdings source is registered."]);
         }
 
-        // Request one extra row so the search itself reveals when more than the cap exist; the
-        // server-side Take would otherwise hide the overflow from ProjectAsync's truncation notice.
-        var summaries = await _securityMasterQueryService
-            .SearchAsync(new SecuritySearchRequest(string.Empty, Take: MaxSecurities + 1, ActiveOnly: true), ct)
-            .ConfigureAwait(false);
-        var activeIds = summaries.Select(static summary => summary.SecurityId).Distinct().ToArray();
-        if (activeIds.Length > MaxSecurities)
-        {
-            notices.Add(
-                $"More than {MaxSecurities} active Security Master subjects exist; only the first {MaxSecurities} are projected, "
-                + "so later active instruments and their coupons/principal and any resulting liquidity breaches are not shown.");
-        }
-
-        var fallbackPositions = await ProjectAsync(
-            activeIds.Take(MaxSecurities).ToArray(),
-            heldQuantities: null,
-            notices,
-            "active Security Master subjects",
-            ct).ConfigureAwait(false);
-        if (fallbackPositions.Count > 0)
-        {
-            notices.Add(
-                "No holdings source is wired: the ladder forecasts active Security Master subjects at unit quantity, "
-                + "not the portfolio's actual holdings, so projected inflows and minimum-balance breaches may be overstated.");
-        }
-
-        return (fallbackPositions, notices);
+        return ([], ["No authoritative holdings source is registered; Security Master subjects cannot substitute for held quantities."]);
     }
 
     private async Task<IReadOnlyList<PortfolioCashLadderPositionDto>> ProjectAsync(

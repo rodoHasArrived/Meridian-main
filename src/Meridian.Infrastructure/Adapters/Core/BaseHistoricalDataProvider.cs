@@ -5,6 +5,7 @@ using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
+using Meridian.ProviderSdk;
 using Meridian.Infrastructure.Http;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
@@ -47,6 +48,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected readonly ILogger Log;
     protected readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
     private readonly HttpResponseHandler _responseHandler;
+    private readonly object _rateLimitSync = new();
+    private readonly TimeProvider _timeProvider;
 
     private int _requestCount;
     private DateTimeOffset _windowStart;
@@ -165,20 +168,24 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <param name="httpClient">Optional HTTP client (uses factory if not provided).</param>
     /// <param name="log">Optional logger.</param>
     /// <param name="enableResilience">Whether to enable HTTP resilience (retry, circuit breaker). Default: true.</param>
+    /// <param name="timeProvider">Clock used for rate-limit snapshots and expiry.</param>
     protected BaseHistoricalDataProvider(
         HttpClient? httpClient = null,
         ILogger? log = null,
-        bool enableResilience = true)
+        bool enableResilience = true,
+        TimeProvider? timeProvider = null)
     {
         Log = log ?? LoggingSetup.ForContext(GetType());
         Http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientName);
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         // Initialize rate limiter with provider-specific settings
         RateLimiter = new RateLimiter(
             MaxRequestsPerWindow,
             RateLimitWindow,
             RateLimitDelay,
-            Log);
+            Log,
+            _timeProvider);
 
         // Initialize resilience pipeline for transient fault handling
         ResiliencePipeline = enableResilience
@@ -194,7 +201,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         // Name is abstract, so derived class must implement it before this runs.
         _responseHandler = new HttpResponseHandler(GetType().Name, Log);
 
-        _windowStart = DateTimeOffset.UtcNow;
+        _windowStart = _timeProvider.GetUtcNow();
     }
 
 
@@ -223,7 +230,12 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task WaitForRateLimitSlotAsync(CancellationToken ct)
     {
         await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-        Interlocked.Increment(ref _requestCount);
+        lock (_rateLimitSync)
+        {
+            var now = _timeProvider.GetUtcNow();
+            ResetRequestWindowIfExpired(now);
+            _requestCount++;
+        }
     }
 
     /// <summary>
@@ -231,9 +243,16 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     protected void RecordRateLimitHit(TimeSpan? retryAfter)
     {
-        _isRateLimited = true;
-        _rateLimitResetsAt = DateTimeOffset.UtcNow + (retryAfter ?? RateLimitWindow);
-        Log.Warning("{Provider} rate limit hit. Resets at {ResetsAt}", Name, _rateLimitResetsAt);
+        DateTimeOffset resetAt;
+        lock (_rateLimitSync)
+        {
+            _isRateLimited = true;
+            var duration = retryAfter is { } value && value > TimeSpan.Zero ? value : RateLimitWindow;
+            resetAt = _timeProvider.GetUtcNow() + duration;
+            _rateLimitResetsAt = resetAt;
+        }
+
+        Log.Warning("{Provider} rate limit hit. Resets at {ResetsAt}", Name, resetAt);
     }
 
     /// <summary>
@@ -241,11 +260,38 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     public RateLimitInfo GetRateLimitInfo()
     {
-        // Reset window if expired
-        if (DateTimeOffset.UtcNow - _windowStart > RateLimitWindow)
+        lock (_rateLimitSync)
         {
-            _requestCount = 0;
-            _windowStart = DateTimeOffset.UtcNow;
+            return GetRateLimitInfo(_timeProvider.GetUtcNow());
+        }
+    }
+
+    /// <inheritdoc />
+    public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+    {
+        lock (_rateLimitSync)
+        {
+            var observedAt = _timeProvider.GetUtcNow();
+            var info = GetRateLimitInfo(observedAt);
+            return new ProviderRateLimitDiagnosticSnapshot(
+                info.ProviderName,
+                ProviderRateLimitSurfaces.Historical,
+                observedAt,
+                info.RequestsMade,
+                info.MaxRequests,
+                info.Window,
+                info.IsLimited,
+                info.ResetsAt,
+                info.UsageRatio,
+                info.IsLimited ? "provider-response" : null);
+        }
+    }
+
+    private RateLimitInfo GetRateLimitInfo(DateTimeOffset observedAt)
+    {
+        ResetRequestWindowIfExpired(observedAt);
+        if (_isRateLimited && _rateLimitResetsAt is { } resetAt && observedAt >= resetAt)
+        {
             _isRateLimited = false;
             _rateLimitResetsAt = null;
         }
@@ -257,8 +303,17 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             RateLimitWindow,
             _rateLimitResetsAt,
             _isRateLimited,
-            _rateLimitResetsAt.HasValue ? _rateLimitResetsAt.Value - DateTimeOffset.UtcNow : null
+            _rateLimitResetsAt.HasValue ? _rateLimitResetsAt.Value - observedAt : null
         );
+    }
+
+    private void ResetRequestWindowIfExpired(DateTimeOffset observedAt)
+    {
+        if (observedAt - _windowStart <= RateLimitWindow)
+            return;
+
+        _requestCount = 0;
+        _windowStart = observedAt;
     }
 
 
@@ -402,47 +457,35 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     }
 
     /// <summary>
-    /// Synchronous HTTP response handling for backwards compatibility.
-    /// Prefer using <see cref="HandleHttpResponseAsync"/> for new code.
+    /// Validates an HTTP response and throws the provider exception mapped to its status.
+    /// Delegates to <see cref="HandleHttpResponseAsync"/> so status handling stays centralized
+    /// (this used to be a full synchronous duplicate of that logic).
+    /// A 404 returns normally so providers can surface empty results.
     /// </summary>
-    protected void HandleHttpResponse(HttpResponseMessage response, string symbol, string dataType)
+    protected async Task HandleHttpResponseOrThrowAsync(
+        HttpResponseMessage response,
+        string symbol,
+        string dataType,
+        CancellationToken ct)
     {
-        if (response.IsSuccessStatusCode)
-            return;
+        var result = await HandleHttpResponseAsync(response, symbol, dataType, ct).ConfigureAwait(false);
+        if (result.IsSuccess || result.IsNotFound)
+            return; // Allow empty results for not found
 
-        var statusCode = (int)response.StatusCode;
-
-        if (statusCode == 401 || statusCode == 403)
-        {
-            Log.Error("{Provider} API returned {StatusCode} for {Symbol} {DataType}: Authentication failed", Name, statusCode, symbol, dataType);
+        if (result.IsAuthError)
             throw new ConnectionException(
-                $"{Name} API returned {statusCode}: Authentication failed for {symbol}",
+                $"{Name} API returned authentication error for {symbol}. Verify credentials.",
                 provider: Name);
-        }
 
-        if (statusCode == 429)
-        {
-            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response) ?? TimeSpan.FromSeconds(60);
-            RecordRateLimitHit(retryAfter);
-            RaiseRateLimitHit(GetRateLimitInfo());
-
-            Log.Warning("{Provider} API returned 429 for {Symbol} {DataType}: Rate limit exceeded", Name, symbol, dataType);
+        if (result.IsRateLimited)
             throw new RateLimitException(
                 $"{Name} API rate limit exceeded for {symbol}",
                 provider: Name,
                 symbol: symbol,
-                retryAfter: retryAfter);
-        }
+                retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
 
-        if (statusCode == 404)
-        {
-            Log.Debug("{Provider} API returned 404 for {Symbol} {DataType}: Not found", Name, symbol, dataType);
-            return; // Allow empty results for not found
-        }
-
-        Log.Warning("{Provider} API returned {StatusCode} for {Symbol} {DataType}", Name, statusCode, symbol, dataType);
         throw new DataProviderException(
-            $"{Name} API returned {statusCode} for {symbol}",
+            $"{Name} API error for {symbol}: {result.ErrorMessage}",
             provider: Name,
             symbol: symbol);
     }

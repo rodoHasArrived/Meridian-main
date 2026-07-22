@@ -1,29 +1,31 @@
-using System.Runtime.InteropServices;
 using System.Text.Json;
-using Meridian.Core.Contracts;
-using Meridian.Storage.Archival;
+using Meridian.DataIntegration.Credentials;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Persists provider credentials to {DataRoot}/provider-credentials.json.
-/// File is created with restricted OS permissions (Unix: 600).
-/// All public methods are thread-safe; a SemaphoreSlim guards read-modify-write cycles.
+/// Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault.
+/// On first access it migrates the historical plaintext sidecar atomically into the vault and then
+/// removes the plaintext source. Unknown provider ids fail on writes and never create a sidecar.
 /// </summary>
-public sealed class ProviderCredentialStore : IProviderCredentialStore
+public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
 {
-    private readonly string _filePath;
-    private readonly SemaphoreSlim _lock = new(1, 1);
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
+    private static readonly JsonSerializerOptions LegacyJsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly IProviderCredentialStore _vault;
+    private readonly string _legacyPath;
+    private readonly SemaphoreSlim _migrationGate = new(1, 1);
+    private bool _migrationChecked;
 
     public ProviderCredentialStore(string dataRoot)
+        : this(new FileProviderCredentialStore(dataRoot), dataRoot)
     {
-        _filePath = Path.Combine(dataRoot, "provider-credentials.json");
+    }
+
+    public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot)
+    {
+        _vault = vault ?? throw new ArgumentNullException(nameof(vault));
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _legacyPath = Path.Combine(Path.GetFullPath(dataRoot), "provider-credentials.json");
     }
 
     public async Task SaveCredentialsAsync(
@@ -33,18 +35,19 @@ public sealed class ProviderCredentialStore : IProviderCredentialStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         ArgumentNullException.ThrowIfNull(values);
-
-        await _lock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var store = await LoadStoreAsync(ct).ConfigureAwait(false);
-            store[moduleId] = new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
-            await PersistStoreAsync(store, ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _lock.Release();
-        }
+        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        RequireKnownProvider(moduleId);
+        await _vault.SaveAsync(
+            new ProviderCredentialSaveRequest(
+                moduleId,
+                values.ToDictionary(pair => pair.Key, pair => (string?)pair.Value, StringComparer.OrdinalIgnoreCase),
+                Actor: "provider-module-setup",
+                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["credentialOwner"] = "Meridian.DataIntegration",
+                    ["compatibilitySource"] = "provider-module-setup"
+                }),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyDictionary<string, string>> GetCredentialsAsync(
@@ -52,88 +55,114 @@ public sealed class ProviderCredentialStore : IProviderCredentialStore
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
+        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        if (ProviderCredentialCatalog.Find(moduleId) is null)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
 
-        await _lock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var store = await LoadStoreAsync(ct).ConfigureAwait(false);
-            return store.TryGetValue(moduleId, out var creds)
-                ? creds
-                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-        finally
-        {
-            _lock.Release();
-        }
+        var result = await _vault.ReadForProviderAsync(moduleId, ct).ConfigureAwait(false);
+        return result?.Credentials ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task<IReadOnlySet<string>> GetStoredKeyNamesAsync(
         string moduleId,
         CancellationToken ct = default)
     {
-        var creds = await GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
-        return new HashSet<string>(
-            creds.Where(kv => !string.IsNullOrEmpty(kv.Value)).Select(kv => kv.Key),
-            StringComparer.OrdinalIgnoreCase);
+        var credentials = await GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+        return credentials
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Value))
+            .Select(pair => pair.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
+        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        if (ProviderCredentialCatalog.Find(moduleId) is not null)
+        {
+            await _vault.DeleteAsync(moduleId, "provider-module-setup", ct).ConfigureAwait(false);
+        }
+    }
 
-        await _lock.WaitAsync(ct).ConfigureAwait(false);
+    private async Task EnsureLegacyMigratedAsync(CancellationToken ct)
+    {
+        if (_migrationChecked)
+        {
+            return;
+        }
+
+        await _migrationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var store = await LoadStoreAsync(ct).ConfigureAwait(false);
-            store.Remove(moduleId);
-            await PersistStoreAsync(store, ct).ConfigureAwait(false);
+            if (_migrationChecked)
+            {
+                return;
+            }
+
+            if (!File.Exists(_legacyPath))
+            {
+                _migrationChecked = true;
+                return;
+            }
+
+            var json = await File.ReadAllTextAsync(_legacyPath, ct).ConfigureAwait(false);
+            var legacy = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
+                json,
+                LegacyJsonOptions) ?? [];
+            foreach (var (providerId, values) in legacy)
+            {
+                RequireKnownProvider(providerId);
+                await _vault.SaveAsync(
+                    new ProviderCredentialSaveRequest(
+                        providerId,
+                        values.ToDictionary(pair => pair.Key, pair => (string?)pair.Value, StringComparer.OrdinalIgnoreCase),
+                        Actor: "credential-vault-migration",
+                        Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["migratedFrom"] = "provider-credentials.json",
+                            ["credentialOwner"] = "Meridian.DataIntegration"
+                        }),
+                    ct).ConfigureAwait(false);
+            }
+
+            SecurelyRemoveLegacySidecar(_legacyPath);
+            _migrationChecked = true;
         }
         finally
         {
-            _lock.Release();
+            _migrationGate.Release();
         }
     }
 
-    private async Task<Dictionary<string, Dictionary<string, string>>> LoadStoreAsync(CancellationToken ct)
+    private static void RequireKnownProvider(string providerId)
     {
-        if (!File.Exists(_filePath))
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-
-        // Let JsonException propagate — treating a corrupt file as empty would cause the
-        // next write to silently drop every other module's credentials.
-        var json = await File.ReadAllTextAsync(_filePath, ct).ConfigureAwait(false);
-        var result = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json, JsonOptions);
-        return result ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-    }
-
-    private async Task PersistStoreAsync(
-        Dictionary<string, Dictionary<string, string>> store,
-        CancellationToken ct)
-    {
-        var dir = Path.GetDirectoryName(_filePath);
-        if (!string.IsNullOrEmpty(dir))
-            Directory.CreateDirectory(dir);
-
-        // On Unix: pre-create the destination file with owner-only permissions (chmod 600)
-        // before the first write. AtomicFileWriter copies security metadata from the destination
-        // to its temp file when the destination already exists, so the temp file inherits 600
-        // before the atomic rename — eliminating the brief window where the file is world-readable.
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !File.Exists(_filePath))
+        if (ProviderCredentialCatalog.Find(providerId) is null)
         {
-            try
+            throw new InvalidOperationException(
+                $"Provider '{providerId}' has no encrypted credential-vault descriptor; plaintext fallback is prohibited.");
+        }
+    }
+
+    private static void SecurelyRemoveLegacySidecar(string path)
+    {
+        var length = new FileInfo(path).Length;
+        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.None))
+        {
+            var zeros = new byte[Math.Min(64 * 1024, Math.Max(1, (int)Math.Min(length, 64 * 1024)))];
+            long remaining = length;
+            while (remaining > 0)
             {
-                using (File.Open(_filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                {
-                }
-                File.SetUnixFileMode(_filePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                var count = (int)Math.Min(remaining, zeros.Length);
+                stream.Write(zeros, 0, count);
+                remaining -= count;
             }
-            catch (Exception)
-            {
-                // Pre-creation failure is non-fatal; permissions will still be applied post-write.
-            }
+
+            stream.SetLength(length);
+            stream.Flush(flushToDisk: true);
         }
 
-        var json = JsonSerializer.Serialize(store, JsonOptions);
-        await AtomicFileWriter.WriteAsync(_filePath, json, ct).ConfigureAwait(false);
+        File.Delete(path);
     }
 }

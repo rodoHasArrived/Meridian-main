@@ -120,6 +120,100 @@ public sealed class ImmutableAuditLogServiceTests
         audit.VerifyIntegrity().Should().BeTrue("concurrent appends must not fork the hash chain");
     }
 
+    [Fact]
+    public void Append_WithDurablePath_RehydratesChainAfterRestart()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+
+            // First "process": append to the durable log.
+            var original = new ImmutableAuditLogService(path);
+            var firstHash = original.Append(actor, CreateRequest("payment-1")).Hash;
+            var secondHash = original.Append(actor, CreateRequest("payment-2")).Hash;
+
+            // Second "process": a fresh instance over the same path must recover the full history
+            // instead of starting empty (the in-memory-only implementation lost everything here).
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.GetAll().Select(static e => e.Hash).Should()
+                .ContainInOrder([firstHash, secondHash], "persisted audit events must survive a restart");
+            reloaded.VerifyIntegrity().Should().BeTrue("the rehydrated hash chain must still verify");
+
+            // A new append must continue the persisted chain, not fork from an empty log.
+            var third = reloaded.Append(actor, CreateRequest("payment-3"));
+            third.PreviousHash.Should().Be(secondHash,
+                "an append after restart must chain onto the last persisted event");
+            reloaded.VerifyIntegrity().Should().BeTrue();
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public void VerifyIntegrity_AfterReloadWithCorruptPersistedRecord_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+            var original = new ImmutableAuditLogService(path);
+            original.Append(actor, CreateRequest("payment-1"));
+            original.Append(actor, CreateRequest("payment-2"));
+
+            // Corrupt the durable log with an unparseable trailing record.
+            File.AppendAllText(path, "{ not valid json" + Environment.NewLine);
+
+            // A fresh instance loads the surviving prefix but must not report the shortened,
+            // still-internally-consistent chain as valid — the corruption has to surface.
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.VerifyIntegrity().Should().BeFalse(
+                "a tamper-evident log must report corruption of a persisted record, not silently drop it");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public void VerifyIntegrity_AfterReloadWithNullPersistedRecord_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+            var original = new ImmutableAuditLogService(path);
+            original.Append(actor, CreateRequest("payment-1"));
+
+            // A record replaced by the JSON literal `null` deserializes without error but is not a
+            // valid event; the reload must still flag the log as corrupt rather than drop it silently.
+            File.AppendAllText(path, "null" + Environment.NewLine);
+
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.VerifyIntegrity().Should().BeFalse(
+                "a persisted null record removes a real event and must fail the integrity check");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
     private static ActorContext CreateActor() => new(
         ActorId: "treasury-ops-1",
         Roles: ["TreasuryOperator"],

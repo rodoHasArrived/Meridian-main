@@ -102,6 +102,15 @@ internal static class CookieCsrfProtection
             return true;
         }
 
+        var remoteAddress = context.Connection.RemoteIpAddress;
+        var localAddress = context.Connection.LocalIpAddress;
+        if (remoteAddress is not null &&
+            System.Net.IPAddress.IsLoopback(remoteAddress) &&
+            (localAddress is null || System.Net.IPAddress.IsLoopback(localAddress)))
+        {
+            return false;
+        }
+
         var environment = context.RequestServices.GetService(typeof(IHostEnvironment)) as IHostEnvironment;
         return environment is null || (!environment.IsDevelopment() && !environment.IsEnvironment("Test"));
     }

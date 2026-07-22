@@ -28,7 +28,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { acknowledgeAnomaly, archiveSymbol, triggerBackfill } from "@/lib/api";
+import { acknowledgeAnomaly, archiveSymbol, remediateQualityGap, triggerBackfill } from "@/lib/api";
 import { useActivityLog } from "@/lib/activity-log/store";
 import type { ActivityEntryInput } from "@/lib/activity-log/types";
 import { describeApiError } from "@/lib/api-errors";
@@ -57,7 +57,20 @@ export interface AnomalyCellContext {
   anomalyType: string;
 }
 
-export type CellActionContext = CoverageGapCellContext | AnomalyCellContext;
+/** A server-resolved open quality gap from the canonical composite dashboard. */
+export interface QualityGapCellContext {
+  kind: "quality-gap";
+  symbol: string;
+  gapId: string;
+  dashboardVersion: string;
+  provider: string | null;
+  from: string;
+  to: string;
+  canBackfill: boolean;
+  disabledReason: string | null;
+}
+
+export type CellActionContext = CoverageGapCellContext | AnomalyCellContext | QualityGapCellContext;
 
 /** Stable identifiers for every contextual action, shared by the builder, hook, and tests. */
 export type CellActionId =
@@ -109,6 +122,17 @@ export function buildCellActions(
     ];
   }
 
+  if (context.kind === "quality-gap") {
+    return [
+      item("backfill", "Backfill this exact gap", <DatabaseZap className="h-4 w-4" aria-hidden="true" />, {
+        disabled: busy || !context.canBackfill
+      }),
+      item("compare-providers", "Compare across providers", <Table2 className="h-4 w-4" aria-hidden="true" />),
+      { id: "quality-gap-divider", type: "divider" },
+      item("open-capability-matrix", "Open provider capability matrix", <Table2 className="h-4 w-4" aria-hidden="true" />)
+    ];
+  }
+
   return [
     item("acknowledge", "Flag as acknowledged", <CheckCircle2 className="h-4 w-4" aria-hidden="true" />, { disabled: busy }),
     item("backfill", "Backfill symbol", <DatabaseZap className="h-4 w-4" aria-hidden="true" />, { disabled: busy }),
@@ -128,12 +152,14 @@ interface CellActionConfirmState {
 
 export interface CellActionApi {
   triggerBackfill: typeof triggerBackfill;
+  remediateQualityGap: typeof remediateQualityGap;
   archiveSymbol: typeof archiveSymbol;
   acknowledgeAnomaly: typeof acknowledgeAnomaly;
 }
 
 const defaultCellActionApi: CellActionApi = {
   triggerBackfill,
+  remediateQualityGap,
   archiveSymbol,
   acknowledgeAnomaly
 };
@@ -169,6 +195,8 @@ export interface UseCellActionsResult {
   resolveConfirm: (accept: boolean) => void;
   /** True while a mutating action is in flight. */
   running: boolean;
+  /** Execute a known action directly for an accessible inline affordance. */
+  run: (context: CellActionContext, actionId: CellActionId) => void;
 }
 
 /**
@@ -235,14 +263,28 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
     [toast, onAfterMutation, activityLog]
   );
 
-  const dispatch = useCallback(
-    (actionId: CellActionId) => {
-      if (!context) {
-        return;
-      }
-      const { symbol } = context;
+  const runFor = useCallback(
+    (target: CellActionContext, actionId: CellActionId) => {
+      const { symbol } = target;
       switch (actionId) {
         case "backfill":
+          if (target.kind === "quality-gap") {
+            void runAction(
+              `Backfilled the ${symbol} quality gap`,
+              `Could not backfill the selected gap for ${symbol}.`,
+              () => api.remediateQualityGap(symbol, {
+                gapId: target.gapId,
+                dashboardVersion: target.dashboardVersion
+              }),
+              {
+                kind: "quality.gap.remediate",
+                route: "/data",
+                routeLabel: "Data quality",
+                detail: `${target.provider ?? "Default provider"}: ${target.from} to ${target.to}.`
+              }
+            );
+            return;
+          }
           void runAction(
             `Backfill queued for ${symbol}`,
             `Could not queue a backfill for ${symbol}.`,
@@ -254,8 +296,8 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
           onMasterSymbol?.(symbol);
           return;
         case "acknowledge":
-          if (context.kind === "anomaly") {
-            const anomalyId = context.anomalyId;
+          if (target.kind === "anomaly") {
+            const anomalyId = target.anomalyId;
             void runAction(
               `Acknowledged anomaly for ${symbol}`,
               `Could not acknowledge the anomaly for ${symbol}.`,
@@ -292,7 +334,14 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
           return;
       }
     },
-    [context, api, runAction, onMasterSymbol, onOpenCapabilityMatrix]
+    [api, runAction, onMasterSymbol, onOpenCapabilityMatrix]
+  );
+
+  const dispatch = useCallback(
+    (actionId: CellActionId) => {
+      if (context) runFor(context, actionId);
+    },
+    [context, runFor]
   );
 
   const resolveConfirm = useCallback(
@@ -323,7 +372,8 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
     },
     confirm,
     resolveConfirm,
-    running
+    running,
+    run: runFor
   };
 }
 

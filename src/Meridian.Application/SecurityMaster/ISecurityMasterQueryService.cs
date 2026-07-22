@@ -13,6 +13,20 @@ public interface ISecurityMasterQueryService
     /// Securities without event history fall back to the current projection.
     /// </summary>
     Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns only event-recorded security state at <paramref name="asOfUtc"/>. This strict
+    /// accounting boundary does not fall back to a projection-only current definition.
+    /// </summary>
+    Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<SecurityDetailDto?>(null);
+    }
+
     Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null);
     Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default);

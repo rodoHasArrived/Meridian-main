@@ -1304,7 +1304,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedBrokeragePositionId).toBe("fund-taxable-MSFT-pos-msft");
     expect(vm.selectedBrokeragePosition?.title).toBe("MSFT");
     expect(vm.selectedBrokeragePosition?.statusDetail).toContain("$1,750 market value");
-    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Position ID")?.value).toBe("pos-msft");
+    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Position ID")).toBeUndefined();
+    expect(vm.selectedBrokeragePosition?.technicalFields.find((field) => field.label === "Position ID")?.value).toBe("pos-msft");
 
     vm.selectBrokeragePosition("fund-roth-AAPL-pos-aapl");
     expect(selectBrokeragePosition).toHaveBeenCalledWith("fund-roth-AAPL-pos-aapl");

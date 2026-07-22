@@ -155,7 +155,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
 
         cts.Cancel();
 
-        var exitCode = await runTask;
+        var exitCode = await runTask.WaitAsync(TimeSpan.FromSeconds(10));
         exitCode.Should().Be(0);
         server.Should().NotBeNull();
         server!.StopCallCount.Should().Be(1);
@@ -188,7 +188,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.Should().NotBeNull();
         await server!.Lifecycle!.RequestShutdownAsync("test-shutdown");
 
-        var exitCode = await runTask;
+        var exitCode = await runTask.WaitAsync(TimeSpan.FromSeconds(10));
         exitCode.Should().Be(0);
         server.StartCallCount.Should().Be(1);
         server.StopCallCount.Should().Be(1);

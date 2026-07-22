@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
@@ -114,6 +114,12 @@ describe("DailyControlTowerScreen", () => {
     expect(
       screen.getByRole("region", { name: /Report pack approval waiting Evidence summary/ })
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 ranked items");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
+    expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
+    expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
   it("updates the evidence pane in place when another queue row is selected", async () => {
@@ -136,6 +142,30 @@ describe("DailyControlTowerScreen", () => {
     expect(
       screen.getByRole("button", { name: "Show evidence for Report pack approval waiting" })
     ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("reveals secondary proof only when the operator expands more evidence", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    const disclosure = screen.getByText("More evidence").closest("details");
+    expect(disclosure).not.toHaveAttribute("open");
+
+    await user.click(screen.getByText("More evidence"));
+
+    expect(disclosure).toHaveAttribute("open");
+    expect(disclosure).toHaveTextContent("Audit Trail");
+    expect(disclosure).toHaveTextContent("Evidence Packet");
+  });
+
+  it("shows the leading action once outside the ranked queue", () => {
+    renderScreen();
+
+    const priorityPanel = screen.getByText("Report pack approval waiting", {
+      selector: ".mds-rpanel__title"
+    }).closest(".mds-rpanel");
+    expect(priorityPanel).not.toBeNull();
+    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
   });
 
   it("has no accessibility violations", async () => {

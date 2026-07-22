@@ -7,6 +7,7 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -31,6 +32,7 @@ public sealed class IBSimulationClient : IMarketDataClient
     private readonly IMarketEventPublisher _publisher;
     private readonly TimeSpan _autoTickDueTime;
     private readonly TimeSpan _autoTickPeriod;
+    private readonly ProviderConnectionSupervisor _connectionSupervisor;
     private readonly Random _rng = new();
     private int _nextTickerId = 10_000;
     private bool _connected;
@@ -61,6 +63,12 @@ public sealed class IBSimulationClient : IMarketDataClient
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _autoTickDueTime = autoTickDueTime ?? TimeSpan.FromSeconds(1);
         _autoTickPeriod = autoTickPeriod ?? TimeSpan.FromSeconds(1);
+        _connectionSupervisor = new ProviderConnectionSupervisor(
+            providerName: ProviderDisplayName,
+            maxReconnectAttempts: 0,
+            retryBaseDelay: TimeSpan.Zero,
+            maxRetryDelay: TimeSpan.Zero);
+        _connectionSupervisor.StateChanged += OnConnectionSupervisorStateChanged;
 
         if (enableAutoTicks)
         {
@@ -70,6 +78,9 @@ public sealed class IBSimulationClient : IMarketDataClient
 
     public bool IsEnabled => true;
     public bool IsSimulation => true;
+
+    /// <inheritdoc/>
+    public bool IsSimulated => true;
 
 
     public string ProviderId => "ib-sim";
@@ -105,9 +116,40 @@ public sealed class IBSimulationClient : IMarketDataClient
         "Do not use for trading decisions."
     };
 
+    /// <inheritdoc/>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <inheritdoc/>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    {
+        var supervisor = _connectionSupervisor.GetSnapshot();
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: ProviderDisplayName,
+            LifecycleState: supervisor.LifecycleState,
+            WebSocketState: System.Net.WebSockets.WebSocketState.None,
+            IsConnected: supervisor.IsConnected,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt,
+            LastHeartbeatReceivedAt: null,
+            LastMessageReceivedAt: null,
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
+            LastError: supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
+            IdleDuration: null,
+            ActiveSubscriptions: _tradeSubs.Count + _depthSubs.Count);
+    }
+
 
     public Task ConnectAsync(CancellationToken ct = default)
+        => _connectionSupervisor.ConnectAsync(ConnectTransportAsync, ct);
+
+    private Task ConnectTransportAsync(CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         _connected = true;
         _log.Information("[IB-SIM] Connected in simulation mode. Generating synthetic market data for subscribed symbols");
         _tickTimer?.Change(_autoTickDueTime, _autoTickPeriod);
@@ -115,13 +157,20 @@ public sealed class IBSimulationClient : IMarketDataClient
     }
 
     public Task DisconnectAsync(CancellationToken ct = default)
+        => _connectionSupervisor.DisconnectAsync(DisconnectTransportAsync, ct);
+
+    private Task DisconnectTransportAsync(CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         _connected = false;
         _tickTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         _log.Information("[IB-SIM] Disconnected. Generated ticks for {TradeCount} trade subscriptions, {DepthCount} depth subscriptions",
             _tradeSubs.Count, _depthSubs.Count);
         return Task.CompletedTask;
     }
+
+    private void OnConnectionSupervisorStateChanged(ProviderConnectionSupervisorSnapshot _)
+        => ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
@@ -187,14 +236,17 @@ public sealed class IBSimulationClient : IMarketDataClient
         }
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
-            return ValueTask.CompletedTask;
+            return;
         _disposed = true;
+        _connected = false;
+        _tickTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        _connectionSupervisor.StateChanged -= OnConnectionSupervisorStateChanged;
         _tickTimer?.Dispose();
         _tradeSubs.Clear();
         _depthSubs.Clear();
-        return ValueTask.CompletedTask;
+        await _connectionSupervisor.DisposeAsync().ConfigureAwait(false);
     }
 }

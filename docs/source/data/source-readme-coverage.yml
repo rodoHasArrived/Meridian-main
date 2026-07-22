@@ -9,6 +9,16 @@ modules:
     readme: src/Meridian/README.md
     status: covered
     last_reviewed: 2026-05-20
+  - module_id: SRC-LIFECYCLE-SUPERVISOR
+    path: src/Meridian.LifecycleSupervisor
+    readme: src/Meridian.LifecycleSupervisor/README.md
+    status: covered
+    last_reviewed: 2026-07-17
+  - module_id: SRC-LAUNCHER
+    path: src/Meridian.Launcher
+    readme: src/Meridian.Launcher/README.md
+    status: covered
+    last_reviewed: 2026-07-19
   - module_id: SRC-APP
     path: src/Meridian.Application
     readme: src/Meridian.Application/README.md

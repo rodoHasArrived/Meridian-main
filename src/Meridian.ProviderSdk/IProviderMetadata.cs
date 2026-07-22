@@ -136,6 +136,31 @@ public sealed record ProviderCredentialField(
     bool Required,
     string? DefaultValue = null);
 
+/// <summary>Granular market-data products that can be independently entitled and routed.</summary>
+public enum MarketDataCapabilityKind : byte
+{
+    Trades, NbboQuotes, Level1Snapshot, Level2Book, TickByTick, Bars,
+    HistoricalTrades, HistoricalQuotes, Auctions, Options, Crypto, News, CorporateActions
+}
+
+/// <summary>
+/// A provider declaration for one market-data product. Values describe the provider contract,
+/// not a claim that an account currently has the applicable exchange entitlement.
+/// </summary>
+public sealed record MarketDataCapabilityProfile(
+    MarketDataCapabilityKind Capability,
+    IReadOnlyList<string> AssetClasses,
+    IReadOnlyList<string> Geographies,
+    IReadOnlyList<string> Venues,
+    string Feed,
+    string Delivery,
+    string EntitlementState,
+    int? MaxRequestsPerWindow,
+    TimeSpan? PacingWindow,
+    TimeSpan? MinimumRequestDelay,
+    string SourceTimestamp,
+    string QualityPosture);
+
 /// <summary>
 /// Unified capability record that consolidates capabilities across all provider types.
 /// Replaces HistoricalDataCapabilities and extends DataSourceCapabilities
@@ -147,6 +172,15 @@ public sealed record ProviderCredentialField(
 /// </remarks>
 public sealed record ProviderCapabilities
 {
+    /// <summary>
+    /// Granular, entitlement-aware market-data products exposed by this provider. Providers may
+    /// override this with feed-specific declarations; otherwise it is derived conservatively from
+    /// the implemented capability flags.
+    /// </summary>
+    public IReadOnlyList<MarketDataCapabilityProfile> MarketDataCapabilities => BuildMarketDataCapabilities();
+
+    /// <summary>Optional explicit product declarations for adapters with feed-level knowledge.</summary>
+    public IReadOnlyList<MarketDataCapabilityProfile>? DeclaredMarketDataCapabilities { get; init; }
 
     /// <summary>Supports real-time streaming data.</summary>
     public bool SupportsStreaming { get; init; }
@@ -203,6 +237,9 @@ public sealed record ProviderCapabilities
     /// <summary>Supports historical auction data.</summary>
     public bool SupportsHistoricalAuctions { get; init; }
 
+    /// <summary>Supports news items and headlines.</summary>
+    public bool SupportsNews { get; init; }
+
     /// <summary>Minimum bar resolution supported.</summary>
     public TimeSpan? MinBarResolution { get; init; }
 
@@ -238,6 +275,40 @@ public sealed record ProviderCapabilities
 
     /// <summary>Minimum delay between requests.</summary>
     public TimeSpan? MinRequestDelay { get; init; }
+
+    private IReadOnlyList<MarketDataCapabilityProfile> BuildMarketDataCapabilities()
+    {
+        if (DeclaredMarketDataCapabilities is { Count: > 0 })
+            return DeclaredMarketDataCapabilities;
+
+        var products = new List<MarketDataCapabilityProfile>();
+        void Add(MarketDataCapabilityKind kind, bool supported, string delivery, string quality = "Provider-declared; runtime entitlement must be verified")
+        {
+            if (supported)
+            {
+                products.Add(new MarketDataCapabilityProfile(
+                    kind, SupportedAssetTypes ?? Array.Empty<string>(), SupportedMarkets,
+                    SupportedExchanges ?? Array.Empty<string>(), "Unspecified", delivery,
+                    "Unknown—verify at connection time", MaxRequestsPerWindow, RateLimitWindow,
+                    MinRequestDelay, "Provider event timestamp when supplied", quality));
+            }
+        }
+
+        Add(MarketDataCapabilityKind.Trades, SupportsRealtimeTrades, "Real-time");
+        Add(MarketDataCapabilityKind.NbboQuotes, SupportsRealtimeQuotes, "Real-time");
+        Add(MarketDataCapabilityKind.Level1Snapshot, SupportsRealtimeQuotes, "Real-time");
+        Add(MarketDataCapabilityKind.Level2Book, SupportsMarketDepth, "Real-time");
+        Add(MarketDataCapabilityKind.TickByTick, SupportsRealtimeTrades, "Real-time");
+        Add(MarketDataCapabilityKind.Bars, SupportsBackfill || SupportsIntraday, SupportsBackfill ? "Historical" : "Real-time");
+        Add(MarketDataCapabilityKind.HistoricalTrades, SupportsHistoricalTrades, "Historical");
+        Add(MarketDataCapabilityKind.HistoricalQuotes, SupportsHistoricalQuotes, "Historical");
+        Add(MarketDataCapabilityKind.Auctions, SupportsHistoricalAuctions, "Historical");
+        Add(MarketDataCapabilityKind.Options, SupportsOptionsChain, "Provider-dependent");
+        Add(MarketDataCapabilityKind.Crypto, SupportedAssetTypes?.Contains("crypto", StringComparer.OrdinalIgnoreCase) == true, "Provider-dependent");
+        Add(MarketDataCapabilityKind.News, SupportsNews, "Provider-dependent");
+        Add(MarketDataCapabilityKind.CorporateActions, SupportsDividends || SupportsSplits, "Historical");
+        return products;
+    }
 
 
 

@@ -83,6 +83,7 @@ export interface StatementFetchSchedule {
   lastRunAtUtc: string | null;
   lastRunStatus: string | null;
   nextDueAtUtc: string | null;
+  sourceKind: StatementImportSourceKind;
 }
 
 export type StatementImportSourceKind = "broker" | "custodian";
@@ -106,6 +107,7 @@ export interface StatementFetchScheduleUpsertRequest {
   toleranceProfileId?: string | null;
   cadenceHours: number;
   enabled: boolean;
+  sourceKind?: StatementImportSourceKind | null;
 }
 
 export interface AccountingReconciliationRecord {
@@ -715,6 +717,9 @@ export interface ReportingRunStatusProjection {
   changedLineCount?: number | null;
   addedLineCount?: number | null;
   removedLineCount?: number | null;
+  resolvedTemplate?: VersionedReportTemplateId | null;
+  resolvedParameters?: ReportingRunParameters | null;
+  readiness?: ReportingRunReadiness | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -1031,6 +1036,8 @@ export interface ReportingScheduleDeliveryTarget {
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
   note?: string | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
 }
 
 export interface ReportingScheduleDeliveryPlan {
@@ -1145,6 +1152,35 @@ export interface StructuredReportingExportPayload {
   rowLineage?: StructuredReportingExportRowLineage[] | null;
 }
 
+export type ReportingScheduledReleaseHandoffState = "PendingRelease" | "Enqueued";
+
+export interface ReportingScheduledReleaseHandoff {
+  handoffId: string;
+  tenantId: string;
+  companyId: string;
+  scheduleId: string;
+  runId: string;
+  templateId: string;
+  distributionId: string;
+  targetDistributionId: string;
+  transportId: string;
+  recipientPrincipalId: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
+  destination: string;
+  subject: string;
+  body: string;
+  requestedFormats: GovernanceReportArtifactFormat[] | null;
+  artifactIds: string[] | null;
+  grantLifetimeSeconds: number | null;
+  grantMaxUses: number | null;
+  maxAttempts: number;
+  createdAtUtc: string;
+  state: ReportingScheduledReleaseHandoffState;
+  enqueuedDeliveryJobId: string | null;
+  enqueuedAtUtc: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
+}
+
 export interface ReportingScheduleRecord {
   scheduleId: string;
   templateId: string;
@@ -1165,6 +1201,15 @@ export interface ReportingScheduleRecord {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  accessPolicySnapshot?: ReportAccessPolicy | null;
+  lastReadiness?: ReportingRunReadiness | null;
+  releaseDeliveryHandoffs?: ReportingScheduledReleaseHandoff[] | null;
+  accessPolicySnapshotHash?: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -1182,6 +1227,8 @@ export interface ReportingScheduleUpsertRequest {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
 }
 
 export interface ReportingScheduleRunResult {
@@ -1246,6 +1293,69 @@ export interface ReportingRunRequest {
   datasetSourceId?: string | null;
   retryReason?: string | null;
   allowRestatement?: boolean;
+  template?: VersionedReportTemplateId | null;
+  parameters?: ReportingRunParameters | null;
+}
+
+export type ReportingEntityScopeKind = "AllEntities" | "Entity" | "Portfolio" | "Investor";
+export type ReportingAccountingBasis = "Gaap" | "Tax" | "Management" | "Cash" | "Statutory";
+export type ReportingConsolidationLevel = "Fund" | "Entity" | "Portfolio" | "Investor";
+export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault";
+export type ReportingFinality = "Draft" | "Final";
+export type ReportingRunReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
+
+export interface ReportingRunScope {
+  fundProfileId: string;
+  entityScopeKind: ReportingEntityScopeKind;
+  entityId?: string | null;
+  portfolioId?: string | null;
+  investorId?: string | null;
+  dimensions?: import("./workstation-2").LedgerDimensionSet | null;
+}
+
+export interface ReportingLedgerBookSelection {
+  ledgerBookId?: string | null;
+  ledgerBookCode?: string | null;
+}
+
+export interface ReportingRunParameters {
+  scope: ReportingRunScope;
+  periodId: string;
+  asOfDate: string;
+  ledgerBook: ReportingLedgerBookSelection;
+  accountingBasis: ReportingAccountingBasis;
+  presentationCurrency: string;
+  consolidationLevel: ReportingConsolidationLevel;
+  outputFormat: ReportingOutputFormat;
+  finality: ReportingFinality;
+  includeSupportingSchedules: boolean;
+  includeEvidenceAppendix: boolean;
+  templateParameters: Record<string, string>;
+}
+
+export interface ReportingRunReadinessCheck {
+  checkId: string;
+  label: string;
+  status: ReportingRunReadinessStatus;
+  summary: string;
+  issueCount: number;
+  blocksDraft: boolean;
+  blocksFinal: boolean;
+  route?: string | null;
+  evidenceReferences: string[];
+}
+
+export interface ReportingRunReadiness {
+  evaluationId: string;
+  evaluatedAtUtc: string;
+  resolvedTemplate: VersionedReportTemplateId;
+  resolvedParameters: ReportingRunParameters;
+  status: ReportingRunReadinessStatus;
+  canGenerateDraft: boolean;
+  canGenerateFinal: boolean;
+  checks: ReportingRunReadinessCheck[];
+  blockingReasons: string[];
+  evidenceHash: string;
 }
 
 export interface ReportingRunResult {
@@ -1479,7 +1589,19 @@ export type ReconciliationCaseLifecycleState = "Open" | "InReview" | "AwaitingAp
 export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
 export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | "Breached" | "Paused" | "Stopped";
 export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
-export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve";
+export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve" | "Waive" | "Supersede";
+export type ReconciliationBreakMeasureKind = "Value" | "Quantity" | "CostBasis";
+export type ReconciliationBreakDisposition = "Resolved" | "Waived" | "Superseded";
+
+export interface ReconciliationBreakMeasure {
+  kind: ReconciliationBreakMeasureKind;
+  expected: number | null;
+  actual: number | null;
+  variance: number | null;
+  tolerance: number | null;
+  unit: string;
+  unavailableReason?: string | null;
+}
 
 export interface ReconciliationBreakExplanation {
   summary: string;

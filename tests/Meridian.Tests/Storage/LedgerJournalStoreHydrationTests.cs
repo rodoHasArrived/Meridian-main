@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Xunit;
@@ -130,6 +131,87 @@ public sealed class LedgerJournalStoreHydrationTests
     }
 
     [Fact]
+    public async Task HydrateFundLedgerAsOfAsync_ReplaysEveryPrimaryBookInDurableOrder()
+    {
+        var fundProfileId = "fund-durable";
+        var firstBookId = Guid.Parse("f53b02e6-7f3b-49d9-b793-8d958b4ecad6");
+        var secondBookId = Guid.Parse("3d9527b2-5717-4ef7-9a49-79eeb53fcff4");
+        var taxBookId = Guid.Parse("6fdfe480-161c-48d7-b690-3f92cf7dd7f3");
+        var periodId = Guid.Parse("e7c783d4-efdc-4bd6-b34c-5ddacb7555e7");
+        var timestamp = DateTimeOffset.Parse("2026-06-30T16:00:00Z");
+        var asOf = timestamp.AddMinutes(30);
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var equity = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var expense = new LedgerAccount("Expenses:Administration", LedgerAccountType.Expense);
+        var payable = new LedgerAccount("Liabilities:Payable", LedgerAccountType.Liability);
+        var records = new[]
+        {
+            BuildRecord(
+                "capital contribution",
+                timestamp,
+                periodId,
+                globalSequence: 2,
+                (cash, 1_000m, 0m),
+                (equity, 0m, 1_000m)) with
+            {
+                AggregateId = firstBookId,
+                AccountingBasis = AccountingBasisKindDto.Primary
+            },
+            BuildRecord(
+                "administration accrual",
+                timestamp,
+                periodId,
+                globalSequence: 1,
+                (expense, 100m, 0m),
+                (payable, 0m, 100m)) with
+            {
+                AggregateId = secondBookId,
+                AccountingBasis = AccountingBasisKindDto.Primary
+            },
+            BuildRecord(
+                "future contribution",
+                asOf.AddMinutes(1),
+                periodId,
+                globalSequence: 3,
+                (cash, 500m, 0m),
+                (equity, 0m, 500m)) with
+            {
+                AggregateId = firstBookId,
+                AccountingBasis = AccountingBasisKindDto.Primary
+            },
+            BuildRecord(
+                "tax-only adjustment",
+                timestamp,
+                periodId,
+                globalSequence: 4,
+                (expense, 25m, 0m),
+                (payable, 0m, 25m)) with
+            {
+                AggregateId = taxBookId,
+                AccountingBasis = AccountingBasisKindDto.Tax
+            }
+        };
+        var books = new[]
+        {
+            BuildBook(firstBookId, fundProfileId, AccountingBasisKindDto.Primary, timestamp),
+            BuildBook(secondBookId, fundProfileId, AccountingBasisKindDto.Primary, timestamp),
+            BuildBook(taxBookId, fundProfileId, AccountingBasisKindDto.Tax, timestamp),
+            BuildBook(Guid.NewGuid(), "fund-other", AccountingBasisKindDto.Primary, timestamp)
+        };
+        var store = new QueryableLedgerJournalStore(records, books);
+
+        var ledger = await store.HydrateFundLedgerAsOfAsync(fundProfileId, asOf);
+
+        ledger.Journal.Select(static entry => entry.Description)
+            .Should()
+            .Equal("administration accrual", "capital contribution");
+        ledger.TrialBalance()[cash].Should().Be(1_000m);
+        ledger.TrialBalance()[equity].Should().Be(1_000m);
+        ledger.TrialBalance()[expense].Should().Be(100m);
+        ledger.TrialBalance()[payable].Should().Be(100m);
+    }
+
+    [Fact]
     public async Task QueryAsync_SourceEventId_ReturnsOnlyTheMatchingEconomicEvent()
     {
         var targetSourceEventId = Guid.NewGuid();
@@ -216,7 +298,25 @@ public sealed class LedgerJournalStoreHydrationTests
             CreatedAt: timestamp);
     }
 
-    private sealed class QueryableLedgerJournalStore(IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
+    private static LedgerBookRecord BuildBook(
+        Guid ledgerBookId,
+        string fundProfileId,
+        AccountingBasisKindDto accountingBasis,
+        DateTimeOffset timestamp) =>
+        new(
+            ledgerBookId,
+            fundProfileId,
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            $"{accountingBasis} book",
+            "USD",
+            timestamp,
+            timestamp,
+            AccountingBasis: accountingBasis);
+
+    private sealed class QueryableLedgerJournalStore(
+        IReadOnlyList<LedgerJournalEntryRecord> records,
+        IReadOnlyList<LedgerBookRecord>? books = null) : ILedgerJournalStore
     {
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
 
@@ -244,6 +344,11 @@ public sealed class LedgerJournalStoreHydrationTests
             if (query.PeriodId.HasValue)
             {
                 filtered = filtered.Where(record => record.PeriodId == query.PeriodId.Value);
+            }
+
+            if (query.LedgerBookId.HasValue && books is not null)
+            {
+                filtered = filtered.Where(record => record.AggregateId == query.LedgerBookId.Value);
             }
 
             if (query.SourceEventId.HasValue)
@@ -285,8 +390,28 @@ public sealed class LedgerJournalStoreHydrationTests
             string? fundProfileId = null,
             Guid? fundStructureNodeId = null,
             FundStructureNodeKindDto? fundStructureNodeKind = null,
-            CancellationToken ct = default) =>
-            throw new NotSupportedException();
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            IEnumerable<LedgerBookRecord> filtered = books ?? [];
+            if (!string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                filtered = filtered.Where(book =>
+                    string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (fundStructureNodeId.HasValue)
+            {
+                filtered = filtered.Where(book => book.FundStructureNodeId == fundStructureNodeId.Value);
+            }
+
+            if (fundStructureNodeKind.HasValue)
+            {
+                filtered = filtered.Where(book => book.FundStructureNodeKind == fundStructureNodeKind.Value);
+            }
+
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(filtered.ToArray());
+        }
 
         public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
             throw new NotSupportedException();

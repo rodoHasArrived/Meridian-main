@@ -10,12 +10,25 @@ import {
 } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
+import { reportingRunRequiresPeriodConfirmation } from "@/lib/reporting-periods";
 import {
   buildReportingTaskMode,
   isReportPackRoute,
   type ReportingTaskModeViewModel
 } from "@/screens/reporting-screen.task-mode-view-model";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import {
+  buildScheduleDeliveryPlanRows,
+  buildScheduleDeliveryPlanSummary,
+  buildScheduleRows,
+  buildScheduleSummary,
+  formatReportingTimestamp as formatTimestamp,
+  formatStarterDeliveryTargets,
+  formatStarterPeriod,
+  formatStarterTemplateId,
+  hasRetainedReportingAsOfDate,
+  presentReportingAsOfDate
+} from "@/screens/reporting-screen.schedule-view-model";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -38,14 +51,118 @@ const formatReportPackDistributionDue = (dueAtUtc: string | null): string => {
   return formatTimestamp(dueAtUtc);
 };
 
-const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: "UTC",
-  timeZoneName: "short"
-});
+const reportingStatusLabels: Record<string, string> = {
+  active: "Active",
+  approved: "Approved",
+  awaitingapproval: "Awaiting approval",
+  blocked: "Blocked",
+  complete: "Complete",
+  completed: "Completed",
+  draft: "Draft",
+  failed: "Failed",
+  inreview: "In review",
+  paused: "Paused",
+  pending: "Pending",
+  pendingapproval: "Pending approval",
+  published: "Published",
+  ready: "Ready",
+  rejected: "Rejected",
+  released: "Released",
+  reviewrequired: "Review required",
+  running: "Running",
+  superseded: "Superseded"
+};
+
+export function presentReportingStatusLabel(status: string | null | undefined): string {
+  const value = status?.trim() ?? "";
+  if (!value) {
+    return "Status unavailable";
+  }
+
+  const compact = value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const known = reportingStatusLabels[compact];
+  if (known) {
+    return known;
+  }
+
+  const spaced = value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  return `${spaced.charAt(0).toUpperCase()}${spaced.slice(1)}`;
+}
+
+export function presentReportingIdentifier(
+  identifier: string | null | undefined,
+  fallback = "Report"
+): string {
+  const value = identifier?.trim() ?? "";
+  if (!value) {
+    return fallback;
+  }
+
+  const compactIdentifierLabels: Record<string, string> = {
+    boardpack: "Board pack",
+    investorstatement: "Investor statement"
+  };
+  const compactValue = value.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const compactLabel = compactIdentifierLabels[compactValue];
+  if (compactLabel) {
+    return compactLabel;
+  }
+
+  const words = value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ");
+
+  return words.map((word, index) => {
+    if (/^[A-Z]{2,4}$/.test(word)) {
+      return word;
+    }
+
+    const lower = word.toLowerCase();
+    return index === 0 ? `${lower.charAt(0).toUpperCase()}${lower.slice(1)}` : lower;
+  }).join(" ");
+}
+
+function presentReportingPersonLabel(value: string | null | undefined, fallback: string): string {
+  return presentReportingIdentifier(value?.replace(/\./g, "-") ?? null, fallback);
+}
+
+function presentReportingSignOffContext(value: string | null | undefined): string {
+  const context = value?.trim();
+  if (!context) {
+    return "No sign-off context retained";
+  }
+
+  return context
+    .replace(/actor '([^']+)'/gi, (_match, actor: string) => `actor '${presentReportingPersonLabel(actor, actor)}'`)
+    .replace(/\bHumanOperator\b/g, "Human operator");
+}
+
+export { hasRetainedReportingAsOfDate, presentReportingAsOfDate };
+
+export function presentReportingRunStatusLabel(
+  status: string | null | undefined,
+  asOfDate: string | null | undefined
+): string {
+  return reportingRunRequiresPeriodConfirmation(status, asOfDate)
+    ? "Period confirmation required"
+    : presentReportingStatusLabel(status);
+}
+
+export function resolveReportingRunSeverityStatus(
+  status: string | null | undefined,
+  asOfDate: string | null | undefined
+): string {
+  return reportingRunRequiresPeriodConfirmation(status, asOfDate)
+    ? "ReviewRequired"
+    : status?.trim() || "StatusUnavailable";
+}
 
 export interface ReportingProfileBadge {
   label: string;
@@ -152,6 +269,7 @@ export interface ReportingAccessAuditCountRow {
 }
 
 export interface ReportingAccessAuditViewModel {
+  isAvailable: boolean;
   evaluationScope: string;
   summary: string;
   principalScopes: string[];
@@ -364,8 +482,26 @@ export interface ReportingScheduleRow {
   description: string;
   deliveryTargetLabel: string;
   datasetSourceLabel: string;
+  accessPolicySnapshotLabel: string;
+  releaseGateLabel: string;
+  releaseGateVariant: Exclude<ReportingBadgeVariant, "default">;
+  releaseHandoffs: ReportingScheduledReleaseHandoffRow[];
   canPause: boolean;
   canResume: boolean;
+  ariaLabel: string;
+}
+
+export interface ReportingScheduledReleaseHandoffRow {
+  id: string;
+  runId: string;
+  distributionLabel: string;
+  transportId: string;
+  recipientLabel: string;
+  formatsLabel: string;
+  state: "PendingRelease" | "Enqueued";
+  stateVariant: Exclude<ReportingBadgeVariant, "default">;
+  createdLabel: string;
+  enqueuedLabel: string;
   ariaLabel: string;
 }
 
@@ -409,6 +545,7 @@ export interface ReportingDeliveryAccessLinkRow {
   kind: string;
   label: string;
   href: string;
+  requiresOpaqueFragment: boolean;
   tokenLabel: string;
   expiresLabel: string | null;
   description: string | null;
@@ -873,12 +1010,12 @@ export function useReportingScreenViewModel(
   const packTargets: ReportingPackTargetRow[] = distributions.map((distribution) => ({
     id: distribution.distributionId,
     label: distribution.recipient,
-    recipientRole: distribution.recipientRole,
+    recipientRole: presentReportingIdentifier(distribution.recipientRole, "Recipient"),
     channel: distribution.channel,
     stateLabel: distribution.state,
     pendingItemsLabel: `${distribution.pendingItems} pending`,
     pendingSummary: distribution.pendingSummary,
-    ownerLabel: distribution.owner,
+    ownerLabel: presentReportingPersonLabel(distribution.owner, "Unassigned"),
     dueLabel: formatReportPackDistributionDue(distribution.dueAtUtc),
     lastSentLabel: distribution.lastSentAtUtc ? formatReportPackDistributionDue(distribution.lastSentAtUtc) : "Not sent",
     href: distribution.route,
@@ -893,7 +1030,7 @@ export function useReportingScreenViewModel(
     pathname
   });
   const templateRows = buildTemplateRows(reporting.templates ?? []);
-  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
+  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? [], reporting.templates ?? []);
   const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
   const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
   const accessAudit = buildReportingAccessAudit(reporting);
@@ -968,8 +1105,8 @@ export function buildRestatementReviewPanel(records: ReportingWorkflowRecord[] =
   const changedLines = selected?.restatement?.changedLines ?? [];
   const evidenceCount = countRestatementEvidence(selected, changedLines);
   const statusLabel = selected?.state ?? "No restatements";
-  const approver = selected?.restatement?.approver?.trim() || "approval pending";
-  const reason = selected?.restatement?.reasonCode?.trim() || "No restatement reason captured";
+  const approver = presentReportingPersonLabel(selected?.restatement?.approver, "Approval pending");
+  const reason = presentReportingIdentifier(selected?.restatement?.reasonCode, "No restatement reason captured");
 
   return {
     regionLabel: "Report-pack restatement review",
@@ -1009,11 +1146,11 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
   const publication = selected?.publication ?? null;
   const evidenceCount = publication?.evidenceLinks?.length ?? 0;
   const lineProvenance = selected?.lineProvenance ?? [];
-  const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
-  const signedOffRole = publication?.signedOffRole?.trim() || "role pending";
+  const signedOffBy = presentReportingPersonLabel(publication?.signedOffBy, "Signer pending");
+  const signedOffRole = presentReportingIdentifier(publication?.signedOffRole, "Role pending");
   const signOffReason = publication?.signOffReason?.trim() || "No sign-off reason retained";
-  const signOffContext = publication?.signOffContext?.trim() || "No sign-off context retained";
-  const actionOrigin = publication?.actionOrigin?.trim() || "HumanOperator";
+  const signOffContext = presentReportingSignOffContext(publication?.signOffContext);
+  const actionOrigin = presentReportingIdentifier(publication?.actionOrigin, "Human operator");
   const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
 
   return {
@@ -1023,7 +1160,7 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
     statusLabel: selected?.state ?? "No publication",
     statusVariant: selected ? "success" : "outline",
     summaryText: publication
-      ? `${publication.manifestId} signed off by ${signedOffBy} at ${publicationTime}.`
+      ? `Publication signed off by ${signedOffBy} on ${formatTimestamp(publicationTime)}.`
       : "No report-pack publication record is loaded for this approval packet.",
     fields: [
       buildReportingDetailField("Workflow records", String(records.length), records.length > 0 ? "default" : "muted"),
@@ -1214,7 +1351,7 @@ export function buildTemplateRows(templates: ReportingTemplateMetadata[]): Repor
       version: template.version,
       versionNumber,
       sectionSummary: `${sectionLabel}${gridLabel}`,
-      statusLabel: lifecycleStatus,
+      statusLabel: presentReportingStatusLabel(lifecycleStatus),
       statusVariant: templateStatusVariant(template.lifecycleStatus),
       sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
       approvalSummary: template.approvalSummary ?? (
@@ -1745,7 +1882,7 @@ export function deriveRestatementSeriesJobId(
 export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): ReportingRunStatusRow[] {
   const latest = new Map<string, ReportingRunStatusRow>();
   for (const run of rows) {
-    if (run.status !== "Released") {
+    if (run.status !== "Released" || !hasRetainedReportingAsOfDate(run.asOfDateLabel)) {
       continue;
     }
 
@@ -1758,7 +1895,11 @@ export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): Repo
   return Array.from(latest.values());
 }
 
-export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
+export function buildRunStatusRows(
+  runs: ReportingRunStatusProjection[],
+  templates: ReportingTemplateMetadata[] = []
+): ReportingRunStatusRow[] {
+  const templateNames = new Map(templates.map((template) => [template.templateId, template.name]));
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
     const nextActions = buildRunActionRows(run);
@@ -1774,7 +1915,7 @@ export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): Report
       runAttemptOrdinal: run.runAttemptOrdinal ?? 1,
       isLatestGenerated: Boolean(run.isLatestGenerated),
       isLatestApproved: Boolean(run.isLatestApproved),
-      templateLabel: run.templateId,
+      templateLabel: templateNames.get(run.templateId) ?? presentReportingIdentifier(run.templateId),
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
       restatementJobId: deriveRestatementSeriesJobId(run.runSeriesId, run.runId, run.asOfDate),
       restatementAsOfDate: run.asOfDate?.trim() ?? "",
@@ -1942,225 +2083,29 @@ function buildRunLinkRows(run: ReportingRunStatusProjection): ReportingRunLinkRo
 }
 
 function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActionRow[] {
-  return (run.nextActions ?? []).map((action) => ({
-    id: action.id,
-    kind: action.kind,
-    label: action.label,
-    href: action.href,
-    method: action.method,
-    isEnabled: action.isEnabled,
-    disabledReason: action.disabledReason,
-    isBrowserNavigable: action.isBrowserNavigable,
-    interactionLabel: action.isBrowserNavigable ? "Open service" : "Service reference",
-    ariaLabel: action.isEnabled
-      ? `${action.label} service reference retained for diagnostics`
-      : `${action.label} unavailable${action.disabledReason ? `: ${action.disabledReason}` : ""}`
-  }));
-}
+  return (run.nextActions ?? []).map((action) => {
+    const disabledReason = action.isEnabled
+      ? action.disabledReason
+      : action.disabledReason
+        ?? (action.kind === "approve"
+          ? "Approval is unavailable until reviewer authority and required evidence are confirmed."
+          : "This action is unavailable for the current run state.");
 
-function buildScheduleRows(
-  schedules: ReportingScheduleRecord[],
-  datasetSources: ReportWriterDatasetSource[]
-): ReportingScheduleRow[] {
-  return schedules.map((schedule) => ({
-    id: schedule.scheduleId,
-    templateId: schedule.templateId,
-    state: schedule.state,
-    stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
-    cronLabel: schedule.cronExpression,
-    dueLabel: formatTimestamp(schedule.dueAtUtc),
-    nextAsOfLabel: schedule.nextAsOfDate,
-    lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
-    runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
-    description: schedule.description?.trim() || "No schedule note",
-    deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
-    datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
-    canPause: schedule.state === "Active",
-    canResume: schedule.state === "Paused",
-    ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
-  }));
-}
-
-function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
-  if (schedules.length === 0) {
-    return "No reporting schedules configured.";
-  }
-
-  const activeCount = schedules.filter((schedule) => schedule.state === "Active").length;
-  return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
-}
-
-function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): ReportingScheduleDeliveryPlanRow[] {
-  return plans.map((plan) => ({
-    id: plan.planId,
-    scheduleId: plan.scheduleId,
-    templateId: plan.templateId,
-    distributionId: plan.distributionId,
-    recipient: plan.recipient,
-    recipientRole: plan.recipientRole,
-    channel: plan.channel,
-    deliveryMode: plan.deliveryMode,
-    formatsLabel: plan.formats.length > 0 ? plan.formats.join(", ") : "Pdf, Xlsx, Csv",
-    readinessSummary: plan.readinessSummary,
-    readinessVariant: plan.isReady ? "success" : "warning",
-    dueLabel: formatTimestamp(plan.dueAtUtc),
-    nextAsOfLabel: plan.nextAsOfDate,
-    ownerLabel: plan.owner,
-    route: plan.route,
-    note: plan.note,
-    lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
-    lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
-    lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
-    accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
-      ? formatTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
-      : "No retained access expiry",
-    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
-    channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
-    downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
-    notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
-    reportWriterDatasetSummaryLabel: plan.lastDeliveryReportWriterDatasetSummary?.trim() || "No retained report-writer dataset",
-    reportWriterGridSummaryLabel: plan.lastDeliveryReportWriterGridSummary?.trim() || "No retained report-writer grids",
-    integrityLabel: formatSchedulePlanIntegrity(plan),
-    integritySummary: plan.lastDeliveryIntegritySummary ?? null,
-    entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
-    brandingLabel: formatSchedulePlanBranding(plan),
-    versionStamp: plan.versionStamp,
-    ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
-  }));
-}
-
-function formatSchedulePlanBranding(plan: ReportingScheduleDeliveryPlan): string {
-  if (plan.brandingTheme) {
-    return `${plan.brandingTheme.name} · ${plan.brandingTheme.firmName} · ${plan.brandingTheme.themeId}`;
-  }
-
-  return plan.brandingThemeId?.trim() || "Default theme";
-}
-
-function formatScheduleDatasetSource(
-  datasetSourceId: string | null | undefined,
-  datasetSources: ReportWriterDatasetSource[]
-): string {
-  const normalizedSourceId = datasetSourceId?.trim();
-  if (!normalizedSourceId) {
-    return "Default retained dataset";
-  }
-
-  const source = datasetSources.find((candidate) =>
-    candidate.sourceId.localeCompare(normalizedSourceId, undefined, { sensitivity: "base" }) === 0);
-
-  return source ? `${source.label} (${source.rowCount})` : normalizedSourceId;
-}
-
-function buildDeliveryAccessLinkRows(
-  links: ReportPackDeliveryAccessLink[] | null | undefined,
-  idPrefix: string
-): ReportingDeliveryAccessLinkRow[] {
-  return (links ?? [])
-    .filter((link) => link.href?.trim())
-    .map((link, index) => {
-      const label = link.label?.trim() || link.kind || "Delivery link";
-      const href = link.href.trim();
-      const expiresLabel = link.expiresAtUtc ? `Expires ${formatTimestamp(link.expiresAtUtc)}` : null;
-      return {
-        id: `${idPrefix}-${index + 1}`,
-        kind: link.kind?.trim() || "delivery-link",
-        label,
-        href,
-        tokenLabel: link.requiresToken ? "Token gated" : "Internal",
-        expiresLabel,
-        description: link.description?.trim() || null,
-        ariaLabel: `${label} ${link.requiresToken ? "token gated" : "internal route"} ${href}`
-      };
-    });
-}
-
-function buildScheduleDeliveryPlanSummary(plans: ReportingScheduleDeliveryPlanRow[]): string {
-  if (plans.length === 0) {
-    return "No schedule delivery plans configured.";
-  }
-
-  const readyCount = plans.filter((plan) => plan.readinessVariant === "success").length;
-  return `${plans.length} delivery plan${plans.length === 1 ? "" : "s"} configured; ${readyCount} ready.`;
-}
-
-function formatSchedulePlanLastDelivery(plan: ReportingScheduleDeliveryPlan): string {
-  if (!plan.lastDeliveryAtUtc || !plan.lastDeliveryState) {
-    return "No retained delivery yet";
-  }
-
-  return `${plan.lastDeliveryState} ${formatTimestamp(plan.lastDeliveryAtUtc)}`;
-}
-
-function formatSchedulePlanIntegrity(plan: ReportingScheduleDeliveryPlan): string {
-  const artifactCount = plan.lastDeliveryArtifactCount ?? 0;
-  if (artifactCount <= 0) {
-    return "No retained artifact checksums";
-  }
-
-  return `${artifactCount} artifact${artifactCount === 1 ? "" : "s"} with SHA-256`;
-}
-
-function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
-  if (!targets || targets.length === 0) {
-    return "No delivery targets";
-  }
-
-  return targets.map(formatScheduleDeliveryTarget).join("; ");
-}
-
-function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): string {
-  const formats = target.formats && target.formats.length > 0
-    ? target.formats.join("/")
-    : "Pdf/Xlsx/Csv";
-  const mode = target.deliveryMode ?? "Policy";
-  return `${target.distributionId} via ${mode} (${formats})`;
-}
-
-function formatStarterDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
-  if (!targets || targets.length === 0) {
-    return "Delivery targets need review";
-  }
-
-  return targets.map(formatScheduleDeliveryTarget).join("; ");
-}
-
-function formatStarterPeriod(period: string | null | undefined): string {
-  if (!period) {
-    return "Default period";
-  }
-
-  const normalized = period.trim();
-  if (normalized === "CurrentMonth") {
-    return "Current month";
-  }
-
-  if (normalized === "CurrentQuarter") {
-    return "Current quarter";
-  }
-
-  if (normalized === "CurrentBusinessDay") {
-    return "Current business day";
-  }
-
-  return normalized.replace(/([a-z])([A-Z])/g, "$1 $2");
-}
-
-function formatStarterTemplateId(templateId: string): string {
-  return templateId
-    .split(/[-_]/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function formatTimestamp(value: string): string {
-  const timestamp = new Date(value);
-  if (Number.isNaN(timestamp.getTime())) {
-    return value;
-  }
-
-  return reportingTimestampFormatter.format(timestamp);
+    return {
+      id: action.id,
+      kind: action.kind,
+      label: action.label,
+      href: action.href,
+      method: action.method,
+      isEnabled: action.isEnabled,
+      disabledReason,
+      isBrowserNavigable: action.isBrowserNavigable,
+      interactionLabel: action.isBrowserNavigable ? "Open service" : "Service reference",
+      ariaLabel: action.isEnabled
+        ? `${action.label} service reference retained for diagnostics`
+        : `${action.label} unavailable${disabledReason ? `: ${disabledReason}` : ""}`
+    };
+  });
 }
 
 function artifactLabel(artifact: string): string {
@@ -2272,14 +2217,15 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   const audit = reporting?.accessAudit ?? null;
   if (!audit) {
     return {
+      isAvailable: false,
       evaluationScope: "Unavailable",
       summary: "Reporting access audit evidence is not available for this report view.",
       principalScopes: ["scope:unavailable"],
       scopeLabel: "scope:unavailable",
-      hiddenTotalLabel: "0 hidden",
+      hiddenTotalLabel: "Counts unavailable",
       postureLabel: "Unknown",
       postureVariant: "outline",
-      countRows: buildAccessAuditCountRows(),
+      countRows: [],
       denialReasons: ["Access-audit counts are not available for this Reporting view."],
       hasDenialReasons: true,
       ariaLabel: "Reporting access audit unavailable"
@@ -2296,6 +2242,7 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   const postureLabel = hiddenTotal > 0 ? "Scoped" : "Fully visible";
 
   return {
+    isAvailable: true,
     evaluationScope: audit.evaluationScope,
     summary: audit.summary,
     principalScopes,
@@ -2379,8 +2326,7 @@ function buildWorkflowTaskPanel({
     chips: [
       { label: "Recipients", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
-      { label: "Ready profiles", value: String(readyProfiles) },
-      { label: "Export service", value: EXPORT_API_ENDPOINTS.reportPacks }
+      { label: "Ready profiles", value: String(readyProfiles) }
     ],
     targetsLabel: "Report-pack distribution recipients",
     targets: packTargets,

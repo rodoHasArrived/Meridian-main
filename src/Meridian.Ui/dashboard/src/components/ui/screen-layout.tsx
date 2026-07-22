@@ -130,6 +130,8 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   contextOpen?: boolean;
   /** Accessible label for the context rail. Defaults to "Context". */
   contextLabel?: string;
+  /** Optional visible cue that the context rail has independently scrollable detail. */
+  contextScrollLabel?: string;
   /** Called when the operator dismisses the context rail. Omit to hide the close control. */
   onContextClose?: () => void;
 }
@@ -158,11 +160,11 @@ function FocusSignalRow({ signals }: { signals: FocusSignal[] }) {
     <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {visible.map((signal) => (
         <div key={signal.id} className="min-w-0">
-          <dt className="truncate text-xs font-medium text-muted-foreground">{signal.label}</dt>
-          <dd className={cn("mt-0.5 truncate text-lg font-semibold leading-tight", focusToneClasses[signal.tone ?? "neutral"])}>
+          <dt className="break-words text-xs font-medium leading-5 text-muted-foreground">{signal.label}</dt>
+          <dd className={cn("mt-0.5 break-words text-lg font-semibold leading-tight", focusToneClasses[signal.tone ?? "neutral"])}>
             {signal.value}
           </dd>
-          {signal.hint ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{signal.hint}</p> : null}
+          {signal.hint ? <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{signal.hint}</p> : null}
         </div>
       ))}
     </dl>
@@ -191,6 +193,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     context,
     contextOpen = false,
     contextLabel = "Context",
+    contextScrollLabel,
     onContextClose,
     ...props
   },
@@ -288,7 +291,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           <aside
             role="complementary"
             aria-label={contextLabel}
-            className="flex w-full shrink-0 flex-col rounded-[2px] border border-border bg-card text-card-foreground xl:w-[360px]"
+            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[2px] border border-border bg-card text-card-foreground xl:sticky xl:top-3 xl:max-h-[calc(100dvh-9rem)] xl:w-[360px]"
           >
             <div className="flex items-center justify-between gap-2 border-b border-border/70 px-4 py-2">
               <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -305,7 +308,20 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
                 </button>
               ) : null}
             </div>
-            <div className="min-h-0 flex-1 overflow-auto p-4">{context}</div>
+            <div
+              className="min-h-0 flex-1 overflow-y-auto p-4 [scrollbar-gutter:stable]"
+              role={contextScrollLabel ? "region" : undefined}
+              aria-label={contextScrollLabel ? `${contextLabel} scroll area` : undefined}
+              tabIndex={contextScrollLabel ? 0 : undefined}
+            >
+              {context}
+            </div>
+            {contextScrollLabel ? (
+              <div className="flex shrink-0 items-center justify-center gap-1 border-t border-border/70 bg-secondary/25 px-3 py-2 text-[11px] font-medium text-muted-foreground">
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{contextScrollLabel}</span>
+              </div>
+            ) : null}
           </aside>
         ) : null}
       </div>

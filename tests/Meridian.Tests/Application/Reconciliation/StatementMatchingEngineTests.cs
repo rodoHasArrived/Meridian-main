@@ -11,10 +11,10 @@ public sealed class StatementMatchingEngineTests
         var engine = new StatementMatchingEngine();
         var request = new StatementMatchingRequest(
             [new NormalizedStatementPosition("stmt-pos-1", "A1", "SPY", new DateOnly(2026, 5, 28), 10m, 5_000m, "broker:pos:1")],
-            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 125.25m, "broker:cash:1")],
+            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 125.25m, "broker:cash:1", new DateOnly(2026, 5, 28))],
             [new NormalizedStatementTransaction("stmt-tx-1", "EXT-123", "A1", "SPY", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 10m, -5_000m, "broker:tx:1")],
             [new InternalPortfolioPosition("int-pos-1", "a1", "spy", new DateOnly(2026, 5, 28), 10m, 5_000m, "internal:pos:1")],
-            [new InternalCashBalance("int-cash-1", "A1", "usd", 125.25m, "internal:cash:1")],
+            [new InternalCashBalance("int-cash-1", "A1", "usd", 125.25m, "internal:cash:1", new DateOnly(2026, 5, 28))],
             [new InternalLedgerTransaction("int-tx-1", "EXT-123", "A1", "SPY", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 10m, -5_000m, "internal:tx:1")],
             Tolerances());
 
@@ -43,10 +43,10 @@ public sealed class StatementMatchingEngineTests
         var engine = new StatementMatchingEngine();
         var request = new StatementMatchingRequest(
             [new NormalizedStatementPosition("stmt-pos-1", "A1", "SPY", new DateOnly(2026, 5, 28), 10.01m, 5_000.50m, "broker:pos:1")],
-            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 125.30m, "broker:cash:1")],
+            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 125.30m, "broker:cash:1", new DateOnly(2026, 5, 28))],
             [new NormalizedStatementTransaction("stmt-tx-1", null, "A1", "SPY", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 10.01m, -5_000.25m, "broker:tx:1")],
             [new InternalPortfolioPosition("int-pos-1", "A1", "SPY", new DateOnly(2026, 5, 28), 10m, 5_000m, "internal:pos:1")],
-            [new InternalCashBalance("int-cash-1", "A1", "USD", 125.25m, "internal:cash:1")],
+            [new InternalCashBalance("int-cash-1", "A1", "USD", 125.25m, "internal:cash:1", new DateOnly(2026, 5, 28))],
             [new InternalLedgerTransaction("int-tx-1", null, "A1", "SPY", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 10m, -5_000m, "internal:tx:1")],
             Tolerances());
 
@@ -101,10 +101,10 @@ public sealed class StatementMatchingEngineTests
         var engine = new StatementMatchingEngine();
         var request = new StatementMatchingRequest(
             [new NormalizedStatementPosition("stmt-pos-1", "A1", "SPY", new DateOnly(2026, 5, 28), 10m, null, "broker:pos:1")],
-            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 100m, "broker:cash:1")],
+            [new NormalizedStatementCashBalance("stmt-cash-1", "A1", "USD", 100m, "broker:cash:1", new DateOnly(2026, 5, 28))],
             [new NormalizedStatementTransaction("stmt-tx-1", null, "A1", "SPY", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 10m, -5_000m, "broker:tx:1")],
             [new InternalPortfolioPosition("int-pos-1", "A2", "QQQ", new DateOnly(2026, 5, 28), 10m, null, "internal:pos:1")],
-            [new InternalCashBalance("int-cash-1", "A2", "USD", 100m, "internal:cash:1")],
+            [new InternalCashBalance("int-cash-1", "A2", "USD", 100m, "internal:cash:1", new DateOnly(2026, 5, 28))],
             [new InternalLedgerTransaction("int-tx-1", null, "A2", "QQQ", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "SELL", 10m, 5_000m, "internal:tx:1")],
             Tolerances());
 

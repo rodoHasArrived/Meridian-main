@@ -88,7 +88,8 @@ public sealed record WorkstationStrategyRunCard(
     decimal? TotalReturn,
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
-    WorkstationRunDrillInLinks DrillIn);
+    WorkstationRunDrillInLinks DrillIn,
+    BiasDisclosureDto? BiasDisclosure = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,
@@ -523,7 +524,8 @@ public sealed record WorkstationReportingTemplatePayload(
     string? ApprovalReference = null,
     VersionedReportTemplateIdDto? BasedOnTemplateId = null,
     IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null,
-    IReadOnlyList<string>? ValidationIssues = null);
+    IReadOnlyList<string>? ValidationIssues = null,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.
@@ -590,7 +592,10 @@ public sealed record WorkstationReportingRunPayload(
     string? ComparisonSummary = null,
     int? ChangedLineCount = null,
     int? AddedLineCount = null,
-    int? RemovedLineCount = null);
+    int? RemovedLineCount = null,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null);
 
 /// <summary>
 /// Daily reporting-work item surfaced in the workstation cockpit for operator triage.

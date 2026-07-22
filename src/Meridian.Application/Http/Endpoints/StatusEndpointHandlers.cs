@@ -27,6 +27,7 @@ public sealed class StatusEndpointHandlers
     private readonly Func<PipelineStatistics> _pipelineProvider;
     private readonly Func<IReadOnlyList<DepthIntegrityEvent>> _integrityProvider;
     private readonly Func<ErrorRingBuffer?> _errorBufferProvider;
+    private readonly Func<DegradedModeStatus?>? _degradedModeProvider;
 
     // Optional extended providers
     private Func<Task<DetailedHealthReport>>? _detailedHealthProvider;
@@ -44,13 +45,15 @@ public sealed class StatusEndpointHandlers
         Func<PipelineStatistics> pipelineProvider,
         Func<IReadOnlyList<DepthIntegrityEvent>> integrityProvider,
         Func<ErrorRingBuffer?>? errorBufferProvider = null,
-        DateTimeOffset? startTime = null)
+        DateTimeOffset? startTime = null,
+        Func<DegradedModeStatus?>? degradedModeProvider = null)
     {
         _metricsProvider = metricsProvider ?? throw new ArgumentNullException(nameof(metricsProvider));
         _pipelineProvider = pipelineProvider ?? throw new ArgumentNullException(nameof(pipelineProvider));
         _integrityProvider = integrityProvider ?? throw new ArgumentNullException(nameof(integrityProvider));
         _errorBufferProvider = errorBufferProvider ?? (() => null);
         _startTime = startTime ?? DateTimeOffset.UtcNow;
+        _degradedModeProvider = degradedModeProvider;
     }
 
     /// <summary>
@@ -284,7 +287,8 @@ public sealed class StatusEndpointHandlers
                 QueueCapacity = pipeline.QueueCapacity,
                 QueueUtilization = (float)pipeline.QueueUtilization,
                 AverageProcessingTimeUs = (float)pipeline.AverageProcessingTimeUs
-            }
+            },
+            DegradedMode = _degradedModeProvider?.Invoke()
         };
     }
 

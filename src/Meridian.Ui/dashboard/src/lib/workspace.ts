@@ -32,12 +32,13 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
-  accountingTrialBalance: "/accounting/trial-balance",
+  accountingTrialBalanceLegacy: "/accounting/trial-balance",
   accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
   accountingCapitalAccounts: "/accounting/capital-accounts",
   accountingReconciliation: "/accounting/reconciliation",
+  accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
   accountingStatementImport: "/accounting/statement-import",
   accountingCloseCalendar: "/accounting/close-calendar",
@@ -46,8 +47,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingAssetDetail: "/accounting/security-master/detail",
   accountingApprovals: "/accounting/approvals",
   accountingApprovalInbox: "/accounting/approvals/inbox",
-  accountingEvidence: "/accounting/evidence",
-  accountingEvidenceDetail: "/accounting/evidence/detail",
+  accountingEvidenceLegacy: "/accounting/evidence",
+  accountingEvidenceDetailLegacy: "/accounting/evidence/detail",
   reporting: "/reporting",
   reportingReportBuilder: "/reporting/report-builder",
   reportingLibrary: "/reporting/library",
@@ -63,28 +64,35 @@ export const WORKSTATION_ROUTE_CATALOG = {
   reportingGovernance: "/reporting/governance",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
-  strategyFormulaWorkbench: "/strategy/formula-workbench",
+  strategyFormulaWorkbenchLegacy: "/strategy/formula-workbench",
   strategyCoveredCall: "/strategy/covered-call",
   strategyPromotions: "/strategy/promotions",
   strategyLab: "/strategy/lab",
   strategyQuantLab: "/strategy/quant-lab",
   data: "/data",
+  dataImport: "/data/import",
   dataProviders: "/data/providers",
-  dataWatchlist: "/data/watchlist",
+  dataWatchlistLegacy: "/data/watchlist",
   dataQuotes: "/data/quotes",
-  dataAlerts: "/data/alerts",
-  dataEvidence: "/data/evidence",
+  dataAlertsLegacy: "/data/alerts",
+  dataEvidenceLegacy: "/data/evidence",
   dataBackfills: "/data/backfills",
+  dataOperations: "/data/operations",
+  dataAssurance: "/data/assurance",
   dataExports: "/data/exports",
   dataQuery: "/data/query",
   dataSecurityMasterLegacy: "/data/security-master",
   settings: "/settings",
   settingsPreferences: "/settings/preferences",
+  settingsAccountingSystems: "/settings/accounting-systems",
   settingsIntegrations: "/settings/integrations",
   settingsAccess: "/settings/access",
   settingsProviders: "/settings/providers",
   settingsDiagnostics: "/settings/diagnostics",
+  settingsDiagnosticsAdvanced: "/settings/diagnostics/advanced",
   settingsFeatureCoverage: "/settings/feature-coverage",
+  settingsAlpacaProviderGuidedSetup: "/settings/providers/alpaca/setup",
+  settingsAlpacaProviderAdvanced: "/settings/providers/alpaca/advanced",
   settingsAlpacaProviderSetup: "/settings#alpaca-provider-setup",
   settingsBackendCapabilityCoverage: "/settings#backend-capability-coverage",
   settingsDiagnosticEndpoints: "/settings#diagnostic-endpoints"
@@ -102,10 +110,7 @@ export type WorkstationRouteQueryValue = string | number | boolean | null | unde
  * primary navigation and the command palette so operators are not steered into
  * dead ends. Remove a route from this set when its read model lands.
  */
-export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set([
-  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
-  WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
-]);
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>();
 
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,
@@ -125,11 +130,11 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundStructureSetup: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
   OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
-  Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  Backfill: WORKSTATION_ROUTE_CATALOG.dataOperations,
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,
-  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.accountingEvidence,
+  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
   FundExceptionWorkbench: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
   FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
@@ -201,6 +206,14 @@ export function workstationRouteWithHash(key: WorkstationRouteKey, hashTarget: s
 
 export function settingsProviderConnectionRoute(providerId: string): string {
   return workstationRouteWithHash("settings", `provider-${providerId}-connection`);
+}
+
+export function settingsProviderSetupRoute(providerId: string): string {
+  return `/settings/providers/${encodeURIComponent(providerId.trim().toLowerCase())}/setup`;
+}
+
+export function settingsProviderAdvancedRoute(providerId: string): string {
+  return `/settings/providers/${encodeURIComponent(providerId.trim().toLowerCase())}/advanced`;
 }
 
 export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
@@ -318,28 +331,30 @@ export function workspaceForPath(pathname: string): WorkspaceSummary {
 
 export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> = {
   alerts: "Alerts",
-  approvals: "Close Cockpit",
+  approvals: "Approvals",
   "asset-detail": "Asset Detail",
+  "accounting-systems": "Accounting Systems",
   "capital-accounts": "Capital Accounts",
-  configure: "Governance",
+  configure: "Configure",
   "covered-call": "Covered Call",
   designer: "Designer",
+  diagnostics: "Diagnostics",
   "entity-setup": "Entity Setup",
   evidence: "Evidence",
-  exceptions: "Reconciliation Casework",
+  exceptions: "Exceptions",
   "family-office": "Family Office",
-  "formula-workbench": "Formula Workbench",
-  "journal-entries": "Journal Entry",
+  "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
   "operations-continuity": "Operations Continuity",
   "operations-record": "Operations Record",
   exports: "Exports",
   providers: "Providers",
+  preferences: "Preferences",
   "quant-lab": "Quant Lab",
-  quotes: "Quotes",
+  quotes: "Market Data",
   readiness: "Readiness",
-  reconciliation: "Reconciliation Casework",
-  "report-packs": "Delivery Evidence",
+  reconciliation: "Reconciliation",
+  "report-packs": "Report Packs",
   run: "Run Report",
   "run-status": "Run Status",
   scheduled: "Scheduled Reports",
@@ -401,6 +416,53 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
     return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
   }
 
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataBackfills.length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "trial-balance") {
+    return `${WORKSTATION_ROUTE_CATALOG.accountingLedger}${withSearchParam(search, "view", "trial-balance")}${hash}`;
+  }
+
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "evidence") {
+    if (pathSegments(pathname)[2] === "detail") {
+      const params = new URLSearchParams(search);
+      const evidenceId = params.get("evidenceId");
+      if (evidenceId) {
+        params.delete("evidenceId");
+        params.set("subjectKind", "evidence");
+        params.set("subjectId", evidenceId);
+      }
+      const nextSearch = params.toString();
+      return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
+    }
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.accountingEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "evidence") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "watchlist") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "watchlist")}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "alerts") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "alerts")}${hash}`;
+  }
+
+  if (firstSegment === "strategy" && pathSegments(pathname)[1] === "formula-workbench") {
+    return `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}${withSearchParam(search, "view", "formulas")}${hash}`;
+  }
+
+  if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice("/data-operations/backfills".length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
+  }
+
   if (firstSegment === "overview") {
     const suffix = pathname.slice("/overview".length);
     return suffix.length === 0 || suffix === "/"
@@ -414,6 +476,13 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 
   const suffix = pathname.slice(`/${firstSegment}`.length);
   return `${workspacePath(LEGACY_WORKSPACE_ALIASES[firstSegment])}${suffix}${search}${hash}`;
+}
+
+/** Merge one extra query parameter into an existing `?…` search string. */
+function withSearchParam(search: string, key: string, value: string): string {
+  const params = new URLSearchParams(search);
+  params.set(key, value);
+  return `?${params.toString()}`;
 }
 
 function firstPathSegment(pathname: string): string | null {

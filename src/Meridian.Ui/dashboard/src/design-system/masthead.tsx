@@ -44,11 +44,14 @@ export function DesignSystemMasthead({
   actions
 }: DesignSystemMastheadProps) {
   return (
-    <header className="workstation-masthead">
-      <div className="workstation-brand-group">
+    <header
+      className="workstation-masthead mds-masthead ws-masthead"
+      data-design-system-component="Masthead"
+    >
+      <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button
           type="button"
-          className="workstation-nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="workstation-nav-toggle mds-masthead__nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label="Open workspace navigation"
           aria-expanded={navOpen}
           aria-haspopup="dialog"
@@ -56,21 +59,22 @@ export function DesignSystemMasthead({
         >
           <Menu className="h-4 w-4" aria-hidden="true" />
         </button>
-        <div className="workstation-brand">
+        <div className="workstation-brand mds-masthead__brand">
           <img src={brandMarkSrc} alt="" aria-hidden="true" />
           <div className="workstation-brand-copy min-w-0">
-            <div className="name">Meridian</div>
-            <div className="sub" aria-hidden="true">
-              <span className="workstation-brand-sep">/</span>
+            <div className="name ws-brand__name">Meridian</div>
+            <div className="sub ws-brand__mod" aria-hidden="true">
+              <span className="workstation-brand-sep ws-brand__sep">/</span>
               {workspaceLabel}
             </div>
+            <span className="sr-only">Current workspace: {workspaceLabel}</span>
           </div>
         </div>
       </div>
 
       <button
         type="button"
-        className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="workstation-search mds-masthead__search ws-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onOpenCommandPalette}
         aria-label={commandTrigger.label}
         aria-controls={commandTrigger.controlsId}
@@ -78,17 +82,17 @@ export function DesignSystemMasthead({
         aria-haspopup={commandTrigger.hasPopup}
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="workstation-search-placeholder">{commandTrigger.placeholder}</span>
-        <span className="workstation-search-kbd" aria-hidden="true">{commandTrigger.shortcutLabel}</span>
+        <span className="workstation-search-placeholder ws-search__txt">{commandTrigger.placeholder}</span>
+        <span className="workstation-search-kbd ws-kbd" aria-hidden="true">{commandTrigger.shortcutLabel}</span>
       </button>
 
       <DesignSystemTrustStrip viewModel={trustStrip} />
 
-      <div className="workstation-actions">
+      <div className="workstation-actions mds-masthead__actions">
         {actions}
         {session ? (
           <div
-            className="workstation-session-card"
+            className="workstation-session-card mds-session-card"
             role="group"
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
           >

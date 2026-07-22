@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,8 @@ public interface ISecurityMasterCostBasisAdjustmentService
     /// <summary>
     /// Builds the reference-data basis adjustments for <paramref name="securityId"/> effective as
     /// of <paramref name="asOf"/>: forward/reverse splits and return-of-capital from corporate
-    /// actions, current pool-factor paydown, and per-lot straight-line premium/discount
+    /// actions, pool-factor paydown (the dated factor schedule as of <paramref name="asOf"/>,
+    /// falling back to the scalar current factor), and per-lot straight-line premium/discount
     /// amortization derived from the master's day-count convention.
     /// </summary>
     /// <param name="priorFactor">
@@ -74,8 +74,11 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
         var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
         if (security is not null)
         {
-            AddFactorAdjustment(adjustments, security, securityId, asOf, priorFactor);
-            AddAmortizationAdjustments(adjustments, security, openLots, securityId, asOf);
+            // One typed term resolve shared with the cash-flow projection path, so factor and
+            // day-count reads cannot diverge from the terms the projections themselves use.
+            var terms = StructuredCashFlowTermsResolver.Resolve(security);
+            AddFactorAdjustment(adjustments, terms, securityId, asOf, priorFactor);
+            AddAmortizationAdjustments(adjustments, security, terms, openLots, securityId, asOf);
         }
 
         return adjustments;
@@ -152,7 +155,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
     private void AddFactorAdjustment(
         List<LedgerTaxLotBasisAdjustment> adjustments,
-        SecurityDetailDto security,
+        StructuredCashFlowTerms terms,
         Guid securityId,
         DateOnly asOf,
         decimal priorFactor)
@@ -163,31 +166,40 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             return;
         }
 
-        if (!TryReadDecimal(security, out var currentFactor, "currentFactor", "factor") || currentFactor is not > 0m)
+        // The dated factor schedule (factor in effect on asOf) takes priority over the scalar
+        // currentFactor — the same sourcing rule the cash-flow projector applies — so cost-basis
+        // relief and projected paydowns read one factor for the same date.
+        var currentFactor = terms.FactorAsOf(asOf);
+        if (currentFactor is not > 0m)
             return;
 
         var ratio = currentFactor.Value / priorFactor;
         if (ratio >= 1m)
             return; // No paydown (factor unchanged or increased): nothing to relieve from basis.
 
+        var reference = terms.FactorSchedule.Any(entry => entry.AsOfDate <= asOf)
+            ? "factor-schedule"
+            : "current-factor";
         adjustments.Add(new LedgerTaxLotBasisAdjustment(
-            LedgerTaxLotBasisAdjustmentKind.Factor, ratio, asOf, securityId, LotId: null, "current-factor").EnsureValid());
+            LedgerTaxLotBasisAdjustmentKind.Factor, ratio, asOf, securityId, LotId: null, reference).EnsureValid());
     }
 
     private void AddAmortizationAdjustments(
         List<LedgerTaxLotBasisAdjustment> adjustments,
         SecurityDetailDto security,
+        StructuredCashFlowTerms terms,
         IReadOnlyList<LedgerTaxLot> openLots,
         Guid securityId,
         DateOnly asOf)
     {
-        if (!IsFixedIncome(security.AssetClass))
+        // Registry-driven: amortization applies exactly to the classes the shared catalog marks as
+        // par-priced (canonical names and vendor aliases like "MBS" both resolve there).
+        if (!SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AmortizesTowardPar)
             return;
-        if (!TryReadDate(security, out var maturity, "maturityDate", "maturity", "legalFinalMaturity"))
+        if (terms.MaturityDate is not DateOnly maturity)
             return;
 
-        _ = TryReadString(security, out var dayCount, "dayCountConvention", "dayCount", "dayCountBasis");
-        var normalizedDayCount = NormalizeDayCount(dayCount);
+        var convention = DayCountConventions.Parse(terms.DayCountConvention);
 
         // Fixed-income lots are recorded as a price per 100 of par (bond quotation convention);
         // premium/discount amortizes straight-line toward par, weighted by the day-count year
@@ -208,8 +220,8 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             if (premiumOrDiscount == 0m)
                 continue;
 
-            var elapsed = YearFraction(normalizedDayCount, lot.AcquiredDate, amortizeTo);
-            var life = YearFraction(normalizedDayCount, lot.AcquiredDate, maturity);
+            var elapsed = DayCountConventions.Fraction(convention, lot.AcquiredDate, amortizeTo);
+            var life = DayCountConventions.Fraction(convention, lot.AcquiredDate, maturity);
             if (life <= 0m)
                 continue;
 
@@ -230,158 +242,6 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
         }
     }
 
-    private static bool IsFixedIncome(string? assetClass)
-    {
-        if (string.IsNullOrWhiteSpace(assetClass))
-            return false;
-
-        return assetClass.Trim().ToUpperInvariant() switch
-        {
-            "BOND" or "TREASURYBILL" or "CERTIFICATEOFDEPOSIT" or "COMMERCIALPAPER"
-                or "MORTGAGEBACKED" or "MORTGAGEBACKEDSECURITY" or "MBS"
-                or "ASSETBACKED" or "ASSETBACKEDSECURITY" or "ABS"
-                or "STRUCTUREDCREDIT" or "LOAN" or "DIRECTLOAN" or "AMORTIZINGLOAN" => true,
-            _ => false,
-        };
-    }
-
     private static DateTimeOffset EndOfDay(DateOnly date)
         => new(date.ToDateTime(new TimeOnly(23, 59, 59)), TimeSpan.Zero);
-
-    // ── Day-count year fraction (mirrors SecurityMasterCashFlowService tokens) ─────────────────
-
-    private static string? NormalizeDayCount(string? dayCountConvention)
-        => dayCountConvention?.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
-
-    private static decimal YearFraction(string? normalizedDayCount, DateOnly start, DateOnly end)
-    {
-        if (end <= start)
-            return 0m;
-
-        if (normalizedDayCount is not null && normalizedDayCount.Contains("30/360", StringComparison.Ordinal))
-            return Days360(start, end) / 360m;
-
-        var actualDays = end.DayNumber - start.DayNumber;
-        if (normalizedDayCount is not null && (normalizedDayCount.Contains("ACT/360", StringComparison.Ordinal) || normalizedDayCount.Contains("ACTUAL/360", StringComparison.Ordinal)))
-            return actualDays / 360m;
-
-        // Default (including ACT/365 and unrecognized conventions): actual days over 365.
-        return actualDays / 365m;
-    }
-
-    private static decimal Days360(DateOnly start, DateOnly end)
-    {
-        // US 30/360 (NASD): D1 of 31 becomes 30; D2 of 31 becomes 30 only when D1 is 30 or 31.
-        var startDay = Math.Min(start.Day, 30);
-        var endDay = end.Day == 31 && start.Day >= 30 ? 30 : end.Day;
-        return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
-    }
-
-    // ── Security-term JSON readers (mirror SecurityMasterCashFlowService) ──────────────────────
-
-    private static bool TryReadString(SecurityDetailDto security, out string? value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property))
-                    continue;
-
-                if (property.ValueKind == JsonValueKind.String)
-                {
-                    value = property.GetString();
-                    return !string.IsNullOrWhiteSpace(value);
-                }
-            }
-        }
-
-        value = null;
-        return false;
-    }
-
-    private static bool TryReadDecimal(SecurityDetailDto security, out decimal? value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property))
-                    continue;
-
-                if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
-                {
-                    value = number;
-                    return true;
-                }
-
-                if (property.ValueKind == JsonValueKind.String && decimal.TryParse(property.GetString(), out var parsed))
-                {
-                    value = parsed;
-                    return true;
-                }
-            }
-        }
-
-        value = null;
-        return false;
-    }
-
-    private static bool TryReadDate(SecurityDetailDto security, out DateOnly value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property) || property.ValueKind != JsonValueKind.String)
-                    continue;
-
-                var raw = property.GetString();
-                if (DateOnly.TryParse(raw, out value))
-                    return true;
-
-                if (DateTimeOffset.TryParse(raw, out var timestamp))
-                {
-                    value = DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
-                    return true;
-                }
-            }
-        }
-
-        value = default;
-        return false;
-    }
-
-    private static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
-    {
-        yield return security.AssetSpecificTerms;
-        if (TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields) &&
-            profileFields.ValueKind == JsonValueKind.Object)
-        {
-            yield return profileFields;
-        }
-
-        yield return security.CommonTerms;
-    }
-
-    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
-    {
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            value = default;
-            return false;
-        }
-
-        foreach (var property in element.EnumerateObject())
-        {
-            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
-        }
-
-        value = default;
-        return false;
-    }
 }

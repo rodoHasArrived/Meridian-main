@@ -941,9 +941,83 @@ public sealed class LedgerIntegrationTests
         ledger.TrialBalanceAsOf(t1)[revenue].Should().Be(100m);
         ledger.TrialBalanceAsOf(t2)[revenue].Should().Be(150m);
 
+        ledger.Journal.Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        ledger.GetJournalEntries().Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        var running = ledger.GetRunningBalance(cash);
+        running.Select(point => point.Description)
+            .Should().Equal("first sale", "second sale");
+        running.Select(point => point.Balance)
+            .Should().Equal(100m, 150m);
+
         var snapshot = ledger.SnapshotAsOf(t1);
         snapshot.JournalEntryCount.Should().Be(1);
         snapshot.LedgerEntryCount.Should().Be(2);
+    }
+
+    [Fact]
+    public void Ledger_DimensionalAsOfBalanceIndex_PreservesPartialScopeAndOutOfOrderSemantics()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Sales", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+        var fundACore = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core");
+        var fundAAlternatives = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "alternatives");
+        var fundBCore = new LedgerLineDimensionSet(FundId: "fund-b", SleeveId: "core");
+
+        ledger.PostLines(t2, "fund A later sale",
+        [
+            (cash, 50m, 0m, fundACore),
+            (revenue, 0m, 50m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund B sale",
+        [
+            (cash, 70m, 0m, fundBCore),
+            (revenue, 0m, 70m, fundBCore)
+        ]);
+        ledger.PostLines(t1, "fund A core sale",
+        [
+            (cash, 100m, 0m, fundACore),
+            (revenue, 0m, 100m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund A alternatives sale",
+        [
+            (cash, 30m, 0m, fundAAlternatives),
+            (revenue, 0m, 30m, fundAAlternatives)
+        ]);
+
+        var fundAAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: " FUND-A "));
+        var fundACoreAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var fundACoreAtT2 = ledger.TrialBalanceAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var allFundsAtT1 = ledger.TrialBalanceAsOf(t1, lineDimensions: new LedgerLineDimensionSet());
+        var fundASnapshotAtT1 = ledger.SnapshotAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a"));
+        var fundACoreSnapshotAtT2 = ledger.SnapshotAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+
+        fundAAtT1[cash].Should().Be(130m);
+        fundAAtT1[revenue].Should().Be(130m);
+        fundACoreAtT1[cash].Should().Be(100m);
+        fundACoreAtT2[cash].Should().Be(150m);
+        allFundsAtT1[cash].Should().Be(200m,
+            "an empty dimension filter retains the existing no-filter semantics");
+        fundASnapshotAtT1.JournalEntryCount.Should().Be(2);
+        fundASnapshotAtT1.LedgerEntryCount.Should().Be(4);
+        fundASnapshotAtT1.Balances[cash].Should().Be(130m);
+        fundACoreSnapshotAtT2.JournalEntryCount.Should().Be(2);
+        fundACoreSnapshotAtT2.LedgerEntryCount.Should().Be(4);
+        fundACoreSnapshotAtT2.Balances[cash].Should().Be(150m);
     }
 
     [Fact]
@@ -1584,11 +1658,23 @@ public sealed class LedgerIntegrationTests
                 new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
             ]));
 
+        // A wash-sale-deferred loss: 10 @ 100 sold at 80 (loss 200) with a matching replacement
+        // purchase in the window, so the whole loss is disallowed and recognized loss is zero.
+        var washSaleProjection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            aaplSecurity,
+            new DateOnly(2026, 5, 20),
+            quantitySold: 10m,
+            salePrice: 80m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("lot-wash", new DateOnly(2026, 1, 5), 10m, 100m)],
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: [new WashSaleReplacementAcquisition("lot-rep", new DateOnly(2026, 5, 22), 10m)]));
+
         var pack = LedgerReportPackBuilder.Build(
             ledger,
             request,
             chart,
-            taxLotReliefProjections: [taxLotProjection]);
+            taxLotReliefProjections: [taxLotProjection, washSaleProjection]);
 
         pack.IsBalanced.Should().BeTrue();
         pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
@@ -1634,7 +1720,11 @@ public sealed class LedgerIntegrationTests
         provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
         var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
-        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100");
+        taxArtifact.Content.Should().Contain("RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
+        // Non-wash-sale row still nets recognized == realized (100), with zero disallowed.
+        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100,0,100");
+        // Wash-sale row: full 200 loss disallowed, recognized loss zero.
+        taxArtifact.Content.Should().Contain("2026-05-20,Assets:Investments:AAPL,AAPL,broker-1,Fifo,lot-wash,2026-01-05,10,100,800,1000,-200,200,0");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");

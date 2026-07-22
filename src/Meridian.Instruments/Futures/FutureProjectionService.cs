@@ -3,41 +3,26 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Futures;
 
-public sealed class FutureProjectionService : IFutureReferenceService
+public sealed class FutureProjectionService
+    : InstrumentProjectionServiceBase<FutureProjectionRow, FutureReferenceDto>, IFutureReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly IFutureReferenceProjectionStore _projectionStore;
 
     public FutureProjectionService(
         ISecurityMasterStore securityMasterStore,
         IFutureReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<FutureReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Future", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "Future";
 
-        var row = await _projectionStore.GetFutureAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<FutureProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetFutureAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<FutureReferenceDto>> GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(rootSymbol))
-        {
-            return Array.Empty<FutureReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByRootSymbolAsync(rootSymbol.Trim().ToUpperInvariant(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<FutureReferenceDto>> GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default)
+        => QueryByTermAsync(rootSymbol, _projectionStore.GetByRootSymbolAsync, ct, toUpperInvariant: true);
 
     public async Task<IReadOnlyList<FutureReferenceDto>> GetExpiryLadderAsync(string rootSymbol, CancellationToken ct = default)
     {
@@ -57,7 +42,7 @@ public sealed class FutureProjectionService : IFutureReferenceService
             ?? ladder.FirstOrDefault(r => r.LifecycleStat == FutureLifecycleStat.Active);
     }
 
-    private static FutureReferenceDto MapRow(FutureProjectionRow row)
+    protected override FutureReferenceDto MapRow(FutureProjectionRow row)
     {
         Enum.TryParse<FutureLifecycleStat>(row.LifecycleStat, ignoreCase: true, out var stat);
         return new FutureReferenceDto(

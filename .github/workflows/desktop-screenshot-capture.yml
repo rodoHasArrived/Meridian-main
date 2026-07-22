@@ -18,7 +18,12 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: desktop-screenshot-capture-${{ github.ref }}
+  # The workflow always checks out the default branch and writes the fixed
+  # automation/desktop-screenshot-capture branch, so every dispatch must share
+  # one concurrency lane regardless of the ref it was dispatched from. A per-ref
+  # group would let cross-branch dispatches race and reopen the shared screenshot
+  # PR. Runs serialize (no cancellation) so an in-flight capture still finishes.
+  group: desktop-screenshot-capture
   cancel-in-progress: false
 
 env:
@@ -72,7 +77,7 @@ jobs:
         shell: pwsh
         run: |
           $baseDir = "docs/screenshots/desktop"
-          $requested = "${{ inputs.output_dir }}"
+          $requested = $env:WORKFLOW_OUTPUT_DIR
           if ([string]::IsNullOrWhiteSpace($requested)) {
             $requested = $baseDir
           }

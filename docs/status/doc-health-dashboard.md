@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#######################-------] 78/100
+  [########################------] 79/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 578 |
-| Total lines | 96,968 |
-| Average file size (lines) | 167.8 |
-| Orphaned files | 245 |
+| Total documentation files | 632 |
+| Total lines | 114,524 |
+| Average file size (lines) | 181.2 |
+| Orphaned files | 258 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 204 |
-| **Health score** | **78/100** |
+| TODO/FIXME markers | 212 |
+| **Health score** | **79/100** |
 
 ### Score Breakdown
 
@@ -76,16 +76,16 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-repo-navigation/SKILL.md`
 - `.agents/skills/meridian-roadmap-strategist/SKILL.md`
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
-- `.agents/skills/meridian-test-writer/SKILL.md`
-- `AGENTS.md`
-- `Meridian Design System/BRAND_GUIDELINES.md`
-- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
-- `Meridian Design System/ICONOGRAPHY.md`
-- `Meridian Design System/INSPIRATION_BRIEF.md`
-- `Meridian Design System/SKILL.md`
-- `Meridian Design System/VISUAL_FOUNDATIONS.md`
-- `Meridian Design System/components/accounting/AccountTree.prompt.md`
-- ... and 225 more
+- `.agents/skills/meridian-simulated-user-panel/agents/grader.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
+- `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
+- `.agents/skills/meridian-simulated-user-panel/references/personas.md`
+- ... and 238 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 78 | 578 | 245 | 0 |
+| 1970-01-01 | 79 | 632 | 258 | 0 |
 
 ---
 

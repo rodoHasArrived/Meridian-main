@@ -6,9 +6,12 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { EmptyState } from "@/components/data/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScreenLayout } from "@/components/ui/screen-layout";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { SeverityBadge } from "@/components/operations";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import {
@@ -55,8 +58,14 @@ const quantMetricColumns: DenseDataTableColumn<QuantMetricRowViewModel>[] = [
   }
 ];
 
+const QUANT_LAB_TABS = [
+  { id: "lab", label: "Script lab" },
+  { id: "formulas", label: "Formulas" }
+];
+
 export function QuantLabScreen() {
-  const vm = useQuantLabScreenViewModel();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get("view") === "formulas" ? "formulas" : "lab";
 
   return (
     <ScreenLayout
@@ -69,6 +78,35 @@ export function QuantLabScreen() {
       scope="Strategy Lane"
       description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
     >
+      <Tabs
+        tabs={QUANT_LAB_TABS}
+        value={view}
+        onValueChange={(nextView) => {
+          const nextParams = new URLSearchParams(searchParams);
+          if (nextView === "lab") {
+            nextParams.delete("view");
+          } else {
+            nextParams.set("view", nextView);
+          }
+          setSearchParams(nextParams, { replace: true });
+        }}
+      >
+        <TabPanel>
+          {view === "lab" ? <ScriptLabPanel /> : null}
+        </TabPanel>
+        <TabPanel>
+          {view === "formulas" ? <FormulaWorkbenchPanel /> : null}
+        </TabPanel>
+      </Tabs>
+    </ScreenLayout>
+  );
+}
+
+function ScriptLabPanel() {
+  const vm = useQuantLabScreenViewModel();
+
+  return (
+    <div className="grid gap-4">
       <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
         <CardContent className="space-y-3">
@@ -128,7 +166,31 @@ export function QuantLabScreen() {
           <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
-    </ScreenLayout>
+    </div>
+  );
+}
+
+function FormulaWorkbenchPanel() {
+  return (
+    <Card className="panel-surface border-border/80">
+      <CardContent className="space-y-4">
+        <EmptyState
+          icon="docs"
+          title="Formula catalog is not connected"
+          detail="No strategy formula endpoint is available in this workstation build. Connect a governed catalog before authoring formulas here."
+        />
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button asChild variant="outline">
+            <Link to="/settings/providers" aria-label="Review provider connections required by the formula workbench">
+              Review provider connections
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/strategy">Open Strategy workspace</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

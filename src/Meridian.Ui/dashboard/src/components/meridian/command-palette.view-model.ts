@@ -210,6 +210,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
   {
+    id: "accounting-external-gl-reconciliation",
+    label: "External GL reconciliation",
+    description: "Compare Meridian balances with the connected accounting system and prepare governed posting or export work.",
+    route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
+  },
+  {
     id: "accounting-security-master",
     label: "Security Master",
     description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
@@ -248,14 +254,20 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "strategy-formula-workbench",
     label: "Formula Workbench",
-    description: "Author cell-based strategy formulas with field search and suggestions.",
-    route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
+    description: "Author cell-based strategy formulas from the Quant Lab formulas tab.",
+    route: `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas`
   },
   {
     id: "strategy-covered-call",
     label: "Covered call backtest",
     description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",
     route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
+  },
+  {
+    id: "data-import",
+    label: "Import data",
+    description: "Load a file, preview its records, and validate the import before committing it to a governed data workflow.",
+    route: WORKSTATION_ROUTE_CATALOG.dataImport
   },
   {
     id: "data-providers",
@@ -266,8 +278,8 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "data-watchlist",
     label: "Watchlist",
-    description: "Add symbols and starter packs before validating live quotes.",
-    route: WORKSTATION_ROUTE_CATALOG.dataWatchlist
+    description: "Add symbols and starter packs from the Market Data desk watchlist view.",
+    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=watchlist`
   },
   {
     id: "data-quotes",
@@ -278,20 +290,20 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "data-alerts",
     label: "Price alerts",
-    description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: WORKSTATION_ROUTE_CATALOG.dataAlerts
+    description: "Create local quote-threshold alerts from the Market Data desk alerts view.",
+    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts`
   },
   {
     id: "data-backfills",
     label: "Backfill queues",
     description: "Preview, trigger, and review historical data backfill jobs.",
-    route: WORKSTATION_ROUTE_CATALOG.dataBackfills
+    route: WORKSTATION_ROUTE_CATALOG.dataOperations
   },
   {
-    id: "settings-integrations",
-    label: "Alpaca provider setup",
-    description: "Repair paper credentials, service acknowledgements, and broker connection readiness.",
-    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
+    id: "settings-provider-setup",
+    label: "Alpaca guided setup",
+    description: "Configure and verify paper credentials before reviewing advanced runtime evidence.",
+    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderGuidedSetup
   }
 ];
 

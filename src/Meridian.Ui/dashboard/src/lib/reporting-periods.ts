@@ -69,6 +69,37 @@ export function isIsoDate(value: string): boolean {
   return parseIsoDate(value) !== null;
 }
 
+/**
+ * Returns whether a run carries a usable reporting period instead of one of the
+ * service/UI sentinel values used when the as-of date was not retained.
+ */
+export function hasRetainedReportingAsOfDateValue(value: string | null | undefined): boolean {
+  const normalized = value?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "") ?? "";
+  return normalized.length > 0
+    && normalized !== "asofdateunavailable"
+    && normalized !== "dateunavailable"
+    && normalized !== "noasofdateretained";
+}
+
+/**
+ * A terminal approval/publication label is not safe to present as current when
+ * the run has no retained reporting period. The raw workflow state remains
+ * available to audit flows, while operator-facing readiness fails closed.
+ */
+export function reportingRunRequiresPeriodConfirmation(
+  status: string | null | undefined,
+  asOfDate: string | null | undefined
+): boolean {
+  if (hasRetainedReportingAsOfDateValue(asOfDate)) {
+    return false;
+  }
+
+  const normalizedStatus = status?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "") ?? "";
+  return normalizedStatus === "approved"
+    || normalizedStatus === "published"
+    || normalizedStatus === "released";
+}
+
 export function shiftIsoDate(anchor: string, unit: ReportingPeriodUnit, amount: number): string {
   const parsed = parseIsoDate(anchor);
   if (!parsed) {

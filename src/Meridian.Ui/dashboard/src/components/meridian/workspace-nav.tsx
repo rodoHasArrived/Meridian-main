@@ -23,10 +23,6 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
  * **Status tones** for nav items are one of:
  * `"live"`, `"review"`, `"paper"`, `"preview"`, `"setup"`, or `"muted"` — each has a
  * matching `.operator-nav-status-*` CSS modifier.
- *
- * @example
- * // Mount inside the .workstation-shell grid:
- * <WorkspaceNav />
  */
 interface WorkspaceNavProps {
   className?: string;

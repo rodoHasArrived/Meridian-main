@@ -73,6 +73,7 @@ internal sealed class NyseAccessTokenProvider : IDisposable
 
             using var httpClient = CreateHttpClient();
             using var response = await httpClient.SendAsync(authRequest, ct).ConfigureAwait(false);
+            NyseHttpResponseGuard.ThrowIfRateLimited(response, "nyse", "OAuth token acquisition");
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

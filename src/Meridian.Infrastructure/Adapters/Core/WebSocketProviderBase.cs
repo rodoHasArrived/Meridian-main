@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -31,7 +32,11 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </remarks>
 [ImplementsAdr("ADR-001", "Unified WebSocket provider base class for streaming data providers")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnectionDiagnosticsSource
+public abstract class WebSocketProviderBase :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource,
+    IProviderRateLimitDiagnosticsSource,
+    IReconnectionGapSource
 {
     private readonly WebSocketConnectionManager _connectionManager;
     private Uri? _wsUri;
@@ -47,15 +52,23 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
     protected readonly SubscriptionManager Subscriptions;
 
     /// <summary>
-    /// Whether the connection is currently established.
+    /// Whether the WebSocket transport is open for protocol hooks. Operator-facing
+    /// diagnostics remain non-connected until authentication and replay complete.
     /// </summary>
-    protected bool Connected => _connectionManager.IsConnected;
+    protected bool Connected => _connectionManager.IsTransportConnected;
 
     /// <inheritdoc/>
     public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
     {
         add => _connectionManager.DiagnosticsChanged += value;
         remove => _connectionManager.DiagnosticsChanged -= value;
+    }
+
+    /// <inheritdoc/>
+    public event Action<ReconnectionGap>? ReconnectionGapDetected
+    {
+        add => _connectionManager.GapDetected += value;
+        remove => _connectionManager.GapDetected -= value;
     }
 
     /// <summary>
@@ -87,7 +100,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
     public abstract bool IsEnabled { get; }
 
     /// <inheritdoc/>
-    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    public virtual WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
         var connection = _connectionManager.GetDiagnosticsSnapshot();
         var subscriptions = Subscriptions.GetSnapshot();
@@ -102,6 +115,32 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
     }
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// The shared WebSocket transport does not receive coherent request-window counters from
+    /// Alpaca, Polygon, or other derived feeds. Expose that absence explicitly so operator
+    /// endpoints include the streaming surface without presenting configured capacity as live
+    /// runtime evidence. A derived provider may override this method when it owns a real tracker.
+    /// </remarks>
+    public virtual ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+    {
+        var capabilities = ProviderCapabilities;
+        return new ProviderRateLimitDiagnosticSnapshot(
+            ProviderId: ProviderId,
+            Surface: ProviderRateLimitSurfaces.Streaming,
+            ObservedAt: DateTimeOffset.UtcNow,
+            RequestsInWindow: 0,
+            // Capabilities expose these as nullable; this "diagnostics unavailable" snapshot marks
+            // StateAvailable: false, so an unset limit collapses to a neutral zero placeholder.
+            MaxRequestsPerWindow: capabilities.MaxRequestsPerWindow.GetValueOrDefault(),
+            Window: capabilities.RateLimitWindow.GetValueOrDefault(),
+            IsRateLimited: false,
+            ResetAt: null,
+            UsageRatio: 0,
+            Reason: "runtime-diagnostics-unavailable",
+            StateAvailable: false);
+    }
+
+    /// <inheritdoc/>
     public virtual async Task ConnectAsync(CancellationToken ct = default)
     {
         if (_connectionManager.IsConnected)
@@ -112,13 +151,14 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
         await _connectionManager.ConnectAsync(
             _wsUri,
             configureSocket: ConfigureWebSocket,
+            initializeConnection: async token =>
+            {
+                await AuthenticateAsync(token).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync);
+            },
             ct: ct).ConfigureAwait(false);
 
         MigrationDiagnostics.IncStreamingFactoryHit(ProviderId);
-
-        await AuthenticateAsync(ct).ConfigureAwait(false);
-
-        _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
 
         Log.Information("{Provider} connected and receive loop started", ProviderId);
     }
@@ -219,10 +259,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
 
 
 
-    private Task OnConnectionLostAsync()
-        => OnConnectionLostAsync(CancellationToken.None);
-
-    private async Task OnConnectionLostAsync(CancellationToken ct)
+    private async Task OnConnectionLostAsync()
     {
         if (_wsUri == null)
             return;
@@ -232,16 +269,16 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
         var success = await _connectionManager.TryReconnectAsync(
             _wsUri,
             configureSocket: ConfigureWebSocket,
-            onReconnected: async () =>
+            initializeConnection: async token =>
             {
-                await AuthenticateAsync(ct).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
-                await ResubscribeAsync(ct).ConfigureAwait(false);
+                await AuthenticateAsync(token).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync);
+                await ResubscribeAsync(token).ConfigureAwait(false);
 
                 MigrationDiagnostics.IncResubscribeAttempt();
                 MigrationDiagnostics.IncResubscribeSuccess();
             },
-            ct: ct).ConfigureAwait(false);
+            ct: CancellationToken.None).ConfigureAwait(false);
 
         if (success)
             MigrationDiagnostics.IncReconnectSuccess(ProviderId);

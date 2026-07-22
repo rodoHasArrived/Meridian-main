@@ -117,6 +117,9 @@ export interface OperationsResolveBreakCaseRequest {
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
   actionOrigin?: OperationsActionOrigin | null;
+  approvalActor?: string | null;
+  approvalReference?: string | null;
+  supersedingBreakId?: string | null;
 }
 
 export interface OperationsCloseWorkflowRequest {

@@ -27,18 +27,25 @@ describe("WorkstationStatusBar", () => {
 
   it("builds ok, warn, and error status text from shell state", () => {
     const items = buildWorkstationStatusItems({
-      session: null,
       workspaceLabel: "Reporting",
-      usingDevelopmentFixtures: true,
       refreshing: true,
       hasError: true
     });
 
     expect(items).toEqual([
-      { key: "session", status: "err", label: "Session", value: "connecting" },
-      { key: "data", status: "warn", label: "Data", value: "demo fixtures" },
-      { key: "sync", label: "Sync", value: "refreshing..." },
+      { key: "sync", status: "err", label: "Sync", value: "attention required" },
       { key: "workspace", label: "Workspace", value: "Reporting", push: true }
+    ]);
+  });
+
+  it("keeps the footer focused on current sync and workspace context", () => {
+    expect(buildWorkstationStatusItems({
+      workspaceLabel: "Portfolio",
+      refreshing: false,
+      hasError: false
+    })).toEqual([
+      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
+      { key: "workspace", label: "Workspace", value: "Portfolio", push: true }
     ]);
   });
 });

@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,10 +15,13 @@ namespace Meridian.Tests.Execution;
 /// Tests for <see cref="OrderManagementSystem"/> consumption of the gateway's
 /// asynchronous execution report stream: order state must reflect reports that
 /// arrive after the synchronous submit ack, and fills replayed on both the ack
-/// and the stream must not be double-applied.
+/// and the stream must not be double-applied. It also guards venue-replay and
+/// subscriber-saturation failure modes in the fill-to-accounting handoff.
 /// </summary>
 public sealed class OrderManagementSystemReportStreamTests
 {
+    private const string HandoffPostingScope = "book-a/period-open";
+
     [Fact]
     public async Task AsyncFillReport_UpdatesOrderState_AndPublishesFill()
     {
@@ -313,6 +318,22 @@ public sealed class OrderManagementSystemReportStreamTests
         condition().Should().BeTrue(because);
     }
 
+    private static async Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> WaitForHandoffFailuresAsync(
+        OrderManagementSystem oms,
+        int expected)
+    {
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            var failures = await oms.GetAccountingHandoffFailuresAsync();
+            if (failures.Count == expected)
+                return failures;
+            await Task.Delay(10);
+        }
+
+        return await oms.GetAccountingHandoffFailuresAsync();
+    }
+
     /// <summary>
     /// Gateway double whose asynchronous report stream is driven by the test. Optionally
     /// replays the submit ack on the stream, mirroring <c>BaseBrokerageGateway</c>.
@@ -366,5 +387,99 @@ public sealed class OrderManagementSystemReportStreamTests
             _reports.Reader.ReadAllAsync(ct);
 
         public ValueTask PublishAsync(ExecutionReport report) => _reports.Writer.WriteAsync(report);
+    }
+
+    private sealed class BlockingSubmitFillGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
+        private readonly TaskCompletionSource _release =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource SubmitStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public string GatewayId => "blocking-submit-test";
+        public bool IsConnected => true;
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            SubmitStarted.TrySetResult();
+            await _release.Task.WaitAsync(ct);
+            var orderId = request.ClientOrderId ?? "blocking-submit";
+            return BuildReport(
+                orderId,
+                OrderStatus.Filled,
+                ExecutionReportType.Fill,
+                filledQty: request.Quantity,
+                fillPrice: 150m,
+                symbol: request.Symbol);
+        }
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<ExecutionReport> ModifyOrderAsync(
+            string orderId,
+            OrderModification modification,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(CancellationToken ct = default) =>
+            _reports.Reader.ReadAllAsync(ct);
+
+        public void Release() => _release.TrySetResult();
+    }
+
+    private class RecordingTradeEventPublisher : ITradeEventPublisher
+    {
+        public ConcurrentQueue<TradeExecutedEvent> AcceptedEvents { get; } = new();
+
+        public virtual void Publish(TradeExecutedEvent tradeEvent) => AcceptedEvents.Enqueue(tradeEvent);
+    }
+
+    private sealed class FailOnceTradeEventPublisher : RecordingTradeEventPublisher
+    {
+        private int _publishAttempts;
+
+        public int PublishAttempts => Volatile.Read(ref _publishAttempts);
+
+        public override void Publish(TradeExecutedEvent tradeEvent)
+        {
+            if (Interlocked.Increment(ref _publishAttempts) == 1)
+                throw new InvalidOperationException("simulated durable handoff outage");
+
+            base.Publish(tradeEvent);
+        }
+    }
+
+    private sealed class AlwaysFailTradeEventPublisher : IScopedTradeEventPublisher
+    {
+        public string PostingScope => HandoffPostingScope;
+
+        public void Publish(TradeExecutedEvent tradeEvent)
+            => throw new IOException("primary accounting persistence unavailable");
+    }
+
+    private sealed class BlockingFailingTradeEventPublisher : IScopedTradeEventPublisher
+    {
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource PublishStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public string PostingScope => HandoffPostingScope;
+
+        public void Publish(TradeExecutedEvent tradeEvent)
+        {
+            PublishStarted.TrySetResult();
+            _release.Task.GetAwaiter().GetResult();
+            throw new IOException("primary accounting persistence unavailable during shutdown");
+        }
+
+        public void Release() => _release.TrySetResult();
     }
 }

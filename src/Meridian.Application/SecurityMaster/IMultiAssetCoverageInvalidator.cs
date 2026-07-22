@@ -21,6 +21,8 @@ public interface IMultiAssetCoverageInvalidator
 /// No-op <see cref="IMultiAssetCoverageInvalidator"/> default for the currently-uncached coverage read
 /// path. Replace with a cache-backed implementation when multi-asset coverage gains a cache.
 /// </summary>
+[Meridian.Application.Composition.ProductionSafeImplementation(
+    "Multi-asset coverage is recomputed for every read, so there is no production cache state to invalidate.")]
 public sealed class NullMultiAssetCoverageInvalidator : IMultiAssetCoverageInvalidator
 {
     public Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default)

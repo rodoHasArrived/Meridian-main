@@ -67,6 +67,163 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
         var skip = second.Skipped.Should().ContainSingle().Subject;
         skip.JournalEntryId.Should().Be(first.Created[0].JournalEntryId);
         skip.Reason.Should().Contain("already exists");
+        skip.Disposition.Should().Be(AutomatedJournalDraftIntakeDisposition.ExistingDraftReady);
+        skip.IsReadyDuplicate.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IntakeAsync_DuplicateNeedsFixRejectedAndReassessment_AreTypedAsUnready()
+    {
+        var fixture = await CreateFixtureAsync(seedChart: true);
+        var investigation = InvestigationAssessment();
+        var firstRequest = BuildRequest(DividendDeclaredEvent()) with
+        {
+            EvidenceAssessments = new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>
+            {
+                [DividendDeclaredEvent().IdempotencyKey!] = investigation
+            }
+        };
+        var first = await fixture.Intake.IntakeAsync(firstRequest);
+
+        var needsFix = await fixture.Intake.IntakeAsync(firstRequest);
+        var reassessment = await fixture.Intake.IntakeAsync(firstRequest with
+        {
+            EvidenceAssessments = new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>
+            {
+                [DividendDeclaredEvent().IdempotencyKey!] = ReadyAssessment()
+            }
+        });
+        await fixture.DraftStore.SaveAsync(first.Created.Single() with
+        {
+            Status = ManualJournalEntryStatusDto.Rejected,
+            Version = first.Created.Single().Version + 1
+        });
+        var rejected = await fixture.Intake.IntakeAsync(firstRequest);
+
+        needsFix.Skipped.Should().ContainSingle().Which.Disposition.Should()
+            .Be(AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix);
+        needsFix.Skipped.Single().IsReadyDuplicate.Should().BeFalse();
+        reassessment.Skipped.Should().ContainSingle().Which.Disposition.Should()
+            .Be(AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired);
+        reassessment.Skipped.Single().IsReadyDuplicate.Should().BeFalse();
+        rejected.Skipped.Should().ContainSingle().Which.Disposition.Should()
+            .Be(AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected);
+        rejected.Skipped.Single().IsReadyDuplicate.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task WorkbenchResave_CannotClearOrUpgradeAutomatedEvidenceAssessment()
+    {
+        var fixture = await CreateFixtureAsync(seedChart: true);
+        var retainedAssessment = InvestigationAssessment();
+        var intake = await fixture.Intake.IntakeAsync(BuildRequest(DividendDeclaredEvent()) with
+        {
+            EvidenceAssessments = new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>
+            {
+                [DividendDeclaredEvent().IdempotencyKey!] = retainedAssessment
+            }
+        });
+        var retained = intake.Created.Should().ContainSingle().Subject;
+
+        var resaved = await fixture.Workbench.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            retained with { AutomationEvidenceAssessment = ReadyAssessment(), ValidationIssues = [] },
+            Actor: "controller",
+            LedgerBookId: BookId));
+
+        resaved.AutomationEvidenceAssessment.Should().Be(retainedAssessment);
+        resaved.Status.Should().Be(ManualJournalEntryStatusDto.NeedsFix);
+        resaved.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "manual-je.automation-investigation-required" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task IntakeAsync_DeterministicIdsIncludeFullAccountingAndTenantScope()
+    {
+        var fixture = await CreateFixtureAsync(seedChart: true);
+        var source = BuildRequest(DividendDeclaredEvent()) with
+        {
+            TenantId = "tenant-a",
+            CompanyId = "company-a"
+        };
+        var requests = new[]
+        {
+            source,
+            source with { FundProfileId = "fund-beta" },
+            source with { LedgerBookId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc") },
+            source with { EntityId = "entity-beta" },
+            source with { Currency = "EUR" },
+            source with { TenantId = "tenant-b" },
+            source with { CompanyId = "company-b" }
+        };
+
+        var ids = new List<Guid>();
+        foreach (var request in requests)
+        {
+            var result = await fixture.Intake.IntakeAsync(request);
+            ids.Add(result.Created.Should().ContainSingle().Subject.JournalEntryId);
+        }
+
+        ids.Should().OnlyHaveUniqueItems(
+            "tenant, company, fund, book, entity, currency, and event identity all scope deterministic drafts");
+    }
+
+    [Fact]
+    public void SelectPendingCorrectionBatchIds_IncludesOnlySameRetainedBatchAndEntity()
+    {
+        var date = new DateOnly(2026, 7, 1);
+        var aaplSecurityId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        var msftSecurityId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var sameBatchAapl = PendingValuationDraft(
+            Guid.Parse("11111111-1111-4111-8111-111111111111"),
+            aaplSecurityId,
+            "AAPL",
+            "batch-a");
+        var sameBatchMsft = PendingValuationDraft(
+            Guid.Parse("22222222-2222-4222-8222-222222222222"),
+            msftSecurityId,
+            "MSFT",
+            "batch-a");
+        var otherBatch = PendingValuationDraft(
+            Guid.Parse("33333333-3333-4333-8333-333333333333"),
+            Guid.Parse("cccccccc-cccc-4ccc-8ccc-cccccccccccc"),
+            "GOOG",
+            "batch-b");
+        var otherEntity = PendingValuationDraft(
+            Guid.Parse("44444444-4444-4444-8444-444444444444"),
+            Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
+            "NVDA",
+            "batch-a") with
+        { EntityId = "entity-beta" };
+        var candidate = new AutomatedJournalDraft(
+            new AutomatedJournalEvent(
+                AutomatedJournalEventKind.FairValueMarkAdjustment,
+                "AAPL",
+                10m,
+                AsOf,
+                SecurityId: aaplSecurityId,
+                EffectiveDate: date,
+                IdempotencyKey: "fair-value|corrected-aapl"),
+            "Correct AAPL close",
+            [
+                (LedgerAccounts.Securities("AAPL"), 10m, 0m, null),
+                (LedgerAccounts.Cash, 0m, 10m, null)
+            ],
+            new JournalEntryMetadata(
+                Symbol: "AAPL",
+                SecurityId: aaplSecurityId,
+                EffectiveDate: date,
+                IdempotencyKey: "fair-value|corrected-aapl"));
+
+        var ids = AutomatedJournalDraftIntakeService.SelectPendingCorrectionBatchIds(
+            [sameBatchAapl, sameBatchMsft, otherBatch, otherEntity],
+            sameBatchAapl,
+            candidate,
+            date,
+            "2026-07",
+            "entity-alpha");
+
+        ids.Should().BeEquivalentTo([sameBatchAapl.JournalEntryId, sameBatchMsft.JournalEntryId]);
     }
 
     [Fact]
@@ -224,4 +381,64 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
         AsOf,
         EffectiveDate: new DateOnly(2026, 07, 01),
         IdempotencyKey: "wht|AAPL|2026-07-01");
+
+    private static AutomatedJournalEvidenceAssessmentDto InvestigationAssessment()
+        => new(
+            "corporate-action-confidence",
+            0.50m,
+            AutomatedJournalEvidenceQualityDto.Low,
+            RequiresInvestigation: true,
+            "Corporate-action evidence needs investigation.",
+            ["Pay date is missing."],
+            ["evidence://corporate-actions/ca-aapl-2026-07"]);
+
+    private static AutomatedJournalEvidenceAssessmentDto ReadyAssessment()
+        => new(
+            "corporate-action-confidence",
+            0.99m,
+            AutomatedJournalEvidenceQualityDto.High,
+            RequiresInvestigation: false,
+            "Corporate-action evidence is ready.",
+            [],
+            ["evidence://corporate-actions/ca-aapl-2026-07"]);
+
+    private static ManualJournalEntryDraftDto PendingValuationDraft(
+        Guid journalEntryId,
+        Guid securityId,
+        string symbol,
+        string batchCorrelationId)
+        => new(
+            journalEntryId,
+            ManualJournalEntryStatusDto.Draft,
+            FundProfileId,
+            BookId,
+            AccountingBasisKindDto.Primary,
+            new DateOnly(2026, 7, 1),
+            "2026-07",
+            "entity-alpha",
+            FundNodeId: null,
+            Currency: "USD",
+            Memo: $"{symbol} daily valuation",
+            PreparedBy: "valuation-ops",
+            CreatedAtUtc: AsOf,
+            UpdatedAtUtc: AsOf,
+            Version: 1,
+            Lines:
+            [
+                new ManualJournalEntryLineDto(
+                    "line-1",
+                    AccountingTemplateLineSideDto.Debit,
+                    10m,
+                    "USD",
+                    $"Assets:Securities:{symbol}",
+                    SecurityId: securityId,
+                    SecurityDisplayName: symbol,
+                    LedgerAccountSymbol: symbol)
+            ],
+            EvidenceLinks: [],
+            ValidationIssues: [],
+            TreasuryContext: new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 7, 1),
+                IdempotencyKey: $"fair-value|{symbol}|2026-07-01",
+                BatchCorrelationId: batchCorrelationId));
 }

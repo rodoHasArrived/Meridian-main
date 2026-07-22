@@ -71,4 +71,20 @@ describe("ReconciliationComparisonPanel", () => {
     expect(statementLine).toHaveClass("is-selected");
     expect(ledgerLine).toHaveClass("is-cross-lit");
   });
+
+  it("omits zero-match chips and describes warning rows as needing review", () => {
+    render(<ReconciliationComparisonPanel view={{
+      ...view,
+      statementLines: [{
+        ...view.statementLines[0],
+        statusLabel: "Review required",
+        statusTone: "warning"
+      }],
+      ledgerLines: []
+    }} />);
+
+    expect(screen.queryByText("0 matched")).not.toBeInTheDocument();
+    expect(screen.getByText("1 needs review")).toBeInTheDocument();
+    expect(screen.queryByText("1 timing")).not.toBeInTheDocument();
+  });
 });

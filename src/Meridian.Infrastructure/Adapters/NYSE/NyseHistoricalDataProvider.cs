@@ -45,6 +45,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical daily bars", symbol);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -116,6 +117,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical intraday bars", symbol);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -159,6 +161,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "dividends", symbol);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -216,6 +219,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "splits", symbol);
 
         if (!response.IsSuccessStatusCode)
         {

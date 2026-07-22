@@ -213,7 +213,11 @@ export function buildOperationsRecordReleaseViewModel({
 
 function buildStatusDetail(blockedCount: number, reviewCount: number, neutralCount: number): string {
   if (blockedCount > 0) {
-    return `${blockedCount} release step${blockedCount === 1 ? "" : "s"} blocked; keep the demo path visible but do not call it closed.`;
+    const attentionCount = reviewCount + neutralCount;
+    const attentionDetail = attentionCount > 0
+      ? ` · ${attentionCount} still ${attentionCount === 1 ? "needs" : "need"} review`
+      : "";
+    return `${blockedCount} release step${blockedCount === 1 ? "" : "s"} blocked${attentionDetail}; keep the demo path visible but do not call it closed.`;
   }
 
   const attentionCount = reviewCount + neutralCount;
@@ -272,7 +276,7 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
         detail: backfillReviewCount > 0
           ? `${backfillReviewCount} backfill job${backfillReviewCount === 1 ? "" : "s"} require review before downstream reporting.`
           : "Backfill queue has no review-state jobs in the loaded payload.",
-        href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+        href: WORKSTATION_ROUTE_CATALOG.dataOperations,
         routeLabel: "Backfill queues",
         tone: backfillReviewCount > 0 ? "review" : "ready",
         badgeVariant: toneToBadgeVariant(backfillReviewCount > 0 ? "review" : "ready"),

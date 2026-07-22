@@ -111,6 +111,13 @@ function Apply-DesktopLaunchMode {
 }
 
 function Assert-ProductionGovernanceConfiguration {
+    # MERIDIAN_DATABASE_URL is the unified persistence variable; the host propagates it into
+    # every per-domain connection string at startup, so its presence satisfies this gate.
+    if (-not [string]::IsNullOrWhiteSpace([System.Environment]::GetEnvironmentVariable('MERIDIAN_DATABASE_URL'))) {
+        Write-Ok 'Production governance persistence configuration is present (MERIDIAN_DATABASE_URL).'
+        return
+    }
+
     $requiredVariables = @(
         'MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING',
         'MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING'
@@ -122,7 +129,7 @@ function Assert-ProductionGovernanceConfiguration {
 
     if ($missing.Count -gt 0) {
         $joined = $missing -join ', '
-        throw "Production desktop launch requires persistence-backed governance services. Configure $joined, or rerun with -LaunchMode Development for the explicit local/dev in-memory profile."
+        throw "Production desktop launch requires persistence-backed governance services. Configure $joined (or MERIDIAN_DATABASE_URL), or rerun with -LaunchMode Development for the explicit local/dev in-memory profile."
     }
 
     Write-Ok 'Production governance persistence configuration is present.'

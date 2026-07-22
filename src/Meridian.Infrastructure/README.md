@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-05
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Infrastructure
@@ -30,11 +30,30 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
-WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
-`IProviderConnectionDiagnosticsSource` for safe provider-level health snapshots. Consumers should
-use that optional seam for connection state, heartbeat time, reconnect status, subscription health
-counts, last subscription message time, and last safe error category instead of reaching into
-provider-specific transport internals.
+Every `IMarketDataClient` now inherits the ProviderSdk-owned
+`IProviderConnectionDiagnosticsSource` contract. Adapters without a lifecycle supervisor receive a
+conservative compatibility snapshot that never claims a live connection; supervised adapters must
+override it with runtime evidence. `WebSocketProviderBase` supplies shared WebSocket state,
+heartbeat, reconnect, and safe failure diagnostics; Robinhood supplies the same normalized shape
+from `PollingProviderBase`; NYSE and Interactive Brokers retain subscription-health and
+transport-specific lifecycle evidence. For polling, raw-socket, simulation, and fallback
+diagnostics, `WebSocketState` is `None`. Consumers should use this contract instead of reaching
+into provider-specific transport internals.
+
+Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
+WebSocket endpoints. Its diagnostics carry a per-stream selected feed and entitlement (for
+example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
+misrepresented as consolidated or OPRA-entitled data.
+
+Alpaca reference-data search preserves broker-supplied marginability, shortability,
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Search no
+longer silently defaults omitted asset-class filters to equities; it can discover equities, crypto,
+options, and fixed-income assets when the configured Alpaca API entitlement exposes them.
+
+The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
+existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
+Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former
+assembly location.
 
 Provider registry paths normalize configured provider identifiers before factory lookup, and the
 registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
@@ -95,7 +114,12 @@ corporate-action, and factor evidence without placing orders. Adapter readiness 
 any write-capable live execution path back to the shared execution governance gates.
 Interactive Brokers contract construction resolves default SecType values from the Contracts-owned
 `InstrumentTypeDescriptorCatalog`, while still honoring explicit provider SecType overrides such
-as `GOVT` for government bonds.
+as `GOVT` for government bonds. The IBKR gateway exposes its actual execution mode to the shared
+OMS, so guidance or smoke builds are simulation-only and cannot be promoted into live routing by
+configuration. It also owns account catalog, portfolio snapshot, and connected-session execution
+sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
+account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
+dividends, interest, FX conversions, corporate actions, and prior-session activity.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

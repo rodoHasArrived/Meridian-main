@@ -9,6 +9,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Tiingo;
@@ -73,9 +74,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         services.AddSingleton(new AlpacaOptions(
             KeyId: "AKTESTDESCRIPTOR0001",
             SecretKey: "descriptor-secret-for-di-tests"));
+        services.AddSingleton(new IBOptions());
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
         services.AddSingleton<QuoteCollector>();
         services.AddSingleton<TradeDataCollector>();
+        services.AddSingleton<MarketDepthCollector>();
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
@@ -115,6 +118,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         robinhood.CorporateActions.Should().BeNull(
             "Robinhood has no dedicated ICorporateActionProvider implementation in the runtime catalog");
 
+        var ibkr = descriptorsById["ib"];
+        ibkr.Streaming.Should().Be(typeof(IBMarketDataClient));
+        ibkr.Historical.Should().Be(typeof(IBHistoricalDataProvider));
+        ibkr.Brokerage.Should().Be(typeof(IBBrokerageGateway));
+
         descriptorsById.Keys.Should().Contain("edgar");
         var edgar = descriptorsById["edgar"];
         edgar.Search.Should().Be(typeof(EdgarSymbolSearchProvider));
@@ -124,6 +132,16 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         edgar.Brokerage.Should().BeNull();
         edgar.CorporateActions.Should().BeNull(
             "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
+
+        var ibStreaming = descriptorsById["ib"];
+        ibStreaming.Streaming.Should().Be(typeof(IBMarketDataClient));
+        ibStreaming.Historical.Should().BeNull(
+            "the IBKR historical adapter registers under its actual ibkr provider identity");
+
+        var ibHistorical = descriptorsById["ibkr"];
+        ibHistorical.Historical.Should().Be(typeof(IBHistoricalDataProvider));
+        ibHistorical.Streaming.Should().BeNull(
+            "the TWS/Gateway streaming adapter registers under its actual ib provider identity");
     }
 
     [Fact]
@@ -180,7 +198,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         var finnhub = descriptorsById["finnhub"];
         finnhub.Historical.Should().Be(typeof(FinnhubHistoricalDataProvider));
-        finnhub.Search.Should().Be(typeof(FinnhubSymbolSearchProviderRefactored));
+        finnhub.Search.Should().Be(typeof(FinnhubSymbolSearchProvider));
         finnhub.CorporateActions.Should().Be(typeof(FinnhubCorporateActionProvider));
         finnhub.Streaming.Should().BeNull(
             "Finnhub has no dedicated streaming provider implementation in the runtime catalog");

@@ -23,7 +23,9 @@ public sealed class AutomatedJournalPostingTargetTests
                 "controller",
                 AsOf,
                 "approved for backtest",
-                ["/evidence/fees/2026-Q2"]));
+                ["/evidence/fees/2026-Q2"],
+                Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                1));
 
         posted.Status.Should().Be(AutomatedJournalApprovalStatus.Posted);
         ledger.Journal.Should().ContainSingle()
@@ -38,10 +40,29 @@ public sealed class AutomatedJournalPostingTargetTests
             "controller",
             AsOf,
             "missing period",
-            ["/evidence/fees/2026-Q2"]);
+            ["/evidence/fees/2026-Q2"],
+            Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+            1);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("*Period id is required*");
+    }
+
+    [Fact]
+    public void PostedApproval_CannotBeConvertedBackIntoAnAppendableJournalEntry()
+    {
+        var approval = ApprovedFeeDraft();
+        var posted = approval.PostTo(
+            new Meridian.Ledger.Ledger(),
+            "controller",
+            AsOf,
+            "posted",
+            ["/evidence/fees/2026-Q2"]);
+
+        Action act = () => posted.ToJournalEntry();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only approved automated journal drafts can be converted*");
     }
 
     private static AutomatedJournalApproval ApprovedFeeDraft()

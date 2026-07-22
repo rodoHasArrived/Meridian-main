@@ -111,14 +111,24 @@ public static class BackfillEndpoints
         // Backfill progress endpoint
         group.MapGet(UiApiRoutes.BackfillProgress, (BackfillCoordinator backfill) =>
         {
-            var progress = backfill.GetProgress();
-            return progress is not null
-                ? Results.Json(progress, jsonOptions)
-                : Results.Json(new { message = "No active backfill operation", symbols = Array.Empty<object>() }, jsonOptions);
+            var progress = backfill.GetProgress() ?? new BackfillRunProgressResponse(
+                LastRun: null,
+                IsActive: false,
+                ProviderProgress: new BackfillProviderProgressSnapshotDto(
+                    Symbols: new Dictionary<string, BackfillProviderSymbolProgressDto>(StringComparer.OrdinalIgnoreCase),
+                    RecentProviderAttempts: Array.Empty<BackfillProviderAttemptProgressDto>(),
+                    OverallPercentComplete: 0,
+                    TotalSymbols: 0,
+                    CompletedSymbols: 0,
+                    FailedSymbols: 0,
+                    DroppedProviderNotifications: 0,
+                    Timestamp: DateTimeOffset.UtcNow),
+                Timestamp: DateTimeOffset.UtcNow);
+            return Results.Json(progress, jsonOptions);
         })
         .WithName("GetBackfillProgress")
-        .WithDescription("Returns progress of the currently active backfill operation, if any.")
-        .Produces(200);
+        .WithDescription("Returns the latest run plus bounded, live provider-attempt progress for the current symbol and range.")
+        .Produces<BackfillRunProgressResponse>(200);
 
         // Get provider metadata descriptors
         group.MapGet(UiApiRoutes.BackfillProviderMetadata, () =>

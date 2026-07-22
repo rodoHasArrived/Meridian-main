@@ -1,10 +1,13 @@
 # Status And Reporting Source-Material Index
 
-**Status:** controlled-migration
+**Status:** automation-owned-support
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
-This folder remains a migration source for status snapshots and generated reports. In the rebuilt model, stakeholder interpretation starts at [`docs/product/README.md`](../product/README.md) and roadmap truth in [`docs/roadmap/README.md`](../roadmap/README.md).
+This supporting folder contains automation-owned reports and compatibility artifacts still consumed
+by documentation, readiness, and workflow tooling. It is not the durable roadmap source.
+Stakeholder interpretation starts at [Product](../product/README.md), and roadmap truth lives in
+the [Roadmap Registry](../roadmap/README.md).
 
 ## Canonical Interpretation Paths
 
@@ -66,4 +69,3 @@ See the full migration index in [`../../archive/docs/status/README.md`](../../ar
 ## Migration Rule
 
 Do not place durable roadmap truth in hand-authored status pages. Update `docs/roadmap/data/*.yml` and regenerated roadmap views when status state changes.
-

@@ -7,7 +7,6 @@ import {
 
 export type WorkstationTopbarCommandTrigger = DesignSystemMastheadCommandTrigger;
 export type WorkstationTopbarProps = DesignSystemMastheadProps;
-
 /**
  * Compatibility wrapper over the dashboard design-system {@link DesignSystemMasthead}
  * adapter. The shell now renders `DesignSystemMasthead` directly; this export stays so the

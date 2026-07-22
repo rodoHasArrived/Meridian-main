@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Audit.Compliance;
 
@@ -64,13 +66,53 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
 
 public sealed class ImmutableAuditLogService
 {
+    private static readonly JsonSerializerOptions PersistenceOptions =
+        new(JsonSerializerDefaults.Web) { WriteIndented = false };
+
     private readonly ConcurrentQueue<AuditEvent> _events = new();
 
-    // The append sequence (read tail hash → compute hash → enqueue) must be atomic.
+    // The append sequence (read tail hash → compute hash → persist → enqueue) must be atomic.
     // ConcurrentQueue makes each individual operation thread-safe, but two concurrent
     // callers would otherwise read the same predecessor hash and chain off it, silently
     // forking the tamper-evident hash chain and breaking VerifyIntegrity.
     private readonly Lock _appendLock = new();
+
+    // Set when a persisted record fails to parse while loading. A tamper-evident log must surface
+    // that corruption rather than silently dropping the record and reporting the shortened prefix as
+    // valid, so VerifyIntegrity fails closed. Written only during construction (single-threaded).
+    private bool _persistedRecordCorrupt;
+
+    // When set, every appended event is durably persisted (and the chain is rehydrated from disk on
+    // construction) so compliance history survives a restart. Null keeps the service purely
+    // in-memory for hosts and tests that do not configure a durable audit path.
+    private readonly string? _persistencePath;
+
+    /// <summary>
+    /// Creates a purely in-memory audit log. Events are lost on restart; use the
+    /// <see cref="ImmutableAuditLogService(string)"/> overload for durable, compliance-grade storage.
+    /// </summary>
+    public ImmutableAuditLogService()
+    {
+    }
+
+    /// <summary>
+    /// Creates a durable audit log backed by an append-only JSONL file at
+    /// <paramref name="persistencePath"/>. Existing events are rehydrated on construction so the
+    /// tamper-evident hash chain continues from the last persisted event rather than an empty log.
+    /// </summary>
+    /// <remarks>
+    /// Assumes a single writer per <paramref name="persistencePath"/>; the host registers this as a
+    /// singleton. The in-process append lock does not coordinate separate processes (or instances)
+    /// writing the same file, and because each instance chains off its own in-memory tail, concurrent
+    /// writers on a shared path would fork the chain regardless of file locking. Multi-writer support
+    /// (re-reading the durable tail under a cross-process lock) is a separate design, out of scope here.
+    /// </remarks>
+    public ImmutableAuditLogService(string persistencePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(persistencePath);
+        _persistencePath = persistencePath;
+        LoadPersistedEvents();
+    }
 
     public AuditEvent Append(ActorContext actor, ComplianceActionRequest request)
     {
@@ -100,14 +142,93 @@ public sealed class ImmutableAuditLogService
             PreviousHash: previousHash);
 
         var hashed = pending with { Hash = AuditHash.Compute(pending) };
+
+        // Persist before publishing to the in-memory queue: a failed durable write must not leave an
+        // event visible in memory but absent from disk, which would fork the chain after a restart.
+        Persist(hashed);
         _events.Enqueue(hashed);
         return hashed;
+    }
+
+    private void Persist(AuditEvent evt)
+    {
+        if (_persistencePath is null)
+        {
+            return;
+        }
+
+        var directory = Path.GetDirectoryName(_persistencePath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var payload = JsonSerializer.Serialize(evt, PersistenceOptions);
+
+        // Copy-on-write append (temp file → fsync → atomic rename → directory fsync) so a crash
+        // mid-write can never leave a torn line that would corrupt the tamper-evident chain. The
+        // append is already serialized by _appendLock, so blocking on the async primitive here does
+        // not add contention; compliance events are low-volume and privileged.
+        AtomicFileWriter.AppendLinesAsync(_persistencePath, [payload], CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    private void LoadPersistedEvents()
+    {
+        if (_persistencePath is null || !File.Exists(_persistencePath))
+        {
+            return;
+        }
+
+        // Stream lines lazily so startup memory stays bounded as the audit log grows.
+        foreach (var line in File.ReadLines(_persistencePath))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            AuditEvent? evt;
+            try
+            {
+                evt = JsonSerializer.Deserialize<AuditEvent>(line, PersistenceOptions);
+            }
+            catch (JsonException)
+            {
+                // A persisted record that no longer parses is corruption or tampering, not something
+                // to silently drop from a tamper-evident log. Flag it so VerifyIntegrity reports the
+                // log invalid even when the surviving records still chain among themselves (e.g. a
+                // truncated trailing record whose absence a plain prefix would hide). The records
+                // that did load are still enqueued so GetAll can expose them for investigation.
+                _persistedRecordCorrupt = true;
+                continue;
+            }
+
+            if (evt is null)
+            {
+                // A non-blank line that deserializes to null (e.g. the JSON literal `null`) is a
+                // removed or corrupt record rather than a valid event — Deserialize returns null
+                // without throwing, so flag it like a parse failure instead of silently dropping it.
+                _persistedRecordCorrupt = true;
+                continue;
+            }
+
+            _events.Enqueue(evt);
+        }
     }
 
     public IReadOnlyList<AuditEvent> GetAll() => _events.ToArray();
 
     public bool VerifyIntegrity()
     {
+        // A record that failed to parse on load broke the durable chain; the surviving in-memory
+        // records may still chain among themselves, so report the corruption explicitly here.
+        if (_persistedRecordCorrupt)
+        {
+            return false;
+        }
+
         string? expectedPrevious = null;
         foreach (var evt in _events)
         {
@@ -130,6 +251,10 @@ public sealed class ImmutableAuditLogService
 
 public sealed class AccessReviewService
 {
+    // Registered as a singleton like the other compliance services, so concurrent reviews
+    // must not corrupt the list; guard mutation and snapshot reads the same way
+    // ImmutableAuditLogService does above.
+    private readonly object _lock = new();
     private readonly List<AccessReviewRecord> _reviews = [];
 
     public AccessReviewRecord ReviewDormantPermissions(string actorId, string reviewedBy, string[] currentRoles, DateTimeOffset lastUsedAtUtc)
@@ -144,9 +269,19 @@ public sealed class AccessReviewService
             RemovedRoles: removed,
             Reason: isDormant ? "Dormant permissions cleanup." : "No dormant permissions.");
 
-        _reviews.Add(review);
+        lock (_lock)
+        {
+            _reviews.Add(review);
+        }
+
         return review;
     }
 
-    public IReadOnlyList<AccessReviewRecord> GetReviews() => _reviews;
+    public IReadOnlyList<AccessReviewRecord> GetReviews()
+    {
+        lock (_lock)
+        {
+            return _reviews.ToArray();
+        }
+    }
 }

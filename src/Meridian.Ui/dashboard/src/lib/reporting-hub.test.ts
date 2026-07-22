@@ -22,6 +22,7 @@ function template(overrides: Partial<ReportingHubTemplateInput>): ReportingHubTe
     templateName: "perf",
     name: "Performance Report",
     family: "Performance",
+    canRunOnDemand: true,
     ...overrides
   };
 }
@@ -99,9 +100,114 @@ describe("reporting hub model", () => {
     expect(audit.readiness).toBe("NoRuns");
     expect(audit.runCount).toBe(0);
     expect(audit.openHref).toBeNull();
+    expect(audit.nextActionHref).toBe("/reporting/run?templateId=audit-pack");
+    expect(audit.nextActionLabel).toBe("Run Audit");
     expect(audit.latestAsOfLabel).toBe("—");
     expect(audit.approvedAsOfLabel).toBe("No approved output yet");
     expect(audit.needsAttention).toBe(true);
+  });
+
+  it("humanizes backend family keys and gives every family one next action", () => {
+    const model = buildReportingHubModel([], [template({
+      id: "investor-monthly:1.0",
+      family: "InvestorStatement",
+      templateName: "investor-monthly"
+    })]);
+
+    expect(model.cards[0]).toMatchObject({
+      familyKey: "InvestorStatement",
+      family: "Investor Statement",
+      nextActionLabel: "Run Investor Statement",
+      nextActionHref: "/reporting/run?templateId=investor-monthly%3A1.0"
+    });
+    expect(model.dailyWorkSummaryLabel).toBe("No urgent work queued · 1 report family needs setup or review");
+  });
+
+  it("routes non-runnable families to setup instead of inferring run authority", () => {
+    const model = buildReportingHubModel([], [template({
+      family: "CustomReport",
+      templateName: "draft-custom",
+      canRunOnDemand: false
+    })]);
+
+    expect(model.cards[0]).toMatchObject({
+      family: "Custom Report",
+      nextActionLabel: "Set up Custom Report",
+      nextActionHref: "/reporting/report-builder?family=CustomReport"
+    });
+  });
+
+  it("labels a failed run as review work even when it has a navigable detail link", () => {
+    const model = buildReportingHubModel([
+      run({
+        status: "Failed",
+        drilldownLinks: [{ href: "/reporting/runs/perf-failed", label: "Run", isBrowserNavigable: true }]
+      })
+    ], [template({})]);
+
+    expect(model.cards[0]).toMatchObject({
+      nextActionLabel: "Review latest run",
+      nextActionHref: "/reporting/runs/perf-failed"
+    });
+  });
+
+  it.each([
+    ["Published", "Released", "Published"],
+    ["AwaitingApproval", "InReview", "Awaiting approval"]
+  ] as const)("presents backend %s runs without falling back to no-runs", (status, readiness, statusLabel) => {
+    const model = buildReportingHubModel([run({ status })], [template({})]);
+
+    expect(model.cards[0]).toMatchObject({ runCount: 1, readiness, statusLabel });
+    expect(model.cards[0]?.statusLabel).not.toBe("No runs yet");
+  });
+
+  it("requires period confirmation instead of presenting a published run as current without an as-of date", () => {
+    const model = buildReportingHubModel([
+      run({
+        family: "InvestorStatement",
+        status: "Published",
+        asOfDateLabel: "As-of date unavailable",
+        runIdLabel: "investor-monthly-missing-period"
+      })
+    ], [template({ family: "InvestorStatement", templateName: "investor-monthly" })]);
+
+    expect(model.cards[0]).toMatchObject({
+      family: "Investor Statement",
+      readiness: "InReview",
+      statusLabel: "Period confirmation required",
+      approvedAsOfLabel: "Approved output needs period confirmation",
+      latestAsOfLabel: "No period confirmed",
+      isCurrent: false,
+      needsAttention: true,
+      nextActionLabel: "Review latest run"
+    });
+    expect(model.currentCount).toBe(0);
+    expect(model.attentionCount).toBe(1);
+  });
+
+  it("keeps a dated retained run ahead of a missing-period run in the same family", () => {
+    const model = buildReportingHubModel([
+      run({
+        family: "InvestorStatement",
+        status: "Published",
+        asOfDateLabel: "As-of date unavailable",
+        runIdLabel: "investor-monthly-missing-period",
+        isLatestGenerated: true
+      }),
+      run({
+        family: "InvestorStatement",
+        status: "Released",
+        asOfDateLabel: "2026-06-30",
+        runIdLabel: "investor-monthly-june"
+      })
+    ], [template({ family: "InvestorStatement", templateName: "investor-monthly" })]);
+
+    expect(model.cards[0]).toMatchObject({
+      latestRunId: "investor-monthly-june",
+      readiness: "Released",
+      latestAsOfLabel: "Jun 30, 2026",
+      needsAttention: false
+    });
   });
 
   it("summarizes current vs. attention counts", () => {

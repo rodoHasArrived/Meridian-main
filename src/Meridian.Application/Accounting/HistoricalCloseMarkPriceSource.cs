@@ -1,6 +1,7 @@
 using System.Threading;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Ledger;
 using Serilog;
 
 namespace Meridian.Application.Accounting;
@@ -46,7 +47,10 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
             return new MarkPriceQuote(
                 bar.Close,
                 source,
-                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"));
+                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"),
+                // A quoted exchange close for the identical instrument is an ASC 820 Level 1 input.
+                FairValueLevel.Level1,
+                bar.SessionDate);
         }
         catch (OperationCanceledException)
         {

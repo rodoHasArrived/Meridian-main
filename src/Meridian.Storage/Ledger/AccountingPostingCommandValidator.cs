@@ -1,4 +1,8 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 
@@ -6,13 +10,24 @@ namespace Meridian.Storage.Ledger;
 
 public static class AccountingPostingCommandValidator
 {
-    public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write)
+    internal const string PostingCommandFingerprintTag = "postingCommandFingerprint";
+
+    public static LedgerJournalEntryWrite NormalizeAndValidate(
+        LedgerJournalEntryWrite write,
+        bool requirePostingCommand = false,
+        bool requireExpectedVersion = false)
     {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
 
         if (write.PostingCommand is not { } command)
         {
+            if (requirePostingCommand)
+            {
+                throw new LedgerValidationException(
+                    "A typed accounting posting command is required at the production ledger append boundary.");
+            }
+
             return write;
         }
 
@@ -66,6 +81,12 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command expected version cannot be negative.");
         }
 
+        if (requireExpectedVersion && !command.ExpectedVersion.HasValue)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command expected version is required at the production ledger append boundary.");
+        }
+
         if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)
         {
             throw new LedgerValidationException("Material accounting posting commands require a human-operator action origin.");
@@ -76,10 +97,16 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command idempotency key is required.");
         }
 
-        if (command.Evidence.Count == 0 && string.IsNullOrWhiteSpace(command.OperatorRationale))
+        if (AssetAccountingEventTypeNames.TryParse(command.SourceEventType, out _))
+        {
+            ValidateAssetAccountingEvidence(command);
+        }
+        else if (command.Evidence.Count == 0 && string.IsNullOrWhiteSpace(command.OperatorRationale))
         {
             throw new LedgerValidationException("Accounting posting command requires retained evidence or an operator rationale.");
         }
+
+        ValidateDataProvenance(command);
 
         if (command.Intent is AccountingPostingIntentDto.Reversal or AccountingPostingIntentDto.Rebook or AccountingPostingIntentDto.Restatement)
         {
@@ -94,6 +121,7 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command requires approved or not-required reviewer state before append.");
         }
 
+        ValidateBookContext(write, command);
         ValidateTypedAssertions(command);
 
         var entry = NormalizeEntryMetadata(write.Entry, command);
@@ -113,6 +141,204 @@ public static class AccountingPostingCommandValidator
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    /// <summary>
+    /// Data-provenance evidence gate (fail closed): a figure whose evidence declares a simulated,
+    /// seeded, or sample origin may only cross the authoritative append boundary when the posting
+    /// carries the retained simulated mark (<see cref="AccountingPostingCommandDto.Provenance"/> set
+    /// to a non-real value). An unmarked simulated figure is refused rather than silently posted as
+    /// if it were real; a marked one is allowed and the mark is retained onto the journal metadata.
+    /// </summary>
+    private static void ValidateDataProvenance(AccountingPostingCommandDto command)
+    {
+        var declaredProvenance = command.Provenance;
+        if (!Enum.IsDefined(declaredProvenance))
+        {
+            throw new LedgerValidationException(
+                $"Accounting posting command provenance '{declaredProvenance}' is not a defined DataProvenance value.");
+        }
+
+        if (declaredProvenance.IsNonReal())
+        {
+            // The mark is retained via the "dataProvenance" journal tag in BuildCommandTags.
+            return;
+        }
+
+        if (DeclaresSimulatedOrigin(command))
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command evidence declares a simulated, seeded, or sample origin but the " +
+                "posting is marked as real. Refusing to post an unmarked simulated figure; set the command's " +
+                "DataProvenance mark so the simulated origin is retained on the journal.");
+        }
+    }
+
+    // Unambiguous, structured simulated-origin markers. Matched by exact (trimmed, case-insensitive)
+    // equality against the source system / source domain — never by substring — so legitimate values
+    // like "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. The explicit
+    // command Provenance mark is the primary gate; this is a narrow safety net for a source that is
+    // labeled simulated while the posting forgot to carry the mark.
+    private static readonly string[] SimulatedOriginTokens =
+        ["simulated", "simulation", "synthetic", "backtest"];
+
+    private static bool DeclaresSimulatedOrigin(AccountingPostingCommandDto command)
+    {
+        foreach (var evidence in command.Evidence)
+        {
+            if (IsSimulatedOriginToken(evidence.SourceSystem))
+            {
+                return true;
+            }
+        }
+
+        return IsSimulatedOriginToken(command.EconomicEvent?.SourceDomain);
+    }
+
+    private static bool IsSimulatedOriginToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        foreach (var token in SimulatedOriginTokens)
+        {
+            if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void ValidateAssetAccountingEvidence(AccountingPostingCommandDto command)
+    {
+        if (command.EconomicEvent is null ||
+            command.ProjectionLineage is null ||
+            command.BookPositionId is null ||
+            command.BookContext is null ||
+            command.RulePackReference is null)
+        {
+            throw new LedgerValidationException(
+                "Asset accounting postings require authoritative book, position, economic-event, projection-lineage, and rule-pack context.");
+        }
+
+        if (command.Evidence.Count == 0)
+        {
+            throw new LedgerValidationException(
+                "Asset accounting postings require verified retained evidence; operator rationale cannot substitute for evidence.");
+        }
+
+        var invalidEvidence = new List<string>();
+        foreach (var item in command.Evidence)
+        {
+            var evidence = new RetainedEvidenceIdentityDto(
+                item.EvidenceId,
+                item.Uri,
+                item.ContentHash ?? string.Empty,
+                item.SourceSystem,
+                item.SourceReference ?? string.Empty,
+                item.ReviewStatus ?? string.Empty,
+                item.Reviewer ?? string.Empty,
+                item.ReviewedAtUtc ?? default,
+                item.EffectiveDate ?? default,
+                item.EvidenceVersion ?? 0,
+                item.RetainedAtUtc,
+                item.RetainedBy,
+                item.SubjectType ?? string.Empty,
+                item.SubjectId ?? string.Empty);
+            invalidEvidence.AddRange(RetainedEvidenceIdentityValidator.Validate(evidence));
+        }
+
+        if (invalidEvidence.Count > 0)
+        {
+            throw new LedgerValidationException(
+                $"Asset accounting posting evidence is incomplete: {string.Join(" ", invalidEvidence.Distinct(StringComparer.Ordinal))}");
+        }
+
+        var eventHash = command.EconomicEvent.SourceContentHash?.Trim();
+        if (string.IsNullOrWhiteSpace(eventHash) ||
+            !command.Evidence.Any(item => HashesMatch(item.ContentHash, eventHash)))
+        {
+            throw new LedgerValidationException(
+                "Asset accounting posting evidence must include the economic event source content hash.");
+        }
+
+        if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate))
+        {
+            throw new LedgerValidationException(
+                "Asset accounting posting evidence effective date must match the economic event effective date.");
+        }
+    }
+
+    private static bool HashesMatch(string? left, string? right)
+        => !string.IsNullOrWhiteSpace(left) &&
+           !string.IsNullOrWhiteSpace(right) &&
+           string.Equals(
+               NormalizeSha256(left),
+               NormalizeSha256(right),
+               StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeSha256(string value)
+        => value.Trim().StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+            ? value.Trim()["sha256:".Length..]
+            : value.Trim();
+
+    private static void ValidateBookContext(
+        LedgerJournalEntryWrite write,
+        AccountingPostingCommandDto command)
+    {
+        if (command.BookContext is not { } context)
+        {
+            if (RequiresAuthoritativeBookContext(command))
+            {
+                throw new LedgerValidationException(
+                    "Typed accounting posting commands require authoritative book context before append.");
+            }
+
+            return;
+        }
+
+        var writeBookId = command.LedgerBookId ?? write.LedgerBookId;
+        if (writeBookId != context.LedgerBookId)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context ledger book must match the ledger write book.");
+        }
+
+        if (context.PeriodId != write.PeriodId)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context period must match the ledger write period.");
+        }
+
+        if (context.AccountingBasis != write.AccountingBasis)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context basis must match the ledger write accounting basis.");
+        }
+
+        if (!string.Equals(
+                context.AccountingPolicyId?.Trim(),
+                write.AccountingPolicyId?.Trim(),
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                context.AccountingPolicyVersion?.Trim(),
+                write.AccountingPolicyVersion?.Trim(),
+                StringComparison.Ordinal))
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context policy must match the ledger write accounting policy and version.");
+        }
+    }
+
+    private static bool RequiresAuthoritativeBookContext(AccountingPostingCommandDto command)
+        => command.BookPositionId.HasValue ||
+           command.EconomicEvent is not null ||
+           command.ProjectionLineage is not null ||
+           command.RulePackReference is not null;
 
     private static void ValidateTypedAssertions(AccountingPostingCommandDto command)
     {
@@ -161,7 +387,14 @@ public static class AccountingPostingCommandValidator
                 item.RetainedBy,
                 item.SubjectId,
                 item.ContentHash,
-                item.Description))
+                item.Description,
+                item.SourceReference,
+                item.ReviewStatus,
+                item.Reviewer,
+                item.ReviewedAtUtc,
+                item.EffectiveDate,
+                item.EvidenceVersion,
+                item.SubjectType))
             .ToArray();
         var typedSecurityId = command.EconomicEvent?.SecurityId;
         if (metadata.SecurityId.HasValue && typedSecurityId.HasValue && metadata.SecurityId != typedSecurityId)
@@ -205,10 +438,12 @@ public static class AccountingPostingCommandValidator
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["postingCommandId"] = command.CommandId.ToString("D"),
-            ["approvalState"] = command.ApprovalState.ToString()
+            ["approvalState"] = command.ApprovalState.ToString(),
+            [PostingCommandFingerprintTag] = ComputePostingCommandFingerprint(command)
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
+        AddTag(tags, "dataProvenance", command.Provenance.Label());
         AddTag(tags, "sourceEventId", (command.EconomicEvent?.EventId ?? command.SourceEventId)?.ToString("D"));
         AddTag(tags, "sourceEventType", command.EconomicEvent?.EventType ?? command.SourceEventType);
         AddTag(tags, "sourceEventVersion", command.EconomicEvent?.EventVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -228,6 +463,68 @@ public static class AccountingPostingCommandValidator
         AddTag(tags, "selectedRuleId", command.RulePackReference?.SelectedRuleId);
         AddTag(tags, "selectedRuleVersion", command.RulePackReference?.SelectedRuleVersion);
         return tags;
+    }
+
+    internal static string ComputePostingCommandFingerprint(AccountingPostingCommandDto command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        var element = JsonSerializer.SerializeToElement(
+            command,
+            AccountingPostingCommandFingerprintJsonContext.Default.AccountingPostingCommandDto);
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            WriteCanonicalJson(writer, element);
+        }
+
+        var hash = SHA256.HashData(stream.ToArray());
+        return $"sha256:{Convert.ToHexString(hash).ToLowerInvariant()}";
+    }
+
+    private static void WriteCanonicalJson(Utf8JsonWriter writer, JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element
+                             .EnumerateObject()
+                             .OrderBy(static property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonicalJson(writer, property.Value);
+                }
+
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                {
+                    WriteCanonicalJson(writer, item);
+                }
+
+                writer.WriteEndArray();
+                break;
+            case JsonValueKind.String:
+                writer.WriteStringValue(element.GetString());
+                break;
+            case JsonValueKind.Number:
+                writer.WriteRawValue(element.GetRawText(), skipInputValidation: true);
+                break;
+            case JsonValueKind.True:
+                writer.WriteBooleanValue(true);
+                break;
+            case JsonValueKind.False:
+                writer.WriteBooleanValue(false);
+                break;
+            case JsonValueKind.Null:
+                writer.WriteNullValue();
+                break;
+            default:
+                throw new LedgerValidationException(
+                    $"Accounting posting command contains unsupported JSON value kind '{element.ValueKind}'.");
+        }
     }
 
     private static void AddTag(IDictionary<string, string> tags, string key, string? value)

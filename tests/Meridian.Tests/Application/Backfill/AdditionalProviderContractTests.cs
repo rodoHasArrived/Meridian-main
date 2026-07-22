@@ -312,13 +312,16 @@ public sealed class AdditionalProviderContractTests
     }
 
     [Fact]
-    public async Task AlphaVantage_HandlesRateLimitMessage_ThrowsHttpRequestException()
+    public async Task AlphaVantage_HandlesRateLimitMessage_ThrowsTypedRateLimitException()
     {
         var httpClient = CreateMockHttpClient(AlphaVantageResponses.RateLimitResponse);
         using var provider = new AlphaVantageHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
 
-        await Assert.ThrowsAsync<HttpRequestException>(
+        var exception = await Assert.ThrowsAsync<Meridian.Core.Exceptions.RateLimitException>(
             () => provider.GetDailyBarsAsync("AAPL", null, null));
+
+        exception.Provider.Should().Be("alphavantage");
+        exception.Symbol.Should().Be("AAPL");
     }
 
     [Fact]

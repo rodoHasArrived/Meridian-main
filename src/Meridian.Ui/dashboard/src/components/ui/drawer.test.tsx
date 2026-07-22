@@ -18,7 +18,7 @@ describe("Drawer", () => {
     const onClose = vi.fn();
 
     render(
-      <Drawer open onClose={onClose}>
+      <Drawer open onClose={onClose} ariaLabel="Account 4000">
         <DrawerHeader title="Account 4000" onClose={onClose} />
         <DrawerBody>Revenue detail</DrawerBody>
         <DrawerFooter>
@@ -27,7 +27,7 @@ describe("Drawer", () => {
       </Drawer>
     );
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Account 4000" })).toBeInTheDocument();
     expect(screen.getByText("Revenue detail")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close drawer" }));
@@ -44,6 +44,7 @@ describe("Drawer", () => {
       </Drawer>
     );
 
+    expect(screen.getByRole("dialog", { name: "Filters" })).toBeInTheDocument();
     await user.keyboard("{Escape}");
     expect(onClose).toHaveBeenCalledTimes(1);
   });

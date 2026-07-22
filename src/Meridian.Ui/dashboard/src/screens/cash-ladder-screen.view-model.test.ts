@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCashLadderChart,
+  formatCashLadderDate,
+  formatCashLadderThreshold,
   selectActiveScenario,
   selectBucketContributions,
   selectScenarioOptions,
@@ -157,6 +159,7 @@ describe("cash-ladder view model", () => {
     expect(firstBucketRows[0].projectionRunId).toBe("11111111");
     expect(firstBucketRows[0].projectionEngineVersion).toBe("asset-obligation-projection-v1");
     expect(firstBucketRows[0].termsVersion).toBe("security-master:3");
+    expect(firstBucketRows[0].dueDate).toBe("Jul 10, 2026");
 
     const secondBucketRows = selectBucketContributions(ladder, 1);
     expect(secondBucketRows).toHaveLength(1);
@@ -177,6 +180,7 @@ describe("cash-ladder view model", () => {
       "ending-cash"
     ]);
     expect(cards[0].value).toBe("$50,000");
+    expect(cards[0].detail).toBe("USD · as of Jul 5, 2026");
     expect(cards[1].value).toBe("$3,500");
     expect(cards[2].value).toBe("$49,000");
     expect(cards[3].tone).toBe("danger");
@@ -193,6 +197,13 @@ describe("cash-ladder view model", () => {
     const chart = buildCashLadderChart(eurLadder);
     expect(chart!.bars[0].cumulativeLabel).toContain("€");
     expect(chart!.bars[0].cumulativeLabel).not.toContain("$");
+    expect(formatCashLadderThreshold(10000, "EUR")).toContain("€");
+  });
+
+  it("presents retained calendar dates without exposing ISO date strings in primary copy", () => {
+    expect(formatCashLadderDate("2026-07-05")).toBe("Jul 5, 2026");
+    expect(formatCashLadderDate("  ")).toBe("Date unavailable");
+    expect(formatCashLadderDate("not-a-date")).toBe("not-a-date");
   });
 
   it("falls back to a base scenario option when the ladder has not loaded", () => {

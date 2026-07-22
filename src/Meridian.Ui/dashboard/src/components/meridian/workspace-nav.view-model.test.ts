@@ -97,7 +97,7 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("keeps the unwired family-office route out of Portfolio navigation while it stays deep-linkable", () => {
+  it("surfaces the cash-ladder and family-office routes under Portfolio", () => {
     const model = buildWorkspaceNavViewModel("/portfolio/family-office");
     const portfolio = model.items.find((item) => item.key === "portfolio");
 
@@ -105,10 +105,24 @@ describe("workspace nav view model", () => {
       "/portfolio",
       "/portfolio/attribution",
       "/portfolio/asset-detail",
-      "/portfolio/brokerage-sync"
+      "/portfolio/brokerage-sync",
+      "/portfolio/cash-ladder",
+      "/portfolio/family-office"
     ]);
-    // The workspace itself still reads active for the deep-linked route.
-    expect(portfolio?.active).toBe(true);
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toMatchObject({
+      label: "Family office",
+      active: true,
+      ariaCurrent: "page"
+    });
+
+    const cashLadder = buildWorkspaceNavViewModel("/portfolio/cash-ladder")
+      .items.find((item) => item.key === "portfolio")
+      ?.subItems.find((item) => item.route === "/portfolio/cash-ladder");
+    expect(cashLadder).toMatchObject({
+      label: "Cash ladder",
+      active: true,
+      ariaCurrent: "page"
+    });
   });
 
   it("surfaces portfolio-native asset detail under Portfolio", () => {
@@ -132,14 +146,13 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/entity-setup",
       "/accounting/ledger",
-      "/accounting/trial-balance",
       "/accounting/journal-entries",
       "/accounting/reconciliation",
+      "/accounting/reconciliation/external-gl",
       "/accounting/statement-import",
       "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals",
-      "/accounting/evidence",
       "/accounting/configure"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
@@ -162,16 +175,48 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("surfaces the accounting evidence intake queue under Accounting", () => {
-    const model = buildWorkspaceNavViewModel("/accounting/evidence");
+  it("keeps the evidence workbench out of Accounting navigation after canonicalization", () => {
+    const model = buildWorkspaceNavViewModel("/accounting/ledger");
+    const accounting = model.items.find((item) => item.key === "accounting");
+    const reporting = model.items.find((item) => item.key === "reporting");
+
+    expect(accounting?.subItems.map((item) => item.route)).not.toContain("/accounting/evidence");
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/evidence")).toMatchObject({
+      label: "Evidence"
+    });
+  });
+
+  it("keeps Accounting route identity aligned for Security Master and Configure", () => {
+    const securityMaster = buildWorkspaceNavViewModel("/accounting/security-master/detail")
+      .items.find((item) => item.key === "accounting")
+      ?.subItems.find((item) => item.route === "/accounting/security-master");
+    expect(securityMaster).toMatchObject({
+      label: "Security Master",
+      active: true,
+      ariaCurrent: "page"
+    });
+
+    const configure = buildWorkspaceNavViewModel("/accounting/configure")
+      .items.find((item) => item.key === "accounting")
+      ?.subItems.find((item) => item.route === "/accounting/configure");
+    expect(configure).toMatchObject({
+      label: "Configure",
+      active: true,
+      ariaCurrent: "page"
+    });
+  });
+
+  it("keeps external GL reconciliation distinct from the Meridian break queue", () => {
+    const model = buildWorkspaceNavViewModel("/accounting/reconciliation/external-gl");
     const accounting = model.items.find((item) => item.key === "accounting");
 
-    expect(accounting?.subItems.find((item) => item.route === "/accounting/evidence")).toMatchObject({
-      label: "Evidence",
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/reconciliation/external-gl")).toMatchObject({
+      label: "External GL",
       active: true,
       ariaCurrent: "page",
-      ariaLabel: "Evidence, current page"
+      ariaLabel: "External GL, current page"
     });
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/reconciliation")?.active).toBe(false);
   });
 
   it("surfaces the operations-record release route under Reporting", () => {
@@ -247,49 +292,44 @@ describe("workspace nav view model", () => {
       ariaCurrent: undefined,
       ariaLabel: "Open Strategy Lab"
     });
+    expect(strategy?.subItems.map((item) => item.route)).not.toContain("/strategy/formula-workbench");
     expect(strategy?.subItems.map((item) => item.label)).not.toContain("Research Lab");
   });
 
-  it("surfaces the implemented price-alerts route under Data", () => {
-    const model = buildWorkspaceNavViewModel("/data/alerts");
+  it("surfaces the consolidated market data desk under Data", () => {
+    const model = buildWorkspaceNavViewModel("/data/quotes");
     const data = model.items.find((item) => item.key === "data");
 
     expect(data?.subItems.map((item) => item.route)).toEqual([
       "/data",
+      "/data/import",
       "/data/providers",
-      "/data/watchlist",
       "/data/quotes",
-      "/data/alerts",
-      "/data/evidence",
-      "/data/backfills",
+      "/data/operations",
+      "/data/assurance",
       "/data/exports",
       "/data/query"
     ]);
-    expect(data?.subItems.find((item) => item.route === "/data/alerts")).toMatchObject({
-      label: "Price alerts",
+    expect(data?.subItems.find((item) => item.route === "/data/quotes")).toMatchObject({
+      label: "Market data",
       active: true,
       ariaCurrent: "page",
-      ariaLabel: "Price alerts, current page"
+      ariaLabel: "Market data, current page"
     });
   });
 
-  it("surfaces the document evidence intake queue under Data", () => {
-    const model = buildWorkspaceNavViewModel("/data/evidence");
+  it("keeps the evidence workbench out of Data navigation after canonicalization", () => {
+    const model = buildWorkspaceNavViewModel("/data/operations");
     const data = model.items.find((item) => item.key === "data");
 
-    expect(data?.subItems.find((item) => item.route === "/data/evidence")).toMatchObject({
-      label: "Evidence",
-      active: true,
-      ariaCurrent: "page",
-      ariaLabel: "Evidence, current page"
-    });
+    expect(data?.subItems.map((item) => item.route)).not.toContain("/data/evidence");
   });
 
   it("surfaces the provider catalog lane under Data", () => {
     const model = buildWorkspaceNavViewModel("/data/providers");
     const data = model.items.find((item) => item.key === "data");
 
-    expect(data?.subItems[1]).toMatchObject({
+    expect(data?.subItems[2]).toMatchObject({
       label: "Providers",
       route: "/data/providers",
       active: true,
@@ -298,11 +338,44 @@ describe("workspace nav view model", () => {
     });
   });
 
+  it("keeps file import separate from provider connection management", () => {
+    const model = buildWorkspaceNavViewModel("/data/import");
+    const data = model.items.find((item) => item.key === "data");
+
+    expect(data?.subItems.find((item) => item.route === "/data/import")).toMatchObject({
+      label: "Import data",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Import data, current page"
+    });
+    expect(data?.subItems.find((item) => item.route === "/data/providers")?.active).toBe(false);
+  });
+
+  it("surfaces focused canonical Settings tasks and selects nested provider routes", () => {
+    const model = buildWorkspaceNavViewModel("/settings/providers/alpaca/advanced");
+    const settings = model.items.find((item) => item.key === "settings");
+
+    expect(settings?.subItems.map((item) => [item.label, item.route])).toEqual([
+      ["Overview", "/settings"],
+      ["Preferences", "/settings/preferences"],
+      ["Access", "/settings/access"],
+      ["Provider Connections", "/settings/providers"],
+      ["Accounting Systems", "/settings/accounting-systems"],
+      ["Diagnostics", "/settings/diagnostics"]
+    ]);
+    expect(settings?.subItems.find((item) => item.label === "Provider Connections")).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Provider Connections, current page"
+    });
+    expect(settings?.subItems.find((item) => item.label === "Overview")?.active).toBe(false);
+  });
+
   it("preserves operating scope across workspace and subroute navigation", () => {
     const model = buildWorkspaceNavViewModel("/data/quotes", undefined, "?symbol=aapl&provider=alpaca");
     const trading = model.items.find((item) => item.key === "trading");
     const data = model.items.find((item) => item.key === "data");
-    const quotes = data?.subItems.find((item) => item.label === "Live quotes");
+    const quotes = data?.subItems.find((item) => item.label === "Market data");
 
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
     expect(trading).toMatchObject({
@@ -316,7 +389,7 @@ describe("workspace nav view model", () => {
     expect(quotes).toMatchObject({
       route: "/data/quotes?symbol=AAPL&provider=alpaca",
       active: true,
-      ariaLabel: "Live quotes, current page, preserving Subject: AAPL / Provider: alpaca"
+      ariaLabel: "Market data, current page, preserving Subject: AAPL / Provider: alpaca"
     });
   });
 
@@ -332,7 +405,7 @@ describe("workspace nav view model", () => {
     });
     expect(model.items.find((item) => item.key === "accounting")).toMatchObject({
       route: "/accounting?fundAccountId=fund-001&runId=run-44",
-      ariaLabel: "Open Accounting workspace, Review, preserving Account: fund-001 / Run: run-44"
+      ariaLabel: "Open Accounting workspace, Review, preserving Account: fund-001 / Run: Selected run"
     });
   });
 });

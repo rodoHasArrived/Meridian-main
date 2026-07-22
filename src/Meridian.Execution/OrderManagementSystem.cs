@@ -1,6 +1,11 @@
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
+using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
@@ -14,7 +19,7 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed class OrderManagementSystem : IOrderManager, IDisposable
+public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
@@ -33,10 +38,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _reportPumpCts = new();
     private readonly Task _reportPumpTask;
-    private readonly ConcurrentDictionary<ExecutionReport, byte> _processedFillReports = new();
-    private readonly ConcurrentQueue<ExecutionReport> _processedFillReportOrder = new();
-    private int _orderSequence;
+    private readonly ITradeEventPublisher? _tradeEventPublisher;
+    private readonly ITradeFillHandoffFailureStore? _tradeFillHandoffFailureStore;
+    private readonly Task _handoffRecoveryTask;
+    private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
+    private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
+    private readonly object _disposeSync = new();
     private long _droppedExecutionReports;
+    private Task? _disposeTask;
+    private TaskCompletionSource? _operationsDrained;
+    private int _orderSequence;
+    private int _activeOperations;
+    private int _disposeStarted;
 
     private const int MaxTrackedFillReports = 4096;
     private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
@@ -53,7 +67,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         PaperSessionPersistenceService? sessionPersistence = null,
         BrokerageConfiguration? brokerageConfiguration = null,
         ILiveOrderReadinessGate? liveOrderReadinessGate = null,
-        OrderManagementSystemOptions? options = null)
+        OrderManagementSystemOptions? options = null,
+        ITradeEventPublisher? tradeEventPublisher = null,
+        ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -65,29 +81,81 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _brokerageConfiguration = brokerageConfiguration;
+        _tradeEventPublisher = tradeEventPublisher;
+        _tradeFillHandoffFailureStore = tradeFillHandoffFailureStore;
+        if (tradeFillHandoffFailureStore is not null
+            && tradeEventPublisher is not IScopedTradeEventPublisher)
+        {
+            throw new ArgumentException(
+                "A handoff-failure store requires a scope-bound accounting publisher.",
+                nameof(tradeEventPublisher));
+        }
+        if (tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher
+            && tradeFillHandoffFailureStore is not null)
+        {
+            var publisherScopeIdentity = scopedPublisher.ScopeIdentity.Validate();
+            var failureStoreScopeIdentity = tradeFillHandoffFailureStore.ScopeIdentity.Validate();
+            var scopeIdentityMatches = publisherScopeIdentity.IsExact && failureStoreScopeIdentity.IsExact
+                ? publisherScopeIdentity == failureStoreScopeIdentity
+                : !publisherScopeIdentity.IsExact
+                  && !failureStoreScopeIdentity.IsExact
+                  && string.Equals(
+                      publisherScopeIdentity.PostingScope,
+                      failureStoreScopeIdentity.PostingScope,
+                      StringComparison.Ordinal);
+            if (!scopeIdentityMatches)
+            {
+                throw new ArgumentException(
+                    $"Accounting publisher scope identity '{publisherScopeIdentity}' does not match handoff-failure store scope identity '{failureStoreScopeIdentity}'.",
+                    nameof(tradeFillHandoffFailureStore));
+            }
+        }
         _options = options ?? new OrderManagementSystemOptions();
+        if (_options.RequireProductionSafetyDependencies)
+        {
+            if (_riskValidator is null)
+                throw new InvalidOperationException("Production OMS requires a pre-trade risk validator.");
+            if (_portfolioState is null)
+                throw new InvalidOperationException("Production OMS requires authoritative portfolio position state.");
+            if (_operatorControls is null)
+                throw new InvalidOperationException("Production OMS requires durable operator controls.");
+        }
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
-        // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
+        // ExecutionReports is a best-effort observer stream: order state, session fill history,
+        // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
+        // slow (or absent — there is no production reader today) subscriber block WriteAsync on
+        // the fill path, stalling the report pump and submit callers once the channel filled.
+        // DropOldest keeps fills flowing; drops are counted and logged.
         var executionPolicy = new EventPipelinePolicy(
             Capacity: _options.ValidatedExecutionChannelCapacity,
-            FullMode: BoundedChannelFullMode.Wait,
+            FullMode: BoundedChannelFullMode.DropOldest,
             EnableMetrics: false);
-        _executionChannel = executionPolicy.CreateChannel<ExecutionReport>(
-            singleReader: true,
-            singleWriter: false);
+        _executionChannel = Channel.CreateBounded<ExecutionReport>(
+            executionPolicy.ToBoundedOptions(singleReader: true, singleWriter: false),
+            dropped =>
+            {
+                var totalDropped = Interlocked.Increment(ref _droppedExecutionReports);
+                _logger.LogWarning(
+                    "Execution-report observer channel is full; dropped oldest report for order {OrderId} ({ReportType}). Total dropped: {DroppedTotal}",
+                    dropped.OrderId, dropped.ReportType, totalDropped);
+            });
 
         // Consume the gateway's asynchronous execution report stream so partial fills,
         // rejects, and cancels that arrive after the synchronous submit ack still reach
         // order state, session persistence, and downstream fill consumers.
         _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
+        _handoffRecoveryTask = _tradeEventPublisher is not null && _tradeFillHandoffFailureStore is not null
+            ? Task.Run(() => ReplayRetainedAccountingHandoffsAsync(_reportPumpCts.Token))
+            : Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        using var operation = EnterOperation();
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
         var brokerName = _gateway.GatewayId;
@@ -109,6 +177,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
                 orderId,
                 request.Symbol);
+        }
+
+        // A duplicate client order id must never reach the state table or the gateway: every
+        // downstream write in this method (including gate rejections) keys on orderId, so a
+        // replayed or colliding id would overwrite the tracked state (fills, status history)
+        // of the order already working under that id.
+        if (request.ClientOrderId is not null
+            && _orders.TryGetValue(orderId, out var existingOrder)
+            && !IsTerminalStatus(existingOrder.Status))
+        {
+            return await RejectDuplicateClientOrderIdAsync(
+                orderId,
+                safeRequest,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                ct).ConfigureAwait(false);
         }
 
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
@@ -246,7 +332,31 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             StrategyId = safeRequest.StrategyId
         };
 
-        _orders[orderId] = orderState;
+        if (!TryRegisterOrder(orderId, orderState))
+        {
+            // Lost a race with a concurrent submission that claimed the same client order id
+            // after the guard above ran; the winner's state must survive untouched.
+            return await RejectDuplicateClientOrderIdAsync(
+                orderId,
+                safeRequest,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                ct).ConfigureAwait(false);
+        }
+
+        if (safeRequest.FundAccountId is { } fundAccountId)
+        {
+            _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
+        }
+        else
+        {
+            // A terminal client-order id may be reused. Do not let the prior order's
+            // accounting scope leak into fills for an unscoped replacement order.
+            _orderFinancialAccountIds.TryRemove(orderId, out _);
+        }
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
@@ -277,37 +387,65 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, safeRequest.Symbol, safeRequest.Side, safeRequest.Quantity, updatedState.Status);
 
-            await RecordSessionOrderUpdateAsync(sessionId, updatedState, ct).ConfigureAwait(false);
+            // Once the broker has acknowledged a fill, its accounting handoff is authoritative.
+            // Caller cancellation, paper-session persistence, or audit failures must never run
+            // first and leave a broker fill without durable posting/fallback state.
+            if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+            {
+                await ProcessFillReportAsync(
+                        sessionId,
+                        report,
+                        previousFilledQuantity,
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            try
+            {
+                await RecordSessionOrderUpdateAsync(sessionId, updatedState, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Order {OrderId} was accepted by gateway {GatewayId}, but its paper-session order update could not be recorded",
+                    orderId,
+                    _gateway.GatewayId);
+            }
 
             // Record submitted order in the audit trail when connected
             if (_auditTrail is not null)
             {
-                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                    AuditId: Guid.NewGuid().ToString("N"),
-                    Category: "Order",
-                    Action: "OrderSubmitted",
-                    Outcome: updatedState.Status.ToString(),
-                    OccurredAt: DateTimeOffset.UtcNow,
-                    Actor: actor,
-                    BrokerName: brokerName,
-                    OrderId: orderId,
-                    RunId: runId,
-                    Symbol: safeRequest.Symbol,
-                    CorrelationId: correlationId,
-                    Reason: operatorControlDecision?.AppliedManualOverrideId is null
-                        ? null
-                        : "ManualOverrideApplied",
-                    Scope: BuildOrderAuditScope(safeRequest, runId),
-                    Metadata: BuildOrderSubmittedAuditMetadata(
-                        operatorControlDecision,
-                        liveOrderReadinessDecision)), ct).ConfigureAwait(false);
-            }
-
-            // Publish fills to the execution channel so portfolio trackers and other
-            // consumers can subscribe without coupling directly to the gateway.
-            if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
-            {
-                await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
+                try
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderSubmitted",
+                        Outcome: updatedState.Status.ToString(),
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: brokerName,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: safeRequest.Symbol,
+                        CorrelationId: correlationId,
+                        Reason: operatorControlDecision?.AppliedManualOverrideId is null
+                            ? null
+                            : "ManualOverrideApplied",
+                        Scope: BuildOrderAuditScope(safeRequest, runId),
+                        Metadata: BuildOrderSubmittedAuditMetadata(
+                            operatorControlDecision,
+                            liveOrderReadinessDecision)), ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Order {OrderId} was accepted by gateway {GatewayId}, but its submission audit could not be recorded",
+                        orderId,
+                        _gateway.GatewayId);
+                }
             }
 
             return new OrderResult
@@ -316,6 +454,44 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 OrderId = orderId,
                 OrderState = updatedState,
                 ErrorMessage = report.RejectReason
+            };
+        }
+        catch (AccountingHandoffException ex)
+        {
+            var filledState = _orders.TryGetValue(orderId, out var retainedState)
+                ? retainedState
+                : orderState;
+            _logger.LogCritical(
+                ex,
+                "Order {OrderId} filled but accounting handoff failed; retained={HandoffRetained}",
+                orderId,
+                ex.WasRetained);
+            try
+            {
+                await RecordOrderLifecycleAuditAsync(
+                        action: "AccountingHandoffFailed",
+                        outcome: "AttentionRequired",
+                        orderId: orderId,
+                        state: filledState,
+                        report: null,
+                        message: ex.Message,
+                        ct: CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception auditFailure)
+            {
+                _logger.LogCritical(
+                    auditFailure,
+                    "Accounting handoff failure for order {OrderId} could not be appended to the execution audit trail",
+                    orderId);
+            }
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                ErrorMessage = ex.Message,
+                OrderState = filledState
             };
         }
         catch (Exception ex)
@@ -360,6 +536,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     /// <inheritdoc />
     public async Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default)
+    {
+        using var operation = EnterOperation();
+        return await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
+    }
+
+    private async Task<OrderResult> CancelOrderCoreAsync(string orderId, CancellationToken ct)
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
@@ -421,6 +603,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <inheritdoc />
     public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
+        using var operation = EnterOperation();
+
         if (!_orders.TryGetValue(orderId, out var state))
         {
             await RecordOrderLifecycleAuditAsync(
@@ -436,13 +620,37 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+        if (report.OrderStatus is OrderStatus.Rejected)
+        {
+            // Do not apply a rejected modify to order state: ApplyReport would let the terminal
+            // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
+            // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: report.OrderStatus.ToString(),
+                orderId: orderId,
+                state: state,
+                report: report,
+                message: report.RejectReason ?? "Modify request rejected",
+                metadata: BuildOrderModificationAuditMetadata(modification, state, report),
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = report.RejectReason ?? "Modify request rejected"
+            };
+        }
+
         var updated = _orders.AddOrUpdate(
             orderId,
             _ => ApplyReport(state, report),
             (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
-            action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
+            action: "OrderModified",
             outcome: updated.Status.ToString(),
             orderId: orderId,
             state: updated,
@@ -488,6 +696,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <inheritdoc />
     public async Task CancelAllAsync(CancellationToken ct = default)
     {
+        using var operation = EnterOperation();
+
         var openOrders = GetOpenOrders();
         _logger.LogInformation("Cancelling all {Count} open orders", openOrders.Count);
 
@@ -500,22 +710,75 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             },
             async (order, token) =>
             {
-                await CancelOrderAsync(order.OrderId, token).ConfigureAwait(false);
+                await CancelOrderCoreAsync(order.OrderId, token).ConfigureAwait(false);
             }).ConfigureAwait(false);
     }
 
     public void Dispose()
-    {
-        _reportPumpCts.Cancel();
-        _executionChannel.Writer.TryComplete();
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        // Dispose the CTS only after the pump has finished using its token.
-        _reportPumpTask.ContinueWith(
-            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
-            _reportPumpCts,
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
+    /// <summary>
+    /// Stops report intake and awaits both the broker-report and retained-handoff pumps before
+    /// returning. Dependency injection can therefore dispose the accounting publisher and
+    /// failure store only after no OMS task can use them.
+    /// </summary>
+    public ValueTask DisposeAsync()
+    {
+        lock (_disposeSync)
+        {
+            Interlocked.Exchange(ref _disposeStarted, 1);
+            if (_disposeTask is not null)
+                return new ValueTask(_disposeTask);
+
+            var operationsDrained = _activeOperations == 0
+                ? Task.CompletedTask
+                : (_operationsDrained ??= new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+            _disposeTask = DisposeCoreAsync(operationsDrained);
+            return new ValueTask(_disposeTask);
+        }
+    }
+
+    private async Task DisposeCoreAsync(Task operationsDrained)
+    {
+        // Do not cancel report intake until every operation admitted before disposal has
+        // completed. In particular, a broker submit may return a fill whose accounting
+        // handoff still needs to reach the primary publisher or durable fallback.
+        await Task.Yield();
+        await operationsDrained.ConfigureAwait(false);
+
+        Exception? shutdownFailure = null;
+        try
+        {
+            await _reportPumpCts.CancelAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            shutdownFailure = ex;
+        }
+
+        try
+        {
+            await Task.WhenAll(_reportPumpTask, _handoffRecoveryTask).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_reportPumpCts.IsCancellationRequested)
+        {
+            // Expected when shutdown interrupts a gateway read or retained-handoff load.
+        }
+        catch (Exception ex)
+        {
+            shutdownFailure = shutdownFailure is null
+                ? ex
+                : new AggregateException(shutdownFailure, ex);
+        }
+        finally
+        {
+            _executionChannel.Writer.TryComplete();
+            _reportPumpCts.Dispose();
+        }
+
+        if (shutdownFailure is not null)
+            ExceptionDispatchInfo.Capture(shutdownFailure).Throw();
     }
 
     /// <summary>
@@ -523,10 +786,63 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// by portfolio trackers and audit subscribers.  Reports are published as each order
     /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
     /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
-    /// (gateways report cumulative quantities). Consumers must drain this reader promptly
-    /// to avoid backpressure.
+    /// (gateways report cumulative quantities). This is a lossy observer stream: when a
+    /// subscriber lags behind <see cref="OrderManagementSystemOptions.ExecutionChannelCapacity"/>,
+    /// the oldest unread report is dropped (logged and counted via
+    /// <see cref="DroppedExecutionReports"/>) rather than blocking the fill path. Order state,
+    /// session fill history, and the durable accounting handoff remain authoritative and lossless.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
+
+    /// <summary>
+    /// Total execution reports dropped from the <see cref="ExecutionReports"/> observer channel
+    /// because no subscriber drained it in time. Fills themselves are never lost — order state
+    /// and the accounting handoff do not flow through this channel.
+    /// </summary>
+    public long DroppedExecutionReports => Interlocked.Read(ref _droppedExecutionReports);
+
+    /// <summary>
+    /// Returns OMS-level accounting handoff failures that could not enter the primary publisher.
+    /// These records survive process restart when a failure store is composed.
+    /// </summary>
+    public Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> GetAccountingHandoffFailuresAsync(
+        CancellationToken ct = default)
+        => GetAccountingHandoffFailuresCoreAsync(ct);
+
+    private async Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> GetAccountingHandoffFailuresCoreAsync(
+        CancellationToken ct)
+    {
+        using var operation = EnterOperation();
+        return _tradeFillHandoffFailureStore is null
+            ? []
+            : await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
+    }
+
+    private OperationLease EnterOperation()
+    {
+        lock (_disposeSync)
+        {
+            if (_disposeStarted != 0)
+                throw new ObjectDisposedException(nameof(OrderManagementSystem));
+
+            checked
+            {
+                _activeOperations++;
+            }
+
+            return new OperationLease(this);
+        }
+    }
+
+    private void ExitOperation()
+    {
+        lock (_disposeSync)
+        {
+            _activeOperations--;
+            if (_activeOperations == 0)
+                _operationsDrained?.TrySetResult();
+        }
+    }
 
     private string GenerateOrderId()
     {
@@ -559,6 +875,96 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
+        };
+    }
+
+    /// <summary>
+    /// Terminal statuses whose order ids may be reclaimed by a later submission. Excludes
+    /// <see cref="OrderStatus.PendingCancel"/>: an order awaiting cancel confirmation is still
+    /// working at the broker and its id must not be reused.
+    /// </summary>
+    private static bool IsTerminalStatus(OrderStatus status)
+        => status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
+
+    /// <summary>
+    /// Atomically claims <paramref name="orderId"/> in the order table. A terminal entry may be
+    /// reclaimed (retention trimming already makes terminal ids reusable once evicted, so
+    /// reuse-after-terminal keeps the same semantics); an active entry may not.
+    /// </summary>
+    private bool TryRegisterOrder(string orderId, OrderState orderState)
+    {
+        while (!_orders.TryAdd(orderId, orderState))
+        {
+            if (!_orders.TryGetValue(orderId, out var existing))
+            {
+                continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
+            }
+
+            if (!IsTerminalStatus(existing.Status))
+            {
+                return false;
+            }
+
+            if (_orders.TryUpdate(orderId, orderState, existing))
+            {
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        CancellationToken ct)
+    {
+        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
+
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
+    }
+
+    private static OrderState CreateRejectedState(
+        string orderId,
+        OrderRequest request,
+        string? reason)
+    {
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            Type = request.Type,
+            Quantity = request.Quantity,
+            LimitPrice = request.LimitPrice,
+            StopPrice = request.StopPrice,
+            Status = OrderStatus.Rejected,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            StrategyId = request.StrategyId,
+            AverageFillPrice = null,
+            FilledQuantity = 0m
         };
     }
 
@@ -617,6 +1023,91 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
     }
 
+    private async Task ReplayRetainedAccountingHandoffsAsync(CancellationToken ct)
+    {
+        if (_tradeEventPublisher is null || _tradeFillHandoffFailureStore is null)
+            return;
+
+        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
+        try
+        {
+            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
+            return;
+        }
+
+        foreach (var failure in retained)
+        {
+            if (ct.IsCancellationRequested)
+                return;
+            try
+            {
+                _tradeEventPublisher.Publish(failure.TradeEvent);
+                await _tradeFillHandoffFailureStore
+                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(
+                    ex,
+                    "Retained accounting handoff replay failed for fill {FillId}; the durable failure record remains pending",
+                    failure.TradeEvent.FillId);
+                try
+                {
+                    await _tradeFillHandoffFailureStore
+                        .RetainAsync(failure.TradeEvent, ex.Message, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception retentionException)
+                {
+                    _logger.LogCritical(
+                        retentionException,
+                        "Could not update retained accounting handoff failure for fill {FillId}",
+                        failure.TradeEvent.FillId);
+                }
+            }
+        }
+    }
+
+    private async Task<bool> RetainAccountingHandoffFailureAsync(
+        TradeExecutedEvent tradeEvent,
+        Exception publisherFailure,
+        CancellationToken ct)
+    {
+        if (_tradeFillHandoffFailureStore is null)
+        {
+            _logger.LogCritical(
+                publisherFailure,
+                "Accounting publisher rejected fill {FillId} and no durable OMS handoff-failure store is configured",
+                tradeEvent.FillId);
+            return false;
+        }
+
+        try
+        {
+            await _tradeFillHandoffFailureStore
+                .RetainAsync(tradeEvent, publisherFailure.Message, ct)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception retentionFailure)
+        {
+            _logger.LogCritical(
+                retentionFailure,
+                "Accounting publisher and OMS failure-store retention both failed for fill {FillId}; the order path will fail closed",
+                tradeEvent.FillId);
+            return false;
+        }
+    }
+
     private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
@@ -634,11 +1125,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             }
         }
 
-        if (updatedState is not null)
-        {
-            await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
-        }
-        else
+        if (updatedState is null)
         {
             _logger.LogWarning(
                 "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
@@ -648,7 +1135,17 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
         {
             var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
-            await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
+            await ProcessFillReportAsync(
+                    sessionId,
+                    report,
+                    previousFilledQuantity,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        if (updatedState is not null)
+        {
+            await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
         }
     }
 
@@ -662,11 +1159,27 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         string? sessionId,
         ExecutionReport report,
         decimal previousFilledQuantity,
-        CancellationToken ct)
+        CancellationToken postHandoffCt)
     {
-        if (!TryMarkFillProcessed(report))
+        var orderId = report.ClientOrderId ?? report.OrderId;
+        if (!_fillProcessing.TryGetValue(report, out var progress))
         {
-            return;
+            // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+            // Alpaca filled_qty) while fill consumers treat each report as a discrete
+            // trade, so only the increment since the last tracked fill may be forwarded.
+            var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+            if (incrementQuantity <= 0m)
+                return;
+
+            var fillIncrement = incrementQuantity == report.FilledQuantity
+                ? report
+                : report with { FilledQuantity = incrementQuantity };
+            progress = _fillProcessing.GetOrAdd(
+                report,
+                _ => new FillProcessingProgress(
+                    fillIncrement,
+                    report.FilledQuantity,
+                    !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
         // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
@@ -683,80 +1196,227 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
         if (incrementQuantity <= 0m)
         {
-            return;
+            if (progress.IsComplete)
+                return;
+
+            var fillIncrement = progress.FillIncrement;
+
+            if (!progress.PortfolioApplied)
+            {
+                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
+
+                // Only fills for orders this OMS placed may mutate the paper portfolio;
+                // stream reports for external/untracked orders are still published below.
+                if (_portfolioState is PaperTradingPortfolio paperPortfolio
+                    && progress.IsTrackedOrder)
+                {
+                    paperPortfolio.ApplyFill(fillIncrement);
+                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
+                }
+
+                progress.NewCash = _portfolioState?.Cash ?? 0m;
+                progress.PortfolioApplied = true;
+            }
+
+            if (!progress.TradeEventPublished)
+            {
+                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
+                {
+                    progress.TradeEvent ??= CreateTradeExecutedEvent(
+                        fillIncrement,
+                        progress.CumulativeFilledQuantity,
+                        progress.RealizedPnl,
+                        progress.NewCash,
+                        ResolveFinancialAccountId(orderId));
+                    try
+                    {
+                        _tradeEventPublisher.Publish(progress.TradeEvent);
+                    }
+                    catch (Exception ex)
+                    {
+                        var wasRetained = await RetainAccountingHandoffFailureAsync(
+                                progress.TradeEvent,
+                                ex,
+                                CancellationToken.None)
+                            .ConfigureAwait(false);
+                        throw new AccountingHandoffException(progress.TradeEvent, wasRetained, ex);
+                    }
+                }
+
+                progress.TradeEventPublished = true;
+            }
+
+            if (!progress.SessionRecorded)
+            {
+                try
+                {
+                    await RecordSessionFillAsync(sessionId, fillIncrement, postHandoffCt).ConfigureAwait(false);
+                    progress.SessionRecorded = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Accounting accepted fill {FillId}, but paper-session fill history could not be recorded",
+                        progress.TradeEvent?.FillId);
+                }
+            }
+
+            if (!progress.ExecutionReportPublished)
+            {
+                // DropOldest semantics: this write completes without blocking even when the
+                // observer channel is full — the channel's drop callback logs and counts the
+                // evicted report. The fill path must never stall on observer lag.
+                try
+                {
+                    await _executionChannel.Writer.WriteAsync(fillIncrement, postHandoffCt).ConfigureAwait(false);
+                    progress.ExecutionReportPublished = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Accounting accepted fill {FillId}, but the execution-report subscriber channel could not publish it",
+                        progress.TradeEvent?.FillId);
+                }
+            }
+
+            if (progress.SessionRecorded && progress.ExecutionReportPublished)
+            {
+                progress.IsComplete = true;
+                TrackCompletedFill(report);
+            }
         }
-
-        var fillIncrement = incrementQuantity == report.FilledQuantity
-            ? report
-            : report with { FilledQuantity = incrementQuantity };
-
-        // Only fills for orders this OMS placed may mutate the paper portfolio;
-        // stream reports for external/untracked orders are still published below
-        // for observers but must not corrupt tracked positions.
-        var orderId = report.ClientOrderId ?? report.OrderId;
-        if (_portfolioState is PaperTradingPortfolio paperPortfolio
-            && !string.IsNullOrWhiteSpace(orderId)
-            && _orders.ContainsKey(orderId))
+        catch (AccountingHandoffException)
         {
-            paperPortfolio.ApplyFill(fillIncrement);
+            throw;
         }
-
-        await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
-
-        if (!_executionChannel.Writer.TryWrite(fillIncrement))
+        catch (Exception ex)
         {
-            var dropped = Interlocked.Increment(ref _droppedExecutionReports);
-            _logger.LogError(
-                "Execution report channel full; dropped fill report for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); {DroppedCount} dropped in total — ExecutionReports consumers must drain faster",
-                fillIncrement.OrderId, fillIncrement.Symbol, fillIncrement.FilledQuantity, fillIncrement.FillPrice, dropped);
+            var evidenceRetained = await TryRetainUnresolvedFillEvidenceAsync(
+                    orderId,
+                    report,
+                    ex)
+                .ConfigureAwait(false);
+            throw new AccountingHandoffException(orderId ?? report.OrderId, evidenceRetained, ex);
+        }
+        finally
+        {
+            progress.Gate.Release();
         }
     }
 
-    /// <summary>
-    /// Marks a fill report as processed; returns <see langword="false"/> when the identical
-    /// report was already handled via the other path (sync ack vs. report stream).
-    /// <see cref="ExecutionReport"/> is a record, so value equality identifies the replayed
-    /// ack; distinct fills always differ in timestamp and cumulative filled quantity.
-    /// </summary>
-    private bool TryMarkFillProcessed(ExecutionReport report)
+    private void TrackCompletedFill(ExecutionReport report)
     {
-        if (!_processedFillReports.TryAdd(report, 0))
+        _completedFillReportOrder.Enqueue(report);
+        while (_completedFillReportOrder.Count > MaxTrackedFillReports
+            && _completedFillReportOrder.TryDequeue(out var oldest))
         {
+            if (_fillProcessing.TryGetValue(oldest, out var progress) && progress.IsComplete)
+                _fillProcessing.TryRemove(oldest, out _);
+        }
+    }
+
+    private string? ResolveFinancialAccountId(string? orderId)
+        => !string.IsNullOrWhiteSpace(orderId)
+            && _orderFinancialAccountIds.TryGetValue(orderId, out var accountId)
+                ? accountId
+                : null;
+
+    private async Task<bool> TryRetainUnresolvedFillEvidenceAsync(
+        string? orderId,
+        ExecutionReport report,
+        Exception failure)
+    {
+        if (_auditTrail is null)
+        {
+            _logger.LogCritical(
+                failure,
+                "Broker fill for order {OrderId} could not form a durable accounting event and no execution audit store is configured",
+                orderId ?? report.OrderId);
             return false;
         }
 
-        _processedFillReportOrder.Enqueue(report);
-        while (_processedFillReportOrder.Count > MaxTrackedFillReports
-            && _processedFillReportOrder.TryDequeue(out var oldest))
+        try
         {
-            _processedFillReports.TryRemove(oldest, out _);
+            _orders.TryGetValue(orderId ?? string.Empty, out var state);
+            var metadata = new Dictionary<string, string>(
+                BuildOrderLifecycleAuditMetadata(state, report) ?? new Dictionary<string, string>(),
+                StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountingFailureType"] = failure.GetType().Name,
+                ["fillPrice"] = report.FillPrice?.ToString(CultureInfo.InvariantCulture) ?? "missing",
+                ["fillOccurredAtUtc"] = report.Timestamp.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture)
+            };
+            await RecordOrderLifecycleAuditAsync(
+                    action: "AccountingHandoffUnresolved",
+                    outcome: "AttentionRequired",
+                    orderId: orderId ?? report.OrderId,
+                    state: state,
+                    report: report,
+                    message: failure.Message,
+                    ct: CancellationToken.None,
+                    metadata: metadata)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception auditFailure)
+        {
+            _logger.LogCritical(
+                auditFailure,
+                "Broker fill for order {OrderId} could not form a durable accounting event and its audit evidence could not be retained",
+                orderId ?? report.OrderId);
+            return false;
+        }
+    }
+
+    private static TradeExecutedEvent CreateTradeExecutedEvent(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        decimal realizedPnl,
+        decimal newCash,
+        string? financialAccountId)
+    {
+        if (fillIncrement.FillPrice is not { } fillPrice)
+        {
+            throw new InvalidOperationException(
+                $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
         }
 
-        return true;
+        var canonicalIdentity = string.Join(
+            "|",
+            EncodeIdentityPart(fillIncrement.OrderId),
+            EncodeIdentityPart(fillIncrement.ClientOrderId),
+            EncodeIdentityPart(fillIncrement.GatewayOrderId),
+            EncodeIdentityPart(fillIncrement.Symbol),
+            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
+            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
+            fillPrice.ToString(CultureInfo.InvariantCulture),
+            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
+            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
+            EncodeIdentityPart(financialAccountId));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
+        var fillId = new Guid(hash.AsSpan(0, 16));
+
+        return new TradeExecutedEvent(
+            fillId,
+            fillIncrement.ClientOrderId ?? fillIncrement.OrderId,
+            fillIncrement.Symbol,
+            fillIncrement.Side,
+            fillIncrement.FilledQuantity,
+            fillPrice,
+            fillIncrement.Commission ?? 0m,
+            realizedPnl,
+            newCash,
+            fillIncrement.Timestamp,
+            financialAccountId);
     }
 
-    private static OrderState CreateRejectedState(
-        string orderId,
-        OrderRequest request,
-        string? reason)
-    {
-        return new OrderState
-        {
-            OrderId = orderId,
-            Symbol = request.Symbol,
-            Side = request.Side,
-            Type = request.Type,
-            Quantity = request.Quantity,
-            LimitPrice = request.LimitPrice,
-            StopPrice = request.StopPrice,
-            Status = OrderStatus.Rejected,
-            CreatedAt = DateTimeOffset.UtcNow,
-            LastUpdatedAt = DateTimeOffset.UtcNow,
-            StrategyId = request.StrategyId,
-            AverageFillPrice = null,
-            FilledQuantity = 0m
-        };
-    }
+    private static string EncodeIdentityPart(string? value)
+        => value is null
+            ? "-"
+            : Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
 
     private async Task RecordSessionOrderUpdateAsync(
         string? sessionId,
@@ -1004,8 +1664,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         IReadOnlyDictionary<string, string>? metadata = null)
     {
         var rejectedState = CreateRejectedState(orderId, request, message);
-        _orders[orderId] = rejectedState;
-        TrimRetainedOrdersIfNeeded();
+        // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
+        // existing entry under this id belongs to a different order (e.g. a terminal order whose
+        // id a rejected submission tried to reuse) and must survive. The rejection is still
+        // audit-trailed and returned to the caller.
+        if (_orders.TryAdd(orderId, rejectedState))
+        {
+            TrimRetainedOrdersIfNeeded();
+        }
+
         await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
         await RecordOrderRejectionAsync(
             orderId,
@@ -1094,14 +1761,67 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         {
             _orders.TryRemove(removableOrderId, out _);
             _orderSessionIds.TryRemove(removableOrderId, out _);
+            _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
         }
     }
-}
 
-/// <summary>Placeholder attribute for ADR traceability.</summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-internal sealed class ImplementsAdrAttribute(string adr, string reason) : Attribute
-{
-    public string Adr { get; } = adr;
-    public string Reason { get; } = reason;
+    private sealed class OperationLease(OrderManagementSystem owner) : IDisposable
+    {
+        private OrderManagementSystem? _owner = owner;
+
+        public void Dispose()
+            => Interlocked.Exchange(ref _owner, null)?.ExitOperation();
+    }
+
+    private sealed class FillProcessingProgress(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        bool isTrackedOrder)
+    {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+        public ExecutionReport FillIncrement { get; } = fillIncrement;
+        public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
+        public bool IsTrackedOrder { get; } = isTrackedOrder;
+        public TradeExecutedEvent? TradeEvent { get; set; }
+        public decimal RealizedPnl { get; set; }
+        public decimal NewCash { get; set; }
+        public bool PortfolioApplied { get; set; }
+        public bool TradeEventPublished { get; set; }
+        public bool SessionRecorded { get; set; }
+        public bool ExecutionReportPublished { get; set; }
+        public volatile bool IsComplete;
+    }
+
+    private sealed class AccountingHandoffException : Exception
+    {
+        public AccountingHandoffException(
+            TradeExecutedEvent tradeEvent,
+            bool wasRetained,
+            Exception innerException)
+            : base(
+                $"Execution fill '{tradeEvent.FillId:D}' was accepted by the broker but its accounting handoff failed"
+                + (wasRetained
+                    ? "; the event is durably retained for restart replay."
+                    : "; no durable fallback accepted the event and the order result is fail-closed."),
+                innerException)
+        {
+            WasRetained = wasRetained;
+        }
+
+        public AccountingHandoffException(
+            string orderId,
+            bool evidenceRetained,
+            Exception innerException)
+            : base(
+                $"Execution fill for order '{orderId}' was accepted by the broker but could not form a safe accounting event"
+                + (evidenceRetained
+                    ? "; durable execution-audit evidence requires operator reconciliation."
+                    : "; no durable reconciliation evidence was available and the order result is fail-closed."),
+                innerException)
+        {
+            WasRetained = evidenceRetained;
+        }
+
+        public bool WasRetained { get; }
+    }
 }

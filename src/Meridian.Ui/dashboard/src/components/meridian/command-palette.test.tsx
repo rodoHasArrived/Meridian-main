@@ -71,10 +71,10 @@ describe("CommandPalette", () => {
   it("keeps Tab focus inside the modal command surface", () => {
     const onOpenChange = vi.fn();
 
-    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings#alpaca-provider-setup"] });
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings/providers/alpaca/setup"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Alpaca provider setup, current route");
+    const lastCommand = screen.getByLabelText("Alpaca guided setup, current route");
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -91,11 +91,11 @@ describe("CommandPalette", () => {
     });
 
     expect(screen.getByLabelText("Settings, current workspace")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Alpaca guided setup route")).toHaveAttribute(
       "href",
-      "/settings#alpaca-provider-setup"
+      "/settings/providers/alpaca/setup"
     );
-    expect(screen.queryByLabelText("Alpaca provider setup, current route")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Alpaca guided setup, current route")).not.toBeInTheDocument();
   });
 
   it("closes when a workspace command is selected", async () => {
@@ -123,9 +123,9 @@ describe("CommandPalette", () => {
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
-    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Alpaca guided setup route")).toHaveAttribute(
       "href",
-      "/settings#alpaca-provider-setup"
+      "/settings/providers/alpaca/setup"
     );
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
   });

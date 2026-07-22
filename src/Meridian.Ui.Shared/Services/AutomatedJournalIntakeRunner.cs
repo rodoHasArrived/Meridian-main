@@ -1,4 +1,7 @@
+using Meridian.Application.Accounting;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
@@ -19,7 +22,10 @@ public sealed record RunDividendDraftIntakeRequest(
     string? EntityId = null,
     string? TenantId = null,
     string? CompanyId = null,
-    decimal WithholdingTaxRate = 0m);
+    decimal WithholdingTaxRate = 0m,
+    DateTimeOffset? AsOf = null,
+    decimal MinimumEvidenceConfidence = 0.75m,
+    int MaximumPositionAgeDays = 7);
 
 /// <summary>
 /// Request to accrue period fees from fund fee terms and land the drafts in the manual
@@ -38,7 +44,12 @@ public sealed record RunFeeAccrualDraftIntakeRequest(
     Guid? LedgerBookId = null,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    DateTimeOffset? AsOf = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    DateTimeOffset? EvidenceRetainedAtUtc = null,
+    AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null,
+    decimal MinimumCapitalAccountConfidence = 0.90m);
 
 /// <summary>
 /// Request to project period-close closing entries from a closed ledger period's trial
@@ -55,13 +66,68 @@ public sealed record RunPeriodCloseDraftIntakeRequest(
     string? CompanyId = null);
 
 /// <summary>
+/// Explicitly governed end-of-day valuation request. Prices are resolved server-side
+/// from the registered historical provider chain; callers provide positions and policy,
+/// never the closing prices that enter the books.
+/// </summary>
+public sealed record RunDailyMarkToMarketDraftIntakeRequest(
+    string FundProfileId,
+    string Currency,
+    string Actor,
+    Guid LedgerBookId,
+    Guid PeriodId,
+    DateTimeOffset AsOf,
+    IReadOnlyList<MarkToMarketPosition> Positions,
+    string PolicyId,
+    string PolicyName,
+    string ValuationMethod,
+    string PolicyApprovedBy,
+    DateTimeOffset PolicyApprovedAtUtc,
+    string Reason,
+    int MaximumMarkAgeDays = 3,
+    DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium,
+    bool RequireCompleteCoverage = true,
+    string? EntityId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? BatchCorrelationId = null);
+
+/// <summary>
 /// Outcome of one automated intake run: producer-side skips plus the intake result
 /// (created drafts and intake-side skips). Empty productions return an empty intake
 /// rather than an error.
 /// </summary>
+public enum AutomatedJournalIntakeReadiness
+{
+    Ready = 0,
+    NeedsInvestigation = 1,
+    Blocked = 2
+}
+
 public sealed record AutomatedJournalIntakeRunResult(
     IReadOnlyList<AutomatedJournalEventProductionSkip> ProducerSkips,
-    AutomatedJournalDraftIntakeResult Intake);
+    AutomatedJournalDraftIntakeResult Intake,
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
+    AutomatedJournalIntakeReadiness Readiness = AutomatedJournalIntakeReadiness.Ready,
+    IReadOnlyList<string>? ReadinessBlockers = null)
+{
+    public IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto> EvidenceAssessments { get; init; } =
+        EvidenceAssessments ?? new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyList<string> ReadinessBlockers { get; init; } = ReadinessBlockers ?? [];
+}
+
+/// <summary>Valuation evidence and workbench intake outcome for one daily-close run.</summary>
+public sealed record DailyMarkToMarketIntakeRunResult(
+    DailyMarkToMarketRun Valuation,
+    AutomatedJournalDraftIntakeResult Intake,
+    string? BatchCorrelationId = null);
+
+internal sealed record PeriodCloseDraftPreview(
+    LedgerPeriodDto Period,
+    LedgerPeriodSummaryDto Summary,
+    PeriodCloseProjection Projection,
+    AutomatedJournalDraft? Draft);
 
 /// <summary>
 /// Wires the automated event producers to <see cref="AutomatedJournalDraftIntakeService"/>:
@@ -77,18 +143,37 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly FeeScheduleAccrualEventProducer _feeProducer;
     private readonly CorporateActionDividendEventProducer? _dividendProducer;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly DailyMarkToMarketService? _dailyMarkToMarketService;
+    private readonly DailyValuationPositionService? _dailyValuationPositionService;
+    private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
+    private readonly IAutomatedJournalCapitalAccountReconciliationResolver? _capitalAccountReconciliationResolver;
+    private readonly TimeProvider _timeProvider;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
         FeeScheduleAccrualEventProducer feeProducer,
         CorporateActionDividendEventProducer? dividendProducer = null,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        DailyMarkToMarketService? dailyMarkToMarketService = null,
+        DailyValuationPositionService? dailyValuationPositionService = null,
+        AutomatedJournalEvidencePolicy? evidencePolicy = null,
+        IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null,
+        TimeProvider? timeProvider = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;
         _ledgerBookService = ledgerBookService;
+        _dailyMarkToMarketService = dailyMarkToMarketService;
+        _dailyValuationPositionService = dailyValuationPositionService;
+        _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
+        _capitalAccountReconciliationResolver = capitalAccountReconciliationResolver;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
+
+    /// <summary>Whether this process can execute the provider-backed daily valuation lane.</summary>
+    public bool CanRunDailyMarkToMarket =>
+        _dailyMarkToMarketService is not null && _dailyValuationPositionService is not null;
 
     public async Task<AutomatedJournalIntakeRunResult> RunDividendIntakeAsync(
         RunDividendDraftIntakeRequest request,
@@ -104,10 +189,13 @@ public sealed class AutomatedJournalIntakeRunner
         var production = await _dividendProducer.ProduceAsync(
             new CorporateActionDividendRequest(
                 request.Positions,
+                request.Currency,
                 request.WindowStart,
                 request.WindowEnd,
-                DateTimeOffset.UtcNow,
-                request.WithholdingTaxRate),
+                request.AsOf ?? DateTimeOffset.UtcNow,
+                request.WithholdingTaxRate,
+                request.MinimumEvidenceConfidence,
+                request.MaximumPositionAgeDays),
             ct).ConfigureAwait(false);
 
         var intake = production.Events.Count == 0
@@ -122,20 +210,161 @@ public sealed class AutomatedJournalIntakeRunner
                     request.PeriodId,
                     request.EntityId,
                     request.TenantId,
-                    request.CompanyId),
+                    request.CompanyId,
+                    production.EvidenceAssessments),
                 ct).ConfigureAwait(false);
 
-        return new AutomatedJournalIntakeRunResult(production.Skipped, intake);
+        return new AutomatedJournalIntakeRunResult(production.Skipped, intake, production.EvidenceAssessments);
+    }
+
+    /// <summary>
+    /// Resolves policy-qualified closing marks and admits the resulting fair-value draft
+    /// into the existing human approval queue. Posting remains exclusively available via
+    /// the workbench lifecycle and its governed durable posting target.
+    /// </summary>
+    public async Task<DailyMarkToMarketIntakeRunResult> RunDailyMarkToMarketIntakeAsync(
+        RunDailyMarkToMarketDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (_dailyMarkToMarketService is null)
+        {
+            throw new InvalidOperationException(
+                "Daily mark-to-market intake requires the registered historical provider chain, which is not configured.");
+        }
+        if (request.LedgerBookId == Guid.Empty)
+            throw new ArgumentException("Ledger book id is required.", nameof(request));
+        if (request.PeriodId == Guid.Empty)
+            throw new ArgumentException("Ledger period id is required.", nameof(request));
+        if (request.MaximumMarkAgeDays < 0)
+            throw new ArgumentOutOfRangeException(nameof(request), "Maximum mark age cannot be negative.");
+        if (_dailyValuationPositionService is null)
+        {
+            throw new InvalidOperationException(
+                "Daily mark-to-market intake requires canonical Security Master position resolution, which is not configured.");
+        }
+
+        var positionResolution = await _dailyValuationPositionService
+            .ResolveAdHocAsync(request.Positions, request.Currency, request.AsOf, ct)
+            .ConfigureAwait(false);
+        if (!positionResolution.IsReady)
+        {
+            throw new InvalidOperationException(
+                $"Daily mark-to-market intake is blocked: {string.Join(" ", positionResolution.Blockers)}");
+        }
+
+        // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy, while
+        // MarkPriceQualityPolicy enforces observed-date, minimum-confidence, and complete-coverage
+        // controls before any fair-value draft can be retained.
+        var policy = new DailyPortfolioPricingPolicy(
+            request.FundProfileId,
+            request.PolicyId,
+            request.PolicyName,
+            request.ValuationMethod,
+            request.PolicyApprovedBy,
+            request.PolicyApprovedAtUtc,
+            stalePricePolicy: StalePricePolicy.Of(request.MaximumMarkAgeDays, StalePriceHandling.Block));
+        var valuation = await _dailyMarkToMarketService.PrepareAsync(
+            new DailyMarkToMarketRequest(
+                policy,
+                request.PeriodId.ToString("D"),
+                request.AsOf,
+                request.Currency,
+                positionResolution.Positions,
+                request.Actor,
+                request.Reason,
+                new MarkPriceQualityPolicy(
+                    TimeSpan.FromDays(request.MaximumMarkAgeDays),
+                    request.MinimumConfidence,
+                    request.RequireCompleteCoverage,
+                    RequireObservedDate: true),
+                request.LedgerBookId),
+            ct).ConfigureAwait(false);
+
+        var batchCorrelationId = BuildDailyValuationBatchCorrelationId(
+            request,
+            positionResolution.Positions,
+            valuation.Approvals,
+            request.BatchCorrelationId);
+
+        if (valuation.Approvals.Count == 0)
+        {
+            return new DailyMarkToMarketIntakeRunResult(valuation, EmptyIntake, batchCorrelationId);
+        }
+
+        var intake = await _intake.IntakeDraftsAsync(
+            new AutomatedJournalPreparedDraftIntakeRequest(
+                request.FundProfileId,
+                request.Currency,
+                valuation.Approvals.Select(static approval => approval.Draft).ToArray(),
+                request.Actor,
+                request.LedgerBookId,
+                request.PeriodId.ToString("D"),
+                request.EntityId,
+                request.TenantId,
+                request.CompanyId,
+                BatchCorrelationId: batchCorrelationId),
+            ct).ConfigureAwait(false);
+
+        return new DailyMarkToMarketIntakeRunResult(valuation, intake, batchCorrelationId);
+    }
+
+    private static string BuildDailyValuationBatchCorrelationId(
+        RunDailyMarkToMarketDraftIntakeRequest request,
+        IReadOnlyList<MarkToMarketPosition> positions,
+        IReadOnlyList<AutomatedJournalApproval> approvals,
+        string? requestedCorrelationSeed)
+    {
+        var draftRevision = approvals.Count == 0
+            ? "no-adjustment"
+            : string.Join('|', approvals
+                .Select(static approval => approval.Draft.Metadata.IdempotencyKey)
+                .Where(static key => !string.IsNullOrWhiteSpace(key))
+                .Order(StringComparer.Ordinal));
+        var seed = FormattableString.Invariant(
+            $"daily-valuation-batch|{requestedCorrelationSeed?.Trim() ?? "unseeded"}|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.LedgerBookId:N}|{request.PeriodId:N}|{request.AsOf.ToUniversalTime():O}|{DailyValuationPositionService.ComputeStaticPositionHash(positions)}|{draftRevision}");
+        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+            .ToString("D");
     }
 
     /// <summary>
     /// Projects closing entries from a closed period's trial balance and admits the
-    /// resulting draft into the workbench queue. The period must already be soft- or
-    /// hard-closed: closing entries are the accounting consequence of a close decision,
-    /// not a way to make one. A period with no temporary-account balances returns an
-    /// empty intake — a correct outcome, not a gap.
+    /// resulting draft into the workbench queue. Mutating intake is allowed only while the
+    /// period is soft-closed; hard-closed periods remain available through the read-only preview
+    /// path but cannot acquire new drafts. A period with no temporary-account balances returns
+    /// an empty intake — a correct outcome, not a gap.
     /// </summary>
     public async Task<AutomatedJournalIntakeRunResult> RunPeriodCloseIntakeAsync(
+        RunPeriodCloseDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        var preview = await PreviewPeriodCloseAsync(request, ct).ConfigureAwait(false);
+        if (preview.Period.Status != LedgerPeriodStatusDto.SoftClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{preview.Period.Label}' must be soft-closed before closing-entry drafts can be queued; current status is {preview.Period.Status}.");
+        }
+
+        var draft = preview.Draft;
+        var intake = draft is null
+            ? EmptyIntake
+            : await _intake.IntakeDraftsAsync(
+                new AutomatedJournalPreparedDraftIntakeRequest(
+                    request.FundProfileId,
+                    request.Currency,
+                    [draft],
+                    request.Actor,
+                    preview.Summary.LedgerBookId,
+                    request.PeriodId.ToString("D"),
+                    request.EntityId,
+                    request.TenantId,
+                    request.CompanyId),
+                ct).ConfigureAwait(false);
+
+        return new AutomatedJournalIntakeRunResult([], intake);
+    }
+
+    internal async Task<PeriodCloseDraftPreview> PreviewPeriodCloseAsync(
         RunPeriodCloseDraftIntakeRequest request,
         CancellationToken ct = default)
     {
@@ -150,18 +379,12 @@ public sealed class AutomatedJournalIntakeRunner
             ?? throw new InvalidOperationException(
                 $"Ledger period '{request.PeriodId}' was not found or is still open; close the period before running closing entries.");
 
-        // The closed period's ledger book is authoritative. The manual journal workbench filters
-        // drafts by ledger book, so binding the draft to a null or mismatched request book id would
-        // orphan the closing entries where the book's own close/reporting workflow cannot see them.
         if (request.LedgerBookId is { } requestedBook && requestedBook != summary.LedgerBookId)
         {
             throw new InvalidOperationException(
                 $"Ledger period '{request.PeriodId}' belongs to book '{summary.LedgerBookId}', not the requested book '{requestedBook}'.");
         }
 
-        // Date closing entries to the period's end date, not the close or run time. Soft close does
-        // not persist a close timestamp (the summary reports the current time), so the run-independent
-        // period end date is the stable accounting date for both soft- and hard-closed periods.
         var period = (await _ledgerBookService
                 .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: summary.LedgerBookId), ct)
                 .ConfigureAwait(false))
@@ -169,32 +392,17 @@ public sealed class AutomatedJournalIntakeRunner
             ?? throw new InvalidOperationException(
                 $"Ledger period '{request.PeriodId}' was not found in book '{summary.LedgerBookId}'.");
         var closingDate = new DateTimeOffset(period.EndDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
-
-        var trialBalance = BuildTrialBalance(summary.TrialBalance);
-
         var projection = PeriodCloseProjector.Project(new PeriodCloseInput(
             request.PeriodId.ToString("D"),
             closingDate,
-            trialBalance,
+            BuildTrialBalance(summary.TrialBalance),
             request.Actor));
 
-        var draft = PeriodCloseDraftBuilder.BuildDraft(projection);
-        var intake = draft is null
-            ? EmptyIntake
-            : await _intake.IntakeDraftsAsync(
-                new AutomatedJournalPreparedDraftIntakeRequest(
-                    request.FundProfileId,
-                    request.Currency,
-                    [draft],
-                    request.Actor,
-                    summary.LedgerBookId,
-                    request.PeriodId.ToString("D"),
-                    request.EntityId,
-                    request.TenantId,
-                    request.CompanyId),
-                ct).ConfigureAwait(false);
-
-        return new AutomatedJournalIntakeRunResult([], intake);
+        return new PeriodCloseDraftPreview(
+            period,
+            summary,
+            projection,
+            PeriodCloseDraftBuilder.BuildDraft(projection));
     }
 
     private static IReadOnlyList<PeriodCloseAccountBalance> BuildTrialBalance(
@@ -257,37 +465,191 @@ public sealed class AutomatedJournalIntakeRunner
             : key;
     }
 
-    public async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
+    public Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
         RunFeeAccrualDraftIntakeRequest request,
+        CancellationToken ct = default)
+        => RunFeeAccrualIntakeAtAsync(request, _timeProvider.GetUtcNow(), ct);
+
+    internal async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAtAsync(
+        RunFeeAccrualDraftIntakeRequest request,
+        DateTimeOffset evaluatedAtUtc,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        evaluatedAtUtc = evaluatedAtUtc.ToUniversalTime();
+        var eventAsOf = request.AsOf ?? evaluatedAtUtc;
+        var (reconciliation, sourceBlocker) = await ResolveCapitalAccountReconciliationAsync(
+            request,
+            evaluatedAtUtc,
+            ct).ConfigureAwait(false);
+        var feeEvidence = AutomatedJournalFeeEvidenceEvaluator.Evaluate(
+            request.PeriodId,
+            request.Currency,
+            request.BeginningNav,
+            request.EndingNavBeforeFees,
+            request.HighWaterMark,
+            reconciliation,
+            request.MinimumCapitalAccountConfidence,
+            evaluatedAtUtc,
+            _evidencePolicy);
+        var readinessBlockers = sourceBlocker is null
+            ? feeEvidence.Blockers
+            : feeEvidence.Blockers
+                .Append(sourceBlocker)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        var assessment = sourceBlocker is null
+            ? feeEvidence.Assessment
+            : feeEvidence.Assessment with
+            {
+                Summary = $"{feeEvidence.Assessment.Summary} {sourceBlocker}",
+                Reasons = readinessBlockers
+            };
+        var feeAssessmentKey = FormattableString.Invariant(
+            $"fee-basis|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.PeriodId.Trim().ToLowerInvariant()}");
+        if (!feeEvidence.IsReady)
+        {
+            return new AutomatedJournalIntakeRunResult(
+                ProducerSkips: [],
+                Intake: EmptyIntake,
+                EvidenceAssessments: new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [feeAssessmentKey] = assessment
+                },
+                Readiness: feeEvidence.FailureState == AutomatedJournalScheduleStateDto.Blocked
+                    ? AutomatedJournalIntakeReadiness.Blocked
+                    : AutomatedJournalIntakeReadiness.NeedsInvestigation,
+                ReadinessBlockers: readinessBlockers);
+        }
+
         var production = _feeProducer.Produce(new FeeScheduleAccrualRequest(
             request.FundProfileId,
             request.PeriodId,
-            DateTimeOffset.UtcNow,
+            eventAsOf,
             request.BeginningNav,
             request.EndingNavBeforeFees,
             request.HighWaterMark,
             request.ManagementFeeRate,
             request.PerformanceFeeRate));
+        var events = AttachFeeScheduleEvidence(
+            production.Events,
+            feeEvidence.EvidenceLinks.Select(static link => link.Route).ToArray(),
+            evaluatedAtUtc,
+            request.Actor,
+            request.FundProfileId,
+            request.PeriodId);
 
-        var intake = production.Events.Count == 0
+        var evidenceAssessments = events
+            .Where(static journalEvent => !string.IsNullOrWhiteSpace(journalEvent.IdempotencyKey))
+            .ToDictionary(
+                static journalEvent => journalEvent.IdempotencyKey!,
+                _ => assessment,
+                StringComparer.OrdinalIgnoreCase);
+        var intake = events.Count == 0
             ? EmptyIntake
             : await _intake.IntakeAsync(
                 new AutomatedJournalDraftIntakeRequest(
                     request.FundProfileId,
                     request.Currency,
-                    production.Events,
+                    events,
                     request.Actor,
                     request.LedgerBookId,
                     request.PeriodId,
                     request.EntityId,
                     request.TenantId,
-                    request.CompanyId),
+                    request.CompanyId,
+                    evidenceAssessments),
                 ct).ConfigureAwait(false);
 
-        return new AutomatedJournalIntakeRunResult(production.Skipped, intake);
+        return new AutomatedJournalIntakeRunResult(
+            production.Skipped,
+            intake,
+            evidenceAssessments,
+            AutomatedJournalIntakeReadiness.Ready,
+            []);
+    }
+
+    private async Task<(AutomatedJournalCapitalAccountReconciliationDto? Reconciliation, string? Blocker)>
+        ResolveCapitalAccountReconciliationAsync(
+            RunFeeAccrualDraftIntakeRequest request,
+            DateTimeOffset evaluatedAtUtc,
+            CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.TenantId) ||
+            string.IsNullOrWhiteSpace(request.CompanyId) ||
+            string.IsNullOrWhiteSpace(request.FundProfileId) ||
+            !request.LedgerBookId.HasValue ||
+            request.LedgerBookId.Value == Guid.Empty ||
+            string.IsNullOrWhiteSpace(request.EntityId) ||
+            string.IsNullOrWhiteSpace(request.PeriodId) ||
+            string.IsNullOrWhiteSpace(request.Currency))
+        {
+            return (null, "Server-owned capital-account reconciliation requires exact tenant, company, fund, ledger-book, entity, period, and currency scope.");
+        }
+
+        if (_capitalAccountReconciliationResolver is null)
+        {
+            return (null, "The server-owned capital-account reconciliation source is unavailable.");
+        }
+
+        try
+        {
+            var scope = new AutomatedJournalCapitalAccountReconciliationScope(
+                request.TenantId.Trim(),
+                request.CompanyId.Trim(),
+                request.FundProfileId.Trim(),
+                request.LedgerBookId.Value,
+                request.EntityId.Trim(),
+                request.PeriodId.Trim(),
+                request.Currency.Trim().ToUpperInvariant(),
+                evaluatedAtUtc);
+            var reconciliation = await _capitalAccountReconciliationResolver
+                .ResolveAsync(scope, ct)
+                .ConfigureAwait(false);
+            return reconciliation is null
+                ? (null, "No server-owned capital-account reconciliation was available for the exact fee-accrual execution scope.")
+                : (reconciliation, null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return (null, "The server-owned capital-account reconciliation source could not be read; fee-accrual preparation is blocked.");
+        }
+    }
+
+    private static IReadOnlyList<AutomatedJournalEvent> AttachFeeScheduleEvidence(
+        IReadOnlyList<AutomatedJournalEvent> events,
+        IReadOnlyList<string>? evidenceLinks,
+        DateTimeOffset retainedAtUtc,
+        string retainedBy,
+        string fundProfileId,
+        string periodId)
+    {
+        var references = (evidenceLinks ?? [])
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select((link, index) => new JournalEvidenceReference(
+                EvidenceId: $"fee-schedule:{fundProfileId.Trim()}:{periodId.Trim()}:{index + 1}",
+                Uri: link.Trim(),
+                Kind: "fee-schedule",
+                SourceSystem: "automated-journal-scheduler",
+                RetainedAtUtc: retainedAtUtc,
+                RetainedBy: retainedBy,
+                SubjectId: fundProfileId.Trim()))
+            .ToArray();
+        if (references.Length == 0)
+            return events;
+
+        return events.Select(journalEvent => journalEvent with
+        {
+            EvidenceReferences = journalEvent.EvidenceReferences
+                    .Concat(references)
+                    .DistinctBy(static reference => reference.Uri, StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+        })
+            .ToArray();
     }
 }

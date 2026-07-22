@@ -364,9 +364,25 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 ? now
                 : current.ClosedAt
         };
-        var saved = await _store
-            .SavePeriodAsync(updated, current.Version, closeEvent, ct)
-            .ConfigureAwait(false);
+        LedgerAccountingPeriod saved;
+        if (string.Equals(targetStatus, HardClosedStatus, StringComparison.Ordinal))
+        {
+            if (_store is not IAtomicLedgerPeriodCloseStore atomicCloseStore)
+            {
+                throw new LedgerBookValidationException(
+                    "Hard-close requires a ledger store that can recheck temporary-account balances and persist the period transition atomically.");
+            }
+
+            saved = await atomicCloseStore
+                .SaveHardClosedPeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            saved = await _store
+                .SavePeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
 
         var requiredRole = NormalizeOptional(request.RequiredSignoffRole) ?? "Fund Controller";
         var toleranceProfile = NormalizeOptional(request.ToleranceProfileId) ?? "standard-recon-tolerance";
@@ -391,6 +407,75 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return new LedgerPeriodCloseResultDto(MapPeriod(saved, book), summary, workItem);
     }
 
+    public async Task<LedgerPeriodReopenResultDto> ReopenPeriodAsync(
+        Guid periodId,
+        ReopenLedgerPeriodRequest request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reopen ledger periods");
+
+        var current = await _store.GetPeriodAsync(periodId, ct).ConfigureAwait(false)
+            ?? throw new LedgerBookNotFoundException($"Ledger period '{periodId}' was not found.");
+        var book = await RequireBookAsync(RequireLedgerBookId(current), ct).ConfigureAwait(false);
+        if (!string.Equals(current.Status, HardClosedStatus, StringComparison.Ordinal))
+        {
+            throw new LedgerPeriodTransitionException(
+                $"Cannot reopen period '{current.Label}' from {current.Status}; only a hard-closed period can enter governed restatement.");
+        }
+
+        var actor = RequireText(request.ReopenedBy, nameof(request.ReopenedBy));
+        var role = RequireText(request.Role, nameof(request.Role));
+        if (!string.Equals(role, "Controller", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new LedgerBookValidationException(
+                "Governed period reopen requires Controller or Fund Controller authority.");
+        }
+
+        var reason = RequireText(request.Reason, nameof(request.Reason));
+        var approvalReference = RequireText(request.ApprovalReference, nameof(request.ApprovalReference));
+        var evidence = request.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (evidence.Length == 0 || !HasScopedRestatementEvidence(evidence, current, book, approvalReference))
+        {
+            throw new LedgerBookValidationException(
+                "Governed period reopen requires retained restatement/reversal evidence referencing the period, ledger book, and approval.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var reopenEvent = new PeriodCloseEventRecord(
+            Guid.NewGuid(),
+            current.PeriodId,
+            current.Status,
+            SoftClosedStatus,
+            actor,
+            $"Governed restatement reopen: {reason} | approval: {approvalReference}",
+            now);
+        var saved = await _store.SavePeriodAsync(
+                current with
+                {
+                    Status = SoftClosedStatus,
+                    ClosedAt = null
+                },
+                current.Version,
+                reopenEvent,
+                ct)
+            .ConfigureAwait(false);
+
+        return new LedgerPeriodReopenResultDto(
+            MapPeriod(saved, book),
+            current.Status,
+            actor,
+            now,
+            approvalReference,
+            evidence);
+    }
+
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
@@ -409,7 +494,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var isValid = (period.Status, targetStatus) switch
         {
             (OpenStatus, SoftClosedStatus) => true,
-            (OpenStatus, HardClosedStatus) => true,
             (SoftClosedStatus, HardClosedStatus) => true,
             _ => false
         };
@@ -419,6 +503,22 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             throw new LedgerPeriodTransitionException(
                 $"Cannot transition period '{period.Label}' from {period.Status} to {targetStatus}.");
         }
+    }
+
+    private static bool HasScopedRestatementEvidence(
+        IReadOnlyList<string> evidence,
+        LedgerAccountingPeriod period,
+        LedgerBookRecord book,
+        string approvalReference)
+    {
+        return evidence.Any(link =>
+            ContainsIdentifier(link, period.PeriodId) &&
+            ContainsIdentifier(link, book.LedgerBookId) &&
+            (link.Contains("restatement", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("reopen", StringComparison.OrdinalIgnoreCase)) &&
+            (link.Contains(approvalReference, StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("approval", StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task<LedgerPeriodFinancials> BuildFinancialsAsync(LedgerAccountingPeriod period, CancellationToken ct)

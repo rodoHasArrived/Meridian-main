@@ -5,8 +5,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FreshnessChip } from "@/components/ui/freshness-chip";
-import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { buildFreshnessChipViewModel, freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   FinancialRecordExplorerShell,
@@ -15,6 +15,7 @@ import {
   type FinancialRecordExplorerScopeItem,
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
@@ -22,6 +23,7 @@ import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
   EquityCurve,
+  Histogram,
   ChartCard,
   ChartSyncProvider,
   useChartSync,
@@ -40,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -356,6 +359,13 @@ export function PortfolioScreen({
     selectedRunDrillIn,
     pathname: location.pathname
   });
+  const portfolioExplorerPresentation = useMemo(
+    () => buildPortfolioExplorerPresentation(portfolioExplorer, {
+      sourceLabel: vm.positionSourceLabel,
+      runLabel: vm.selectedRun?.title ?? "Linked strategy run"
+    }),
+    [portfolioExplorer, vm.positionSourceLabel, vm.selectedRun?.title]
+  );
 
   useEffect(() => {
     if (!shouldFocusBrokerageAccount.current) {
@@ -535,13 +545,52 @@ export function PortfolioScreen({
           id: "portfolio-coverage-evidence",
           label: "Coverage proof",
           href: vm.multiAssetCoveragePanel.evidenceRoute,
-          ariaLabel: `Open coverage endpoint ${vm.multiAssetCoveragePanel.evidenceRouteLabel}`
+          ariaLabel: "Open portfolio coverage proof"
         }
       : {
           id: "portfolio-coverage-evidence-empty",
           label: "Coverage proof unavailable"
         }
   ];
+  const hasRefreshEvidence = Boolean(
+    refreshStatus && (refreshStatus.lastSucceededAt || refreshStatus.inFlight || refreshStatus.phase === "failed")
+  );
+  const freshnessVm = hasRefreshEvidence && refreshStatus
+    ? buildFreshnessChipViewModel({
+        ...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace"),
+        now: Date.now()
+      })
+    : brokeragePortfolio?.asOf
+      ? buildFreshnessChipViewModel({
+          timestamp: brokeragePortfolio.asOf,
+          staleBudgetMs: PORTFOLIO_FRESHNESS_BUDGET_MS,
+          now: Date.now(),
+          label: "Brokerage portfolio snapshot",
+          detail: "Latest brokerage portfolio snapshot"
+        })
+      : null;
+  const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
+  const freshnessTone: OperationalTrustTone = freshnessVm?.state === "failing"
+    ? "blocked"
+    : freshnessVm?.state === "aging"
+      ? "review"
+      : freshnessVm?.state === "fresh" || freshnessVm?.state === "live"
+        ? "ready"
+        : heartbeat
+          ? "ready"
+          : "unknown";
+  const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
+    ? "ready"
+    : vm.hasPositions || vm.hasRuns
+      ? "review"
+      : "blocked";
+  const workflowBlocker = vm.workflowTaskPanel && vm.workflowTaskPanel.statusTone !== "success"
+    ? {
+        value: vm.workflowTaskPanel.statusLabel,
+        detail: vm.workflowTaskPanel.selectedSummary,
+        tone: vm.workflowTaskPanel.statusTone === "danger" ? "blocked" as const : "review" as const
+      }
+    : undefined;
 
   return (
     <div className="space-y-5">
@@ -564,11 +613,6 @@ export function PortfolioScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {refreshStatus ? (
-            <FreshnessChip
-              {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
-            />
-          ) : null}
           <Button asChild variant="outline" size="sm">
             <Link
               to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
@@ -592,6 +636,37 @@ export function PortfolioScreen({
           />
         </div>
       </section>
+
+      <OperationalTrustSummary
+        label="Portfolio data confidence"
+        source={{
+          value: vm.positionSourceLabel,
+          detail: "Holdings source used by this route",
+          tone: vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
+        }}
+        scope={{
+          value: vm.selectedBrokerageAccount.title,
+          detail: routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
+          tone: vm.selectedBrokerageAccount.statusTone === "danger"
+            ? "blocked"
+            : vm.selectedBrokerageAccount.statusTone === "warning"
+              ? "review"
+              : vm.selectedBrokerageAccount.statusTone === "success"
+                ? "ready"
+                : "unknown"
+        }}
+        freshness={{
+          value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
+          detail: freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          tone: freshnessTone
+        }}
+        completeness={{
+          value: `${vm.positionCountLabel} · ${vm.runCountLabel}`,
+          detail: "Holdings and run evidence loaded",
+          tone: completenessTone
+        }}
+        blocker={workflowBlocker}
+      />
 
       {vm.workflowTaskPanel ? (
         <section
@@ -645,9 +720,12 @@ export function PortfolioScreen({
                 </div>
               ))}
             </dl>
-            <div className="rounded-lg border border-border/70 bg-background/20 p-3">
-              <div className="eyebrow-label">Backend sources</div>
-              <div className="mt-3 grid gap-2">
+            <TechnicalDetails
+              label="Technical source health"
+              description="Endpoint contracts supporting this workflow."
+              className="h-fit"
+            >
+              <div className="grid gap-2">
                 {vm.workflowTaskPanel.backendLinks.map((link) => (
                   <a
                     key={link.id}
@@ -662,7 +740,7 @@ export function PortfolioScreen({
                   </a>
                 ))}
               </div>
-            </div>
+            </TechnicalDetails>
           </div>
         </section>
       ) : null}
@@ -811,9 +889,14 @@ export function PortfolioScreen({
                 ))}
               </div>
             ) : null}
-            <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
-              Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
-            </a>
+            <TechnicalDetails
+              label="Coverage source details"
+              description="Technical route for the retained multi-asset coverage evidence."
+            >
+              <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+                Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
+              </a>
+            </TechnicalDetails>
           </CardContent>
         </Card>
       ) : null}
@@ -1035,6 +1118,27 @@ export function PortfolioScreen({
                         </div>
                       ))}
                     </dl>
+                    {vm.selectedBrokeragePosition.technicalFields.length > 0 ? (
+                      <TechnicalDetails
+                        label="Technical position identity"
+                        description="Stable provider identifiers used for audit and support workflows."
+                        className="mt-4"
+                      >
+                        <dl className="grid gap-2">
+                          {vm.selectedBrokeragePosition.technicalFields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
+                    ) : null}
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
@@ -1075,7 +1179,7 @@ export function PortfolioScreen({
         summaryItems={financialRecordExplorerSummaryItems}
         appliedFilters={financialRecordExplorerAppliedFilters}
         actions={financialRecordExplorerActions}
-        explorer={portfolioExplorer}
+        explorer={portfolioExplorerPresentation}
         onSaveView={savePortfolioExplorerView}
       >
         {showOverview ? (
@@ -1346,13 +1450,28 @@ export function PortfolioScreen({
                         <div className="min-w-0">
                           <div className="eyebrow-label">{vm.selectedRun.statusTitle}</div>
                           <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedRun.title}</h3>
-                          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
-                            {vm.selectedRun.subtitle}
-                          </p>
                         </div>
                         <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
+                      <TechnicalDetails label="Audit details" className="mt-4">
+                        <p className="break-words font-mono text-xs text-muted-foreground">
+                          {vm.selectedRun.subtitle}
+                        </p>
+                        <dl className="mt-3 grid gap-2">
+                          {vm.selectedRun.fields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
                       <div className="mt-4">
                         <Button asChild size="sm" variant="outline">
                           <Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}>
@@ -1361,19 +1480,6 @@ export function PortfolioScreen({
                           </Link>
                         </Button>
                       </div>
-                      <dl className="mt-4 grid gap-2">
-                        {vm.selectedRun.fields.map((field) => (
-                          <div
-                            key={field.label}
-                            className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                          >
-                            <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                            <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
-                              {field.value}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
                     </>
                   ) : (
                     <div role="status" className="text-sm leading-6 text-muted-foreground">
@@ -1433,6 +1539,7 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
 }
 
 const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
+const drillInSignedPercent = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
  * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
@@ -1461,31 +1568,93 @@ function PortfolioDrillInChartInner({
   const sync = useChartCrosshairSync(timestamps);
 
   return (
+    <div className="space-y-3">
+      <ChartCard
+        title="Run equity and drawdown"
+        subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
+        readout={[
+          { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
+          {
+            label: "Max drawdown",
+            value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
+            color: "var(--chart-drawdown, #BA3F55)"
+          },
+          { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
+        ]}
+        height={280}
+        style={{ flexShrink: 0 }}
+      >
+        <EquityCurve
+          series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
+          drawdown={drawdown}
+          labels={labels}
+          valueFmt={drillInCurrency}
+          crosshairIndex={sync.crosshairIndex}
+          onCrosshairChange={sync.onCrosshairChange}
+          onPointActivate={sync.onPointActivate}
+        />
+        <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
+      </ChartCard>
+      <PortfolioDrillInReturnDistribution profile={profile} runTitle={runTitle} />
+    </div>
+  );
+}
+
+/** Daily-return distribution for a loaded run drill-in profile. Reuses the already-fetched
+ * equity-curve points (no extra request) so the same drill-in that draws the equity/drawdown
+ * curve also shows the shape of its returns — a signed histogram with a mean rule. Rendered only
+ * when at least two return observations exist so a single-day profile stays a curve-only view. */
+function PortfolioDrillInReturnDistribution({
+  profile,
+  runTitle
+}: {
+  profile: EquityCurveSummary;
+  runTitle: string;
+}) {
+  // Memoize the returns series and its summary stats on the fetched points so they are not
+  // recomputed on every crosshair move — the parent re-renders on each hover, but these O(n)
+  // reductions only depend on profile.points.
+  const stats = useMemo(() => {
+    const returns = profile.points.map((point) => point.dailyReturn * 100);
+    if (returns.length < 2) {
+      return null;
+    }
+    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+    const best = Math.max(...returns);
+    const worst = Math.min(...returns);
+    const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+    return { returns, mean, best, worst, positiveShare };
+  }, [profile.points]);
+
+  if (!stats) {
+    return null;
+  }
+
+  const { returns, mean, best, worst, positiveShare } = stats;
+
+  return (
     <ChartCard
-      title="Run equity and drawdown"
-      subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
+      title="Daily return distribution"
+      subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
       readout={[
-        { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
         {
-          label: "Max drawdown",
-          value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
-          color: "var(--chart-drawdown, #BA3F55)"
+          label: "Mean / day",
+          value: drillInSignedPercent(mean),
+          color: mean >= 0 ? "var(--chart-equity, #16885F)" : "var(--chart-drawdown, #BA3F55)"
         },
-        { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
+        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #16885F)" },
+        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #BA3F55)" },
+        { label: "Positive days", value: `${positiveShare.toFixed(0)}%` }
       ]}
-      height={280}
+      height={220}
       style={{ flexShrink: 0 }}
     >
-      <EquityCurve
-        series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
-        drawdown={drawdown}
-        labels={labels}
-        valueFmt={drillInCurrency}
-        crosshairIndex={sync.crosshairIndex}
-        onCrosshairChange={sync.onCrosshairChange}
-        onPointActivate={sync.onPointActivate}
+      <Histogram
+        values={returns}
+        signed
+        showMean
+        valueFmt={(value) => `${value.toFixed(1)}%`}
       />
-      <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
     </ChartCard>
   );
 }

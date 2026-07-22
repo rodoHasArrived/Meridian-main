@@ -1,10 +1,11 @@
 import type { OperationsApproval, OperationsApprovalState, OperationsContinuityWorkflow, OperationsContinuityWorkflowSummary, OperationsWorkflowBlocker } from "@/types";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 
 // Approvals-workstream pure helpers extracted from accounting-screen.tsx to keep the
 // screen root focused on rendering. Status labels/tones, evidence summaries, blocker and
 // next-action derivation, and small formatters for the accounting approvals queue.
 
-export function approvalQueueStatusLabel(workflow: OperationsContinuityWorkflowSummary): string {
+export function approvalQueueStatusLabel(workflow: OperationsContinuityWorkflowSummary | OperationsContinuityWorkflow): string {
   const approvalGate = workflow.gates.find((gate) => gate.gateKey === "Approval") ?? null;
   if (workflow.status === "Blocked" || approvalGate?.status === "Blocked") {
     return "Blocked";
@@ -17,8 +18,34 @@ export function approvalQueueStatusLabel(workflow: OperationsContinuityWorkflowS
   return "Pending";
 }
 
-export function approvalQueueStatusTone(workflow: OperationsContinuityWorkflowSummary): "success" | "warning" | "danger" | "outline" {
+export function approvalQueueStatusTone(workflow: OperationsContinuityWorkflowSummary | OperationsContinuityWorkflow): "success" | "warning" | "danger" | "outline" {
   const label = approvalQueueStatusLabel(workflow);
+  if (label === "Approved") return "success";
+  if (label === "Blocked") return "danger";
+  return "warning";
+}
+
+export function approvalWorkflowStatusLabel(
+  workflow: OperationsContinuityWorkflowSummary | OperationsContinuityWorkflow,
+  detail: OperationsContinuityWorkflow | null = null
+): string {
+  const effectiveDetail = detail?.workflowId === workflow.workflowId
+    ? detail
+    : "blockers" in workflow
+      ? workflow
+      : null;
+  if (effectiveDetail && (approvalBlockers(effectiveDetail).length > 0 || !effectiveDetail.reportPackReadiness.isReady)) {
+    return "Blocked";
+  }
+
+  return approvalQueueStatusLabel(workflow);
+}
+
+export function approvalWorkflowStatusTone(
+  workflow: OperationsContinuityWorkflowSummary | OperationsContinuityWorkflow,
+  detail: OperationsContinuityWorkflow | null = null
+): "success" | "warning" | "danger" | "outline" {
+  const label = approvalWorkflowStatusLabel(workflow, detail);
   if (label === "Approved") return "success";
   if (label === "Blocked") return "danger";
   return "warning";
@@ -148,16 +175,18 @@ export function resolveApprovalReportPackId(workflow: OperationsContinuityWorkfl
 }
 
 export function formatApprovalDate(value: string | null | undefined): string {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-US", { timeZone: "UTC" });
+  return formatDateTimeLabel(value);
 }
 
 export function splitApprovalWords(value: string): string {
-  return value.replace(/([a-z])([A-Z])/g, "$1 $2");
+  const normalized = value
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+  return normalized ? normalized.replace(/^\w/, (character) => character.toUpperCase()) : "Activity";
 }
 
 export function formatApprovalError(err: unknown, fallback: string): string {

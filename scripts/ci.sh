@@ -66,6 +66,8 @@ fi
 ci_summary_dir="artifacts/ci-summary/${selected_lane}"
 ci_steps_tsv="${ci_summary_dir}/steps.tsv"
 ci_summary_md="${ci_summary_dir}/summary.md"
+handoff_summary_json="${ci_summary_dir}/ai-handoff-docs-automation-summary.json"
+handoff_summary_md="${ci_summary_dir}/ai-handoff-docs-automation-summary.md"
 mkdir -p "$ci_summary_dir" artifacts/build-logs artifacts/test-results/dotnet
 rm -f artifacts/build-logs/*.log artifacts/test-results/dotnet/ci-dotnet-test-summary.json
 : > "$ci_steps_tsv"
@@ -137,6 +139,9 @@ verify_dotnet() {
 
   run_step "Validate warning suppression inventory" \
     "$python_cmd" build/scripts/ci/check-warning-suppressions.py
+
+  run_step "Enforce ApiClientService caller ratchet" \
+    "$python_cmd" build/scripts/ci/check-apiclient-callers.py
 
   run_step "Enforce no-new-god-file ratchet" \
     "$python_cmd" build/scripts/ci/check-file-size.py
@@ -210,18 +215,18 @@ verify_docs() {
   run_step "Validate AI handoff checklist schema" \
     "$python_cmd" build/scripts/docs/run-docs-automation.py \
       --scripts check-ai-handoff-strict,prompt-route-linter,handoff-packet-generator,check-handoff-packet-schema,check-ai-routing-parity \
-      --json-output docs/status/docs-automation-summary.json \
-      --summary-output docs/status/docs-automation-summary.md
+      --json-output "$handoff_summary_json" \
+      --summary-output "$handoff_summary_md"
 
   run_step "Enforce mode escalation policy" \
     "$python_cmd" build/scripts/docs/check-mode-escalation.py \
       --route-json docs/status/prompt-route-lint-report.json \
-      --summary-json docs/status/docs-automation-summary.json \
+      --summary-json "$handoff_summary_json" \
       --summary
 
   run_step "Enforce validation-floor guard for AI/docs changes" \
     "$python_cmd" build/scripts/docs/check-validation-floor.py \
-      --summary-json docs/status/docs-automation-summary.json \
+      --summary-json "$handoff_summary_json" \
       --route-json docs/status/prompt-route-lint-report.json \
       --summary
 
@@ -249,6 +254,12 @@ verify_workflows() {
 
   run_step "Validate workflow hygiene" \
     bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee artifacts/build-logs/workflow-hygiene.log' "$python_cmd"
+
+  # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
+  # had rotted unnoticed. The runner gates every suite except the tracked quarantine list
+  # in build/scripts/ci/script-test-quarantine.json, which it prints on every run.
+  run_step "Run repo script test suite (quarantine-aware)" \
+    "$python_cmd" build/scripts/ci/run-script-tests.py
 }
 
 verify_fast() {

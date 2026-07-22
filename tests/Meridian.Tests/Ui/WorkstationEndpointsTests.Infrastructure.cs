@@ -64,6 +64,7 @@ public sealed partial class WorkstationEndpointsTests
         string? currentUserCompanyId = "tenant-test",
         string currentUserName = "ops-user",
         bool? mapLedgerApi = null,
+        string? currentUserTenantId = null,
         [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -100,7 +101,12 @@ public sealed partial class WorkstationEndpointsTests
             {
                 var companyId = currentUserCompanyId.Trim();
                 context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = companyId;
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] =
+                    string.IsNullOrWhiteSpace(currentUserTenantId) ? companyId : currentUserTenantId.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(currentUserTenantId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentUserTenantId.Trim();
             }
 
             await next();
@@ -245,7 +251,8 @@ public sealed partial class WorkstationEndpointsTests
                 Symbol: "OPS",
                 SecurityId: securityId),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)

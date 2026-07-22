@@ -43,6 +43,28 @@ describe("ScreenLayout", () => {
     expect(screen.queryByText(`Value ${FOCUS_SIGNAL_LIMIT}`)).not.toBeInTheDocument();
   });
 
+  it("wraps long focus labels, values, and hints instead of clipping operator context", () => {
+    render(
+      <ScreenLayout
+        title="Screen"
+        focus={[{
+          id: "run",
+          label: "Selected reconciliation run",
+          value: "Paper Index Mean Reversion",
+          hint: "Trial balance needs review"
+        }]}
+      >
+        <div>work</div>
+      </ScreenLayout>
+    );
+
+    for (const text of ["Selected reconciliation run", "Paper Index Mean Reversion", "Trial balance needs review"]) {
+      const element = screen.getByText(text);
+      expect(element).toHaveClass("break-words");
+      expect(element).not.toHaveClass("truncate");
+    }
+  });
+
   it("collapses and expands the focus zone", async () => {
     const user = userEvent.setup();
     render(
@@ -180,5 +202,22 @@ describe("ScreenLayout", () => {
       </ScreenLayout>
     );
     expect(screen.queryByRole("button", { name: /close detail/i })).not.toBeInTheDocument();
+  });
+
+  it("labels scrollable context and keeps a visible continuation cue", () => {
+    render(
+      <ScreenLayout
+        title="Screen"
+        context={<div>ledger lines</div>}
+        contextOpen
+        contextLabel="Trial-balance detail"
+        contextScrollLabel="Scroll account detail for ledger lines and supporting documents"
+      >
+        <div>work</div>
+      </ScreenLayout>
+    );
+
+    expect(screen.getByRole("region", { name: "Trial-balance detail scroll area" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByText("Scroll account detail for ledger lines and supporting documents")).toBeInTheDocument();
   });
 });

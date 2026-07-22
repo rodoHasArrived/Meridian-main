@@ -53,6 +53,8 @@ public sealed record InstrumentRoleDto(
     JsonElement? ExtensionPayload = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record BookPositionDto(
@@ -73,6 +75,8 @@ public sealed record BookPositionDto(
     JsonElement? ExtensionPayload = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record PositionEconomicStateDto(
@@ -101,6 +105,8 @@ public sealed record PositionEconomicStateDto(
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 
     public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record EconomicEventReferenceDto(
@@ -121,6 +127,8 @@ public sealed record EconomicEventReferenceDto(
     public Guid? SecurityId { get; init; }
 
     public Guid? BookPositionId { get; init; }
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record ProjectionLineageDto(
@@ -143,4 +151,6 @@ public sealed record ProjectionLineageDto(
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 
     public Guid? BookPositionId { get; init; }
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }

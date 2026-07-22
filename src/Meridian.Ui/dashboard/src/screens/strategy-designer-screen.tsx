@@ -54,21 +54,42 @@ export function StrategyDesignerScreen() {
     <div className="space-y-6" data-testid="strategy-designer-screen">
       <WorkbenchHero vm={vm.workbench} />
 
-      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+      <div
+        className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]"
+        data-testid="strategy-designer-primary-workbench"
+      >
         <FieldCatalogPanel vm={vm.workbench} />
         <CellCanvasPanel vm={vm.workbench} />
-        <InspectorPanel vm={vm.workbench} />
+        <div className="xl:col-span-2">
+          <InspectorPanel vm={vm.workbench} />
+        </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <TemplateGallery vm={vm.workbench} />
-        <BacktestProofPanel vm={vm.workbench} />
-      </div>
+      <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          Templates and backtest proof
+        </summary>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Load a governed starting point or inspect validation, trace, and endpoint proof after the active design is ready.
+        </p>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <TemplateGallery vm={vm.workbench} />
+          <BacktestProofPanel vm={vm.workbench} />
+        </div>
+      </details>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <TransitionMap transitions={vm.workbench.transitions} />
-        <OptionsPayoffPanel vm={vm} />
-      </div>
+      <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+        <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          Transition and payoff analysis
+        </summary>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Review graph transitions and sampled payoff evidence without crowding the primary cell-authoring canvas.
+        </p>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <TransitionMap transitions={vm.workbench.transitions} />
+          <OptionsPayoffPanel vm={vm} />
+        </div>
+      </details>
     </div>
   );
 }

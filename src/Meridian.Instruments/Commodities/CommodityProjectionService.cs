@@ -3,54 +3,31 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Commodities;
 
-public sealed class CommodityProjectionService : ICommodityReferenceService
+public sealed class CommodityProjectionService
+    : InstrumentProjectionServiceBase<CommodityProjectionRow, CommodityReferenceDto>, ICommodityReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly ICommodityReferenceProjectionStore _projectionStore;
 
     public CommodityProjectionService(
         ISecurityMasterStore securityMasterStore,
         ICommodityReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<CommodityReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Commodity", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "Commodity";
 
-        var row = await _projectionStore.GetCommodityAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<CommodityProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetCommodityAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<CommodityReferenceDto>> GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(commodityType))
-        {
-            return Array.Empty<CommodityReferenceDto>();
-        }
+    public Task<IReadOnlyList<CommodityReferenceDto>> GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default)
+        => QueryByTermAsync(commodityType, _projectionStore.GetByCommodityTypeAsync, ct);
 
-        var rows = await _projectionStore.GetByCommodityTypeAsync(commodityType.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<CommodityReferenceDto>> GetByExchangeAsync(string exchangeCode, CancellationToken ct = default)
+        => QueryByTermAsync(exchangeCode, _projectionStore.GetByExchangeAsync, ct);
 
-    public async Task<IReadOnlyList<CommodityReferenceDto>> GetByExchangeAsync(string exchangeCode, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(exchangeCode))
-        {
-            return Array.Empty<CommodityReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByExchangeAsync(exchangeCode.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
-
-    private static CommodityReferenceDto MapRow(CommodityProjectionRow row)
+    protected override CommodityReferenceDto MapRow(CommodityProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

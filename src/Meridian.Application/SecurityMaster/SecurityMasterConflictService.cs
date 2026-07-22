@@ -25,6 +25,14 @@ public interface ISecurityMasterConflictService
     /// Called automatically after projection writes such as create, amend, import, and rebuild replay.
     /// </summary>
     Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct);
+
+    /// <summary>
+    /// Compares the pre-write golden copy against an incoming revision of the same security and
+    /// records field-level cross-source conflicts (economic and common terms whose values disagree
+    /// between two source systems). Called on amend paths where the previous record is in hand;
+    /// same-source revisions record nothing. Conflicts an operator already resolved are preserved.
+    /// </summary>
+    Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);
 }
 
 /// <summary>
@@ -139,5 +147,32 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             _logger.LogInformation(
                 "Recorded {Count} new identifier conflict(s) for security {SecurityId}",
                 newConflicts, projection.SecurityId);
+    }
+
+    public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
+    {
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+
+        int newConflicts = 0;
+        foreach (var conflict in candidates)
+        {
+            // Only record if not already tracked with a non-Open status (operator resolutions win).
+            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
+                continue;
+
+            _conflicts[conflict.ConflictId] = conflict;
+            newConflicts++;
+
+            _logger.LogWarning(
+                "Cross-source field conflict on {FieldPath} for security {SecurityId}: {SourceA}='{ValueA}' vs {SourceB}='{ValueB}'",
+                conflict.FieldPath, conflict.SecurityId, conflict.ProviderA, conflict.ValueA, conflict.ProviderB, conflict.ValueB);
+        }
+
+        if (newConflicts > 0)
+            _logger.LogInformation(
+                "Recorded {Count} new field conflict(s) for security {SecurityId}",
+                newConflicts, incoming.SecurityId);
+
+        return Task.CompletedTask;
     }
 }

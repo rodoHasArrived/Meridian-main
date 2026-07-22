@@ -113,29 +113,25 @@ Use this map as a starting point before diving into generated type/member pages.
 
 ## REST API Endpoints
 
-The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
+The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set, except requests already authenticated by a browser login session (the workstation UI authenticates with the session cookie + CSRF token instead of an API key). Swagger UI is available at `/swagger` in development mode.
 
 ### Authentication
 
-Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
-- `X-Api-Key` header (recommended)
+Set the `MDC_API_KEY` environment variable to enable API-key authentication for out-of-band clients (scripts, service-to-service calls). Pass the key via:
+- `X-Api-Key` header (the only accepted transport — query-string keys are rejected to avoid leakage via URLs, logs, and browser history)
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
 
 **Example:**
 
 ```bash
-# With header (recommended)
 curl -H "X-Api-Key: your-api-key" http://localhost:8080/api/status
-
-# With query parameter
-curl http://localhost:8080/api/status?api_key=your-api-key
 ```
 
 When authentication fails, the API returns `401 Unauthorized`:
 
 ```json
-{ "error": "Unauthorized", "message": "Missing or invalid API key" }
+{ "error": "Unauthorized. Provide a valid API key via the X-Api-Key header." }
 ```
 
 ### Rate Limiting
@@ -594,6 +590,12 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 |--------|-------|-------------|
 | GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and accounting-control posture. |
 | GET | `/api/workstation/data` | Data workspace payload for provider posture, backfill, storage, and quality handoffs. |
+| GET | `/api/workstation/data/ingestion-operations` | Filterable durable ingestion-job summary with checkpoint, retry, failure, action, and evidence posture. |
+| GET | `/api/workstation/data/ingestion-operations/{jobId}` | Ingestion job detail with checkpoint and per-symbol progress. |
+| POST | `/api/workstation/data/ingestion-operations/{jobId}/actions/{action}` | Apply a permitted pause, resume, retry, or cancel transition with rationale, idempotency, and retained evidence. |
+| GET | `/api/workstation/data/storage-assurance` | Consolidated storage health, quality, canonicalization, capacity, tier, alert, and permission posture. |
+| POST | `/api/workstation/data/storage-assurance/actions/preview` | Preview a quality check, temporary-file cleanup, or copy-only tier migration. |
+| POST | `/api/workstation/data/storage-assurance/actions/execute` | Execute an unexpired preview after permission, rationale, typed-confirmation, and candidate revalidation checks. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |

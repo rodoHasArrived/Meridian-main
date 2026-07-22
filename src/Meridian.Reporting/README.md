@@ -6,17 +6,17 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Reporting
 
 ## Purpose
 
-Physical bounded-context module project for report packs, governed exports, reporting run
-contracts, template catalogs, Security Master-enriched report generation, NAV attribution,
-orchestration, publication, restatement, distribution, no-code report-writer grid rendering, and
-reporting ownership conformance.
+Physical bounded-context module project for certified reporting runs, governed exports, template
+catalogs, deterministic artifact declarations, immutable lifecycle/restatement contracts, secure
+distribution contracts, Security Master-enriched report generation, NAV attribution, no-code
+report-writer grid rendering, and reporting ownership conformance.
 
 ## Layer responsibility
 
@@ -32,10 +32,20 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
   audit contracts.
+- `ReportingGovernanceContracts.cs` - tenant-bound `Draft -> Validated -> InReview -> Approved ->
+  Released` aggregates, maker-checker rules, governed restatement, and append-only audit contracts.
+- `ReportingArtifactContracts.cs` and `ReportingArtifactDeclaration.cs` - immutable package,
+  content-addressed artifact, access-audit, and deterministic output-declaration contracts.
+- `ReportingReconciliationEvidenceContracts.cs` - exact close/reconciliation receipts, including
+  item-level value, quantity, and cost-basis measures, unresolved blocked outputs, dispositions,
+  approval lineage, and per-break evidence hashes.
+- `ReportingDistributionContracts.cs` - opaque scoped grants, durable delivery jobs, leases,
+  retries, provider receipts, and release authorization contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
 - `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
-  contribution, saved-filter, and formula-backed report-writer tables over supplied dataset rows.
+  contribution, saved-filter, and formula-backed report-writer tables over explicit lower-level
+  input rows.
 - `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
   enrichment, lookup-quality classification, and asset-class section grouping.
 - `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
@@ -43,7 +53,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Report-template metadata, report-pack generation, NAV attribution, run contracts, deterministic section rendering, governed report-run orchestration, approval transitions, audit entries, and run persistence handoff live here so UI Shared and UI Services do not own reporting behavior.
+Use this README to understand the module before editing source files. Update the registry when
+validation, roadmap links, diagrams, or ownership changes. Reporting owns the immutable run,
+artifact, governance, restatement, and distribution contracts plus deterministic orchestration.
+UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
+implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
+server-returned action availability.
+Artifact declarations are not completion evidence by themselves. UI Shared renders the declared
+PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty content and SHA-256
+identity, and retains them in one immutable package. Final report readiness fails closed when exact
+reconciliation evidence identifies an unresolved break; blocker evidence names the break, measures,
+impacted outputs, and retained evidence hash.
 
 ## Diagrams
 
@@ -68,24 +88,33 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportGenerationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportingGovernance|FullyQualifiedName~ReportingArtifact|FullyQualifiedName~ReportingSecureDistribution|FullyQualifiedName~ReportingRunCertification|FullyQualifiedName~ReportingTenantIsolation" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ### API and contract notes
 
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
-`IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
-module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
-and WPF fund-operation views. `ReportGenerationService` retains the canonical ledger dimension
+`IReportingRunStore`, `IReportingGovernanceRepository`, `IReportingArtifactStore`,
+`IReportingArtifactCatalog`, `IReportingAccessGrantStore`, `IReportingDeliveryStore`,
+`ReportGenerationService`, and `NavAttributionService` publish the Reporting module seams consumed
+by UI Shared, Storage, browser, and WPF. A successful orchestration manifest remains a certified
+Draft until the canonical governance aggregate validates, submits, approves, verifies exact retained
+bytes, and releases it. Released state is terminal; approved restatement creates a newly certified
+revision without changing its predecessor. `ReportGenerationService` retains the canonical ledger dimension
 envelope from dimensioned fund-ledger lines on generated trial-balance rows so downstream
 report-pack evidence artifacts do not reconstruct accounting scope from account names or route
 context. `ReportWriterGridEngine` renders governed template grid definitions without script
 execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
-against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
+against the lower-level engine's input rows with structured warnings for missing or non-numeric
+inputs. Governed HTTP callers do not supply those rows; the server resolves their certified source.
 The canonical envelope now preserves optional `PositionId` alongside `InstrumentId`, keeping
 same-security book positions distinct in generated reporting evidence without treating a projected
 position or balance as an accounting fact. The immutable journal remains authoritative.
+`ReportingDistributionContracts.cs` keeps durable delivery jobs, retry state, provider/audited
+receipts, and opaque access grants bound to separate governed run and content-derived package
+identities. A release authorization names exact artifact hashes and sizes; shared distribution
+adapters must re-verify those immutable bytes before queueing and immediately before dispatch.
 Contribution grids generate `contributionPercent` and `contributionAbsPercent` after aggregation,
 using absolute metric exposure as the denominator so offsetting winners and laggards still produce a
 signed and absolute percentage-of-P&L breakdown. Report-writer formulas can reference those generated
@@ -106,10 +135,13 @@ Generated Reporting run manifests also retain the report-writer grid
 artifact metadata generated from approved template definitions, including grid title, kind,
 artifact URI, dimension count, metric count, and formula count, while shared UI projections derive
 validation summary counts from retained rendered-grid lineage and warnings so delivery packages and shared UI
-read models do not need to parse artifact strings to explain no-code grid evidence. When ad-hoc or
-scheduled run contracts include dataset rows, the same manifest also retains rendered grid columns,
-rows, warnings, and lineage so generated run delivery artifacts can carry source-backed pivot,
-Top-N, contribution, and formula output instead of only grid descriptors. Repeated generated runs
+read models do not need to parse artifact strings to explain no-code grid evidence. Authenticated
+governed run and schedule endpoints reject caller-supplied dataset rows and resolve an approved
+`DatasetSourceId` on the server. Lower-level render/orchestration contracts retain `DatasetRows` for
+non-governed and compatibility callers only; they are not an authoritative certification input.
+The certified manifest retains the server-resolved rendered grid columns, rows, warnings, and
+lineage so generated run delivery artifacts can carry source-backed pivot, Top-N, contribution, and
+formula output instead of only grid descriptors. Repeated generated runs
 for the same job/as-of pair now retain a stable run series id, versioned run attempt ordinal, prior
 run id, retry reason, and report-writer grid diffs generated by `ReportSnapshotDiffEngine`, so
 downstream review surfaces can compare latest generated, latest approved, and prior line-level
@@ -146,3 +178,5 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/source/README.md`
 - `docs/source/generated/source-module-index.md`
 - `docs/architecture/module-map.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
