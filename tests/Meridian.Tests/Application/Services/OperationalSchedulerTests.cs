@@ -8,13 +8,25 @@ namespace Meridian.Tests.Application.Services;
 
 public sealed class OperationalSchedulerTests
 {
-    private readonly Mock<ITradingCalendarProvider> _calendarMock;
+    private readonly Mock<IOperationalTradingCalendar> _calendarMock;
     private readonly OperationalScheduler _scheduler;
 
     public OperationalSchedulerTests()
     {
-        _calendarMock = new Mock<ITradingCalendarProvider>();
+        _calendarMock = new Mock<IOperationalTradingCalendar>();
         _scheduler = new OperationalScheduler(_calendarMock.Object);
+    }
+
+
+    [Fact]
+    public void Constructor_AcceptsTheDeterministicLocalTradingCalendar()
+    {
+        IOperationalTradingCalendar localCalendar = new TradingCalendar();
+
+        var scheduler = new OperationalScheduler(localCalendar);
+
+        scheduler.Should().NotBeNull();
+        localCalendar.IsTradingDay(new DateOnly(2024, 7, 4)).Should().BeFalse();
     }
 
     [Fact]

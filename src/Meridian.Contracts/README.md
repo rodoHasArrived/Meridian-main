@@ -61,8 +61,8 @@ or provider implementations.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
-  validation gates, fund-structure graph/query orchestration, operational scheduling/trading
-  calendar coordination, plus Environment Design draft/publish/runtime projection contracts that
+  validation gates, fund-structure graph/query orchestration, operational scheduling/deterministic local trading-calendar
+  coordination, plus Environment Design draft/publish/runtime projection contracts that
   must be injectable without depending on Application implementation types.
 - `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
   Application orchestration, Data Integration ETL services, Infrastructure adapters, and
@@ -732,8 +732,9 @@ Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/` 
 `PipelineStatistics` contract-owned so Platform backpressure alerting can observe Application
 pipeline state without referencing Application implementation assemblies.
 Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
-`ITradingCalendarProvider`, operation types, resource requirements, scheduling decisions, slots,
-trading sessions, and maintenance-window records contract-owned so scheduling behavior can be
+`IOperationalTradingCalendar` (plus the obsolete `ITradingCalendarProvider` compatibility alias),
+operation types, resource requirements, scheduling decisions, slots, trading sessions, and
+maintenance-window records contract-owned so deterministic local scheduling behavior can be
 implemented in Platform while tests, future hosts, and operator surfaces consume the same
 scheduler shape.
 Evidence Vault identities also expose retained artifact metadata, grouped request lists, and

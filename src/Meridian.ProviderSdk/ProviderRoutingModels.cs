@@ -25,12 +25,9 @@ public enum ProviderCapabilityKind : byte
     BankStatements = 14,
     ReconciliationFeed = 15,
     FactorSchedule = 16,
-    News = 17,
-    Scanner = 18,
-    PnLStream = 19,
-    TradingCalendar = 20,
-    MarketRules = 21,
-    InstrumentDiscovery = 22
+
+    /// <summary>Provider-supplied exchange sessions, closures, and early-close calendar data.</summary>
+    TradingCalendar = 17
 }
 
 /// <summary>
