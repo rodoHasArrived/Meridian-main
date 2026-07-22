@@ -225,6 +225,23 @@ public sealed class OperationsApprovalPolicyMatrixService : IOperationsApprovalP
                     "Override id, policy reference, rationale, expiration date, and linked evidence.",
                     "security-master-override-approved",
                     UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove,
+                    "Error"),
+            Row(
+                    "operations-continuity.security-master-field-edit",
+                    "Reference data control",
+                    "Approve Security Master field edit",
+                    OperationsGateKeyDto.SecurityMaster,
+                    "A pending Security Master passport field edit is operator-authored with effective date, justification, and prior value.",
+                    AnyPermission(UserPermission.AdminMaintenance, UserPermission.ModifySecurityMaster),
+                    "Security Master operator",
+                    "Security Master approver",
+                    requiredDistinctApprovals: 1,
+                    requiresIndependentReviewer: true,
+                    requiresReportPack: false,
+                    requiresChecklistControlApprovals: false,
+                    "Revision id, field path, prior and new value, effective date, justification, and linked evidence.",
+                    "security-master-field-edit-approved",
+                    UiApiRoutes.OperationsContinuitySecurityMasterFieldEditApprove,
                     "Error")
         ];
 

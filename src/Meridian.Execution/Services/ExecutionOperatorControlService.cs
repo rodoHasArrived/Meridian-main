@@ -10,7 +10,9 @@ namespace Meridian.Execution.Services;
 /// <summary>
 /// Configuration for persisted execution operator controls.
 /// </summary>
-public sealed record ExecutionOperatorControlOptions(string RootDirectory)
+public sealed record ExecutionOperatorControlOptions(
+    string RootDirectory,
+    bool FailClosedOnMissingOrCorruptSnapshot = false)
 {
     public static ExecutionOperatorControlOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "controls"));
@@ -64,7 +66,8 @@ public sealed record ExecutionControlSnapshot(
     decimal? DefaultMaxPositionSize,
     IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
     IReadOnlyList<ExecutionManualOverride> ManualOverrides,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    long Version = 0);
 
 /// <summary>
 /// Manual override creation request.
@@ -115,11 +118,13 @@ public sealed class ExecutionOperatorControlService
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<ExecutionOperatorControlService> _logger;
     private readonly Lock _lock = new();
+    private readonly SemaphoreSlim _mutationGate = new(1, 1);
 
     private ExecutionCircuitBreakerState _circuitBreaker = new(false);
     private decimal? _defaultMaxPositionSize;
     private Dictionary<string, decimal> _symbolPositionLimits = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, ExecutionManualOverride> _manualOverrides = new(StringComparer.OrdinalIgnoreCase);
+    private long _version;
 
     public ExecutionOperatorControlService(
         ExecutionOperatorControlOptions? options,
@@ -170,20 +175,18 @@ public sealed class ExecutionOperatorControlService
         string? correlationId = null,
         CancellationToken ct = default)
     {
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            _circuitBreaker = new ExecutionCircuitBreakerState(
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _circuitBreaker = new ExecutionCircuitBreakerState(
                 IsOpen: isOpen,
                 Reason: string.IsNullOrWhiteSpace(reason) ? null : reason,
                 ChangedBy: NormalizeActor(changedBy),
                 ChangedAt: DateTimeOffset.UtcNow);
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
@@ -215,15 +218,14 @@ public sealed class ExecutionOperatorControlService
             maxPositionSize = null;
         }
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            _defaultMaxPositionSize = maxPositionSize;
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _defaultMaxPositionSize = maxPositionSize;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "DefaultPositionLimitUpdated",
@@ -259,24 +261,22 @@ public sealed class ExecutionOperatorControlService
         }
 
         var normalizedSymbol = symbol.Trim().ToUpperInvariant();
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            if (maxPositionSize.HasValue)
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
             {
-                _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
-            }
-            else
-            {
-                _symbolPositionLimits.Remove(normalizedSymbol);
-            }
+                if (maxPositionSize.HasValue)
+                {
+                    _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
+                }
+                else
+                {
+                    _symbolPositionLimits.Remove(normalizedSymbol);
+                }
 
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "SymbolPositionLimitUpdated",
@@ -325,15 +325,14 @@ public sealed class ExecutionOperatorControlService
             StrategyId: NormalizeOptionalToken(request.StrategyId),
             RunId: NormalizeOptionalToken(request.RunId));
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        await MutateAndPersistAsync(
+            () =>
+            {
+                _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCreated",
@@ -368,26 +367,15 @@ public sealed class ExecutionOperatorControlService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideId);
 
-        ExecutionManualOverride? removed = null;
-        ExecutionControlSnapshot snapshot;
+        var (removed, _, persisted) = await MutateAndPersistAsync(
+            () => _manualOverrides.Remove(overrideId, out var existing) ? existing : null,
+            static value => value is not null,
+            ct).ConfigureAwait(false);
 
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            if (_manualOverrides.Remove(overrideId, out var existing))
-            {
-                removed = existing;
-            }
-
-            snapshot = BuildSnapshotLocked();
-        }
-
-        if (removed is null)
+        if (!persisted || removed is null)
         {
             return false;
         }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCleared",
@@ -423,7 +411,7 @@ public sealed class ExecutionOperatorControlService
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
-                OverrideMatchesOrder(overrideEntry, request, runId));
+                OverrideMatchesTarget(overrideEntry, ManualOverrideTarget.ForOrder(request, runId)));
 
             if (forceBlock is not null)
             {
@@ -437,9 +425,7 @@ public sealed class ExecutionOperatorControlService
             var bypassOverride = TryResolveManualOverrideLocked(
                 requestedOverrideId,
                 ExecutionManualOverrideKinds.BypassOrderControls,
-                request.Symbol,
-                request.StrategyId,
-                runId);
+                ManualOverrideTarget.ForOrder(request, runId));
 
             if (_circuitBreaker.IsOpen && bypassOverride is null)
             {
@@ -502,9 +488,7 @@ public sealed class ExecutionOperatorControlService
             var livePromotionOverride = TryResolveManualOverrideLocked(
                 manualOverrideId,
                 ExecutionManualOverrideKinds.AllowLivePromotion,
-                symbol: null,
-                strategyId: strategyId,
-                runId: runId);
+                new ManualOverrideTarget(Symbol: null, StrategyId: strategyId, RunId: runId));
 
             return livePromotionOverride is null
                 ? LivePromotionControlDecision.Rejected(
@@ -517,6 +501,7 @@ public sealed class ExecutionOperatorControlService
     {
         if (!File.Exists(_options.SnapshotPath))
         {
+            EnterFailClosedStateIfRequired("Execution control snapshot is missing.");
             return;
         }
 
@@ -526,22 +511,95 @@ public sealed class ExecutionOperatorControlService
             var snapshot = JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.ExecutionControlSnapshot);
             if (snapshot is null)
             {
-                return;
+                throw new JsonException("Execution control snapshot deserialized to null.");
             }
 
-            _circuitBreaker = snapshot.CircuitBreaker;
-            _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
-            _symbolPositionLimits = new Dictionary<string, decimal>(
-                snapshot.SymbolPositionLimits,
-                StringComparer.OrdinalIgnoreCase);
-            _manualOverrides = snapshot.ManualOverrides.ToDictionary(
-                static entry => entry.OverrideId,
-                StringComparer.OrdinalIgnoreCase);
+            ApplySnapshotLocked(snapshot);
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            _logger.LogError(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            EnterFailClosedStateIfRequired("Execution control snapshot is unreadable or corrupt.");
         }
+    }
+
+    private void EnterFailClosedStateIfRequired(string reason)
+    {
+        if (!_options.FailClosedOnMissingOrCorruptSnapshot)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: reason,
+            ChangedBy: "system",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _defaultMaxPositionSize = null;
+        _symbolPositionLimits = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = new Dictionary<string, ExecutionManualOverride>(StringComparer.OrdinalIgnoreCase);
+        _version = 0;
+    }
+
+    private async Task<(T Result, ExecutionControlSnapshot Snapshot, bool Persisted)> MutateAndPersistAsync<T>(
+        Func<T> mutation,
+        Func<T, bool>? shouldPersist,
+        CancellationToken ct)
+    {
+        await _mutationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ExecutionControlSnapshot previous;
+            ExecutionControlSnapshot next;
+            T result;
+            lock (_lock)
+            {
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                previous = BuildSnapshotLocked();
+                result = mutation();
+                if (shouldPersist is not null && !shouldPersist(result))
+                {
+                    return (result, previous, false);
+                }
+
+                _version = checked(_version + 1);
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                next = BuildSnapshotLocked();
+            }
+
+            try
+            {
+                await PersistSnapshotAsync(next, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_lock)
+                {
+                    ApplySnapshotLocked(previous);
+                }
+
+                throw;
+            }
+
+            return (result, next, true);
+        }
+        finally
+        {
+            _mutationGate.Release();
+        }
+    }
+
+    private void ApplySnapshotLocked(ExecutionControlSnapshot snapshot)
+    {
+        _circuitBreaker = snapshot.CircuitBreaker;
+        _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
+        _symbolPositionLimits = new Dictionary<string, decimal>(
+            snapshot.SymbolPositionLimits,
+            StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = snapshot.ManualOverrides.ToDictionary(
+            static entry => entry.OverrideId,
+            StringComparer.OrdinalIgnoreCase);
+        _version = snapshot.Version;
     }
 
     private async Task PersistSnapshotAsync(ExecutionControlSnapshot snapshot, CancellationToken ct)
@@ -587,7 +645,8 @@ public sealed class ExecutionOperatorControlService
             ManualOverrides: _manualOverrides.Values
                 .OrderByDescending(static entry => entry.CreatedAt)
                 .ToArray(),
-            AsOf: DateTimeOffset.UtcNow);
+            AsOf: DateTimeOffset.UtcNow,
+            Version: _version);
     }
 
     private void PurgeExpiredOverridesLocked(DateTimeOffset now)
@@ -607,9 +666,7 @@ public sealed class ExecutionOperatorControlService
     private ExecutionManualOverride? TryResolveManualOverrideLocked(
         string? overrideId,
         string requiredKind,
-        string? symbol,
-        string? strategyId,
-        string? runId)
+        ManualOverrideTarget target)
     {
         if (string.IsNullOrWhiteSpace(overrideId) ||
             !_manualOverrides.TryGetValue(overrideId, out var overrideEntry))
@@ -622,9 +679,7 @@ public sealed class ExecutionOperatorControlService
             return null;
         }
 
-        if (!MatchesOptionalTarget(overrideEntry.Symbol, symbol) ||
-            !MatchesOptionalTarget(overrideEntry.StrategyId, strategyId) ||
-            !MatchesOptionalTarget(overrideEntry.RunId, runId))
+        if (!OverrideMatchesTarget(overrideEntry, target))
         {
             return null;
         }
@@ -640,10 +695,10 @@ public sealed class ExecutionOperatorControlService
             : _defaultMaxPositionSize;
     }
 
-    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request, string? runId) =>
-        MatchesOptionalTarget(overrideEntry.Symbol, request.Symbol) &&
-        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId) &&
-        MatchesOptionalTarget(overrideEntry.RunId, runId);
+    private static bool OverrideMatchesTarget(ExecutionManualOverride overrideEntry, ManualOverrideTarget target) =>
+        MatchesOptionalTarget(overrideEntry.Symbol, target.Symbol) &&
+        MatchesOptionalTarget(overrideEntry.StrategyId, target.StrategyId) &&
+        MatchesOptionalTarget(overrideEntry.RunId, target.RunId);
 
     private static bool MatchesOptionalTarget(string? configuredTarget, string? actualTarget)
     {
@@ -663,4 +718,13 @@ public sealed class ExecutionOperatorControlService
 
     private static string? NormalizeOptionalToken(string? token) =>
         string.IsNullOrWhiteSpace(token) ? null : token.Trim();
+
+    private readonly record struct ManualOverrideTarget(
+        string? Symbol,
+        string? StrategyId,
+        string? RunId)
+    {
+        public static ManualOverrideTarget ForOrder(OrderRequest request, string? runId) =>
+            new(request.Symbol, request.StrategyId, runId);
+    }
 }

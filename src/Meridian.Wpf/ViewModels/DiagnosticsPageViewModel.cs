@@ -491,7 +491,14 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
                     var fileCount = new DirectoryInfo(fullPath).GetFiles("*", SearchOption.TopDirectoryOnly).Length;
                     output.Append($" ({fileCount} files)");
                 }
-                catch { /* ignore */ }
+                catch (Exception ex)
+                {
+                    // ignore
+                    global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                        "Diagnostics directory file count failed.",
+                        ("exception", ex.GetType().Name),
+                        ("message", ex.Message));
+                }
             }
             output.AppendLine();
         }

@@ -28,13 +28,13 @@
   architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
   dictionary pages, and context packs before implementation.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
-- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
-  workflows, launch automation, and desktop validation.
+- Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support both desktop and browser surfaces without duplicating business logic.
+  that should support the browser workstation and retained WPF compatibility without duplicating
+  business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -74,10 +74,11 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+bash scripts/ci.sh
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
@@ -85,10 +86,20 @@ GNU Make targets are optional convenience wrappers. In Windows shells where `whe
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 Prefer the narrowest validation command that matches the touched files.
+For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
+is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
+it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
+`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
-tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
-`tests/` plus `dotnet_filter`.
+tool before retrying broad local scripts. Select a whitelisted `mode`; for .NET slices, use
+`mode=dotnet-filtered` with a repo-relative test project under `tests/` plus `dotnet_filter`.
+After a timed-out generation, build, or test attempt, run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+validation.
 
 ---
 
@@ -113,7 +124,7 @@ tool before retrying broad local scripts. The .NET lane requires a repo-relative
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF desktop shell
+  services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
 
@@ -153,7 +164,7 @@ tool before retrying broad local scripts. The .NET lane requires a repo-relative
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: current shell orchestration anchor
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell orchestration anchor
 
 ---
 

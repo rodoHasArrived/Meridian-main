@@ -137,4 +137,21 @@ public sealed class OrderRateThrottleTests
         result1.IsApproved.Should().BeFalse();
         result2.IsApproved.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task EvaluateAsync_UnderConcurrentBurst_ApprovalsNeverExceedLimit()
+    {
+        const int limit = 10;
+        const int burst = 200;
+        var sut = CreateSut(maxOrdersPerMinute: limit);
+
+        // Fire the whole burst concurrently across the thread pool. The purge → count →
+        // enqueue sequence must be atomic; otherwise multiple callers observe a count below
+        // the limit and all enqueue, letting the burst exceed the cap.
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, burst).Select(_ => Task.Run(() => sut.EvaluateAsync(CreateOrder()))));
+
+        results.Count(r => r.IsApproved).Should().Be(limit,
+            "a concurrent burst must not approve more orders than the per-minute limit");
+    }
 }

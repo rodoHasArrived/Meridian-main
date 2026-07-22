@@ -21,7 +21,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 /// Instruments search endpoint:
 /// GET https://api.robinhood.com/instruments/?query={symbol}
 /// </remarks>
-[DataSource("robinhood-symbols", "Robinhood (Symbol Search)", DataSourceType.Historical, DataSourceCategory.Free,
+[DataSource("robinhood-symbols", "Robinhood (Symbol Search)", DataSourceType.Reference, DataSourceCategory.Free,
     Priority = 25, Description = "Symbol search via Robinhood's public instruments API")]
 [ImplementsAdr("ADR-001", "Robinhood symbol search provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]

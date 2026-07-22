@@ -12,7 +12,7 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 - strategy, backtesting, paper validation, and execution workflows,
 - risk, ledger, reconciliation, approval, and governed reporting surfaces,
 - a browser-based operator workstation,
-- an active WPF desktop workstation alongside the browser-based operator workstation,
+- an active WPF desktop workstation (co-equal UI lane) whose current focus is web-UI parity over shared contracts,
 - MCP and AI workflow assets for repository navigation and task automation.
 
 ## Critical Rules
@@ -26,6 +26,10 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
 8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
 9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
+10. Local work may happen on `main` when the user explicitly requests it or the checkout is
+    intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
+    use a `codex/<short-task-name>` branch, open a PR to `main`, and treat GitHub Actions
+    `Meridian CI / quality-gate` as the authoritative merge gate.
 
 ## Current Product Direction
 
@@ -37,12 +41,16 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
   charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
   development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
   supports them.
-- Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
+- Operator UI work runs across two active, co-equal lanes: the browser workstation in
+  `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+  The WPF lane's immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`); see
+  `docs/development/wpf-web-ui-alignment-plan.md`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/`.
-- Keep browser and desktop workflows backed by shared contracts, read models, and API seams where
-  the product behavior is common.
+- Keep both the browser and WPF workflows backed by shared contracts, read models, and API seams so
+  neither client forks product state; new WPF parity surfaces consume the shared seam before
+  composing presentation.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation may continue for the browser workstation.
@@ -54,6 +62,7 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 Use the narrowest relevant command:
 
 ```bash
+bash scripts/ci.sh
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
@@ -66,14 +75,20 @@ python3 build/scripts/docs/validate-skill-packages.py
 
 GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+For completed PR-ready work, `bash scripts/ci.sh` is the canonical local/Codex verification
+command; the GitHub-hosted `quality-gate` check remains authoritative before merge.
 
 When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
 branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
-broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
-non-empty `dotnet_filter`:
+broad local scripts. Select a whitelisted `mode`; the .NET lane uses `mode=dotnet-filtered` with a
+repo-relative test project under `tests/` and a non-empty `dotnet_filter`:
+After timed-out generation, build, or test attempts, first run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout.
 
 ```bash
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
 ## Repository Layout
@@ -81,7 +96,7 @@ gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridia
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
-- `src/Meridian.Wpf/` - active Windows desktop shell, workflow automation, and desktop validation lane
+- `src/Meridian.Wpf/` - active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity
 - `src/Meridian.Application/` - orchestration and pipelines
 - `src/Meridian.Infrastructure/` - provider and integration adapters
 - `src/Meridian.Storage/` - WAL, archival, packaging, and durability paths
@@ -110,20 +125,23 @@ Keep Claude-specific files focused on host mechanics and discovery. Shared polic
 
 ## Orchestration and Multi-Agent Dispatch
 
-The Chief of Staff (CoS) runtime (`tools/chief-of-staff-runtime/runtime.py`) is the repo's
-out-of-process ADK orchestration layer for multi-domain, approval-gated, or evidence-synthesis
-tasks. Route work through it when any of the following apply:
+Route work by scope. Use a single specialist agent (blueprint, test-writer, code-review, etc.) for
+single-domain tasks. For work that crosses subsystems, needs an approval gate, or requires evidence
+synthesis, compose multiple specialist agents and hold to the provider-agnostic Human-in-the-loop
+Gates in `docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm
+before an action proceeds. Treat the following as signals that a task needs the gated, multi-agent
+path:
 
 - The request crosses multiple subsystems and needs evidence from more than one source.
 - The request requires an approval gate or operator sign-off before an action can proceed.
 - The request needs a structured briefing with trace/evidence retention (e.g. readiness reviews,
   reconciliation summaries, report-pack approvals).
 
-Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
-multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime. Ordinary
-assistant sessions still follow the provider-agnostic Human-in-the-loop Gates in
-`docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm, while CoS
-remains the heavy-duty path for structured approval, evidence synthesis, and retained sign-off.
+> Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty
+> path was archived in commit `7ee19e38f`. Its code and plan now live under
+> `archive/code/tools/chief-of-staff-runtime/` and `archive/docs/plans/chief-of-staff-runtime.md`
+> for historical reference only. Do not wire new work to it — use specialist agents plus the
+> workflow-contract gates instead.
 
 ### Agent Design Patterns
 
@@ -134,14 +152,14 @@ When composing multiple agents, choose the right topology for the work:
   simultaneously.
 - **Sequential** — each step's output feeds the next. Use for the default single-domain lane:
   Repo Navigation → Specialist → Implementation → Review → Assurance.
-- **Hierarchical** — a coordinator delegates to specialist agents, aggregates evidence, and
-  enforces approval gates before proceeding. Use the CoS runtime for this pattern whenever a
-  task is multi-domain, gated, or requires structured evidence synthesis.
+- **Hierarchical** — a coordinating session delegates to specialist agents, aggregates their
+  evidence, and enforces the workflow-contract approval gates before proceeding. Use this pattern
+  whenever a task is multi-domain, gated, or requires structured evidence synthesis.
 
 Key resources:
-- `tools/chief-of-staff-runtime/runtime.py` — ADK node pipeline and integration boundary.
-- `docs/development/chief-of-staff-runtime.md` — API routes, config reference, and integration details.
-- `.codex/skills/cos-runtime-development/SKILL.md` — Codex workflow for extending the CoS runtime.
+- `docs/ai/assistant-workflow-contract.md` — Human-in-the-loop Gates and shared assistant policy.
+- `docs/ai/work-modes.md` — select a work mode before implementation.
+- `docs/ai/agent-handoff-checklist.md` — required handoff format for multi-agent/lane workflows.
 
 ## Skills
 

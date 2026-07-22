@@ -195,8 +195,13 @@ public sealed partial class FundContextService : IFundProfileCatalog
             var json = JsonSerializer.Serialize(model, StorageJsonOptions);
             await File.WriteAllTextAsync(_storagePath, json, ct).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
+            // Persisting fund context is best-effort; disk failures must not break navigation.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist fund context.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

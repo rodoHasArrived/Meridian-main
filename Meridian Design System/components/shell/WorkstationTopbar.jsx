@@ -1,6 +1,7 @@
 // Meridian masthead — near-black brand bar (#171A1F) capping the light workstation.
 // Brand mark + module breadcrumb · command search · UTC clock · environment mode badge.
 import React from "react";
+import { Badge } from "../core/Badge";
 
 let injected = false;
 function inject() {
@@ -15,25 +16,18 @@ function inject() {
 .ws-brand{display:inline-flex;align-items:center;gap:.5rem;min-width:0;}
 .ws-brand img{width:22px;height:22px;flex:0 0 auto;}
 .ws-brand__name{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--topbar-text,#F4F6F8);}
-.ws-brand__sep{color:#3A4048;}
-.ws-brand__mod{font-size:13px;color:#AEB7C0;}
+.ws-brand__sep{color:var(--topbar-sep,#3A4048);}
+.ws-brand__mod{font-size:13px;color:var(--topbar-text-muted,#AEB7C0);}
 .ws-search{display:flex;align-items:center;gap:.5rem;width:100%;max-width:560px;height:30px;
-  padding:0 .625rem;border:1px solid #2C323A;border-radius:var(--radius-button,6px);
-  background:#0F1216;color:#8A929B;text-align:left;cursor:text;
+  padding:0 .625rem;border:1px solid var(--topbar-field-border,#2C323A);border-radius:var(--radius-button,2px);
+  background:var(--topbar-field-bg,#0F1216);color:var(--topbar-text-faint,#8A929B);text-align:left;cursor:text;
   font-family:var(--font-body);font-size:12px;transition:border-color .12s ease;}
-.ws-search:hover{border-color:#3A424B;}
+.ws-search:hover{border-color:var(--topbar-field-border-hover,#3A424B);}
 .ws-search__txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ws-kbd{font-family:var(--font-data);font-size:10px;border:1px solid #2C323A;
-  border-radius:3px;padding:1px 5px;color:#8A929B;}
+.ws-kbd{font-family:var(--font-data);font-size:10px;border:1px solid var(--topbar-field-border,#2C323A);
+  border-radius:var(--radius-chip,2px);padding:1px 5px;color:var(--topbar-text-faint,#8A929B);}
 .ws-status{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-data);
-  font-size:11px;color:#AEB7C0;font-variant-numeric:tabular-nums;}
-.ws-env{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid;
-  border-radius:var(--radius-chip,4px);font-family:var(--font-body);font-size:11px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;}
-.ws-env__dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-.ws-env--live{color:#E27087;border-color:rgba(186,63,85,.55);background:rgba(186,63,85,.18);}
-.ws-env--paper{color:#7FB2CC;border-color:rgba(47,111,143,.55);background:rgba(47,111,143,.20);}
-.ws-env--fixture{color:#D6A84A;border-color:rgba(183,121,31,.55);background:rgba(183,121,31,.20);}
+  font-size:11px;color:var(--topbar-text-muted,#AEB7C0);font-variant-numeric:tabular-nums;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "masthead");
@@ -48,7 +42,8 @@ export function WorkstationTopbar({
   inject();
   const env = String(environment).toLowerCase();
   return (
-    <header className="ws-masthead">
+    // Live mode paints a hard 2px red inset hairline across the masthead — operators feel "real money".
+    <header className="ws-masthead" style={env === "live" ? { boxShadow: "inset 0 2px 0 0 var(--mode-live)" } : undefined}>
       <div className="ws-brand">
         <img src={brandSrc} alt="Meridian" />
         <span className="ws-brand__name">Meridian</span>
@@ -61,13 +56,13 @@ export function WorkstationTopbar({
         <span className="ws-kbd">Ctrl K</span>
       </button>
       <div className="ws-status">
-        <span style={{ width: 6, height: 6, borderRadius: 999, background: "#2FA377", display: "inline-block" }} />
+        <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--chrome-ok, #2FA377)", display: "inline-block" }} />
         <span>{clock}</span>
       </div>
-      <span className={`ws-env ws-env--${env}`}>
-        <span className="ws-env__dot" aria-hidden="true" />
+      {/* Environment chip — reuse Badge's solid live/paper/fixture variants instead of a hand-rolled twin */}
+      <Badge variant={["live", "paper", "fixture"].includes(env) ? env : "neutral"} dot>
         {String(environment)}
-      </span>
+      </Badge>
     </header>
   );
 }

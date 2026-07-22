@@ -8,11 +8,11 @@ public sealed class RunMatViewModelTests
 {
     // ── Helpers ───────────────────────────────────────────────────────────
 
-    private static (RunMatViewModel vm, RunMatService service, string root) CreateSubject()
+    private static (RunMatViewModel vm, RunMatService service, string root) CreateSubject(TimeProvider? timeProvider = null)
     {
         var root = Path.Combine(Path.GetTempPath(), "runmat-vm-test-" + Guid.NewGuid().ToString("N"));
         var service = new RunMatService(root);
-        var vm = new RunMatViewModel(service);
+        var vm = new RunMatViewModel(service, timeProvider);
         return (vm, service, root);
     }
 
@@ -84,12 +84,12 @@ public sealed class RunMatViewModelTests
     [Fact]
     public void NewScriptCommand_Execute_ShouldClearSelectedScriptAndSetScratchName()
     {
-        var (vm, _, _) = CreateSubject();
+        var (vm, _, _) = CreateSubject(new FixedTimeProvider(new DateTimeOffset(2026, 6, 25, 9, 30, 5, TimeSpan.Zero)));
 
         vm.NewScriptCommand.Execute(null);
 
         vm.SelectedScript.Should().BeNull();
-        vm.ScriptName.Should().MatchRegex(@"scratch_\d{6}\.m");
+        vm.ScriptName.Should().Be("scratch_093005000_01.m");
         vm.ScriptSource.Should().Contain("linspace");
         vm.StatusText.Should().Be("Created new scratch script.");
     }
@@ -97,18 +97,16 @@ public sealed class RunMatViewModelTests
     [Fact]
     public void NewScriptCommand_ExecutedTwice_ShouldProduceDifferentScriptNames()
     {
-        var (vm, _, _) = CreateSubject();
+        var (vm, _, _) = CreateSubject(new FixedTimeProvider(new DateTimeOffset(2026, 6, 25, 9, 30, 5, TimeSpan.Zero)));
 
         vm.NewScriptCommand.Execute(null);
         var first = vm.ScriptName;
 
-        // Small delay so timestamp changes
-        System.Threading.Thread.Sleep(1100);
-
         vm.NewScriptCommand.Execute(null);
         var second = vm.ScriptName;
 
-        second.Should().NotBe(first, "each new script gets a fresh timestamp");
+        second.Should().NotBe(first, "each new script gets a deterministic unique suffix");
+        second.Should().Be("scratch_093005000_02.m");
     }
 
     // ── StopRun command tests ─────────────────────────────────────────────
@@ -244,5 +242,12 @@ public sealed class RunMatViewModelTests
         }
 
         throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+
+        public override DateTimeOffset GetUtcNow() => utcNow;
     }
 }

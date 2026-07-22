@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class RobinhoodMarketDataClient : IMarketDataClient
+public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketDataClient, IProviderConnectionDiagnosticsSource
 {
     private const string QuotesEndpoint = "https://api.robinhood.com/marketdata/quotes/";
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
@@ -51,22 +51,9 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     private readonly QuoteCollector _quoteCollector;
     private readonly ILogger<RobinhoodMarketDataClient> _logger;
     private readonly string? _accessToken;
-    private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
 
     private readonly ConcurrentDictionary<int, string> _subscriptions = new();
     private int _nextSubId;
-    private CancellationTokenSource? _pollCts;
-    private Task? _pollTask;
-    private volatile bool _connected;
-    private bool _disposed;
-    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
-    private DateTimeOffset? _connectedAt;
-    private DateTimeOffset? _disconnectedAt;
-    private DateTimeOffset? _lastPollAttemptAt;
-    private DateTimeOffset? _lastSuccessfulApiCallAt;
-    private DateTimeOffset? _lastMessageReceivedAt;
-    private string? _lastError;
-    private int _consecutivePollFailures;
     private long _dataQualityRejections;
 
     public RobinhoodMarketDataClient(
@@ -74,10 +61,11 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
         QuoteCollector quoteCollector,
         ILogger<RobinhoodMarketDataClient> logger,
         string? accessToken = null)
+        : base("Robinhood Live Quotes", logger, DefaultPollInterval)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
     }
 
@@ -107,83 +95,20 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 
     // ── IMarketDataClient ─────────────────────────────────────────────────
 
-    public bool IsEnabled => !string.IsNullOrWhiteSpace(_accessToken);
-
     /// <inheritdoc />
-    public async Task ConnectAsync(CancellationToken ct = default)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+    public override bool IsEnabled => !string.IsNullOrWhiteSpace(_accessToken);
 
-        if (string.IsNullOrWhiteSpace(_accessToken))
-        {
-            SetLifecycleState(ProviderConnectionLifecycleState.NotConfigured);
-            _lastError = "Robinhood access token is missing.";
-            throw new ConnectionException(
-                $"ROBINHOOD_ACCESS_TOKEN environment variable is not set. " +
-                "Set it to your Robinhood personal access token before connecting.");
-        }
+    /// <summary>Error recorded when a connect is attempted without a token (see base class).</summary>
+    protected override string NotEnabledError => "Robinhood access token is missing.";
 
-        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (_connected)
-                return;
+    /// <summary>Exception thrown by the base <c>ConnectAsync</c> when no token is configured.</summary>
+    protected override Exception CreateNotEnabledException()
+        => new ConnectionException(
+            "ROBINHOOD_ACCESS_TOKEN environment variable is not set. " +
+            "Set it to your Robinhood personal access token before connecting.");
 
-            SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
-            _pollCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            _connected = true;
-            _connectedAt = DateTimeOffset.UtcNow;
-            _lastError = null;
-            _consecutivePollFailures = 0;
-            SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-            _pollTask = RunPollLoopAsync(_pollCts.Token);
-            _logger.LogInformation("Robinhood market data client connected (polling interval {Interval})", DefaultPollInterval);
-        }
-        finally
-        {
-            _lifecycleLock.Release();
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task DisconnectAsync(CancellationToken ct = default)
-    {
-        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (!_connected)
-            {
-                if (_lifecycleState is not ProviderConnectionLifecycleState.NotConfigured)
-                    SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
-                return;
-            }
-
-            SetLifecycleState(ProviderConnectionLifecycleState.Disconnecting);
-            _connected = false;
-
-            if (_pollCts is not null)
-            {
-                await _pollCts.CancelAsync().ConfigureAwait(false);
-                if (_pollTask is not null)
-                {
-                    try
-                    { await _pollTask.WaitAsync(ct).ConfigureAwait(false); }
-                    catch (OperationCanceledException) { }
-                }
-                _pollCts.Dispose();
-                _pollCts = null;
-            }
-
-            _pollTask = null;
-            _disconnectedAt = DateTimeOffset.UtcNow;
-            SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
-            _logger.LogInformation("Robinhood market data client disconnected");
-        }
-        finally
-        {
-            _lifecycleLock.Release();
-        }
-    }
+    /// <summary>Number of active quote subscriptions, surfaced in shared diagnostics.</summary>
+    protected override int ActiveSubscriptionCount => _subscriptions.Count;
 
     /// <inheritdoc />
     public int SubscribeTrades(SymbolConfig cfg)
@@ -212,7 +137,7 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     /// <summary>Subscribe a symbol to receive polling-based BBO quote updates.</summary>
     public int SubscribeQuotes(SymbolConfig cfg)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ThrowIfDisposed();
         var id = Interlocked.Increment(ref _nextSubId);
         _subscriptions.TryAdd(id, cfg.Symbol.ToUpperInvariant());
         _logger.LogDebug("Robinhood subscribed quotes for {Symbol} (subId={SubId})", cfg.Symbol, id);
@@ -232,118 +157,91 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     public RobinhoodMarketDataDiagnostics GetDiagnosticsSnapshot()
     {
         var now = DateTimeOffset.UtcNow;
-        var lastActivity = _lastMessageReceivedAt ?? _lastSuccessfulApiCallAt ?? _connectedAt;
+        var lastActivity = LastMessageReceivedAt ?? LastSuccessfulApiCallAt ?? ConnectedAt;
 
         return new RobinhoodMarketDataDiagnostics(
             ProviderId: "robinhood-live",
-            LifecycleState: _lifecycleState,
-            IsConnected: _connected,
+            LifecycleState: LifecycleState,
+            IsConnected: Connected,
             ActiveSubscriptionCount: _subscriptions.Count,
-            LastConnectedAt: _connectedAt,
-            LastDisconnectedAt: _disconnectedAt,
-            LastPollAttemptAt: _lastPollAttemptAt,
-            LastSuccessfulApiCallAt: _lastSuccessfulApiCallAt,
-            LastMessageReceivedAt: _lastMessageReceivedAt,
-            LastError: _lastError,
-            ConsecutivePollFailures: _consecutivePollFailures,
+            LastConnectedAt: ConnectedAt,
+            LastDisconnectedAt: DisconnectedAt,
+            LastPollAttemptAt: LastPollAttemptAt,
+            LastSuccessfulApiCallAt: LastSuccessfulApiCallAt,
+            LastMessageReceivedAt: LastMessageReceivedAt,
+            LastError: LastError,
+            ConsecutivePollFailures: ConsecutivePollFailures,
             DataQualityRejections: Interlocked.Read(ref _dataQualityRejections),
-            ConnectionAge: _connected && _connectedAt is not null ? now - _connectedAt.Value : null,
-            IdleDuration: lastActivity is not null ? now - lastActivity.Value : null);
+            ConnectionAge: Connected && ConnectedAt is { } connectedAt ? now - connectedAt : null,
+            IdleDuration: lastActivity is { } activityAt ? now - activityAt : null);
     }
 
-    // ── Polling loop ──────────────────────────────────────────────────────
+    // ── Polling ────────────────────────────────────────────────────────────
 
-    private async Task RunPollLoopAsync(CancellationToken ct)
+    /// <summary>
+    /// Runs one poll cycle: batches the subscribed symbols (deduplicated) and polls the
+    /// Robinhood quotes endpoint per batch. Returns <see langword="true"/> only if every batch
+    /// succeeded, so the base class can drive degraded-state backoff.
+    /// </summary>
+    protected override async Task<bool> PollOnceAsync(CancellationToken ct)
     {
-        _logger.LogInformation("Robinhood quote polling loop started");
-        try
+        var seenSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var batch = new List<string>(MaxSymbolsPerBatch);
+        var pollSucceeded = true;
+
+        foreach (var symbol in _subscriptions.Values)
         {
-            while (!ct.IsCancellationRequested)
+            ct.ThrowIfCancellationRequested();
+
+            if (!seenSymbols.Add(symbol))
             {
-                await Task.Delay(DefaultPollInterval, ct).ConfigureAwait(false);
-
-                var seenSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var batch = new List<string>(MaxSymbolsPerBatch);
-                var pollSucceeded = true;
-
-                foreach (var symbol in _subscriptions.Values)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    if (!seenSymbols.Add(symbol))
-                    {
-                        continue;
-                    }
-
-                    batch.Add(symbol);
-                    if (batch.Count < MaxSymbolsPerBatch)
-                    {
-                        continue;
-                    }
-
-                    pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
-                    batch.Clear();
-                }
-
-                if (batch.Count > 0)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
-                }
-
-                if (pollSucceeded)
-                {
-                    _consecutivePollFailures = 0;
-                    if (_lifecycleState is ProviderConnectionLifecycleState.Degraded)
-                        SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-                }
-                else
-                {
-                    _consecutivePollFailures++;
-                    if (_lifecycleState is not ProviderConnectionLifecycleState.Failed)
-                        SetLifecycleState(ProviderConnectionLifecycleState.Degraded);
-                    var backoff = CalculatePollBackoff(_consecutivePollFailures);
-                    _logger.LogWarning(
-                        "Robinhood quote polling degraded after {Failures} consecutive failed poll cycles; backing off for {Delay}",
-                        _consecutivePollFailures,
-                        backoff);
-                    await Task.Delay(backoff, ct).ConfigureAwait(false);
-                }
+                continue;
             }
+
+            batch.Add(symbol);
+            if (batch.Count < MaxSymbolsPerBatch)
+            {
+                continue;
+            }
+
+            pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
+            batch.Clear();
         }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
+
+        if (batch.Count > 0)
         {
-            _logger.LogError(ex, "Robinhood quote polling loop failed unexpectedly");
+            ct.ThrowIfCancellationRequested();
+            pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
         }
-        finally
-        {
-            _logger.LogInformation("Robinhood quote polling loop stopped");
-        }
+
+        return pollSucceeded;
     }
 
     private async Task<bool> PollBatchAsync(IReadOnlyList<string> symbols, CancellationToken ct)
     {
         try
         {
-            _lastPollAttemptAt = DateTimeOffset.UtcNow;
+            RecordPollAttempt();
             using var client = CreateHttpClient();
             var symbolList = string.Join(",", symbols);
             var url = $"{QuotesEndpoint}?symbols={Uri.EscapeDataString(symbolList)}";
 
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            AddAuthHeader(request);
+
+            using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                _lastError = "Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token.";
-                SetLifecycleState(ProviderConnectionLifecycleState.Failed);
+                RecordTerminalPollFailure(new UnauthorizedAccessException(
+                    "Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token."));
                 _logger.LogWarning("Robinhood quote polling: 401 Unauthorized — access token may have expired");
                 return false;
             }
 
             if (!response.IsSuccessStatusCode)
             {
-                _lastError = $"Provider returned HTTP {(int)response.StatusCode} while polling Robinhood quotes.";
+                RecordError($"Provider returned HTTP {(int)response.StatusCode} while polling Robinhood quotes.");
                 _logger.LogWarning(
                     "Robinhood quote polling: HTTP {StatusCode} for batch {Symbols}",
                     response.StatusCode, string.Join(",", symbols));
@@ -357,8 +255,8 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 
             if (result?.Results is null)
             {
-                _lastSuccessfulApiCallAt = DateTimeOffset.UtcNow;
-                _lastError = null;
+                RecordSuccessfulApiCall();
+                ClearError();
                 return true;
             }
 
@@ -400,10 +298,10 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
                 publishedAny = true;
             }
 
-            _lastSuccessfulApiCallAt = DateTimeOffset.UtcNow;
+            RecordSuccessfulApiCall();
             if (publishedAny)
-                _lastMessageReceivedAt = _lastSuccessfulApiCallAt;
-            _lastError = null;
+                RecordMessageReceived();
+            ClearError();
             return true;
         }
         catch (OperationCanceledException)
@@ -412,7 +310,7 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
         }
         catch (Exception ex)
         {
-            _lastError = ex.Message;
+            RecordError(ex.Message);
             _logger.LogError(ex, "Robinhood quote poll error for batch {Symbols}", string.Join(",", symbols));
             return false;
         }
@@ -421,36 +319,19 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private HttpClient CreateHttpClient()
-    {
-        var client = _httpClientFactory.CreateClient(HttpClientNames.RobinhoodMarketData);
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _accessToken);
-        return client;
-    }
+        => _httpClientFactory.CreateClient(HttpClientNames.RobinhoodMarketData);
 
-    public async ValueTask DisposeAsync()
+    /// <summary>
+    /// Applies the bearer token to the specific request rather than mutating the
+    /// factory-shared <see cref="HttpClient.DefaultRequestHeaders"/>, which is unsafe if the
+    /// client is ever pooled or cached. Mirrors <c>NYSEDataSource.AddAuthHeader</c>.
+    /// </summary>
+    private void AddAuthHeader(HttpRequestMessage request)
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-        await DisconnectAsync().ConfigureAwait(false);
-        _lifecycleLock.Dispose();
-    }
-
-    private static TimeSpan CalculatePollBackoff(int consecutiveFailures)
-    {
-        var attempt = Math.Clamp(consecutiveFailures, 1, 5);
-        var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
-        return delay > TimeSpan.FromSeconds(30) ? TimeSpan.FromSeconds(30) : delay;
-    }
-
-    private void SetLifecycleState(ProviderConnectionLifecycleState state)
-    {
-        if (_lifecycleState == state)
-            return;
-
-        _lifecycleState = state;
-        _logger.LogInformation("Robinhood market data lifecycle state changed to {LifecycleState}", state);
+        if (!string.IsNullOrEmpty(_accessToken))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        }
     }
 
     // ── JSON DTOs (ADR-014: source generators) ────────────────────────────

@@ -562,6 +562,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _selectedTrustSnapshot, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -575,8 +576,29 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isTrustSnapshotLoading, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Governed passport editor hosted contextually for the selected security. A fresh instance is built
+    /// for each launch (hydrated from the loaded trust snapshot's securityId + optimistic-concurrency
+    /// version); the instance is reused only to keep an in-progress draft for the same security alive, so a
+    /// different security, a refreshed version, or an in-flight write from a prior security can never bleed in.
+    /// </summary>
+    private SecurityPassportEditorViewModel _passportEditor;
+    public SecurityPassportEditorViewModel PassportEditor
+    {
+        get => _passportEditor;
+        private set => SetProperty(ref _passportEditor, value);
+    }
+
+    private bool _isPassportEditorOpen;
+    public bool IsPassportEditorOpen
+    {
+        get => _isPassportEditorOpen;
+        private set => SetProperty(ref _isPassportEditorOpen, value);
     }
 
     private string _trustSnapshotErrorText = string.Empty;
@@ -1423,6 +1445,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
     public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
+    public IRelayCommand OpenPassportEditorCommand { get; }
+    public IRelayCommand ClosePassportEditorCommand { get; }
     public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }
     public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }
     public IAsyncRelayCommand DismissConflictCommand { get; }
@@ -1491,7 +1515,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.FundContextService fundContextService,
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
-        ISmService service)
+        ISmService service,
+        WpfServices.DesktopAuthenticationSession? authenticationSession = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
@@ -1504,7 +1529,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
+        {
+            _conflictOperatorText = sessionActor;
+        }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
+
+        _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
 
         CreateNewCommand = new RelayCommand(OnCreateNew);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
@@ -1526,6 +1557,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 ? LoadSelectedTrustSnapshotAsync(SelectedSecurity.SecurityId, ct)
                 : Task.CompletedTask,
             () => HasSelectedSecurity && !IsTrustSnapshotLoading);
+        OpenPassportEditorCommand = new RelayCommand(OnOpenPassportEditor, () => CanOpenPassportEditor);
+        ClosePassportEditorCommand = new RelayCommand(() => IsPassportEditorOpen = false);
         AcceptPrimaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptA", ct), () => CanResolveSelectedConflict);
         AcceptSecondaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptB", ct), () => CanResolveSelectedConflict);
         DismissConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("Dismiss", ct), () => CanResolveSelectedConflict);
@@ -1751,6 +1784,44 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(OpenLotReadModelStatusText));
     }
 
+    // The contextual passport editor is reachable once the selected security's trust snapshot has
+    // loaded (it carries the securityId and the optimistic-concurrency version the editor needs).
+    private bool CanOpenPassportEditor => SelectedTrustSnapshot is not null && !IsTrustSnapshotLoading;
+
+    private void OnOpenPassportEditor()
+    {
+        // Defensive: although these are non-nullable contract members, a partially-deserialized snapshot
+        // could surface nulls, and the editor must not open against an absent economic definition.
+        var snapshot = SelectedTrustSnapshot;
+        if (snapshot?.EconomicDefinition is not { } economic)
+        {
+            return;
+        }
+
+        // Reuse the existing editor only to keep unsaved work for the *same* security alive (a saved draft
+        // or typed-but-unsaved input), and only when no write is in flight. Otherwise build a fresh editor:
+        // a different security, a refreshed version on an empty editor, or an in-flight write started
+        // against a prior security must never bleed into this passport.
+        var preserveInProgressWork = PassportEditor.SecurityId == economic.SecurityId
+            && PassportEditor.HasUnsavedWork
+            && !PassportEditor.IsBusy;
+        if (!preserveInProgressWork)
+        {
+            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient)
+            {
+                Parameter = new SecurityPassportEditorParameter(
+                    SecurityId: economic.SecurityId,
+                    Version: economic.Version,
+                    Symbol: snapshot.Security?.DisplayName ?? string.Empty,
+                    AssetClass: economic.AssetClass,
+                    TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+                    FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null)
+            };
+        }
+
+        IsPassportEditorOpen = true;
+    }
+
     private void NotifySelectionCommandsChanged()
     {
         EditSelectedCommand.NotifyCanExecuteChanged();
@@ -1897,6 +1968,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ClearSelectedSecurityAssuranceState()
     {
+        // The contextual editor targets the previously-selected security, so close it when the
+        // selection changes; reopening for the new security re-hydrates and resets its inputs.
+        IsPassportEditorOpen = false;
         SelectedTrustSnapshot = null;
         SelectedInstrumentPassport = null;
         TrustSnapshotErrorText = string.Empty;
@@ -2179,9 +2253,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var endpoint = $"/api/workstation/security-master/securities" +
                            $"?query={Uri.EscapeDataString(query)}&take=50&activeOnly={ActiveOnly}";
 
-            var results = await ApiClientService.Instance
-                .GetAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
-                .ConfigureAwait(false);
+            var results = (await ApiClientService.Instance
+                .GetWithResponseAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
+                .ConfigureAwait(false)).DataOrLoggedNull("Search security master securities");
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -2262,6 +2336,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -2384,8 +2462,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var activeProviderCount = passport.ProviderConfidence.Count(item => item.IsActive);
         var primaryProvider = passport.ProviderConfidence.FirstOrDefault(item => item.IsPrimary)
             ?? passport.ProviderConfidence.FirstOrDefault();
-        ReplaceCollection(InstrumentPassportFields,
-        [
+        var fields = new List<SecurityMasterPresentationField>
+        {
             new SecurityMasterPresentationField("Display name", passport.Identity.DisplayName),
             new SecurityMasterPresentationField("Security ID", passport.SecurityId.ToString("D")),
             new SecurityMasterPresentationField("Asset class", SecurityMasterTextHelpers.FirstNonEmpty(passport.Identity.AssetClass, passport.EconomicDefinition.AssetClass, "Unavailable")),
@@ -2396,7 +2474,76 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
             new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
             new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
-        ]);
+        };
+
+        if (passport.OperatingModel is { } operatingModel)
+        {
+            fields.Add(new SecurityMasterPresentationField("Operating model", $"{operatingModel.Status}: {operatingModel.Summary}"));
+            foreach (var stage in operatingModel.Stages)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    stage.Title,
+                    $"{stage.Status}: {stage.Summary} Evidence {stage.EvidenceCount}; blockers {stage.BlockingIssueCount}."));
+            }
+
+            var applicableEntitlements = operatingModel.EntitlementApplicability
+                .Count(static item => item.IsApplicable && item.IsMostSpecific);
+            fields.Add(new SecurityMasterPresentationField(
+                "Entitlement applicability",
+                $"{applicableEntitlements} most-specific applicable entitlement(s)."));
+            fields.Add(new SecurityMasterPresentationField(
+                "Manual-change approval",
+                $"{operatingModel.ManualChangeApproval.Status}: {operatingModel.ManualChangeApproval.PolicyKey} via {operatingModel.ManualChangeApproval.Gate}; {operatingModel.ManualChangeApproval.Summary}"));
+        }
+
+        if (passport.ReferenceDataWorkbench is { } workbench)
+        {
+            fields.Add(new SecurityMasterPresentationField("Reference-data workbench", $"{workbench.Status}: {workbench.Summary}"));
+            foreach (var section in workbench.Sections)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    section.Title,
+                    $"{section.Status}: {section.Summary} Evidence {section.EvidenceCount}; blockers {section.BlockingIssueCount}."));
+            }
+
+            var enabledHandoffs = workbench.OperationsHandoffs.Count(static handoff => handoff.IsEnabled);
+            fields.Add(new SecurityMasterPresentationField(
+                "Operations handoff",
+                $"{enabledHandoffs} enabled / {workbench.OperationsHandoffs.Count} total handoff(s)."));
+        }
+
+        if (passport.OperationsWorkbench is { } operationsWorkbench)
+        {
+            fields.Add(new SecurityMasterPresentationField("Operations workbench", $"{operationsWorkbench.Status}: {operationsWorkbench.Summary}"));
+            foreach (var readiness in operationsWorkbench.Readiness)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    readiness.Label,
+                    $"{readiness.Status}: {readiness.Summary} Evidence {readiness.EvidenceCount}; blockers {readiness.BlockingIssueCount}; next action {readiness.NextAction}"));
+            }
+
+            foreach (var panel in operationsWorkbench.Panels)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    panel.Title,
+                    $"{panel.Status}: {panel.Summary} {panel.Items.Count} item(s)."));
+            }
+
+            foreach (var handoff in operationsWorkbench.Handoffs)
+            {
+                var impactedOutputs = handoff.ImpactedOutputs.Count == 0
+                    ? "Security Master"
+                    : string.Join(", ", handoff.ImpactedOutputs);
+                var linkedCases = handoff.LinkedCases.Count == 0
+                    ? "none"
+                    : string.Join(", ", handoff.LinkedCases);
+                fields.Add(new SecurityMasterPresentationField(
+                    $"Handoff: {handoff.Title}",
+                    $"{handoff.Status}: owner {SecurityMasterTextHelpers.FirstNonEmpty(handoff.Owner, "Security Master steward")}; blocker {SecurityMasterTextHelpers.FirstNonEmpty(handoff.BlockerReason, handoff.Detail)}; outputs {impactedOutputs}; linked cases {linkedCases}; route {SecurityMasterTextHelpers.FirstNonEmpty(handoff.Route, handoff.Target)}"));
+            }
+        }
+
+        ReplaceCollection(InstrumentPassportFields, fields);
     }
     private void RebuildFilteredConflicts()
         => RebuildFilteredConflicts(SelectedConflict?.ConflictId);
@@ -2637,6 +2784,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -3118,7 +3269,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     CorporateActions.Add(action);
             });
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load corporate actions", ex);
@@ -3186,9 +3343,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null);
 
-            var result = await ApiClientService.Instance
-                .PostAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
-                .ConfigureAwait(false);
+            var result = (await ApiClientService.Instance
+                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
             {
@@ -3209,7 +3366,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 _notificationService.ShowNotification("Corporate Actions", "Failed to record corporate action.", NotificationType.Error);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to record corporate action", ex);
@@ -3312,6 +3475,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {

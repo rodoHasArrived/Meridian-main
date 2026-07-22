@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-30
 
 This is the canonical operator lane for historical data backfill operations and recovery in Meridian.
 
@@ -18,7 +18,7 @@ This is the canonical operator lane for historical data backfill operations and 
 Use this sequence for controlled backfill execution:
 
 1. Configure provider credentials and priorities for all intended providers.
-2. Run preview before execution and capture the preview evidence.
+2. Run preview or cost estimate before execution and capture the preview evidence.
 3. Run scoped backfill jobs (single symbol or small batches first).
 4. Monitor status/progress APIs until completion or bounded retries.
 5. Run quality check and gap report before archival or downstream promotion.
@@ -29,6 +29,7 @@ Use this sequence for controlled backfill execution:
 - `GET /api/backfill/status`
 - `GET /api/backfill/progress`
 - `POST /api/backfill/run/preview`
+- `POST /api/backfill/cost-estimate`
 - `POST /api/backfill/run`
 - `GET /api/backfill/executions`
 - `GET /api/backfill/statistics`
@@ -44,6 +45,30 @@ Use explicit provider priority and fallback policy matching current run intent:
 Keep provider lookup details in Reference lane files:
 - [provider-capability-matrix.md](../reference/provider-capability-matrix.md)
 - [provider-validation-matrix.md](../reference/provider-validation-matrix.md)
+
+## Multi-symbol ordering and resume semantics
+
+Current `HistoricalBackfillService` behavior is deterministic only within the configured execution
+mode:
+
+- `MaxConcurrentSymbols` caps concurrent symbol processing. If unset, the service uses the
+  configured backfill job concurrency.
+- When `SymbolPriorities` is supplied, lower numeric priority values process first. Priority keys are
+  matched case-insensitively.
+- When no symbol priorities are supplied and concurrency is `1`, input symbol order is preserved.
+- Cost preview and execution trim symbols, drop blanks, and de-duplicate symbols case-insensitively
+  while preserving the first-seen order and spelling, so repeated symbols do not create duplicate
+  provider calls or validation rows.
+- When concurrency is greater than `1`, completion order is not a stable ordering contract. Use
+  per-symbol validation signals and checkpoints rather than task completion order as evidence.
+- `ResumeFromCheckpoint=true` skips fully covered symbols, advances partial symbols to the day after
+  the recorded checkpoint, and emits warning signals when checkpoint bar-count evidence is missing.
+- Fresh runs without the resume flag clear matching-granularity checkpoints before writing new
+  checkpoint evidence; they do not clear checkpoints recorded for another granularity.
+- Automatic gap-analyzer remediation batches same-provider, same-window scan gaps into one
+  deterministic request with symbols normalized to uppercase and sorted lexically before execution
+  history is retained. Data-quality and quality-alert triggers remain single-symbol remediation
+  signals.
 
 ## Execution commands
 
@@ -69,7 +94,43 @@ Before accepting outputs, run:
 
 - backfill gap report (`dotnet run -- --gap-report ...`)
 - quality report (`dotnet run -- --quality-report <symbol>`)
+- bounded cross-source daily backfill reconciliation when an alternate provider is part of the
+  acceptance evidence; batch reconciliation normalizes symbols to uppercase, de-duplicates them,
+  preserves first-seen request order, filters comparison bars to the requested symbol, and reports
+  clean/drift/symbol-mismatch/missing-evidence/error posture per symbol
 - review execution history/lineage before promoting archive/parquet transitions.
+
+## Gap-remediation SLA posture
+
+The current automation provides guardrails plus retained SLA classification metadata and a
+queryable SLA status snapshot for gap remediation, but it is not a complete cross-provider SLA
+engine. Treat these as the active operator semantics until a provider-governance workflow enforces
+timers and escalation end to end:
+
+- Detect: a gap report, data-quality gap, or quality alert must identify symbol, provider when known,
+  date range, granularity, severity, and affected downstream workflow.
+- Triage: critical gaps that block paper promotion, reconciliation, accounting, or governed reporting
+  require same-business-day owner assignment and a retained runbook entry. Auto-remediation history
+  now records `sla-tier`, `sla-due-utc`, `sla-requires-owner`, `downstream-workflow`, and
+  `sla-reason` warnings for each system-triggered remediation execution so operators can distinguish
+  standard repairs from critical workflow blockers. `AutoGapRemediationService.EvaluateRemediationSla`
+  projects those retained fields into current `Overdue`, `DueSoon`, `Failed`, `Open`, or `Completed`
+  status items with owner-assignment counts.
+- Attempt: auto-remediation may run when the gap exceeds the configured minimum duration/size and is
+  not under symbol/provider cooldown. Duplicate triggers are suppressed by idempotency; transient
+  provider failures may retry with the same remediation key. Same-provider, same-window scan gaps
+  share a batched remediation key so operators can audit one execution against the affected symbol
+  set.
+- Fallback: cross-provider repair must use the configured provider priority/fallback order and must
+  preserve the original source/provider evidence for audit comparison.
+- Prove: a gap is not closed until the rerun has execution history, per-symbol validation signals,
+  bounded cross-source reconciliation evidence when fallback data is used, no wrong-symbol fallback
+  rows or zero-evidence provider windows in the accepted evidence set, a retained closure decision
+  with ordered review symbols, and a follow-up gap/quality check showing the affected interval is
+  acceptable for the downstream workflow.
+- Escalate: if provider fallback cannot close the interval or the SLA snapshot marks the remediation
+  overdue, attach the failed execution evidence and route the exception to provider readiness,
+  reconciliation, or reporting owners according to the blocked workflow.
 
 ## Backfill controls for operators
 
@@ -84,6 +145,17 @@ Before accepting outputs, run:
 - Honor rate-limit pressure by widening intervals rather than forcing retries.
 - Use incremental backfill windows when a full range is high risk.
 - Escalate unresolved critical breaks only with evidence attached.
+
+### Cost-estimate and execution partition planning
+
+- `POST /api/backfill/cost-estimate` returns per-provider `PartitionStrategy` and
+  `AdaptivePartitions` entries for estimator-planned provider windows.
+- Bounded long intraday or multi-year daily runs execute through the same adaptive windows so
+  provider calls stay aligned with the previewed plan.
+- Review adaptive partitions before long runs. They are planning and execution-shape evidence for
+  quota, wall-clock, and batching expectations, not completion proof.
+- Retain execution history, checkpoint evidence, and follow-up quality/gap checks as the proof that
+  each affected interval was accepted for downstream workflows.
 
 ## Mandatory evidence
 

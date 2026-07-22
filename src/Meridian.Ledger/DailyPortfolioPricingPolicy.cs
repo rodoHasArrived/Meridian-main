@@ -11,7 +11,9 @@ public sealed record DailyPortfolioPricingPolicy
         string policyName,
         string valuationMethod,
         string approvedBy,
-        DateTimeOffset approvedAtUtc)
+        DateTimeOffset approvedAtUtc,
+        FairValueLevel defaultFairValueLevel = FairValueLevel.Unclassified,
+        StalePricePolicy? stalePricePolicy = null)
     {
         if (string.IsNullOrWhiteSpace(fundId))
             throw new ArgumentException("Fund identifier must not be null or whitespace.", nameof(fundId));
@@ -30,6 +32,8 @@ public sealed record DailyPortfolioPricingPolicy
         ValuationMethod = valuationMethod.Trim();
         ApprovedBy = approvedBy.Trim();
         ApprovedAtUtc = approvedAtUtc.ToUniversalTime();
+        DefaultFairValueLevel = defaultFairValueLevel;
+        StalePricePolicy = (stalePricePolicy ?? StalePricePolicy.Disabled).EnsureValid();
     }
 
     public string FundId { get; }
@@ -43,4 +47,15 @@ public sealed record DailyPortfolioPricingPolicy
     public string ApprovedBy { get; }
 
     public DateTimeOffset ApprovedAtUtc { get; }
+
+    /// <summary>
+    /// Default ASC 820 fair-value level applied to marks that do not classify themselves.
+    /// Defaults to <see cref="FairValueLevel.Unclassified"/> for backward compatibility.
+    /// </summary>
+    public FairValueLevel DefaultFairValueLevel { get; }
+
+    /// <summary>
+    /// Freshness policy applied to daily marks. Defaults to <see cref="StalePricePolicy.Disabled"/>.
+    /// </summary>
+    public StalePricePolicy StalePricePolicy { get; }
 }

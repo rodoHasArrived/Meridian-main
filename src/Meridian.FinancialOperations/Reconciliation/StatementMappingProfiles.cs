@@ -14,7 +14,14 @@ public enum StatementCanonicalField
     SettlementDate,
     Currency,
     FeesCommission,
-    ExternalTransactionId
+    ExternalTransactionId,
+    AccountId,
+    ExternalAccountId,
+    SecurityId,
+    UnresolvedIdentifier,
+    MarketValue,
+    Amount,
+    ExternalReference
 }
 
 public sealed record StatementFieldMapping(
@@ -47,6 +54,7 @@ public sealed class StatementMappingProfileRegistry
 {
     public const string CanonicalCsvV1ProfileId = "canonical-csv-v1";
     public const string SampleBrokerCsvV1ProfileId = "sample-broker-csv-v1";
+    public const string IbFlexV1ProfileId = "ib-flex-v1";
 
     private readonly Dictionary<string, StatementMappingProfile> _profiles;
 
@@ -78,6 +86,7 @@ public sealed class StatementMappingProfileRegistry
         return Resolve(normalizedSourceKind switch
         {
             "sample-broker" => SampleBrokerCsvV1ProfileId,
+            "ib-flex" or "ibflex" or "ibkr" or "interactive-brokers" or "interactivebrokers" => IbFlexV1ProfileId,
             _ => CanonicalCsvV1ProfileId
         });
     }
@@ -101,7 +110,14 @@ public sealed class StatementMappingProfileRegistry
                 new(StatementCanonicalField.SettlementDate, "settlementDate", Required: false),
                 new(StatementCanonicalField.Currency, "currency", Required: false),
                 new(StatementCanonicalField.FeesCommission, "feesCommission", Required: false),
-                new(StatementCanonicalField.ExternalTransactionId, "externalTransactionId", Required: false)
+                new(StatementCanonicalField.ExternalTransactionId, "externalTransactionId", Required: false),
+                new(StatementCanonicalField.AccountId, "accountId", Required: false),
+                new(StatementCanonicalField.ExternalAccountId, "externalAccountId", Required: false),
+                new(StatementCanonicalField.SecurityId, "securityId", Required: false),
+                new(StatementCanonicalField.UnresolvedIdentifier, "unresolvedIdentifier", Required: false),
+                new(StatementCanonicalField.MarketValue, "marketValue", Required: false),
+                new(StatementCanonicalField.Amount, "amount", Required: false),
+                new(StatementCanonicalField.ExternalReference, "externalReference", Required: false)
             ],
             [
                 new("position", "position"),
@@ -135,6 +151,42 @@ public sealed class StatementMappingProfileRegistry
                 new("SELL", "trade"),
                 new("FEE", "fee"),
                 new("DIV", "dividend")
+            ]),
+        new StatementMappingProfile(
+            IbFlexV1ProfileId,
+            "Interactive Brokers Flex Query v1",
+            [
+                // Source columns are Flex XML attribute names; the Flex importer emits the
+                // canonical activity types (trade/position/cash) directly per section.
+                new(StatementCanonicalField.Account, "accountId"),
+                new(StatementCanonicalField.SecurityIdentifier, "symbol"),
+                new(StatementCanonicalField.Quantity, "quantity"),
+                new(StatementCanonicalField.Price, "tradePrice"),
+                new(StatementCanonicalField.CashAmount, "netCash"),
+                new(StatementCanonicalField.ActivityType, "activityType"),
+                new(StatementCanonicalField.TradeDate, "tradeDate"),
+                new(StatementCanonicalField.SettlementDate, "settleDateTarget", Required: false),
+                new(StatementCanonicalField.Currency, "currency", Required: false),
+                new(StatementCanonicalField.FeesCommission, "ibCommission", Required: false),
+                new(StatementCanonicalField.ExternalTransactionId, "tradeID", Required: false),
+                new(StatementCanonicalField.MarketValue, "positionValue", Required: false),
+                new(StatementCanonicalField.Amount, "amount", Required: false)
+            ],
+            [
+                new("BUY", "trade"),
+                new("SELL", "trade"),
+                new("trade", "trade"),
+                new("position", "position"),
+                new("cash", "cash"),
+                // Flex CashTransactions are ledger movements, not the account's ending cash balance, so
+                // they reconcile against ledger transactions: canonical "cash"/"cashbalance" are reserved
+                // for balance rows. Dividends keep dividend semantics; the rest are generic transactions.
+                new("Dividends", "dividend"),
+                new("Deposits/Withdrawals", "transaction"),
+                new("Broker Interest Paid", "transaction"),
+                new("Broker Interest Received", "transaction"),
+                new("Withholding Tax", "transaction"),
+                new("Other Fees", "fee")
             ])
     ];
 }
@@ -170,7 +222,10 @@ internal sealed class StatementMappedCsvRow
             return null;
         }
 
-        return value;
+        // Treat a blank/whitespace mapped value the same as a missing one so callers' default
+        // fallbacks (e.g. currency -> "USD", accountId -> account) apply to blank or omitted
+        // optional columns, matching the prior positional importer.
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     public decimal GetRequiredDecimal(StatementCanonicalField field, int rowNumber) =>
@@ -178,6 +233,16 @@ internal sealed class StatementMappedCsvRow
 
     public DateOnly GetRequiredDate(StatementCanonicalField field, int rowNumber) =>
         DateOnly.Parse(GetRequired(field, rowNumber), CultureInfo.InvariantCulture);
+
+    public decimal? GetOptionalDecimal(StatementCanonicalField field) =>
+        GetOptional(field) is { } value && !string.IsNullOrWhiteSpace(value)
+            ? decimal.Parse(value, NumberStyles.Number, CultureInfo.InvariantCulture)
+            : null;
+
+    public DateOnly? GetOptionalDate(StatementCanonicalField field) =>
+        GetOptional(field) is { } value && !string.IsNullOrWhiteSpace(value)
+            ? DateOnly.Parse(value, CultureInfo.InvariantCulture)
+            : null;
 
     public Dictionary<string, string> ToCanonicalSnapshot()
     {

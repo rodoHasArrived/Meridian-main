@@ -546,6 +546,9 @@ public sealed class LatencyHistogramTests : IDisposable
     }
 }
 
+/// <summary>
+/// Guards cross-provider comparison against feed divergence that can corrupt ingestion confidence.
+/// </summary>
 public sealed class CrossProviderComparisonServiceTests : IDisposable
 {
     private readonly CrossProviderComparisonService _service;
@@ -575,6 +578,59 @@ public sealed class CrossProviderComparisonServiceTests : IDisposable
         providers.Should().HaveCount(2);
         providers.Should().Contain("Provider1");
         providers.Should().Contain("Provider2");
+    }
+
+    [Fact]
+    public void Scenario_CrossProviderTradeDivergence_VolumeMismatchEmitsDiscrepancy()
+    {
+        using var service = new CrossProviderComparisonService(new CrossProviderConfig
+        {
+            PriceDiscrepancyThresholdPercent = 10.0,
+            VolumeDiscrepancyThresholdPercent = 10.0,
+            ComparisonWindowSeconds = 60
+        });
+        var detected = new List<ProviderDiscrepancy>();
+        service.OnDiscrepancyDetected += detected.Add;
+        var timestamp = DateTimeOffset.UtcNow;
+
+        service.RecordTrade("AAPL", "alpaca", timestamp, 150.00m, 100, 1);
+        service.RecordTrade("AAPL", "polygon", timestamp, 150.00m, 500, 2);
+
+        var discrepancy = service.GetRecentDiscrepancies()
+            .Should()
+            .ContainSingle(d => d.DiscrepancyType == "VolumeDifference")
+            .Subject;
+
+        discrepancy.Field.Should().Be("Volume");
+        discrepancy.Severity.Should().Be(DiscrepancySeverity.Critical);
+        new[] { discrepancy.Provider1, discrepancy.Provider2 }.Should().BeEquivalentTo("alpaca", "polygon");
+        detected.Should().ContainSingle(d => d.DiscrepancyType == "VolumeDifference");
+    }
+
+    [Fact]
+    public void Scenario_CrossProviderQuoteDivergence_AskMismatchEmitsDiscrepancy()
+    {
+        using var service = new CrossProviderComparisonService(new CrossProviderConfig
+        {
+            QuoteDiscrepancyThresholdPercent = 0.5,
+            ComparisonWindowSeconds = 60
+        });
+        var detected = new List<ProviderDiscrepancy>();
+        service.OnDiscrepancyDetected += detected.Add;
+        var timestamp = DateTimeOffset.UtcNow;
+
+        service.RecordQuote("AAPL", "alpaca", timestamp, 100.00m, 100.05m, 100, 100);
+        service.RecordQuote("AAPL", "polygon", timestamp, 100.00m, 102.00m, 100, 100);
+
+        var discrepancy = service.GetRecentDiscrepancies()
+            .Should()
+            .ContainSingle(d => d.DiscrepancyType == "AskPriceDifference")
+            .Subject;
+
+        discrepancy.Field.Should().Be("AskPrice");
+        discrepancy.Severity.Should().Be(DiscrepancySeverity.High);
+        new[] { discrepancy.Provider1, discrepancy.Provider2 }.Should().BeEquivalentTo("alpaca", "polygon");
+        detected.Should().ContainSingle(d => d.DiscrepancyType == "AskPriceDifference");
     }
 
     [Fact]

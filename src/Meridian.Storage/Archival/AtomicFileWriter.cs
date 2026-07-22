@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,12 +16,18 @@ public static partial class AtomicFileWriter
 {
     private static readonly ILogger Log = LoggingSetup.ForContext(typeof(AtomicFileWriter));
 
+    // UTF-8 without a byte-order mark. A BOM would prefix text files (e.g. the .sha256 checksum
+    // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
+    private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
+
     /// <summary>
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
     /// </summary>
-    public static void Write(string destinationPath, string content)
+    public static void Write(string destinationPath, string content, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -38,13 +45,14 @@ public static partial class AtomicFileWriter
                 FileShare.None,
                 bufferSize: 65536,
                 FileOptions.None))
-            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var writer = new StreamWriter(stream, Utf8NoBom))
             {
                 writer.Write(content);
                 writer.Flush();
                 stream.Flush(flushToDisk: true);
             }
 
+            ct.ThrowIfCancellationRequested();
             File.Move(tempPath, destinationPath, overwrite: true);
             SyncDirectory(directory!);
 
@@ -78,21 +86,23 @@ public static partial class AtomicFileWriter
 
         try
         {
-            // Write to temp file
-            await File.WriteAllTextAsync(tempPath, content, Encoding.UTF8, ct);
+            // Write to temp file (no BOM: readers token-split the raw content, e.g. checksum sidecars)
+            await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
+
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
 
-            // Sync the temp file to disk
-            await SyncFileAsync(tempPath, ct);
-
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync the directory to ensure rename is persisted
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
                 Encoding.UTF8.GetByteCount(content), destinationPath);
@@ -126,19 +136,21 @@ public static partial class AtomicFileWriter
         {
             // Write to temp file
             await File.WriteAllBytesAsync(tempPath, content, ct);
+
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
 
-            // Sync the temp file to disk
-            await SyncFileAsync(tempPath, ct);
-
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync the directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}", content.Length, destinationPath);
         }
@@ -180,19 +192,81 @@ public static partial class AtomicFileWriter
                 await writeAction(writer);
                 await writer.FlushAsync();
             }
+
+            // Sync the temp file while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
 
-            // Sync the temp file
+            // Atomic rename
+            File.Move(tempPath, destinationPath, overwrite: true);
+
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
+        }
+        catch
+        {
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Atomically writes content to a file using a raw stream writer action, overwriting any
+    /// existing file. The destination is only replaced once the temporary file has been fully
+    /// written, flushed, and fsynced, and the rename is made durable with a directory fsync.
+    /// </summary>
+    public static async Task WriteStreamAsync(
+        string destinationPath,
+        Func<Stream, Task> writeAction,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(writeAction);
+
+        var directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var tempPath = GetTempPath(destinationPath);
+        var destinationExists = File.Exists(destinationPath);
+
+        try
+        {
+            // ReadWrite (not Write) so writeAction can read back bytes it copied into the
+            // temp stream — required by formats that merge existing content in place,
+            // such as Parquet row-group appends.
+            await using (var tempStream = new FileStream(
+                tempPath,
+                FileMode.Create,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 65536,
+                FileOptions.Asynchronous))
+            {
+                await writeAction(tempStream);
+                await tempStream.FlushAsync(ct);
+            }
+
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
             await SyncFileAsync(tempPath, ct);
+
+            if (destinationExists)
+            {
+                CopySecurityMetadata(destinationPath, tempPath);
+            }
 
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory to ensure the rename is persisted (post-commit: non-cancellable).
+            await SyncCommittedDirectoryAsync(directory!);
         }
         catch
         {
@@ -205,6 +279,12 @@ public static partial class AtomicFileWriter
     /// Atomically appends binary content to an existing file using copy-on-write semantics.
     /// The original file is preserved until the new file containing both the original and
     /// appended bytes has been fully written and renamed into place.
+    /// </summary>
+    /// <summary>
+    /// Atomically appends by copying the ENTIRE existing destination into a temp file, appending,
+    /// and renaming — O(destination size) per call. Suitable for small, low-frequency artifacts
+    /// only; hot-path day files use the JSONL sink's persistent append streams instead
+    /// (JsonlWriteMode.AppendStream), with the WAL as the crash backstop.
     /// </summary>
     public static async Task AppendAsync(
         string destinationPath,
@@ -247,7 +327,8 @@ public static partial class AtomicFileWriter
 
             await SyncFileAsync(tempPath, ct);
             File.Move(tempPath, destinationPath, overwrite: true);
-            await SyncDirectoryAsync(directory!, ct);
+            // post-commit: non-cancellable
+            await SyncCommittedDirectoryAsync(directory!);
         }
         catch
         {
@@ -326,12 +407,16 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Write checksum sidecar file
+            // Write the checksum sidecar atomically (temp + fsync + rename). A bare
+            // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
+            // health check would misread as payload corruption. Post-commit: non-cancellable so a
+            // cancelled token cannot report the already-renamed payload as a failed write.
             var checksumPath = destinationPath + ".sha256";
-            await File.WriteAllTextAsync(checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", ct);
+            await WriteAsync(
+                checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", CancellationToken.None);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Wrote {Bytes} bytes with checksum {Checksum} to {Path}",
                 content.Length, checksum[..16], destinationPath);
@@ -410,13 +495,17 @@ public static partial class AtomicFileWriter
                     File.Delete(backupPath);
                 }
                 File.Move(destinationPath, backupPath);
+
+                // Make the backup rename durable before the destination is overwritten, so a
+                // crash mid-sequence can never leave both the original and its backup missing.
+                await SyncDirectoryAsync(directory!, ct);
             }
 
             // Move temp to destination
             File.Move(tempPath, destinationPath);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             // Optionally remove backup
             if (!keepBackup && File.Exists(backupPath))
@@ -426,23 +515,25 @@ public static partial class AtomicFileWriter
 
             Log.Debug("Atomically replaced {Path}", destinationPath);
         }
-        catch
+        catch (Exception writeException)
         {
-            // On failure, try to restore backup
+            // On failure, try to restore the backup without masking the original exception.
             if (File.Exists(backupPath) && !File.Exists(destinationPath))
             {
                 try
                 {
                     File.Move(backupPath, destinationPath);
                 }
-                catch (Exception ex)
+                catch (Exception restoreException)
                 {
-                    Log.Error(ex, "Failed to restore backup for {Path}", destinationPath);
+                    Log.Error(restoreException, "Failed to restore backup for {Path}", destinationPath);
                 }
             }
 
             TryDeleteFile(tempPath);
-            throw;
+
+            // Re-throw the original failure with its stack trace intact.
+            ExceptionDispatchInfo.Throw(writeException);
         }
     }
 
@@ -477,23 +568,48 @@ public static partial class AtomicFileWriter
 
     private static async Task SyncFileAsync(string path, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+
+        // Open for write and force an OS-level flush to physical disk. A read-only handle with
+        // FlushAsync only touches the (empty) managed read buffer and never performs an fsync,
+        // so the file contents would remain non-durable before the rename.
         await using var fs = new FileStream(
             path,
             FileMode.Open,
-            FileAccess.Read,
+            FileAccess.Write,
             FileShare.ReadWrite);
-        await fs.FlushAsync(ct);
+        fs.Flush(flushToDisk: true);
     }
 
-    private static Task SyncDirectoryAsync(string directory, CancellationToken ct)
+    /// <summary>
+    /// Fsyncs a directory so that prior rename/link operations within it are durable after a crash
+    /// or power loss. No-op on platforms where directory metadata is journaled automatically.
+    /// </summary>
+    public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         SyncDirectory(directory);
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Fsyncs a directory after the operation it belongs to has already committed (the rename or
+    /// delete has succeeded). This durability step must not observe caller cancellation: throwing
+    /// here would report an already-committed operation as failed, leading callers to retry or
+    /// restore against state that no longer exists.
+    /// </summary>
+    private static Task SyncCommittedDirectoryAsync(string directory)
+        => SyncDirectoryAsync(directory, CancellationToken.None);
+
     private static void SyncDirectory(string directory)
     {
+        // A bare relative path (e.g. "file.txt") yields an empty directory; treat it as the
+        // current directory rather than faulting.
+        if (string.IsNullOrEmpty(directory))
+        {
+            directory = ".";
+        }
+
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);

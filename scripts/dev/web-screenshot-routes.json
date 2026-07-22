@@ -8,20 +8,20 @@
   },
   "captures": [
     {
-      "id": "W00",
-      "name": "web-overview-workspace",
-      "path": "/trading",
-      "docLabel": "Overview",
-      "waitForText": "Trading Workstation",
+      "id": "W00A",
+      "name": "web-daily-control-tower",
+      "path": "/",
+      "docLabel": "Daily Control Tower",
+      "waitForText": "Daily Control Tower Workstation",
       "requiredApiRoutes": [
         "/api/workstation/session",
-        "/api/status"
+        "/api/status",
+        "/api/workstation/workflow-summary"
       ],
       "waitForTexts": [
-        "Trading Controls",
-        "Ops Desk",
-        "Net P&L",
-        "AAPL"
+        "What needs an operator decision now",
+        "Finance queue",
+        "Daily Control Tower"
       ]
     },
     {
@@ -29,13 +29,13 @@
       "name": "web-trading-workspace",
       "path": "/trading",
       "docLabel": "Trading \u2014 Orders blotter",
-      "waitForText": "Trading lane",
+      "waitForText": "Trading overview",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper cockpit readiness"
       ]
     },
     {
@@ -43,13 +43,14 @@
       "name": "web-trading-orders",
       "path": "/trading/orders",
       "docLabel": "Trading \u2014 Orders",
-      "waitForText": "Trading lane",
+      "waitForText": "Orders blotter",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Open orders",
+        "Recent fills"
       ]
     },
     {
@@ -57,12 +58,13 @@
       "name": "web-trading-positions",
       "path": "/trading/positions",
       "docLabel": "Trading \u2014 Position book",
-      "waitForText": "Trading lane",
+      "waitForText": "Position book",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
+        "Live positions",
         "AAPL"
       ]
     },
@@ -71,13 +73,20 @@
       "name": "web-trading-risk",
       "path": "/trading/risk",
       "docLabel": "Trading \u2014 Risk guardrails",
-      "waitForText": "Trading lane",
+      "waitForText": "Risk guardrails",
       "requiredApiRoutes": [
-        "/api/workstation/trading"
+        "/api/workstation/trading",
+        "/api/risk/rules",
+        "/api/risk/rules/DrawdownCircuitBreaker/config"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper risk cockpit"
+      ],
+      "waitForAbsentTexts": [
+        "Refreshing risk controls",
+        "Loading risk rules",
+        "Loading rule violations"
       ]
     },
     {
@@ -92,7 +101,12 @@
       ],
       "waitForTexts": [
         "REVIEW REQUIRED",
-        "Reconciliation clear"
+        "Reconciliation clear",
+        "Active paper session"
+      ],
+      "waitForAbsentTexts": [
+        "Awaiting readiness payload",
+        "Trading readiness unavailable"
       ]
     },
     {
@@ -100,12 +114,12 @@
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Execution-linked holdings",
       "requiredApiRoutes": [
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total Equity",
+        "Total exposure",
         "VTI"
       ]
     },
@@ -114,13 +128,32 @@
       "name": "web-portfolio-attribution",
       "path": "/portfolio/attribution",
       "docLabel": "Portfolio \u2014 Attribution",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Run-linked equity",
       "requiredApiRoutes": [
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total Equity",
-        "VTI"
+        "Total exposure",
+        "Mean Reversion FX"
+      ]
+    },
+    {
+      "id": "W02D",
+      "name": "web-portfolio-asset-detail",
+      "path": "/portfolio/asset-detail?symbol=AAPL",
+      "docLabel": "Portfolio \u2014 Asset Detail",
+      "waitForText": "Asset Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/security-master/securities",
+        "/api/workstation/security-master/securities/sec-dev-001",
+        "/api/workstation/security-master/securities/sec-dev-001/identity",
+        "/api/security-master/sec-dev-001/corporate-actions",
+        "/api/security-master/sec-dev-001/trading-parameters"
+      ],
+      "waitForTexts": [
+        "Apple Inc.",
+        "AAPL",
+        "Trading parameters"
       ]
     },
     {
@@ -128,7 +161,7 @@
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
       "docLabel": "Portfolio \u2014 Brokerage Sync",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Live brokerage portfolio",
       "requiredApiRoutes": [
         "/api/workstation/portfolio",
         "/api/portfolio/household",
@@ -140,11 +173,40 @@
       ]
     },
     {
+      "id": "W02E",
+      "name": "web-portfolio-cash-ladder",
+      "path": "/portfolio/cash-ladder",
+      "docLabel": "Portfolio \u2014 Cash Ladder",
+      "waitForText": "Cash Ladder",
+      "requiredApiRoutes": [
+        "/api/portfolio/cash-ladder"
+      ],
+      "waitForTexts": [
+        "Projected cash by bucket",
+        "Contributing flows",
+        "Scenario semantics"
+      ]
+    },
+    {
+      "id": "W02C",
+      "name": "web-portfolio-family-office",
+      "path": "/portfolio/family-office",
+      "docLabel": "Portfolio \u2014 Family Office",
+      "waitForText": "Family Office Portfolio",
+      "requiredApiRoutes": [
+        "/api/workstation/portfolio"
+      ],
+      "waitForTexts": [
+        "Consolidated entity ownership",
+        "Family office data is not connected"
+      ]
+    },
+    {
       "id": "W03",
       "name": "web-accounting-workspace",
       "path": "/accounting",
       "docLabel": "Accounting \u2014 Ledger",
-      "waitForText": "Accounting lane",
+      "waitForText": "Close Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -152,11 +214,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
-        "Operations control center",
-        "CFO / Controller close command center",
-        "Critical cash variance breached SLA for run-42.",
-        "QuickBooks fixture evidence"
+        "Accounting case workbench"
       ]
     },
     {
@@ -164,7 +222,7 @@
       "name": "web-accounting-reconciliation",
       "path": "/accounting/reconciliation",
       "docLabel": "Accounting \u2014 Reconciliation",
-      "waitForText": "Accounting lane",
+      "waitForText": "Reconciliation Casework",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -172,10 +230,10 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
+        "Open breaks",
         "Intraday Vol Carry",
         "Statement runs",
-        "QuickBooks fixture evidence"
+        "Reconciliation Casework"
       ]
     },
     {
@@ -183,7 +241,7 @@
       "name": "web-accounting-security-master",
       "path": "/accounting/security-master",
       "docLabel": "Accounting \u2014 Security Master",
-      "waitForText": "Accounting lane",
+      "waitForText": "Security & Instrument Explorer",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -191,10 +249,27 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
-        "Intraday Vol Carry",
-        "Security Master",
-        "QuickBooks fixture evidence"
+        "Security Master command deck"
+      ]
+    },
+    {
+      "id": "W03B1",
+      "name": "web-accounting-asset-detail",
+      "path": "/accounting/security-master/detail?symbol=AAPL",
+      "docLabel": "Accounting \u2014 Asset Detail",
+      "waitForText": "Asset Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/security-master/securities",
+        "/api/workstation/security-master/securities/sec-dev-001",
+        "/api/workstation/security-master/securities/sec-dev-001/identity",
+        "/api/security-master/sec-dev-001/corporate-actions",
+        "/api/security-master/sec-dev-001/trading-parameters"
+      ],
+      "waitForTexts": [
+        "Apple Inc.",
+        "AAPL",
+        "Trading parameters"
       ]
     },
     {
@@ -202,7 +277,7 @@
       "name": "web-accounting-approvals",
       "path": "/accounting/approvals",
       "docLabel": "Accounting \u2014 Approvals",
-      "waitForText": "Accounting lane",
+      "waitForText": "Approval queue and audit gate",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -211,17 +286,15 @@
       ],
       "waitForTexts": [
         "Approval queue",
-        "Close approvals",
-        "Report-pack readiness",
-        "QuickBooks fixture evidence"
+        "Close approvals"
       ]
     },
     {
       "id": "W03D",
       "name": "web-accounting-external-gl-reconciliation",
-      "path": "/accounting/reconciliation",
+      "path": "/accounting/reconciliation/external-gl",
       "docLabel": "Accounting \u2014 External GL Reconciliation",
-      "waitForText": "External GL reconciliation",
+      "waitForText": "External GL Reconciliation",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -229,9 +302,23 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "QuickBooks fixture evidence",
+        "External GL",
         "Posting/export",
-        "quickbooks-fixture:trial-balance"
+        "Read-only import ready"
+      ]
+    },
+    {
+      "id": "W03D1",
+      "name": "web-accounting-trial-balance-detail",
+      "path": "/accounting/ledger?view=trial-balance&runId=run-42",
+      "docLabel": "Accounting \u2014 Trial Balance Detail",
+      "waitForText": "Trial Balance",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Pick a ledger run",
+        "basis-aware account balances"
       ]
     },
     {
@@ -248,9 +335,239 @@
       ],
       "waitForTexts": [
         "Case queue",
-        "Critical cash variance breached SLA for run-42.",
-        "run-42:cash",
-        "Approval gate"
+        "Approval gate",
+        "Workflow handoffs"
+      ]
+    },
+    {
+      "id": "W03F",
+      "name": "web-accounting-configure",
+      "path": "/accounting/configure",
+      "docLabel": "Accounting \u2014 Configure",
+      "waitForText": "Configure",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/production-readiness",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
+      ],
+      "waitForTexts": [
+        "Activation checklist"
+      ]
+    },
+    {
+      "id": "W03G",
+      "name": "web-accounting-operations-continuity",
+      "path": "/accounting/operations-continuity",
+      "docLabel": "Accounting \u2014 Operations Continuity",
+      "waitForText": "Operations continuity",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
+      ],
+      "waitForTexts": [
+        "1 operations continuity workflows loaded.",
+        "Workflows",
+        "Ledger Posting Draft"
+      ]
+    },
+    {
+      "id": "W03H",
+      "name": "web-accounting-entity-setup",
+      "path": "/accounting/entity-setup",
+      "docLabel": "Accounting \u2014 Entity Setup",
+      "waitForText": "Entity setup wizard",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Organization code",
+        "Fund code",
+        "Requested by"
+      ]
+    },
+    {
+      "id": "W03I",
+      "name": "web-accounting-ledger",
+      "path": "/accounting/ledger",
+      "docLabel": "Accounting \u2014 Ledger Explorer",
+      "waitForText": "Ledger Explorer",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/journal"
+      ],
+      "waitForTexts": [
+        "Search by account, amount, journal ID, source, security, entity",
+        "Saved views",
+        "Ledger search results"
+      ]
+    },
+    {
+      "id": "W03I1",
+      "name": "web-accounting-account-detail",
+      "path": "/accounting/accounts/detail?accountId=acct-cash",
+      "docLabel": "Accounting \u2014 Account Detail",
+      "waitForText": "Account Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/trial-balance"
+      ],
+      "waitForTexts": [
+        "Cash",
+        "$120,500.00",
+        "Open ledger activity",
+        "Open source journal entry"
+      ]
+    },
+    {
+      "id": "W03I2",
+      "name": "web-accounting-reconciliation-match",
+      "path": "/accounting/reconciliation/match",
+      "docLabel": "Accounting \u2014 Reconciliation Match",
+      "waitForText": "Reconciliation Match Workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open breaks",
+        "Open reconciliation casework",
+        "Review retained evidence",
+        "Record match decision"
+      ]
+    },
+    {
+      "id": "W03I3",
+      "name": "web-accounting-close-calendar",
+      "path": "/accounting/close-calendar",
+      "docLabel": "Accounting \u2014 Close Calendar",
+      "waitForText": "Close Calendar",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/operations/continuity/close-calendar"
+      ],
+      "waitForTexts": [
+        "Close workflow queue",
+        "Run trial balance",
+        "Open Operations Continuity"
+      ]
+    },
+    {
+      "id": "W03I4",
+      "name": "web-accounting-approval-inbox",
+      "path": "/accounting/approvals/inbox",
+      "docLabel": "Accounting \u2014 Approval Inbox",
+      "waitForText": "Approval Inbox",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Approval queue",
+        "Reviewer checklist",
+        "What evidence supports it?",
+        "Controller review of the June close package"
+      ]
+    },
+    {
+      "id": "W03I5",
+      "name": "web-accounting-evidence-detail",
+      "path": "/accounting/evidence/detail?evidenceId=bank-statement",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Accounting \u2014 Evidence Detail (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Evidence Workbench",
+        "Document intake"
+      ]
+    },
+    {
+      "id": "W03J",
+      "name": "web-accounting-journal-entries",
+      "path": "/accounting/journal-entries",
+      "docLabel": "Accounting \u2014 Journal Entries",
+      "waitForText": "Manual journal entry workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/ledger/journal-entry-workbench"
+      ],
+      "waitForTexts": [
+        "Manual journal entries",
+        "Month-end investment income adjustment",
+        "Balanced"
+      ]
+    },
+    {
+      "id": "W03J1",
+      "name": "web-accounting-journal-entry-detail",
+      "path": "/accounting/journal-entries/detail?journalEntryId=manual-je-fixture",
+      "docLabel": "Accounting \u2014 Journal Entry Detail",
+      "waitForText": "Month-end investment income adjustment",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/ledger/journal-entry-workbench"
+      ],
+      "waitForTexts": [
+        "Draft",
+        "Cash adjustment",
+        "Retained posting evidence 1",
+        "Approval"
+      ]
+    },
+    {
+      "id": "W03K",
+      "name": "web-accounting-capital-accounts",
+      "path": "/accounting/capital-accounts",
+      "docLabel": "Accounting \u2014 Capital Accounts",
+      "waitForText": "Capital Accounts",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/ledger/private-capital/capital-account-workbench"
+      ],
+      "waitForTexts": [
+        "Capital Account Workbench",
+        "Investor capital accounts",
+        "Statement lineage",
+        "LP 1 June capital statement"
+      ]
+    },
+    {
+      "id": "W03L",
+      "name": "web-accounting-evidence-workbench",
+      "path": "/accounting/evidence",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Accounting \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Evidence Workbench",
+        "Document intake"
+      ]
+    },
+    {
+      "id": "W03M",
+      "docLabel": "Accounting \u2014 Statement Import",
+      "name": "web-accounting-statement-import",
+      "path": "/accounting/statement-import",
+      "requiredApiRoutes": [
+        "/api/workstation/reconciliation/statement-connectors",
+        "/api/workstation/reconciliation/statement-mapping-profiles"
+      ],
+      "waitForText": "Import statement",
+      "waitForTexts": [
+        "Statement source"
       ]
     },
     {
@@ -258,15 +575,18 @@
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting lane",
+      "waitForText": "Reporting Workstation",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Governed report templates",
-        "Report run audit and lineage",
-        "Board Close Pack",
-        "report-run-board-202605"
+        "Report packs, governed exports",
+        "Reporting workbench",
+        "Daily reporting cockpit",
+        "Report family organizer"
+      ],
+      "waitForAbsentTexts": [
+        "No runs yet"
       ]
     },
     {
@@ -274,15 +594,16 @@
       "name": "web-reporting-report-packs",
       "path": "/reporting/report-packs",
       "docLabel": "Reporting \u2014 Report Packs",
-      "waitForText": "Reporting lane",
+      "waitForText": "Report Packs",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
+        "Report Packs",
         "Report-pack recipients",
         "Publication review",
-        "Restatement changed lines",
-        "vault/report-packs/manifest-restated-demo.json"
+        "Restatement review",
+        "Changed lines and restatement evidence"
       ]
     },
     {
@@ -296,7 +617,7 @@
       ],
       "waitForTexts": [
         "Evidence Workbench",
-        "Choose a workflow subject"
+        "Document intake"
       ]
     },
     {
@@ -304,16 +625,160 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Reporting lane",
+      "waitForText": "Reporting Workstation",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Governed export workbench",
+        "Reporting owns governed export previews",
         "Investor PDF",
+        "Governed export queue"
+      ]
+    },
+    {
+      "id": "W04D",
+      "name": "web-reporting-report-builder",
+      "path": "/reporting/report-builder",
+      "docLabel": "Reporting \u2014 Report Builder",
+      "waitForText": "Report Builder",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Design governed output, report-writer grids, branding, and reusable templates",
+        "Template families",
+        "Governed report templates"
+      ]
+    },
+    {
+      "id": "W04E",
+      "name": "web-reporting-run-status",
+      "path": "/reporting/run-status",
+      "docLabel": "Reporting \u2014 Run Status",
+      "waitForText": "Run Status",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Reporting owns report-run readiness",
         "Report run audit and lineage",
-        "Report-pack recipients",
-        "report-run-board-202605"
+        "Audit, lineage, and artifacts",
+        "Review approval details"
+      ]
+    },
+    {
+      "id": "W04F",
+      "name": "web-reporting-operations-record",
+      "path": "/reporting/operations-record",
+      "docLabel": "Reporting \u2014 Operations Record",
+      "waitForText": "Operations record release",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Source data to report pack",
+        "Report-pack distributions",
+        "Root navigation remains Trading"
+      ]
+    },
+    {
+      "id": "W04G",
+      "name": "web-reporting-governance",
+      "path": "/reporting/governance",
+      "docLabel": "Reporting \u2014 Governance",
+      "waitForText": "Governance",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Reporting owns access scope",
+        "Template lifecycle and access",
+        "User, group, and company scope"
+      ]
+    },
+    {
+      "id": "W04H",
+      "name": "web-reporting-library",
+      "path": "/reporting/library",
+      "docLabel": "Reporting \u2014 Report Library",
+      "waitForText": "Report Library",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Choose an available governed template",
+        "Investor Monthly Statement",
+        "Browse standard report catalog"
+      ]
+    },
+    {
+      "id": "W04I",
+      "name": "web-reporting-run-parameters",
+      "path": "/reporting/run",
+      "docLabel": "Reporting \u2014 Run Parameters",
+      "waitForText": "Report Parameters",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Choose a governed template, review readiness",
+        "Or browse the Report Library"
+      ]
+    },
+    {
+      "id": "W04I1",
+      "name": "web-reporting-preview-validation",
+      "path": "/reporting/preview",
+      "docLabel": "Reporting \u2014 Preview Validation",
+      "waitForText": "Report Preview & Validation",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Validation Issues",
+        "Changes Since Prior Run",
+        "Evidence"
+      ]
+    },
+    {
+      "id": "W04I2",
+      "name": "web-reporting-run-detail",
+      "path": "/reporting/runs/detail?runId=report-run-investor-202605",
+      "docLabel": "Reporting \u2014 Run Detail",
+      "waitForText": "Report Run Detail",
+      "requiredApiRoutes": [
+        "/api/fund-structure/reporting/runs/report-run-investor-202605",
+        "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
+        "/api/fund-structure/reporting/distribution/transports",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants"
+      ],
+      "waitForTexts": [
+        "Governed lifecycle",
+        "Immutable release artifacts",
+        "Immutable audit trail",
+        "Authenticated transport catalog"
+      ],
+      "waitForAbsentTexts": [
+        "Loading governed report run",
+        "Governed report run unavailable"
+      ]
+    },
+    {
+      "id": "W04J",
+      "name": "web-reporting-scheduled",
+      "path": "/reporting/scheduled",
+      "docLabel": "Reporting \u2014 Scheduled Reports",
+      "waitForText": "Reporting schedules",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Schedule delivery",
+        "Monthly governed investor statement delivery.",
+        "Due schedules are leased and executed by Meridian",
+        "Delivery history"
       ]
     },
     {
@@ -321,11 +786,13 @@
       "name": "web-strategy-workspace",
       "path": "/strategy",
       "docLabel": "Strategy",
-      "waitForText": "Strategy Lane",
+      "waitForText": "Strategy overview",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
+        "Choose the next strategy task",
+        "Latest retained run",
         "Mean Reversion FX",
         "Promotions"
       ]
@@ -335,7 +802,7 @@
       "name": "web-strategy-promotions",
       "path": "/strategy/promotions",
       "docLabel": "Strategy \u2014 Promotions",
-      "waitForText": "Strategy Lane",
+      "waitForText": "Strategy run library",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
@@ -349,12 +816,12 @@
       "name": "web-strategy-lab",
       "path": "/strategy/lab",
       "docLabel": "Strategy \u2014 Lab",
-      "waitForText": "Strategy Lane",
+      "waitForText": "Strategy Lab",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
-        "Mean Reversion FX",
+        "PlotTool workstation",
         "Promotions"
       ]
     },
@@ -363,13 +830,19 @@
       "name": "web-strategy-quant-lab",
       "path": "/strategy/quant-lab",
       "docLabel": "Strategy \u2014 Quant Lab",
-      "waitForText": "Strategy Lane",
+      "waitForText": "Quant Lab",
       "requiredApiRoutes": [
-        "/api/workstation/strategy"
+        "/api/workstation/strategy",
+        "/api/quant/templates",
+        "/api/quant/parameters"
       ],
       "waitForTexts": [
-        "Quant Lab is ready.",
+        "Hello Quant Lab",
         "Starter templates"
+      ],
+      "waitForAbsentTexts": [
+        "PARAMS SCAN",
+        "Scanning source for runtime parameters"
       ]
     },
     {
@@ -390,24 +863,58 @@
       ]
     },
     {
+      "id": "W05E",
+      "name": "web-strategy-formula-workbench",
+      "path": "/strategy/quant-lab?view=formulas",
+      "docLabel": "Strategy \u2014 Formula Workbench",
+      "waitForText": "Quant Lab",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Formula catalog is not connected",
+        "Open Strategy workspace"
+      ]
+    },
+    {
+      "id": "W05F",
+      "name": "web-strategy-covered-call",
+      "path": "/strategy/covered-call",
+      "docLabel": "Strategy \u2014 Covered Call",
+      "waitForText": "Covered Call Backtest",
+      "requiredApiRoutes": [
+        "/api/workstation/strategy"
+      ],
+      "waitForTexts": [
+        "Parameters",
+        "Min strike",
+        "Chain data is not point-in-time"
+      ]
+    },
+    {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",
       "docLabel": "Data",
-      "waitForText": "Data Lane",
+      "waitForText": "Data overview",
       "requiredApiRoutes": [
-        "/api/workstation/data"
+        "/api/workstation/data",
+        "/api/quality/dashboard",
+        "/api/providers/capability-matrix",
+        "/api/security-master/corporate-actions/inbox",
+        "/api/security-master/quality-report/latest"
       ],
       "waitForTexts": [
-        "Data command deck",
-        "Provider Management"
+        "Choose the next Data task",
+        "Provider connections",
+        "Import retained files"
       ]
     },
     {
       "id": "W06A",
       "name": "web-data-watchlist",
-      "path": "/data/watchlist",
-      "docLabel": "Data \u2014 Watchlist",
+      "path": "/data/quotes?view=watchlist",
+      "docLabel": "Data \u2014 Market Data (Watchlist view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -415,13 +922,17 @@
       "waitForTexts": [
         "Symbol watchlist",
         "QUICK ADD"
+      ],
+      "waitForAbsentTexts": [
+        "Refreshing…",
+        "Loading symbols…"
       ]
     },
     {
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
-      "docLabel": "Data \u2014 Live Quotes",
+      "docLabel": "Data \u2014 Market Data (Live Quotes view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -436,13 +947,136 @@
       "name": "web-data-backfills",
       "path": "/data/backfills",
       "docLabel": "Data \u2014 Backfills",
-      "waitForText": "Data Lane",
+      "waitForText": "Backfill queue",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Data command deck",
+        "Backfill queue",
+        "Selected Backfill"
+      ]
+    },
+    {
+      "id": "W06D",
+      "name": "web-data-providers",
+      "path": "/data/providers",
+      "docLabel": "Data \u2014 Providers",
+      "waitForText": "Provider catalog",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Provider status and setup",
         "Provider Management"
+      ]
+    },
+    {
+      "id": "W06I",
+      "name": "web-data-import",
+      "path": "/data/import",
+      "docLabel": "Data \u2014 Import",
+      "waitForText": "Data import",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Governed file import",
+        "Upload data template",
+        "Broker execution import",
+        "Retained source file"
+      ]
+    },
+    {
+      "id": "W06G",
+      "name": "web-data-exports",
+      "path": "/data/exports",
+      "docLabel": "Data \u2014 Exports",
+      "waitForText": "Recent exports",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Recent exports",
+        "Selected Export"
+      ]
+    },
+    {
+      "id": "W06H",
+      "name": "web-data-query",
+      "path": "/data/query",
+      "docLabel": "Data \u2014 SQL Query",
+      "waitForText": "SQL query",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "SQL query",
+        "Run query"
+      ]
+    },
+    {
+      "id": "W06E",
+      "name": "web-data-alerts",
+      "path": "/data/quotes?view=alerts",
+      "docLabel": "Data \u2014 Market Data (Price Alerts view)",
+      "waitForText": "Price alerts",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "ACTIVE ALERTS",
+        "Browser notifications are",
+        "New alert"
+      ]
+    },
+    {
+      "id": "W06F",
+      "name": "web-data-evidence-workbench",
+      "path": "/data/evidence",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Data \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Evidence Workbench",
+        "Document intake"
+      ]
+    },
+    {
+      "id": "W06J",
+      "name": "web-data-ingestion-operations",
+      "path": "/data/operations",
+      "docLabel": "Data \u2014 Ingestion Operations",
+      "waitForText": "Ingestion Operations Center",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/ingestion-operations"
+      ],
+      "waitForTexts": [
+        "Ingestion Operations Center",
+        "Action rationale",
+        "Resumable"
+      ],
+      "waitForAbsentTexts": [
+        "Loading ingestion operations\u2026"
+      ]
+    },
+    {
+      "id": "W06K",
+      "name": "web-data-storage-assurance",
+      "path": "/data/assurance",
+      "docLabel": "Data \u2014 Storage Assurance",
+      "waitForText": "Storage & Data Assurance",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/storage-assurance"
+      ],
+      "waitForTexts": [
+        "Storage & Data Assurance",
+        "Assurance signals",
+        "Guarded maintenance"
       ]
     },
     {
@@ -450,7 +1084,7 @@
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings lane",
+      "waitForText": "What do you need to do?",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -464,8 +1098,9 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
-        "Profile and access posture"
+        "Personalize my workstation",
+        "Connect a provider",
+        "Investigate a problem"
       ]
     },
     {
@@ -473,7 +1108,7 @@
       "name": "web-settings-preferences",
       "path": "/settings/preferences",
       "docLabel": "Settings \u2014 Preferences",
-      "waitForText": "Settings lane",
+      "waitForText": "Preferences",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -487,16 +1122,17 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
-        "Profile and access posture"
+        "Appearance",
+        "Density",
+        "Compact"
       ]
     },
     {
       "id": "W07B",
-      "name": "web-settings-integrations",
-      "path": "/settings/integrations",
-      "docLabel": "Settings \u2014 Integrations",
-      "waitForText": "Settings lane",
+      "name": "web-settings-accounting-systems",
+      "path": "/settings/accounting-systems",
+      "docLabel": "Settings \u2014 Accounting Systems",
+      "waitForText": "Accounting systems",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -510,8 +1146,216 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
+        "Fund operations control center",
+        "Asset Profile accounting"
+      ]
+    },
+    {
+      "id": "W07C",
+      "name": "web-settings-alpaca-provider-setup",
+      "path": "/settings/providers/alpaca/setup",
+      "docLabel": "Settings \u2014 Provider Setup",
+      "waitForText": "Guided provider setup",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#alpaca-provider-setup"
+      ],
+      "waitForTexts": [
+        "Alpaca paper API keys",
+        "Back to provider overview"
+      ]
+    },
+    {
+      "id": "W07D",
+      "name": "web-settings-backend-capability-coverage",
+      "path": "/settings/diagnostics/advanced",
+      "docLabel": "Settings \u2014 Advanced Diagnostics",
+      "waitForText": "Advanced diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#backend-capability-coverage"
+      ],
+      "waitForTexts": [
+        "Diagnostic service inventory",
+        "Runtime controls",
+        "Capability coverage",
+        "All surfaced"
+      ]
+    },
+    {
+      "id": "W07E",
+      "name": "web-settings-diagnostic-endpoints",
+      "path": "/settings/diagnostics/advanced#diagnostic-endpoints",
+      "docLabel": "Settings \u2014 Diagnostic Endpoints",
+      "waitForText": "Advanced diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#diagnostic-endpoints"
+      ],
+      "waitForTexts": [
+        "Event posture",
+        "Diagnostic service inventory"
+      ]
+    },
+    {
+      "id": "W07F",
+      "name": "web-settings-access",
+      "path": "/settings/access",
+      "docLabel": "Settings \u2014 Access",
+      "waitForText": "Access",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#settings-overview"
+      ],
+      "waitForTexts": [
         "Profile and access posture"
+      ]
+    },
+    {
+      "id": "W07G",
+      "name": "web-settings-providers",
+      "path": "/settings/providers",
+      "docLabel": "Settings \u2014 Providers",
+      "waitForText": "Provider connections",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#provider-connection-center"
+      ],
+      "waitForTexts": [
+        "Provider Connection Center"
+      ]
+    },
+    {
+      "id": "W07H",
+      "name": "web-settings-diagnostics",
+      "path": "/settings/diagnostics",
+      "docLabel": "Settings \u2014 Diagnostics",
+      "waitForText": "Diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#diagnostic-endpoints"
+      ],
+      "waitForTexts": [
+        "Exceptions requiring attention"
+      ]
+    },
+    {
+      "id": "W07I",
+      "name": "web-settings-feature-coverage",
+      "path": "/settings/diagnostics/advanced#runtime-feature-capabilities",
+      "docLabel": "Settings \u2014 Feature Coverage",
+      "waitForText": "Advanced diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#runtime-feature-capabilities"
+      ],
+      "waitForTexts": [
+        "Runtime controls",
+        "Capability coverage"
+      ]
+    },
+    {
+      "id": "W07J",
+      "name": "web-settings-alpaca-provider-advanced",
+      "path": "/settings/providers/alpaca/advanced",
+      "docLabel": "Settings \u2014 Provider Advanced Controls",
+      "waitForText": "Advanced provider controls",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#provider-connection-center"
+      ],
+      "waitForTexts": [
+        "Provider Connection Center",
+        "Advanced integration and runtime evidence are isolated on this route.",
+        "Back to provider overview"
       ]
     }
   ]

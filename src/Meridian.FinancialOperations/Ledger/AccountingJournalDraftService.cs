@@ -66,8 +66,6 @@ public sealed record AccountingJournalDraftResult(
 
 public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
 {
-    private const decimal BalanceTolerance = 0.000001m;
-
     private readonly IAccountingPolicyService _accountingPolicyService;
     private readonly IAccountingBasisProjectionService _projectionService;
 
@@ -153,7 +151,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         ValidateTreasuryContext(treasuryContext, request, issues);
         var (draftEntry, totalDebits, totalCredits) = BuildDraftEntry(request, issues, evidenceLinks, treasuryContext);
         var imbalance = totalDebits - totalCredits;
-        var isBalanced = Math.Abs(imbalance) <= BalanceTolerance;
+        var isBalanced = LedgerJournalConstruction.IsBalanced(totalDebits, totalCredits);
 
         if (!isBalanced)
         {
@@ -251,6 +249,17 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 "Resolve the open accounting period before building the draft.");
         }
 
+        if (!request.LedgerBookId.HasValue || request.LedgerBookId.Value == Guid.Empty)
+        {
+            AddIssue(
+                issues,
+                "JOURNAL_DRAFT_LEDGER_BOOK_REQUIRED",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Draft ledger-book scope is required.",
+                "ledgerBookId",
+                "Select the primary, GAAP, tax, statutory, cash, or other target ledger book before building a governed journal draft.");
+        }
+
         if (string.IsNullOrWhiteSpace(request.Description))
         {
             AddIssue(
@@ -287,6 +296,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
         var journalEntryId = Guid.NewGuid();
         var lines = new List<LedgerEntry>(request.Lines.Count);
+        var lineDimensionScopes = new List<(Guid EntryId, LedgerDimensionSetDto? Dimensions)>(request.Lines.Count);
         var totalDebits = 0m;
         var totalCredits = 0m;
         var description = request.Description?.Trim() ?? string.Empty;
@@ -332,6 +342,11 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 continue;
             }
 
+            if (!ValidateLineDimensionLedgerBook(request, line, index, issues))
+            {
+                continue;
+            }
+
             totalDebits += line.Debit;
             totalCredits += line.Credit;
             var lineEntryId = Guid.NewGuid();
@@ -344,6 +359,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 line.Credit,
                 description,
                 ToLedgerLineDimensions(line.Dimensions)));
+            lineDimensionScopes.Add((lineEntryId, line.Dimensions));
         }
 
         if (lines.Count == 0)
@@ -359,7 +375,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                     request.AccountingTimestamp,
                     description,
                     lines,
-                    BuildJournalEntryMetadata(request, lines, evidenceLinks, treasuryContext)),
+                    BuildJournalEntryMetadata(request, lineDimensionScopes, evidenceLinks, treasuryContext)),
                 totalDebits,
                 totalCredits);
         }
@@ -376,9 +392,37 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         }
     }
 
+    private static bool ValidateLineDimensionLedgerBook(
+        AccountingJournalDraftRequest request,
+        AccountingJournalDraftLineRequest line,
+        int index,
+        List<AccountingConfigurationValidationIssueDto> issues)
+    {
+        var lineBookId = NormalizeOptional(line.Dimensions?.BookId);
+        if (lineBookId is null || !request.LedgerBookId.HasValue || request.LedgerBookId.Value == Guid.Empty)
+        {
+            return true;
+        }
+
+        var draftBookId = request.LedgerBookId.Value.ToString("D");
+        if (string.Equals(lineBookId, draftBookId, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        AddIssue(
+            issues,
+            "JOURNAL_DRAFT_LINE_LEDGER_BOOK_MISMATCH",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Journal line dimension book '{lineBookId}' does not match draft ledger book '{draftBookId}'.",
+            $"lines[{index}].dimensions.bookId",
+            "Use one ledger book across draft header and line dimensions before submitting or posting.");
+        return false;
+    }
+
     private static JournalEntryMetadata BuildJournalEntryMetadata(
         AccountingJournalDraftRequest request,
-        IReadOnlyList<LedgerEntry> lines,
+        IReadOnlyList<(Guid EntryId, LedgerDimensionSetDto? Dimensions)> lineDimensionScopes,
         IReadOnlyList<string> evidenceLinks,
         TreasuryLedgerContextDto? treasuryContext)
     {
@@ -400,9 +444,9 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, "postingRuleVersion", request.PostingRuleVersion);
         AddTag(tags, "dryRunCorrelationId", request.DryRunCorrelationId);
 
-        for (var index = 0; index < request.Lines.Count && index < lines.Count; index++)
+        foreach (var (entryId, dimensions) in lineDimensionScopes)
         {
-            AppendLineDimensionTags(tags, lines[index].EntryId, request.Lines[index].Dimensions);
+            AppendLineDimensionTags(tags, entryId, dimensions);
         }
 
         return new JournalEntryMetadata(
@@ -445,6 +489,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, prefix + "investorId", dimensions.InvestorId);
         AddTag(tags, prefix + "capitalAccountId", dimensions.CapitalAccountId);
         AddTag(tags, prefix + "instrumentId", dimensions.InstrumentId?.ToString("D"));
+        AddTag(tags, prefix + "positionId", dimensions.PositionId?.ToString("D"));
         AddTag(tags, prefix + "taxLotId", dimensions.TaxLotId);
         AddTag(tags, prefix + "costCenterId", dimensions.CostCenterId);
         AddTag(tags, prefix + "counterpartyId", dimensions.CounterpartyId);
@@ -477,35 +522,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
     }
 
     private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
-    {
-        if (dimensions is null)
-        {
-            return null;
-        }
-
-        return new LedgerLineDimensionSet(
-            FundId: NormalizeOptional(dimensions.FundId),
-            EntityId: NormalizeOptional(dimensions.EntityId),
-            SleeveId: NormalizeOptional(dimensions.SleeveId),
-            StrategyId: NormalizeOptional(dimensions.StrategyId),
-            InvestorId: NormalizeOptional(dimensions.InvestorId),
-            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
-            InstrumentId: dimensions.InstrumentId,
-            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
-            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
-            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
-            ExternalGlDimensions: dimensions.ExternalGlDimensions
-                .Where(static item => !string.IsNullOrWhiteSpace(item.Key) && !string.IsNullOrWhiteSpace(item.Value))
-                .OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(static item => item.Key.Trim(), static item => item.Value.Trim(), StringComparer.OrdinalIgnoreCase),
-            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
-            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
-            BookId: NormalizeOptional(dimensions.BookId),
-            AccountId: NormalizeOptional(dimensions.AccountId),
-            CustomerId: NormalizeOptional(dimensions.CustomerId),
-            VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
-    }
+        => LedgerJournalConstruction.ToLedgerLineDimensions(dimensions);
 
     private static AccountingPostingCommandDto BuildPostingCommand(
         AccountingJournalDraftRequest request,

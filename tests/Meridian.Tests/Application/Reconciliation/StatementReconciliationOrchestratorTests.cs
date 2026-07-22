@@ -70,17 +70,21 @@ public sealed class StatementReconciliationOrchestratorTests
 
             Assert.Equal(StatementReconciliationStage.Completed, result.CurrentStage);
             Assert.Equal(2, result.ImportedRowCount);
-            Assert.Equal(1, result.MatchCount);
-            Assert.Equal(1, result.UnresolvedCount);
+            // Without internal position evidence, both the position and the dividend rows
+            // surface as unresolved breaks instead of a phantom position match.
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
             var evidenceLink = Assert.Single(result.EvidenceLinks!);
             Assert.Equal(result.ImportId, evidenceLink.RunId);
             Assert.Equal(2, evidenceLink.MatchSummary.StatementItemCount);
-            Assert.Equal(1, evidenceLink.MatchSummary.BreakCount);
+            Assert.Equal(2, evidenceLink.MatchSummary.BreakCount);
             Assert.Equal("A1", evidenceLink.Account);
             Assert.Equal(new DateOnly(2026, 5, 29), evidenceLink.StatementPeriodStart);
             Assert.Equal(new DateOnly(2026, 5, 30), evidenceLink.StatementPeriodEnd);
-            Assert.Single(intake.Cases);
-            var reconciliationCase = intake.Cases[0];
+            Assert.Equal(2, intake.Cases.Count);
+            var reconciliationCase = intake.Cases.Single(item =>
+                item.BreakExplanation is not null &&
+                item.BreakExplanation.ProbableCause.Contains("dividend", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("fund-ops", reconciliationCase.Owner);
             Assert.NotNull(reconciliationCase.DueAtUtc);
             Assert.Equal("NeedsInvestigation", reconciliationCase.Disposition);
@@ -92,7 +96,6 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(attachment.ContentHash, reconciliationCase.BreakExplanation?.EvidenceLinks.Last().Replace("statement-hash:", string.Empty, StringComparison.Ordinal));
             Assert.NotNull(reconciliationCase.BreakExplanation);
             Assert.Contains("broker", reconciliationCase.BreakExplanation.SourceSystems);
-            Assert.Contains("dividend", reconciliationCase.BreakExplanation.ProbableCause, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Security Master corporate-action evidence", reconciliationCase.BreakExplanation.SuggestedNextAction);
         }
         finally
@@ -175,12 +178,57 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(StatementReconciliationStage.Completed, recovered.CurrentStage);
             Assert.Equal("Completed", recovered.Status);
             Assert.Equal(1, recovered.ImportedRowCount);
-            Assert.Equal(1, recovered.MatchCount);
-            Assert.Equal(0, recovered.UnresolvedCount);
+            Assert.Equal(0, recovered.MatchCount);
+            Assert.Equal(1, recovered.UnresolvedCount);
         }
         finally
         {
             File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WithResume_DoesNotReuseCheckpointForDifferentSource()
+    {
+        var accountId = Guid.NewGuid();
+        var store = new InMemoryStatementReconciliationCheckpointStore();
+        var service = new StatementReconciliationService();
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
+
+        var firstPath = Path.GetTempFileName();
+        var secondPath = Path.GetTempFileName();
+        await File.WriteAllLinesAsync(firstPath,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "A1,QQQ,5,400,0,position,2026-05-29"
+        ]);
+        await File.WriteAllLinesAsync(secondPath,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "A1,QQQ,5,400,0,position,2026-05-29",
+            "A1,SPY,3,500,0,position,2026-05-29"
+        ]);
+
+        try
+        {
+            var first = await orchestrator.RunAsync(accountId, "broker", firstPath, resume: false, CancellationToken.None);
+            Assert.Equal(StatementReconciliationStage.Completed, first.CurrentStage);
+            Assert.Equal(1, first.ImportedRowCount);
+
+            // Resume requested for the same account but a different statement source: the prior
+            // checkpoint must not be reused, so the new statement is fully reprocessed.
+            var second = await orchestrator.RunAsync(accountId, "broker", secondPath, resume: true, CancellationToken.None);
+
+            Assert.Equal(secondPath, second.SourcePath);
+            Assert.Equal(StatementReconciliationStage.Completed, second.CurrentStage);
+            Assert.Equal(2, second.ImportedRowCount);
+            Assert.NotEqual(first.ImportId, second.ImportId);
+        }
+        finally
+        {
+            File.Delete(firstPath);
+            File.Delete(secondPath);
         }
     }
 }

@@ -13,7 +13,9 @@ public sealed record LedgerFinancialStatements(
     decimal TotalEquity,
     decimal TotalRevenue,
     decimal TotalExpenses,
-    decimal NetIncome)
+    decimal NetIncome,
+    LedgerCashFlowStatement? CashFlow = null,
+    LedgerPartnersCapitalStatement? PartnersCapital = null)
 {
     /// <summary>Equity after closing current-period net income to retained earnings.</summary>
     public decimal EndingEquity => TotalEquity + NetIncome;

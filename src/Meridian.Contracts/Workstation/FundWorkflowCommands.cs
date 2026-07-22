@@ -1,11 +1,20 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Contracts.Workstation;
 
-public enum FundWorkflowOverallStatus : byte { Draft=0, InProgress=1, AwaitingApproval=2, Approved=3, Rejected=4, Closed=5 }
-public enum FundWorkflowStage : byte { BrokerImport=0, SecurityMaster=1, Ledger=2, Reconciliation=3, Approval=4 }
-public enum FundWorkflowSubStatus : byte { NotStarted=0, InProgress=1, Completed=2, Blocked=3 }
-public enum FundWorkflowRejectionReasonCode : byte { DataQuality=0, MappingDefect=1, LedgerMismatch=2, ReconciliationBreak=3, GovernanceFailure=4 }
+public enum FundWorkflowOverallStatus : byte { Draft = 0, InProgress = 1, AwaitingApproval = 2, Approved = 3, Rejected = 4, Closed = 5 }
+public enum FundWorkflowStage : byte { BrokerImport = 0, SecurityMaster = 1, Ledger = 2, Reconciliation = 3, Approval = 4 }
+public enum FundWorkflowSubStatus : byte { NotStarted = 0, InProgress = 1, Completed = 2, Blocked = 3 }
+public enum FundWorkflowRejectionReasonCode : byte { DataQuality = 0, MappingDefect = 1, LedgerMismatch = 2, ReconciliationBreak = 3, GovernanceFailure = 4 }
 
-public sealed record FundWorkflowCommandMetadata(string Actor,string Role,string? RequestId=null,string? CorrelationId=null,string? IncidentTicketId=null);
+public sealed record FundWorkflowCommandMetadata(
+    string Actor,
+    string Role,
+    string? RequestId = null,
+    string? CorrelationId = null,
+    string? IncidentTicketId = null,
+    string? ApprovalReference = null,
+    string? AssigneeId = null);
 public sealed record StartWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 public sealed record ImportBrokerData(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 public sealed record NormalizeBrokerTransactions(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
@@ -30,4 +39,5 @@ public sealed record FundWorkflowState(
     bool PostingGateOpen,
     bool ReconciliationGateOpen,
     string? LastActor,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    VerifiedOperationOutcome? Outcome = null);

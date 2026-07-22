@@ -19,7 +19,32 @@ public sealed record BacktestStudioRunRequest(
     IReadOnlyDictionary<string, string>? ExternalEngineOptions = null,
     string? SweepId = null,
     string? SweepDefinitionHash = null,
-    string? SweepObjective = null);
+    string? SweepObjective = null,
+    IReadOnlyList<string>? OperatorAcceptanceCriteria = null,
+    IReadOnlyList<string>? RetainedEvidenceReferences = null,
+    IReadOnlyList<string>? AccountingRecordReferences = null,
+    IReadOnlyList<string>? ApprovalReferences = null,
+    IReadOnlyList<string>? PaperValidationReferences = null,
+    IReadOnlyList<string>? GovernedReportReferences = null)
+{
+    public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
+        OperatorAcceptanceCriteria ?? [];
+
+    public IReadOnlyList<string> RetainedEvidenceReferences { get; init; } =
+        RetainedEvidenceReferences ?? [];
+
+    public IReadOnlyList<string> AccountingRecordReferences { get; init; } =
+        AccountingRecordReferences ?? [];
+
+    public IReadOnlyList<string> ApprovalReferences { get; init; } =
+        ApprovalReferences ?? [];
+
+    public IReadOnlyList<string> PaperValidationReferences { get; init; } =
+        PaperValidationReferences ?? [];
+
+    public IReadOnlyList<string> GovernedReportReferences { get; init; } =
+        GovernedReportReferences ?? [];
+}
 
 /// <summary>
 /// Stable handle returned when a Backtest Studio run is accepted by an engine.

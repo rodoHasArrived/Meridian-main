@@ -10,21 +10,21 @@ function inject() {
   injected = true;
   const css = `
 .stm-wrap{overflow-x:auto;border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-chip,4px);background:var(--bg-light,#fff);}
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#fff);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
 .stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#F5F7FA);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6E7781);
+  letter-spacing:.03em;color:var(--text-muted,#59636F);
   border-bottom:1px solid var(--border,#D7DCE2);text-align:right;}
 .stm thead th.stm--l{text-align:left;}
 .stm__section td{padding:10px 14px 5px;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#4D5967);
   border-top:1px solid var(--border,#D7DCE2);}
 .stm__section--first td{border-top:none;}
-.stm__item td{padding:8px 14px;color:var(--text-primary,#22272E);}
+.stm__item td{padding:9px 14px;color:var(--text-primary,#22272E);height:40px;}
 .stm__item td.stm--l{color:var(--text-secondary,#4D5967);}
 .stm__item td.stm--num{text-align:right;}
-.stm__item--muted td.stm--l{color:var(--text-muted,#6E7781);}
+.stm__item--muted td.stm--l{color:var(--text-muted,#59636F);}
 .stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#D7DCE2);
   background:var(--card-surface-raised,#FAFBFC);}
 .stm__sub td.stm--l{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
@@ -87,7 +87,7 @@ export function StatementTable({
                   {valuesOf(row).map((v, vi) => (
                     <td key={vi} className="stm--num">
                       {v == null || v === ""
-                        ? <span style={{ color: "var(--text-disabled,#9AA4AF)" }}>&mdash;</span>
+                        ? <span style={{ color: "var(--text-disabled,#889099)" }}>&mdash;</span>
                         : <AmountCell value={v} currency={currency} parens={parens} mode={pnl ? "pnl" : "plain"} />}
                     </td>
                   ))}

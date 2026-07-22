@@ -4,9 +4,11 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Logging;
 using Meridian.Entities.FundStructure;
 using Meridian.FSharp.CashFlowInterop;
 using Meridian.Storage.FundStructure;
+using Serilog;
 
 namespace Meridian.Application.FundStructure;
 
@@ -14,8 +16,9 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
+public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<InMemoryFundStructureService>();
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
     private const string SecurityMasterInstrumentAssignmentType = "SecurityMasterInstrument";
@@ -3199,86 +3202,6 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         }
     }
 
-    private void LoadState()
-    {
-        try
-        {
-            var json = _stateStore.Load();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return;
-            }
-
-            var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
-            if (state is null)
-            {
-                return;
-            }
-
-            foreach (var organization in state.Organizations)
-            {
-                _organizations[organization.OrganizationId] = organization;
-            }
-
-            foreach (var business in state.Businesses)
-            {
-                _businesses[business.BusinessId] = business;
-            }
-
-            foreach (var client in state.Clients)
-            {
-                _clients[client.ClientId] = client;
-            }
-
-            foreach (var fund in state.Funds)
-            {
-                _funds[fund.FundId] = fund;
-            }
-
-            foreach (var sleeve in state.Sleeves)
-            {
-                _sleeves[sleeve.SleeveId] = sleeve;
-            }
-
-            foreach (var vehicle in state.Vehicles)
-            {
-                _vehicles[vehicle.VehicleId] = vehicle;
-            }
-
-            foreach (var entity in state.Entities)
-            {
-                _entities[entity.EntityId] = entity;
-            }
-
-            foreach (var portfolio in state.InvestmentPortfolios)
-            {
-                _investmentPortfolios[portfolio.InvestmentPortfolioId] = portfolio;
-            }
-
-            foreach (var link in state.OwnershipLinks)
-            {
-                _ownershipLinks[link.OwnershipLinkId] = link;
-            }
-
-            foreach (var assignment in state.Assignments)
-            {
-                _assignments[assignment.AssignmentId] = assignment;
-            }
-
-            foreach (var linkedAccountId in state.LinkedAccountIds)
-            {
-                _linkedAccountIds.Add(linkedAccountId);
-            }
-
-            _stateVersion = 1;
-            _persistedVersion = 1;
-        }
-        catch (Exception ex) when (ex is IOException or JsonException)
-        {
-            // Preserve startup availability for malformed or missing local snapshots.
-        }
-    }
-
     private async Task<IReadOnlyList<AccountSummaryDto>> GetVisibleAccountsAsync(
         bool activeOnly,
         DateTimeOffset asOf,
@@ -3841,15 +3764,24 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
     private Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKindsLocked()
     {
         var nodeKinds = new Dictionary<Guid, FundStructureNodeKindDto>();
-        foreach (var nodeId in _organizations.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
-        foreach (var nodeId in _businesses.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
-        foreach (var nodeId in _clients.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
-        foreach (var nodeId in _funds.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
-        foreach (var nodeId in _sleeves.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
-        foreach (var nodeId in _vehicles.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
-        foreach (var nodeId in _entities.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
-        foreach (var nodeId in _investmentPortfolios.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
-        foreach (var nodeId in _linkedAccountIds) nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
+        foreach (var nodeId in _organizations.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
+        foreach (var nodeId in _businesses.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
+        foreach (var nodeId in _clients.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
+        foreach (var nodeId in _funds.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
+        foreach (var nodeId in _sleeves.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
+        foreach (var nodeId in _vehicles.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
+        foreach (var nodeId in _entities.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
+        foreach (var nodeId in _investmentPortfolios.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
+        foreach (var nodeId in _linkedAccountIds)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
         foreach (var link in _ownershipLinks.Values)
         {
             nodeKinds.TryAdd(link.ParentNodeId, FundStructureNodeKindDto.Account);

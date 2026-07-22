@@ -68,7 +68,7 @@ internal static class SecurityAssetProfileSeeds
                     RequiredDecimal("originalFace", "Original face", 0.01m, null, projected: true),
                     RequiredText("couponOrIndex", "Coupon/index", projected: true, searchable: true),
                     RequiredText("factorSchedule", "Factor schedule", projected: true, searchable: true),
-                    RequiredEnum("collateralType", "Collateral type", ["MBS", "CMBS", "ABS", "CLO", "CDO", "Other"], projected: true, searchable: true)
+                    RequiredEnum("collateralType", "Collateral type", Taxonomy(SecurityReferenceTaxonomyKeys.CollateralType), projected: true, searchable: true)
                 ],
                 [
                     new(SecurityIdentifierKind.Cusip, true, "Structured-credit strips should carry CUSIP coverage when available."),
@@ -82,7 +82,7 @@ internal static class SecurityAssetProfileSeeds
                 "RealAssets",
                 "Property Interest",
                 [
-                    RequiredEnum("propertyType", "Property type", ["Office", "Industrial", "Retail", "Multifamily", "Hospitality", "Land", "Other"], projected: true, searchable: true),
+                    RequiredEnum("propertyType", "Property type", Taxonomy(SecurityReferenceTaxonomyKeys.PropertyType), projected: true, searchable: true),
                     RequiredText("addressOrMarket", "Address/market", projected: true, searchable: true),
                     RequiredDecimal("ownershipPercent", "Ownership %", 0m, 100m, projected: true),
                     RequiredDecimal("appraisalValue", "Appraisal value", 0m, null, projected: true),
@@ -142,7 +142,7 @@ internal static class SecurityAssetProfileSeeds
                     RequiredText("sponsor", "Sponsor", projected: true, searchable: true),
                     RequiredDecimal("commitment", "Commitment", 0m, null, projected: true),
                     RequiredText("economics", "Economics", projected: true, searchable: true),
-                    RequiredEnum("reportingCadence", "Reporting cadence", ["Monthly", "Quarterly", "SemiAnnual", "Annual", "AdHoc"], projected: true, searchable: true)
+                    RequiredEnum("reportingCadence", "Reporting cadence", Taxonomy(SecurityReferenceTaxonomyKeys.ReportingCadence), projected: true, searchable: true)
                 ],
                 [new(SecurityIdentifierKind.InternalCode, true, "SPV and co-investment vehicles require a stable internal code.")],
                 ["Committed", "Active", "Monitoring", "Exited", "Retired"],
@@ -175,6 +175,9 @@ internal static class SecurityAssetProfileSeeds
             "Meridian",
             ApprovedAtUtc,
             "Seeded starter template for governed custom asset profile validation.");
+
+    private static IReadOnlyList<string> Taxonomy(string taxonomyKey)
+        => SecurityReferenceTaxonomyCatalog.Default.GetValues(taxonomyKey);
 
     private static SecurityAssetProfileFieldDefinitionDto RequiredText(string key, string label, bool projected, bool searchable = false)
         => Field(key, label, SecurityAssetProfileFieldTypeDto.Text, true, [], null, null, projected, searchable);

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Contracts
@@ -24,9 +24,35 @@ or provider implementations.
 
 ## Key folders and files
 
-- `Workstation/` - workstation and operator workflow DTOs.
+- `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
+  supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
+- `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
+  case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
+  or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
+  actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted
+  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
-  and query/command service contracts.
+  terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
+  and event references, projection lineage, and query/command service contracts.
+- `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
+  authoritative book-context snapshot, and existing rule-pack reference contracts.
+- `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
+  append requests, append results, structured audit metadata, and the injectable command service
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
+  contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
+  changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
+  for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO
+  15022 CAEV alignment, provider aliases (alias-tolerant `TryNormalize`), required fields,
+  asset-class validity, and adjustment/ledger-posting behavior. Lifecycle support rides
+  `CorporateActionLifecycleStates` (write-side Announced/Confirmed/Cancelled; Ex/Paid derived
+  from dates) plus `CorporateActionEffectiveStateProjector`, which folds append-only
+  supersede chains (`CorporateActionDto.SupersedesCorpActId`) into effective actions with
+  amendment timelines.
+  Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
+  operator metadata scope so the shared Instrument Passport operating model can identify the
+  most-specific applicable vendor/data-type control without browser-only or WPF-only rules.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
@@ -35,8 +61,8 @@ or provider implementations.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
-  validation gates, fund-structure graph/query orchestration, operational scheduling/trading
-  calendar coordination, plus Environment Design draft/publish/runtime projection contracts that
+  validation gates, fund-structure graph/query orchestration, operational scheduling/deterministic local trading-calendar
+  coordination, plus Environment Design draft/publish/runtime projection contracts that
   must be injectable without depending on Application implementation types.
 - `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
   Application orchestration, Data Integration ETL services, Infrastructure adapters, and
@@ -79,8 +105,9 @@ required provider capability gaps and degraded provider capability gaps from the
 routing matrix; the server turns those into broker-ingest blocker/review states instead of asking
 clients to infer close readiness from provider metadata. Closed operations workflows also
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
-evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
-clients can inspect close-package publication without rebuilding package metadata locally.
+evidence hash, sign-off actor/rationale, report pack id, evidence links, checklist approvals, and
+frozen vault document snapshots so clients can inspect close-package publication without rebuilding
+package metadata locally.
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
@@ -100,10 +127,15 @@ and external-GL dimensions through the Financial Operations posting gate.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
-Accounting-system production-readiness contracts also expose retained migration run artifact list
-and upsert payloads so browser, WPF, and admin surfaces can store ledger-book scope, historical
+Accounting-system production-readiness contracts also expose migration-run execution requests,
+execution results, retained migration run artifact list/upsert payloads, and generated migration
+rollout plan rows so browser, WPF, and admin surfaces can store ledger-book scope, historical
 journal backfill, dimensional backfill, configuration-promotion, and close/reporting evidence
-migration proof under one shared route instead of passing one-off request-only evidence.
+migration proof under shared routes and render the required migration lane actions instead of
+passing one-off request-only evidence. Migration-run execution requests can also reference a
+retained worker plan, and the shared worker-plan DTO plus list/upsert request payloads carry source
+and migrated row counts, ledger-book scope, evidence references, tenant/company scope, and optional
+canonical dimensions for governed historical-journal and dimensional backfill execution.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
@@ -127,6 +159,15 @@ Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Ev
 Support. The dashboard metrics expose status, retained evidence, route hints, and required actions
 so browser and WPF clients can present the Financial Operations core flow without recomputing it
 from lower-level workflow fragments.
+`FinancialOperationsCommandCenterDto` also carries the optional
+`FinancialOperationsCloseSupportDecisionDto`, which packages period state, lock/reopen posture,
+NAV/report dependency posture, unresolved exception count, pending approval count, retained
+evidence gap count, and blocking decision rows into one shared close-support read model. Browser
+and WPF clients should render those server-owned decisions directly instead of deriving close
+completion readiness from queue rows independently.
+`FinancialOperationsQueueRowDto` carries deterministic row labels for status, owner, due date,
+severity, SLA, blocker type, close/report impact, evidence, action, and route so browser and WPF
+clients can present the same FINOPS queue without recreating exception-aging or close-impact logic.
 The workflow detail contract also carries `OperationsReviewedAutomationSummaryDto`, which lists
 allowed suggestion/draft use cases, prohibited material actions, current review stage, required
 human actions, retained evidence, and artifact rows for extraction, match suggestion, journal draft,
@@ -188,8 +229,27 @@ desktop-specific contract shapes.
 Accounting configuration workspaces expose a computed `AccountingRulesStudioDto` beside the raw
 posting-rule, version, approval, dry-run, and regression-test DTOs. Browser and WPF clients should
 render rule counts, generated-posting coverage, effective-dated rule posture, saved-test coverage,
-promotion queues, and activation readiness from this shared studio read model instead of
-recomputing approval or validation state locally.
+promotion queues, activation readiness, and server-owned required-action counters from this shared
+studio read model instead of recomputing approval, regression-test, promotion, or validation state
+locally.
+Accounting-basis projection-set DTOs let shared clients request one retained source event across
+multiple accounting bases, ledger books, periods, policies, and dimension scopes, returning the
+governed posting candidate for each target without creating posted ledger facts. Approved generated
+candidate posting uses a separate request/result contract so clients cannot confuse preview with
+durable append.
+`AssetAccountingEventSpineDto` provides the canonical Acquisition, Capitalization, Valuation,
+Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal lifecycle envelope.
+It keeps Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct and allows
+posted impact only when the response identifies the immutable journal, book, period, accounting
+basis, Posted status, currency, balanced amounts, and journal lines. `RetainedEvidenceIdentityDto`
+is the shared fail-closed evidence shape; a URI or operator rationale without identity, SHA-256,
+source reference, accepted review, effective date, positive version, retention metadata, and subject
+scope does not satisfy canonical asset posting or production-readiness gates.
+Drafted authority retains the full candidate intent/result and canonical fingerprints, including
+all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
+instruction. Typed correction lineage identifies the exact earlier event version and posted journal
+(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
+asset account and cost authority; other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -197,32 +257,86 @@ Accounting-system contracts also publish `AccountingProductionReadinessDto`, a r
 assessment for production rollout. The payload aggregates ledger-book rollout, Rules Studio,
 posting-rule execution, journal lifecycle, dimensional accounting, external GL, close/reporting,
 tenant-administration posture, explicit ledger-book-native workflow certification for posting
-rules, journal lifecycle, close/reporting, and external GL with retained ledger-book-scoped
+rules, journal lifecycle, close/reporting, external GL, reconciliation, direct-lending
+projections, and strategy ledger reads with retained ledger-book-scoped
 workflow evidence, and migration-rollout controls for
 ledger-book migration, historical journal backfill, dimensional backfill, accounting configuration
 promotion, and close/reporting evidence migration with shared blocker codes and retained
-`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
-same fail-closed readiness state instead of recomputing production gaps or treating certification
-booleans as executable migration proof. Migration run artifacts can carry the canonical
+`AccountingMigrationRunExecutionRequestDto`, `AccountingMigrationRunExecutionResultDto`,
+`AccountingMigrationRunWorkerPlanDto`, `AccountingMigrationRunWorkerPlanListDto`, and
+`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can retain
+worker plans, execute a governed rollout run, render the same fail-closed readiness state, and avoid
+recomputing production gaps or treating certification booleans as executable migration proof.
+Execution requests can select a retained worker plan by id so historical journal and dimensional
+backfill runs carry the plan's source counts, migrated counts, evidence references, and canonical
+dimension scope into the retained artifact. Migration run artifacts can
+carry the canonical
 `LedgerDimensionSetDto` plus tenant and company scope; dimensional backfill certification is
 expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,
 instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration
 evidence instead of relying on account or run names.
-`AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
-reports, journal dimension filters, and external-export dimension mappings with retained
+`AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle,
+close/reporting, close-plan configuration, external GL, reconciliation, direct-lending, and
+strategy-ledger-read controls as complete only when the certification flag is paired with retained
+ledger-book-scoped typed evidence for that specific workflow lane. Legacy string links and full-token
+certification packets remain navigation metadata and cannot establish readiness. The retained
+evidence URI must use an explicit `ledger-book:<id>`,
+`ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and
+`ledgerBookId/<id>` accepted for route-shaped evidence; incidental bare GUID references and generic
+evidence links do not certify every workflow lane by implication.
+`AccountingDimensionalReportingReadinessDto` separately certifies posted ledger-line dimension
+persistence, trial-balance dimension filters, period reports, cross-period reports, journal
+dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
+Each dimensional control requires evidence for that specific ledger/query/report/export lane and a
+`dimension-scope` or `ledger-dimension-set` marker on the same complete typed retained artifact.
+This keeps one generic ledger-book evidence link, incidental bare GUID
+reference, or split support artifact from certifying all dimensional reporting controls by
+implication, and keeps ledger-book proof separate from proof that fund, entity, sleeve, strategy,
+investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL
+dimensions were covered by the certified query/report/export path.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
-admin-studio, and retained-evidence readiness so production accounting setup is blocked by shared
-contract state rather than workstation-local assumptions.
+admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL
+mapping setup, tenant/company/report-group setup, ledger-book administration, posting-rule
+authoring, approval queues, dimension mapping, implementation sandbox validation, audit review
+tooling, bulk import/export safeguards, performance validation, disaster-recovery runbooks, and retained-evidence readiness so
+production accounting setup is blocked by shared contract state rather than workstation-local
+assumptions.
+Each configured tenant administration or enterprise configuration studio control requires retained
+evidence for that setup lane, or an explicit `tenant-admin/full` or `tenant-administration/full`
+certification packet, before readiness counts the control as complete. That evidence must identify
+the selected tenant and company, so a generic or wrong-company setup packet is retained for audit
+context but cannot certify every tenant-admin control by implication. When a rollout is scoped to a
+ledger book, operational-hardening controls for audit review, bulk import/export safeguards,
+performance validation, and disaster-recovery runbooks also require retained evidence naming that
+selected ledger book before readiness treats those controls as production-ready.
 `AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.
 `AccountingProductionCertificationProfileDto` is the retained tenant/company/fund/book certification
-profile for ledger-book-native workflow controls and dimensional report/query/export controls, so
+profile for ledger-book-native workflow controls and dimensional ledger/query/report/export controls, so
 production readiness can load approved evidence from the shared Accounting System store only for the
 active tenant, company, fund, and ledger-book scope instead of trusting request-time certification
 flags alone.
+`AccountingProductionGapDto` adds a stable, shared production-gap checklist to the readiness
+payload for the five current productization lanes: configurable multi-ledger workflows,
+enterprise accounting configuration studio, guarded external-GL integration, dimensional
+ledger/reporting, and production controls hardening. Each row carries status, highest severity,
+component areas, blocking issue codes, issue messages, suggested actions, routes, summary, and
+required action so browser, WPF, and admin setup surfaces can show the same remaining-work checklist
+without reverse-engineering it from component labels or local heuristics.
+Certified migration run artifacts must also be operationally clean: a retained certified run needs a
+completion timestamp and zero retained issue count before the migration rollout plan can mark that
+lane ready. This keeps ledger-book, historical journal, dimensional, configuration-promotion, and
+close/reporting evidence migrations from becoming production proof while unresolved run issues
+remain attached to the artifact. Migration execution requests can retain source-store and migrated
+row counts on the same run, either supplied directly or extracted from retained evidence links;
+mismatched, incomplete, negative, or body-versus-evidence-conflicting counts fail closed, and
+successful reconciliations are retained on the artifact and evidence references for rollout review. Execution
+requests that ask to certify a migration run must also provide operator-retained evidence naming the
+selected tenant, company, fund profile, ledger book, and migration kind; generated run lineage alone
+does not certify a migration control.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can
@@ -345,50 +459,26 @@ payloads carry operator-safe issue codes and required evidence labels so no-code
 unresolved canonical mappings, missing approval evidence, and production-write capabilities that
 are not backed by a certified provider adapter.
 
-Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
-`Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
-retained manifest path, retained evidence links, report-line provenance, create requests, publish
-requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
-actor/role, and optional evidence-link metadata, workflow action-origin requests for material
-report-pack state changes, and restatement requests with approver, prior-version, changed-line,
-evidence-link, and action-origin metadata. The same shared contracts also carry
-report-pack delivery attempts, delivery failure attempts, delivery history, operator-managed
-reporting schedules, schedule delivery targets, due-schedule run results with delivery
-attempts/warnings, ad-hoc report-run requests/results, and HTML/PDF rendered-statement artifact
-formats so browser, WPF, endpoints, and host bootstrap payloads consume the same reporting command
-and history shape.
-Workflow action, restatement, publish, and delivery request DTOs carry `OperationsActionOriginDto`;
-services must reject assistant or automation-origin approval, restatement, archival, publication,
-delivery-package creation, and delivery-failure recording before any retained output, report-line
-edit, or stakeholder package is written.
-Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
-delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
-formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
-publication evidence hash used for package integrity summaries, optional publication manifest
-metadata, publication evidence links, retained line provenance, and publication-approved branding
-metadata. Generated reporting-run packages also retain run id, template id, schedule id,
-as-of date, trigger, status, attempt count, section count, lineage count, selected schedule
-branding theme metadata, and source-artifact metadata so PDF/XLSX/CSV artifact bytes, checksums,
-and byte sizes can be reconstructed consistently after package-store reloads. Delivery packages also carry contract-owned access,
-channel, and download summaries plus `ReportPackDeliveryAccessLinkDto` rows for the primary
-email-link/secure-portal/evidence-vault/internal route, operator route, retained manifest, and
-token-gated artifact downloads, so clients can explain package access and retained outputs without
-parsing token URLs locally. Delivery packages also carry `ReportPackDeliveryNotificationDto`
-rows that preserve the recipient, channel, subject, body, token-gated href, status, and expiry for
-email-link and secure-portal package notifications, so clients can show what was sent or published
-without fabricating outbox state from the secure URL. Token-gated email-link and secure-portal
-packages also carry an access-expiry timestamp plus access and channel summaries so clients can display and enforce
-package availability from the shared contract. Keep those package fields shared so email-link, secure portal, evidence-vault, and
-internal-route distribution clients do not infer report package output or integrity from
-delivery-reference strings. The shared route catalog
-includes both the token-gated package manifest URL under
-`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package` and the
-secure-portal package URL under `/portal/reporting/packages/{packageId}`. Package artifacts can
-also carry token-gated `DownloadRoute` values under
-`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`
-so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
-building artifact URLs locally; downloaded artifacts include package identity, publication manifest
-fields, publication evidence links, and report-line provenance for downstream audit review.
+Canonical governed reporting uses `Draft`, `Validated`, `InReview`, `Approved`, and terminal
+`Released` states from `Meridian.Reporting`. `Meridian.Contracts.Reporting` publishes the thin HTTP
+commands and projections for immutable tenant/organization/company/fund/book/access snapshots,
+normalized run parameters, point-in-time source and reconciliation hashes, maker-checker receipts,
+server-owned action availability, release artifacts, series history, and governed restatement.
+Callers supply only business rationale and optimistic versions; actor, permissions, evidence,
+snapshot identity, and release authority remain server-owned.
+
+Secure distribution contracts retain non-secret delivery and access-grant state. Delivery DTOs
+include governed run/package/release identity, immutable payload metadata, retry state, provider
+message reference, receipts, and failure detail. Grant issue returns an opaque fragment link once;
+grant list/detail DTOs contain only audience, artifact scope, expiry/use, and revocation state.
+`UiApiRoutes` owns the canonical `/api/fund-structure/reporting/distribution/*`, authenticated
+`/portal/reporting/secure/packages/{runId}`, and token-safe
+`/portal/reporting/access-grants/{grantId}/exchange` paths. Legacy query-token package and artifact
+routes are retired with `410 Gone` and must not be emitted by browser, WPF, or shared read models.
+
+Older `ReportPack*` workflow/delivery DTOs remain readable only for tenant-filtered historical
+compatibility. Their `Published` lifecycle and delivery-link fields are not an authoritative
+mutation, release, or recipient-access contract.
 `WorkstationReportingPayload` and `FundReportingSummaryDto` also carry
 `reportWriterDatasetSources` for no-code report-writer authoring. Each source includes a stable
 source id, label, description, row count, field catalog, retained source rows, tags, certification
@@ -405,6 +495,11 @@ retained sources server-side when callers do not embed explicit `datasetRows`. G
 run payloads and manifests retain the resolved report-writer dataset source id, label, and row
 count so audit cards, delivery packages, and downstream evidence consumers can prove which governed
 dataset powered a no-code report-writer output.
+`ReportingStarterKitDto`, `ReportingStarterKitStateDto`, and
+`ReportingStarterKitProvisionResultDto` describe editable Reporting desk presets in the shared
+contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
+selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
+seeded for review but should not run until an operator activates them.
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
@@ -429,10 +524,12 @@ also owns the retained grid artifact route at
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` so browser and desktop
 clients build JSON/CSV/XLSX links from the same route contract.
 `ReportPackDeliveryPackageDto` preserves the same generated grid rows and report-writer dataset
-source evidence for reporting-run delivery packages plus optional `renderedReportWriterGrids` rows,
-columns, warnings, lineage, data-dictionary fields, and validation checks so
-token-gated PDF/XLSX/CSV artifact downloads can be rebuilt byte-stably from the persisted package
-manifest. `ReportingRunRequestDto` and `ReportingScheduleRecordDto` can also carry optional
+source evidence for historical reporting-run delivery packages plus optional
+`renderedReportWriterGrids` rows, columns, warnings, lineage, data-dictionary fields, and validation
+checks. It is a compatibility read shape, not the authority for rebuilding or downloading governed
+artifacts. Canonical PDF/XLSX/CSV artifacts are retained once by the governed run artifact store and
+downloaded only through a released package plus a scoped distribution grant.
+`ReportingRunRequestDto` and `ReportingScheduleRecordDto` can also carry optional
 dataset rows for approved report-writer grids; clients should only provide rows from a governed
 dataset snapshot and should treat missing rows as an explicit no-data render, not as permission to
 fabricate portfolio values. Shared services may resolve omitted ad-hoc or scheduled run rows from
@@ -506,12 +603,12 @@ download summary, access-expiry timestamp, package access/channel summaries, not
 report-writer dataset/grid summaries, and entitlement scope from the package evidence packet so clients can show whether the latest
 scheduled no-code package was generated from a retained dataset and whether its pivot/Top-N/formula grids were rendered,
 as well as whether it was company-wide, private, or restricted to specific user/group/company
-principals. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
-retained XLSX workbook artifacts; it is a token-gated `format=xls` route that returns the canonical
-XLSX workbook bytes and MIME type rather than a separate legacy workbook artifact.
-Email-link and secure-portal package links resolve to token-gated HTML views for recipient-facing
-access, while `format=json` on the same routes returns the retained package manifest for API
-clients.
+principals. Legacy delivery package `accessLinks`, including `artifact-xls`, are retained only as
+historical compatibility data and must not be used for new recipient access. Governed recipient
+access uses an opaque, expiring, revocable grant whose bearer is returned once in a URL fragment,
+exchanged in a no-store POST body, and never included in list/detail DTOs. Artifact retrieval is
+bound to the released run, immutable package and artifact scope, tenant, audience, expiry, maximum
+uses, and exact retained-byte integrity.
 `ReportingRunAuditTrailDto` exposes retained generic Reporting run lineage with run/template/as-of
 metadata plus timestamped actor/action/notes rows, letting browser, WPF, and export consumers inspect
 the same audit trail persisted by the orchestration store instead of relying on collapsed action
@@ -614,10 +711,16 @@ and WPF consumers should depend on this contract rather than the Application-lay
 Environment Design service contracts also live in `Services/` and return DTOs from
 `EnvironmentDesign/`; browser, WPF, and host composition should depend on those contracts while the
 Workflow module provides the current local-first `EnvironmentDesignerService` implementation.
-ETL contracts include `EtlJobDefinition`, run/export result payloads, `IEtlJobDefinitionStore`,
-and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Data
-Integration-owned export service can target SFTP without depending on Infrastructure, while the
-Infrastructure adapter implements transport-specific publishing details.
+ETL contracts include `EtlJobDefinition`, run/export/preview result payloads,
+`IEtlJobDefinitionStore`, and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so
+Data Integration-owned services can target SFTP without depending on Infrastructure, while the
+Infrastructure adapter implements transport-specific connection, staging, post-processing, and
+publishing details. SFTP source and destination definitions carry `hostKeySha256Fingerprint` so
+shared job definitions can pin remote server identity without leaking transport-library types into
+Contracts. Source definitions also carry post-processing intent so local and SFTP readers can leave,
+delete, archive, error-route, or mark completed files consistently after a successful import. The
+transport adapter accepts either normalized 64-character hex SHA-256 fingerprints or OpenSSH-style
+`SHA256:<base64>` fingerprints and normalizes them before host-key comparison.
 
 Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/` under
 `Meridian.Contracts.Monitoring`. Keep `IEventMetrics`, `MetricsSnapshot`, and
@@ -629,28 +732,58 @@ Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/` 
 `PipelineStatistics` contract-owned so Platform backpressure alerting can observe Application
 pipeline state without referencing Application implementation assemblies.
 Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
-`ITradingCalendarProvider`, operation types, resource requirements, scheduling decisions, slots,
-trading sessions, and maintenance-window records contract-owned so scheduling behavior can be
+`IOperationalTradingCalendar` (plus the obsolete `ITradingCalendarProvider` compatibility alias),
+operation types, resource requirements, scheduling decisions, slots, trading sessions, and
+maintenance-window records contract-owned so deterministic local scheduling behavior can be
 implemented in Platform while tests, future hosts, and operator surfaces consume the same
 scheduler shape.
 Evidence Vault identities also expose retained artifact metadata, grouped request lists, and
 support request rows for file-backed evidence bundles: storage kind, artifact id, kind, relative
 vault path, content hash, retained size, source route, canonical subject linkage, request-list
-target, highest severity, blocked outputs, missing/stale evidence requests, blocking work-item
-references, and validation support issues. Retained artifact references and copied vault artifacts
+target, typed close/audit/tax/report-package/operational-event request-list family, highest
+severity, blocked outputs, missing/stale evidence requests, blocking work-item references, and
+validation support issues. Retained artifact references and copied vault artifacts
 can also carry capture channel/source metadata plus extracted fields with confidence, review state,
 expected value, validation status, and linked record identity. Keep that metadata shared so packet,
 report, approval, screenshot, statement, audit, tax, close, and validation producers can enforce the
 same retained-artifact, extraction, and request-list vocabulary. Request-list index DTOs should stay
 contract-owned so close, audit, tax, report-package, browser, and WPF review surfaces can query the
-same frozen support posture without parsing manifest JSON.
+same frozen support posture without parsing manifest JSON. `EvidenceVaultIdentityDto.ManifestSnapshot`
+is the public frozen-manifest contract over that retained package, carrying package kind/id,
+typed package family for close binders, audit packets, report support packages, tax support packages,
+and event support packages, content hash, document snapshots, support request snapshots, and linked
+operational objects for close, report, tax, and audit packages.
+`EvidenceDocumentDto`, `EvidenceDocumentLinkDto`, `EvidenceRequestDto`, and `EvidenceManifestDto`
+name the document-intake surface explicitly over the retained vault: document identity carries
+classification for bank statements, admin packages, valuation support, capital notices, invoices,
+tax/audit support, agreements, custodian files, immutable source hash, received timestamp, source
+imported-file adapter seams, intake source kind for uploaded content, local/imported files, email,
+SFTP, API, and portal-download adapter references, actor, tenant/scope, extraction status including pending, extractor id,
+reviewer state with human-confirmed field rows for accepted evidence, audit trail, explicit
+support-only authority flags, and links to period, portfolio, fund, account, instrument, journal,
+reconciliation case, report line, or close task objects. The same source facts are also grouped in
+`EvidenceDocumentSourceRecordDto` as the immutable receipt record, including hash, receipt time,
+channel, actor, tenant/scope, source system/reference, and receipt hash for manifest and review
+consumers that need a single provenance object. `EvidenceVaultDocumentQueryDto`
+and `EvidenceVaultDocumentEntryDto` provide the shared browser/WPF queue shape for retained
+documents, including vault context, manifest route, open support-request count, and filters for
+classification, typed channel kind, extraction state, reviewer state, subject, tenant/scope, and
+linked object.
 `EvidenceVaultIntakeRequestDto` and `EvidenceVaultIntakeResponseDto` extend that vocabulary to
-API-backed document intake: callers provide the evidence subject, channel, file name, base64
-payload, optional expected SHA-256 hash, source reference, extraction fields, lifecycle metadata,
-and lookup linkage, while the response returns the retained artifact path, content hash, capture
-metadata, extraction review fields, and vault identity. Non-ready extraction fields are part of the
-shared support-request vocabulary so direct intake can freeze close, audit, tax, report-package, or
-event request lists without browser or WPF clients parsing manifest JSON.
+API-backed document intake: callers provide the evidence subject, channel, file name, uploaded
+base64 payload or an `EvidenceDocumentIntakeSourceDto` local/imported/adapter source reference, optional
+expected SHA-256 hash, source reference, extraction fields, lifecycle metadata, document
+classification, intake channel kind, reviewer state, object links, and lookup linkage, while the response returns the
+retained artifact path, content hash, capture metadata, extraction review fields, document record,
+and vault identity. Non-ready extraction fields are part of the shared support-request vocabulary so
+direct intake can freeze close, audit, tax, report-package, or event request lists without browser or
+WPF clients parsing manifest JSON. Intake and manifest export both populate the same public
+manifest snapshot on the vault identity so browser, WPF, and close binder consumers do not have to
+deserialize the retained manifest payload to discover frozen documents or requests.
+Accepted document review requests must carry at least one `EvidenceDocumentConfirmedFieldDto`,
+keeping accounting-grade evidence behind a human-confirmed field trail instead of a status-only
+transition. `EvidenceDocumentAuthorityDto` remains support-only by default: documents can support,
+block, suggest, and link, but cannot approve, post, certify, or release authority-bearing outputs.
 
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,
@@ -675,7 +808,10 @@ workbench payloads. `InstrumentPassportDto` carries identifier and provider mapp
 events, corporate actions, pricing/trading-parameter readiness, downstream usage, and trust posture
 so browser and WPF clients do not rebuild governed passport semantics locally. Provider-confidence
 rows expose mapping source, freshness, confidence score, identifier-conflict links, and override
-history for each provider symbol mapping.
+history for each provider symbol mapping. The same passport now carries an operations workbench
+with identity, provider-evidence, terms, readiness, and handoff panels so browser and WPF clients
+can render valuation, ledger, reconciliation, close, and report readiness without local readiness
+rules.
 
 Security Master custom asset profile contracts live under `SecurityMaster/` and define versioned
 profile definitions, typed field schemas, identifier preferences, lifecycle states, accounting-impact
@@ -684,6 +820,29 @@ Data, Settings, browser, WPF, and endpoint flows validate the same no-code custo
 instead of accepting client-local JSON shapes.
 `SecurityAssetClassCatalog` also exposes `CustomAsset` so create workflows and projection consumers
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
+Alternative asset operations are represented as first-class Security Master asset classes for
+`StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
+that cannot yet be upgraded to one of those minimum first-class classes.
+`SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
+narrow automation: each pack declares contract schema dimensions, lifecycle events, valuation
+methods, lifecycle-event automation coverage, journal-template rule hooks, structured template
+rules by lifecycle event/accounting basis/currency scope/entity scope, validation rules, reporting
+taxonomy, automation depth, an admission policy for wide capture/narrow automation, and the policy
+that asset packs extend accounting through event-to-template mappings without changing the core
+ledger. `CreateCandidateDescriptor`, `ValidateDescriptor`, `ValidateAll`, and `ValidateCandidateSet`
+provide the contract-level admission gate for new packs, checking required schema sections,
+supported lifecycle and valuation methods, lifecycle capture/automation coverage, structured
+journal-template scopes, validation/taxonomy coverage, evidence-gated automation policy, and the
+core-ledger extension policy before an asset pack is exposed as registry-valid. Candidate descriptor
+creation gives imported or proposed packs the same standard schema, lifecycle coverage builder,
+template rule derivation, validation taxonomy, and admission policy as built-ins; candidate-set
+validation then proves their schema and asset-class claims against the built-in registry without
+mutating the built-in list or adding asset-specific core-ledger paths.
+`MultiAssetCoverageSummaryDto` carries those pack
+descriptors beside asset-class readiness rows so shared browser, WPF, and endpoint clients can
+inspect supported asset packs without rebuilding registry rules locally.
 `SecuritySearchRequest` carries optional `customProfileId`, `profileVersion`, `profileFieldKey`,
 and `profileFieldValue` filters so shared clients can find profile-backed alternative assets
 through the canonical Security Master search route without depending on endpoint-local JSON.
@@ -699,6 +858,17 @@ compare strategy versions and engines without endpoint-local DTOs.
 Strategy promotion readiness contracts also carry retained approval checklist and evidence
 references so paper-to-live promotion gates remain contract-owned and browser/WPF clients can show
 the same human-approved evidence requirements without local promotion-state rules.
+Trading readiness contracts also expose broker execution reconciliation evidence when a broker-backed
+gateway is active: the shared payload carries broker/OMS open-order match counts, break details, and
+a stable broker execution reconciliation work-item kind so clients do not infer live-readiness parity
+from order rows. The same readiness payload now separates paper operation readiness from live
+operation readiness: `ReadyForLiveOperation` fails closed until the live promotion trace,
+account-scoped brokerage sync, and broker execution reconciliation evidence all clear, and
+`LiveOperationBlockers` names the remaining shared blocker codes. `LiveOperationRequirements`
+also exposes the approved live-promotion trace plus each W7 checklist/evidence item as typed rows
+so clients can show trusted data, paper validation, reconciliation, accounting records, governed
+reporting, governance sign-off, exception handling, rollback/kill-switch, audit retention, and
+broker parity without duplicating checklist-token rules.
 Strategy briefing contracts live in `Workstation/StrategyBriefingDtos.cs` and provide the
 canonical Strategy-named payloads for run drill-ins, saved comparisons, alerts, "what changed"
 items, workspace summary, and the full briefing DTO. Older `ResearchBriefing*` contracts are
@@ -709,10 +879,27 @@ The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` 
 Data upload template, preview, and bank-statement import result contracts live under
 `Workstation/DataUploadDtos.cs`. The Data bootstrap payload includes the upload-template catalog so
 browser and WPF clients can render the same trade, transaction, bank-statement, asset-information,
-and entity-configuration intake templates while upload preview results remain retained source
+servicer position statement, servicer remittance statement, and entity-configuration intake
+templates while upload preview results remain retained source
 evidence, validation issues, and bounded sample rows only. Bank-statement import responses identify
 the retained source path, imported batch, target bank account, statement date, and line count after
 the shared endpoint applies evidence through the fund-account service.
+Custodian/broker statement connector commit results live in `Workstation/StatementConnectorDtos.cs`
+and stay additive: successful imports return retained break ids, reconciliation case ids, legacy
+case-route arrays, and `StatementImportReconciliationCaseLinkDto` structured reconciliation case
+links with break id, route, status, priority, reason, and suggested next action alongside Evidence
+Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
+and WPF clients can deep-link into the exact casework opened by the statement run without relying on
+parallel arrays.
+The same additive contract family carries persisted statement-fetch schedule and upsert payloads.
+Schedules expose an explicit `SourceKind` (`broker` or `custodian`) so background imports preserve
+the same reconciliation classification as file imports; omitted values on older upsert clients and
+persisted snapshots default to `broker` for compatibility.
+Direct Lending servicer statement intake contracts live under
+`DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
+result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained
+evidence routes so browser, WPF, and endpoints use the same operator-reviewed servicer statement
+workflow instead of creating a separate importer contract stack.
 The same workstation contract file owns the multi-asset operational coverage DTOs returned by
 `/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
@@ -720,10 +907,19 @@ The same workstation contract file owns the multi-asset operational coverage DTO
 `MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
 reconciliation casework, ledger mapping/evidence, Asset Operations detail, and close readiness.
 Private-credit `DirectLoan` rows can also carry loan-schedule, commitment/covenant, and paydown/obligation targets, while
-structured/private `CustomAsset` rows can carry profile-lineage, servicer/trustee, valuation/NAV,
-and obligation close-readiness targets. Browser, WPF, and shared endpoint clients should render
-those rows as supplied instead of recalculating asset-class readiness, ledger coverage,
-reconciliation status, or close blockers locally.
+structured credit, private-fund, private-company, real-estate, and commitment/guarantee rows carry
+class-specific trustee/servicer, factor, collateral tape, administrator/GP, capital call,
+distribution, NAV, cap-table, appraisal, debt-service, fee-accrual, covenant, and release/expiry
+targets. `CustomAsset` rows remain available for profile-lineage, servicer/trustee, valuation/NAV,
+and obligation close-readiness compatibility coverage. Browser, WPF, and shared endpoint clients
+should render those rows as supplied instead of recalculating asset-class readiness, ledger
+coverage, reconciliation status, or close blockers locally.
+
+Asset Operations terms/obligations timeline contracts carry the shared projection view for
+expected cash flows, projected obligations, retained evidence posture, variances, ledger support,
+formula trace, and next action. Browser and WPF clients should render `AssetTermsObligationsTimelineDto`
+and its event/variance rows as supplied instead of rebuilding projection math or source-support
+rules in UI-specific DTOs.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
@@ -838,6 +1034,30 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, ledger-book scope, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
+`AccountingBookContextDto` adds the ledger-book, period, basis, policy, currency, owner-scope, and
+dimension snapshot used to validate that intent. It is an assertion for transport and evidence;
+posting services must resolve server-owned book state and reject mismatches rather than trusting a
+browser- or WPF-supplied snapshot. `AccountingRulePackReferenceDto` points to the existing
+`AccountingPolicyRulePackDto` and selected rule/version, preserving one Rules Studio authority
+instead of defining a second rule-pack model.
+Asset Operations publishes additive `InstrumentRoleDto`, `BookPositionDto`,
+`PositionEconomicStateDto`, `EconomicEventReferenceDto`, and `ProjectionLineageDto` records keyed by
+canonical Security Master identity. Posting-candidate and command contracts may carry these optional
+typed references alongside legacy source-event fields; populated representations must agree. The
+types remain transport-safe and default-empty where they extend existing detail/projection payloads,
+so older JSON and existing browser/WPF constructors remain compatible.
+Security Master reconciliation events can additionally expose their typed
+`EconomicEventReferenceDto`, `ProjectionLineageDto`, and retained evidence links. Older JSON and
+positional callers remain valid; typed factor events use these fields to carry deterministic event
+and projection identity into the existing posting-candidate route without accepting journal rows
+from a client.
+Append-only `PositionEconomicStateDto` rows may retain their typed `ProjectionLineageDto` so an
+older factor event remains reconstructable after a later position update; older payloads default
+that optional property to `null`.
+Manual journal drafts, workbench reads, lifecycle requests, and evidence-attachment requests also
+carry optional tenant/company scope so shared endpoints can stamp the authenticated accounting
+context, resolve the tenant-scoped chart, and retain scoped lifecycle audit rows without trusting
+browser- or WPF-supplied organization fields.
 Accounting configuration contracts also carry the productized rules-studio vocabulary:
 effective-dated posting rules, flat conditions, grouped `All`/`Any` condition sets, formulas,
 allocation metadata, priority, dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,
@@ -846,9 +1066,12 @@ the dedicated promotion-approval request for approving a retained rule version w
 retained approval/review evidence that identifies the retained rule, rule version, and approval id in the same artifact,
 human-operator action origin, and passing saved current-version regression tests whose retained evidence identifies the test case, expected rule, and expected version in the same artifact. Activation-readiness blockers for promotion-gated rules
 remain contract-visible. Chart, template, posting-rule, regression-test, and promotion mutation
-requests can carry `LedgerBookId`, and `IAccountingConfigurationStore.GetAsync` accepts the same
-book scope so clients can address fund-level and ledger-book-specific rule studios without sharing
-one fund-wide workspace by accident. Dry-run generation expands positive static
+requests can carry `LedgerBookId`, `TenantId`, and `CompanyId`, and
+`IAccountingConfigurationStore.GetAsync` accepts the same tenant/company/fund/book scope so clients
+can address tenant-isolated fund-level and ledger-book-specific rule studios without sharing one
+fund-wide workspace by accident. Accounting configuration audit events also retain optional
+tenant/company scope so browser, WPF, and admin review surfaces can list mutation history without
+blending same-company events across tenants. Dry-run generation expands positive static
 or formula-backed allocation weights into generated posting lines, preserves balance through
 residual rounding, and merges allocation target dimensions into the preview payload. Generated
 posting-rule predicates can evaluate dimensional fields and external GL dimensions through the
@@ -859,9 +1082,16 @@ same shared dry-run request, including explicit external GL field aliases such a
 event can be evaluated by the shared Rules Studio engine and returned as a governed journal draft
 candidate with selected rule/version metadata, generated posting lines, retained evidence links,
 blocking/non-blocking issues, and an approval-gated `AccountingPostingCommandDto` when validation
-passes. `UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates` exposes that shape as the
-shared browser/WPF preview route. The candidate contract is non-posting by design; browser and WPF
-clients must treat it as review input for the JE lifecycle, not as a ledger append.
+passes. Candidate requests also carry tenant/company scope alongside fund and ledger-book scope so
+the dry-run and chart resolution path uses the same isolated Rules Studio workspace as accounting
+configuration. `UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates` exposes that shape
+as the shared browser/WPF preview route. The candidate contract is non-posting by design; browser
+and WPF clients must treat it as review input for the JE lifecycle, not as a ledger append.
+`PostPostingRuleJournalCandidateRequestDto` and `PostedPostingRuleJournalCandidateResultDto` publish
+the approved generated-candidate append contract behind
+`UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts`; that route requires the
+candidate aggregate to be the target `LedgerBookId` while `SourceEventId` remains the economic event
+identity, allowing one event to post separately into GAAP, cash, tax, statutory, or primary books.
 posting and allocation formula references are fail-closed contract concerns: duplicate formula ids,
 missing formula references, and formula-backed allocation weights that resolve non-positive surface
 as critical validation issues in workspace validation and dry-run previews. Rules sharing source
@@ -880,16 +1110,24 @@ consumers the same retained-evidence provenance contract. Reworked `Draft` and `
 must not carry stale submitted, approved, posted, or close-lock metadata from an earlier rejected
 review cycle, but their lifecycle transition history remains retained for audit reconstruction.
 Close and reporting contracts publish `ClosePeriodPlanDto`,
-`SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`, and
-`AccountingReportPackageBundleDto` so browser and WPF consumers use the same dependency,
-role-scoped sign-off requirement, close-calendar milestone, evidence-backed close task sign-off
-whose retained artifact identifies the task, sign-off role, and workflow or period, materiality, retained
+`ClosePeriodPlanConfigurationDto`, `UpsertClosePeriodPlanConfigurationRequestDto`,
+`SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`,
+`ReviewCloseEvidenceRequestDto`, `CloseEvidenceReviewDto`, `LockClosePeriodRequestDto`,
+`ClosePeriodLockResultDto`, `CloseOperatingCoverageItemDto`, and
+`AccountingReportPackageBundleDto` so
+browser and WPF consumers use the same dependency, role-scoped sign-off requirement, governed
+close-plan setup with configurable task approval role/count plus multi-role sign-off matrix rows,
+dependency reason retention, and optional
+loaded-configuration timestamp guard, close-calendar milestone,
+evidence-backed close task sign-off whose retained artifact identifies the task, sign-off role, and workflow or period, materiality, retained
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
-on the same retained artifact, financial statement, investor capital
+on the same retained artifact, retained active-blocker evidence reviews that remain separate from
+validation clearing, service-owned operating coverage rows for setup, dependencies, sign-off
+matrix, late adjustments, blocker review, and period lock, governed period-lock request/result, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
-Operations Continuity workflow start and workflow projection DTOs can carry an optional
-`LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can remain
-ledger-book-native after workflow handoff. Close-backed report package contracts treat ledger-book
+Operations Continuity workflow start, summary-list, and workflow projection DTOs can carry an
+optional `LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can
+remain ledger-book-native after workflow handoff. Close-backed report package contracts treat ledger-book
 scope as evidence scope as well: retained ledger, reconciliation, rendered-report, and NAV support
 links are expected to name the selected book before the package is ready for certification.
 Posting-rule promotion approval, close sign-off, late-adjustment, report-package certification, and external GL export certification
@@ -901,7 +1139,20 @@ without enabling live external posting.
 External GL export package manifests expose the same controlled-review posture for guarded
 QBO/Xero/NetSuite artifacts: generated mapped lines, validation state, retained evidence, content
 hash, mapping/reconciliation lineage, and `ExternalPostingAllowed = false` remain visible without
-enabling live posting.
+enabling live posting. Import summaries carry a stable `ContentHash`, and reconciliation summaries
+carry the selected import hash as `ImportContentHash` so shared clients and export certification
+guards can detect provider-evidence drift beyond row totals or provider-facing reconciliation ids.
+Provider rows also publish shared mapping-requirement DTOs for account mapping, journal lineage,
+trial-balance tie-out, and dimension mapping so browser, WPF, and admin setup surfaces can render
+QBO/Xero/NetSuite-specific guarded-export prerequisites without hard-coding provider vocabulary.
+`AccountingTenantAdministrationProfileDto` carries retained enterprise setup controls and now also
+includes `AccountingApprovalQueueConfigurationDto` rows for queue id, display name, workflow kind,
+required approval role/count, segregation policy, and evidence requirement so browser and WPF
+Configure persist approval queue setup through the shared Accounting System profile instead of
+checkbox-only readiness posture. The same profile now carries
+`AccountingDimensionMappingConfigurationDto` rows for mapping id, provider id, Meridian dimensions,
+provider dimensions, and evidence requirements so dimension-map setup is retained as structured
+tenant/company configuration rather than only a certification flag.
 Export packages also retain mapping profile, reconciliation, and balanced-reconciliation lineage so
 Financial Operations can revalidate the current external-GL mapping and latest reconciliation state
 before certification.
@@ -928,6 +1179,11 @@ fund/private-capital workflows. Manual journal normalization trims and retains h
 merges deterministic external GL dimension keys, and propagates fund/entity scope to line
 dimensions while allowing line-specific organization, entity, portfolio, account, instrument,
 tax-lot, cost-center, and external GL overrides.
+`PositionId` is an optional dimension beside `InstrumentId`; it scopes lineage to a book position
+without treating the position or a projected balance as an accounting fact. Candidate journals stay
+non-posting review artifacts, and Asset Operations economic-state, projection-event, and balance
+snapshot DTOs stay rebuildable read models. `JournalEntry` with child ledger entries remains the
+authoritative posted accounting aggregate.
 Generated posting candidates also carry those line dimensions into the governed draft request shape,
 where retained ledger entries receive first-class line dimensions while compatibility metadata tags
 remain available for downstream report and external-GL mapping recovery. This keeps dimensional
@@ -958,7 +1214,10 @@ capital, realized gain/loss, NAV, and provenance artifacts carry the retained le
 `LedgerDimensionSetDto` scope so report consumers can remain book- and dimension-native without
 reconstructing package context from parent rows or retained-history routes. The retained bundle
 also preserves tenant and company scope so browser/WPF history routes do not blend packages across
-companies that share a fund, period, or ledger-book naming convention. Package
+companies that share a fund, period, or ledger-book naming convention. The bundle also carries
+service-owned close readiness rows for checklist/sign-off posture, period lock, late-adjustment
+review, report evidence, export certification, and restatement workflow state so browser, WPF, and
+API consumers do not rebuild certification safeguards locally. Package
 certification remains `Draft` when close checklist dependencies are incomplete, approved sign-offs
 are missing, or material late adjustments are not approved, and close-backed certification can
 refresh the current close plan before moving a retained package to `Certified`.
@@ -966,7 +1225,8 @@ refresh the current close plan before moving a retained package to `Certified`.
 is the shared evidence-backed command payload for moving a retained ready-for-review package to
 `Certified`; consumers supply the package id, reviewer notes, actor context, and evidence links that
 carry approval, certification, sign-off, or review evidence and identify the retained package,
-certification id, and package period on the same evidence artifact,
+certification id, ledger book, package period, and explicit dimension scope when the package is
+dimension-scoped on the same evidence artifact,
 while Financial Operations owns the validation and state transition. Export artifact rows expose
 artifact kind, format, route, content hash, source statement id, retained ledger-book scope,
 `LedgerDimensionSetDto` scope, retained evidence, and certification state so browser and WPF
@@ -978,12 +1238,17 @@ certified, both Meridian and external GL dimension sides must carry fund/entity 
 export lines must come from mapped Meridian-owned ledger totals rather than external-only evidence.
 Reconciliation summaries carry `LedgerBookId`, and guarded export package requests must name the
 target Meridian ledger book and use reconciliation evidence from the same book before review or
-certification can proceed.
+certification can proceed. Retained export package and manifest DTOs also carry a reconciliation
+snapshot hash so certification can detect content drift in rows, totals, or evidence even when the
+provider-facing reconciliation id is unchanged; the snapshot includes the retained import content
+hash so chart, journal, trial-balance, or evidence-reference changes remain part of drift review.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
-that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
-support and approval links leave the profile in `Draft`.
+that identifies the mapping profile or provider/fund scope on the same evidence artifact, and the
+certifying upsert must carry a human-operator action origin; split support and approval links leave
+the profile in `Draft`.
 The retained export-control evidence supplied at package creation must identify the export fund,
-provider/fund scope, or exact export period before the package can move beyond Draft.
+provider/fund scope, or exact export period before the package can move beyond Draft, and governed
+export package retention also requires a human-operator action origin.
 `CertifyAccountingSystemExportPackageRequestDto` carries the retained export package id, reviewer
 notes, actor context, and evidence links for the service-owned transition to `Certified`; the
 certification evidence artifact must itself identify the retained export package, certification id,
@@ -1000,6 +1265,10 @@ for mutable drafts and submitted/approved entries. The request carries the curre
 one typed evidence attachment, optional evidence links, and origin metadata; the shared service
 validates line-scoped attachments, audits `manual-je.attach-evidence`, and rejects posted,
 reversed, rebooked, or close-locked entries.
+Evidence Vault document DTOs retain extracted-field rows on the document snapshot itself, alongside
+source record, reviewer state, confirmed fields, authority posture, and object links, so browser,
+WPF, and manifest consumers can review the same field-level evidence before a document becomes
+accounting-grade support.
 `ManualJournalEntryWorkbenchDto` also carries an optional `PrivateCapitalActivityProjectionDto`
 with server-owned fund-event rows, capital-account activity aggregates, ordered capital-account
 subledger entries with running net activity, ledger-impact rows, report-output readiness candidates,
@@ -1099,6 +1368,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-EVIDENCE-001` | Evidence Vault productization |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1108,6 +1381,24 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- | --- | --- |
 | `TODO-SRC-CONTRACTS-001` | Complete W5 accounting record evidence-chain contract coverage | done | high |
 <!-- source-todos:end -->
+
+## API and contract notes
+
+The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
+It does not replace Security Master identity, create an Instrument Master above Security Master,
+migrate direct-lending/portfolio/fund-account stores, or expose a route that accepts authoritative
+`JournalEntry` or ledger-line rows. The ownership direction remains Reference Data/Security Master
+to Instruments/Asset Operations to Financial Operations to Ledger/Storage, with shared read models
+consumed by the active browser and WPF workstations.
+
+`IPartnerFileParser.ParseAsync` accepts an optional partner schema id so ETL orchestrators can route CSV and Excel workbook rows through the persisted mapping schema while retaining checkpoint-aware streaming envelopes.
+`ExecutionPositionActionRequest` carries an optional `FundAccountId` so browser and WPF close/upsize
+position actions can keep account-scoped live-readiness evidence aligned with the selected
+operating fund account before the execution layer routes a broker order.
+`TradingExecutionReconciliationReadinessDto`, `TradingExecutionReconciliationBreakDto`, and
+`TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
+open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
+W7 live-readiness gate.
 
 ## Validation
 

@@ -1,0 +1,76 @@
+<!-- @dsCard group="Core" viewport="900x620" name="Forms Depth · Combobox" subtitle="AsyncCombobox · useDirtyState · useAsyncValidation · useWizard" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Forms depth</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const DS = window.MeridianDesignSystem_4f61be;
+const { AsyncCombobox, FormField, Input, Stepper, Button, Badge, Eyebrow } = DS;
+const { useDirtyState, useAsyncValidation, useWizard } = DS.FormHooks;
+const { useState } = React;
+
+const UNIVERSE = ["AAPL Apple Inc.","MSFT Microsoft Corp.","NVDA NVIDIA Corp.","SPY SPDR S&P 500","TLT iShares 20+ Treasury","AMZN Amazon.com","GOOGL Alphabet","META Meta Platforms","TSLA Tesla","QQQ Invesco QQQ","IWM iShares Russell 2000","GLD SPDR Gold"]
+  .map((s) => ({ symbol: s.split(" ")[0], name: s.split(" ").slice(1).join(" ") }));
+const search = (q) => new Promise((res) => setTimeout(() => res(UNIVERSE.filter((o) => (o.symbol + o.name).toLowerCase().includes(q.toLowerCase()))), 220));
+
+function Box({ t, children }) {
+  return <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}><Eyebrow>{t}</Eyebrow>{children}</div>;
+}
+
+function App() {
+  const [sym, setSym] = useState(null);
+  const form = useDirtyState({ name: "momentum-v4", cap: "2500000" });
+  const nameCheck = useAsyncValidation(form.values.name, (n) => new Promise((res) => setTimeout(() => res(["momentum-v4", "carry-v2"].includes(n) ? "Name already in use" : null), 400)));
+  const wizard = useWizard(["Scope", "Rules", "Review"], { validate: (i) => (i === 0 ? !!sym : true) });
+  return (
+    <div style={{ maxWidth: 860, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "start" }}>
+      <Box t="AsyncCombobox — 12-symbol universe, windowed & debounced">
+        <FormField label="Instrument">
+          <AsyncCombobox value={sym} onChange={setSym} fetchOptions={search}
+            getKey={(o) => o.symbol} getLabel={(o) => o.name} getSecondary={(o) => o.name}
+            minChars={0} placeholder="Search symbol…" />
+        </FormField>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>Selected: <b>{sym ? `${sym.symbol} · ${sym.name}` : "—"}</b></div>
+      </Box>
+
+      <Box t="useDirtyState + useAsyncValidation">
+        <FormField label="Strategy name" error={nameCheck.invalid ? nameCheck.error : undefined}
+          hint={nameCheck.checking ? "Checking availability…" : nameCheck.valid ? "Available" : undefined}>
+          <Input value={form.values.name} onChange={(e) => form.set("name", e.target.value)} />
+        </FormField>
+        <FormField label="Capital">
+          <Input value={form.values.cap} onChange={(e) => form.set("cap", e.target.value)} />
+        </FormField>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {form.dirty ? <Badge variant="warning">Unsaved · {form.dirtyFields.size} field(s)</Badge> : <Badge variant="neutral">Clean</Badge>}
+          <Button variant="ghost" size="sm" disabled={!form.dirty} onClick={form.reset}>Discard</Button>
+          <Button variant="primary" size="sm" disabled={!form.dirty || nameCheck.checking || nameCheck.invalid} onClick={form.commit}>Save</Button>
+        </div>
+      </Box>
+
+      <Box t="useWizard — gated step flow (pick a symbol to advance)">
+        <Stepper steps={wizard.steps.map((s, i) => ({ label: s }))} activeIndex={wizard.step} />
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button variant="ghost" size="sm" disabled={wizard.isFirst} onClick={wizard.back}>Back</Button>
+          <Button variant="primary" size="sm" disabled={!wizard.canAdvance} onClick={wizard.next}>{wizard.isLast ? "Finish" : "Next"}</Button>
+          <span style={{ fontSize: 12, color: "var(--text-muted)", alignSelf: "center" }}>
+            Step {wizard.step + 1}/{wizard.steps.length}{!wizard.canAdvance ? " · pick a symbol first" : ""}
+          </span>
+        </div>
+      </Box>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

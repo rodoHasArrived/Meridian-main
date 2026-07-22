@@ -18,7 +18,7 @@ digraph UiNavigationMap {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 3304d173dc7e\nWorkspaces: 7\nRegistry pages: 91"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 97ea904cf591\nWorkspaces: 7\nRegistry pages: 93"];
   shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellNavigationCatalog\nWorkspace registry"];
   navigation [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="NavigationService\nBuildDefault registry"];
   shell -> navigation [label="resolve canonical page tags", color="#38bdf8"];
@@ -73,7 +73,7 @@ digraph UiNavigationMap {
     label="Accounting workspace";
     color="#334155";
     style="rounded";
-    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n13 shell entries"];
+    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n14 shell entries"];
     shell -> workspace_3 [color="#22d3ee"];
     page_AccountingShell [label="Accounting Workspace\nAccountingShell → AccountingWorkspaceShellPage", fillcolor="#1e293b"];
     workspace_3 -> page_AccountingShell;
@@ -93,6 +93,8 @@ digraph UiNavigationMap {
     workspace_3 -> page_FundCashFinancing;
     page_FundAccountingConfigure [label="Accounting configure\nFundAccountingConfigure → AccountingConfigurePage", fillcolor="#1e293b"];
     workspace_3 -> page_FundAccountingConfigure;
+    page_FundAccountingClose [label="Accounting close\nFundAccountingClose → AccountingClosePage", fillcolor="#1e293b"];
+    workspace_3 -> page_FundAccountingClose;
     page_FundTrialBalance [label="Fund trial balance\nFundTrialBalance → FundLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_FundTrialBalance;
     page_LedgerExplorer [label="Ledger explorer\nLedgerExplorer → FinancialRecordExplorerPage", fillcolor="#1e293b"];
@@ -223,7 +225,7 @@ digraph UiNavigationMap {
     label="Settings workspace";
     color="#334155";
     style="rounded";
-    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n17 shell entries"];
+    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n18 shell entries"];
     shell -> workspace_7 [color="#22d3ee"];
     page_ActivityLog [label="Activity log\nActivityLog → ActivityLogPage", fillcolor="#1e293b"];
     workspace_7 -> page_ActivityLog;
@@ -245,6 +247,8 @@ digraph UiNavigationMap {
     workspace_7 -> page_CredentialManagement;
     page_SystemHealth [label="System health\nSystemHealth → SystemHealthPage", fillcolor="#1e293b"];
     workspace_7 -> page_SystemHealth;
+    page_LifecycleControl [label="Lifecycle control\nLifecycleControl → LifecycleControlPage", fillcolor="#1e293b"];
+    workspace_7 -> page_LifecycleControl;
     page_Diagnostics [label="Diagnostics\nDiagnostics → DiagnosticsPage", fillcolor="#1e293b"];
     workspace_7 -> page_Diagnostics;
     page_ServiceManager [label="Service manager\nServiceManager → ServiceManagerPage", fillcolor="#1e293b"];

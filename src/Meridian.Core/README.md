@@ -68,8 +68,8 @@ consume these Core-owned contracts so durable persistence layers do not depend o
 service namespaces.
 `Serialization/MarketDataJsonContext.cs` and `Serialization/SecurityMasterJsonContext.cs` include
 source-generated metadata for market-data events, Security Master validation, reference-data,
-custom asset profile, and custom profile governance DTOs so shared services can serialize those
-payloads without reflection-based fallback.
+custom asset profile, custom profile governance, and Passport Workbench governed-write DTOs so
+shared services can serialize those payloads without reflection-based fallback.
 
 ## Diagrams
 

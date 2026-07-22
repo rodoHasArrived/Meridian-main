@@ -83,6 +83,29 @@ public enum BacktestCommissionKind
 /// price level when <see cref="ExecutionModel.OrderBook"/> is used. Values are clamped to 0..1;
 /// zero keeps the original immediate-depth-walk behavior.
 /// </param>
+/// <param name="FillTiming">
+/// When orders become eligible to fill relative to the event that generated them. Defaults to
+/// <see cref="FillTiming.NextBar"/> (no same-bar look-ahead); set <see cref="FillTiming.SameBar"/>
+/// explicitly to reproduce legacy same-bar fills — the run's bias disclosure will flag it.
+/// </param>
+/// <param name="FillConservatism">
+/// Limit/stop execution realism for bar-based fill models. Defaults to
+/// <see cref="FillConservatism.Conservative"/> (trade-through limits, gap-aware stops);
+/// set <see cref="FillConservatism.Optimistic"/> to reproduce legacy touch-fill behaviour.
+/// </param>
+/// <param name="DelistingPolicy">
+/// What to do with open positions in symbols whose data ends before <paramref name="To"/>.
+/// Defaults to <see cref="DelistingPolicy.LiquidateAtLastPrice"/>.
+/// </param>
+/// <param name="DelistingHaircutPercent">
+/// Haircut (0..1) applied against the position when the delisting policy liquidates it:
+/// longs receive <c>lastPrice × (1 − haircut)</c>, shorts cover at <c>lastPrice × (1 + haircut)</c>.
+/// Default 0 (liquidate at the last observed price).
+/// </param>
+/// <param name="DelistingGraceDays">
+/// Number of consecutive calendar days without events before an open position's symbol is treated
+/// as delisted. Keeps weekends, holidays, and short data gaps from triggering liquidation (default: 5).
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -108,7 +131,12 @@ public sealed record BacktestRequest(
     IReadOnlyDictionary<DateOnly, double>? RiskFreeRateSeries = null,
     decimal MaxParticipationRate = 0m,
     bool FailOnUnknownSymbols = false,
-    decimal OrderBookQueueAheadFraction = 0m)
+    decimal OrderBookQueueAheadFraction = 0m,
+    FillTiming FillTiming = FillTiming.NextBar,
+    FillConservatism FillConservatism = FillConservatism.Conservative,
+    DelistingPolicy DelistingPolicy = DelistingPolicy.LiquidateAtLastPrice,
+    decimal DelistingHaircutPercent = 0m,
+    int DelistingGraceDays = 5)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

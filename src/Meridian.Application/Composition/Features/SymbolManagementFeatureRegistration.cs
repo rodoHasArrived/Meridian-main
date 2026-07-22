@@ -5,6 +5,8 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Services;
+using Meridian.Application.UI;
+using Meridian.Application.SecurityMaster;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -25,6 +27,29 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
         services.AddSingleton<CanonicalSymbolRegistry>();
         services.AddSingleton<Contracts.Catalog.ICanonicalSymbolRegistry>(sp =>
             sp.GetRequiredService<CanonicalSymbolRegistry>());
+        services.AddSingleton<SymbolResolutionMismatchTracker>();
+        services.AddSingleton<Contracts.Catalog.ISymbolResolutionMismatchReader>(sp =>
+            sp.GetRequiredService<SymbolResolutionMismatchTracker>());
+
+        // Canonical resolution spine: registry-first symbol resolver that learns
+        // OpenFIGI resolutions back into the registry so all consumers converge.
+        services.AddSingleton<Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>(sp =>
+        {
+            var config = sp.GetRequiredService<ConfigStore>().Load();
+            var mode = config.DataSources?.SymbolMappings?.ResolutionMode
+                ?? config.Backfill?.SymbolResolutionMode
+                ?? Contracts.Catalog.SymbolResolutionMode.Compare;
+            var reportMismatches = config.DataSources?.SymbolMappings?.ReportMismatches ?? true;
+            var apiKey = config.Backfill?.Providers?.OpenFigi?.ApiKey;
+            var mismatchTracker = sp.GetRequiredService<SymbolResolutionMismatchTracker>();
+            return new Infrastructure.Adapters.Core.SymbolResolution.CanonicalRegistrySymbolResolver(
+                sp.GetRequiredService<Contracts.Catalog.ICanonicalSymbolRegistry>(),
+                new OpenFigiSymbolResolver(apiKey, log: LoggingSetup.ForContext<OpenFigiSymbolResolver>()),
+                LoggingSetup.ForContext<Infrastructure.Adapters.Core.SymbolResolution.CanonicalRegistrySymbolResolver>(),
+                mode,
+                reportMismatches ? mismatchTracker.Report : null);
+        });
+        services.AddHostedService<CanonicalSymbolRegistryMigrationService>();
 
         // Symbol import/export
         services.AddSingleton<SymbolImportExportService>();

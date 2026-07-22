@@ -23,7 +23,7 @@ public sealed class ConnectionSettings
     public int InitialReconnectDelayMs { get; set; } = 2000;
     public int MaxReconnectDelayMs { get; set; } = 300000;
     public int HealthCheckIntervalSeconds { get; set; } = 5;
-    public string ServiceUrl { get; set; } = "http://localhost:8080";
+    public string ServiceUrl { get; set; } = ApiEndpointDefaults.LocalApiBaseUrl;
     public int ServiceTimeoutSeconds { get; set; } = 30;
 }
 

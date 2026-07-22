@@ -9,10 +9,13 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import os
+import subprocess
 from pathlib import Path
+from pathlib import PurePosixPath
 
 
 EXCLUDED_DIR_NAMES = {
+    ".ai",
     ".artifacts",
     ".git",
     ".idea",
@@ -21,6 +24,7 @@ EXCLUDED_DIR_NAMES = {
     ".playwright-cli",
     ".pytest_cache",
     ".ruff_cache",
+    ".tmp",
     ".vs",
     "__pycache__",
     "artifacts",
@@ -30,12 +34,21 @@ EXCLUDED_DIR_NAMES = {
     "node_modules",
     "obj",
     "obj-codex",
+    "output",
     "archive",
     "TestResults",
+    "wwwroot",
 }
 
 EXCLUDED_ROOT_DIR_NAMES = {
     "data",
+}
+
+# Git-ignored directories that the filesystem merge in `_git_visible_files` would otherwise
+# pick up. These hold checkouts of the repository itself, so walking them injects thousands of
+# duplicate entries and makes the generated tree depend on local scratch state.
+EXCLUDED_RELATIVE_DIR_PATHS = {
+    ".claude/worktrees",
 }
 
 EXCLUDED_FILE_SUFFIXES = {
@@ -48,9 +61,16 @@ EXCLUDED_FILE_SUFFIXES = {
 
 EXCLUDED_FILE_PATTERNS = (
     "*.backup-*",
+    "*_wpftmp.csproj",
 )
 EXCLUDED_ROOT_FILE_NAMES = {
     "package-lock.json",
+}
+EXCLUDED_FILE_NAMES = {
+    "appsettings.json",
+    # Runtime scheduler artifact (present only while a session has a cron scheduled); excluding it keeps
+    # the generated tree deterministic across local and CI checkouts.
+    "scheduled_tasks.lock",
 }
 REPOSITORY_DISPLAY_NAME = "Meridian-main"
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
@@ -58,6 +78,22 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 
 def utc_now() -> str:
     return STABLE_GENERATED_AT
+
+
+def write_text_lf(path: Path, content: str) -> None:
+    """Write UTF-8 text with LF endings so generated docs match the repo on every platform."""
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
+def _is_excluded_relative_dir(relative_parts: tuple[str, ...]) -> bool:
+    if not relative_parts:
+        return False
+    candidate = "/".join(relative_parts)
+    return any(
+        candidate == excluded or candidate.startswith(excluded + "/")
+        for excluded in EXCLUDED_RELATIVE_DIR_PATHS
+    )
 
 
 def is_excluded(path: Path, root: Path | None = None) -> bool:
@@ -75,11 +111,18 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
             relative_parts = parts
         if relative_parts and relative_parts[0] in EXCLUDED_ROOT_DIR_NAMES:
             return True
+        if _is_excluded_relative_dir(relative_parts):
+            return True
         if len(relative_parts) == 1 and relative_parts[0] in EXCLUDED_ROOT_FILE_NAMES:
             return True
 
     name = path.name
+    if name in EXCLUDED_FILE_NAMES:
+        return True
+
     if path.is_file():
+        if name in EXCLUDED_FILE_NAMES:
+            return True
         if path.suffix.lower() in EXCLUDED_FILE_SUFFIXES:
             return True
         if any(fnmatch.fnmatch(name, pattern) for pattern in EXCLUDED_FILE_PATTERNS):
@@ -88,14 +131,115 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
     return False
 
 
+def _is_excluded_relative_file(path: PurePosixPath) -> bool:
+    parts = path.parts
+    if not parts or any(part in EXCLUDED_DIR_NAMES for part in parts):
+        return True
+    if parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+        return True
+    if _is_excluded_relative_dir(parts):
+        return True
+    if len(parts) == 1 and parts[0] in EXCLUDED_ROOT_FILE_NAMES:
+        return True
+
+    name = parts[-1]
+    return (
+        name in EXCLUDED_FILE_NAMES
+        or path.suffix.lower() in EXCLUDED_FILE_SUFFIXES
+        or any(fnmatch.fnmatch(name, pattern) for pattern in EXCLUDED_FILE_PATTERNS)
+    )
+
+
+def _git_visible_files(root: Path) -> list[PurePosixPath] | None:
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "--cached",
+                "-z",
+            ],
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+
+    files: dict[str, PurePosixPath] = {}
+    for raw_path in result.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        relative = PurePosixPath(raw_path.decode("utf-8", errors="surrogateescape"))
+        if _is_excluded_relative_file(relative):
+            continue
+        materialized = root.joinpath(*relative.parts)
+        if materialized.is_symlink():
+            continue
+        files[relative.as_posix()] = relative
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if not is_excluded(current / dirname, root)
+        ]
+        for filename in filenames:
+            materialized = current / filename
+            if is_excluded(materialized, root):
+                continue
+            relative = PurePosixPath(materialized.relative_to(root).as_posix())
+            files.setdefault(relative.as_posix(), relative)
+
+    return list(files.values())
+
+
+def _render_visible_files(files: list[PurePosixPath]) -> str:
+    tree: dict[str, object] = {}
+    for path in files:
+        current = tree
+        for part in path.parts[:-1]:
+            child = current.setdefault(part, {})
+            if not isinstance(child, dict):
+                break
+            current = child
+        else:
+            current.setdefault(path.parts[-1], None)
+
+    lines = [REPOSITORY_DISPLAY_NAME]
+
+    def walk(entries: dict[str, object], prefix: str = "") -> None:
+        ordered = sorted(
+            entries.items(),
+            key=lambda item: (item[1] is None, item[0].casefold(), item[0]),
+        )
+        for index, (name, child) in enumerate(ordered):
+            connector = "└── " if index == len(ordered) - 1 else "├── "
+            lines.append(f"{prefix}{connector}{name}")
+            if isinstance(child, dict):
+                extension = "    " if index == len(ordered) - 1 else "│   "
+                walk(child, prefix + extension)
+
+    walk(tree)
+    return "\n".join(lines)
+
+
 def render_tree(root: Path) -> str:
+    visible_files = _git_visible_files(root)
+    if visible_files is not None:
+        return _render_visible_files(visible_files)
+
     lines: list[str] = []
 
     def walk(current: Path, prefix: str = "") -> None:
         try:
             entries = sorted(
                 [p for p in current.iterdir() if not is_excluded(p, root)],
-                key=lambda p: (p.is_file(), p.name.lower()),
+                key=lambda p: (p.is_file(), p.name.casefold(), p.name),
             )
         except PermissionError:
             return
@@ -260,9 +404,22 @@ def generate_provider_registry(root: Path) -> str:
     return "\n".join(lines)
 
 
+DEFAULT_OUTPUTS = {
+    "workflows": "docs/generated/workflows-overview.md",
+    "providers": "docs/generated/provider-registry.md",
+    "structure": "docs/generated/repository-structure.md",
+}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate documentation artifacts for repo structure and workflows.")
-    parser.add_argument("--output", required=True, help="Path to output markdown file")
+    parser.add_argument(
+        "--output",
+        help=(
+            "Path to output markdown file. Defaults to the canonical path for the "
+            f"selected mode ({', '.join(f'{k}: {v}' for k, v in DEFAULT_OUTPUTS.items())})."
+        ),
+    )
     parser.add_argument("--format", default="markdown", help="Output format (currently markdown only)")
     parser.add_argument("--workflows-only", action="store_true", help="Generate workflows overview")
     parser.add_argument("--providers-only", action="store_true", help="Generate provider registry")
@@ -275,21 +432,21 @@ def main() -> int:
     if args.format.lower() != "markdown":
         raise SystemExit("Only markdown format is supported")
 
-    root = Path.cwd()
-    output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
     if args.workflows_only and args.providers_only:
         raise SystemExit("--workflows-only and --providers-only are mutually exclusive")
 
-    if args.workflows_only:
-        content = generate_workflows_overview(root)
-    elif args.providers_only:
-        content = generate_provider_registry(root)
-    else:
-        content = generate_repository_structure(root)
+    root = Path.cwd()
 
-    output_path.write_text(content, encoding="utf-8")
+    if args.workflows_only:
+        mode, content = "workflows", generate_workflows_overview(root)
+    elif args.providers_only:
+        mode, content = "providers", generate_provider_registry(root)
+    else:
+        mode, content = "structure", generate_repository_structure(root)
+
+    output_path = Path(args.output or DEFAULT_OUTPUTS[mode])
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_text_lf(output_path, content)
     return 0
 
 

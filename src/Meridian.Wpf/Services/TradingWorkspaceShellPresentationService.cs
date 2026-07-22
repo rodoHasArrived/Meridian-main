@@ -332,6 +332,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             ? "the current trading scope"
             : operatingContextDisplayName;
         var effectiveWorkflow = BuildEffectiveWorkflow(workflow, hasOperatingContext);
+        var activeRunIsLiveMode = activeRun is not null && IsLiveMode(activeRun);
 
         if (!hasOperatingContext)
         {
@@ -430,9 +431,9 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
                 return BuildWorkItemReviewDeskHeroState(workItem, scopeDisplayName);
             }
 
-            if (!IsOperatorReady(readiness))
+            if (!IsOperatorReady(readiness, activeRunIsLiveMode))
             {
-                return BuildReadinessReviewDeskHeroState(readiness, scopeDisplayName);
+                return BuildReadinessReviewDeskHeroState(readiness, scopeDisplayName, activeRunIsLiveMode);
             }
         }
 
@@ -454,8 +455,8 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
                 TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, effectiveWorkflow.NextAction.TargetPageTag)}");
         }
 
-        var isLiveMode = IsLiveMode(activeRun);
-        var hasOperatorReadyLane = readiness is not null && IsOperatorReady(readiness);
+        var isLiveMode = activeRunIsLiveMode;
+        var hasOperatorReadyLane = readiness is not null && IsOperatorReady(readiness, isLiveMode);
         var badgeTone = hasOperatorReadyLane
             ? TradingWorkspaceStatusTone.Success
             : ResolveCardTone(activeRun.PromotionStatus, activeRun.AuditStatus, activeRun.ValidationStatus);
@@ -873,15 +874,23 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
 
     private static TradingDeskHeroState BuildReadinessReviewDeskHeroState(
         TradingOperatorReadinessDto readiness,
-        string scopeDisplayName)
+        string scopeDisplayName,
+        bool isLiveMode)
     {
         var reviewGate = readiness.AcceptanceGates.FirstOrDefault(static gate =>
             gate.Status != TradingAcceptanceGateStatusDto.Ready);
-        var summary = reviewGate?.Detail
+        var liveRequirement = isLiveMode
+            ? readiness.LiveOperationRequirements.FirstOrDefault(static requirement =>
+                requirement.Status != TradingAcceptanceGateStatusDto.Ready)
+            : null;
+        var summary = liveRequirement?.Detail
+            ?? reviewGate?.Detail
             ?? readiness.Warnings.FirstOrDefault()
             ?? "Shared trading readiness is still under operator review.";
-        var gateLabel = reviewGate?.Label ?? "Operator readiness";
-        var primaryActionId = ResolveReadinessReviewActionId(reviewGate?.GateId);
+        var gateLabel = liveRequirement?.Label ?? reviewGate?.Label ?? "Operator readiness";
+        var primaryActionId = liveRequirement is null
+            ? ResolveReadinessReviewActionId(reviewGate?.GateId)
+            : ResolveLiveOperationRequirementActionId(liveRequirement.RequirementId);
         var secondaryActionId = primaryActionId == "FundAuditTrail"
             ? "NotificationCenter"
             : "FundAuditTrail";
@@ -902,6 +911,26 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             SecondaryActionLabel: ResolveHeroActionLabel(secondaryActionId, "Audit Trail"),
             TargetLabel: $"Target page: {ResolveHeroTargetLabel(primaryActionId, primaryActionId)}");
     }
+
+    private static string ResolveLiveOperationRequirementActionId(string requirementId) => requirementId switch
+    {
+        "live-approval" => "StrategyRuns",
+        "trusted-data" => "FundAuditTrail",
+        "run-lineage" => "StrategyRuns",
+        "portfolio-ledger-continuity" => "FundTrialBalance",
+        "risk-controls" => "RunRisk",
+        "paper-validation" => "ReplayVerification",
+        "reconciliation-evidence" => "FundReconciliation",
+        "broker-execution-reconciliation" => "AccountPortfolio",
+        "accounting-records" => "FundTrialBalance",
+        "governed-reporting" => "FundReportPack",
+        "governance-signoff" => "NotificationCenter",
+        "exception-handling" => "NotificationCenter",
+        "rollback-kill-switch" => "RunRisk",
+        "audit-retention" => "FundAuditTrail",
+        "live-override" => "RunRisk",
+        _ => "NotificationCenter"
+    };
 
     private static string ResolveReadinessReviewActionId(string? gateId) => gateId switch
     {
@@ -1114,7 +1143,10 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         => activeRun.ModeLabel.Contains("live", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsOperatorReady(TradingOperatorReadinessDto readiness) =>
-        readiness.ReadyForPaperOperation &&
+        IsOperatorReady(readiness, isLiveMode: false);
+
+    private static bool IsOperatorReady(TradingOperatorReadinessDto readiness, bool isLiveMode) =>
+        (isLiveMode ? readiness.ReadyForLiveOperation : readiness.ReadyForPaperOperation) &&
         readiness.OverallStatus == TradingAcceptanceGateStatusDto.Ready &&
         GetPrimaryAttentionWorkItem(readiness.WorkItems) is null;
 

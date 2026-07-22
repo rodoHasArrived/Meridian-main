@@ -12,6 +12,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 ## Start Gate
 
 - Run `git status --short` before editing and preserve unrelated user-owned changes.
+- Follow the root `AGENTS.md` protected-branch policy: local work may happen on `main` when the
+  user explicitly requests it or the checkout is intentionally operating there. Do not bypass
+  GitHub protections; for PR-ready publishing, use a `codex/<short-task-name>` branch and PR, run
+  `bash scripts/ci.sh` before representing completed work, and treat GitHub Actions
+  `Meridian CI / quality-gate` as the merge authority.
 - Read `.codex/skills/_shared/project-context.md` before changing Codex guidance that references
   product scope, active surfaces, commands, roadmap direction, or canonical terminology.
 - Read `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`,
@@ -19,9 +24,18 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   domain modeling, workflow design, or architecture-sensitive implementation.
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.
+  Use a matching `.codex/memory/tasks/<task-id>.yml` descriptor for named scopes and a
+  `.codex/memory/goals/<goal-id>.yml` inventory for long-running work that spans compaction,
+  continuation, or multiple implementation passes. Load only entries selected by the descriptor,
+  current intent, selected skill, changed paths, branch, or explicit tags; prefer canonical docs,
+  source, tests, scripts, scoped `AGENTS.md`, and selected `SKILL.md` files over memory if they
+  disagree.
 - Read `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, and relevant
   `.codex/memory/tasks/*.yml` descriptors or `.codex/memory/goals/*.yml` inventories before
-  changing Codex memory entries, routing metadata, or memory validation tooling.
+  changing Codex memory entries, routing metadata, or memory validation tooling. Emit compact
+  memory receipts with selected IDs, match reasons, stale warnings, active-goal progress count, and
+  task or branch scope skips when memory routing is used.
 - When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
   and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
   `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,
@@ -30,6 +44,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
 - For source-facing guidance changes, verify the referenced source path, README, command, or script
   exists before documenting it as current.
+- After timed-out generation, build, or test attempts, run
+  `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+  shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+  `VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+  validation.
 - Prefer targeted edits over broad rewrites. Do not reformat generated, archived, or unrelated
   Codex assets.
 - For multi-lane AI work, route coordination and handoff format through

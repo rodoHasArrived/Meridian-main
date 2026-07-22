@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -35,6 +36,63 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_BlocksReadyForReviewWhenReportEvidenceIsMissing()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-01",
+            EvidenceLinks: []));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-evidence-package" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportEvidenceMissing"));
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-export-certification" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportExportArtifactEvidenceMissing"));
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_CarriesStandaloneLedgerBookEvidenceScopeIssuesIntoReadiness()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-01",
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-01:book:{AlternateLedgerBookId:D}"
+            ]));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportNavEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-evidence-package" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportLedgerEvidenceMissingLedgerBookScope") &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportNavEvidenceMissingLedgerBookScope"));
+    }
+
+    [Fact]
     public async Task BuildPackageAsync_BlocksCloseBackedCertificationUntilPeriodLock()
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -51,6 +109,16 @@ public sealed class AccountingReportPackageServiceTests
             issue.Code == "PeriodNotLocked" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == $"close-plan-{workflowId:D}");
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "period-lock" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "PeriodNotLocked") &&
+            item.LedgerBookId == DefaultLedgerBookId &&
+            item.Dimensions.BookId == DefaultLedgerBookId.ToString("D"));
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "close-checklist-signoffs" &&
+            item.State == AccountingReadinessStateDto.ReadyForReview &&
+            item.EvidenceLinks.Contains("evidence:close-package:period-lock"));
 
         var certify = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             package.FinancialStatements.PackageId,
@@ -287,7 +355,7 @@ public sealed class AccountingReportPackageServiceTests
             "Controller certified the wrong retained report package.",
             ["evidence:report-certification:controller-approval:2027-04"]));
         await wrongPeriodEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var splitCertificationEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -298,7 +366,7 @@ public sealed class AccountingReportPackageServiceTests
                 "evidence:report-certification:controller-approval:2027-04"
             ]));
         await splitCertificationEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var missingCertificationIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -306,7 +374,52 @@ public sealed class AccountingReportPackageServiceTests
             "Controller certified with package and period evidence that omits the certification id.",
             [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:2027-03"]));
         await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedPackageIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a package evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}ffff:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedPackageIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedCertificationIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a certification evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}ffff:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var missingLedgerBookEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with package, certification, and period evidence that omits the ledger book.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:{ready.FinancialStatements.PeriodId}"]));
+
+        await missingLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedLedgerBookEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a ledger-book evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}ffff:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedPeriodEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a period evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}ffff"]));
+
+        await extendedPeriodEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var assistantCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -317,9 +430,17 @@ public sealed class AccountingReportPackageServiceTests
         await assistantCertification.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Reviewed automation cannot certify accounting report packages*human operator*");
 
-        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+        var selfCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "controller",
+            "Controller attempted to certify the report package they prepared.",
+            [CertificationEvidence(ready)]));
+        await selfCertification.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*independent from preparer*");
+
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller-reviewer",
             "Controller certified the retained report package.",
             [CertificationEvidence(ready)]));
 
@@ -331,6 +452,10 @@ public sealed class AccountingReportPackageServiceTests
         certified.ExportArtifacts.Should().OnlyContain(row => row.CertificationState == AccountingCertificationStateDto.Certified);
         certified.ExportArtifacts.Should().OnlyContain(row =>
             row.EvidenceLinks.Contains(CertificationEvidence(ready)));
+        certified.CloseReadinessItems.Should().NotBeEmpty();
+        certified.CloseReadinessItems.Should().OnlyContain(item =>
+            item.State == AccountingReadinessStateDto.Certified &&
+            item.EvidenceLinks.Contains(CertificationEvidence(ready)));
         certified.ExportArtifacts.Select(static row => row.ContentHash).Should().OnlyContain(hash => hash.Length == 64);
 
         var artifact = certified.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");
@@ -354,6 +479,109 @@ public sealed class AccountingReportPackageServiceTests
         manifest.Payload.Should().Contain("\"ledgerBookId\"");
         manifest.Payload.Should().Contain("\"dimensions\"");
         manifest.Payload.Should().Contain(CertificationEvidence(ready));
+    }
+
+    [Fact]
+    public async Task CertifyPackageAsync_RequiresExplicitDimensionScopeEvidence()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            CostCenterId: "cost-center-investments",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            },
+            BookId: DefaultLedgerBookId.ToString("D"));
+        var ready = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            Dimensions: dimensions));
+
+        ready.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        ready.FinancialStatements.PackageId.Should().Contain("scope-");
+
+        var missingScopeEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification without retained dimension-scope proof.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await missingScopeEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedScopeEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification with a dimension-scope token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.DimensionScope!.CertificationEvidenceToken}ffff:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedScopeEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller-reviewer",
+            "Controller certified the retained dimension-scoped report package.",
+            [CertificationEvidence(ready)]));
+
+        certified.Should().NotBeNull();
+        certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.Certification.EvidenceLinks.Should().Contain(CertificationEvidence(ready));
+    }
+
+    [Fact]
+    public async Task CertifyPackageAsync_RequiresTenantCompanyScopedEvidenceForTenantPackages()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var ready = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var bookScopedOnly = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification without retained tenant/company proof.",
+            [CertificationEvidence(ready)]));
+
+        await bookScopedOnly.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedTenantCompanyEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification with tenant/company tokens that only match by prefix.",
+            [$"evidence:report-certification:controller-approval:tenant/tenant-alpha-extra/company/company-alpha-extra:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        await extendedTenantCompanyEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var tenantScopedEvidence =
+            $"evidence:report-certification:controller-approval:tenant/tenant-alpha/company/company-alpha:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}";
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller-reviewer",
+            "Controller certified the retained tenant-scoped report package.",
+            [tenantScopedEvidence],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        certified.Should().NotBeNull();
+        certified!.TenantId.Should().Be("tenant-alpha");
+        certified.CompanyId.Should().Be("company-alpha");
+        certified.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.Certification.EvidenceLinks.Should().Contain(tenantScopedEvidence);
     }
 
     [Fact]
@@ -426,10 +654,10 @@ public sealed class AccountingReportPackageServiceTests
 
         var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             draftPrior.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the prior report package.",
             [CertificationEvidence(draftPrior)]));
-        var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
+        var genericLineageRestatement = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
             CloseWorkflowId: workflowId,
@@ -445,10 +673,34 @@ public sealed class AccountingReportPackageServiceTests
                 "evidence:prior-package:lineage:2027-03"
             ]));
 
+        genericLineageRestatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        genericLineageRestatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
+
+        var exactPriorPackageEvidence = $"evidence:prior-package:lineage:{certifiedPrior.FinancialStatements.PackageId}:2027-03";
+        var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior.FinancialStatements.PackageId,
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                exactPriorPackageEvidence
+            ]));
+
         readyRestatement.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         readyRestatement.ValidationIssues.Should().NotContain(issue =>
             issue.Code == "RestatementPriorPackageNotRetained" ||
-            issue.Code == "RestatementPriorPackageNotCertified");
+            issue.Code == "RestatementPriorPackageNotCertified" ||
+            issue.Code == "RestatementPriorPackageEvidenceMissing");
         readyRestatement.NavPackage.Restatement.Should().NotBeNull();
         readyRestatement.NavPackage.Restatement!.PriorPackageId.Should().Be(certifiedPrior.FinancialStatements.PackageId);
         readyRestatement.NavPackage.Restatement.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
@@ -456,28 +708,130 @@ public sealed class AccountingReportPackageServiceTests
             row.StatementId == "restatement-workflow" &&
             row.SourceKind == "RestatementLineage" &&
             row.EvidenceLinks.Contains("evidence:restatement:nav-correction:2027-04") &&
-            row.EvidenceLinks.Contains("evidence:prior-package:lineage:2027-03"));
+            row.EvidenceLinks.Contains(exactPriorPackageEvidence));
 
-        var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+        var missingPriorPackageCertificationEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             readyRestatement.FinancialStatements.PackageId,
             "controller",
             "Controller approved the restatement package.",
             [CertificationEvidence(readyRestatement, "restatement-approval")]));
+
+        await missingPriorPackageCertificationEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*exact prior package*");
+
+        var restatementCertificationEvidence =
+            $"{CertificationEvidence(readyRestatement, "restatement-approval")}:prior-package:{certifiedPrior.FinancialStatements.PackageId}";
+
+        var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            readyRestatement.FinancialStatements.PackageId,
+            "controller-reviewer",
+            "Controller approved the restatement package.",
+            [restatementCertificationEvidence]));
 
         certifiedRestatement.Should().NotBeNull();
         certifiedRestatement!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
         certifiedRestatement.FinancialStatements.Restatement.Should().NotBeNull();
         certifiedRestatement.FinancialStatements.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.FinancialStatements.Restatement.EvidenceLinks.Should()
-            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
+            .Contain(restatementCertificationEvidence);
         certifiedRestatement.NavPackage.Restatement.Should().NotBeNull();
         certifiedRestatement.NavPackage.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.NavPackage.Restatement.EvidenceLinks.Should()
-            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
+            .Contain(restatementCertificationEvidence);
         certifiedRestatement.ExportArtifacts.Should().Contain(row =>
             row.ArtifactKind == "restatement-workflow" &&
             row.CertificationState == AccountingCertificationStateDto.Certified &&
-            row.EvidenceLinks.Contains(CertificationEvidence(readyRestatement, "restatement-approval")));
+            row.EvidenceLinks.Contains(restatementCertificationEvidence));
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_BlocksRestatementAgainstPriorPackageFromDifferentLedgerBook()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var prior = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId));
+        var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            prior.FinancialStatements.PackageId,
+            "controller-reviewer",
+            "Controller certified the prior primary-book report package.",
+            [CertificationEvidence(prior)]));
+
+        var restatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: AlternateLedgerBookId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior!.FinancialStatements.PackageId,
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{AlternateLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                "evidence:prior-package:lineage:2027-03"
+            ]));
+
+        restatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        restatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageLedgerBookMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_BlocksRestatementAgainstPriorPackageFromDifferentDimensionScope()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var prior = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId,
+            Dimensions: new LedgerDimensionSetDto(
+                EntityId: "entity-alpha",
+                CapitalAccountId: "capital-account-lp-1",
+                BookId: DefaultLedgerBookId.ToString("D"))));
+        var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            prior.FinancialStatements.PackageId,
+            "controller-reviewer",
+            "Controller certified the prior entity-scoped report package.",
+            [CertificationEvidence(prior)]));
+
+        var restatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior!.FinancialStatements.PackageId,
+            Dimensions: new LedgerDimensionSetDto(
+                EntityId: "entity-beta",
+                CapitalAccountId: "capital-account-lp-2",
+                BookId: DefaultLedgerBookId.ToString("D")),
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                "evidence:prior-package:lineage:2027-03"
+            ]));
+
+        restatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        restatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageDimensionScopeMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
     }
 
     [Fact]
@@ -489,7 +843,7 @@ public sealed class AccountingReportPackageServiceTests
         var ready = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-05", CloseWorkflowId: workflowId));
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the May report package.",
             [CertificationEvidence(ready)]));
 
@@ -579,12 +933,30 @@ public sealed class AccountingReportPackageServiceTests
         alpha.FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
         alpha.FinancialStatements.Dimensions.StrategyId.Should().Be("strategy-credit");
         alpha.FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+        alpha.DimensionScope.Should().NotBeNull();
+        alpha.DimensionScope!.HasExplicitScope.Should().BeTrue();
+        alpha.DimensionScope.LedgerBookId.Should().Be(DefaultLedgerBookId);
+        alpha.DimensionScope.ScopeHash.Should().HaveLength(12);
+        alpha.DimensionScope.CertificationEvidenceToken.Should().Be($"dimension-scope:{alpha.DimensionScope.ScopeHash}");
+        alpha.DimensionScope.ScopedDimensionKeys.Should().Contain(["bookId", "capitalAccountId", "entityId", "externalGl.Department", "fundId", "strategyId"]);
         alpha.FinancialStatements.LineProvenance.Should().OnlyContain(row =>
             row.Dimensions.EntityId == "entity-alpha" &&
             row.Dimensions.ExternalGlDimensions["Department"] == "Investments");
         alpha.ExportArtifacts.Should().OnlyContain(artifact =>
             artifact.Dimensions.EntityId == "entity-alpha" &&
-            artifact.Dimensions.ExternalGlDimensions["Department"] == "Investments");
+            artifact.Dimensions.ExternalGlDimensions["Department"] == "Investments" &&
+            artifact.DimensionScope != null &&
+            artifact.DimensionScope.ScopeHash == alpha.DimensionScope.ScopeHash);
+        var alphaArtifact = alpha.ExportArtifacts.Should().Contain(artifact =>
+            artifact.ArtifactKind == "financial-statements").Subject;
+        var alphaManifest = await service.GetExportArtifactManifestAsync(
+            alpha.FinancialStatements.PackageId,
+            alphaArtifact.ArtifactId);
+        alphaManifest.Should().NotBeNull();
+        alphaManifest!.DimensionScope.Should().NotBeNull();
+        alphaManifest.DimensionScope!.ScopeHash.Should().Be(alpha.DimensionScope.ScopeHash);
+        alphaManifest.DimensionScope.CertificationEvidenceToken.Should().Be(alpha.DimensionScope.CertificationEvidenceToken);
+        alphaManifest.Payload.Should().Contain(alpha.DimensionScope.CertificationEvidenceToken);
 
         var all = await service.ListPackagesAsync("fund-alpha", "2027-07", DefaultLedgerBookId);
         var alphaOnly = await service.ListPackagesAsync(
@@ -605,6 +977,8 @@ public sealed class AccountingReportPackageServiceTests
 
         all.Should().HaveCount(2);
         alphaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha.FinancialStatements.PackageId);
+        alphaOnly[0].DimensionScope.Should().NotBeNull();
+        alphaOnly[0].DimensionScope!.ScopeHash.Should().Be(alpha.DimensionScope.ScopeHash);
         betaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == beta.FinancialStatements.PackageId);
     }
 
@@ -627,6 +1001,14 @@ public sealed class AccountingReportPackageServiceTests
         package.ValidationIssues.Should().Contain(issue =>
             issue.Code == "ReportPackageLedgerBookDimensionMismatch" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-dimension-scope" &&
+            item.Category == "ReportDimensions" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportPackageFundDimensionMismatch") &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportPackageLedgerBookDimensionMismatch") &&
+            item.Dimensions.FundId == "fund-alpha" &&
+            item.Dimensions.BookId == DefaultLedgerBookId.ToString("D"));
     }
 
     [Fact]
@@ -719,7 +1101,33 @@ public sealed class AccountingReportPackageServiceTests
     private static string CertificationEvidence(
         AccountingReportPackageBundleDto package,
         string approvalLabel = "controller-approval")
-        => $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}:{package.FinancialStatements.PeriodId}";
+    {
+        var ledgerBookScope = package.FinancialStatements.LedgerBookId is Guid ledgerBookId
+            ? $":book:{ledgerBookId:D}"
+            : string.Empty;
+        var dimensionScope = HasExplicitDimensionScope(package.FinancialStatements)
+            ? $":{package.DimensionScope!.CertificationEvidenceToken}"
+            : string.Empty;
+        return $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}{ledgerBookScope}{dimensionScope}:{package.FinancialStatements.PeriodId}";
+    }
+
+    private static bool HasExplicitDimensionScope(FinancialStatementPackageDto package)
+        => package.Dimensions.EntityId is not null ||
+           package.Dimensions.SleeveId is not null ||
+           package.Dimensions.StrategyId is not null ||
+           package.Dimensions.InvestorId is not null ||
+           package.Dimensions.CapitalAccountId is not null ||
+           package.Dimensions.InstrumentId.HasValue ||
+           package.Dimensions.TaxLotId is not null ||
+           package.Dimensions.CostCenterId is not null ||
+           package.Dimensions.CounterpartyId is not null ||
+           package.Dimensions.OrganizationId is not null ||
+           package.Dimensions.PortfolioId is not null ||
+           package.Dimensions.AccountId is not null ||
+           package.Dimensions.CustomerId is not null ||
+           package.Dimensions.VendorId is not null ||
+           package.Dimensions.ProjectId is not null ||
+           package.Dimensions.ExternalGlDimensions.Count > 0;
 
     private static ClosePeriodPlanDto BuildSignedOffClosePlan(
         Guid workflowId,
@@ -820,8 +1228,26 @@ public sealed class AccountingReportPackageServiceTests
             CancellationToken ct = default)
             => throw new NotSupportedException();
 
+        public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+            ReviewCloseEvidenceRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
         public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
             SignOffCloseTaskRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+            UpsertClosePeriodPlanConfigurationRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
             string actor,
             CancellationToken ct = default)
             => throw new NotSupportedException();
@@ -851,8 +1277,26 @@ public sealed class AccountingReportPackageServiceTests
             CancellationToken ct = default)
             => throw new NotSupportedException();
 
+        public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+            ReviewCloseEvidenceRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
         public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
             SignOffCloseTaskRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+            UpsertClosePeriodPlanConfigurationRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
             string actor,
             CancellationToken ct = default)
             => throw new NotSupportedException();

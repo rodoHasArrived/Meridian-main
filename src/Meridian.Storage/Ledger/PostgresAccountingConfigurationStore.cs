@@ -19,24 +19,34 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var configurationScopeId = ConfigurationScopeId(ledgerBookId);
+        var tenantScopeId = TenantScopeId(tenantId);
+        var companyScopeId = CompanyScopeId(companyId);
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var workspaceCommand = connection.CreateCommand();
         workspaceCommand.CommandText =
             $"""
-            select ledger_book_id,
+            select tenant_id,
+                   company_id,
+                   ledger_book_id,
                    status,
                    configuration_version,
                    updated_at_utc,
                    validation_issues
             from {Qualified("accounting_configuration_workspaces")}
-            where fund_profile_id = @fund_profile_id
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and fund_profile_id = @fund_profile_id
               and configuration_scope_id = @configuration_scope_id;
             """;
+        workspaceCommand.Parameters.AddWithValue("tenant_id", tenantScopeId);
+        workspaceCommand.Parameters.AddWithValue("company_id", companyScopeId);
         workspaceCommand.Parameters.AddWithValue("fund_profile_id", normalizedFundProfileId);
         workspaceCommand.Parameters.AddWithValue("configuration_scope_id", configurationScopeId);
 
@@ -46,17 +56,19 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             return null;
         }
 
-        var loadedLedgerBookId = reader.IsDBNull(0) ? (Guid?)null : reader.GetGuid(0);
-        var status = Enum.Parse<AccountingConfigurationStatusDto>(reader.GetString(1), ignoreCase: true);
-        var configurationVersion = reader.GetString(2);
-        var updatedAtUtc = reader.GetDateTime(3);
-        var validationIssues = Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(4)) ?? [];
+        var loadedTenantId = ScopeToNullable(reader.GetString(0));
+        var loadedCompanyId = ScopeToNullable(reader.GetString(1));
+        var loadedLedgerBookId = reader.IsDBNull(2) ? (Guid?)null : reader.GetGuid(2);
+        var status = Enum.Parse<AccountingConfigurationStatusDto>(reader.GetString(3), ignoreCase: true);
+        var configurationVersion = reader.GetString(4);
+        var updatedAtUtc = reader.GetDateTime(5);
+        var validationIssues = Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(6)) ?? [];
         await reader.DisposeAsync().ConfigureAwait(false);
 
-        var chart = await LoadChartAsync(connection, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var templates = await LoadTemplatesAsync(connection, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var rules = await LoadRulesAsync(connection, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var testCases = await LoadRuleTestCasesAsync(connection, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var chart = await LoadChartAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var templates = await LoadTemplatesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var rules = await LoadRulesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var testCases = await LoadRuleTestCasesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
 
         return new AccountingConfigurationWorkspaceDto(
             normalizedFundProfileId,
@@ -70,7 +82,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             PostingRules: rules,
             ValidationIssues: validationIssues,
             AuditTrail: [],
-            RuleTestCases: testCases);
+            RuleTestCases: testCases,
+            TenantId: loadedTenantId,
+            CompanyId: loadedCompanyId);
     }
 
     public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
@@ -109,6 +123,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 after_hash,
                 validation_issues,
                 evidence_links,
+                tenant_id,
                 company_id,
                 report_group_principal_ids)
             values (
@@ -123,6 +138,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 @after_hash,
                 @validation_issues,
                 @evidence_links,
+                @tenant_id,
                 @company_id,
                 @report_group_principal_ids);
             """;
@@ -137,6 +153,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddTextOrNull(command, "after_hash", auditEvent.AfterHash);
         AddJson(command, "validation_issues", auditEvent.ValidationIssues);
         AddJson(command, "evidence_links", auditEvent.EvidenceLinks);
+        AddTextOrNull(command, "tenant_id", auditEvent.TenantId);
         AddTextOrNull(command, "company_id", auditEvent.CompanyId);
         AddJson(command, "report_group_principal_ids", auditEvent.ReportGroupPrincipalIds ?? []);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -145,7 +162,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
@@ -163,6 +182,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                    after_hash,
                    validation_issues,
                    evidence_links,
+                   tenant_id,
                    company_id,
                    report_group_principal_ids
             from {Qualified("accounting_action_audit_events")}
@@ -171,7 +191,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
         if (!string.IsNullOrWhiteSpace(fundProfileId))
         {
-            command.CommandText += " and fund_profile_id = @fund_profile_id";
+            // FundProfileId is matched case-insensitively everywhere it is consumed (the file store's
+            // audit list and the publish-time run resolver both use OrdinalIgnoreCase), so the audit
+            // query must too — otherwise a case-variant fund (e.g. FUND-X vs fund-x) is wrongly treated
+            // as having no history, which would let the tenant guard mis-classify a foreign fund as
+            // unknown.
+            command.CommandText += " and lower(fund_profile_id) = lower(@fund_profile_id)";
             command.Parameters.AddWithValue("fund_profile_id", fundProfileId.Trim());
         }
 
@@ -179,6 +204,18 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             command.CommandText += " and ledger_book_id = @ledger_book_id";
             command.Parameters.AddWithValue("ledger_book_id", ledgerBookId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(tenantId))
+        {
+            command.CommandText += " and tenant_id = @tenant_id";
+            command.Parameters.AddWithValue("tenant_id", tenantId.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(companyId))
+        {
+            command.CommandText += " and company_id = @company_id";
+            command.Parameters.AddWithValue("company_id", companyId.Trim());
         }
 
         command.CommandText += " order by recorded_at_utc desc, audit_event_id;";
@@ -199,8 +236,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 reader.GetString(8),
                 Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
                 Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
-                reader.IsDBNull(11) ? null : reader.GetString(11),
-                Deserialize<IReadOnlyList<string>>(reader.GetString(12)) ?? []));
+                reader.IsDBNull(12) ? null : reader.GetString(12),
+                Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
+                reader.IsDBNull(11) ? null : reader.GetString(11)));
         }
 
         return events;
@@ -208,6 +246,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<ChartOfAccountsNodeDto>> LoadChartAsync(
         NpgsqlConnection connection,
+        string tenantScopeId,
+        string companyScopeId,
         string fundProfileId,
         string configurationScopeId,
         CancellationToken ct)
@@ -217,10 +257,14 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             $"""
             select node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived
             from {Qualified("accounting_configuration_chart_nodes")}
-            where fund_profile_id = @fund_profile_id
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and fund_profile_id = @fund_profile_id
               and configuration_scope_id = @configuration_scope_id
             order by path;
             """;
+        command.Parameters.AddWithValue("tenant_id", tenantScopeId);
+        command.Parameters.AddWithValue("company_id", companyScopeId);
         command.Parameters.AddWithValue("fund_profile_id", fundProfileId);
         command.Parameters.AddWithValue("configuration_scope_id", configurationScopeId);
 
@@ -244,6 +288,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<JournalEntryTemplateDto>> LoadTemplatesAsync(
         NpgsqlConnection connection,
+        string tenantScopeId,
+        string companyScopeId,
         string fundProfileId,
         string configurationScopeId,
         CancellationToken ct)
@@ -253,10 +299,14 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             $"""
             select template_id, display_name, description, lines, is_archived, version
             from {Qualified("accounting_configuration_journal_templates")}
-            where fund_profile_id = @fund_profile_id
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and fund_profile_id = @fund_profile_id
               and configuration_scope_id = @configuration_scope_id
             order by template_id;
             """;
+        command.Parameters.AddWithValue("tenant_id", tenantScopeId);
+        command.Parameters.AddWithValue("company_id", companyScopeId);
         command.Parameters.AddWithValue("fund_profile_id", fundProfileId);
         command.Parameters.AddWithValue("configuration_scope_id", configurationScopeId);
 
@@ -278,6 +328,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<PostingRuleDto>> LoadRulesAsync(
         NpgsqlConnection connection,
+        string tenantScopeId,
+        string companyScopeId,
         string fundProfileId,
         string configurationScopeId,
         CancellationToken ct)
@@ -287,10 +339,14 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             $"""
             select rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload
             from {Qualified("accounting_configuration_posting_rules")}
-            where fund_profile_id = @fund_profile_id
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and fund_profile_id = @fund_profile_id
               and configuration_scope_id = @configuration_scope_id
             order by rule_id;
             """;
+        command.Parameters.AddWithValue("tenant_id", tenantScopeId);
+        command.Parameters.AddWithValue("company_id", companyScopeId);
         command.Parameters.AddWithValue("fund_profile_id", fundProfileId);
         command.Parameters.AddWithValue("configuration_scope_id", configurationScopeId);
 
@@ -320,6 +376,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<AccountingRuleTestCaseDto>> LoadRuleTestCasesAsync(
         NpgsqlConnection connection,
+        string tenantScopeId,
+        string companyScopeId,
         string fundProfileId,
         string configurationScopeId,
         CancellationToken ct)
@@ -329,10 +387,14 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             $"""
             select test_case_payload
             from {Qualified("accounting_configuration_rule_test_cases")}
-            where fund_profile_id = @fund_profile_id
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and fund_profile_id = @fund_profile_id
               and configuration_scope_id = @configuration_scope_id
             order by display_name, test_case_id;
             """;
+        command.Parameters.AddWithValue("tenant_id", tenantScopeId);
+        command.Parameters.AddWithValue("company_id", companyScopeId);
         command.Parameters.AddWithValue("fund_profile_id", fundProfileId);
         command.Parameters.AddWithValue("configuration_scope_id", configurationScopeId);
 
@@ -356,6 +418,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         command.CommandText =
             $"""
             insert into {Qualified("accounting_configuration_workspaces")} (
+                tenant_id,
+                company_id,
                 fund_profile_id,
                 configuration_scope_id,
                 ledger_book_id,
@@ -363,14 +427,16 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 configuration_version,
                 updated_at_utc,
                 validation_issues)
-            values (@fund_profile_id, @configuration_scope_id, @ledger_book_id, @status, @configuration_version, @updated_at_utc, @validation_issues)
-            on conflict (fund_profile_id, configuration_scope_id) do update set
+            values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @ledger_book_id, @status, @configuration_version, @updated_at_utc, @validation_issues)
+            on conflict (tenant_id, company_id, fund_profile_id, configuration_scope_id) do update set
                 ledger_book_id = excluded.ledger_book_id,
                 status = excluded.status,
                 configuration_version = excluded.configuration_version,
                 updated_at_utc = excluded.updated_at_utc,
                 validation_issues = excluded.validation_issues;
             """;
+        command.Parameters.AddWithValue("tenant_id", TenantScopeId(workspace.TenantId));
+        command.Parameters.AddWithValue("company_id", CompanyScopeId(workspace.CompanyId));
         command.Parameters.AddWithValue("fund_profile_id", NormalizeFundProfileId(workspace.FundProfileId));
         command.Parameters.AddWithValue("configuration_scope_id", ConfigurationScopeId(workspace.LedgerBookId));
         AddUuidOrNull(command, "ledger_book_id", workspace.LedgerBookId);
@@ -383,7 +449,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task ReplaceChartAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
     {
-        await DeleteScopedAsync(connection, transaction, "accounting_configuration_chart_nodes", workspace.FundProfileId, workspace.LedgerBookId, ct).ConfigureAwait(false);
+        await DeleteScopedAsync(connection, transaction, "accounting_configuration_chart_nodes", workspace, ct).ConfigureAwait(false);
         foreach (var node in workspace.ChartOfAccounts)
         {
             await using var command = connection.CreateCommand();
@@ -391,10 +457,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_chart_nodes")} (
-                    fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived)
-                values (@fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived);
                 """;
-            AddScope(command, workspace.FundProfileId, workspace.LedgerBookId);
+            AddScope(command, workspace);
             command.Parameters.AddWithValue("node_id", node.NodeId);
             command.Parameters.AddWithValue("path", node.Path);
             command.Parameters.AddWithValue("account_name", node.AccountName);
@@ -409,7 +475,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task ReplaceTemplatesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
     {
-        await DeleteScopedAsync(connection, transaction, "accounting_configuration_journal_templates", workspace.FundProfileId, workspace.LedgerBookId, ct).ConfigureAwait(false);
+        await DeleteScopedAsync(connection, transaction, "accounting_configuration_journal_templates", workspace, ct).ConfigureAwait(false);
         foreach (var template in workspace.JournalTemplates)
         {
             await using var command = connection.CreateCommand();
@@ -417,10 +483,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_journal_templates")} (
-                    fund_profile_id, configuration_scope_id, template_id, display_name, description, lines, is_archived, version)
-                values (@fund_profile_id, @configuration_scope_id, @template_id, @display_name, @description, @lines, @is_archived, @version);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, template_id, display_name, description, lines, is_archived, version)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @template_id, @display_name, @description, @lines, @is_archived, @version);
                 """;
-            AddScope(command, workspace.FundProfileId, workspace.LedgerBookId);
+            AddScope(command, workspace);
             command.Parameters.AddWithValue("template_id", template.TemplateId);
             command.Parameters.AddWithValue("display_name", template.DisplayName);
             command.Parameters.AddWithValue("description", template.Description);
@@ -433,7 +499,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task ReplaceRulesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
     {
-        await DeleteScopedAsync(connection, transaction, "accounting_configuration_posting_rules", workspace.FundProfileId, workspace.LedgerBookId, ct).ConfigureAwait(false);
+        await DeleteScopedAsync(connection, transaction, "accounting_configuration_posting_rules", workspace, ct).ConfigureAwait(false);
         foreach (var rule in workspace.PostingRules)
         {
             await using var command = connection.CreateCommand();
@@ -441,10 +507,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_posting_rules")} (
-                    fund_profile_id, configuration_scope_id, rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload)
-                values (@fund_profile_id, @configuration_scope_id, @rule_id, @display_name, @source_event_type, @template_id, @rule_version, @is_archived, @description, @rule_payload);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @rule_id, @display_name, @source_event_type, @template_id, @rule_version, @is_archived, @description, @rule_payload);
                 """;
-            AddScope(command, workspace.FundProfileId, workspace.LedgerBookId);
+            AddScope(command, workspace);
             command.Parameters.AddWithValue("rule_id", rule.RuleId);
             command.Parameters.AddWithValue("display_name", rule.DisplayName);
             command.Parameters.AddWithValue("source_event_type", rule.SourceEventType);
@@ -459,7 +525,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task ReplaceRuleTestCasesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
     {
-        await DeleteScopedAsync(connection, transaction, "accounting_configuration_rule_test_cases", workspace.FundProfileId, workspace.LedgerBookId, ct).ConfigureAwait(false);
+        await DeleteScopedAsync(connection, transaction, "accounting_configuration_rule_test_cases", workspace, ct).ConfigureAwait(false);
         foreach (var testCase in workspace.RuleTestCases)
         {
             await using var command = connection.CreateCommand();
@@ -467,10 +533,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_rule_test_cases")} (
-                    fund_profile_id, configuration_scope_id, test_case_id, display_name, test_case_payload)
-                values (@fund_profile_id, @configuration_scope_id, @test_case_id, @display_name, @test_case_payload);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, test_case_id, display_name, test_case_payload)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @test_case_id, @display_name, @test_case_payload);
                 """;
-            AddScope(command, workspace.FundProfileId, workspace.LedgerBookId);
+            AddScope(command, workspace);
             command.Parameters.AddWithValue("test_case_id", testCase.TestCaseId);
             command.Parameters.AddWithValue("display_name", testCase.DisplayName);
             AddJson(command, "test_case_payload", testCase);
@@ -482,14 +548,13 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         string table,
-        string fundProfileId,
-        Guid? ledgerBookId,
+        AccountingConfigurationWorkspaceDto workspace,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"delete from {Qualified(table)} where fund_profile_id = @fund_profile_id and configuration_scope_id = @configuration_scope_id;";
-        AddScope(command, fundProfileId, ledgerBookId);
+        command.CommandText = $"delete from {Qualified(table)} where tenant_id = @tenant_id and company_id = @company_id and fund_profile_id = @fund_profile_id and configuration_scope_id = @configuration_scope_id;";
+        AddScope(command, workspace);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -508,10 +573,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     private string Qualified(string tableName)
         => $"{ValidateIdentifier(_options.SchemaName)}.{ValidateIdentifier(tableName)}";
 
-    private static void AddScope(NpgsqlCommand command, string fundProfileId, Guid? ledgerBookId)
+    private static void AddScope(NpgsqlCommand command, AccountingConfigurationWorkspaceDto workspace)
     {
-        command.Parameters.AddWithValue("fund_profile_id", NormalizeFundProfileId(fundProfileId));
-        command.Parameters.AddWithValue("configuration_scope_id", ConfigurationScopeId(ledgerBookId));
+        command.Parameters.AddWithValue("tenant_id", TenantScopeId(workspace.TenantId));
+        command.Parameters.AddWithValue("company_id", CompanyScopeId(workspace.CompanyId));
+        command.Parameters.AddWithValue("fund_profile_id", NormalizeFundProfileId(workspace.FundProfileId));
+        command.Parameters.AddWithValue("configuration_scope_id", ConfigurationScopeId(workspace.LedgerBookId));
     }
 
     private static void AddTextOrNull(NpgsqlCommand command, string name, string? value)
@@ -534,6 +601,18 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private static string ConfigurationScopeId(Guid? ledgerBookId)
         => ledgerBookId.HasValue ? ledgerBookId.Value.ToString("D") : "fund";
+
+    private static string TenantScopeId(string? tenantId)
+        => NormalizeScopeId(tenantId);
+
+    private static string CompanyScopeId(string? companyId)
+        => NormalizeScopeId(companyId);
+
+    private static string NormalizeScopeId(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "all" : value.Trim();
+
+    private static string? ScopeToNullable(string value)
+        => string.Equals(value, "all", StringComparison.OrdinalIgnoreCase) ? null : value;
 
     private static string ValidateIdentifier(string value)
     {

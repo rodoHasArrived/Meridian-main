@@ -180,7 +180,7 @@ public sealed class ProjectLedgerBook
         return summaries
             .Select(pair => new LedgerAccountSummary(
                 pair.Key,
-                CalculateNetBalance(pair.Key, pair.Value.Debits, pair.Value.Credits),
+                Ledger.CalculateNetBalance(pair.Key, pair.Value.Debits, pair.Value.Credits),
                 pair.Value.Debits,
                 pair.Value.Credits,
                 pair.Value.EntryCount,
@@ -210,11 +210,6 @@ public sealed class ProjectLedgerBook
 
     private static string? NormalizeOptionalValue(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
-        => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debits - credits
-            : credits - debits;
 
     private IEnumerable<KeyValuePair<LedgerBookKey, Ledger>> FilterLedgers(
         string? ledgerBook = null,

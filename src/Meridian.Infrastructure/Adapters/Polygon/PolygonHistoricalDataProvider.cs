@@ -34,7 +34,7 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
     Description = "Polygon.io API key from https://polygon.io/dashboard/api-keys")]
 public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 {
-    private const string BaseUrl = "https://api.polygon.io";
+    private const string BaseUrl = PolygonEndpoints.RestBase;
 
     private readonly string? _apiKey;
 
@@ -126,7 +126,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "bars");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -225,7 +225,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "bars");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

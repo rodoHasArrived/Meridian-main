@@ -13,46 +13,59 @@ public sealed class AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
         [Description("Optional file glob to scope the audit, e.g. 'src/Meridian.Infrastructure/**'")] string? pathFilter = null,
         CancellationToken ct = default)
     {
-        var args = "audit-code";
+        var auditArgs = new List<string> { "audit-code" };
         if (!string.IsNullOrWhiteSpace(pathFilter))
-            args += $" --filter \"{pathFilter}\"";
-        return await RunAuditCommandAsync(args, "Code Convention Audit", ct);
+        {
+            auditArgs.Add("--filter");
+            auditArgs.Add(pathFilter);
+        }
+
+        return await RunAuditCommandAsync(auditArgs, "Code Convention Audit", ct);
     }
 
     [McpServerTool(Name = "run_provider_audit")]
     [Description("Audit all provider classes for missing [ImplementsAdr] and [DataSource] attributes. Returns a list of non-compliant provider files.")]
     public async Task<string> RunProviderAuditAsync(CancellationToken ct = default) =>
-        await RunAuditCommandAsync("audit-providers", "Provider Compliance Audit", ct);
+        await RunAuditCommandAsync(["audit-providers"], "Provider Compliance Audit", ct);
 
     [McpServerTool(Name = "run_test_audit")]
     [Description("Identify Meridian classes that lack corresponding test files. Returns a prioritized list of coverage gaps.")]
     public async Task<string> RunTestAuditAsync(CancellationToken ct = default) =>
-        await RunAuditCommandAsync("audit-tests", "Test Coverage Audit", ct);
+        await RunAuditCommandAsync(["audit-tests"], "Test Coverage Audit", ct);
 
     [McpServerTool(Name = "get_diff_summary")]
     [Description("Summarize current uncommitted git changes in the repository. Useful for writing commit messages or understanding what's changed.")]
     public async Task<string> GetDiffSummaryAsync(CancellationToken ct = default) =>
-        await RunAuditCommandAsync("diff-summary", "Uncommitted Changes Summary", ct);
+        await RunAuditCommandAsync(["diff-summary"], "Uncommitted Changes Summary", ct);
 
     [McpServerTool(Name = "run_full_audit")]
     [Description("Run the full Meridian repository audit (code, docs, tests, config, providers). Returns a consolidated findings report.")]
     public async Task<string> RunFullAuditAsync(CancellationToken ct = default) =>
-        await RunAuditCommandAsync("audit", "Full Repository Audit", ct);
+        await RunAuditCommandAsync(["audit"], "Full Repository Audit", ct);
 
-    private async Task<string> RunAuditCommandAsync(string command, string label, CancellationToken ct)
+    private async Task<string> RunAuditCommandAsync(IReadOnlyList<string> auditArgs, string label, CancellationToken ct)
     {
         if (!File.Exists(repo.AuditScriptPath))
             return $"Audit script not found at: {repo.AuditScriptPath}\n\nEnsure you are running from the Meridian repository.";
 
-        logger.LogInformation("Running audit command {Command}", command);
+        // Display-only rendering; never used to construct the actual process arguments.
+        var commandDisplay = string.Join(' ', auditArgs);
+        logger.LogInformation("Running audit command {Command}", commandDisplay);
 
-        var psi = new ProcessStartInfo("python3", $"\"{repo.AuditScriptPath}\" {command}")
+        // Add each argument via ArgumentList so the runtime quotes/escapes them
+        // individually. Concatenating into a single argument string would let a
+        // caller-supplied value (e.g. pathFilter containing a quote) break out of its
+        // quoting and inject additional arguments to the audit script.
+        var psi = new ProcessStartInfo("python3")
         {
             WorkingDirectory = repo.Root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        psi.ArgumentList.Add(repo.AuditScriptPath);
+        foreach (var arg in auditArgs)
+            psi.ArgumentList.Add(arg);
 
         using var process = new Process { StartInfo = psi };
         process.Start();
@@ -67,7 +80,7 @@ public sealed class AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
         var stdout = await stdoutTask;
         var stderr = await stderrTask;
 
-        return FormatAuditOutput(label, command, stdout, stderr, process.ExitCode);
+        return FormatAuditOutput(label, commandDisplay, stdout, stderr, process.ExitCode);
     }
 
     private static string FormatAuditOutput(string label, string command, string stdout, string stderr, int exitCode)

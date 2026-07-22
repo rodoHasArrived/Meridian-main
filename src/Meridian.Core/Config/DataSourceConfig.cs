@@ -1,3 +1,6 @@
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Catalog;
+
 namespace Meridian.Core.Config;
 
 /// <summary>
@@ -178,10 +181,12 @@ public sealed record IBClientPortalOptions(
     // <summary>
     // Base URL for the IB Client Portal API.
     // </summary>
-    string BaseUrl = "https://localhost:5000",
+    string BaseUrl = ApiEndpointDefaults.IbClientPortalBaseUrl,
 
     // <summary>
-    // Whether Meridian should allow the self-signed certificate typically used by local Client Portal sessions.
+    // Whether Meridian should allow the self-signed certificate typically used by local Client
+    // Portal sessions. Self-signed certificates are only ever tolerated for loopback hosts
+    // (localhost/127.0.0.1/::1); a non-loopback gateway must present a valid certificate.
     // </summary>
     bool AllowSelfSignedCertificates = true
 );
@@ -288,7 +293,18 @@ public sealed record SymbolMappingsConfig(
     // <summary>
     // List of symbol mappings.
     // </summary>
-    SymbolMappingConfig[]? Mappings = null
+    SymbolMappingConfig[]? Mappings = null,
+
+    // <summary>
+    // Migration mode for the shared canonical symbol registry. Compare returns the legacy
+    // result while reporting disagreements; legacy inputs remain available for rollback.
+    // </summary>
+    SymbolResolutionMode ResolutionMode = SymbolResolutionMode.Compare,
+
+    // <summary>
+    // Emit structured disagreement diagnostics while running in comparison mode.
+    // </summary>
+    bool ReportMismatches = true
 );
 
 /// <summary>

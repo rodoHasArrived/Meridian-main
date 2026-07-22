@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
+import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
 import type {
   MetricSnapshot,
   MetricsDiff,
@@ -263,6 +265,7 @@ export interface StrategyRunInlineDetailState {
   evidenceAction: StrategyEvidenceAction;
   openDetailLabel: string;
   fields: StrategyRunDetailSummaryRow[];
+  technicalFields: StrategyRunDetailSummaryRow[];
 }
 
 export interface StrategyRunDetailState {
@@ -277,10 +280,12 @@ export interface StrategyRunDetailState {
   modeBadgeVariant: StrategyRunDetailBadgeVariant;
   summaryLabel: string;
   summaryRows: StrategyRunDetailSummaryRow[];
+  technicalRows: StrategyRunDetailSummaryRow[];
   notesLabel: string;
   notesText: string;
   closeButtonLabel: string;
   closeButtonAriaLabel: string;
+  biasDisclosure: import("@/types/workstation-6").BiasDisclosure | null;
 }
 
 export type StrategyRunDetailBadgeVariant = "research" | "paper" | "live";
@@ -693,12 +698,6 @@ const defaultStrategyServices: StrategyRunLibraryServices = {
   createPaperSession: (strategyId, strategyName, initialCash) => workstationApi.createPaperSession(strategyId, strategyName, initialCash)
 };
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0
-});
-
 export function useStrategyRunLibraryViewModel(
   data: StrategyWorkspaceResponse | null,
   services: StrategyRunLibraryServices = defaultStrategyServices
@@ -838,7 +837,6 @@ export function useStrategyRunLibraryViewModel(
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
-
     setSelectedRun(null);
     return true;
   }, []);
@@ -848,7 +846,6 @@ export function useStrategyRunLibraryViewModel(
     if (!nextView) {
       return null;
     }
-
     setActivePlotToolView(nextView);
     return plotToolTabIdForView(nextView);
   }, [activePlotToolView]);
@@ -1080,7 +1077,6 @@ export function useStrategyRunLibraryViewModel(
 }
 
 export function buildStrategyRunLibraryState({
-  metrics = [],
   runs,
   plotToolFromApi = null,
   selectedIds,
@@ -1178,16 +1174,7 @@ export function buildStrategyRunLibraryState({
     ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
     : null;
   const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory, resolvedPromotionHistoryId);
-  const basePlotTool = buildPlotToolStateFromApiOrFallback(
-    plotToolFromApi,
-    {
-      metrics,
-      runs,
-      selectedRuns,
-      comparison,
-      runDiff
-    }
-  );
+  const basePlotTool = buildPlotToolStateFromApiOrFallback(plotToolFromApi);
   const resolvedPlotStudyId = resolveSelectedPlotStudyId(basePlotTool.studies, selectedPlotStudyId);
   const plotTool: StrategyPlotToolState = {
     ...basePlotTool,
@@ -1195,7 +1182,9 @@ export function buildStrategyRunLibraryState({
       ...basePlotTool.workspace,
       notebookToolbarAriaLabel: "Strategy notebook filters",
       notebookToolbarItems: buildPlotNotebookToolbarItems(basePlotTool.studies, resolvedPlotStudyId),
-      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableEmptyText: basePlotTool.studies.length > 0
+        ? "No retained PlotTool studies are available."
+        : basePlotTool.workspace.studyTableEmptyText,
       studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
       selectedStudyEmptyText: "No PlotTool study is selected."
     },
@@ -1764,14 +1753,7 @@ export function buildRunTable(
 }
 
 function buildPlotToolStateFromApiOrFallback(
-  plotToolFromApi: StrategyPlotToolPayload | null | undefined,
-  fallbackArgs: {
-    metrics: MetricSnapshot[];
-    runs: StrategyRunRecord[];
-    selectedRuns: StrategyRunRecord[];
-    comparison: RunComparisonRow[];
-    runDiff: RunDiff | null;
-  }
+  plotToolFromApi: StrategyPlotToolPayload | null | undefined
 ): StrategyPlotToolState {
   if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
     const workspace = plotToolFromApi.workspace as StrategyPlotWorkspaceState;
@@ -1784,7 +1766,98 @@ function buildPlotToolStateFromApiOrFallback(
     };
   }
 
-  return buildPlotToolState(fallbackArgs);
+  return buildEmptyPlotToolState();
+}
+
+function buildEmptyPlotToolState(): StrategyPlotToolState {
+  const xAxisLabel = "Spread";
+  const yAxisLabel = "Implied volatility";
+  const focusPoint: StrategyPlotFocusPointState = {
+    label: "No marker",
+    xValueText: "N/A",
+    yValueText: "N/A",
+    detail: "Connect a governed PlotTool payload before inspecting scatter observations."
+  };
+
+  return {
+    studies: [],
+    workspace: {
+      eyebrow: "Strategy Lane · PlotTool",
+      title: "PlotTool catalog not connected",
+      description: "No Strategy PlotTool payload is available. Connect a governed strategy analytics endpoint before inspecting notebooks, scatter analysis, or statistics.",
+      statusBadgeLabel: "NOT CONNECTED",
+      statusBadgeVariant: "outline",
+      expression: "Connect strategy PlotTool API payload",
+      toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: [],
+      studyTableEmptyText: "No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.",
+      studyTableCaption: "PlotTool notebooks are available after the Strategy endpoint returns retained studies.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
+      metaItems: ["Catalog not connected", "0 obs"],
+      xAxisLabel,
+      yAxisLabel,
+      xTicks: [],
+      yTicks: [],
+      points: [],
+      scatterChart: buildPlotToolScatterChartState({
+        points: [],
+        xTicks: [],
+        yTicks: [],
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: { x: 0, y: 0, emphasis: false },
+        focusPoint,
+        chartStudyLabel: "Unconnected PlotTool"
+      }),
+      studySummary: [
+        { id: "source", label: "Source", value: "Not connected" },
+        { id: "catalog", label: "Formula catalog", value: "Unavailable" },
+        { id: "samples", label: "Samples", value: "0" }
+      ],
+      legendItems: [
+        { id: "history", label: "History", detail: "No observations", tone: "muted" },
+        { id: "current", label: "Current", detail: "No marker", tone: "muted" },
+        { id: "trend", label: "OLS fit", detail: "Unavailable", tone: "muted" }
+      ],
+      focusPoint,
+      signalCards: [
+        {
+          id: "connection",
+          label: "Connection",
+          value: "Unavailable",
+          detail: "Strategy analytics endpoint has not returned a PlotTool payload.",
+          tone: "warning"
+        }
+      ],
+      consoleTitle: "Expression editor unavailable",
+      consoleBody: "Connect a governed formula catalog before authoring or previewing PlotTool expressions here.",
+      overlayTitle: "Meridian overlays",
+      overlayItems: [
+        "Notebook coverage: no retained PlotTool studies.",
+        "Evidence posture: unavailable until a PlotTool payload is connected.",
+        "Diff posture: unavailable until a PlotTool payload is connected."
+      ]
+    },
+    statistics: {
+      eyebrow: "Statistics view",
+      title: "PlotTool statistics not connected",
+      description: "No PlotTool distribution, regression, or observation sheet is available from the Strategy endpoint.",
+      summaryTiles: [],
+      distributionBars: [],
+      distributionChart: buildPlotToolDistributionChartState([]),
+      distributionSummary: "Connect a PlotTool payload before reviewing residual distributions.",
+      distributionFootnote: "No latest observation is available.",
+      moments: [],
+      momentsTable: buildPlotToolMomentsTable([]),
+      regression: {
+        equation: "Unavailable",
+        detailItems: ["Connect a governed PlotTool payload before reviewing regression output."]
+      },
+      sampleRows: [],
+      sampleTable: buildPlotToolSampleTable([])
+    }
+  };
 }
 
 export function buildPlotToolState({
@@ -2692,16 +2765,19 @@ export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
     modeBadgeVariant: modeBadgeVariantFor(run.mode),
     summaryLabel: "Selected strategy run evidence",
     summaryRows: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) }
     ],
+    technicalRows: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
+    ],
     notesLabel: "Operator notes",
     notesText: formatOptionalNotes(run.notes),
     closeButtonLabel: "Close",
-    closeButtonAriaLabel: `Close ${title} run detail`
+    closeButtonAriaLabel: `Close ${title} run detail`,
+    biasDisclosure: run.biasDisclosure ?? null
   };
 }
 
@@ -2723,12 +2799,14 @@ export function buildInlineRunDetail(run: StrategyRunRecord, panelId = STRATEGY_
     evidenceAction: buildStrategyEvidenceAction(run)!,
     openDetailLabel: `Open ${title} run detail dialog`,
     fields: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) },
       { id: "notes", label: "Notes", value: formatOptionalNotes(run.notes) }
+    ],
+    technicalFields: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
     ]
   };
 }
@@ -2845,7 +2923,7 @@ function formatMoney(value: number | null | undefined, signed = false): string {
     return "Unavailable";
   }
 
-  const amount = currencyFormatter.format(Math.abs(value));
+  const amount = formatCurrencyAmount(Math.abs(value), { maximumFractionDigits: 0 });
 
   if (!signed) {
     return value < 0 ? `-${amount}` : amount;
@@ -3356,66 +3434,4 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
   }
 
   return undefined;
-}
-
-function buildStrategyStatusAnnouncement({
-  activeCommand,
-  actionError,
-  comparison,
-  runDiff,
-  promotionHistory,
-  comparisonLoaded = false,
-  runDiffLoaded = false,
-  promotionHistoryLoaded = false
-}: {
-  activeCommand: StrategyCommand | null;
-  actionError: string | null;
-  comparison: RunComparisonRow[];
-  runDiff: RunDiff | null;
-  promotionHistory: PromotionRecord[];
-  comparisonLoaded?: boolean;
-  runDiffLoaded?: boolean;
-  promotionHistoryLoaded?: boolean;
-}): string {
-  if (activeCommand === "compare") {
-    return "Comparing selected strategy runs.";
-  }
-
-  if (activeCommand === "diff") {
-    return "Diffing selected strategy runs.";
-  }
-
-  if (activeCommand === "history") {
-    return "Loading promotion history.";
-  }
-
-  if (actionError) {
-    return `Strategy command failed: ${actionError}`;
-  }
-
-  if (runDiff) {
-    return `Run diff ready for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}.`;
-  }
-
-  if (runDiffLoaded) {
-    return "No run diff returned for the selected pair.";
-  }
-
-  if (comparison.length > 0) {
-    return `${comparison.length} comparison ${comparison.length === 1 ? "row" : "rows"} loaded.`;
-  }
-
-  if (comparisonLoaded) {
-    return "No comparison rows returned for the selected pair.";
-  }
-
-  if (promotionHistory.length > 0) {
-    return `${promotionHistory.length} promotion history ${promotionHistory.length === 1 ? "record" : "records"} loaded.`;
-  }
-
-  if (promotionHistoryLoaded) {
-    return "No promotion history records returned.";
-  }
-
-  return "";
 }

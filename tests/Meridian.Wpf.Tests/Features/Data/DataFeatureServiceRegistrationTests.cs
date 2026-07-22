@@ -1,6 +1,7 @@
 using Meridian.Wpf.Tests.Features;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.ProviderDiagnostics;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Features.Data;
 using Meridian.Wpf.Services;
@@ -34,6 +35,7 @@ public sealed class DataFeatureServiceRegistrationTests
         services.SingleDescriptor<IDataQualityApiClient>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<IDataQualityPresentationService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<IDataQualityRefreshService>().Lifetime.Should().Be(ServiceLifetime.Transient);
+        services.SingleDescriptor<IProviderDiagnosticsApiClient>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<BackfillViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);
         services.SingleDescriptor<ProviderViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);
         services.SingleDescriptor<DataQualityViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);

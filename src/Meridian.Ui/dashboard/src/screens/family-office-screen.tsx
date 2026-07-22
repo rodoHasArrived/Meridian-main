@@ -1,14 +1,24 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/data/empty-state";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import {
+  MetricCard,
+  KeyValueGrid
+} from "@/components/data/concrete";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
   selectAdjacentFamilyOfficeNode,
+  type FamilyOfficeEntityStructure,
   type FamilyOfficeOwnershipNode,
   type FamilyOfficePanelViewModel,
   type FamilyOfficeTone
@@ -23,13 +33,6 @@ const panelIconMap: Record<string, typeof Landmark> = {
   "unfunded-commitments": AlertTriangle,
   "unresolved-reconciliation-breaks": AlertTriangle,
   "stale-valuation-warnings": AlertTriangle
-};
-
-const toneBadgeVariant: Record<FamilyOfficeTone, "outline" | "success" | "warning" | "danger"> = {
-  default: "outline",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
 };
 
 const graphNodeClassName: Record<FamilyOfficeTone, string> = {
@@ -74,10 +77,10 @@ const ownershipColumns: DenseDataTableColumn<FamilyOfficeOwnershipNode>[] = [
   }
 ];
 
-export function FamilyOfficeScreen() {
+export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure?: FamilyOfficeEntityStructure | null }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showTableFallback, setShowTableFallback] = useState(false);
-  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId);
+  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, entityStructure);
   const graphNodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusGraphNode = useRef(false);
 
@@ -95,7 +98,7 @@ export function FamilyOfficeScreen() {
   };
 
   const moveGraphSelection = (direction: "next" | "previous" | "first" | "last") => {
-    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction);
+    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, entityStructure);
     if (nextNodeId) {
       shouldFocusGraphNode.current = true;
       setSelectedNodeId(nextNodeId);
@@ -128,38 +131,69 @@ export function FamilyOfficeScreen() {
   };
 
   return (
-    <section className="space-y-6" aria-label={vm.route.ariaLabel}>
-      <header className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="eyebrow-label">{vm.route.workspaceLabel} / {vm.route.label}</div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{vm.route.title}</h1>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.route.description}</p>
-            {vm.route.disabledReason ? (
-              <p className="mt-2 text-sm text-warning">{vm.route.disabledReason}</p>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-2 lg:justify-end">
-            {vm.statusChips.map((chip) => (
-              <span
-                key={chip.label}
-                className="rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground"
-                aria-label={`${chip.label}: ${chip.value}`}
-              >
-                {chip.label}<b className="ml-2 font-mono text-foreground">{chip.value}</b>
-              </span>
-            ))}
-          </div>
-        </div>
-      </header>
+    <ScreenLayout
+      title={vm.route.title}
+      scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
+      description={vm.route.description}
+    >
+      <OperationalTrustSummary
+        label="Family office data confidence"
+        source={{
+          value: entityStructure?.displayName ?? "Not connected",
+          detail: "Entity, portfolio, accounting, and private-asset sources",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        scope={{
+          value: entityStructure ? `${entityStructure.entities.length} entities` : "No family entities",
+          detail: entityStructure ? `${entityStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
+          tone: entityStructure?.entities.length ? "ready" : "blocked"
+        }}
+        freshness={{
+          value: entityStructure?.asOfDate ?? "Unavailable",
+          detail: "Latest consolidated family-office evidence",
+          tone: entityStructure?.asOfDate ? "ready" : "unknown"
+        }}
+        completeness={{
+          value: entityStructure
+            ? `${entityStructure.privateAssets.length} private assets · ${entityStructure.commitments.length} commitments`
+            : "No records loaded",
+          detail: "Private-asset and commitment coverage",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        blocker={vm.notConnected ? {
+          value: "Entity setup required",
+          detail: "Connect governed sources before using consolidated values for decisions",
+          tone: "blocked"
+        } : undefined}
+      />
 
+      {vm.notConnected ? (
+      <Card className="panel-surface border-border/80">
+        <CardContent className="space-y-4">
+          <EmptyState
+            icon="inbox"
+            title="Family office data is not connected"
+            detail={vm.route.emptyState}
+          />
+          <div className="flex justify-center">
+            <Button asChild>
+              <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {!vm.notConnected ? (
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Family office summary panels">
         <h2 className="sr-only">Family office summary panels</h2>
         {vm.panels.map((panel) => (
           <FamilyOfficePanel key={panel.id} panel={panel} />
         ))}
       </section>
+      ) : null}
 
+      {!vm.notConnected ? (
       <Card className="panel-surface border-border/80">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -259,17 +293,27 @@ export function FamilyOfficeScreen() {
             {vm.ownershipGraph.selectedNode ? (
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
+                    {vm.ownershipGraph.selectedNode.tone !== "default" ? (
+                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
+                    ) : null}
+                  </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                     {vm.ownershipGraph.selectedNode.detail}
                   </p>
                 </div>
-                <dl className="grid gap-2 sm:grid-cols-3 lg:min-w-[28rem]">
-                  <OwnershipDetail label="Value" value={vm.ownershipGraph.selectedNode.value} />
-                  <OwnershipDetail label="Ownership" value={vm.ownershipGraph.selectedNode.percentage} />
-                  <OwnershipDetail label="Parent" value={vm.ownershipGraph.selectedNode.parentId ?? "Root"} />
-                </dl>
+                <div className="lg:min-w-[28rem]">
+                  <KeyValueGrid
+                    columns={3}
+                    items={[
+                      { label: "Value", value: vm.ownershipGraph.selectedNode.value },
+                      { label: "Ownership", value: vm.ownershipGraph.selectedNode.percentage },
+                      { label: "Parent", value: vm.ownershipGraph.selectedNode.parentId ?? "Root" }
+                    ]}
+                  />
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">{vm.ownershipGraph.selectedDetailEmptyTitle}</p>
@@ -277,7 +321,8 @@ export function FamilyOfficeScreen() {
           </section>
         </CardContent>
       </Card>
-    </section>
+      ) : null}
+    </ScreenLayout>
   );
 }
 
@@ -285,21 +330,13 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
   const Icon = panelIconMap[panel.id] ?? Landmark;
 
   return (
-    <Card className="panel-surface border-border/80" aria-label={panel.ariaLabel}>
-      <CardHeader className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <Icon className="mt-1 h-4 w-4 text-primary" aria-hidden="true" />
-          <Badge variant={toneBadgeVariant[panel.tone]}>{panel.tone === "default" ? "Tracked" : panel.tone}</Badge>
-        </div>
-        <div>
-          <CardTitle className="text-sm font-semibold text-foreground">{panel.label}</CardTitle>
-          <div className="mt-2 font-mono text-2xl font-semibold text-foreground">{panel.value}</div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm leading-6 text-muted-foreground">{panel.detail}</p>
-      </CardContent>
-    </Card>
+    <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
+      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
+      <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
+        <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+        <span>{panel.detail}</span>
+      </p>
+    </div>
   );
 }
 
@@ -319,7 +356,7 @@ function OwnershipNodeButton({
       ref={refCallback}
       type="button"
       className={cn(
-        "min-h-28 rounded-xl border px-4 py-3 text-left shadow-hard transition focus:outline-none focus:ring-2 focus:ring-primary/60",
+        "min-h-28 rounded-sm border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/60",
         graphNodeClassName[node.tone],
         node.isSelected ? "ring-2 ring-primary/70" : "hover:border-primary/50"
       )}
@@ -331,21 +368,12 @@ function OwnershipNodeButton({
       onClick={() => onSelect(node.id)}
       onKeyDown={onKeyDown}
     >
-      <span className="block text-xs uppercase tracking-[0.2em] opacity-80">{node.type}</span>
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">{node.type}</span>
       <span className="mt-2 block text-sm font-semibold text-foreground">{node.label}</span>
-      <span className="mt-3 flex items-center justify-between gap-3 font-mono text-xs">
+      <span className="mt-3 flex items-center justify-between gap-3 font-mono text-xs tabular-nums">
         <span>{node.value}</span>
         <span>{node.percentage}</span>
       </span>
     </button>
-  );
-}
-
-function OwnershipDetail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-1 font-mono text-sm text-foreground">{value}</dd>
-    </div>
   );
 }

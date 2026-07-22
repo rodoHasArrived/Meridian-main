@@ -76,6 +76,13 @@ export function isApiError(error: unknown): error is ApiError {
 export function describeApiError(error: unknown, fallback: string): ApiErrorDisplay {
   if (!isApiError(error)) {
     if (error instanceof Error && error.message.trim()) {
+      if (looksLikeRawTechnicalResponse(error.message)) {
+        return {
+          summary: fallback,
+          details: ["Open diagnostics for the technical response."]
+        };
+      }
+
       return {
         summary: error.message,
         details: []
@@ -88,8 +95,15 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
     };
   }
 
+  if (hasRawTechnicalBody(error)) {
+    return {
+      summary: summarizeTechnicalApiError(error, fallback),
+      details: [buildDiagnosticsDetail(error.status)]
+    };
+  }
+
   const summary = summarizeApiError(error, fallback);
-  const details: string[] = [`Endpoint returned ${error.status} for ${error.path}.`];
+  const details: string[] = [buildDiagnosticsDetail(error.status)];
 
   if (error.title && error.detail && error.title !== error.detail) {
     details.push(error.title);
@@ -117,6 +131,10 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
   };
 }
 
+function buildDiagnosticsDetail(status: number): string {
+  return `Meridian service returned ${status}. Open diagnostics for technical details.`;
+}
+
 function summarizeApiError(error: ApiError, fallback: string): string {
   if (error.status === 401) {
     return "Session expired or Meridian sign-in is required.";
@@ -127,6 +145,37 @@ function summarizeApiError(error: ApiError, fallback: string): string {
   }
 
   return error.detail ?? error.title ?? fallback;
+}
+
+function summarizeTechnicalApiError(error: ApiError, fallback: string): string {
+  if (error.status === 404) {
+    return "The requested Meridian data is unavailable.";
+  }
+
+  if (error.status >= 500) {
+    return "Meridian could not load this data. Try again or open diagnostics.";
+  }
+
+  return fallback;
+}
+
+function hasRawTechnicalBody(error: ApiError): boolean {
+  return looksLikeRawTechnicalResponse(error.responseBody)
+    || looksLikeRawTechnicalResponse(error.detail)
+    || looksLikeRawTechnicalResponse(error.title);
+}
+
+function looksLikeRawTechnicalResponse(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  return /<!doctype\s+html/i.test(trimmed)
+    || /<html(?:\s|>)/i.test(trimmed)
+    || /\bfile not found\b/i.test(trimmed)
+    || /^404(?:\s|$|:|-)/i.test(trimmed)
+    || /\bhttp\s+error\s+404\b/i.test(trimmed);
 }
 
 function buildMessageSuffix(detail: string | null, validationDetail: string): string {

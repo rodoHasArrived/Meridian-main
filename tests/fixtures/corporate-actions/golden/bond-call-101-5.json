@@ -1,0 +1,31 @@
+{
+  "scenarioId": "bond-call-101-5",
+  "description": "Issuer call at 101.5% of par. The bridge calculates cash from the per-100-par price and the held face quantity.",
+  "ticker": "XYZC29",
+  "securityId": "a4000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a4000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a4000000-aaaa-4000-8000-000000000001",
+      "eventType": "BondCall",
+      "exDate": "2026-06-01",
+      "payDate": "2026-06-08",
+      "dividendPerShare": null,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-05-29",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": 101.5
+    }
+  ],
+  "bars": [],
+  "postingContext": { "positionQuantity": 50000, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [ "journal-balanced" ]
+}

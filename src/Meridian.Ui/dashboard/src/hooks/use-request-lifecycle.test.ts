@@ -91,12 +91,83 @@ describe("useRequestLifecycle", () => {
     expect(next?.version).toBeGreaterThan(first!.version);
   });
 
-  it("Scenario_RetryableProviderFailure_ExposesBackoffMetadataForUserStatus", () => {
+  it("Scenario_FullRefreshInvalidatesSubsidiaryRequest_ClearsRunningStatus", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "trading refresh" }));
+
+    let subsidiary: ReturnType<typeof result.current.start>;
+    act(() => {
+      subsidiary = result.current.start();
+    });
+
+    expect(subsidiary).not.toBeNull();
+    expect(result.current.status.phase).toBe("running");
+    expect(result.current.status.inFlight).toBe(true);
+
+    act(() => {
+      result.current.invalidate();
+    });
+
+    expect(result.current.status.phase).toBe("stale");
+    expect(result.current.status.inFlight).toBe(false);
+    expect(result.current.status.message).toBe("An older refresh response was discarded.");
+
+    act(() => {
+      expect(result.current.finish(subsidiary!)).toBe(false);
+    });
+
+    expect(result.current.status.phase).toBe("stale");
+    expect(result.current.status.inFlight).toBe(false);
+    expect(result.current.status.staleDiscardCount).toBe(1);
+  });
+
+  it("Scenario_RetryableProviderFailure_SchedulesRetryAndExposesBackoffMetadata", () => {
+    vi.useFakeTimers();
+    try {
+      const onRetry = vi.fn();
+      const { result } = renderHook(() => useRequestLifecycle({
+        operation: "provider routing refresh",
+        maxRetries: 2,
+        baseBackoffMs: 250,
+        backoffMultiplier: 3,
+        onRetry
+      }));
+
+      let token: ReturnType<typeof result.current.start>;
+      act(() => {
+        token = result.current.start();
+      });
+      act(() => {
+        result.current.fail(token!, new Error("rate limited"), { fallback: "Provider refresh failed." });
+      });
+
+      expect(result.current.status.phase).toBe("failed");
+      expect(result.current.status.error).toContain("rate limited");
+      expect(result.current.status.backoff).toMatchObject({
+        attempt: 1,
+        retryCount: 0,
+        nextRetryDelayMs: 250,
+        maxRetries: 2
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(249);
+      });
+      expect(onRetry).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(onRetry).toHaveBeenCalledTimes(1);
+      expect(onRetry).toHaveBeenCalledWith({ attempt: 2 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("Scenario_NoRetryRunner_DoesNotAdvertiseARetryThatWillNeverRun", () => {
     const { result } = renderHook(() => useRequestLifecycle({
       operation: "provider routing refresh",
       maxRetries: 2,
-      baseBackoffMs: 250,
-      backoffMultiplier: 3
+      baseBackoffMs: 250
     }));
 
     let token: ReturnType<typeof result.current.start>;
@@ -104,16 +175,170 @@ describe("useRequestLifecycle", () => {
       token = result.current.start();
     });
     act(() => {
-      result.current.fail(token!, new Error("rate limited"), { fallback: "Provider refresh failed." });
+      result.current.fail(token!, new Error("rate limited"));
     });
 
     expect(result.current.status.phase).toBe("failed");
-    expect(result.current.status.error).toContain("rate limited");
     expect(result.current.status.backoff).toMatchObject({
       attempt: 1,
       retryCount: 0,
-      nextRetryDelayMs: 250,
+      nextRetryDelayMs: null,
       maxRetries: 2
     });
+  });
+
+  it("Scenario_RetryBudgetExhausted_FinalFailureStopsScheduling", () => {
+    vi.useFakeTimers();
+    try {
+      const onRetry = vi.fn();
+      const { result } = renderHook(() => useRequestLifecycle({
+        operation: "trading workspace refresh",
+        maxRetries: 1,
+        baseBackoffMs: 100,
+        onRetry
+      }));
+
+      let token: ReturnType<typeof result.current.start>;
+      act(() => {
+        token = result.current.start();
+      });
+      act(() => {
+        result.current.fail(token!, new Error("outage"));
+      });
+      expect(result.current.status.backoff.nextRetryDelayMs).toBe(100);
+
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(onRetry).toHaveBeenCalledWith({ attempt: 2 });
+
+      act(() => {
+        token = result.current.start({ attempt: 2 });
+      });
+      act(() => {
+        result.current.fail(token!, new Error("outage"));
+      });
+
+      expect(result.current.status.backoff).toMatchObject({
+        attempt: 2,
+        retryCount: 1,
+        nextRetryDelayMs: null,
+        maxRetries: 1
+      });
+      act(() => {
+        vi.runAllTimers();
+      });
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("Scenario_NewerRequestSupersedesPendingRetry_TimerIsDiscarded", () => {
+    vi.useFakeTimers();
+    try {
+      const onRetry = vi.fn();
+      const { result } = renderHook(() => useRequestLifecycle({
+        operation: "trading workspace refresh",
+        maxRetries: 2,
+        baseBackoffMs: 500,
+        onRetry
+      }));
+
+      let token: ReturnType<typeof result.current.start>;
+      act(() => {
+        token = result.current.start();
+      });
+      act(() => {
+        result.current.fail(token!, new Error("blip"));
+      });
+      expect(result.current.status.backoff.nextRetryDelayMs).toBe(500);
+
+      // Manual refresh before the retry fires supersedes the pending timer.
+      act(() => {
+        token = result.current.start();
+      });
+      act(() => {
+        vi.runAllTimers();
+      });
+      expect(onRetry).not.toHaveBeenCalled();
+      expect(result.current.status.phase).toBe("running");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("Scenario_OperatorNavigatesAway_PendingRetryIsCancelledOnUnmount", () => {
+    vi.useFakeTimers();
+    try {
+      const onRetry = vi.fn();
+      const { result, unmount } = renderHook(() => useRequestLifecycle({
+        operation: "trading workspace refresh",
+        maxRetries: 2,
+        baseBackoffMs: 500,
+        onRetry
+      }));
+
+      let token: ReturnType<typeof result.current.start>;
+      act(() => {
+        token = result.current.start();
+      });
+      act(() => {
+        result.current.fail(token!, new Error("blip"));
+      });
+
+      unmount();
+      act(() => {
+        vi.runAllTimers();
+      });
+      expect(onRetry).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("Scenario_PollingFailsAfterSuccess_LastSucceededAtSurvivesTheFailure", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
+
+    expect(result.current.status.lastSucceededAt).toBeNull();
+
+    let token: ReturnType<typeof result.current.start>;
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.succeed(token!);
+    });
+
+    const lastSucceededAt = result.current.status.lastSucceededAt;
+    expect(lastSucceededAt).not.toBeNull();
+    expect(result.current.status.settledAt).toBe(lastSucceededAt);
+
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.fail(token!, new Error("provider outage"));
+    });
+
+    expect(result.current.status.phase).toBe("failed");
+    expect(result.current.status.lastSucceededAt).toBe(lastSucceededAt);
+    expect(result.current.status.settledAt).not.toBeNull();
+  });
+
+  it("Scenario_StaleSucceedDiscarded_DoesNotAdvanceLastSucceededAt", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
+
+    let older: ReturnType<typeof result.current.start>;
+    act(() => {
+      older = result.current.start();
+      result.current.start();
+    });
+    act(() => {
+      result.current.succeed(older!);
+    });
+
+    expect(result.current.status.lastSucceededAt).toBeNull();
+    expect(result.current.status.staleDiscardCount).toBe(1);
   });
 });

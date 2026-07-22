@@ -24,23 +24,39 @@ public sealed class AccountingSystemIntegrationService
             QuickBooksOnlineProviderId,
             "QuickBooks Online",
             "Live QuickBooks Online OAuth, company selection, and read-only GL import require the QuickBooks Online provider registration.",
-            ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]),
+            ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+            BuildProviderMappingRequirements(QuickBooksOnlineProviderId)),
         new(
             "xero",
             "Xero",
             "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]),
+            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
+            BuildProviderMappingRequirements("xero-fixture")),
         new(
             "netsuite",
             "NetSuite",
             "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"])
+            ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
+            BuildProviderMappingRequirements("netsuite-fixture"))
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
+    private static readonly HashSet<string> ExternalGlReconciliationSafeguardIssueCodes =
+    [
+        "MissingExternalGlReconciliation",
+        "ExternalGlReconciliationLedgerBookMismatch",
+        "ExternalGlReconciliationPeriodMismatch",
+        "ExternalGlReconciliationSnapshotChanged",
+        "UnresolvedExternalGlBreaks",
+        "MissingExternalGlExportControlEvidence",
+        "UnscopedExternalGlExportControlEvidence",
+        "LiveExternalPostingProviderEnabled",
+        "LiveExternalPostingRetainedPackageEnabled",
+        "MissingGeneratedExternalGlExportLines"
+    ];
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
@@ -85,15 +101,21 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var rows = _mappingProfiles.Values
             .Where(record => normalizedProviderId is null || string.Equals(record.ProviderId, normalizedProviderId, StringComparison.OrdinalIgnoreCase))
             .Where(record => normalizedFundProfileId is null || string.Equals(record.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(record => ledgerBookId is null || record.LedgerBookId == ledgerBookId)
+            .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .Select(static record => record.Profile)
             .OrderBy(static profile => profile.ProviderId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static profile => profile.DisplayName, StringComparer.OrdinalIgnoreCase)
@@ -114,6 +136,8 @@ public sealed class AccountingSystemIntegrationService
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId ?? request.Profile.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var evidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         var certificationState = ResolveMappingProfileCertificationState(
             request.Profile,
@@ -121,6 +145,11 @@ public sealed class AccountingSystemIntegrationService
             fundProfileId,
             profileId,
             evidenceLinks);
+        if (certificationState != AccountingCertificationStateDto.Draft)
+        {
+            EnsureHumanOrigin(request.ActionOrigin, "certify external GL mapping profiles");
+        }
+
         var normalizedProfile = request.Profile with
         {
             ProfileId = profileId,
@@ -139,8 +168,8 @@ public sealed class AccountingSystemIntegrationService
             normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
         }
 
-        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId)] =
-            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks);
+        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId)] =
+            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks, tenantId, companyId);
 
         return Task.FromResult(normalizedProfile);
     }
@@ -152,20 +181,24 @@ public sealed class AccountingSystemIntegrationService
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
 
+        EnsureHumanOrigin(request.ActionOrigin, "retain external GL export review packages");
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
-        var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId);
-        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var providerSupportsPosting = ProviderSupportsPosting(providerId);
+        var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
+        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, request.LedgerBookId);
+        var reconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
         var validationIssues = BuildExportValidationIssues(
             providerId,
             fundProfileId,
+            providerSupportsPosting,
             request.LedgerBookId,
             mappingProfile,
             reconciliation,
@@ -173,12 +206,19 @@ public sealed class AccountingSystemIntegrationService
             periodEnd,
             request.RequireBalancedReconciliation,
             requestEvidenceLinks,
-            generatedLines);
+            generatedLines,
+            packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
             ? AccountingCertificationStateDto.Draft
             : AccountingCertificationStateDto.ReadyForReview;
+        var safeguardIssueCodes = BuildReconciliationSafeguardIssueCodes(validationIssues);
+        var safeguardState = ResolveReconciliationSafeguardState(
+            reconciliation?.ReconciliationId,
+            reconciliationSnapshotHash,
+            safeguardIssueCodes,
+            certificationState);
         var certification = new ExternalGlExportCertificationDto(
             $"external-gl-export-cert-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             certificationState,
@@ -190,7 +230,7 @@ public sealed class AccountingSystemIntegrationService
             evidenceLinks);
 
         var package = new ExternalGlExportPackageDto(
-            BuildExportPackageId(providerId, fundProfileId, periodEnd, tenantId, companyId),
+            BuildExportPackageId(providerId, fundProfileId, request.LedgerBookId, periodEnd, tenantId, companyId),
             providerId,
             fundProfileId,
             request.LedgerBookId,
@@ -208,8 +248,11 @@ public sealed class AccountingSystemIntegrationService
             mappingProfile?.Profile.ProfileId,
             reconciliation?.ReconciliationId,
             request.RequireBalancedReconciliation,
+            safeguardState,
+            safeguardIssueCodes,
             tenantId,
-            companyId);
+            companyId,
+            reconciliationSnapshotHash);
         _exportPackages[package.ExportPackageId] = package;
         return package;
     }
@@ -302,13 +345,18 @@ public sealed class AccountingSystemIntegrationService
             PostingEnabled = false,
             PostingDisabledReason = "Certified guarded export artifact only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.",
             EvidenceLinks = mergedEvidenceLinks,
-            Certification = certification
+            Certification = certification,
+            ReconciliationSafeguardState = ResolveReconciliationSafeguardState(
+                package.ReconciliationId,
+                package.ReconciliationSnapshotHash,
+                package.ReconciliationSafeguardIssueCodes,
+                certification.State)
         };
         _exportPackages[certified.ExportPackageId] = certified;
         return certified;
     }
 
-    public Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
+    public async Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
         string exportPackageId,
         string? tenantId = null,
         string? companyId = null,
@@ -316,9 +364,42 @@ public sealed class AccountingSystemIntegrationService
     {
         ct.ThrowIfCancellationRequested();
         var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
-        return Task.FromResult(TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package)
-            ? BuildExportPackageManifest(package)
-            : null);
+        if (!TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package))
+        {
+            return null;
+        }
+
+        var currentValidationIssues = await BuildCurrentExportCertificationIssuesAsync(package, ct).ConfigureAwait(false);
+        return BuildExportPackageManifest(package, currentValidationIssues);
+    }
+
+    public Task<IReadOnlyList<ExternalGlExportPackageDto>> ListExportPackagesAsync(
+        string? providerId = null,
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        AccountingCertificationStateDto? certificationState = null,
+        string? tenantId = null,
+        string? companyId = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
+        var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+
+        var rows = _exportPackages.Values
+            .Where(package => normalizedProviderId is null || string.Equals(package.ProviderId, normalizedProviderId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => normalizedFundProfileId is null || string.Equals(package.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => ledgerBookId is null || package.LedgerBookId == ledgerBookId)
+            .Where(package => normalizedTenantId is null || string.Equals(package.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => normalizedCompanyId is null || string.Equals(package.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => certificationState is null || package.Certification?.State == certificationState)
+            .OrderByDescending(static package => package.CreatedAtUtc)
+            .ThenBy(static package => package.ExportPackageId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<ExternalGlExportPackageDto>>(rows);
     }
 
     public async Task<AccountingSystemImportDetailDto> ImportAsync(
@@ -329,10 +410,13 @@ public sealed class AccountingSystemIntegrationService
         request ??= new AccountingSystemImportRequestDto();
         var provider = await ResolveProviderAsync(request.ProviderId, ct).ConfigureAwait(false);
         var detail = await provider.ImportAsync(request, ct).ConfigureAwait(false);
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
+        detail = NormalizeImportedDetail(provider, request, detail, tenantId, companyId);
 
         if (request.PersistPreview)
         {
-            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId)] = detail;
+            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId)] = detail;
         }
 
         return detail;
@@ -342,12 +426,16 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedProviderId = await ResolveProviderIdAsync(providerId, ct).ConfigureAwait(false);
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        if (_latestImports.TryGetValue(ImportKey(normalizedProviderId, normalizedFundProfileId, ledgerBookId), out var detail))
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (_latestImports.TryGetValue(ImportKey(normalizedProviderId, normalizedFundProfileId, ledgerBookId, normalizedTenantId, normalizedCompanyId), out var detail))
         {
             return detail;
         }
@@ -357,7 +445,9 @@ public sealed class AccountingSystemIntegrationService
                 normalizedProviderId,
                 normalizedFundProfileId,
                 ledgerBookId,
-                PersistPreview: true),
+                PersistPreview: true,
+                TenantId: normalizedTenantId,
+                CompanyId: normalizedCompanyId),
             ct).ConfigureAwait(false);
     }
 
@@ -365,10 +455,12 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
-        var latest = await GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var latest = await GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var meridianTotals = await LoadMeridianTotalsAsync(latest.Summary, ct).ConfigureAwait(false);
         var externalRows = latest.TrialBalance.ToDictionary(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase);
         var accountCodes = externalRows.Keys.Concat(meridianTotals.Keys).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -433,7 +525,8 @@ public sealed class AccountingSystemIntegrationService
             PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
             rows,
             summaryEvidenceReferences,
-            latest.Summary.LedgerBookId)
+            latest.Summary.LedgerBookId,
+            latest.Summary.ContentHash)
         {
             EvidencePackages = BuildEvidencePackages(
                 latest,
@@ -449,18 +542,26 @@ public sealed class AccountingSystemIntegrationService
         string providerId,
         string fundProfileId,
         Guid? ledgerBookId,
-        string? mappingProfileId)
+        string? mappingProfileId,
+        string? tenantId = null,
+        string? companyId = null)
     {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var scopedCandidates = _mappingProfiles.Values
             .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
             .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-            .Where(record => record.LedgerBookId == ledgerBookId);
+            .Where(record => record.LedgerBookId == ledgerBookId)
+            .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
         var candidates = scopedCandidates.Any() || ledgerBookId is null
             ? scopedCandidates
             : _mappingProfiles.Values
                 .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
                 .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-                .Where(static record => record.LedgerBookId is null);
+                .Where(static record => record.LedgerBookId is null)
+                .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+                .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
 
         if (!string.IsNullOrWhiteSpace(mappingProfileId))
         {
@@ -477,7 +578,9 @@ public sealed class AccountingSystemIntegrationService
         string providerId,
         string fundProfileId,
         Guid? ledgerBookId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
     {
         if (!_providers.Any(provider => string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)))
         {
@@ -486,7 +589,13 @@ public sealed class AccountingSystemIntegrationService
 
         try
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ex) when (
+            ledgerBookId.HasValue &&
+            ex.Message.Contains("returned ledger book", StringComparison.OrdinalIgnoreCase))
+        {
+            return await ReconcileLatestAsync(providerId, fundProfileId, null, ct, tenantId, companyId).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
@@ -502,17 +611,23 @@ public sealed class AccountingSystemIntegrationService
             package.ProviderId,
             package.FundProfileId,
             package.LedgerBookId,
-            package.MappingProfileId);
+            package.MappingProfileId,
+            package.TenantId,
+            package.CompanyId);
         var reconciliation = await TryReconcileLatestAsync(
             package.ProviderId,
             package.FundProfileId,
             package.LedgerBookId,
-            ct).ConfigureAwait(false);
+            ct,
+            package.TenantId,
+            package.CompanyId).ConfigureAwait(false);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
+        var currentReconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
 
         return BuildExportValidationIssues(
             package.ProviderId,
             package.FundProfileId,
+            ProviderSupportsPosting(package.ProviderId),
             package.LedgerBookId,
             mappingProfile,
             reconciliation,
@@ -521,12 +636,15 @@ public sealed class AccountingSystemIntegrationService
             package.RequireBalancedReconciliation,
             package.EvidenceLinks,
             generatedLines,
-            package.ReconciliationId);
+            package.ReconciliationId,
+            package.ReconciliationSnapshotHash,
+            currentReconciliationSnapshotHash);
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
         string fundProfileId,
+        bool providerSupportsPosting,
         Guid? exportLedgerBookId,
         ScopedExternalGlMappingProfile? mappingProfile,
         AccountingSystemReconciliationSummaryDto? reconciliation,
@@ -535,11 +653,23 @@ public sealed class AccountingSystemIntegrationService
         bool requireBalancedReconciliation,
         IReadOnlyList<string> requestEvidenceLinks,
         IReadOnlyList<ExternalGlExportLineDto> generatedLines,
-        string? packageReconciliationId = null)
+        string? packageReconciliationId = null,
+        string? packageReconciliationSnapshotHash = null,
+        string? currentReconciliationSnapshotHash = null)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var mappingProfileLedgerBookMatchesExport = exportLedgerBookId is null ||
             (mappingProfile is not null && mappingProfile.LedgerBookId == exportLedgerBookId);
+        if (providerSupportsPosting)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "LiveExternalPostingProviderEnabled",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL provider advertises live posting capability, so guarded export review cannot proceed under the import-first policy.",
+                providerId,
+                "Disable live posting capability or register a read-only import/reconciliation provider before creating or certifying guarded export packages."));
+        }
+
         if (exportLedgerBookId is null)
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -633,7 +763,7 @@ public sealed class AccountingSystemIntegrationService
                     AccountingConfigurationValidationSeverityDto.Critical,
                     $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' has no dimension mappings.",
                     mappingProfile.Profile.ProfileId,
-                    "Map Meridian fund/entity/dimensional scopes to external GL dimensions before export certification."));
+                    "Map Meridian canonical accounting dimensions to external GL dimensions before export certification."));
             }
             else
             {
@@ -648,15 +778,15 @@ public sealed class AccountingSystemIntegrationService
                 }
 
                 foreach (var mapping in dimensionMappings.Where(static mapping =>
-                    !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
-                    !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+                    !HasRequiredExternalGlDimensionScope(mapping.MeridianDimensions) ||
+                    !HasRequiredExternalGlDimensionScope(mapping.ExternalDimensions)))
                 {
                     issues.Add(new AccountingConfigurationValidationIssueDto(
                         "IncompleteExternalGlDimensionMapping",
                         AccountingConfigurationValidationSeverityDto.Critical,
-                        $"External GL dimension mapping '{mapping.ProfileId}' is missing fund or entity scope.",
+                        $"External GL dimension mapping '{mapping.ProfileId}' is missing canonical accounting or external GL dimensional scope.",
                         mapping.ProfileId,
-                        "Map both fund and entity dimensions on the Meridian and external GL sides before export certification."));
+                        "Map fund, entity, ledger book, operating/investment dimensions, customer, vendor, project, and external GL dimensions on both sides before export certification."));
                 }
             }
         }
@@ -703,6 +833,18 @@ public sealed class AccountingSystemIntegrationService
                     "Recreate the guarded export package from the latest retained reconciliation before certification."));
             }
 
+            if (!string.IsNullOrWhiteSpace(packageReconciliationSnapshotHash) &&
+                !string.IsNullOrWhiteSpace(currentReconciliationSnapshotHash) &&
+                !string.Equals(packageReconciliationSnapshotHash, currentReconciliationSnapshotHash, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ExternalGlReconciliationSnapshotChanged",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "External GL reconciliation snapshot content changed after export package creation.",
+                    reconciliation.ReconciliationId,
+                    "Recreate the guarded export package from the latest retained reconciliation before certification."));
+            }
+
             if (requireBalancedReconciliation && reconciliation.BreakCount > 0)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -736,9 +878,66 @@ public sealed class AccountingSystemIntegrationService
         return issues;
     }
 
-    private static bool HasRequiredDimensionScope(LedgerDimensionSetDto? dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions?.FundId) &&
-           !string.IsNullOrWhiteSpace(dimensions.EntityId);
+    private static IReadOnlyList<string> BuildReconciliationSafeguardIssueCodes(
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+        => validationIssues
+            .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(static issue => issue.Code)
+            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private bool ProviderSupportsPosting(string providerId)
+        => _providers.Any(provider =>
+            string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) &&
+            provider.Capabilities.SupportsPosting);
+
+    private static ExternalGlExportReconciliationSafeguardStateDto ResolveReconciliationSafeguardState(
+        string? reconciliationId,
+        string? reconciliationSnapshotHash,
+        IReadOnlyList<string> safeguardIssueCodes,
+        AccountingCertificationStateDto certificationState)
+    {
+        if (string.IsNullOrWhiteSpace(reconciliationId) ||
+            string.IsNullOrWhiteSpace(reconciliationSnapshotHash))
+        {
+            return ExternalGlExportReconciliationSafeguardStateDto.MissingEvidence;
+        }
+
+        if (safeguardIssueCodes.Count > 0)
+        {
+            return ExternalGlExportReconciliationSafeguardStateDto.Blocked;
+        }
+
+        return certificationState == AccountingCertificationStateDto.Certified
+            ? ExternalGlExportReconciliationSafeguardStateDto.Certified
+            : ExternalGlExportReconciliationSafeguardStateDto.Ready;
+    }
+
+    private static bool HasRequiredExternalGlDimensionScope(LedgerDimensionSetDto? dimensions)
+        => dimensions is not null &&
+           !string.IsNullOrWhiteSpace(dimensions.FundId) &&
+           !string.IsNullOrWhiteSpace(dimensions.EntityId) &&
+           !string.IsNullOrWhiteSpace(dimensions.SleeveId) &&
+           !string.IsNullOrWhiteSpace(dimensions.StrategyId) &&
+           !string.IsNullOrWhiteSpace(dimensions.InvestorId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) &&
+           dimensions.InstrumentId.HasValue &&
+           !string.IsNullOrWhiteSpace(dimensions.TaxLotId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CostCenterId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) &&
+           !string.IsNullOrWhiteSpace(dimensions.OrganizationId) &&
+           !string.IsNullOrWhiteSpace(dimensions.PortfolioId) &&
+           !string.IsNullOrWhiteSpace(dimensions.BookId) &&
+           !string.IsNullOrWhiteSpace(dimensions.AccountId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CustomerId) &&
+           !string.IsNullOrWhiteSpace(dimensions.VendorId) &&
+           !string.IsNullOrWhiteSpace(dimensions.ProjectId) &&
+           dimensions.ExternalGlDimensions.Count > 0 &&
+           dimensions.ExternalGlDimensions.All(static pair =>
+               !string.IsNullOrWhiteSpace(pair.Key) &&
+               !string.IsNullOrWhiteSpace(pair.Value));
 
     private static IReadOnlyList<ExternalGlExportLineDto> BuildGeneratedExportLines(
         ScopedExternalGlMappingProfile? mappingProfile,
@@ -788,8 +987,8 @@ public sealed class AccountingSystemIntegrationService
         if (dimensionMappings.Count == 0 ||
             dimensionMappings.Any(static mapping =>
                 mapping.CertificationState != AccountingCertificationStateDto.Certified ||
-                !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
-                !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+                !HasRequiredExternalGlDimensionScope(mapping.MeridianDimensions) ||
+                !HasRequiredExternalGlDimensionScope(mapping.ExternalDimensions)))
         {
             return null;
         }
@@ -821,9 +1020,21 @@ public sealed class AccountingSystemIntegrationService
     }
 
     private static ExternalGlExportPackageManifestDto BuildExportPackageManifest(
-        ExternalGlExportPackageDto package)
+        ExternalGlExportPackageDto package,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> currentValidationIssues)
     {
+        var manifestPostingDisabledReason = ResolveManifestPostingDisabledReason(package);
+        var validationIssues = MergeExportManifestValidationIssues(
+            package.ValidationIssues,
+            currentValidationIssues,
+            BuildRetainedPostingStateIssues(package));
+        var safeguardIssueCodes = BuildReconciliationSafeguardIssueCodes(validationIssues);
         var certificationState = package.Certification?.State ?? AccountingCertificationStateDto.Draft;
+        var safeguardState = ResolveReconciliationSafeguardState(
+            package.ReconciliationId,
+            package.ReconciliationSnapshotHash,
+            safeguardIssueCodes,
+            certificationState);
         var evidenceLinks = NormalizeEvidenceReferences(
             package.EvidenceLinks.Concat(package.Certification?.EvidenceLinks ?? []));
         var payload = JsonSerializer.Serialize(
@@ -839,17 +1050,28 @@ public sealed class AccountingSystemIntegrationService
                 package.PeriodEnd,
                 package.MappingProfileId,
                 package.ReconciliationId,
+                package.ReconciliationSnapshotHash,
                 package.RequireBalancedReconciliation,
+                ReconciliationSafeguardState = safeguardState,
+                ReconciliationSafeguardIssueCodes = safeguardIssueCodes,
                 certificationState,
-                package.PostingEnabled,
-                package.PostingDisabledReason,
+                PostingEnabled = false,
+                PostingDisabledReason = manifestPostingDisabledReason,
                 generatedLineCount = package.GeneratedLines.Count,
                 generatedLines = package.GeneratedLines,
                 evidenceLinks,
-                validationIssues = package.ValidationIssues
+                validationIssues
             },
             JsonOptions);
-        var contentHash = ComputeExportPackageHash(package, certificationState, evidenceLinks);
+        var contentHash = ComputeExportPackageHash(
+            package,
+            certificationState,
+            evidenceLinks,
+            validationIssues,
+            safeguardState,
+            safeguardIssueCodes,
+            postingEnabled: false,
+            manifestPostingDisabledReason);
         return new ExternalGlExportPackageManifestDto(
             package.ExportPackageId,
             package.ProviderId,
@@ -863,22 +1085,113 @@ public sealed class AccountingSystemIntegrationService
             "application/json",
             $"{SanitizeId(package.ExportPackageId)}.external-gl-export.json",
             ExternalPostingAllowed: false,
-            package.PostingDisabledReason,
+            manifestPostingDisabledReason,
             payload,
             package.GeneratedLines,
             evidenceLinks,
-            package.ValidationIssues,
+            validationIssues,
             package.MappingProfileId,
             package.ReconciliationId,
             package.RequireBalancedReconciliation,
+            safeguardState,
+            safeguardIssueCodes,
             package.TenantId,
-            package.CompanyId);
+            package.CompanyId,
+            package.ReconciliationSnapshotHash);
+    }
+
+    private static string ResolveManifestPostingDisabledReason(ExternalGlExportPackageDto package)
+        => !package.PostingEnabled && !string.IsNullOrWhiteSpace(package.PostingDisabledReason)
+            ? package.PostingDisabledReason
+            : "Controlled external GL export manifest only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.";
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildRetainedPostingStateIssues(
+        ExternalGlExportPackageDto package)
+    {
+        if (!package.PostingEnabled && !string.IsNullOrWhiteSpace(package.PostingDisabledReason))
+        {
+            return [];
+        }
+
+        return
+        [
+            new AccountingConfigurationValidationIssueDto(
+                "LiveExternalPostingRetainedPackageEnabled",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Retained external GL export package state attempted to enable live posting or removed the posting-disabled reason; manifest output remains posting-disabled.",
+                package.ExportPackageId,
+                "Recreate the guarded external GL export package from the current import/reconciliation evidence before review or certification.")
+        ];
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> MergeExportManifestValidationIssues(
+        params IReadOnlyList<AccountingConfigurationValidationIssueDto>[] issueSets)
+        => issueSets
+            .SelectMany(static issues => issues)
+            .GroupBy(
+                static issue => string.Join(
+                    "\u001f",
+                    issue.Code,
+                    issue.Severity,
+                    issue.TargetId ?? string.Empty,
+                    issue.Message,
+                    issue.SuggestedAction ?? string.Empty),
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderByDescending(static issue => issue.Severity)
+            .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static string? ComputeReconciliationSnapshotHash(AccountingSystemReconciliationSummaryDto? reconciliation)
+    {
+        if (reconciliation is null)
+        {
+            return null;
+        }
+
+        var payload = string.Join(
+            "|",
+            reconciliation.ReconciliationId,
+            reconciliation.ImportId,
+            reconciliation.ProviderId,
+            reconciliation.FundProfileId,
+            reconciliation.LedgerBookId?.ToString("D") ?? string.Empty,
+            reconciliation.ImportContentHash ?? string.Empty,
+            reconciliation.PeriodStart.ToString("yyyy-MM-dd"),
+            reconciliation.PeriodEnd.ToString("yyyy-MM-dd"),
+            reconciliation.MatchedCount,
+            reconciliation.BreakCount,
+            reconciliation.TotalExternalDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalExternalCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalMeridianDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalMeridianCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            string.Join(",", reconciliation.Rows
+                .OrderBy(static row => row.RowId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatReconciliationRowForHash)),
+            string.Join(",", reconciliation.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", reconciliation.EvidencePackages
+                .OrderBy(static package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+                .Select(static package => string.Join(
+                    ":",
+                    package.PackageId,
+                    package.Label,
+                    package.Status,
+                    package.EvidenceReferenceCount,
+                    string.Join("\u001d", package.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+                    string.Join("\u001d", package.RequiredActions.Order(StringComparer.OrdinalIgnoreCase))))));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
     private static string ComputeExportPackageHash(
         ExternalGlExportPackageDto package,
         AccountingCertificationStateDto certificationState,
-        IReadOnlyList<string> evidenceLinks)
+        IReadOnlyList<string> evidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        ExternalGlExportReconciliationSafeguardStateDto safeguardState,
+        IReadOnlyList<string> safeguardIssueCodes,
+        bool postingEnabled,
+        string postingDisabledReason)
     {
         var payload = string.Join(
             "|",
@@ -892,20 +1205,42 @@ public sealed class AccountingSystemIntegrationService
             package.PeriodEnd.ToString("yyyy-MM-dd"),
             package.MappingProfileId ?? string.Empty,
             package.ReconciliationId ?? string.Empty,
+            package.ReconciliationSnapshotHash ?? string.Empty,
             package.RequireBalancedReconciliation,
+            safeguardState,
+            string.Join(",", safeguardIssueCodes.Order(StringComparer.OrdinalIgnoreCase)),
             certificationState,
-            package.PostingEnabled,
-            package.PostingDisabledReason,
+            postingEnabled,
+            postingDisabledReason,
             string.Join(",", package.GeneratedLines
                 .OrderBy(static line => line.ExportLineId, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatGeneratedExportLineForHash)),
-            string.Join(",", package.ValidationIssues
+            string.Join(",", validationIssues
                 .OrderBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
+
+    private static string FormatReconciliationRowForHash(AccountingSystemReconciliationRowDto row)
+        => string.Join(
+            ":",
+            row.RowId,
+            row.AccountCode,
+            row.AccountName,
+            row.Currency,
+            row.Status,
+            row.ExternalDebit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.ExternalCredit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.MeridianDebit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.MeridianCredit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.Variance.ToString("0.00", CultureInfo.InvariantCulture),
+            row.Detail,
+            row.EvidenceRef ?? string.Empty,
+            string.Join(",", row.ExternalEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", row.MeridianEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)));
 
     private static string FormatGeneratedExportLineForHash(ExternalGlExportLineDto line)
         => string.Join(
@@ -934,7 +1269,7 @@ public sealed class AccountingSystemIntegrationService
         var externalGl = dimensions.ExternalGlDimensions
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
-        return string.Join(
+        var signature = string.Join(
             "\u001e",
             dimensions.FundId ?? string.Empty,
             dimensions.EntityId ?? string.Empty,
@@ -954,7 +1289,224 @@ public sealed class AccountingSystemIntegrationService
             dimensions.CustomerId ?? string.Empty,
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}\u001epositionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
+
+    private static AccountingSystemImportDetailDto NormalizeImportedDetail(
+        IAccountingSystemProvider provider,
+        AccountingSystemImportRequestDto request,
+        AccountingSystemImportDetailDto detail,
+        string? tenantId,
+        string? companyId)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(detail);
+        ArgumentNullException.ThrowIfNull(detail.Summary);
+
+        var providerId = NormalizeProviderId(provider.ProviderId);
+        var summaryProviderId = NormalizeProviderId(detail.Summary.ProviderId);
+        if (!string.Equals(providerId, summaryProviderId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned import evidence for provider '{summaryProviderId}'.");
+        }
+
+        var requestedFundProfileId = string.IsNullOrWhiteSpace(request.FundProfileId)
+            ? null
+            : NormalizeFundProfileId(request.FundProfileId);
+        var summaryFundProfileId = NormalizeFundProfileId(detail.Summary.FundProfileId);
+        if (requestedFundProfileId is not null &&
+            !string.Equals(requestedFundProfileId, summaryFundProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned fund profile '{summaryFundProfileId}' for requested fund profile '{requestedFundProfileId}'.");
+        }
+
+        if (request.LedgerBookId.HasValue && detail.Summary.LedgerBookId != request.LedgerBookId)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned ledger book '{detail.Summary.LedgerBookId?.ToString("D") ?? "unscoped"}' for requested ledger book '{request.LedgerBookId.Value:D}'.");
+        }
+
+        if (request.PeriodStart.HasValue && detail.Summary.PeriodStart != request.PeriodStart.Value)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned period start {detail.Summary.PeriodStart:yyyy-MM-dd} for requested period start {request.PeriodStart.Value:yyyy-MM-dd}.");
+        }
+
+        if (request.PeriodEnd.HasValue && detail.Summary.PeriodEnd != request.PeriodEnd.Value)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned period end {detail.Summary.PeriodEnd:yyyy-MM-dd} for requested period end {request.PeriodEnd.Value:yyyy-MM-dd}.");
+        }
+
+        if (detail.Summary.PeriodEnd < detail.Summary.PeriodStart)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned an invalid import period ending before it starts.");
+        }
+
+        var chartAccounts = detail.ChartAccounts ?? [];
+        var journalEntries = detail.JournalEntries ?? [];
+        var trialBalance = detail.TrialBalance ?? [];
+        EnsureImportCountMatches(providerId, "chart account", detail.Summary.ChartAccountCount, chartAccounts.Count);
+        EnsureImportCountMatches(providerId, "journal entry", detail.Summary.JournalEntryCount, journalEntries.Count);
+        EnsureImportCountMatches(providerId, "trial-balance line", detail.Summary.TrialBalanceLineCount, trialBalance.Count);
+        EnsureBalancedJournalEvidence(providerId, journalEntries);
+
+        var evidenceReferences = NormalizeEvidenceReferences(detail.Summary.EvidenceReferences);
+        var warnings = NormalizeEvidenceReferences(detail.Summary.Warnings);
+        var normalizedSummary = detail.Summary with
+        {
+            ProviderId = providerId,
+            FundProfileId = summaryFundProfileId,
+            State = request.PersistPreview
+                ? AccountingSystemImportStateDto.Imported
+                : AccountingSystemImportStateDto.Previewed,
+            ChartAccountCount = chartAccounts.Count,
+            JournalEntryCount = journalEntries.Count,
+            TrialBalanceLineCount = trialBalance.Count,
+            EvidenceReferences = evidenceReferences,
+            Warnings = warnings,
+            TenantId = tenantId,
+            CompanyId = companyId
+        };
+
+        normalizedSummary = normalizedSummary with
+        {
+            ContentHash = ComputeImportContentHash(
+                normalizedSummary,
+                chartAccounts,
+                journalEntries,
+                trialBalance)
+        };
+
+        return detail with
+        {
+            Summary = normalizedSummary,
+            ChartAccounts = chartAccounts,
+            JournalEntries = journalEntries,
+            TrialBalance = trialBalance
+        };
+    }
+
+    private static void EnsureImportCountMatches(
+        string providerId,
+        string label,
+        int summaryCount,
+        int actualCount)
+    {
+        if (summaryCount != actualCount)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned {label} count {summaryCount}, but the payload contains {actualCount} {label}(s).");
+        }
+    }
+
+    private static void EnsureBalancedJournalEvidence(
+        string providerId,
+        IReadOnlyList<AccountingSystemJournalEntryDto> journalEntries)
+    {
+        foreach (var entry in journalEntries)
+        {
+            var lineDebitTotal = entry.Lines.Sum(static line => line.Debit);
+            var lineCreditTotal = entry.Lines.Sum(static line => line.Credit);
+            if (Math.Abs(entry.TotalDebits - entry.TotalCredits) > 0.01m ||
+                Math.Abs(lineDebitTotal - lineCreditTotal) > 0.01m ||
+                Math.Abs(entry.TotalDebits - lineDebitTotal) > 0.01m ||
+                Math.Abs(entry.TotalCredits - lineCreditTotal) > 0.01m)
+            {
+                throw new InvalidOperationException(
+                    $"Accounting-system provider '{providerId}' returned unbalanced journal entry '{entry.ExternalJournalEntryId}'.");
+            }
+        }
+    }
+
+    private static string ComputeImportContentHash(
+        AccountingSystemImportSummaryDto summary,
+        IReadOnlyList<AccountingSystemChartAccountDto> chartAccounts,
+        IReadOnlyList<AccountingSystemJournalEntryDto> journalEntries,
+        IReadOnlyList<AccountingSystemTrialBalanceLineDto> trialBalance)
+    {
+        var payload = string.Join(
+            "|",
+            summary.ImportId,
+            summary.ProviderId,
+            summary.FundProfileId,
+            summary.LedgerBookId?.ToString("D") ?? string.Empty,
+            summary.TenantId ?? string.Empty,
+            summary.CompanyId ?? string.Empty,
+            summary.PeriodStart.ToString("yyyy-MM-dd"),
+            summary.PeriodEnd.ToString("yyyy-MM-dd"),
+            string.Join(",", summary.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", chartAccounts
+                .OrderBy(static account => account.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static account => account.AccountCode, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatChartAccountForHash)),
+            string.Join(",", journalEntries
+                .OrderBy(static entry => entry.ExternalJournalEntryId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatJournalEntryForHash)),
+            string.Join(",", trialBalance
+                .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatTrialBalanceLineForHash)));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+    }
+
+    private static string FormatChartAccountForHash(AccountingSystemChartAccountDto account)
+        => string.Join(
+            ":",
+            account.ExternalAccountId,
+            account.AccountCode,
+            account.DisplayName,
+            account.AccountType,
+            account.Currency,
+            account.IsActive,
+            account.ParentExternalAccountId ?? string.Empty,
+            account.EvidenceRef ?? string.Empty);
+
+    private static string FormatJournalEntryForHash(AccountingSystemJournalEntryDto entry)
+        => string.Join(
+            ":",
+            entry.ExternalJournalEntryId,
+            entry.AccountingDate.ToString("yyyy-MM-dd"),
+            entry.Description,
+            entry.Currency,
+            entry.TotalDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            entry.TotalCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            entry.EvidenceRef ?? string.Empty,
+            string.Join("\u001d", entry.Lines
+                .OrderBy(static line => line.ExternalLineId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatJournalLineForHash)));
+
+    private static string FormatJournalLineForHash(AccountingSystemJournalLineDto line)
+        => string.Join(
+            ":",
+            line.ExternalLineId,
+            line.ExternalAccountId,
+            line.AccountCode,
+            line.Description,
+            line.Debit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Credit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Currency,
+            line.EvidenceRef ?? string.Empty);
+
+    private static string FormatTrialBalanceLineForHash(AccountingSystemTrialBalanceLineDto line)
+        => string.Join(
+            ":",
+            line.ExternalAccountId,
+            line.AccountCode,
+            line.AccountName,
+            line.AccountType,
+            line.Debit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Credit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Currency,
+            line.AsOfDate.ToString("yyyy-MM-dd"),
+            line.EvidenceRef ?? string.Empty);
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
         AccountingSystemImportSummaryDto summary,
@@ -1158,8 +1710,119 @@ public sealed class AccountingSystemIntegrationService
             statusLabel,
             statusDetail,
             provider.Capabilities.EvidenceKinds,
-            metadata);
+            metadata,
+            BuildProviderMappingRequirements(provider.ProviderId));
     }
+
+    private static IReadOnlyList<AccountingSystemProviderMappingRequirementDto> BuildProviderMappingRequirements(
+        string providerId)
+    {
+        var normalized = NormalizeProviderId(providerId);
+        var accountEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroAccount",
+            "netsuite" or "netsuite-fixture" => "NetSuiteAccount",
+            _ => "QuickBooksAccount"
+        };
+        var journalEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroManualJournal",
+            "netsuite" or "netsuite-fixture" => "NetSuiteJournalEntry",
+            _ => "QuickBooksJournalEntry"
+        };
+        var trialBalanceEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroTrialBalance",
+            "netsuite" or "netsuite-fixture" => "NetSuiteTrialBalance",
+            _ => "QuickBooksTrialBalance"
+        };
+        var dimensionVocabulary = normalized switch
+        {
+            "xero" or "xero-fixture" => "Xero tracking categories",
+            "netsuite" or "netsuite-fixture" => "NetSuite segments, departments, classes, and subsidiaries",
+            _ => "QuickBooks classes, locations, and departments"
+        };
+
+        return
+        [
+            new(
+                $"{normalized}:account-mapping",
+                "Account mapping",
+                accountEvidenceKind,
+                "Map every reconciled Meridian GL account to a certified external GL account before guarded export review."),
+            new(
+                $"{normalized}:journal-lineage",
+                "Journal lineage",
+                journalEvidenceKind,
+                "Retain provider journal evidence and Meridian ledger-entry lineage for the exact fund, book, and export period."),
+            new(
+                $"{normalized}:trial-balance-tie-out",
+                "Trial-balance tie-out",
+                trialBalanceEvidenceKind,
+                "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification."),
+            new(
+                $"{normalized}:dimension-mapping",
+                "Dimension mapping",
+                $"{accountEvidenceKind}:Dimensions",
+                $"Certify canonical Meridian dimensions against {dimensionVocabulary} before generated export lines can be review-ready."),
+            .. BuildProviderSpecificMappingRequirements(normalized, accountEvidenceKind, journalEvidenceKind)
+        ];
+    }
+
+    private static IReadOnlyList<AccountingSystemProviderMappingRequirementDto> BuildProviderSpecificMappingRequirements(
+        string normalizedProviderId,
+        string accountEvidenceKind,
+        string journalEvidenceKind)
+        => normalizedProviderId switch
+        {
+            "xero" or "xero-fixture" =>
+            [
+                new(
+                    $"{normalizedProviderId}:tracking-category-options",
+                    "Tracking category options",
+                    "XeroTrackingCategory",
+                    "Retain and certify Xero tracking category option mappings for fund, entity, strategy, cost center, and external GL dimensions before guarded export review."),
+                new(
+                    $"{normalizedProviderId}:contact-mapping",
+                    "Contact mapping",
+                    "XeroContact",
+                    "Map Meridian counterparty, customer, vendor, investor, and capital-account dimensions to certified Xero contacts for generated export lines."),
+                new(
+                    $"{normalizedProviderId}:tax-rate-mapping",
+                    "Tax rate mapping",
+                    "XeroTaxRate",
+                    "Certify Xero tax-rate treatment for taxable journal lines so export reviewers can reconcile tax classification without live posting."),
+                new(
+                    $"{normalizedProviderId}:bank-account-scope",
+                    "Bank account scope",
+                    accountEvidenceKind,
+                    "Identify Xero bank-account and clearing-account mappings for cash activity, transfers, and reconciliation evidence before export certification.")
+            ],
+            "netsuite" or "netsuite-fixture" =>
+            [
+                new(
+                    $"{normalizedProviderId}:subsidiary-scope",
+                    "Subsidiary scope",
+                    "NetSuiteSubsidiary",
+                    "Map Meridian fund, entity, and ledger-book scope to certified NetSuite subsidiaries before generated export lines can be review-ready."),
+                new(
+                    $"{normalizedProviderId}:classification-segments",
+                    "Classification segments",
+                    "NetSuiteSegment",
+                    "Retain certified NetSuite department, class, location, and custom-segment mappings for fund, sleeve, strategy, cost center, and external GL dimensions."),
+                new(
+                    $"{normalizedProviderId}:entity-mapping",
+                    "Entity mapping",
+                    "NetSuiteEntity",
+                    "Map Meridian counterparty, customer, vendor, investor, and capital-account dimensions to NetSuite entities for generated journal-entry evidence."),
+                new(
+                    $"{normalizedProviderId}:intercompany-controls",
+                    "Intercompany controls",
+                    journalEvidenceKind,
+                    "Retain intercompany elimination and due-to/due-from mapping evidence before NetSuite export packages can be certified.")
+            ],
+            _ => []
+        };
 
     private static AccountingSystemReconciliationStatusDto ResolveStatus(
         AccountingSystemTrialBalanceLineDto? external,
@@ -1253,9 +1916,9 @@ public sealed class AccountingSystemIntegrationService
         string fundProfileId,
         string profileId)
         => evidenceLinks.Any(link =>
-            link.Contains(profileId, StringComparison.OrdinalIgnoreCase) ||
-            (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
-             link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)));
+            ReferencesEvidenceToken(link, profileId) ||
+            (ReferencesEvidenceToken(link, providerId) &&
+             ReferencesEvidenceToken(link, fundProfileId)));
 
     private static bool HasMappingProfileCertificationEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
@@ -1289,13 +1952,13 @@ public sealed class AccountingSystemIntegrationService
         var compactPeriodEnd = $"{package.PeriodEnd:yyyyMMdd}";
         return evidenceLinks.Any(link =>
             HasExportCertificationEvidence([link]) &&
-            link.Contains(package.ExportPackageId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
-            HasLedgerBookEvidence(link, package.LedgerBookId) &&
-            ((link.Contains(periodStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(periodEnd, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(compactPeriodStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(compactPeriodEnd, StringComparison.OrdinalIgnoreCase))));
+            ReferencesEvidenceToken(link, package.ExportPackageId) &&
+            ReferencesEvidenceToken(link, package.Certification.CertificationId) &&
+            HasExplicitLedgerBookEvidence(link, package.LedgerBookId) &&
+            ((ReferencesEvidenceToken(link, periodStart) &&
+              ReferencesEvidenceToken(link, periodEnd)) ||
+             (ReferencesEvidenceToken(link, compactPeriodStart) &&
+              ReferencesEvidenceToken(link, compactPeriodEnd))));
     }
 
 
@@ -1322,13 +1985,13 @@ public sealed class AccountingSystemIntegrationService
         var compactEnd = $"{periodEnd:yyyyMMdd}";
         return evidenceLinks.Any(link =>
             HasLedgerBookEvidence(link, ledgerBookId) &&
-            (link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) ||
-             (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(formattedStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(formattedEnd, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(compactStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(compactEnd, StringComparison.OrdinalIgnoreCase))));
+            (ReferencesEvidenceToken(link, fundProfileId) ||
+             (ReferencesEvidenceToken(link, providerId) &&
+              ReferencesEvidenceToken(link, fundProfileId)) ||
+             (ReferencesEvidenceToken(link, formattedStart) &&
+              ReferencesEvidenceToken(link, formattedEnd)) ||
+             (ReferencesEvidenceToken(link, compactStart) &&
+              ReferencesEvidenceToken(link, compactEnd))));
     }
 
     private static bool HasExportPackageControlEvidenceWithProvenance(
@@ -1349,9 +2012,122 @@ public sealed class AccountingSystemIntegrationService
             return true;
         }
 
-        return link.Contains(scopedLedgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(scopedLedgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+        return HasExplicitLedgerBookEvidence(link, scopedLedgerBookId);
     }
+
+    private static bool HasExplicitLedgerBookEvidence(string link, Guid? ledgerBookId)
+    {
+        if (ledgerBookId is not Guid scopedLedgerBookId)
+        {
+            return true;
+        }
+
+        var ledgerBookIdText = scopedLedgerBookId.ToString("D");
+        var ledgerBookIdCompact = scopedLedgerBookId.ToString("N");
+        return ReferencesScopedValue(link, "ledger-book:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledger-book/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledger-book=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book=", ledgerBookIdCompact);
+    }
+
+    private static bool ReferencesScopedValue(string reference, string prefix, string value)
+    {
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var valueIndex = string.IsNullOrEmpty(prefix)
+                ? reference.IndexOf(value, searchIndex, StringComparison.OrdinalIgnoreCase)
+                : IndexOfScopedValue(reference, prefix, value, searchIndex);
+            if (valueIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex + value.Length;
+        }
+
+        return false;
+    }
+
+    private static bool ReferencesEvidenceToken(string reference, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var valueIndex = reference.IndexOf(value, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (valueIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(reference, valueIndex - 1) &&
+                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex + value.Length;
+        }
+
+        return false;
+    }
+
+    private static int IndexOfScopedValue(string reference, string prefix, string value, int searchIndex)
+    {
+        while (searchIndex < reference.Length)
+        {
+            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return -1;
+            }
+
+            var valueIndex = prefixIndex + prefix.Length;
+            if (reference.Length >= valueIndex + value.Length &&
+                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                return valueIndex;
+            }
+
+            searchIndex = valueIndex;
+        }
+
+        return -1;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string reference, int index)
+        => index >= reference.Length ||
+           reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
@@ -1378,21 +2154,34 @@ public sealed class AccountingSystemIntegrationService
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static string ImportKey(string providerId, string fundProfileId, Guid? ledgerBookId)
-        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}";
+    private static string ImportKey(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string? tenantId = null,
+        string? companyId = null)
+        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}|{BuildTenantPackageScope(tenantId, companyId)}";
 
-    private static string MappingProfileKey(string providerId, string fundProfileId, Guid? ledgerBookId, string profileId)
-        => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{profileId.Trim().ToLowerInvariant()}";
+    private static string MappingProfileKey(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string profileId,
+        string? tenantId,
+        string? companyId)
+        => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{BuildTenantPackageScope(tenantId, companyId)}|{profileId.Trim().ToLowerInvariant()}";
 
     private static string BuildExportPackageId(
         string providerId,
         string fundProfileId,
+        Guid? ledgerBookId,
         DateOnly periodEnd,
         string? tenantId,
         string? companyId)
     {
         var tenantScope = BuildTenantPackageScope(tenantId, companyId);
-        var baseId = $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}";
+        var bookScope = ledgerBookId.HasValue ? $"-book-{ledgerBookId.Value:N}" : string.Empty;
+        var baseId = $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}{bookScope}-{periodEnd:yyyyMMdd}";
         return string.IsNullOrWhiteSpace(tenantScope)
             ? $"{baseId}-{Guid.NewGuid():N}"
             : $"{baseId}-{tenantScope}-{Guid.NewGuid():N}";
@@ -1459,7 +2248,8 @@ public sealed class AccountingSystemIntegrationService
         string ProviderId,
         string DisplayName,
         string StatusDetail,
-        IReadOnlyList<string> EvidenceKinds)
+        IReadOnlyList<string> EvidenceKinds,
+        IReadOnlyList<AccountingSystemProviderMappingRequirementDto> MappingRequirements)
     {
         public AccountingSystemProviderDto ToDto()
             => new(
@@ -1473,7 +2263,8 @@ public sealed class AccountingSystemIntegrationService
                 SupportsPosting: false,
                 "Import adapter not registered",
                 StatusDetail,
-                EvidenceKinds);
+                EvidenceKinds,
+                MappingRequirements: MappingRequirements);
     }
 
     private sealed record ScopedExternalGlMappingProfile(
@@ -1482,7 +2273,9 @@ public sealed class AccountingSystemIntegrationService
         Guid? LedgerBookId,
         ExternalGlMappingProfileDto Profile,
         string Actor,
-        IReadOnlyList<string> EvidenceLinks);
+        IReadOnlyList<string> EvidenceLinks,
+        string? TenantId = null,
+        string? CompanyId = null);
 
     private sealed class MeridianAccountTotal
     {

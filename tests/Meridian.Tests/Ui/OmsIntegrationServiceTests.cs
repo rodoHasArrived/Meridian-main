@@ -63,8 +63,8 @@ public sealed class OmsIntegrationServiceTests
     public void ResolveSyncConflict_UsesTimestampPrecedence_ForExcelPush()
     {
         var service = new OmsIntegrationApiHandler();
-        var older = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow.AddMinutes(-5), new Dictionary<string, string>{{"qty","10"}});
-        var newer = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow, new Dictionary<string, string>{{"qty","12"}});
+        var older = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow.AddMinutes(-5), new Dictionary<string, string> { { "qty", "10" } });
+        var newer = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow, new Dictionary<string, string> { { "qty", "12" } });
 
         var result = service.ResolveSyncConflict(new OmsSyncRequest("push", "acct-1", "corr-2", older, newer));
 
@@ -107,8 +107,8 @@ public sealed class OmsIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.ViewTrades);
         var client = app.GetTestClient();
-        var older = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow.AddMinutes(-5), new Dictionary<string, string>{{"qty","10"}});
-        var newer = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow, new Dictionary<string, string>{{"qty","12"}});
+        var older = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow.AddMinutes(-5), new Dictionary<string, string> { { "qty", "10" } });
+        var newer = new OmsSyncRecord("acct-1", DateTimeOffset.UtcNow, new Dictionary<string, string> { { "qty", "12" } });
 
         using var response = await client.PostAsJsonAsync("/api/oms/excel/sync", new OmsSyncRequest("push", "acct-1", "corr-auth", older, newer));
 
@@ -152,7 +152,10 @@ public sealed class OmsIntegrationServiceTests
         app.UseRouting();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "oms-operator";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "oms-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "oms-test-tenant";
             await next();
         });
         app.MapOmsIntegrationEndpoints(JsonOptions());

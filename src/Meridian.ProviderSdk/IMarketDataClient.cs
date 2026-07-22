@@ -14,13 +14,26 @@ namespace Meridian.Infrastructure;
 /// All streaming data providers must implement this interface.
 ///
 /// Implements <see cref="IProviderMetadata"/> for unified provider discovery
-/// and capability reporting across all provider types.
+/// and capability reporting across all provider types, plus
+/// <see cref="IProviderConnectionDiagnosticsSource"/> so runtime health surfaces can always
+/// obtain a conservative connection snapshot. Providers with supervised lifecycle state should
+/// override the diagnostics defaults with their richer runtime evidence.
 /// </remarks>
 [ImplementsAdr("ADR-001", "Core streaming data provider contract")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public interface IMarketDataClient : IProviderMetadata, IAsyncDisposable
+public interface IMarketDataClient :
+    IProviderMetadata,
+    IProviderConnectionDiagnosticsSource,
+    IAsyncDisposable
 {
     bool IsEnabled { get; }
+
+    /// <summary>
+    /// True when this client fabricates synthetic data instead of delivering real market data.
+    /// Hosts surface this loudly (status endpoints, workstation banner) so simulated prices are
+    /// never mistaken for live ones.
+    /// </summary>
+    bool IsSimulated => false;
 
     Task ConnectAsync(CancellationToken ct = default);
     Task DisconnectAsync(CancellationToken ct = default);

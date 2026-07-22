@@ -1,5 +1,9 @@
 # Screenshot Artifacts
 
+**Status:** supporting-generated
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
 
@@ -25,10 +29,16 @@ matching route/page manifest entry fails validation instead of being accepted as
 unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
 or different run cannot satisfy the evidence gate by reusing the expected filename.
 
+The maintained browser catalog in `scripts/dev/web-screenshot-routes.json` is expected to cover the
+active workstation page surface: every non-legacy path in `WORKSTATION_ROUTE_CATALOG`, the
+workstation root route, and every explicit non-redirect `<Route>` in the dashboard app shell. The
+web capture script checks that coverage before launching Playwright. Update the route definition and
+fixture-backed wait evidence together when adding a new browser page.
+
 ## Desktop WPF screenshot index
 
 The maintained desktop WPF coverage index lives at
-[`docs/screenshots/desktop/README.md`](desktop/README.md). It maps active registered WPF page
+[`docs/screenshots/desktop/README.md`](desktop/README.md). It maps retained registered WPF page
 tags to committed screenshot paths, fixture/data mode, refresh dates, and TBI coverage gaps.
 The generated WPF development tracker consumes that index at
 [`docs/status/wpf-screen-development-tracker.md`](../status/wpf-screen-development-tracker.md).

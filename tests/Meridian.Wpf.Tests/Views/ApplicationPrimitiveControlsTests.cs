@@ -25,14 +25,20 @@ public sealed class ApplicationPrimitiveControlsTests
             {
                 Title = "No approvals queued",
                 Description = "The current fund has no retained approval work.",
+                Severity = "No reconciliation run",
+                SeverityTone = WorkspaceTone.Warning,
                 IconGlyph = "\uE946",
                 ActionText = "Refresh approvals",
                 ActionCommand = emptyAction,
+                SecondaryActionText = "Open setup",
+                SecondaryActionCommand = queueAction,
                 PanelAutomationId = "EmptyStateTest",
                 IconAutomationId = "EmptyStateIconTest",
                 TitleAutomationId = "EmptyStateTitleTest",
                 DescriptionAutomationId = "EmptyStateDescriptionTest",
-                ActionButtonAutomationId = "EmptyStateActionTest"
+                ActionButtonAutomationId = "EmptyStateActionTest",
+                SecondaryActionButtonAutomationId = "EmptyStateSecondaryActionTest",
+                SeverityAutomationId = "EmptyStateSeverityTest"
             };
             var iconButton = new IconTextButton
             {
@@ -92,7 +98,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(emptyState).Should().Be("EmptyStateTest");
@@ -102,8 +108,13 @@ public sealed class ApplicationPrimitiveControlsTests
                 AutomationProperties.GetAutomationId(Get<TextBlock>(emptyState, "TitleText")).Should().Be("EmptyStateTitleTest");
                 AutomationProperties.GetAutomationId(Get<TextBlock>(emptyState, "DescriptionText")).Should().Be("EmptyStateDescriptionTest");
                 AutomationProperties.GetAutomationId(Get<Button>(emptyState, "ActionButton")).Should().Be("EmptyStateActionTest");
+                AutomationProperties.GetAutomationId(Get<ToneBadge>(emptyState, "SeverityBadge")).Should().Be("EmptyStateSeverityTest");
+                AutomationProperties.GetAutomationId(Get<Button>(emptyState, "SecondaryActionButton")).Should().Be("EmptyStateSecondaryActionTest");
                 Get<TextBlock>(emptyState, "TitleText").Text.Should().Be("No approvals queued");
+                Get<ToneBadge>(emptyState, "SeverityBadge").Text.Should().Be("No reconciliation run");
+                Get<ToneBadge>(emptyState, "SeverityBadge").Tone.Should().Be(WorkspaceTone.Warning);
                 Get<Button>(emptyState, "ActionButton").Command.Should().BeSameAs(emptyAction);
+                Get<Button>(emptyState, "SecondaryActionButton").Command.Should().BeSameAs(queueAction);
 
                 AutomationProperties.GetAutomationId(iconButton).Should().Be("IconTextButtonTest");
                 AutomationProperties.GetName(iconButton).Should().Be("Refresh");
@@ -189,7 +200,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             var host = new StackPanel { Children = { alert, evidence } };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(alert).Should().Be("InlineAlertTest");
@@ -267,7 +278,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             var host = new StackPanel { Children = { header, filters, freshness } };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(header).Should().Be("SectionHeaderTest");
@@ -340,10 +351,12 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<Button>(emptyWithoutCommand, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(emptyWithoutCommand, "SecondaryActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<ToneBadge>(emptyWithoutCommand, "SeverityBadge").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(emptyWithoutText, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(queueWithoutCommand, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(queueWithoutText, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
@@ -355,6 +368,18 @@ public sealed class ApplicationPrimitiveControlsTests
                 window.Close();
             }
         });
+    }
+
+    [Fact]
+    public void EmptyStateMessages_ShouldCoverCommonMissingDataCasesInPlainEnglish()
+    {
+        EmptyStateMessages.NoProviderConfigured.Title.Should().Be("No provider configured");
+        EmptyStateMessages.NoRecordsImported.Description.Should().Contain("Import records");
+        EmptyStateMessages.NoSelectedAccountOrPortfolio.Title.Should().Contain("account or portfolio");
+        EmptyStateMessages.StaleData.Description.Should().Contain("Refresh this view");
+        EmptyStateMessages.NoReconciliationRun.Title.Should().Contain("No reconciliation run");
+        EmptyStateMessages.NoReportsGenerated.Description.Should().Contain("Generate a governed report pack");
+        EmptyStateMessages.FixtureDataAvailable.Title.Should().Contain("Fixture data");
     }
 
     [Fact]
@@ -386,7 +411,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<Border>(alert, "IconContainer").Visibility.Should().Be(Visibility.Collapsed);
@@ -434,7 +459,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<ToneBadge>(header, "Badge").Visibility.Should().Be(Visibility.Collapsed);
@@ -466,7 +491,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             control.Click += (_, _) => clickCount++;
 
-            var window = Show(control);
+            var window = Render(control);
             try
             {
                 Get<Button>(control, "InternalButton").RaiseEvent(
@@ -515,19 +540,19 @@ public sealed class ApplicationPrimitiveControlsTests
         return null;
     }
 
-    private static Window Show(FrameworkElement element)
+    private static RenderedElement Render(FrameworkElement element)
     {
-        var window = new Window
-        {
-            Width = 900,
-            Height = 700,
-            Content = element
-        };
-
-        window.Show();
-        window.UpdateLayout();
+        element.Measure(new Size(900, 700));
+        element.Arrange(new Rect(0, 0, 900, 700));
         element.UpdateLayout();
-        return window;
+        return new RenderedElement();
+    }
+
+    private sealed class RenderedElement
+    {
+        public void Close()
+        {
+        }
     }
 
     private sealed class TestCommand : ICommand

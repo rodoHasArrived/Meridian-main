@@ -247,21 +247,15 @@ public sealed class SourceRegistry : ISourceRegistry
             return;
         }
 
-        // Apply the in-memory change first; ConcurrentDictionary operations are thread-safe.
-        // We do this before acquiring the save gate so that callers always see up-to-date
-        // in-memory state regardless of how long a concurrent disk write takes.
-        applyChange();
-
-        // Bounded wait: prevents indefinite thread-pool thread blocking under load.
-        // If the timeout expires it means another save is already in progress. We skip
-        // this redundant write because the next mutation (or the ongoing save) will
-        // persist all accumulated in-memory state — the full snapshot is always serialised
-        // in SaveToDisk, so no intermediate state is ever permanently lost.
+        // A registry mutation is not reported as successful until the resulting snapshot has
+        // been durably retained. Contention therefore returns an explicit failure instead of
+        // silently relying on a future, unrelated mutation to persist this one.
         if (!_saveGate.Wait(TimeSpan.FromSeconds(10)))
-            return;
+            throw new TimeoutException("Source registry persistence lock timed out before the mutation could be committed.");
 
         try
         {
+            applyChange();
             SaveToDisk();
         }
         finally

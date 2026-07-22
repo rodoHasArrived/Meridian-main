@@ -6,7 +6,9 @@ import config, {
   createMeridianApiProxy,
   defaultMeridianApiBaseUrl,
   meridianDevFixtureHeader,
-  resolveMeridianApiBaseUrl
+  meridianScreenshotCaptureEnv,
+  resolveMeridianApiBaseUrl,
+  resolveViteHmrConfig
 } from "../vite.config";
 import type { ProxyOptions, UserConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -78,6 +80,12 @@ describe("Vite Meridian API proxy", () => {
 
     expect(getApiProxyTarget(userConfig.server?.proxy)).toBe(defaultMeridianApiBaseUrl);
     expect(getApiProxyTarget(userConfig.preview?.proxy)).toBe(defaultMeridianApiBaseUrl);
+  });
+
+  it("disables Vite HMR for screenshot-capture runs only", () => {
+    expect(resolveViteHmrConfig({})).toBeUndefined();
+    expect(resolveViteHmrConfig({ [meridianScreenshotCaptureEnv]: "true" })).toBe(false);
+    expect(resolveViteHmrConfig({ [meridianScreenshotCaptureEnv]: "1" })).toBe(false);
   });
 
   it("builds /api proxy options for a custom Meridian host", () => {

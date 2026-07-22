@@ -1,6 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -125,7 +126,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         viewModel.CockpitDecisionItems.Select(static item => item.SecondaryActionId)
             .Should()
-            .Equal("ExportPresets", "FundAuditTrail", "DataQuality", "DataQuality", "AnalysisExport", "ExportPresets");
+            .Equal("ExportPresets", "ReportLineProvenanceExplorer", "DataQuality", "DataQuality", "AnalysisExport", "ExportPresets");
 
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
@@ -163,5 +164,100 @@ public sealed class WorkspaceCockpitShellViewModelTests
             .Where(static actionId => !string.IsNullOrWhiteSpace(actionId));
 
         actionIds.Should().OnlyContain(static actionId => ShellNavigationCatalog.GetPage(actionId) != null);
+    }
+
+    [Fact]
+    public void ReportingCockpitDecisionItems_ShouldSurfaceDailyReportingWorkFromSharedSummary()
+    {
+        var summary = new FundReportingSummaryDto(
+            ProfileCount: 0,
+            RecommendedProfiles: [],
+            ReportPackDistributions: [],
+            Profiles: [],
+            Summary: "Reporting summary.",
+            DailyWork:
+            [
+                new WorkstationReportingDailyWorkItemDto(
+                    "due-package:board",
+                    "due-package",
+                    "Board package due",
+                    "Due",
+                    "Board package is due today.",
+                    "warning",
+                    "fund-controller",
+                    DateTimeOffset.Parse("2026-06-26T15:00:00Z"),
+                    "Open package",
+                    "/reporting?package=board"),
+                new WorkstationReportingDailyWorkItemDto(
+                    "approval-needed:monthly",
+                    "approval-needed",
+                    "Monthly package approval",
+                    "Pending approval",
+                    "Controller approval is required.",
+                    "warning",
+                    "controller",
+                    null,
+                    "Review approval",
+                    "/reporting?approval=monthly"),
+                new WorkstationReportingDailyWorkItemDto(
+                    "delivery-failure:investor",
+                    "delivery-failure",
+                    "Investor delivery failed",
+                    "Failed",
+                    "Email-link package bounced.",
+                    "danger",
+                    "reporting-ops",
+                    null,
+                    "Review delivery",
+                    "/reporting?delivery=investor"),
+                new WorkstationReportingDailyWorkItemDto(
+                    "evidence-gap:lineage",
+                    "evidence-gap",
+                    "Lineage evidence gap",
+                    "Lineage incomplete",
+                    "Two report sections are missing retained provenance.",
+                    "warning",
+                    "reporting-ops",
+                    null,
+                    "Open evidence",
+                    "/reporting?evidence=lineage",
+                    EvidenceGaps: ["Missing report-line provenance", "Missing approval evidence"],
+                    Context: ["InvestorStatement", "2026-05"])
+            ]);
+
+        var items = ReportingWorkspaceShellPresentationService.BuildDecisionItems(summary);
+
+        var daily = items[0];
+        daily.Title.Should().Be("Daily reporting cockpit");
+        daily.StatusLabel.Should().Be("Blocked");
+        daily.CountLabel.Should().Be("4 item(s)");
+        daily.Tone.Should().Be(WorkspaceTone.Danger);
+        daily.IsBlocked.Should().BeTrue();
+        daily.PrimaryActionId.Should().Be("ReportRunStatus");
+        daily.Detail.Should().Contain("1 due package(s)")
+            .And.Contain("1 approval(s)")
+            .And.Contain("1 blocked")
+            .And.Contain("3 needing review");
+
+        items.Select(static item => item.Title).Should().Contain(
+            "Delivery readiness queue",
+            "Approval review queue",
+            "Due package queue",
+            "Evidence and provenance gaps",
+            "__VACUITY_PROBE__");
+
+        var delivery = items.Single(static item => item.Title == "Delivery readiness queue");
+        delivery.Tone.Should().Be(WorkspaceTone.Danger);
+        delivery.IsBlocked.Should().BeTrue();
+        delivery.PrimaryActionId.Should().Be("ReportRunStatus");
+        delivery.SecondaryActionId.Should().Be("ReportLineProvenanceExplorer");
+
+        var evidence = items.Single(static item => item.Title == "Evidence and provenance gaps");
+        evidence.StatusLabel.Should().Be("Evidence review");
+        evidence.CountLabel.Should().Be("1 item(s), 2 gap(s)");
+        evidence.Detail.Should().Contain("retained evidence/provenance gap")
+            .And.Contain("InvestorStatement")
+            .And.Contain("2026-05");
+        evidence.SecondaryActionLabel.Should().Be("Provenance");
     }
 }

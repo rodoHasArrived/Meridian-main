@@ -134,15 +134,17 @@ public sealed class EvidenceSubjectResolver
                         SubjectKind: ApprovalKind,
                         Label: $"Operations approval {workflow.PeriodId}",
                         Workspace: "Accounting",
-                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                        PageTag: "OperationsContinuity"),
+                        Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                        PageTag: "OperationsContinuity",
+                        LedgerBookId: workflow.LedgerBookId),
                     new EvidenceSubjectDto(
                         SubjectId: workflow.WorkflowId.ToString("D"),
                         SubjectKind: AccountingRecordKind,
                         Label: $"Accounting record {workflow.PeriodId}",
                         Workspace: "Accounting",
-                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                        PageTag: "OperationsContinuity")
+                        Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                        PageTag: "OperationsContinuity",
+                        LedgerBookId: workflow.LedgerBookId)
                 }));
         }
 
@@ -302,8 +304,8 @@ public sealed class EvidenceSubjectResolver
                 Workspace: "Data",
                 Route: "/data/security-master?view=conflicts",
                 PageTag: "SecurityMaster"),
-            ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ct).ConfigureAwait(false),
-            AccountingRecordKind => await ResolveAccountingRecordSubjectAsync(subjectId, ct).ConfigureAwait(false),
+            ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false),
+            AccountingRecordKind => await ResolveAccountingRecordSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false),
             EvidenceVaultKind => new EvidenceSubjectDto(
                 SubjectId: subjectId,
                 SubjectKind: EvidenceVaultKind,
@@ -339,11 +341,12 @@ public sealed class EvidenceSubjectResolver
             return null;
         }
 
-        var fundProfileId = TryResolveFundProfileIdFromFundEventId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        var fundProfileId = TryResolveFundProfileIdFromFundEventId(canonicalSubjectId);
         ledgerBookId ??= TryResolveLedgerBookId(subjectId);
         var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var record = activity.FundEventRecords.FirstOrDefault(item =>
-            string.Equals(item.FundEventId, subjectId, StringComparison.OrdinalIgnoreCase));
+            string.Equals(item.FundEventId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
         if (record is null)
         {
             return null;
@@ -367,12 +370,14 @@ public sealed class EvidenceSubjectResolver
             return null;
         }
 
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
         if (ledgerBookId.HasValue)
         {
-            var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(subjectId);
+            var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(canonicalSubjectId);
             var scopedActivity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
             var scopedWorkflow = scopedActivity.PaymentIntents
-                .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(item => string.Equals(item.PaymentIntentId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
             if (scopedWorkflow is not null)
             {
                 return new EvidenceSubjectDto(
@@ -393,7 +398,7 @@ public sealed class EvidenceSubjectResolver
                 service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct))).ConfigureAwait(false);
         var workflow = activities
             .SelectMany(static activity => activity.PaymentIntents)
-            .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(item => string.Equals(item.PaymentIntentId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
         if (workflow is null)
         {
             return null;
@@ -424,6 +429,29 @@ public sealed class EvidenceSubjectResolver
         return $"/accounting/journal-entries?{string.Join("&", query)}";
     }
 
+    private static string BuildOperationsContinuityRoute(Guid workflowId, Guid? ledgerBookId)
+    {
+        var query = new List<string>
+        {
+            $"workflowId={workflowId:D}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return $"/accounting?{string.Join("&", query)}";
+    }
+
+    private static string StripQueryScope(string subjectId)
+    {
+        var queryStart = subjectId.IndexOf('?', StringComparison.Ordinal);
+        return queryStart < 0
+            ? subjectId.Trim()
+            : subjectId[..queryStart].Trim();
+    }
+
     private static Guid? TryResolveLedgerBookId(string subjectId)
     {
         var queryStart = subjectId.IndexOf('?', StringComparison.Ordinal);
@@ -447,13 +475,20 @@ public sealed class EvidenceSubjectResolver
         return null;
     }
 
-    private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IOperationsContinuityWorkflowService>();
-        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (service is not null && Guid.TryParse(canonicalSubjectId, out var workflowId))
         {
             var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
             if (workflow is null)
+            {
+                return null;
+            }
+
+            if (ledgerBookId.HasValue && workflow.LedgerBookId != ledgerBookId.Value)
             {
                 return null;
             }
@@ -463,8 +498,9 @@ public sealed class EvidenceSubjectResolver
                 SubjectKind: ApprovalKind,
                 Label: $"Operations approval {workflow.PeriodId}",
                 Workspace: "Accounting",
-                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                PageTag: "OperationsContinuity");
+                Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                PageTag: "OperationsContinuity",
+                LedgerBookId: workflow.LedgerBookId);
         }
 
         return new EvidenceSubjectDto(
@@ -478,13 +514,20 @@ public sealed class EvidenceSubjectResolver
             PageTag: "OperationsContinuity");
     }
 
-    private async Task<EvidenceSubjectDto?> ResolveAccountingRecordSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolveAccountingRecordSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IOperationsContinuityWorkflowService>();
-        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (service is not null && Guid.TryParse(canonicalSubjectId, out var workflowId))
         {
             var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
             if (workflow is null)
+            {
+                return null;
+            }
+
+            if (ledgerBookId.HasValue && workflow.LedgerBookId != ledgerBookId.Value)
             {
                 return null;
             }
@@ -494,8 +537,9 @@ public sealed class EvidenceSubjectResolver
                 SubjectKind: AccountingRecordKind,
                 Label: $"Accounting record {workflow.PeriodId}",
                 Workspace: "Accounting",
-                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                PageTag: "OperationsContinuity");
+                Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                PageTag: "OperationsContinuity",
+                LedgerBookId: workflow.LedgerBookId);
         }
 
         return new EvidenceSubjectDto(
@@ -513,26 +557,7 @@ public sealed class EvidenceSubjectResolver
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
 
     private IReadOnlyList<ReportPackDeliveryAttemptDto> ListReportPackDeliveryAttempts(int limit)
-    {
-        var service = _services.GetService<ReportPackDeliveryService>();
-        if (service is not null)
-        {
-            return service.ListAttempts(limit);
-        }
-
-        var store = _services.GetService<IReportPackDeliveryRecordStore>();
-        if (store is null)
-        {
-            return [];
-        }
-
-        return store.Load()
-            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
-            .ThenBy(static attempt => attempt.ReportId)
-            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Clamp(limit, 1, 500))
-            .ToArray();
-    }
+        => ReportingDeliveryReadModelSecurity.ListVisibleAttempts(_services, limit).Attempts;
 
     private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
     {

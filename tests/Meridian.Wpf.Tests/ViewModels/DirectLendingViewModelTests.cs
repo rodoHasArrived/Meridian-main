@@ -86,6 +86,12 @@ public sealed class DirectLendingViewModelTests
         xaml.Should().Contain("DirectLendingLoansGrid");
         xaml.Should().Contain("DirectLendingAccrualsGrid");
         xaml.Should().Contain("DirectLendingCashTransactionsGrid");
+        xaml.Should().Contain("DirectLendingCollateralGrid");
+        xaml.Should().Contain("DirectLendingStatusPostureGrid");
+        xaml.Should().Contain("DirectLendingExceptionsGrid");
+        xaml.Should().Contain("DirectLendingEvidenceGrid");
+        xaml.Should().Contain("DirectLendingCloseBlockersGrid");
+        xaml.Should().Contain("DirectLendingServicerStatementsGrid");
         xaml.Should().Contain("DirectLendingLoanInspector");
         xaml.Should().Contain("DirectLendingLoanActionInspector");
         xaml.Should().Contain("ToolTip=\"{Binding PostAccrualTooltip}\"");
@@ -93,9 +99,16 @@ public sealed class DirectLendingViewModelTests
         viewModel.Should().Contain("public WorkstationTableModel<LoanSummaryDto> LoansTable { get; }");
         viewModel.Should().Contain("public WorkstationTableModel<DailyAccrualEntryDto> AccrualsTable { get; }");
         viewModel.Should().Contain("public WorkstationTableModel<CashTransactionDto> CashTransactionsTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsCollateralCoverageDto> CollateralCoverageTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsStatusPostureDto> StatusPostureTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsReconciliationExceptionDto> ExceptionsTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsEvidenceItemDto> EvidenceTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsCloseBlockerDto> CloseBlockersTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<DirectLendingOperationsServicerStatementDto> ServicerStatementsTable { get; }");
         viewModel.Should().Contain("public InspectorPanelModel SelectedLoanInspector");
         viewModel.Should().Contain("public InspectorPanelModel LoanActionInspector");
         viewModel.Should().Contain("public bool CanPostAccrual");
+        viewModel.Should().Contain("\"/api/loans/operations\"");
     }
 
     private static LoanSummaryDto BuildLoan(LoanStatus status = LoanStatus.Active)

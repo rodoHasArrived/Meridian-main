@@ -1,6 +1,6 @@
 # Meridian Accounting Productization Checklist
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 This checklist tracks progress toward production-grade, configurable, multi-ledger accounting. It is
 not a release certification; items stay open until current source, tests, and operator surfaces prove
@@ -39,7 +39,11 @@ the requirement end to end.
 - [x] External GL remains guarded and import-first: QuickBooks fixture/import evidence,
   Xero and NetSuite fixture import evidence, provider-neutral mapping profiles,
   ledger-book-scoped reconciliation, and controlled export package certification exist while live
-  external posting stays disabled.
+  external posting stays disabled. Provider rows now expose QBO/Xero/NetSuite-specific mapping
+  requirements for account mapping, journal lineage, trial-balance tie-out, and dimension mapping,
+  plus Xero tracking/contact/tax/bank-account and NetSuite subsidiary/segment/entity/intercompany
+  fixture prerequisites. Browser/WPF Accounting Configure surfaces consume those shared setup
+  requirements.
 - [x] Close/report package and report-line DTOs carry ledger-book, reconciliation, certification,
   restatement, and evidence state for downstream close/reporting surfaces.
 - [x] Strategy-run workstation ledger trial-balance and journal reads now carry canonical
@@ -54,6 +58,16 @@ the requirement end to end.
 - [x] Financial Operations accounting-close trial-balance projection now preserves line dimensions,
   buckets same-account activity by dimensional scope, and supports scoped close/report filters over
   the canonical dimension set plus external-GL dimensions.
+- [x] Durable ledger journal storage now canonicalizes first-class line dimensions before JSONB
+  persistence, query containment, and rehydration, covering fund, entity, sleeve, strategy,
+  investor, capital account, instrument, tax lot, cost center, counterparty, external GL, and
+  customer-neutral accounting scopes.
+- [x] Ledger-owned report-pack and scheduled-export dimension filters now share canonical
+  line-dimension matching/formatting, so messy or duplicate external-GL dimension inputs do not
+  split report scopes from durable journal query behavior.
+- [x] Shared ledger report endpoints now canonicalize dimension query filters, retained row
+  dimensions, matching, and report signatures before browser/WPF clients render or certify
+  scoped trial-balance reports.
 - [x] Browser Accounting ledger inquiry now mirrors the shared trial-balance dimension contract,
   renders dimension summaries and detail fields, and lets GL account searches match retained fund,
   entity, sleeve, strategy, investor, capital account, instrument, tax-lot, cost-center,
@@ -92,51 +106,390 @@ the requirement end to end.
   controls are not certified, certified controls lack retained certified run artifacts, or retained
   run artifacts failed. Retained migration run artifacts now have a shared file-backed store and
   Accounting System list/upsert endpoints, and production readiness automatically merges stored
-  fund/book-scoped artifacts into the assessment. Browser Accounting Configure now reads the
-  retained artifact list endpoint and renders run kind, status, scope, migrated-record count,
-  issue count, and evidence-reference count beside production-readiness blockers.
+  fund/book-scoped artifacts into the assessment. The shared production-readiness payload now also
+  emits a migration rollout plan for ledger-book scope, historical journal backfill, dimensional
+  backfill, configuration promotion, and close/reporting evidence migration, including lane status,
+  scope, latest retained run, migrated-record and issue counts, blocking issue codes, and required
+  actions. Browser Accounting Configure now reads the retained artifact list endpoint and renders
+  both the rollout plan and run kind, status, scope, migrated-record count, issue count, and
+  evidence-reference count beside production-readiness blockers. WPF Accounting Configure renders
+  the same shared migration rollout plan and retained run evidence. Migration rollout readiness now
+  also fails closed when the assessment lacks tenant/company scope or when retained migration run
+  artifacts belong to another tenant/company rollout. Accounting System now exposes a governed
+  migration-run execution endpoint that stamps authenticated tenant/company/actor scope, rejects
+  assistant or automation-origin runs, creates scoped retained run artifacts, and feeds the same
+  production-readiness rollout plan. Migration execution now also accepts source-store and
+  migrated-row counts supplied on retained runs or extracted from retained evidence links, blocks
+  incomplete, negative, mismatched, or body-versus-evidence-conflicting counts, and retains
+  successful row-count reconciliation as artifact metadata plus evidence tokens.
+- [x] Source-event posting candidates and production-readiness Rules Studio checks now use
+  tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
+  browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
+  falling back to another company's retained Rules Studio workspace.
+- [x] Ledger-book-native production certification is now evidence-qualified by workflow lane:
+  posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct-lending
+  projections, and strategy ledger reads require retained evidence for that lane, or an explicit
+  full workflow certification packet, before readiness counts the control as complete. Browser and
+  WPF production-certification editors can retain the added reconciliation, direct-lending, and
+  strategy-ledger-read controls under the shared Accounting System profile store.
+- [x] Dimensional reporting/export production certification is now evidence-qualified by lane:
+  posted ledger-line dimensions, trial-balance filters, period reports, cross-period reports,
+  journal filters, report-package provenance, and external export mappings require retained
+  evidence for that lane, or an explicit full dimensional/production certification packet, before
+  readiness counts the control as complete.
+- [x] Close/Reporting production readiness now consumes the dimensional reporting/export
+  certification state directly, so report package readiness remains blocked until posted
+  ledger-line dimensions, trial-balance filters, period reports, cross-period reports, journal
+  dimension filters, report-package provenance, and external-export dimension mappings have retained
+  ledger-book-scoped evidence.
+- [x] Close-plan configuration production readiness is now its own ledger-book-native workflow
+  control. Materiality policy, checklist/dependency, sign-off, and close-setup evidence must name
+  the selected ledger book before close/reporting readiness can count the setup lane as complete.
+- [x] Tenant administration production readiness is now evidence-qualified by setup lane: tenant
+  scope, admin roles, scoped access, reporting groups, aggregate operator surface, browser admin
+  studio, and WPF admin studio each require retained evidence for that lane, or an explicit
+  setup-certified tenant-admin packet, before readiness counts the control as complete.
+- [x] Posting Rule Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation,
+  direct-lending, and strategy ledger-read
+  production-readiness components now consume ledger-book-native workflow certification and
+  retained lane evidence directly, so those components remain blocked even when generated rules or
+  services are present until the selected ledger book has posting-candidate, lifecycle,
+  close/reporting, import, reconciliation, mapping, guarded-export, direct-lending projection, and
+  strategy-run ledger-read proof.
+- [x] Tenant administration readiness now includes explicit enterprise configuration studio
+  controls for chart administration, rule-test/promotion setup, close setup, provider/external-GL
+  mapping setup, tenant/company/report-group setup, ledger-book administration, posting-rule
+  authoring, approval queues, dimension mapping, and implementation sandbox validation. The shared
+  profile, browser editor, WPF request/profile path, production-readiness blockers, and retained
+  evidence checks all use the same control-plane model. Browser and WPF production-certification
+  saves now also retain typed workflow, dimensional, and tenant-admin certification artifacts with
+  passed lane rows for the selected controls, so chart, rules, approvals, dimensions, close setup,
+  provider mapping, and sandbox controls can feed readiness through executable artifact payloads
+  instead of broad certification flags alone.
+- [x] Tenant administration readiness now also exposes operational-hardening controls for audit
+  review tooling, bulk import/export safeguards, performance validation, and disaster-recovery
+  runbooks. Browser and WPF setup surfaces carry the same shared profile fields, and production
+  readiness blocks until those controls have retained tenant-admin evidence or a full setup packet.
+- [x] Retained accounting production certification and migration-run artifacts now reject extended
+  ledger-book evidence tokens such as `ledger-book:{id}ffff`, so durable readiness stores cannot
+  certify one book by matching a longer unrelated identifier prefix.
+- [x] Accounting report package certification now applies the same exact-token ledger-book evidence
+  check, preventing certified financial statement, NAV, restatement, and export artifacts from
+  accepting `book:{id}ffff` as selected-book provenance. Certification evidence also requires
+  exact-token package id, certification id, period, tenant/company scope, and dimension-scope
+  provenance before reports, NAV, restatement, or export artifacts can be certified.
+- [x] Close-management task sign-off and late-adjustment request/review evidence now apply
+  exact-token ledger-book, close-task, journal-entry, and late-adjustment request evidence checks,
+  preventing extended identifiers such as `book:{id}ffff` from satisfying selected close-control
+  provenance.
+- [x] Close-management task sign-off now also enforces reviewer independence from the actor who
+  acknowledged/prepared the checklist task before retained sign-off evidence can satisfy the close
+  matrix.
+- [x] Rejected close-management task sign-off decisions now block the close task, close-calendar
+  milestone, and close-plan validation until the failed retained control is remediated.
+- [x] Close-management sign-off retention now also rejects any later same-role decision while a
+  retained rejection is active, so a second approval cannot overwrite a failed control without a
+  remediation workflow.
+- [x] Close-management dependency projection now requires predecessor tasks to be signed off before
+  dependent tasks advance, emits close-plan validation issues for unresolved dependencies, and
+  proves both waiting and advanced dependency states in focused Financial Operations tests.
+- [x] External GL export-control and export-certification evidence recognizes colon-delimited
+  ledger-book scope as a valid exact-token boundary while still rejecting extended ledger-book
+  identifiers.
+- [x] External GL mapping-profile certification evidence now requires exact-token profile,
+  provider, and fund provenance, so extended profile identifiers cannot certify guarded export
+  mappings by prefix.
+- [x] Production-readiness dimensional rollout evidence now requires exact-token tenant, company,
+  fund, and ledger-book provenance before retained dimension/report/export certification can count
+  for the selected rollout scope.
+- [x] Tenant administration production-readiness evidence now requires exact-token tenant and
+  company provenance, so extended tenant or company identifiers cannot certify enterprise setup
+  controls by prefix.
+- [x] Tenant administration production-readiness now also requires selected ledger-book evidence for
+  operational-hardening controls: audit review tooling, bulk import/export safeguards, performance
+  validation, and disaster-recovery runbooks.
+- [x] Accounting migration-run execution now fails certification requests unless operator-retained
+  evidence names the selected tenant, company, fund profile, ledger book, and migration kind.
+- [x] Close-period plans now emit critical validation blockers for every unsatisfied required
+  close-task sign-off role, even when the upstream workflow checklist marks the task done, so close
+  cockpit, report certification, and period-lock surfaces see missing approvals before package
+  assembly.
+- [x] Close-period plans now have a governed shared configuration command for materiality policy,
+  task owner/due-date overrides, sign-off counts, required evidence, custom dependencies,
+  ledger-book-scoped setup evidence, and trusted session-actor stamping.
+- [x] Close management now exposes a governed close-period lock command/result that requires
+  human-operator origin, expected workflow version, scoped close-package/report-pack/period-lock
+  evidence, linked report-package id, and a close plan without critical blockers before delegating
+  to the Operations Continuity close-package publication gate.
+- [x] WPF Accounting close setup now registers the shared close-management service and exposes a
+  governed view-model command that retains loaded close-plan materiality, task/dependency,
+  sign-off, required-evidence, late-adjustment evidence, workflow correlation, and actor context
+  through the same shared close-plan configuration contract used by browser close setup. WPF now
+  also exposes a governed close-period lock command over the same shared service, carrying workflow
+  version, close-package/report-pack/manifest identifiers, checklist-control approvals, selected
+  period, and selected ledger-book evidence while rendering service-owned lock blockers.
+- [x] Browser Accounting close/report package cockpit now exposes the same governed close-period
+  lock path through `/api/ledger/close-management/period-lock`, carrying loaded workflow version,
+  selected report package, close-package manifest route, checklist-control approvals,
+  ledger-book-scoped evidence, and human-operator origin while rendering returned service blockers
+  instead of mutating close state locally. Its close workflow sequence now distinguishes pending
+  late-adjustment review gates from new-adjustment request gates and carries active blocker-review
+  disabled reasons from the same row-level evidence review posture.
+- [x] External GL export certification and export-control provenance now require exact-token
+  package, certification, fund/provider, and period evidence instead of accepting longer identifier
+  prefixes.
+- [x] Manual journal lifecycle approval, posting, close-lock, reversal, and rebook evidence now
+  requires exact-token journal-entry, period, ledger-book, tenant, and company provenance, so
+  extended lifecycle identifiers cannot satisfy governed transition evidence by prefix.
+- [x] Manual journal draft, submit, evidence-attach, and lifecycle endpoints now stamp trusted
+  tenant/company, actor, and report-group principal context onto shared-service requests, so manual
+  journal audit events retain browser/WPF session role/profile scope instead of relying on
+  body-supplied authorization metadata.
+- [x] Manual journal save/validate/submit end-to-end workstation proof now runs under an
+  authenticated tenant/company session, so Accounting and Reporting workspace projections are
+  tested through the same tenant-scope gate used by production workstation routes.
+- [x] Durable PostgreSQL journal reads now apply account and line-dimension filters through a
+  matching-entry subquery before rehydrating all retained journal legs, preventing scoped ledger
+  queries from returning unbalanced partial entries to close, reporting, reconciliation, or export
+  consumers.
+- [x] Report package restatement workflows now require retained lineage evidence that names the
+  exact prior package or certification id being restated, so generic prior-period support cannot
+  move a restatement package to certification review.
+- [x] Final restatement package certification now also requires the retained approval artifact to
+  name the exact prior package being restated before approving the statement and NAV restatement
+  workflow metadata.
+- [x] Close task sign-off evidence now boundary-checks role and period tokens, so extended role or
+  period identifiers cannot satisfy retained close approval provenance by prefix.
+- [x] Late-adjustment request and review evidence now boundary-checks close-period tokens, blocking
+  extended period identifiers from requesting or approving material close adjustments.
+- [x] Material late-adjustment review now enforces requester/reviewer independence at the
+  Financial Operations service and workstation endpoint layer before retaining an approval or
+  rejection decision.
+- [x] Pending material late adjustments now emit critical close-plan validation blockers until a
+  controller review approves or rejects the retained request, so period-lock and report
+  certification surfaces cannot treat unresolved late adjustments as advisory warnings.
+- [x] Accounting report package certification now enforces certifier independence from the
+  retained package preparer after evidence, close-plan, state, and critical-issue checks pass.
+- [x] Accounting report package assembly now treats a missing retained report evidence package as a
+  critical blocker and carries that blocker into the report-evidence readiness row, so financial
+  statements, NAV, restatement, and export packages cannot appear ready for review without retained
+  ledger, reconciliation, rendered-report, and NAV support evidence.
+- [x] Standalone accounting report packages now carry wrong-ledger-book retained evidence blockers
+  into the report-evidence readiness row, so operator review surfaces do not hide critical
+  ledger-book evidence scope drift behind package-level validation only.
+- [x] Accounting report package assembly now emits a dedicated report-dimension-scope readiness row
+  for fund, ledger-book, investor, capital-account, and explicit dimension mismatches, so
+  dimensional reporting blockers are visible to operator review surfaces before certification.
+- [x] Accounting report export readiness now fails closed when retained export artifacts are missing
+  evidence, content hashes, ledger-book alignment, or package dimension-scope alignment, so report
+  export certification surfaces cannot treat artifact retention as complete from certification state
+  alone.
+- [x] Tenant administration production readiness now requires aggregate accounting admin, browser
+  admin-studio, and WPF admin-studio evidence to name the selected ledger book, so enterprise setup
+  surfaces cannot be certified from generic tenant/company evidence alone.
+- [x] Tenant/company/report-group setup production readiness now also requires retained evidence for
+  the selected ledger book, blocking generic enterprise setup packets from certifying multi-ledger
+  reporting administration controls without book-specific proof.
+- [x] Reporting-group production readiness now also requires retained evidence for the selected
+  ledger book, so production reporting delivery controls cannot pass from generic tenant/company
+  report-group evidence alone.
+- [x] Tenant setup, accounting admin role-profile, and scoped-access production readiness now require
+  retained evidence for the selected ledger book, so tenant-level setup packets cannot certify
+  book-native authorization and access controls by implication.
+- [x] The focused operational-hardening regression now covers every configured tenant-admin
+  setup-control family that has selected-ledger-book evidence enforcement, including chart
+  administration, Rules Studio promotion, close setup, provider mapping, ledger-book administration,
+  posting-rule authoring, approval queues, dimension mapping, sandbox validation, audit review,
+  import/export safeguards, performance validation, and recovery runbooks.
+- [x] WPF Accounting Configure now persists and assesses WPF admin-studio, chart administration,
+  rule-test/promotion, close setup, provider mapping, and tenant/company/report-group setup controls
+  as independent tenant-admin fields instead of deriving them from the aggregate operator-surface
+  checkbox.
+- [x] Browser Accounting Configure regression coverage now saves every browser-exposed
+  tenant-admin setup-control family, including close setup and tenant/company/report-group setup, as
+  independent shared profile fields with retained evidence.
+- [x] Browser external-GL fixtures and tests now carry provider mapping requirements for
+  guarded-export readiness instead of omitting the required mapping contract from demo/test provider
+  rows.
+- [x] Direct-lending operations read models now accept selected ledger-book scope, retain that scope
+  in the shared DTO, filter journal evidence by retained line dimensions, and raise a critical
+  close blocker when selected-book journal evidence is missing or mismatched.
 
 ## Still To Complete
 
 - [ ] Prove every accounting workflow is ledger-book-native end to end, including close, reporting,
-  reconciliation, external GL, direct-lending projections, strategy ledger reads, and any remaining
-  fund-level compatibility paths.
-- [ ] Turn Accounting Configure into a complete enterprise configuration studio: richer ledger-book
-  editing/selection, chart administration, rule authoring, rule test management, approval queues,
-  close setup, provider mapping setup, and tenant/company/report-group controls from both browser
-  and WPF.
+  reconciliation, external GL, direct-lending projection storage beyond the operations evidence
+  view, strategy ledger reads, and any remaining fund-level compatibility paths.
+- [ ] Turn Accounting Configure into a complete enterprise configuration studio: the shared
+  certification model now separately tracks ledger-book administration, chart administration,
+  posting-rule authoring, rule-test management, approval queues, dimension mapping, close setup,
+  provider mapping setup, tenant/company/report-group controls, and implementation sandbox proof
+  from both browser and WPF. Browser/WPF Configure can now author and save retained external-GL
+  provider mapping profiles with account mappings plus editable Meridian/provider dimension maps
+  for fund, book, customer/vendor/project, and provider-side dimension keys, human-origin
+  certification evidence, and production-readiness refresh through the shared Accounting System
+  service. Browser/WPF Accounting Configure now also author retained chart account nodes through the
+  shared chart upsert endpoint with ledger-book scope, parent path, financial account id, and retained
+  setup evidence instead of requiring JSON/API-only chart edits. WPF Accounting Configure now also
+  authors promotion-gated posting-rule drafts through the shared configuration upsert path with
+  active ledger-book scope, template validation, priority, retained evidence, and audit rows instead
+  of treating desktop posting-rule authoring as read-only Rules Studio posture. Browser/WPF tenant-administration setup now also retains an approval queue configuration
+  with queue id, workflow kind, required role/count, segregation policy, and evidence requirement
+  through the same shared profile. Browser/WPF tenant-administration setup now also retains a structured
+  dimension mapping configuration with mapping id, provider id, Meridian/provider dimension rows,
+  and evidence requirement through that shared profile, and both Configure surfaces now retain ledger-book-scoped
+  implementation sandbox, sandbox-validation, fixture-validation, and implementation-fixture proof
+  through the shared tenant-administration profile store while validating and preserving the current
+  approval-queue and dimension-mapping payloads on the sandbox-retention command. The shared profile
+  store now also rejects configured approval-queue or dimension-mapping studios without their typed
+  payloads, and Browser/WPF Configure save readiness now blocks those configured studios until the
+  typed setup payloads are complete. Browser Configure save callbacks now fail locally for missing
+  tenant-admin evidence, invalid typed tenant-admin setup, invalid external-GL mapping profiles,
+  and incomplete chart account fields before shared-service submission, and browser sandbox proof
+  command state now disables invalid typed tenant-admin setup before retaining fixture proof. Browser
+  Rules Studio direct callbacks now also return disabled reasons and avoid shared-service mutation
+  when duplicate, archive, promotion approval, or activation commands are invoked without the
+  required selected rule or activation readiness. WPF chart, posting-rule,
+  provider-mapping, production-certification, tenant-admin, and sandbox command execution share
+  the same evidence and payload guards, so direct API saves and operator surfaces cannot preserve checkbox-only studio posture, but the remaining underlying
+  authoring/editing workflows still need deeper production-grade UX and execution coverage.
 - [ ] Complete durable dimensional ledger persistence and query coverage for fund, entity, sleeve,
   strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external
   GL dimensions across all journal lines, report filters, close checks, and export mappings; close
   trial-balance projection, browser ledger inquiry, and browser retained-journal evidence rows now
   have dimension bucketing/filter/display proof, and browser run-ledger helpers can now request
   server-scoped dimension filters for trial-balance and journal reads. WPF Run Ledger also projects
-  canonical dimensions from retained run ledger rows, but not every durable query and report surface
-  is covered.
+  canonical dimensions from retained run ledger rows. PostgreSQL journal storage now preserves full
+  balanced entries for account and line-dimension scoped reads, but not every durable query and
+  report surface is covered.
 - [ ] Finish JE lifecycle hardening across every mutation path: version guards, actor/segregation
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now
   replay retained correlation ids for submit, approve, reject, post, close-lock, reverse, and rebook
-  without appending duplicate transitions or audit events, and approval/rejection/posting/close-lock/
-  correction actions require an actor independent from the draft preparer. Broader authorization
-  policy, role-based segregation, and end-to-end mutation coverage remain open.
+  without appending duplicate transitions or audit events, approval/rejection/posting/close-lock/
+  correction actions require an actor independent from the draft preparer, and endpoint-driven
+  manual journal lifecycle audit now retains trusted role/profile principal scope. The primary
+  manual journal workstation proof also exercises Accounting and Reporting projections with an
+  authenticated tenant/company session. Broader authorization policy, service-level role
+  enforcement, and end-to-end mutation coverage remain open.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,
-  file-backed retained migration run artifacts, and retained-artifact blockers for these controls,
-  but it does not yet execute migration jobs or backfill data.
+  tenant/company-scoped retained migration run artifacts, retained-artifact blockers, and a shared
+  migration rollout plan/checklist for these controls. A governed Accounting System migration-run
+  endpoint now executes scoped rollout runs into retained artifacts and blocks automation-origin or
+  unscoped runs, and supplied or retained-evidence-extracted source-store versus migrated row-count
+  mismatches now fail closed. Accounting System now also exposes shared migration-worker-plan
+  list/upsert endpoints for browser, WPF, and admin setup surfaces; those endpoints stamp
+  authenticated tenant/company scope, reject automation-origin retention, and persist worker plans
+  that migration execution can consume for historical-journal and dimensional backfill lanes,
+  carrying worker-plan source/migrated counts, certified evidence references, and canonical
+  dimension scope into the retained artifact while failing closed when request scope or counts
+  conflict with the selected worker plan. Browser Accounting Configure now consumes the shared
+  worker-plan endpoint and renders retained worker-plan reconciliation, scope, dimension, and
+  evidence summaries beside migration rollout evidence. WPF Accounting Configure now registers the
+  same file-backed worker-plan store and renders retained worker-plan reconciliation, scope,
+  dimension, and evidence rows beside migration rollout evidence. Full source data rewrite workers
+  that transform legacy journal/dimension stores remain open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
-  import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
-  export certification still need provider-specific coverage before any separately approved live
-  posting adapter is considered.
-- [ ] Productize close management with close-plan editing, dependency graph, sign-off matrix,
-  materiality policy setup, late-adjustment workflow, period locks, and blocker/evidence review in
-  shared services plus browser/WPF surfaces.
+  import fixtures, provider-specific mapping requirements, richer fixture prerequisites, and
+  guarded export fixture coverage, but live credentialed import adapters and provider-owned
+  controlled export certification still need coverage before any separately approved live posting
+  adapter is considered.
+- [ ] Productize close management with close-plan editing, dependency graph authoring, sign-off
+  matrix administration, materiality policy setup, late-adjustment workflow, period locks, and
+  blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
+  projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
+  critical pending material late-adjustment blockers, and a governed close-plan configuration
+  command. The browser close cockpit now has editable close setup fields for materiality thresholds,
+  currency, review role, late-adjustment approval requirement, primary checklist owner/due date,
+  approval role/count, required evidence, role-scoped sign-off matrix rows, and dependencies before retaining ledger-book evidence and
+  correlation context through that shared configuration endpoint; WPF now has service registration
+  and a close view-model command with editable close setup draft fields for materiality thresholds,
+  review role, late-adjustment approval posture, primary checklist owner/due date, approval role/count,
+  required evidence, role-scoped sign-off matrix rows, and dependencies before retaining close-plan setup through the same shared
+  contract when workflow context is supplied. Browser/WPF close setup now also carries per-edge dependency
+  reason metadata through the shared close-plan configuration contract, including keyed predecessor
+  entries, so graph authoring preserves why each predecessor must clear, not only which task id is linked. WPF now routes `FundAccountingClose` and
+  `AccountingClose` to a dedicated Accounting Close workbench that loads a shared close plan by
+  workflow id, exposes the setup editor, and binds desktop close-review rows for materiality policy,
+  period-lock state, tasks, dependencies, sign-off matrix requirements, late-adjustments, retained
+  evidence, and validation blockers from the shared close-plan DTO. WPF now also exposes governed
+  close-task sign-off and late-adjustment review commands that post the next unsatisfied role or
+  submitted late-adjustment review through the same shared service with retained workflow, period,
+  ledger-book, request/task, and human-origin evidence instead of desktop-local approval rules.
+  Close management now also has a governed period-lock command/result over the Operations
+  Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and
+  retained close-package/report-pack/ledger-book evidence. Browser close/report package cockpit now
+  also renders dedicated dependency-graph, sign-off-matrix, and evidence/blocker review rows from
+  the shared close plan and selected report package, making predecessor coverage, required approval
+  roles, retained close evidence, and validation blockers visible beside the editable setup and
+  command actions. Browser setup editing now also exposes a retained task catalog for selecting the
+  checklist row whose owner, due date, approval role/count, required evidence, and dependency ids
+  are being edited, blocks unknown task ids before calling the shared configuration endpoint, and
+  presents known predecessor tasks as selectable dependency candidates for graph-authoring edits.
+  It also presents sign-off role candidates from the selected task's required roles, retained
+  sign-offs, task owner, and materiality reviewer, then blocks invalid materiality thresholds,
+  malformed currencies, blank materiality review roles, non-positive approval counts, blank approval
+  roles, and blank sign-off evidence before retaining setup or matrix changes. WPF setup retention
+  now applies the same fail-closed posture to desktop drafts, including negative materiality
+  thresholds, malformed currencies, blank review roles, missing or unknown close task ids, invalid
+  due-date text, non-positive approval counts, blank approval roles, and blank sign-off evidence
+  before calling the shared close-management service. It also exposes the retained checklist task
+  selector before applying desktop owner, due-date, approval, evidence, and dependency edits, so WPF
+  operators are no longer pinned to the first loaded close task. WPF now also has retained
+  late-adjustment request drafting for journal-entry id, amount, currency, and reason, carrying
+  human-origin workflow, period, and ledger-book evidence through the shared close-management
+  request path before materiality approval rules decide whether review is required. WPF sign-off
+  administration now also exposes close task, role, Approved/Rejected decision, and retained notes
+  before invoking the shared sign-off service, allowing desktop operators to retain matrix rejection
+  evidence instead of only approving the next unsatisfied role. Browser sign-off administration now
+  has the same retained task, role, Approved/Rejected decision, and notes draft over the shared
+  sign-off endpoint, with invalid signer roles blocked before request submission.
+  Browser evidence/blocker review rows now also post retained close evidence-review records through
+  the shared close-management endpoint, carrying workflow, period, issue, target, ledger-book,
+  notes, correlation id, and human-origin close-review evidence while keeping the underlying
+  validation blocker active for period-lock and certification gates.
+  Browser close/report package cockpit now also renders an end-to-end close workflow control
+  sequence over close setup, checklist sign-off, late adjustments, blocker review, report package
+  build, certification, export manifest inspection, and period lock, with each action and disabled
+  reason derived from the shared close plan, selected package, and service-owned blockers.
+  WPF close evidence review now exposes the same shared review command from the desktop close
+  workbench, selecting the next active unreviewed blocker and retaining workflow, period, issue,
+  target, ledger-book, notes, correlation id, and human-origin close-review evidence while leaving
+  period-lock blockers service-owned.
+  WPF review administration now also exposes explicit late-adjustment review request id,
+  Approved/Rejected decision, review notes, blocker issue code, blocker target id, and blocker
+  review notes before invoking the shared late-adjustment or close-evidence review command, so
+  desktop operators can choose the exact retained adjustment or blocker rather than only accepting
+  the next default row.
+  WPF close workbench now also renders an ordered close workflow control sequence over setup
+  retention, checklist sign-off, late-adjustment request, late-adjustment review, blocker review,
+  and period lock, with each step's command, evidence posture, and disabled reason derived from the
+  loaded shared close plan and governed desktop command state.
+  Browser and WPF setup saves now also submit the loaded configuration timestamp, and the shared
+  close-management service rejects stale setup writes before they can overwrite newer retained
+  materiality, dependency, or sign-off matrix configuration. Browser and WPF setup drafts now preserve
+  keyed per-predecessor dependency reasons while remaining compatible with one shared reason for all
+  selected predecessors.
+  Shared close-plan configuration now carries `SignOffRequirementConfigurations` per task, the
+  close-management service normalizes and evaluates every configured role/count/evidence row,
+  browser setup accepts retained `role | count | evidence` rows while preserving unedited task
+  matrices, and WPF close setup exposes the same matrix editor and request mapping.
+  Production readiness now evidence-qualifies close-plan setup by ledger book. The shared close
+  plan now also carries service-owned operating coverage rows for close setup, dependency graph,
+  sign-off matrix, late adjustments, blocker review, and period lock, derived from retained
+  evidence and the same validation issues used by lock/certification gates. The browser close
+  cockpit now renders those shared operating coverage rows as the primary control surface before
+  task/dependency/matrix details. Remaining production-grade close operating coverage remains open
+  until the WPF close workbench consumes the same rows across desktop administration and review.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
-  export evidence across all relevant ledger-book and dimension scopes.
-- [ ] Add broader operational hardening: admin UX, tenant-level setup workflows, authorization and
-  report-group scoping, audit review tooling, bulk import/export safeguards, performance tests, and
-  disaster-recovery validation. The shared production-readiness endpoint now exposes the blocker
-  contract for these lanes, but full browser/WPF admin setup workflows and operating runbooks are
-  still open.
+  export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails
+  closed when retained report evidence is missing or points to the wrong ledger book, but broader
+  report authoring, review, and operating workflows remain open.
+- [ ] Add broader operational hardening: deeper admin UX, tenant-level setup workflows,
+  authorization and report-group scoping, audit review workflows, bulk import/export execution
+  safeguards, performance test automation, and disaster-recovery validation. The shared
+  production-readiness endpoint now exposes explicit blocker controls for these lanes, but full
+  browser/WPF workflow depth and operating runbooks are still open.

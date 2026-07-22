@@ -139,7 +139,7 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             HttpRequest request) =>
         {
-            if (!HasOperationsContinuityMutationPermission(context))
+            if (!HasFundAccountEvidenceMutationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -288,10 +288,12 @@ public static partial class WorkstationEndpoints
         .ProducesValidationProblem()
         .Produces(403)
         .Produces(501);
+
+        MapDataUploadWorkbookEndpoints(group, jsonOptions);
     }
 
     private static DataUploadTemplateCatalogDto BuildDataUploadTemplateCatalog()
-        => new(
+        => EnrichDataUploadTemplateCatalog(new(
             Templates:
             [
                 new DataUploadTemplateDto(
@@ -387,6 +389,82 @@ public static partial class WorkstationEndpoints
                         "Use the bank-statement import endpoint when the CSV should be applied to a bank account instead of previewed only."
                     ]),
                 new DataUploadTemplateDto(
+                    TemplateId: "servicer-position-statement",
+                    Label: "Servicer position statement",
+                    Description: "Direct Lending servicer position rows retained as statement-run evidence before operator review.",
+                    DataDomain: "Direct Lending",
+                    TargetWorkflow: "Preview -> Validate -> Import Evidence -> Reconcile -> Review",
+                    FileName: "meridian-servicer-position-statement-template.csv",
+                    ContentType: "text/csv",
+                    HeaderLine: "rowId,kind,loanId,securitySymbol,servicerLoanNumber,borrowerReference,fundAccountId,statementDate,principalOutstanding,interestAccruedUnpaid,feesAccruedUnpaid,penaltyAccruedUnpaid,commitmentAvailable,currency,externalRef",
+                    Fields:
+                    [
+                        RequiredUploadField("rowId", "Row ID", "POS-1", "Stable row identifier from the servicer statement."),
+                        OptionalUploadField("kind", "Kind", "Position", "Position, Remittance, or Mixed; defaults to the selected import kind."),
+                        OptionalUploadField("loanId", "Loan ID", "85d3d906-5a20-4d40-90dd-7ad8b7b33190", "Direct Lending loan id when known."),
+                        OptionalUploadField("securitySymbol", "Security symbol", "DL-ACME-2028", "Security Master symbol for the direct loan instrument."),
+                        OptionalUploadField("servicerLoanNumber", "Servicer loan number", "SLN-10001", "Loan number assigned by the servicer."),
+                        OptionalUploadField("borrowerReference", "Borrower reference", "Acme Borrower LLC", "Borrower name or source borrower reference."),
+                        OptionalUploadField("fundAccountId", "Fund account ID", "FUND-A-DL", "Fund account or account code receiving the retained evidence."),
+                        RequiredUploadField("statementDate", "Statement date", "2026-06-30", "Servicer statement date in YYYY-MM-DD format."),
+                        RequiredUploadField("principalOutstanding", "Principal outstanding", "245000.00", "Servicer-reported outstanding principal."),
+                        OptionalUploadField("interestAccruedUnpaid", "Interest accrued unpaid", "3250.00", "Servicer-reported unpaid interest."),
+                        OptionalUploadField("feesAccruedUnpaid", "Fees accrued unpaid", "150.00", "Servicer-reported unpaid fees."),
+                        OptionalUploadField("penaltyAccruedUnpaid", "Penalty accrued unpaid", "0.00", "Servicer-reported penalties."),
+                        OptionalUploadField("commitmentAvailable", "Commitment available", "755000.00", "Remaining available commitment."),
+                        OptionalUploadField("currency", "Currency", "USD", "Loan currency; mismatches are hard validation issues."),
+                        OptionalUploadField("externalRef", "External reference", "stmt-202606", "Retained source file, row, or servicer reference.")
+                    ],
+                    SampleRows:
+                    [
+                        "POS-1,Position,,DL-ACME-2028,SLN-10001,Acme Borrower LLC,FUND-A-DL,2026-06-30,245000.00,3250.00,150.00,0.00,755000.00,USD,stmt-202606"
+                    ],
+                    ValidationNotes:
+                    [
+                        "Position statements are retained evidence and reconciliation input; they do not post cash or ledger activity automatically.",
+                        "Provide either loanId, securitySymbol, borrowerReference, or a stable servicer loan number for mapping review."
+                    ]),
+                new DataUploadTemplateDto(
+                    TemplateId: "servicer-remittance-statement",
+                    Label: "Servicer remittance statement",
+                    Description: "Direct Lending remittance/payment rows previewed before controlled application to loan servicing events.",
+                    DataDomain: "Direct Lending",
+                    TargetWorkflow: "Preview -> Validate -> Import Evidence -> Apply Accepted Rows",
+                    FileName: "meridian-servicer-remittance-statement-template.csv",
+                    ContentType: "text/csv",
+                    HeaderLine: "rowId,kind,loanId,securitySymbol,servicerLoanNumber,borrowerReference,fundAccountId,cashAccountId,statementDate,effectiveDate,settlementDate,grossAmount,principalAmount,interestAmount,feeAmount,penaltyAmount,currency,externalRef,applyMode",
+                    Fields:
+                    [
+                        RequiredUploadField("rowId", "Row ID", "REM-1", "Stable row identifier from the servicer remittance statement."),
+                        OptionalUploadField("kind", "Kind", "Remittance", "Position, Remittance, or Mixed; defaults to the selected import kind."),
+                        OptionalUploadField("loanId", "Loan ID", "85d3d906-5a20-4d40-90dd-7ad8b7b33190", "Direct Lending loan id when known."),
+                        OptionalUploadField("securitySymbol", "Security symbol", "DL-ACME-2028", "Security Master symbol for the direct loan instrument."),
+                        OptionalUploadField("servicerLoanNumber", "Servicer loan number", "SLN-10001", "Loan number assigned by the servicer."),
+                        OptionalUploadField("borrowerReference", "Borrower reference", "Acme Borrower LLC", "Borrower name or source borrower reference."),
+                        OptionalUploadField("fundAccountId", "Fund account ID", "FUND-A-DL", "Fund account or account code receiving the retained evidence."),
+                        OptionalUploadField("cashAccountId", "Cash account ID", "FUND-A-CASH", "Cash account that received or expects the remittance."),
+                        RequiredUploadField("statementDate", "Statement date", "2026-06-30", "Servicer statement date in YYYY-MM-DD format."),
+                        RequiredUploadField("effectiveDate", "Effective date", "2026-06-28", "Loan servicing effective date in YYYY-MM-DD format."),
+                        OptionalUploadField("settlementDate", "Settlement date", "2026-06-30", "Cash settlement date in YYYY-MM-DD format."),
+                        RequiredUploadField("grossAmount", "Gross amount", "12500.00", "Total servicer-reported remittance amount."),
+                        OptionalUploadField("principalAmount", "Principal amount", "9000.00", "Principal component."),
+                        OptionalUploadField("interestAmount", "Interest amount", "3200.00", "Interest component."),
+                        OptionalUploadField("feeAmount", "Fee amount", "300.00", "Fee component."),
+                        OptionalUploadField("penaltyAmount", "Penalty amount", "0.00", "Penalty component."),
+                        OptionalUploadField("currency", "Currency", "USD", "Payment currency; mismatches are hard validation issues."),
+                        OptionalUploadField("externalRef", "External reference", "remit-202606-001", "Servicer payment or retained source reference."),
+                        OptionalUploadField("applyMode", "Apply mode", "ApplyMixedPayment", "ApplyMixedPayment, ApplyPrincipalPayment, AssessFee, ChargePenalty, or CreateCashOnly.")
+                    ],
+                    SampleRows:
+                    [
+                        "REM-1,Remittance,,DL-ACME-2028,SLN-10001,Acme Borrower LLC,FUND-A-DL,FUND-A-CASH,2026-06-30,2026-06-28,2026-06-30,12500.00,9000.00,3200.00,300.00,0.00,USD,remit-202606-001,ApplyMixedPayment"
+                    ],
+                    ValidationNotes:
+                    [
+                        "Remittance rows are never applied automatically; operators must import evidence and then apply selected accepted rows.",
+                        "Split principal, interest, fee, and penalty amounts so Direct Lending commands receive explicit allocations."
+                    ]),
+                new DataUploadTemplateDto(
                     TemplateId: "asset-information",
                     Label: "Asset information",
                     Description: "Security Master candidate facts and instrument metadata for operator review.",
@@ -450,7 +528,93 @@ public static partial class WorkstationEndpoints
             ],
             AcceptedFileExtensions: [".csv"],
             MaxPreviewRows: DataUploadMaxPreviewRows,
-            MaxFileBytes: DataUploadMaxFileBytes);
+            MaxFileBytes: DataUploadMaxFileBytes));
+
+    private static DataUploadTemplateCatalogDto EnrichDataUploadTemplateCatalog(DataUploadTemplateCatalogDto catalog)
+        => catalog with
+        {
+            Templates = catalog.Templates
+                .Select(template => template with
+                {
+                    SourceKinds = BuildDataUploadSourceKinds(template.TemplateId),
+                    SetupChecklist = BuildDataUploadSetupChecklist(template.TemplateId),
+                    MappingGuidance = BuildDataUploadMappingGuidance(template.TemplateId)
+                })
+                .ToArray(),
+            WorkbookFileName = OnboardingWorkbookFileName,
+            WorkbookAcceptedFileExtensions = OnboardingWorkbookAcceptedExtensions,
+            WorkbookMaxFileBytes = DataUploadWorkbookMaxFileBytes
+        };
+
+    private static IReadOnlyList<string> BuildDataUploadSourceKinds(string templateId)
+        => templateId.Equals("bank-statement", StringComparison.OrdinalIgnoreCase)
+            ? ["Manual upload", "SFTP bank drop", "Provider statement export"]
+            : ["Manual upload", "SFTP file drop", "Provider export"];
+
+    private static IReadOnlyList<string> BuildDataUploadSetupChecklist(string templateId)
+        => templateId.Equals("bank-statement", StringComparison.OrdinalIgnoreCase)
+            ? [
+                "Confirm the bank account target and statement date before import.",
+                "Use a pinned SFTP host key or retained manual source file for provenance.",
+                "Preview the CSV before applying it as account evidence."
+            ]
+            : [
+                "Select the template that matches the downstream workflow before choosing a file.",
+                "Use the CSV template headers exactly; required fields are validated before review.",
+                "For SFTP intake, configure the remote path and pinned host-key fingerprint in the provider setup flow before routing files."
+            ];
+
+    private static IReadOnlyList<string> BuildDataUploadMappingGuidance(string templateId)
+        => templateId.ToLowerInvariant() switch
+        {
+            "trade-data" =>
+            [
+                "Map trade_id and source_document_id to retained broker evidence.",
+                "Map account_code, symbol, side, quantity, and price before reconciliation.",
+                "Keep strategy_id populated when a trade must hand off to strategy attribution."
+            ],
+            "transaction-data" =>
+            [
+                "Map transaction_id to the source activity key and account_code to the Meridian account.",
+                "Normalize transaction_type before reconciliation so fees, dividends, transfers, and adjustments do not collapse into one bucket.",
+                "Keep source_system and source_document_id populated for audit traceability."
+            ],
+            "bank-statement" =>
+            [
+                "Map transaction_date, amount, and description before importing the statement.",
+                "Use reference and closing_balance when available to improve duplicate and reconciliation checks.",
+                "Bank statement import writes retained account evidence only; ledger posting remains approval gated."
+            ],
+            "asset-information" =>
+            [
+                "Map asset_id and symbol to Security Master candidate identifiers.",
+                "Map asset_class, issuer, currency, and maturity facts before review.",
+                "Conflicting asset facts stay candidates until governed Security Master approval."
+            ],
+            "entity-configuration" =>
+            [
+                "Map entity_id, entity_type, parent_entity_id, and effective_from before governance review.",
+                "Use source_system to tie setup candidates back to the administrator or retained structure packet.",
+                "Parent and ownership mappings remain candidates until approved."
+            ],
+            "servicer-position-statement" =>
+            [
+                "Map rowId and at least one loan identifier before direct-lending reconciliation.",
+                "Map principalOutstanding and currency before review.",
+                "Retain externalRef so servicer evidence can be traced after import."
+            ],
+            "servicer-remittance-statement" =>
+            [
+                "Map rowId, statementDate, effectiveDate, grossAmount, and currency before applying rows.",
+                "Split principal, interest, fee, and penalty amounts before command review.",
+                "Use applyMode only after the previewed allocation is accepted."
+            ],
+            _ =>
+            [
+                "Map required fields first, then optional provenance fields.",
+                "Retain source identifiers so validation and reconciliation can explain every row."
+            ]
+        };
 
     private static DataUploadTemplateFieldDto RequiredUploadField(
         string name,

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "@/lib/api";
+import { formatCurrency as formatCurrencyAmount, formatNumber as formatNumberAmount } from "@/lib/format";
 import type {
   QuantDiagnostic,
   QuantParameter,
@@ -243,6 +244,7 @@ export function useQuantLabScreenViewModel(
   const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("idle");
   const [selectedTradeRowId, setSelectedTradeRowId] = useState<string | null>(null);
   const sourceRef = useRef(DEFAULT_QUANT_SOURCE);
+  const initialParameterScanScheduledRef = useRef(false);
 
   const updateSource = useCallback((nextSource: string) => {
     sourceRef.current = nextSource;
@@ -279,8 +281,12 @@ export function useQuantLabScreenViewModel(
     }
 
     let cancelled = false;
+    let requestStarted = false;
+    const isInitialScan = !initialParameterScanScheduledRef.current;
+    initialParameterScanScheduledRef.current = true;
     setParameterPhase("extracting");
     const timer = window.setTimeout(() => {
+      requestStarted = true;
       services.extractParameters(source)
         .then((response) => {
           if (cancelled) return;
@@ -292,11 +298,14 @@ export function useQuantLabScreenViewModel(
           if (cancelled) return;
           setParameterPhase("unavailable");
         });
-    }, 600);
+    }, isInitialScan ? 0 : 600);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      if (isInitialScan && !requestStarted) {
+        initialParameterScanScheduledRef.current = false;
+      }
     };
   }, [services, source]);
 
@@ -1097,13 +1106,7 @@ function formatQuantTradeSide(value: string): string {
 }
 
 function formatQuantMoney(value: number): string {
-  if (!Number.isFinite(value)) return "$0.00";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
+  return formatCurrencyAmount(value, { minimumFractionDigits: 2, fallback: "$0.00" });
 }
 
 function formatSignedQuantMoney(value: number): string {
@@ -1113,10 +1116,7 @@ function formatSignedQuantMoney(value: number): string {
 }
 
 function formatQuantQuantity(value: number): string {
-  if (!Number.isFinite(value)) return "0";
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 4
-  }).format(Math.abs(value));
+  return formatNumberAmount(Math.abs(value), { maximumFractionDigits: 4, fallback: "0" });
 }
 
 function formatSignedQuantQuantity(value: number): string {

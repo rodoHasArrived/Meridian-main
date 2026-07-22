@@ -47,7 +47,7 @@ export function RiskControlPanel() {
       <CardContent className="space-y-4">
         <span id="risk-control-status" className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.error ? (
-          <div role="alert" className="rounded-[var(--radius-button,0.375rem)] border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+          <div role="alert" className="rounded-[2px] border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
             <p>{vm.error.summary}</p>
             {vm.error.details.length > 0 ? (
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
@@ -62,7 +62,7 @@ export function RiskControlPanel() {
           <div
             role={vm.statusRole}
             className={cn(
-              "rounded-[var(--radius-button,0.375rem)] border px-3 py-2.5 text-sm",
+              "rounded-[2px] border px-3 py-2.5 text-sm",
               vm.statusTone === "success"
                 ? "border-success/35 bg-success/10 text-success"
                 : vm.statusTone === "danger"
@@ -76,7 +76,7 @@ export function RiskControlPanel() {
         <div className="space-y-2">
           <h4 className="text-xs font-semibold uppercase text-muted-foreground">{vm.rowsLabel}</h4>
           {vm.rows.map((row) => (
-            <article key={row.ruleName} className="rounded-[var(--radius-card,0.5rem)] border border-border/70 bg-background/35 p-3">
+            <article key={row.ruleName} className="rounded-[2px] border border-border/70 bg-background/35 p-3">
               <div className="flex items-center justify-between gap-3">
                 <h4 className="font-semibold">{row.ruleName}</h4>
                 <span className={cn("text-xs font-semibold uppercase tracking-wide", toneClass[row.tone])}>
@@ -90,13 +90,13 @@ export function RiskControlPanel() {
             </article>
           ))}
           {vm.rows.length === 0 && (
-            <p role={vm.loading ? "status" : undefined} className="rounded-[var(--radius-card,0.5rem)] border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+            <p role={vm.loading ? "status" : undefined} className="rounded-[2px] border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
               {vm.emptyRowsText}
             </p>
           )}
         </div>
 
-        <div className="rounded-[var(--radius-card,0.5rem)] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
           <label htmlFor={vm.drawdownField.id} className="text-sm font-semibold">
             {vm.drawdownField.label}
           </label>
@@ -135,7 +135,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[var(--radius-card,0.5rem)] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
           <h4 className="font-semibold">{vm.timelineLabel}</h4>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {vm.violationTimeline.slice(0, 10).map((item) => (

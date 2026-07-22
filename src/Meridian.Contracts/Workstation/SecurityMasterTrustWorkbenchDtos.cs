@@ -69,7 +69,36 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
     public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
     public InstrumentPassportDto? InstrumentPassport { get; init; }
+    public IReadOnlyList<CorporateActionDescriptorDto>? CorporateActionDescriptors { get; init; }
 }
+
+/// <summary>
+/// Canonical-taxonomy projection of one effective corporate action for workbench surfaces:
+/// the chain tip's catalog identity (canonical name, ISO 15022 CAEV alignment, display name),
+/// its lifecycle state resolved at the snapshot's as-of time, and the amendment timeline
+/// (original announcement first, tip last). <see cref="CorpActId"/> joins the descriptor back
+/// to the raw row in <see cref="SecurityMasterTrustSnapshotDto.CorporateActions"/>.
+/// </summary>
+public sealed record CorporateActionDescriptorDto(
+    Guid CorpActId,
+    string CanonicalName,
+    string? CaevCode,
+    string DisplayName,
+    string LifecycleState,
+    bool IsCancelled,
+    IReadOnlyList<CorporateActionTimelineEntryDto> Timeline);
+
+/// <summary>
+/// One event in an effective corporate action's supersede chain. <see cref="LifecycleState"/>
+/// is the stored write-side state (null stored states read as Confirmed);
+/// <see cref="IsAmendment"/> marks entries that superseded a prior event.
+/// </summary>
+public sealed record CorporateActionTimelineEntryDto(
+    Guid CorpActId,
+    string LifecycleState,
+    DateOnly ExDate,
+    DateOnly? PayDate,
+    bool IsAmendment);
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
     Guid SecurityId,
@@ -366,6 +395,156 @@ public sealed record InstrumentPassportProviderConfidenceDto(
     IReadOnlyList<string> IdentifierConflictSummaries,
     IReadOnlyList<SecurityMasterChangeHistoryItemDto> OverrideHistory);
 
+public sealed record InstrumentPassportReferenceDataWorkbenchDto(
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Sections,
+    IReadOnlyList<InstrumentPassportOperationsHandoffDto> OperationsHandoffs);
+
+public sealed record InstrumentPassportReferenceDataWorkbenchSectionDto(
+    string SectionId,
+    string Title,
+    string Status,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount);
+
+public sealed record InstrumentPassportOperationsHandoffDto(
+    string HandoffId,
+    string Target,
+    string Title,
+    string Detail,
+    string Status,
+    bool IsEnabled)
+{
+    public string? Owner { get; init; }
+    public string? BlockerReason { get; init; }
+    public IReadOnlyList<string> ImpactedOutputs { get; init; } = [];
+    public IReadOnlyList<string> LinkedCases { get; init; } = [];
+    public string? Route { get; init; }
+}
+
+public sealed record InstrumentPassportOperationsWorkbenchDto(
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportOperationsWorkbenchPanelDto> Panels,
+    IReadOnlyList<InstrumentPassportOperationsReadinessDto> Readiness,
+    IReadOnlyList<InstrumentPassportOperationsHandoffDto> Handoffs);
+
+public sealed record InstrumentPassportOperationsWorkbenchPanelDto(
+    string PanelId,
+    string Title,
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> Items);
+
+public sealed record InstrumentPassportOperationsWorkbenchItemDto(
+    string ItemId,
+    string Label,
+    string Value,
+    string Status,
+    string Detail,
+    int EvidenceCount,
+    int BlockingIssueCount,
+    string? Route = null);
+
+public sealed record InstrumentPassportOperationsReadinessDto(
+    string ReadinessId,
+    string Label,
+    string Status,
+    bool IsReady,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount,
+    string NextAction,
+    string? Route = null);
+
+public sealed record SecurityMasterOperatingModelDto(
+    Guid SecurityId,
+    string? ClientId,
+    string? AccountId,
+    string? FundProfileId,
+    string Status,
+    string Summary,
+    IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages,
+    IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability,
+    IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata,
+    SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval,
+    IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls,
+    DateTimeOffset RetrievedAtUtc);
+
+public sealed record SecurityMasterOperatingModelStageDto(
+    string StageId,
+    string Title,
+    string Status,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount);
+
+public sealed record SecurityMasterEntitlementApplicabilityDto(
+    Guid EntitlementId,
+    string VendorName,
+    DataVendorDataType DataType,
+    string Scope,
+    string? ClientId,
+    string? AccountId,
+    string? FundProfileId,
+    Guid? SecurityId,
+    bool IsApplicable,
+    bool IsMostSpecific,
+    DataVendorEntitlementStatus Status,
+    bool RequiresDirectClientContract,
+    string? ContractReference,
+    string Summary);
+
+public sealed record SecurityMasterOperatorMetadataDto(
+    string MetadataId,
+    string VendorName,
+    DataVendorDataType DataType,
+    string SourceCategory,
+    string ExpectedRefreshCadence,
+    int? DefaultMaxDaysStale,
+    bool RequiresDirectClientContract,
+    string? OperatorMetadata,
+    string Summary);
+
+public sealed record SecurityMasterManualChangeApprovalPostureDto(
+    string PolicyKey,
+    OperationsGateKeyDto Gate,
+    string Route,
+    string RequiredPermission,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    string EvidenceRequirement,
+    string Status,
+    int ManualChangeCount,
+    int UnapprovedManualChangeCount,
+    string Summary);
+
+public sealed record InstrumentPassportClassificationProfileDto(
+    string InstrumentType,
+    string DisplayName,
+    string SecurityMasterAssetClass,
+    string? AssetFamily,
+    string? SubType,
+    string DefaultProviderSecurityType,
+    bool IsTradeable,
+    bool IsReferenceOnly,
+    bool IsDerivative,
+    bool RequiresUnderlying,
+    bool ProducesCashFlows,
+    bool RequiresLotTracking,
+    string SettlementModel,
+    IReadOnlyList<string> CompatibleSecurityMasterAssetClasses,
+    IReadOnlyList<string> PreferredIdentifierKinds,
+    IReadOnlyList<string> RequiredEconomicTerms,
+    IReadOnlyList<string> ProviderCapabilities,
+    IReadOnlyList<string> LifecycleEvents,
+    IReadOnlyList<string> ValidationRules,
+    IReadOnlyList<string> LedgerBehaviorHints,
+    IReadOnlyList<string> RiskModelHints,
+    string Summary);
+
 public sealed record InstrumentPassportDto(
     Guid SecurityId,
     SecurityIdentityDrillInDto Identity,
@@ -380,6 +559,10 @@ public sealed record InstrumentPassportDto(
     DateTimeOffset RetrievedAtUtc)
 {
     public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
+    public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
+    public SecurityMasterOperatingModelDto? OperatingModel { get; init; }
+    public InstrumentPassportOperationsWorkbenchDto? OperationsWorkbench { get; init; }
+    public InstrumentPassportClassificationProfileDto? ClassificationProfile { get; init; }
 }
 
 public sealed record InstrumentPassportPricingDto(

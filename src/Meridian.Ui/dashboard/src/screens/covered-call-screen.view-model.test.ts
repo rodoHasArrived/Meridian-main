@@ -647,13 +647,13 @@ describe("buildChainPreviewPanelViewModel", () => {
       data: null,
       error: {
         summary: "HTTP 503",
-        details: ["Endpoint returned 503 for /api/covered-call/preview."]
+        details: ["Meridian service returned 503. Open diagnostics for technical details."]
       },
       selectedIndex: 0
     })).toMatchObject({
       description: "Error: HTTP 503",
       emptyText: "Chain preview failed: HTTP 503",
-      errorDetails: ["Endpoint returned 503 for /api/covered-call/preview."],
+      errorDetails: ["Meridian service returned 503. Open diagnostics for technical details."],
       detailEmptyTitle: "Chain preview failed"
     });
   });
@@ -872,7 +872,7 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.historyError).toEqual({
       summary: "Covered-call run history is temporarily offline.",
       details: [
-        "Endpoint returned 503 for /api/covered-call/runs?limit=50.",
+        "Meridian service returned 503. Open diagnostics for technical details.",
         "History store unavailable"
       ]
     });
@@ -936,7 +936,7 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.errorBanner).toEqual({
       summary: "The run already completed before cancellation reached the engine.",
       details: [
-        "Endpoint returned 409 for /api/covered-call/runs/abc/cancel.",
+        "Meridian service returned 409. Open diagnostics for technical details.",
         "Cancellation blocked"
       ]
     });

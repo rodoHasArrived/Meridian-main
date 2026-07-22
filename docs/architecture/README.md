@@ -1,6 +1,8 @@
 # Architecture Documentation
 
-**Owner:** Core Team
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-07-19
 **Scope:** Engineering
 **Review Cadence:** Quarterly or when significant architectural decisions are made
 
@@ -23,10 +25,12 @@ This directory contains documentation about the system's design, architectural d
 
 ## What Does NOT Belong Here
 
-- Step-by-step developer guides → use `development/`
-- Provider-specific setup or comparison content → use `providers/`
-- Operational runbooks or deployment procedures → use `operations/`
-- Architecture Decision Records (those live in `adr/`)
+- Step-by-step developer guides → use [Engineering](../engineering/README.md) or
+  [Development Guides](../development/README.md)
+- Provider setup and recovery → use [Operators](../operators/README.md); provider capability and
+  evidence lookup → use [Reference](../reference/README.md)
+- Operational runbooks or deployment procedures → use [Operators](../operators/README.md)
+- Architecture Decision Records → use [ADRs](../adr/README.md)
 
 ---
 
@@ -40,11 +44,13 @@ This directory contains documentation about the system's design, architectural d
 | [Meridian Domain Model](meridian-domain-model.md) | Compact operational-record domain model and invariants for generated code, tests, UI, and reports |
 | [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
 | [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
+| [Module Conventions](module-conventions.md) | Capability endpoint groups, tenant-context, scoped-access, tenant-store-factory, registration seams, and the no-new-god-file ratchet |
 | [Design Document Adaptation](design-document-adaptation.md) | Executable adaptation contract for the design document's scope, contexts, modules, workspaces, screen inventory, and deferrals |
 | [Design Module Conformance](design-module-conformance.md) | Maps the design document's bounded-context modules to current source owners and staged extraction rules |
 | [MVVM Guidelines](mvvm-guidelines.md) | Browser workstation and WPF desktop view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
+| [Storage Topology Diagram](diagrams/meridian-storage-topology.mmd) | File-backed and PostgreSQL durable stores, control services, and their consumers |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
 | [Desktop Layers](desktop-layers.md) | WPF desktop application architecture |
 | [Why This Architecture](why-this-architecture.md) | Design rationale and tradeoffs |

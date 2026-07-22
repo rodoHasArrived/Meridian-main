@@ -486,4 +486,261 @@ public sealed class CanonicalSymbolRegistryTests : IDisposable
 
         result.Should().Be("AAPL");
     }
+
+    [Fact]
+    public async Task RegisterAsync_MergesSecurityIdentityAndProviderScopedMappings()
+    {
+        var securityId = Guid.NewGuid();
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "BRK.B",
+            SecurityId = securityId,
+            DisplayName = "Berkshire Hathaway Class B",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["yahoo"] = new("BRK-B", SymbolMappingSources.SecurityMaster)
+            }
+        });
+
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "BRK.B",
+            Figi = "BBG000BLNNH6",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["stooq"] = new("brk-b.us", SymbolMappingSources.OpenFigi)
+            }
+        });
+
+        var definition = _canonicalRegistry.GetDefinition("BRK.B");
+        definition.Should().NotBeNull();
+        definition!.SecurityId.Should().Be(securityId);
+        definition.DisplayName.Should().Be("Berkshire Hathaway Class B");
+        definition.Figi.Should().Be("BBG000BLNNH6");
+        definition.ProviderSymbols["yahoo"].Symbol.Should().Be("BRK-B");
+        definition.ProviderSymbols["stooq"].Symbol.Should().Be("brk-b.us");
+        _canonicalRegistry.TryResolve("BRK-B", "YAHOO").Should().Be("BRK.B");
+        _canonicalRegistry.GetProviderSymbol("BRK.B", "STOOQ").Should().Be("brk-b.us");
+    }
+
+    [Fact]
+    public async Task RegisterAsync_SameSecurityIdDifferentCanonicalTicker_ExposesOneResolvableDefinition()
+    {
+        var securityId = Guid.NewGuid();
+        var startingCount = _canonicalRegistry.Count;
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "RENAMED.OLD",
+            SecurityId = securityId,
+            DisplayName = "Renamed issuer"
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "RENAMED.NEW",
+            SecurityId = securityId,
+            Figi = "BBG-RENAMED-1"
+        });
+
+        _canonicalRegistry.Count.Should().Be(startingCount + 1);
+        _canonicalRegistry.ResolveToCanonical("RENAMED.OLD").Should().Be("RENAMED.OLD");
+        _canonicalRegistry.ResolveToCanonical("RENAMED.NEW").Should().Be("RENAMED.OLD");
+        var definition = _canonicalRegistry.GetDefinition("RENAMED.NEW");
+        definition.Should().NotBeNull();
+        definition!.SecurityId.Should().Be(securityId);
+        definition.Canonical.Should().Be("RENAMED.OLD");
+        definition.Aliases.Should().Contain("RENAMED.NEW");
+        definition.Figi.Should().Be("BBG-RENAMED-1");
+    }
+
+    [Fact]
+    public async Task OperatorOverride_WinsAndCanBeRemovedWithoutDeletingSecurity()
+    {
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "AAPL",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["yahoo"] = new("AAPL", SymbolMappingSources.OpenFigi)
+            }
+        });
+
+        await _canonicalRegistry.SetProviderSymbolAsync(
+            "AAPL",
+            "Yahoo",
+            "AAPL-OPERATOR",
+            SymbolMappingSources.Operator,
+            isOverride: true);
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "AAPL",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["yahoo"] = new("AAPL-LEARNED", SymbolMappingSources.OpenFigi)
+            }
+        });
+
+        _canonicalRegistry.GetProviderSymbol("AAPL", "yahoo").Should().Be("AAPL-OPERATOR");
+
+        var removed = await _canonicalRegistry.RemoveProviderSymbolAsync("AAPL", "YAHOO");
+
+        removed.Should().BeTrue();
+        _canonicalRegistry.GetDefinition("AAPL").Should().NotBeNull();
+        _canonicalRegistry.GetProviderSymbol("AAPL", "yahoo").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CrossProviderAliasCollision_RequiresProviderContextWhileUnambiguousAliasesRemainGeneric()
+    {
+        const string sharedAlias = "CROSS-PROVIDER-COLLISION";
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "COLLISION.A",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["provider-a"] = new(sharedAlias, SymbolMappingSources.Operator, IsOverride: true),
+                ["unique-a"] = new("UNIQUE-PROVIDER-ALIAS", SymbolMappingSources.Operator, IsOverride: true)
+            }
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "COLLISION.B",
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["provider-b"] = new(sharedAlias, SymbolMappingSources.SecurityMaster)
+            }
+        });
+
+        _canonicalRegistry.ResolveToCanonical(sharedAlias).Should().BeNull(
+            "a provider-less lookup cannot choose between securities that reuse one provider ticker");
+        _registryService.LookupSymbol(sharedAlias).Found.Should().BeFalse(
+            "the storage fallback must not reintroduce dictionary-order resolution");
+        _canonicalRegistry.TryResolveWithProvider(sharedAlias, "provider-a").Should().Be("COLLISION.A");
+        _canonicalRegistry.TryResolveWithProvider(sharedAlias, "provider-b").Should().Be("COLLISION.B");
+        _canonicalRegistry.GetProviderSymbol(sharedAlias, "provider-a").Should().Be(sharedAlias,
+            "outbound lookup should use the supplied provider to disambiguate its input");
+        _canonicalRegistry.ResolveToCanonical("UNIQUE-PROVIDER-ALIAS").Should().Be("COLLISION.A");
+    }
+
+    [Fact]
+    public async Task ProviderScopedAliasHistory_DoesNotOverrideGenericAliasWithSameSpelling()
+    {
+        const string sharedAlias = "SECURITY-MASTER-SHARED";
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SCOPED.A",
+            AliasDefinitions =
+            [
+                new CanonicalSymbolAliasDefinition(
+                    sharedAlias,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: "provider-a")
+            ],
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["provider-a"] = new(sharedAlias, SymbolMappingSources.SecurityMaster)
+            }
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SCOPED.B",
+            AliasDefinitions =
+            [
+                new CanonicalSymbolAliasDefinition(
+                    sharedAlias,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: "provider-b")
+            ],
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                ["provider-b"] = new(sharedAlias, SymbolMappingSources.SecurityMaster)
+            }
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "GENERIC.C",
+            Aliases = [sharedAlias]
+        });
+
+        _canonicalRegistry.ResolveToCanonical(sharedAlias).Should().Be("GENERIC.C");
+        _registryService.ResolveAlias(sharedAlias).Should().Be("GENERIC.C");
+        _canonicalRegistry.TryResolveWithProvider(sharedAlias, "provider-a").Should().Be("SCOPED.A");
+        _canonicalRegistry.TryResolveWithProvider(sharedAlias, "provider-b").Should().Be("SCOPED.B");
+        _registryService.GetRegistry().AliasIndex[sharedAlias].Should().Be("GENERIC.C");
+
+        var scopedDefinition = _canonicalRegistry.GetDefinition("SCOPED.A");
+        scopedDefinition!.AliasDefinitions.Should().ContainSingle(alias =>
+            alias.Alias == sharedAlias
+            && alias.Provider == "provider-a"
+            && alias.Source == SymbolMappingSources.SecurityMaster);
+    }
+
+    [Fact]
+    public async Task SameProviderAliasCollision_RemainsAmbiguousEvenWhenGenericAliasExists()
+    {
+        const string provider = "provider-a";
+        const string sharedAlias = "SAME-PROVIDER-COLLISION";
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SAME.A",
+            AliasDefinitions =
+            [
+                new CanonicalSymbolAliasDefinition(
+                    sharedAlias,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: provider)
+            ],
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                [provider] = new(sharedAlias, SymbolMappingSources.SecurityMaster)
+            }
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SAME.B",
+            AliasDefinitions =
+            [
+                new CanonicalSymbolAliasDefinition(
+                    sharedAlias,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: provider)
+            ],
+            ProviderSymbols = new Dictionary<string, ProviderSymbolDefinition>
+            {
+                [provider] = new(sharedAlias, SymbolMappingSources.SecurityMaster)
+            }
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "SAME.GENERIC",
+            Aliases = [sharedAlias]
+        });
+
+        _canonicalRegistry.ResolveToCanonical(sharedAlias).Should().Be("SAME.GENERIC");
+        _canonicalRegistry.TryResolve(sharedAlias, provider).Should().BeNull();
+        _canonicalRegistry.TryResolveWithProvider(sharedAlias, provider).Should().BeNull();
+        _canonicalRegistry.GetProviderSymbol(sharedAlias, provider).Should().BeNull();
+        if (_registryService.GetRegistry().ProviderMappings.TryGetValue(provider, out var mappings))
+            mappings.Should().NotContainKey(sharedAlias);
+    }
+
+    [Fact]
+    public async Task GenericAliasCollision_RemainsAmbiguousInsteadOfChoosingRegistryOrder()
+    {
+        const string sharedAlias = "GENERIC-ALIAS-COLLISION";
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "GENERIC.A",
+            Aliases = [sharedAlias]
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "GENERIC.B",
+            Aliases = [sharedAlias]
+        });
+
+        _canonicalRegistry.ResolveToCanonical(sharedAlias).Should().BeNull();
+        _registryService.LookupSymbol(sharedAlias).Found.Should().BeFalse();
+        _registryService.ResolveAlias(sharedAlias).Should().Be(sharedAlias);
+        _registryService.GetRegistry().AliasIndex.Should().NotContainKey(sharedAlias);
+    }
 }

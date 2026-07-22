@@ -271,6 +271,19 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void MainWindow_ShouldRebindLaunchNavigationToTheMainContentFrame()
+    {
+        var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+        var mainPage = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\MainPage.xaml.cs"));
+
+        mainWindow.Should().Contain("request.HasPageNavigation && RootFrame.Content is MainPage mainPage");
+        mainWindow.Should().Contain("mainPage.NavigateToLaunchPage(request.PageTag!)");
+        mainPage.Should().Contain("public bool NavigateToLaunchPage(string pageTag)");
+        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked)");
+        mainPage.Should().Contain("return _navigationService.NavigateTo(pageTag)");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldPruneWorkflowArtifactsBeforeCreatingRunDirectory()
     {
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
@@ -299,13 +312,17 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void WindowsDesktopBuildWorkflow_ShouldEnableFullWpfBuildTestAndPublish()
+    public void WindowsDesktopBuildWorkflow_ShouldRunIsolatedValidationAndGatedPublish()
     {
         var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
-        workflow.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj");
-        workflow.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("pwsh ./scripts/dev/validate-wpf-dev.ps1");
+        workflow.Should().Contain("-Restore");
+        workflow.Should().Contain("-Filter \"Category!=Integration&FullyQualifiedName!~Integration\"");
+        workflow.Should().Contain("-OutputRoot \"artifacts/wpf-validation/windows-desktop-build\"");
+        workflow.Should().Contain("run_smoke_publish");
+        workflow.Should().Contain("Decide desktop smoke publish");
+        workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
         workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("/p:EnableWindowsTargeting=true");

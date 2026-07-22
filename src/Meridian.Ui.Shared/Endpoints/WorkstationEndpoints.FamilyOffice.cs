@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Serialization;
 using Meridian.Ui.Shared.Services;
@@ -12,7 +13,7 @@ public static partial class WorkstationEndpoints
 {
     private static void MapFamilyOfficeEndpoints(RouteGroupBuilder group)
     {
-        group.MapGet("/family-office/overview", async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOverview), async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -28,7 +29,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeOverviewDto>(200)
         .Produces(501);
 
-        group.MapGet("/family-office/balance-sheet", async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeBalanceSheet), async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -44,7 +45,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeBalanceSheetResponseDto>(200)
         .Produces(501);
 
-        group.MapGet("/family-office/entities", async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeEntities), async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -60,7 +61,7 @@ public static partial class WorkstationEndpoints
         .Produces<FamilyOfficeEntitiesResponseDto>(200)
         .Produces(501);
 
-        group.MapGet("/family-office/ownership-graph", async Task<IResult> (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFamilyOfficeOwnershipGraph), async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)

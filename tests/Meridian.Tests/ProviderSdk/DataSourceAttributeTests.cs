@@ -112,10 +112,12 @@ public sealed class DataSourceAttributeTests
         var realtimeAttr = new DataSourceAttribute("rt", "RT", DataSourceType.Realtime, DataSourceCategory.Free);
         var hybridAttr = new DataSourceAttribute("hb", "HB", DataSourceType.Hybrid, DataSourceCategory.Free);
         var historicalAttr = new DataSourceAttribute("hs", "HS", DataSourceType.Historical, DataSourceCategory.Free);
+        var referenceAttr = new DataSourceAttribute("ref", "REF", DataSourceType.Reference, DataSourceCategory.Free);
 
         DataSourceMetadata.FromAttribute(realtimeAttr, typeof(object)).IsRealtime.Should().BeTrue();
         DataSourceMetadata.FromAttribute(hybridAttr, typeof(object)).IsRealtime.Should().BeTrue();
         DataSourceMetadata.FromAttribute(historicalAttr, typeof(object)).IsRealtime.Should().BeFalse();
+        DataSourceMetadata.FromAttribute(referenceAttr, typeof(object)).IsRealtime.Should().BeFalse();
     }
 
     [Fact]
@@ -124,10 +126,12 @@ public sealed class DataSourceAttributeTests
         var realtimeAttr = new DataSourceAttribute("rt", "RT", DataSourceType.Realtime, DataSourceCategory.Free);
         var hybridAttr = new DataSourceAttribute("hb", "HB", DataSourceType.Hybrid, DataSourceCategory.Free);
         var historicalAttr = new DataSourceAttribute("hs", "HS", DataSourceType.Historical, DataSourceCategory.Free);
+        var referenceAttr = new DataSourceAttribute("ref", "REF", DataSourceType.Reference, DataSourceCategory.Free);
 
         DataSourceMetadata.FromAttribute(realtimeAttr, typeof(object)).IsHistorical.Should().BeFalse();
         DataSourceMetadata.FromAttribute(hybridAttr, typeof(object)).IsHistorical.Should().BeTrue();
         DataSourceMetadata.FromAttribute(historicalAttr, typeof(object)).IsHistorical.Should().BeTrue();
+        DataSourceMetadata.FromAttribute(referenceAttr, typeof(object)).IsHistorical.Should().BeFalse();
     }
 
     #endregion
@@ -137,10 +141,11 @@ public sealed class DataSourceAttributeTests
     [Fact]
     public void DataSourceType_HasExpectedValues()
     {
-        Enum.GetValues<DataSourceType>().Should().HaveCount(3);
+        Enum.GetValues<DataSourceType>().Should().HaveCount(4);
         ((int)DataSourceType.Realtime).Should().Be(0);
         ((int)DataSourceType.Historical).Should().Be(1);
         ((int)DataSourceType.Hybrid).Should().Be(2);
+        ((int)DataSourceType.Reference).Should().Be(3);
     }
 
     #endregion

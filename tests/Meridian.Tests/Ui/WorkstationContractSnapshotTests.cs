@@ -13,6 +13,7 @@ public sealed class WorkstationContractSnapshotTests
     private static readonly Type[] DashboardCriticalContractTypes =
     [
         typeof(TradingOperatorReadinessDto),
+        typeof(TradingLiveOperationRequirementDto),
         typeof(TradingAcceptanceGateDto),
         typeof(OperatorWorkItemDto),
         typeof(OperatorInboxDto),
@@ -24,7 +25,7 @@ public sealed class WorkstationContractSnapshotTests
     {
         var descriptor = BuildDescriptor();
         var actualHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(descriptor)));
-        var approvedHash = "C99F3953127AEAE32B9E3260D2554A7FF92776B5A73F07D9D11E7D2218C2B695";
+        var approvedHash = "E6E6285EB5CF18520C1C033BBFDD9824B314870D057E5318FDF0309AE18590B7";
         Assert.Equal(approvedHash, actualHash);
     }
 
@@ -63,22 +64,27 @@ public sealed class WorkstationContractSnapshotTests
         var sb = new StringBuilder();
         foreach (var type in DashboardCriticalContractTypes.OrderBy(static t => t.FullName, StringComparer.Ordinal))
         {
-            sb.AppendLine(type.FullName);
+            AppendSnapshotLine(sb, type.FullName ?? type.Name);
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                          .OrderBy(static p => p.Name, StringComparer.Ordinal))
             {
-                sb.Append(property.Name).Append(':').AppendLine(property.PropertyType.FullName ?? property.PropertyType.Name);
+                AppendSnapshotLine(sb, $"{property.Name}:{property.PropertyType.FullName ?? property.PropertyType.Name}");
             }
 
             if (type.IsEnum)
             {
                 foreach (var name in Enum.GetNames(type).OrderBy(static x => x, StringComparer.Ordinal))
                 {
-                    sb.Append("enum:").AppendLine(name);
+                    AppendSnapshotLine(sb, $"enum:{name}");
                 }
             }
         }
 
         return sb.ToString();
+    }
+
+    private static void AppendSnapshotLine(StringBuilder sb, string value)
+    {
+        sb.Append(value).Append('\n');
     }
 }

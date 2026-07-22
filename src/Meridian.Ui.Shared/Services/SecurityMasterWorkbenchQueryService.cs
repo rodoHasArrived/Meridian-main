@@ -3,13 +3,18 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -29,6 +34,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private readonly LedgerReadService _ledgerReadService;
     private readonly IReconciliationRunService? _reconciliationRunService;
     private readonly ReportGenerationService _reportGenerationService;
+    private readonly ISecurityMasterPricingService? _pricingService;
+    private readonly ISecurityMasterCashFlowService? _cashFlowService;
+    private readonly IDataVendorEntitlementService? _entitlementService;
+    private readonly ISecurityMasterDataQualityService? _dataQualityService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -39,7 +50,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
         ReportGenerationService reportGenerationService,
-        IReconciliationRunService? reconciliationRunService = null)
+        IReconciliationRunService? reconciliationRunService = null,
+        ISecurityMasterPricingService? pricingService = null,
+        ISecurityMasterCashFlowService? cashFlowService = null,
+        IDataVendorEntitlementService? entitlementService = null,
+        ISecurityMasterDataQualityService? dataQualityService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -50,6 +67,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
         _reconciliationRunService = reconciliationRunService;
+        _pricingService = pricingService;
+        _cashFlowService = cashFlowService;
+        _entitlementService = entitlementService;
+        _dataQualityService = dataQualityService;
+        _tenancyRegistry = tenancyRegistry;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
@@ -59,6 +82,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         ct.ThrowIfCancellationRequested();
         var nowUtc = DateTimeOffset.UtcNow;
+
+        // Tenant isolation (SEC-005): sanitize the operator-supplied fund scope ONCE here so every
+        // fund-scoped evidence path the snapshot and its instrument passport fan out to — downstream
+        // impact, open lots, Clearwater pricing (golden-copy/hierarchy), and entitlement applicability —
+        // is unscoped for a fund owned by another tenant, not just runs/lots. Own/blank funds and registry
+        // uncertainty pass through unchanged (fail open to the single-company-per-deployment boundary).
+        fundProfileId = await SanitizeFundScopeAsync(fundProfileId, ct).ConfigureAwait(false);
 
         var detailTask = _queryService.GetByIdAsync(securityId, ct);
         var historyTask = _queryService.GetHistoryAsync(new SecurityHistoryRequest(securityId, 50), ct);
@@ -114,6 +144,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var lotModel = BuildLotModel(detail, economic, trading);
         var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
         var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
+        var corporateActionDescriptors = BuildCorporateActionDescriptors(corporateActions, nowUtc);
 
         var snapshot = new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
@@ -149,12 +180,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             ScheduleSummary = scheduleSummary,
             LotModel = lotModel,
             ScheduleBook = scheduleBook,
-            OpenLotReadModel = openLotReadModel
+            OpenLotReadModel = openLotReadModel,
+            CorporateActionDescriptors = corporateActionDescriptors
         };
 
         return snapshot with
         {
-            InstrumentPassport = BuildInstrumentPassport(snapshot, trading)
+            InstrumentPassport = await BuildInstrumentPassportAsync(snapshot, trading, fundProfileId, ct).ConfigureAwait(false)
         };
     }
 
@@ -167,9 +199,54 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return snapshot?.InstrumentPassport;
     }
 
-    private static InstrumentPassportDto BuildInstrumentPassport(
+    public async Task<SecurityMasterOperatingModelDto?> GetOperatingModelAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default)
+    {
+        var passport = await GetInstrumentPassportAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        return passport?.OperatingModel;
+    }
+
+    /// <summary>
+    /// Projects the raw corporate-action rows into canonical-taxonomy descriptors: supersede
+    /// chains collapse to their tips via <see cref="CorporateActionEffectiveStateProjector"/>,
+    /// catalog metadata supplies the display identity, and lifecycle states resolve at the
+    /// snapshot's as-of time. Event types outside the catalog fail open to their raw string
+    /// with no CAEV alignment so unknown provider vocab never drops rows from the workbench.
+    /// </summary>
+    private static IReadOnlyList<CorporateActionDescriptorDto> BuildCorporateActionDescriptors(
+        IReadOnlyList<CorporateActionDto> corporateActions,
+        DateTimeOffset asOf)
+    {
+        return CorporateActionEffectiveStateProjector.Project(corporateActions, asOf)
+            .Select(static state =>
+            {
+                var descriptor = CorporateActionTypeDescriptorCatalog.Find(state.Effective.EventType);
+                return new CorporateActionDescriptorDto(
+                    CorpActId: state.Effective.CorpActId,
+                    CanonicalName: state.Effective.EventType,
+                    CaevCode: descriptor?.CaevCode,
+                    DisplayName: descriptor?.DisplayName ?? state.Effective.EventType,
+                    LifecycleState: state.LifecycleState,
+                    IsCancelled: state.IsCancelled,
+                    Timeline: state.Timeline
+                        .Select(static entry => new CorporateActionTimelineEntryDto(
+                            CorpActId: entry.CorpActId,
+                            LifecycleState: entry.LifecycleState ?? CorporateActionLifecycleStates.Confirmed,
+                            ExDate: entry.ExDate,
+                            PayDate: entry.PayDate,
+                            IsAmendment: entry.SupersedesCorpActId.HasValue))
+                        .ToArray());
+            })
+            .ToArray();
+    }
+
+    private async Task<InstrumentPassportDto> BuildInstrumentPassportAsync(
         SecurityMasterTrustSnapshotDto snapshot,
-        TradingParametersDto? tradingParameters)
+        TradingParametersDto? tradingParameters,
+        string? fundProfileId,
+        CancellationToken ct)
     {
         var identifierSummary = snapshot.IdentifierSummary ?? BuildFallbackIdentifierSummary(snapshot.Identity);
         var lifecycleEvents = snapshot.ChangeHistory
@@ -178,6 +255,25 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 .Select(MapHistoryToLifecycleEvent)
                 .ToArray();
         var pricing = BuildPassportPricing(snapshot.TrustPosture, tradingParameters);
+        var providerConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents);
+        var clearwaterEvidence = await BuildClearwaterEvidenceAsync(
+            snapshot.SecurityId,
+            fundProfileId,
+            ct).ConfigureAwait(false);
+        var operatingModel = BuildOperatingModel(
+            snapshot,
+            identifierSummary,
+            fundProfileId,
+            providerConfidence,
+            lifecycleEvents,
+            clearwaterEvidence);
+        var referenceDataWorkbench = BuildReferenceDataWorkbench(
+            snapshot,
+            identifierSummary,
+            providerConfidence,
+            pricing,
+            operatingModel);
+        var classificationProfile = BuildClassificationProfile(snapshot);
 
         return new InstrumentPassportDto(
             SecurityId: snapshot.SecurityId,
@@ -192,9 +288,1402 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             TrustPosture: snapshot.TrustPosture,
             RetrievedAtUtc: snapshot.RetrievedAtUtc)
         {
-            ProviderConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents)
+            ProviderConfidence = providerConfidence,
+            OperatingModel = operatingModel,
+            ReferenceDataWorkbench = referenceDataWorkbench,
+            OperationsWorkbench = BuildOperationsWorkbench(
+                snapshot,
+                identifierSummary,
+                providerConfidence,
+                pricing,
+                referenceDataWorkbench,
+                classificationProfile),
+            ClassificationProfile = classificationProfile
         };
     }
+
+    private static InstrumentPassportReferenceDataWorkbenchDto BuildReferenceDataWorkbench(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing,
+        SecurityMasterOperatingModelDto operatingModel)
+    {
+        var openIdentifierConflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var activeProviderEvidenceCount = providerConfidence.Count(static row => row.IsActive);
+        var hasUsableIdentifierConfidence =
+            identifierSummary.HasPrimaryIdentifier &&
+            identifierSummary.HasProviderMappings &&
+            activeProviderEvidenceCount > 0 &&
+            openIdentifierConflictCount == 0;
+        var hasObligationEvidence =
+            snapshot.CorporateActions.Count > 0 ||
+            snapshot.ScheduleBook?.Events.Count > 0 ||
+            snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true;
+        var hasCashFlowReadiness =
+            snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ||
+            snapshot.ScheduleBook?.SupportsCashflowSchedule == true ||
+            snapshot.CorporateActions.Count > 0;
+        var hasLedgerClassification =
+            !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass) &&
+            !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var operationsHandoffEvidenceCount = Math.Max(
+            1,
+            snapshot.RecommendedActions.Count + snapshot.DownstreamImpact.Links.Count);
+
+        var sections = new List<InstrumentPassportReferenceDataWorkbenchSectionDto>
+        {
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "provider-evidence",
+                Title: "Provider evidence",
+                Status: activeProviderEvidenceCount > 0 ? "Ready" : "Review",
+                Summary: activeProviderEvidenceCount > 0
+                    ? $"{activeProviderEvidenceCount} active provider evidence row(s) retained on the passport."
+                    : "No active provider evidence rows are retained on the passport.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: openIdentifierConflictCount),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "identifier-confidence",
+                Title: "Identifier confidence",
+                Status: hasUsableIdentifierConfidence ? "Ready" : "Review",
+                Summary: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount + identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: openIdentifierConflictCount),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "terms-obligations",
+                Title: "Terms and obligations",
+                Status: hasObligationEvidence ? "Ready" : "Review",
+                Summary: BuildTermsAndObligationsSummary(snapshot),
+                EvidenceCount: snapshot.CorporateActions.Count + (snapshot.ScheduleBook?.Events.Count ?? 0),
+                BlockingIssueCount: snapshot.TrustPosture.HasOpenConflicts ? snapshot.TrustPosture.OpenConflictCount : 0),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "cash-flow-readiness",
+                Title: "Projected cash-flow readiness",
+                Status: hasCashFlowReadiness ? "Ready" : "Review",
+                Summary: snapshot.ScheduleSummary?.Summary ?? pricing.Summary,
+                EvidenceCount: (snapshot.ScheduleBook?.Events.Count ?? 0) + snapshot.CorporateActions.Count,
+                BlockingIssueCount: hasCashFlowReadiness ? 0 : 1),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "ledger-classification",
+                Title: "Ledger classification",
+                Status: hasLedgerClassification ? "Ready" : "Review",
+                Summary: BuildLedgerClassificationSummary(snapshot),
+                EvidenceCount: snapshot.DownstreamImpact.LedgerExposureCount + (hasLedgerClassification ? 1 : 0),
+                BlockingIssueCount: hasLedgerClassification ? 0 : 1),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "operations-handoff",
+                Title: "Operations handoff",
+                Status: "Ready",
+                Summary: snapshot.DownstreamImpact.Summary,
+                EvidenceCount: operationsHandoffEvidenceCount,
+                BlockingIssueCount: snapshot.RecommendedActions.Count(static action => !action.IsEnabled))
+        };
+
+        sections.AddRange(operatingModel.Controls);
+
+        var status = sections.Any(static section => section.BlockingIssueCount > 0 || section.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
+            ? "Review"
+            : "Ready";
+        var handoffs = BuildOperationsHandoffs(snapshot);
+
+        return new InstrumentPassportReferenceDataWorkbenchDto(
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Multi-asset reference-data workbench is ready for downstream FINOPS use."
+                : "Multi-asset reference-data workbench needs review before downstream FINOPS use.",
+            Sections: sections,
+            OperationsHandoffs: handoffs);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchDto BuildOperationsWorkbench(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing,
+        InstrumentPassportReferenceDataWorkbenchDto referenceDataWorkbench,
+        InstrumentPassportClassificationProfileDto? classificationProfile)
+    {
+        var handoffs = referenceDataWorkbench.OperationsHandoffs;
+        var readiness = BuildOperationsReadiness(snapshot, identifierSummary, providerConfidence, pricing, handoffs);
+        var panels = new List<InstrumentPassportOperationsWorkbenchPanelDto>
+        {
+            BuildIdentityPanel(snapshot, identifierSummary, providerConfidence),
+            BuildProviderEvidencePanel(snapshot, providerConfidence),
+            BuildTermsPanel(snapshot, pricing, classificationProfile),
+            BuildReadinessPanel(readiness),
+            BuildHandoffPanel(snapshot, handoffs)
+        };
+        var status = panels.Any(PanelNeedsReview) || readiness.Any(static item => !item.IsReady)
+            ? "Review"
+            : "Ready";
+
+        return new InstrumentPassportOperationsWorkbenchDto(
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use."
+                : "Security Master operations workbench needs review before downstream portfolio, accounting, reconciliation, close, or reporting use.",
+            Panels: panels,
+            Readiness: readiness,
+            Handoffs: handoffs);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildIdentityPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence)
+    {
+        var conflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var items = new List<InstrumentPassportOperationsWorkbenchItemDto>
+        {
+            new(
+                ItemId: "canonical-id",
+                Label: "Canonical ID",
+                Value: snapshot.SecurityId.ToString("D"),
+                Status: "Ready",
+                Detail: SecurityMasterText(snapshot.Identity.DisplayName, "Security Master identity is retained."),
+                EvidenceCount: 1,
+                BlockingIssueCount: 0),
+            new(
+                ItemId: "primary-identifier",
+                Label: SecurityMasterText(identifierSummary.PrimaryIdentifierKind, "Primary identifier"),
+                Value: SecurityMasterText(identifierSummary.PrimaryIdentifierValue, "Unavailable"),
+                Status: identifierSummary.HasPrimaryIdentifier ? "Ready" : "Review",
+                Detail: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount,
+                BlockingIssueCount: identifierSummary.HasPrimaryIdentifier ? 0 : 1),
+            new(
+                ItemId: "aliases-provider-ids",
+                Label: "Aliases and provider IDs",
+                Value: $"{identifierSummary.ActiveAliasCount} alias(es); {identifierSummary.ProviderMappingCount} provider mapping(s)",
+                Status: identifierSummary.HasProviderMappings ? "Ready" : "Review",
+                Detail: $"{identifierSummary.DistinctProviderCount} distinct provider(s) contribute identity evidence.",
+                EvidenceCount: identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: identifierSummary.HasProviderMappings ? 0 : 1),
+            new(
+                ItemId: "duplicate-candidates",
+                Label: "Duplicate candidates",
+                Value: conflictCount == 0 ? "No open identifier conflicts" : $"{conflictCount} identifier conflict(s)",
+                Status: conflictCount == 0 ? "Ready" : "Review",
+                Detail: conflictCount == 0
+                    ? "No provider identifier conflicts are blocking canonical identity confidence."
+                    : "Provider identifier conflicts require steward review before downstream consumers trust the asset.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: conflictCount)
+        };
+
+        return BuildOperationsPanel("identity", "Identity", items);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildProviderEvidencePanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence)
+    {
+        var activeCount = providerConfidence.Count(static row => row.IsActive);
+        var items = providerConfidence
+            .Select((row, index) => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: $"provider-{index + 1}",
+                Label: row.Provider,
+                Value: $"{row.MappingKind}: {row.Symbol}",
+                Status: row.IdentifierConflictIds.Count == 0 && row.IsActive ? "Ready" : "Review",
+                Detail: BuildProviderEvidenceDetail(row),
+                EvidenceCount: 1 + row.OverrideHistory.Count,
+                BlockingIssueCount: row.IdentifierConflictIds.Count))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            items.Add(new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: "provider-evidence-missing",
+                Label: "Provider evidence",
+                Value: "Unavailable",
+                Status: "Review",
+                Detail: "No provider, administrator, custodian, or retained source evidence is attached to this passport.",
+                EvidenceCount: 0,
+                BlockingIssueCount: 1));
+        }
+
+        items.Insert(0, new InstrumentPassportOperationsWorkbenchItemDto(
+            ItemId: "active-source-count",
+            Label: "Active sources",
+            Value: $"{activeCount} active / {providerConfidence.Count} total",
+            Status: activeCount > 0 ? "Ready" : "Review",
+            Detail: "Provider, administrator, custodian, and retained source rows are reviewed before downstream handoff.",
+            EvidenceCount: providerConfidence.Count,
+            BlockingIssueCount: activeCount > 0 ? 0 : 1));
+        items.AddRange(BuildSourceEvidenceItems(snapshot));
+        items.AddRange(BuildConflictItems(snapshot, "provider-conflict", IsProviderOrIdentifierConflict));
+
+        return BuildOperationsPanel("provider-evidence", "Provider evidence", items);
+    }
+
+    private static string BuildProviderEvidenceDetail(InstrumentPassportProviderConfidenceDto row)
+    {
+        var freshness = row.FreshnessAsOf.HasValue
+            ? $"Fresh as of {row.FreshnessAsOf.Value.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'} ({row.FreshnessMinutes.GetValueOrDefault()} minute(s) old)."
+            : "Freshness timestamp unavailable.";
+        var overrides = row.OverrideHistory.Count == 0
+            ? "No retained override history."
+            : $"{row.OverrideHistory.Count} retained override event(s).";
+
+        return $"{row.ProviderSource}; {row.ConfidenceReason} {freshness} {overrides}";
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> BuildSourceEvidenceItems(
+        SecurityMasterTrustSnapshotDto snapshot)
+    {
+        if (snapshot.ProvenanceCandidates.Count == 0)
+        {
+            return
+            [
+                new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: "source-record-missing",
+                    Label: "Retained source evidence",
+                    Value: "Unavailable",
+                    Status: "Review",
+                    Detail: "Source record unavailable; as of timestamp unavailable; updated by unknown steward. Link provider, administrator, or custodian evidence before downstream handoff.",
+                    EvidenceCount: 0,
+                    BlockingIssueCount: 1,
+                    Route: "/workstation/accounting/security-master#source-missing")
+            ];
+        }
+
+        return snapshot.ProvenanceCandidates
+            .OrderByDescending(static candidate => candidate.IsWinningSource)
+            .ThenByDescending(static candidate => candidate.AsOf)
+            .ThenBy(static candidate => candidate.SourceSystem, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select((candidate, index) =>
+            {
+                var isBlockingConflict = candidate.ConflictId.HasValue &&
+                    candidate.ImpactSeverity is not SecurityMasterImpactSeverity.None and not SecurityMasterImpactSeverity.Low;
+                var sourceRecord = SecurityMasterText(candidate.SourceRecordId, "no retained source record id");
+                var updatedBy = SecurityMasterText(candidate.UpdatedBy, "unknown steward");
+                var reason = SecurityMasterText(candidate.Reason, candidate.IsWinningSource ? "winning source" : "source candidate");
+                var asOf = candidate.AsOf.HasValue
+                    ? candidate.AsOf.Value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                    : "timestamp unavailable";
+                var route = candidate.ConflictId.HasValue
+                    ? $"/workstation/accounting/security-master#conflict-{candidate.ConflictId.Value:D}"
+                    : $"/workstation/accounting/security-master#source-{index + 1}";
+
+                return new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: $"source-record-{index + 1}",
+                    Label: candidate.SourceSystem,
+                    Value: $"{candidate.FieldPath}: {candidate.DisplayValue}",
+                    Status: isBlockingConflict ? "Review" : "Ready",
+                    Detail: $"Source record {sourceRecord}; as of {asOf}; updated by {updatedBy}; {reason}.",
+                    EvidenceCount: 1,
+                    BlockingIssueCount: isBlockingConflict ? 1 : 0,
+                    Route: route);
+            })
+            .ToArray();
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildTermsPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        InstrumentPassportPricingDto pricing,
+        InstrumentPassportClassificationProfileDto? classificationProfile)
+    {
+        var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
+        var factorCount = snapshot.ScheduleBook?.FactorHistory.Count ?? 0;
+        var hasClassification = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
+            && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var hasEconomicTerms = snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
+            || scheduleEventCount > 0
+            || snapshot.CorporateActions.Count > 0
+            || pricing.TradingParameters is not null;
+        var items = new List<InstrumentPassportOperationsWorkbenchItemDto>
+        {
+            new(
+                ItemId: "classification",
+                Label: "Classification",
+                Value: BuildClassificationValue(snapshot),
+                Status: hasClassification ? "Ready" : "Review",
+                Detail: BuildLedgerClassificationSummary(snapshot),
+                EvidenceCount: hasClassification ? 1 : 0,
+                BlockingIssueCount: hasClassification ? 0 : 1),
+            new(
+                ItemId: "instrument-type-profile",
+                Label: "Instrument type profile",
+                Value: classificationProfile is null
+                    ? "Unavailable"
+                    : $"{classificationProfile.DisplayName} ({classificationProfile.InstrumentType})",
+                Status: classificationProfile is null ? "Review" : "Ready",
+                Detail: classificationProfile?.Summary
+                    ?? "No InstrumentType compatibility profile is available for this Security Master asset class.",
+                EvidenceCount: classificationProfile is null
+                    ? 0
+                    : Math.Max(
+                        1,
+                        classificationProfile.ProviderCapabilities.Count +
+                        classificationProfile.LifecycleEvents.Count +
+                        classificationProfile.LedgerBehaviorHints.Count),
+                BlockingIssueCount: classificationProfile is null ? 1 : 0),
+            new(
+                ItemId: "economics",
+                Label: "Economics",
+                Value: pricing.Summary,
+                Status: IsReadyStatus(pricing.Status) || hasEconomicTerms ? "Ready" : "Review",
+                Detail: BuildTermsAndObligationsSummary(snapshot),
+                EvidenceCount: (pricing.TradingParameters is null ? 0 : 1) + snapshot.CorporateActions.Count + scheduleEventCount,
+                BlockingIssueCount: IsReadyStatus(pricing.Status) || hasEconomicTerms ? 0 : 1),
+            new(
+                ItemId: "payment-schedule",
+                Label: "Payment schedule",
+                Value: scheduleEventCount > 0 ? $"{scheduleEventCount} projected event(s)" : "No projected events",
+                Status: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? "Ready" : "Review",
+                Detail: snapshot.ScheduleSummary?.Summary ?? "Payment, amortization, PIK, covenant, and paydown schedule evidence is not retained.",
+                EvidenceCount: scheduleEventCount,
+                BlockingIssueCount: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? 0 : 1),
+            new(
+                ItemId: "factors-collateral-covenants",
+                Label: "Factors, collateral, covenants",
+                Value: factorCount > 0 ? $"{factorCount} factor row(s)" : "Review required",
+                Status: factorCount > 0 || snapshot.ScheduleSummary?.SupportsFactorHistory == true ? "Ready" : "Review",
+                Detail: "Structured-asset factor, collateral, covenant, and paydown evidence must be linked when applicable.",
+                EvidenceCount: factorCount,
+                BlockingIssueCount: factorCount > 0 || snapshot.ScheduleSummary?.SupportsFactorHistory == true ? 0 : 1)
+        };
+        items.AddRange(BuildConflictItems(snapshot, "terms-conflict", IsTermsConflict));
+
+        return BuildOperationsPanel("terms", "Terms", items);
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> BuildConflictItems(
+        SecurityMasterTrustSnapshotDto snapshot,
+        string itemPrefix,
+        Func<SecurityMasterConflictAssessmentDto, bool> predicate)
+    {
+        return snapshot.ConflictAssessments
+            .Where(predicate)
+            .OrderByDescending(static assessment => assessment.ImpactSeverity)
+            .ThenBy(static assessment => assessment.Conflict.FieldPath, StringComparer.OrdinalIgnoreCase)
+            .Select((assessment, index) =>
+            {
+                var conflict = assessment.Conflict;
+                return new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: $"{itemPrefix}-{index + 1}",
+                    Label: conflict.FieldPath,
+                    Value: $"{conflict.ProviderA}: {conflict.ValueA} / {conflict.ProviderB}: {conflict.ValueB}",
+                    Status: "Review",
+                    Detail: $"{assessment.ImpactSummary} Recommended resolution: {assessment.RecommendedResolution}",
+                    EvidenceCount: 2,
+                    BlockingIssueCount: assessment.ImpactSeverity is SecurityMasterImpactSeverity.None or SecurityMasterImpactSeverity.Low ? 0 : 1,
+                    Route: $"/workstation/accounting/security-master#conflict-{conflict.ConflictId:D}");
+            })
+            .ToArray();
+    }
+
+    private static bool IsProviderOrIdentifierConflict(SecurityMasterConflictAssessmentDto assessment) =>
+        ContainsAnyControlToken(
+            [
+                assessment.Conflict.ConflictKind,
+                assessment.Conflict.FieldPath
+            ],
+            "identifier",
+            "ticker",
+            "cusip",
+            "isin",
+            "figi",
+            "provider",
+            "mapping",
+            "alias");
+
+    private static bool IsTermsConflict(SecurityMasterConflictAssessmentDto assessment) =>
+        ContainsAnyControlToken(
+            [
+                assessment.Conflict.ConflictKind,
+                assessment.Conflict.FieldPath
+            ],
+            "maturity",
+            "coupon",
+            "assettype",
+            "asset type",
+            "classification",
+            "currency",
+            "factor",
+            "collateral",
+            "covenant",
+            "paydown",
+            "amortization",
+            "strike",
+            "expiry",
+            "expiration",
+            "pik");
+
+    private static IReadOnlyList<InstrumentPassportOperationsReadinessDto> BuildOperationsReadiness(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing,
+        IReadOnlyList<InstrumentPassportOperationsHandoffDto> handoffs)
+    {
+        var identifierConflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var activeProviderCount = providerConfidence.Count(static row => row.IsActive);
+        var identityReady = identifierSummary.HasPrimaryIdentifier
+            && identifierSummary.HasProviderMappings
+            && activeProviderCount > 0
+            && identifierConflictCount == 0;
+        var classificationReady = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
+            && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var termsReady = snapshot.ScheduleBook?.Events.Count > 0
+            || snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
+            || snapshot.CorporateActions.Count > 0
+            || pricing.TradingParameters is not null;
+        var valuationReady = identityReady && IsReadyStatus(pricing.Status);
+        var reconciliationReady = identityReady && classificationReady && !snapshot.TrustPosture.HasOpenConflicts;
+        var ledgerReady = identityReady && classificationReady && snapshot.DownstreamImpact.LedgerExposureCount > 0;
+        var closeReady = reconciliationReady && ledgerReady && termsReady;
+        var reportReady = identityReady && snapshot.DownstreamImpact.ReportPackExposureCount > 0 && !snapshot.TrustPosture.HasOpenConflicts;
+        var nextAction = handoffs.FirstOrDefault(static handoff => handoff.IsEnabled);
+
+        return
+        [
+            BuildReadiness("valuation", "Valuation-ready", valuationReady, pricing.Summary, activeProviderCount + (pricing.TradingParameters is null ? 0 : 1), identifierConflictCount, "Review pricing source, identifier confidence, and active provider evidence.", nextAction?.Target),
+            BuildReadiness("reconciliation", "Reconciliation-ready", reconciliationReady, snapshot.DownstreamImpact.ReconciliationExposureSummary, snapshot.DownstreamImpact.ReconciliationExposureCount + activeProviderCount, snapshot.TrustPosture.OpenConflictCount, "Resolve identifier, classification, maturity, coupon, currency, or factor conflicts.", nextAction?.Target),
+            BuildReadiness("ledger", "Ledger-ready", ledgerReady, snapshot.DownstreamImpact.LedgerExposureSummary, snapshot.DownstreamImpact.LedgerExposureCount + (classificationReady ? 1 : 0), ledgerReady ? 0 : 1, "Confirm ledger classification and retained Security Master provenance.", nextAction?.Target),
+            BuildReadiness("close", "Close-ready", closeReady, snapshot.DownstreamImpact.Summary, snapshot.DownstreamImpact.Links.Count + (termsReady ? 1 : 0), closeReady ? 0 : 1, "Clear unresolved Security Master blockers before close package use.", nextAction?.Target),
+            BuildReadiness("report", "Report-ready", reportReady, snapshot.DownstreamImpact.ReportPackExposureSummary, snapshot.DownstreamImpact.ReportPackExposureCount, reportReady ? 0 : 1, "Link report-line provenance and resolve open definition conflicts.", nextAction?.Target)
+        ];
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildReadinessPanel(
+        IReadOnlyList<InstrumentPassportOperationsReadinessDto> readiness)
+    {
+        var items = readiness
+            .Select(item => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: item.ReadinessId,
+                Label: item.Label,
+                Value: item.Status,
+                Status: item.Status,
+                Detail: item.Summary,
+                EvidenceCount: item.EvidenceCount,
+                BlockingIssueCount: item.BlockingIssueCount,
+                Route: item.Route))
+            .ToArray();
+        return BuildOperationsPanel("operations-readiness", "Operations readiness", items);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildHandoffPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        IReadOnlyList<InstrumentPassportOperationsHandoffDto> handoffs)
+    {
+        var items = handoffs
+            .Select(handoff => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: handoff.HandoffId,
+                Label: handoff.Title,
+                Value: handoff.Target,
+                Status: handoff.Status,
+                Detail: BuildHandoffDetail(handoff),
+                EvidenceCount: 1,
+                BlockingIssueCount: handoff.IsEnabled ? 0 : 1,
+                Route: handoff.Route ?? handoff.Target))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            items.Add(new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: "handoff-review",
+                Label: "Review Security Master handoff",
+                Value: "Security Master detail",
+                Status: "Review",
+                Detail: snapshot.DownstreamImpact.Summary,
+                EvidenceCount: snapshot.DownstreamImpact.Links.Count,
+                BlockingIssueCount: 1));
+        }
+
+        return BuildOperationsPanel("handoff", "Handoff", items);
+    }
+
+    private static string BuildHandoffDetail(InstrumentPassportOperationsHandoffDto handoff)
+    {
+        var outputs = handoff.ImpactedOutputs.Count == 0
+            ? "Security Master"
+            : string.Join(", ", handoff.ImpactedOutputs);
+        var linkedCases = handoff.LinkedCases.Count == 0
+            ? "none"
+            : string.Join(", ", handoff.LinkedCases);
+        var owner = SecurityMasterText(handoff.Owner, "Security Master steward");
+        var blocker = SecurityMasterText(handoff.BlockerReason, handoff.Detail);
+
+        return $"{handoff.Detail} Owner: {owner}. Blocker: {blocker}. Impacted outputs: {outputs}. Linked cases: {linkedCases}.";
+    }
+
+    private static InstrumentPassportOperationsReadinessDto BuildReadiness(
+        string readinessId,
+        string label,
+        bool isReady,
+        string summary,
+        int evidenceCount,
+        int blockingIssueCount,
+        string blockedAction,
+        string? route)
+    {
+        return new InstrumentPassportOperationsReadinessDto(
+            ReadinessId: readinessId,
+            Label: label,
+            Status: isReady ? "Ready" : "Review",
+            IsReady: isReady,
+            Summary: SecurityMasterText(summary, isReady ? "Readiness evidence is retained." : blockedAction),
+            EvidenceCount: evidenceCount,
+            BlockingIssueCount: isReady ? 0 : Math.Max(1, blockingIssueCount),
+            NextAction: isReady ? "No blocker." : blockedAction,
+            Route: route);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildOperationsPanel(
+        string panelId,
+        string title,
+        IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> items)
+    {
+        var blockingCount = items.Sum(static item => item.BlockingIssueCount);
+        var reviewCount = items.Count(static item => !IsReadyStatus(item.Status));
+        var status = blockingCount == 0 && reviewCount == 0 ? "Ready" : "Review";
+        var evidenceCount = items.Sum(static item => item.EvidenceCount);
+
+        return new InstrumentPassportOperationsWorkbenchPanelDto(
+            PanelId: panelId,
+            Title: title,
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? $"{title} panel has {evidenceCount} retained evidence item(s) and no blocking issue."
+                : $"{title} panel has {blockingCount} blocking issue(s) requiring operator review.",
+            Items: items);
+    }
+
+    private static bool PanelNeedsReview(InstrumentPassportOperationsWorkbenchPanelDto panel) =>
+        !IsReadyStatus(panel.Status) || panel.Items.Any(static item => item.BlockingIssueCount > 0);
+
+    private static bool IsReadyStatus(string? status) =>
+        status?.Equals("Ready", StringComparison.OrdinalIgnoreCase) == true
+        || status?.Equals("Trusted", StringComparison.OrdinalIgnoreCase) == true
+        || status?.Equals("Complete", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static string BuildClassificationValue(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var parts = new[]
+        {
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
+            snapshot.EconomicDefinition.Currency
+        }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return parts.Length == 0 ? "Unavailable" : string.Join(" / ", parts);
+    }
+
+    private static InstrumentPassportClassificationProfileDto? BuildClassificationProfile(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var assetClass = NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetClass);
+        if (assetClass is null)
+        {
+            return null;
+        }
+
+        var compatibility = SecurityKindMapping.GetCompatibilityProfile(assetClass);
+        var descriptors = SecurityKindMapping.ToInstrumentTypeDescriptors(assetClass);
+        var hasMultipleDirectInstrumentTypes = compatibility?.InstrumentTypes.Count > 1;
+        var primaryDescriptor = compatibility?.PrimaryInstrumentType is { } primaryInstrumentType
+            ? InstrumentTypeDescriptorCatalog.Find(primaryInstrumentType)
+            : hasMultipleDirectInstrumentTypes == true
+                ? null
+                : descriptors.FirstOrDefault();
+
+        if (compatibility is null && primaryDescriptor is null)
+        {
+            return null;
+        }
+
+        var descriptorNames = descriptors.Select(static descriptor => descriptor.DisplayName).ToArray();
+        var displayName = primaryDescriptor?.DisplayName
+            ?? (descriptorNames.Length > 1 ? $"{assetClass} family" : assetClass);
+        var instrumentType = primaryDescriptor?.InstrumentType.ToString()
+            ?? (compatibility?.InstrumentTypes.Count > 0
+                ? string.Join(", ", compatibility.InstrumentTypes)
+                : "Unmapped");
+        var providerSecurityTypes = DistinctProfileValues(descriptors.Select(static descriptor => descriptor.DefaultProviderSecurityType));
+        var preferredIdentifierKinds = DistinctProfileValues(
+            descriptors.SelectMany(static descriptor => descriptor.PreferredIdentifierKinds),
+            SecurityAssetClassCatalog.GetPreferredIdentifierKinds(assetClass).Select(static kind => kind.ToString()));
+        var requiredEconomicTerms = compatibility?.RequiredEconomicTerms
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.RequiredEconomicTerms));
+        var providerCapabilities = compatibility?.ProviderCapabilities
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.ProviderCapabilities));
+        var lifecycleEvents = compatibility?.LifecycleEvents
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.LifecycleEvents));
+        var validationRules = compatibility?.ValidationRules
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.ValidationRules));
+        var ledgerBehaviorHints = compatibility?.LedgerBehaviorHints
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.LedgerBehaviorHints));
+        var riskModelHints = compatibility?.RiskModelHints
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.RiskModelHints));
+        var compatibleAssetClasses = compatibility?.CompatibleSecurityMasterAssetClasses
+            ?? DistinctProfileValues([assetClass], descriptors.SelectMany(static descriptor => descriptor.CompatibleSecurityMasterAssetClasses));
+        var summary = compatibility?.Summary
+            ?? $"{displayName} retains an InstrumentType descriptor for provider routing and downstream operations.";
+
+        if (providerCapabilities.Count > 0 || lifecycleEvents.Count > 0)
+        {
+            summary = $"{summary} Provider route {SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a")}; {requiredEconomicTerms.Count} required term(s); {lifecycleEvents.Count} lifecycle event(s).";
+        }
+
+        return new InstrumentPassportClassificationProfileDto(
+            InstrumentType: instrumentType,
+            DisplayName: displayName,
+            SecurityMasterAssetClass: assetClass,
+            AssetFamily: NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
+            SubType: NormalizeSecurityMasterText(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
+            IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
+            IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
+            IsDerivative: primaryDescriptor?.IsDerivative ?? descriptors.Any(static descriptor => descriptor.IsDerivative),
+            RequiresUnderlying: primaryDescriptor?.RequiresUnderlying ?? descriptors.Any(static descriptor => descriptor.RequiresUnderlying),
+            ProducesCashFlows: primaryDescriptor?.ProducesCashFlows ?? descriptors.Any(static descriptor => descriptor.ProducesCashFlows),
+            RequiresLotTracking: primaryDescriptor?.RequiresLotTracking ?? descriptors.Any(static descriptor => descriptor.RequiresLotTracking),
+            SettlementModel: primaryDescriptor?.SettlementModel ?? "Security Master reference-data settlement model is not mapped to a direct InstrumentType.",
+            CompatibleSecurityMasterAssetClasses: compatibleAssetClasses,
+            PreferredIdentifierKinds: preferredIdentifierKinds,
+            RequiredEconomicTerms: requiredEconomicTerms,
+            ProviderCapabilities: providerCapabilities,
+            LifecycleEvents: lifecycleEvents,
+            ValidationRules: validationRules,
+            LedgerBehaviorHints: ledgerBehaviorHints,
+            RiskModelHints: riskModelHints,
+            Summary: summary);
+    }
+
+    private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct)
+    {
+        var goldenCopy = _pricingService is null
+            ? null
+            : await _pricingService.GetGoldenCopyPriceAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        var hierarchy = _pricingService is null
+            ? null
+            : await _pricingService.GetPricingHierarchyAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        var cashFlowSource = _cashFlowService is null
+            ? null
+            : await _cashFlowService.GetCashFlowSourceAsync(securityId, ct).ConfigureAwait(false);
+        var entitlements = _entitlementService is null
+            ? []
+            : await _entitlementService.GetAllAsync(ct).ConfigureAwait(false);
+        var qualityReport = _dataQualityService is null
+            ? null
+            : await _dataQualityService.GetLatestReportAsync(ct).ConfigureAwait(false);
+
+        return new ClearwaterReferenceDataEvidence(
+            securityId,
+            goldenCopy,
+            hierarchy,
+            cashFlowSource,
+            entitlements,
+            qualityReport);
+    }
+
+    private static IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> BuildClearwaterControlSections(
+        ClearwaterReferenceDataEvidence evidence,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        return
+        [
+            BuildPricingHierarchySection(evidence),
+            BuildCashFlowSourceSection(evidence),
+            BuildVendorEntitlementSection(evidence),
+            BuildDataQualityControlSection(evidence),
+            BuildManualChangeReviewSection(lifecycleEvents)
+        ];
+    }
+
+    private static SecurityMasterOperatingModelDto BuildOperatingModel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        string? fundProfileId,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents,
+        ClearwaterReferenceDataEvidence clearwaterEvidence)
+    {
+        var context = new SecurityMasterOperatingScope(
+            ClientId: null,
+            AccountId: ResolveDominantAccountId(snapshot),
+            FundProfileId: NormalizeSecurityMasterText(fundProfileId),
+            SecurityId: snapshot.SecurityId);
+        var controls = BuildClearwaterControlSections(clearwaterEvidence, lifecycleEvents);
+        var entitlementApplicability = BuildEntitlementApplicability(clearwaterEvidence.VendorEntitlements, context);
+        var operatorMetadata = BuildOperatorMetadata(clearwaterEvidence, entitlementApplicability);
+        var manualChangeApproval = BuildManualChangeApprovalPosture(lifecycleEvents);
+        var stages = BuildOperatingModelStages(snapshot, identifierSummary, providerConfidence, controls, entitlementApplicability, manualChangeApproval);
+        var status = stages.Any(static stage => stage.BlockingIssueCount > 0 || stage.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
+            || manualChangeApproval.UnapprovedManualChangeCount > 0
+            ? "Review"
+            : "Ready";
+
+        return new SecurityMasterOperatingModelDto(
+            SecurityId: snapshot.SecurityId,
+            ClientId: context.ClientId,
+            AccountId: context.AccountId,
+            FundProfileId: context.FundProfileId,
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Security Master operating model has applicable entitlement, source, control, and approval evidence for the selected scope."
+                : "Security Master operating model needs entitlement, source, control, or approval review for the selected scope.",
+            Stages: stages,
+            EntitlementApplicability: entitlementApplicability,
+            OperatorMetadata: operatorMetadata,
+            ManualChangeApproval: manualChangeApproval,
+            Controls: controls,
+            RetrievedAtUtc: snapshot.RetrievedAtUtc);
+    }
+
+    private static IReadOnlyList<SecurityMasterOperatingModelStageDto> BuildOperatingModelStages(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> controls,
+        IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> entitlementApplicability,
+        SecurityMasterManualChangeApprovalPostureDto manualChangeApproval)
+    {
+        var pricingEvidence = controls.FirstOrDefault(static section => section.SectionId == "pricing-hierarchy");
+        var cashFlowEvidence = controls.FirstOrDefault(static section => section.SectionId == "cash-flow-source-governance");
+        var qualityEvidence = controls.FirstOrDefault(static section => section.SectionId == "data-quality-controls");
+        var entitlementBlockers = entitlementApplicability.Count(static item =>
+            item.IsApplicable
+            && item.IsMostSpecific
+            && item.Status is DataVendorEntitlementStatus.Expired or DataVendorEntitlementStatus.ExpiringSoon or DataVendorEntitlementStatus.PendingRenewal);
+        var mostSpecificEntitlements = entitlementApplicability.Count(static item => item.IsApplicable && item.IsMostSpecific);
+        var activeProviderEvidenceCount = providerConfidence.Count(static row => row.IsActive);
+        var providerBlockingCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var matchBlockers = identifierSummary.HasPrimaryIdentifier && identifierSummary.HasProviderMappings && providerBlockingCount == 0 ? 0 : 1;
+
+        return
+        [
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "receive",
+                Title: "Receive",
+                Status: activeProviderEvidenceCount > 0 && providerBlockingCount == 0 ? "Ready" : "Review",
+                Summary: activeProviderEvidenceCount > 0
+                    ? $"{activeProviderEvidenceCount} active provider evidence row(s) retained on the passport."
+                    : "No active provider evidence rows are retained on the passport.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: activeProviderEvidenceCount == 0 ? 1 : providerBlockingCount),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "validate",
+                Title: "Validate",
+                Status: qualityEvidence?.Status ?? "Review",
+                Summary: qualityEvidence?.Summary ?? "Quality validation evidence is unavailable.",
+                EvidenceCount: qualityEvidence?.EvidenceCount ?? 0,
+                BlockingIssueCount: qualityEvidence?.BlockingIssueCount ?? 1),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "match",
+                Title: "Match",
+                Status: matchBlockers == 0 ? "Ready" : "Review",
+                Summary: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount + identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: matchBlockers),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "create-enrich",
+                Title: "Create and enrich",
+                Status: manualChangeApproval.UnapprovedManualChangeCount == 0 ? "Ready" : "Review",
+                Summary: manualChangeApproval.Summary,
+                EvidenceCount: manualChangeApproval.ManualChangeCount,
+                BlockingIssueCount: manualChangeApproval.UnapprovedManualChangeCount),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "build-golden-copy",
+                Title: "Build golden copy",
+                Status: pricingEvidence?.Status ?? "Review",
+                Summary: pricingEvidence?.Summary ?? "Golden-copy pricing evidence is unavailable.",
+                EvidenceCount: pricingEvidence?.EvidenceCount ?? 0,
+                BlockingIssueCount: pricingEvidence?.BlockingIssueCount ?? 1),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "reconcile",
+                Title: "Reconcile",
+                Status: entitlementBlockers == 0 && mostSpecificEntitlements > 0 ? "Ready" : "Review",
+                Summary: mostSpecificEntitlements > 0
+                    ? $"{mostSpecificEntitlements} most-specific entitlement record(s) apply to the selected Security Master scope."
+                    : "No applicable vendor entitlement evidence is retained for the selected Security Master scope.",
+                EvidenceCount: mostSpecificEntitlements,
+                BlockingIssueCount: mostSpecificEntitlements == 0 ? 1 : entitlementBlockers),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "calculate-report",
+                Title: "Calculate and report",
+                Status: cashFlowEvidence?.Status ?? (snapshot.DownstreamImpact.Links.Count > 0 ? "Ready" : "Review"),
+                Summary: cashFlowEvidence?.Summary ?? snapshot.DownstreamImpact.Summary,
+                EvidenceCount: (cashFlowEvidence?.EvidenceCount ?? 0) + snapshot.DownstreamImpact.Links.Count,
+                BlockingIssueCount: cashFlowEvidence?.BlockingIssueCount ?? 0)
+        ];
+    }
+
+    private static IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> BuildEntitlementApplicability(
+        IReadOnlyList<DataVendorEntitlementDto> entitlements,
+        SecurityMasterOperatingScope context)
+    {
+        var rows = entitlements
+            .Select(entitlement => BuildEntitlementApplicabilityRow(entitlement, context))
+            .OrderByDescending(static row => row.IsApplicable)
+            .ThenBy(static row => row.VendorName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.DataType)
+            .ThenByDescending(GetApplicabilityRank)
+            .ToArray();
+        var bestRanks = rows
+            .Where(static row => row.IsApplicable)
+            .GroupBy(static row => (row.VendorName, row.DataType), new VendorDataTypeComparer())
+            .ToDictionary(static group => group.Key, static group => group.Max(GetApplicabilityRank), new VendorDataTypeComparer());
+
+        return rows
+            .Select(row => row with
+            {
+                IsMostSpecific = row.IsApplicable
+                    && bestRanks.TryGetValue((row.VendorName, row.DataType), out var rank)
+                    && GetApplicabilityRank(row) == rank
+            })
+            .ToArray();
+    }
+
+    private static SecurityMasterEntitlementApplicabilityDto BuildEntitlementApplicabilityRow(
+        DataVendorEntitlementDto entitlement,
+        SecurityMasterOperatingScope context)
+    {
+        var applies =
+            ScopeMatches(entitlement.ClientId, context.ClientId)
+            && ScopeMatches(entitlement.AccountId, context.AccountId)
+            && ScopeMatches(entitlement.FundProfileId, context.FundProfileId)
+            && (!entitlement.SecurityId.HasValue || entitlement.SecurityId == context.SecurityId);
+        var scope = ResolveEntitlementScope(entitlement);
+        return new SecurityMasterEntitlementApplicabilityDto(
+            EntitlementId: entitlement.EntitlementId,
+            VendorName: entitlement.VendorName,
+            DataType: entitlement.DataType,
+            Scope: scope,
+            ClientId: entitlement.ClientId,
+            AccountId: entitlement.AccountId,
+            FundProfileId: entitlement.FundProfileId,
+            SecurityId: entitlement.SecurityId,
+            IsApplicable: applies,
+            IsMostSpecific: false,
+            Status: entitlement.Status,
+            RequiresDirectClientContract: entitlement.RequiresDirectClientContract,
+            ContractReference: entitlement.ContractReference,
+            Summary: applies
+                ? $"{entitlement.VendorName} {entitlement.DataType} entitlement applies at {scope} scope with {entitlement.Status} status."
+                : $"{entitlement.VendorName} {entitlement.DataType} entitlement is configured for {scope} scope and does not match the selected scope.");
+    }
+
+    private static IReadOnlyList<SecurityMasterOperatorMetadataDto> BuildOperatorMetadata(
+        ClearwaterReferenceDataEvidence evidence,
+        IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> entitlementApplicability)
+    {
+        var entitlementMetadata = evidence.VendorEntitlements
+            .Where(entitlement => entitlementApplicability.Any(applicable =>
+                applicable.EntitlementId == entitlement.EntitlementId
+                && applicable.IsApplicable
+                && applicable.IsMostSpecific))
+            .Select(entitlement => new SecurityMasterOperatorMetadataDto(
+                MetadataId: $"entitlement-{entitlement.EntitlementId:N}",
+                VendorName: entitlement.VendorName,
+                DataType: entitlement.DataType,
+                SourceCategory: SecurityMasterText(entitlement.SourceCategory, "Vendor entitlement"),
+                ExpectedRefreshCadence: SecurityMasterText(entitlement.ExpectedRefreshCadence, "Operator configured"),
+                DefaultMaxDaysStale: entitlement.DefaultMaxDaysStale,
+                RequiresDirectClientContract: entitlement.RequiresDirectClientContract,
+                OperatorMetadata: entitlement.OperatorMetadata,
+                Summary: SecurityMasterText(
+                    entitlement.OperatorMetadata,
+                    $"{entitlement.VendorName} {entitlement.DataType} source metadata is configurable by operations.")))
+            .ToList();
+
+        if (evidence.GoldenCopyPrice is not null && entitlementMetadata.All(static item => item.DataType != DataVendorDataType.Pricing))
+        {
+            entitlementMetadata.Add(new SecurityMasterOperatorMetadataDto(
+                MetadataId: "golden-copy-pricing",
+                VendorName: evidence.GoldenCopyPrice.SelectedSource,
+                DataType: DataVendorDataType.Pricing,
+                SourceCategory: "Pricing hierarchy",
+                ExpectedRefreshCadence: evidence.GoldenCopyPrice.IsStaleFallback ? "Stale fallback review" : "Fresh hierarchy selection",
+                DefaultMaxDaysStale: evidence.GoldenCopyPrice.DaysStale,
+                RequiresDirectClientContract: false,
+                OperatorMetadata: null,
+                Summary: $"Golden-copy pricing selected {evidence.GoldenCopyPrice.SelectedSource}."));
+        }
+
+        if (evidence.CashFlowSource is not null && entitlementMetadata.All(static item => item.DataType != DataVendorDataType.CashFlows))
+        {
+            entitlementMetadata.Add(new SecurityMasterOperatorMetadataDto(
+                MetadataId: "cash-flow-source",
+                VendorName: evidence.CashFlowSource.SourceKind.ToString(),
+                DataType: DataVendorDataType.CashFlows,
+                SourceCategory: "Cash-flow source governance",
+                ExpectedRefreshCadence: evidence.CashFlowSource.IsClientOverride ? "Client override confirmation" : "Vendor source refresh",
+                DefaultMaxDaysStale: null,
+                RequiresDirectClientContract: evidence.CashFlowSource.IsClientOverride,
+                OperatorMetadata: evidence.CashFlowSource.ClientConfirmedBy,
+                Summary: $"{evidence.CashFlowSource.SourceKind} cash-flow source metadata is retained for operators."));
+        }
+
+        return entitlementMetadata
+            .OrderBy(static item => item.VendorName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.DataType)
+            .ToArray();
+    }
+
+    private static SecurityMasterManualChangeApprovalPostureDto BuildManualChangeApprovalPosture(
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var manualEvents = lifecycleEvents.Where(IsManualSecurityChange).ToArray();
+        var unapprovedCount = manualEvents.Count(static item => !IsApprovedManualSecurityChange(item));
+
+        return new SecurityMasterManualChangeApprovalPostureDto(
+            PolicyKey: "operations-continuity.security-master-override",
+            Gate: OperationsGateKeyDto.SecurityMaster,
+            Route: UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove,
+            RequiredPermission: "AdminMaintenance or ModifySecurityMaster",
+            RequiredDistinctApprovals: 1,
+            RequiresIndependentReviewer: true,
+            EvidenceRequirement: "Override id, policy reference, rationale, expiration date, and linked evidence.",
+            Status: unapprovedCount == 0 ? "Ready" : "Review",
+            ManualChangeCount: manualEvents.Length,
+            UnapprovedManualChangeCount: unapprovedCount,
+            Summary: manualEvents.Length == 0
+                ? "No manual creation, remapping, override, or critical-attribute change is retained on this passport."
+                : $"{manualEvents.Length} manual change event(s) reuse the operations-continuity.security-master-override approval policy; {unapprovedCount} require independent reviewer evidence.");
+    }
+
+    private static int GetApplicabilityRank(SecurityMasterEntitlementApplicabilityDto row) =>
+        row.SecurityId.HasValue ? 4 :
+        !string.IsNullOrWhiteSpace(row.AccountId) ? 3 :
+        !string.IsNullOrWhiteSpace(row.FundProfileId) ? 2 :
+        !string.IsNullOrWhiteSpace(row.ClientId) ? 1 : 0;
+
+    private static bool ScopeMatches(string? configuredScope, string? selectedScope)
+    {
+        var configured = NormalizeSecurityMasterText(configuredScope);
+        if (configured is null)
+            return true;
+
+        var selected = NormalizeSecurityMasterText(selectedScope);
+        return selected is not null && configured.Equals(selected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveEntitlementScope(DataVendorEntitlementDto entitlement)
+    {
+        if (entitlement.SecurityId.HasValue)
+            return "Security";
+        if (!string.IsNullOrWhiteSpace(entitlement.AccountId))
+            return "Account";
+        if (!string.IsNullOrWhiteSpace(entitlement.FundProfileId))
+            return "FundProfile";
+        if (!string.IsNullOrWhiteSpace(entitlement.ClientId))
+            return "Client";
+
+        return "Global";
+    }
+
+    private static string? ResolveDominantAccountId(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var accountIds = snapshot.OpenLotReadModel?.Lots
+            .Select(static lot => NormalizeSecurityMasterText(lot.AccountScopeId))
+            .Where(static value => value is not null)
+            .Select(static value => value!)
+            .GroupBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(static group => group.Count())
+            .ThenBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.Key)
+            .ToArray();
+
+        return accountIds is { Length: > 0 } ? accountIds[0] : null;
+    }
+
+    private static string? NormalizeSecurityMasterText(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<string> DistinctProfileValues(params IEnumerable<string>[] values) =>
+        values
+            .SelectMany(static value => value)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildPricingHierarchySection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var hierarchyCount = evidence.PricingHierarchy?.Entries.Count ?? 0;
+        if (evidence.GoldenCopyPrice is null)
+        {
+            return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "pricing-hierarchy",
+                Title: "Pricing hierarchy and stale fallback",
+                Status: "Review",
+                Summary: hierarchyCount > 0
+                    ? $"{hierarchyCount} pricing source(s) configured, but no market-price golden copy is available."
+                    : "No Clearwater pricing hierarchy or market-price golden copy is available on this passport.",
+                EvidenceCount: hierarchyCount,
+                BlockingIssueCount: 1);
+        }
+
+        var staleLabel = evidence.GoldenCopyPrice.IsStaleFallback
+            ? $"stale fallback, {evidence.GoldenCopyPrice.DaysStale?.ToString(CultureInfo.InvariantCulture) ?? "unknown"} day(s) old"
+            : "fresh hierarchy selection";
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "pricing-hierarchy",
+            Title: "Pricing hierarchy and stale fallback",
+            Status: evidence.GoldenCopyPrice.IsStaleFallback ? "Review" : "Ready",
+            Summary: $"Golden-copy price {evidence.GoldenCopyPrice.GoldenCopyPrice.ToString("0.####", CultureInfo.InvariantCulture)} from {evidence.GoldenCopyPrice.SelectedSource}; {staleLabel}. {hierarchyCount} pricing source(s) configured.",
+            EvidenceCount: hierarchyCount + evidence.GoldenCopyPrice.ComparisonPrices.Count + 1,
+            BlockingIssueCount: evidence.GoldenCopyPrice.IsStaleFallback ? 1 : 0);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildCashFlowSourceSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        if (evidence.CashFlowSource is null)
+        {
+            return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "cash-flow-source-governance",
+                Title: "Cash-flow source governance",
+                Status: "Review",
+                Summary: "No Clearwater cash-flow source assignment is available for this security.",
+                EvidenceCount: 0,
+                BlockingIssueCount: 1);
+        }
+
+        var ageDays = evidence.CashFlowSource.LastUpdatedUtc.HasValue
+            ? (int)Math.Max(0, (DateTimeOffset.UtcNow - evidence.CashFlowSource.LastUpdatedUtc.Value).TotalDays)
+            : (int?)null;
+        var isStaleClientOverride = evidence.CashFlowSource.IsClientOverride
+            && (!evidence.CashFlowSource.ClientConfirmedAt.HasValue || ageDays is null or > 7);
+        var confirmation = evidence.CashFlowSource.IsClientOverride
+            ? $" Client confirmation: {SecurityMasterText(evidence.CashFlowSource.ClientConfirmedBy, "not retained")}."
+            : string.Empty;
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "cash-flow-source-governance",
+            Title: "Cash-flow source governance",
+            Status: isStaleClientOverride ? "Review" : "Ready",
+            Summary: $"{evidence.CashFlowSource.SourceKind} cash-flow source assigned; last update {FormatAgeDays(ageDays)}.{confirmation}",
+            EvidenceCount: 1,
+            BlockingIssueCount: isStaleClientOverride ? 1 : 0);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildVendorEntitlementSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var entitlements = evidence.VendorEntitlements;
+        var directContractCount = entitlements.Count(static item => item.RequiresDirectClientContract);
+        var atRiskCount = entitlements.Count(static item =>
+            item.Status is DataVendorEntitlementStatus.Expired or DataVendorEntitlementStatus.ExpiringSoon or DataVendorEntitlementStatus.PendingRenewal);
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "vendor-entitlements",
+            Title: "Vendor licensing and entitlements",
+            Status: entitlements.Count > 0 && atRiskCount == 0 ? "Ready" : "Review",
+            Summary: entitlements.Count > 0
+                ? $"{entitlements.Count} vendor entitlement record(s) retained; {directContractCount} direct-client contract requirement(s); {atRiskCount} renewal or expiry issue(s)."
+                : "No vendor entitlement evidence is retained for CUSIP, SEDOL, pricing, ratings, MSCI, WSO, or cash-flow sources.",
+            EvidenceCount: entitlements.Count,
+            BlockingIssueCount: entitlements.Count == 0 ? 1 : atRiskCount);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildDataQualityControlSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var violations = evidence.QualityReport?.Violations
+            .Where(item => item.SecurityId == evidence.SecurityId)
+            .ToArray() ?? [];
+        var blockingCount = violations.Count(static item =>
+            item.Severity is DataQualityRuleSeverity.Error or DataQualityRuleSeverity.HardBlock);
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "data-quality-controls",
+            Title: "Data-quality and golden-copy controls",
+            Status: evidence.QualityReport is not null && blockingCount == 0 ? "Ready" : "Review",
+            Summary: evidence.QualityReport is null
+                ? "No retained Security Master quality report is available for completeness, taxonomy, consistency, or staleness checks."
+                : $"{violations.Length} quality violation(s) retained for this security from the {evidence.QualityReport.RunAt:yyyy-MM-dd HH:mm} UTC run.",
+            EvidenceCount: violations.Length,
+            BlockingIssueCount: evidence.QualityReport is null ? 1 : blockingCount);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildManualChangeReviewSection(
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var manualEvents = lifecycleEvents
+            .Where(IsManualSecurityChange)
+            .ToArray();
+        var unapprovedCount = manualEvents.Count(static item => !IsApprovedManualSecurityChange(item));
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "manual-change-review",
+            Title: "Manual creation and change review",
+            Status: unapprovedCount == 0 ? "Ready" : "Review",
+            Summary: manualEvents.Length == 0
+                ? "No manual creation, remapping, override, or critical-attribute change is retained on this passport."
+                : $"{manualEvents.Length} manual change event(s) retained; {unapprovedCount} require independent review evidence.",
+            EvidenceCount: manualEvents.Length,
+            BlockingIssueCount: unapprovedCount);
+    }
+
+    private static string FormatAgeDays(int? ageDays) =>
+        ageDays.HasValue
+            ? $"{ageDays.Value.ToString(CultureInfo.InvariantCulture)} day(s) ago"
+            : "unknown";
+
+    private static string SecurityMasterText(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value)
+            ? fallback
+            : value.Trim();
+
+    private static bool IsManualSecurityChange(SecurityMasterChangeHistoryItemDto item) =>
+        ContainsAnyControlToken(
+            [
+                item.EventType,
+                item.SourceSystem,
+                item.Actor,
+                item.Origin,
+                item.Reason,
+                .. item.ChangedFields
+            ],
+            "manual",
+            "override",
+            "operator",
+            "wpf-ui",
+            "desktop-user",
+            "user",
+            "remap",
+            "amend");
+
+    private static bool IsApprovedManualSecurityChange(SecurityMasterChangeHistoryItemDto item) =>
+        ContainsAnyControlToken(
+            [
+                item.EventType,
+                item.Reason,
+                item.Summary
+            ],
+            "approved",
+            "reviewed",
+            "review",
+            "signoff",
+            "sign-off");
+
+    private static bool ContainsAnyControlToken(IEnumerable<string?> values, params string[] tokens) =>
+        values.Any(value => tokens.Any(token => Contains(value, token)));
+
+    private static string BuildTermsAndObligationsSummary(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
+        if (scheduleEventCount > 0)
+        {
+            return $"{scheduleEventCount} projected obligation event(s) retained with source provenance.";
+        }
+
+        if (snapshot.CorporateActions.Count > 0)
+        {
+            return $"{snapshot.CorporateActions.Count} corporate action obligation event(s) retained on the passport.";
+        }
+
+        return $"{snapshot.EconomicDefinition.AssetClass} terms retained for {snapshot.EconomicDefinition.Currency} reference-data review.";
+    }
+
+    private static string BuildLedgerClassificationSummary(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var classification = new[]
+        {
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
+            snapshot.EconomicDefinition.Currency
+        }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var prefix = classification.Length == 0
+            ? "Ledger classification is unavailable"
+            : string.Join(" / ", classification);
+        var compatibility = SecurityKindMapping.GetCompatibilityProfile(snapshot.EconomicDefinition.AssetClass);
+        var compatibilitySummary = compatibility is null ? string.Empty : $" {compatibility.Summary}";
+        return $"{prefix}. {snapshot.DownstreamImpact.LedgerExposureSummary}{compatibilitySummary}";
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsHandoffDto> BuildOperationsHandoffs(
+        SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var handoffs = new List<InstrumentPassportOperationsHandoffDto>();
+
+        handoffs.AddRange(snapshot.DownstreamImpact.Links.Select((link, index) =>
+            new InstrumentPassportOperationsHandoffDto(
+                HandoffId: $"impact-{index + 1}",
+                Target: link.Target,
+                Title: link.Label,
+                Detail: link.Summary,
+                Status: link.Severity.ToString(),
+                IsEnabled: link.IsActive)
+            {
+                Owner = ResolveHandoffOwner(link.Target),
+                BlockerReason = link.IsActive
+                    ? link.Summary
+                    : "Downstream impact is not active for the selected Security Master scope.",
+                ImpactedOutputs = ResolveImpactedOutputs(link.Target),
+                LinkedCases = [],
+                Route = ResolveHandoffRoute(link.Target)
+            }));
+
+        handoffs.AddRange(snapshot.RecommendedActions.Select((action, index) =>
+            new InstrumentPassportOperationsHandoffDto(
+                HandoffId: $"action-{index + 1}",
+                Target: action.Target ?? action.Kind.ToString(),
+                Title: action.Title,
+                Detail: action.Detail,
+                Status: action.IsPrimary ? "Primary" : "Available",
+                IsEnabled: action.IsEnabled)
+            {
+                Owner = ResolveActionOwner(action.Kind),
+                BlockerReason = action.Detail,
+                ImpactedOutputs = ResolveImpactedOutputs(action.Kind),
+                LinkedCases = action.ConflictId.HasValue ? [action.ConflictId.Value.ToString("D")] : [],
+                Route = ResolveActionRoute(action)
+            }));
+
+        if (handoffs.Count == 0)
+        {
+            handoffs.Add(new InstrumentPassportOperationsHandoffDto(
+                HandoffId: "downstream-impact",
+                Target: "SecurityMasterDetail",
+                Title: "Retain Security Master context",
+                Detail: snapshot.DownstreamImpact.Summary,
+                Status: snapshot.DownstreamImpact.Severity.ToString(),
+                IsEnabled: true)
+            {
+                Owner = "Security Master steward",
+                BlockerReason = snapshot.DownstreamImpact.Summary,
+                ImpactedOutputs = ResolveImpactedOutputs(snapshot.DownstreamImpact),
+                LinkedCases = [],
+                Route = "/workstation/accounting/security-master"
+            });
+        }
+
+        return handoffs
+            .OrderByDescending(static handoff => handoff.IsEnabled)
+            .ThenBy(static handoff => handoff.Title, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string ResolveHandoffOwner(string? target)
+    {
+        return NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => "Portfolio operations",
+            "ledger" => "Accounting operations",
+            "reconciliation" => "Reconciliation owner",
+            "reportpack" => "Reporting controller",
+            "securitymasterdetail" => "Security Master steward",
+            _ => "Security Master steward"
+        };
+    }
+
+    private static string ResolveActionOwner(SecurityMasterRecommendedActionKind kind) =>
+        kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => "Portfolio operations",
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => "Accounting operations",
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => "Reconciliation owner",
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => "Reporting controller",
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict or
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts or
+            SecurityMasterRecommendedActionKind.EditSelectedSecurity or
+            SecurityMasterRecommendedActionKind.RefreshTrustSnapshot => "Security Master steward",
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters or
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => "Reference-data steward",
+            _ => "Security Master steward"
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(SecurityMasterRecommendedActionKind kind) =>
+        kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => ["Portfolio"],
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => ["Ledger", "Accounting"],
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => ["Reconciliation", "Close"],
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => ["Reporting", "Close"],
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters => ["Valuation", "Portfolio"],
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => ["Valuation", "Ledger", "Close"],
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict or
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => ["Portfolio", "Accounting", "Reconciliation", "Close", "Reporting"],
+            _ => ["Security Master"]
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(string? target) =>
+        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => ["Portfolio"],
+            "ledger" => ["Ledger", "Accounting"],
+            "reconciliation" => ["Reconciliation", "Close"],
+            "reportpack" => ["Reporting", "Close"],
+            _ => ["Security Master"]
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(SecurityMasterDownstreamImpactDto impact)
+    {
+        var outputs = new List<string>();
+        if (impact.PortfolioExposureCount > 0)
+        {
+            outputs.Add("Portfolio");
+        }
+
+        if (impact.LedgerExposureCount > 0)
+        {
+            outputs.Add("Ledger");
+            outputs.Add("Accounting");
+        }
+
+        if (impact.ReconciliationExposureCount > 0)
+        {
+            outputs.Add("Reconciliation");
+            outputs.Add("Close");
+        }
+
+        if (impact.ReportPackExposureCount > 0)
+        {
+            outputs.Add("Reporting");
+        }
+
+        return outputs.Count == 0 ? ["Security Master"] : outputs.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static string ResolveActionRoute(SecurityMasterRecommendedActionDto action)
+    {
+        if (!string.IsNullOrWhiteSpace(action.Target) && action.Target.StartsWith('/'))
+        {
+            return action.Target;
+        }
+
+        return action.Kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => "/workstation/portfolio",
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => "/workstation/accounting/ledger",
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => "/workstation/accounting/reconciliation",
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => "/workstation/reporting/evidence",
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters => "/workstation/data/backfills",
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict when action.ConflictId.HasValue =>
+                $"/workstation/accounting/security-master#conflict-{action.ConflictId.Value:D}",
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => "/workstation/accounting/security-master#conflicts",
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => "/workstation/accounting/security-master#corporate-actions",
+            SecurityMasterRecommendedActionKind.EditSelectedSecurity => "/workstation/accounting/security-master#passport",
+            _ => "/workstation/accounting/security-master"
+        };
+    }
+
+    private static string ResolveHandoffRoute(string? target) =>
+        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => "/workstation/portfolio",
+            "ledger" => "/workstation/accounting/ledger",
+            "reconciliation" => "/workstation/accounting/reconciliation",
+            "reportpack" => "/workstation/reporting/evidence",
+            _ => "/workstation/accounting/security-master"
+        };
 
     private static IReadOnlyList<InstrumentPassportProviderConfidenceDto> BuildProviderConfidence(
         SecurityMasterTrustSnapshotDto snapshot,
@@ -642,6 +2131,17 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var normalizedFundProfileId = fundProfileId.Trim();
+
+        // Tenant isolation (SEC-005): a fund the registry reports as owned by another tenant must surface as
+        // withheld/unknown — NOT as an empty "no runs" (Severity.None) impact. Reporting None would let
+        // downstream low-risk gates (e.g. bulk conflict resolution, which only proceeds on None/Low) treat
+        // a foreign scope as safe instead of forbidden; Unknown keeps it non-eligible while still disclosing
+        // zero runs/exposures. Unbound/legacy/own funds and uncertainty all pass through and resolve below.
+        if (!await IsFundAccessibleToCurrentTenantAsync(normalizedFundProfileId, ct).ConfigureAwait(false))
+        {
+            return BuildWithheldFundImpact(normalizedFundProfileId);
+        }
+
         var relatedRuns = await LoadFundRunsAsync(normalizedFundProfileId, ct).ConfigureAwait(false);
         if (relatedRuns.Count == 0)
         {
@@ -855,6 +2355,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Links: links);
     }
 
+    /// <summary>
+    /// Enumerates the process-wide run store for a single fund. Callers MUST first gate access with
+    /// <see cref="IsFundAccessibleToCurrentTenantAsync"/> (tenant isolation, SEC-005): the run store carries
+    /// no tenant key, so a foreign fund's runs are withheld at the impact/open-lot boundaries — a foreign
+    /// scope yields a withheld/Unknown impact and empty lots, never a misleading empty "no runs" result.
+    /// </summary>
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadFundRunsAsync(string fundProfileId, CancellationToken ct)
     {
         var runs = new List<StrategyRunEntry>();
@@ -871,6 +2377,86 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ThenBy(static run => run.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    /// <summary>
+    /// Whether the fund profile may be resolved for the current request's tenant. Returns true (pass
+    /// through) when there is no tenancy registry, a blank fund, no HTTP request context (background/test),
+    /// no caller tenant scope, or the registry is unavailable — only a positive "owned by a different
+    /// tenant" verdict withholds the fund's data.
+    /// </summary>
+    private async Task<bool> IsFundAccessibleToCurrentTenantAsync(string fundProfileId, CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return true;
+        }
+
+        var httpContext = _httpContextAccessor?.HttpContext;
+        if (httpContext is null)
+        {
+            return true;
+        }
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        if (!tenant.HasTenantScope)
+        {
+            return true;
+        }
+
+        try
+        {
+            return await _tenancyRegistry
+                .IsAccessibleAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Fail open to the deployment boundary rather than dropping restatement impact on uncertainty.
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Sanitizes an operator-supplied fund scope for tenant isolation (SEC-005): returns the fund unchanged
+    /// when it is blank, owned by the caller's tenant, unbound/legacy, or accessibility cannot be decided
+    /// (fail open), and returns <c>null</c> — i.e. treat the request as unscoped — when the registry
+    /// positively attributes the fund to a different tenant. Used at the snapshot/passport entry so a
+    /// foreign fund never reaches any fund-scoped evidence path.
+    /// </summary>
+    private async Task<string?> SanitizeFundScopeAsync(string? fundProfileId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return fundProfileId;
+        }
+
+        return await IsFundAccessibleToCurrentTenantAsync(fundProfileId, ct).ConfigureAwait(false)
+            ? fundProfileId
+            : null;
+    }
+
+    /// <summary>
+    /// Downstream-impact result for a fund the registry positively attributes to another tenant: scoped but
+    /// withheld with <see cref="SecurityMasterImpactSeverity.Unknown"/> (SEC-005). Unknown — not None —
+    /// keeps the foreign scope out of low-risk gates such as bulk conflict resolution while disclosing no
+    /// runs or exposures.
+    /// </summary>
+    private static SecurityMasterDownstreamImpactDto BuildWithheldFundImpact(string fundProfileId)
+        => new(
+            FundProfileId: fundProfileId,
+            IsScoped: true,
+            Severity: SecurityMasterImpactSeverity.Unknown,
+            Summary: $"Fund profile {fundProfileId} is owned by another tenant; downstream impact is withheld.",
+            PortfolioExposureSummary: "Portfolio impact is withheld for a fund owned by another tenant.",
+            LedgerExposureSummary: "Ledger impact is withheld for a fund owned by another tenant.",
+            ReconciliationExposureSummary: "Reconciliation impact is withheld for a fund owned by another tenant.",
+            ReportPackExposureSummary: "Report-pack impact is withheld for a fund owned by another tenant.",
+            MatchedRunCount: 0,
+            PortfolioExposureCount: 0,
+            LedgerExposureCount: 0,
+            ReconciliationExposureCount: 0,
+            ReportPackExposureCount: 0,
+            Links: []);
 
     private static FundLedgerBook BuildFundLedgerBook(string fundProfileId, IReadOnlyList<StrategyRunEntry> runs)
     {
@@ -1047,7 +2633,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var openConflictCount = assessments.Count;
         var blockingValidationCount = validationReport.CriticalIssueCount + validationReport.ErrorIssueCount;
         var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count - blockingValidationCount);
-        var upcomingCorporateActions = corporateActions
+        // Effective view only: amendments fold to their latest terms and cancelled actions
+        // stop counting against trust, so the posture reflects what will actually happen.
+        var upcomingCorporateActions = CorporateActionEffectiveStateProjector
+            .ProjectEffectiveActions(corporateActions, DateTimeOffset.UtcNow)
             .Where(action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow))
             .OrderBy(static action => action.ExDate)
             .Take(5)
@@ -1105,7 +2694,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var corporateActionReadiness = upcomingCorporateActions.Length == 0
             ? "No upcoming corporate actions are scheduled in the current review window."
             : upcomingCorporateActions.Length == 1
-                ? $"Upcoming {upcomingCorporateActions[0].EventType} on {upcomingCorporateActions[0].ExDate:yyyy-MM-dd} should be reviewed before downstream close."
+                ? $"Upcoming {CorporateActionTypeDescriptorCatalog.Find(upcomingCorporateActions[0].EventType)?.DisplayName ?? upcomingCorporateActions[0].EventType} on {upcomingCorporateActions[0].ExDate:yyyy-MM-dd} should be reviewed before downstream close."
                 : $"{upcomingCorporateActions.Length} upcoming corporate actions should be reviewed before downstream close.";
 
         return new SecurityMasterTrustPostureDto(
@@ -1693,7 +3282,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var scopedFundProfileId = fundProfileId.Trim();
-        var relatedRuns = await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false);
+        // Tenant isolation (SEC-005): withhold a foreign fund's lots — treat as no scoped runs so the
+        // unscoped/empty read model is returned and no cross-tenant lots are materialized.
+        IReadOnlyList<StrategyRunEntry> relatedRuns =
+            await IsFundAccessibleToCurrentTenantAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                ? await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                : [];
         if (relatedRuns.Count == 0)
         {
             return new SecurityMasterOpenLotReadModelDto(
@@ -3111,6 +4705,32 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         DateTimeOffset? AsOf,
         string? UpdatedBy,
         string? Reason);
+
+    private sealed record ClearwaterReferenceDataEvidence(
+        Guid SecurityId,
+        SecurityPriceGoldenCopyDto? GoldenCopyPrice,
+        SecurityPricingHierarchyDto? PricingHierarchy,
+        SecurityCashFlowSourceDto? CashFlowSource,
+        IReadOnlyList<DataVendorEntitlementDto> VendorEntitlements,
+        SecurityMasterQualityReportDto? QualityReport);
+
+    private sealed record SecurityMasterOperatingScope(
+        string? ClientId,
+        string? AccountId,
+        string? FundProfileId,
+        Guid SecurityId);
+
+    private sealed class VendorDataTypeComparer : IEqualityComparer<(string VendorName, DataVendorDataType DataType)>
+    {
+        public bool Equals(
+            (string VendorName, DataVendorDataType DataType) x,
+            (string VendorName, DataVendorDataType DataType) y) =>
+            x.DataType == y.DataType
+            && string.Equals(x.VendorName, y.VendorName, StringComparison.OrdinalIgnoreCase);
+
+        public int GetHashCode((string VendorName, DataVendorDataType DataType) obj) =>
+            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.VendorName), obj.DataType);
+    }
 
     private enum ConflictSide : byte
     {

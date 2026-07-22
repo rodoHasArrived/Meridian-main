@@ -783,6 +783,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _logger.LogDebug("QuantScript operation cancelled");
         }
         catch (Exception ex)
         {
@@ -1335,6 +1337,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _logger.LogDebug("QuantScript operation cancelled");
         }
         catch (Exception ex)
         {

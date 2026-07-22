@@ -1,4 +1,6 @@
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
@@ -15,10 +17,39 @@ namespace Meridian.Tests.Application.Composition.Startup;
 [Collection("Sequential")]
 public sealed class SharedStartupBootstrapperTests : IDisposable
 {
+    private static readonly string[] StartupEnvironmentVariables =
+    [
+        "DOTNET_ENVIRONMENT",
+        "ASPNETCORE_ENVIRONMENT",
+        "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+        SecurityMasterStartup.ConnectionStringVariable,
+        SecurityMasterStartup.SchemaVariable,
+        DirectLendingStartup.ConnectionStringVariable,
+        DirectLendingStartup.SchemaVariable,
+        LedgerStartup.ConnectionStringVariable,
+        LedgerStartup.SchemaVariable,
+        FundAccountsStartup.ConnectionStringVariable,
+        FundAccountsStartup.SchemaVariable,
+        FundStructureStartup.ConnectionStringVariable,
+        FundStructureStartup.SchemaVariable,
+        BankingStartup.ConnectionStringVariable,
+        BankingStartup.SchemaVariable,
+        MoneyMarketStartup.ConnectionStringVariable,
+        MoneyMarketStartup.SchemaVariable,
+        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
+    ];
+
     private readonly string? _originalConfigPath = Environment.GetEnvironmentVariable("MDC_CONFIG_PATH");
+    private readonly Dictionary<string, string?> _originalEnvironment = CaptureEnvironment(StartupEnvironmentVariables);
     private readonly string _originalCurrentDirectory = Environment.CurrentDirectory;
     private readonly ILogger _log = new LoggerConfiguration().CreateLogger();
     private readonly List<string> _tempDirectories = [];
+
+    public SharedStartupBootstrapperTests()
+    {
+        ConfigureLocalInMemoryGovernanceFixture();
+    }
 
     [Fact]
     public void ResolveConfigPath_PrefersCliArgumentOverEnvironmentVariable()
@@ -70,8 +101,9 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     public async Task RunAsync_DesktopModeCancellation_StillStopsDashboardServerGracefully()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var configPath = CreateConfigFile(cfg);
         var cliArgs = CliArguments.Parse([]);
-        var deployment = DeploymentContext.ForDesktop("test.json", port: 4321);
+        var deployment = DeploymentContext.ForDesktop(configPath, port: 4321);
         using var cts = new CancellationTokenSource();
         await using var configService = new ConfigurationService(_log);
 
@@ -84,12 +116,12 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
                 return server;
             });
 
-        Func<Task<int>> act = () => orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment, cts.Token);
+        Func<Task<int>> act = () => orchestrator.RunAsync(cliArgs, cfg, configPath, configService, deployment, cts.Token);
 
         var exitCode = await act();
         exitCode.Should().Be(0);
         server.Should().NotBeNull();
-        server!.ConfigPath.Should().Be("test.json");
+        server!.ConfigPath.Should().Be(configPath);
         server.Port.Should().Be(4321);
         server.StartCallCount.Should().Be(1);
         server.StopCallCount.Should().Be(1);
@@ -101,8 +133,9 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     public async Task RunAsync_DesktopMode_RemainsAliveUntilCancellation()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var configPath = CreateConfigFile(cfg);
         var cliArgs = CliArguments.Parse([]);
-        var deployment = DeploymentContext.ForDesktop("test.json", port: 4321);
+        var deployment = DeploymentContext.ForDesktop(configPath, port: 4321);
         using var cts = new CancellationTokenSource();
         await using var configService = new ConfigurationService(_log);
 
@@ -111,18 +144,18 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
             _log,
             (configPath, port, _) =>
             {
-                server = new FakeDashboardServer(configPath, port);
+                server = new FakeDashboardServer(configPath, port, waitForStartCancellation: true);
                 return server;
             });
 
-        var runTask = orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment, cts.Token);
+        var runTask = orchestrator.RunAsync(cliArgs, cfg, configPath, configService, deployment, cts.Token);
 
         await Task.Delay(200);
         runTask.IsCompleted.Should().BeFalse("desktop mode should keep the collector alive until shutdown is requested");
 
         cts.Cancel();
 
-        var exitCode = await runTask;
+        var exitCode = await runTask.WaitAsync(TimeSpan.FromSeconds(10));
         exitCode.Should().Be(0);
         server.Should().NotBeNull();
         server!.StopCallCount.Should().Be(1);
@@ -133,8 +166,9 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     public async Task RunAsync_WorkstationMode_RemainsAliveUntilLifecycleShutdown()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var configPath = CreateConfigFile(cfg);
         var cliArgs = CliArguments.Parse(["--mode", "workstation"]);
-        var deployment = DeploymentContext.ForWorkstation("test.json", port: 4321);
+        var deployment = DeploymentContext.ForWorkstation(configPath, port: 4321);
         await using var configService = new ConfigurationService(_log);
 
         FakeDashboardServer? server = null;
@@ -146,7 +180,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
                 return server;
             });
 
-        var runTask = orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment);
+        var runTask = orchestrator.RunAsync(cliArgs, cfg, configPath, configService, deployment);
 
         await Task.Delay(200);
         runTask.IsCompleted.Should().BeFalse("workstation mode should serve the browser workstation until the lifecycle requests shutdown");
@@ -154,7 +188,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.Should().NotBeNull();
         await server!.Lifecycle!.RequestShutdownAsync("test-shutdown");
 
-        var exitCode = await runTask;
+        var exitCode = await runTask.WaitAsync(TimeSpan.FromSeconds(10));
         exitCode.Should().Be(0);
         server.StartCallCount.Should().Be(1);
         server.StopCallCount.Should().Be(1);
@@ -206,6 +240,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", _originalConfigPath);
+        RestoreEnvironment(_originalEnvironment);
         Environment.CurrentDirectory = _originalCurrentDirectory;
         (_log as IDisposable)?.Dispose();
 
@@ -223,20 +258,64 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         return path;
     }
 
+    private string CreateConfigFile(AppConfig cfg)
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        File.WriteAllText(path, JsonSerializer.Serialize(cfg, AppConfigJsonOptions.Write));
+        return path;
+    }
+
+    private static Dictionary<string, string?> CaptureEnvironment(IEnumerable<string> names)
+        => names.ToDictionary(name => name, Environment.GetEnvironmentVariable, StringComparer.OrdinalIgnoreCase);
+
+    private static void RestoreEnvironment(IReadOnlyDictionary<string, string?> values)
+    {
+        foreach (var (name, value) in values)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+        }
+    }
+
+    private static void ConfigureLocalInMemoryGovernanceFixture()
+    {
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(FundStructureStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(BankingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(BankingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING", null);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA", null);
+    }
+
     private sealed class FakeDashboardServer : IHostDashboardServer
     {
         private readonly CancellationTokenSource? _cts;
+        private readonly bool _waitForStartCancellation;
 
         public FakeDashboardServer(
             string configPath,
             int port,
             CancellationTokenSource? cts = null,
-            IApplicationLifecycleCoordinator? lifecycle = null)
+            IApplicationLifecycleCoordinator? lifecycle = null,
+            bool waitForStartCancellation = false)
         {
             ConfigPath = configPath;
             Port = port;
             _cts = cts;
             Lifecycle = lifecycle;
+            _waitForStartCancellation = waitForStartCancellation;
         }
 
         public string ConfigPath { get; }
@@ -247,11 +326,21 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         public int DisposeCallCount { get; private set; }
         public CancellationToken StopCancellationToken { get; private set; }
 
-        public Task StartAsync(CancellationToken ct = default)
+        public async Task StartAsync(CancellationToken ct = default)
         {
             StartCallCount++;
+            if (_waitForStartCancellation)
+            {
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                }
+            }
+
             _cts?.Cancel();
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken ct = default)

@@ -15,6 +15,10 @@ internal sealed record StrategyRunScopeMetadata(
     string? SleeveDisplayName,
     string? VehicleId,
     string? VehicleDisplayName,
+    string? OrganizationId,
+    string? CustomerId,
+    string? VendorId,
+    string? ProjectId,
     IReadOnlyDictionary<string, string> ExternalGlDimensions);
 
 internal static class StrategyRunScopeMetadataResolver
@@ -49,6 +53,10 @@ internal static class StrategyRunScopeMetadataResolver
             SleeveDisplayName: ReadScopeValue(entry, "sleeveScopeDisplayName", "sleeveDisplayName", "sleeveName"),
             VehicleId: ReadScopeValue(entry, "vehicleScopeId", "vehicleId"),
             VehicleDisplayName: ReadScopeValue(entry, "vehicleScopeDisplayName", "vehicleDisplayName", "vehicleName"),
+            OrganizationId: ReadScopeValue(entry, "organizationScopeId", "organizationId"),
+            CustomerId: ReadScopeValue(entry, "customerScopeId", "customerId"),
+            VendorId: ReadScopeValue(entry, "vendorScopeId", "vendorId"),
+            ProjectId: ReadScopeValue(entry, "projectScopeId", "projectId"),
             ExternalGlDimensions: ReadExternalGlDimensions(entry));
     }
 

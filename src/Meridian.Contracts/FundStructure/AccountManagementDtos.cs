@@ -32,7 +32,8 @@ public sealed record CustodianPositionLineDto(
     string Currency,
     string? SecurityName,
     string? AssetClass,
-    bool IsShort);
+    bool IsShort,
+    decimal? CostBasis = null);
 
 /// <summary>A single transaction line from a bank statement.</summary>
 public sealed record BankStatementLineDto(

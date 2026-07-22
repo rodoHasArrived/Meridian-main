@@ -37,12 +37,12 @@ public sealed class AccountingProductionReadinessService
             tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        BuildJournalLifecycleComponent(components);
-        BuildCloseReportingComponent(components);
-        var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        BuildMigrationRolloutComponent(effectiveRequest, components);
-        var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
+        var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
+        BuildJournalLifecycleComponent(components, ledgerBookResult.WorkflowReadiness);
+        BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness, rulesStudioResult.DimensionalReportingReadiness);
+        var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
+        var migrationRolloutPlan = BuildMigrationRolloutComponent(effectiveRequest, components);
+        var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, fundProfileId, components);
 
         var issues = components
             .SelectMany(static component => component.Issues)
@@ -52,6 +52,7 @@ public sealed class AccountingProductionReadinessService
             .ToArray();
         var status = ResolveStatus(components);
         var score = components.Count == 0 ? 0 : (int)Math.Round(components.Average(static component => component.Score));
+        var productionGaps = BuildProductionGaps(components);
 
         return new AccountingProductionReadinessDto(
             DateTimeOffset.UtcNow,
@@ -69,7 +70,12 @@ public sealed class AccountingProductionReadinessService
             externalGlCounts.CertifiedMappingProfileCount,
             externalGlCounts.LivePostingEnabled,
             migrationRunArtifacts,
-            tenantAdministration);
+            migrationRolloutPlan,
+            tenantAdministration,
+            productionGaps,
+            effectiveRequest.WorkflowCertificationArtifacts,
+            effectiveRequest.DimensionalCertificationArtifacts,
+            effectiveRequest.TenantAdminCertificationArtifacts);
     }
 
     private async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> LoadMigrationRunArtifactsAsync(
@@ -141,17 +147,36 @@ public sealed class AccountingProductionReadinessService
             return request;
         }
 
+        var workflowProfileEvidence = BuildProductionProfileWorkflowEvidence(profile);
+        var dimensionalProfileEvidence = BuildProductionProfileDimensionalEvidence(profile);
         var workflowEvidence = request.LedgerBookWorkflowEvidenceLinks
-            .Concat(profile.EvidenceReferences)
+            .Concat(workflowProfileEvidence)
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var dimensionalEvidence = request.DimensionalReportingEvidenceLinks
-            .Concat(profile.EvidenceReferences)
+            .Concat(dimensionalProfileEvidence)
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var retainedEvidence = request.RetainedEvidence
+            .Concat(profile.RetainedEvidence)
+            .Where(AccountingProductionCertificationEvidenceValidator.IsEligible)
+            .DistinctBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var workflowArtifacts = request.WorkflowCertificationArtifacts
+            .Concat(profile.WorkflowCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var dimensionalArtifacts = request.DimensionalCertificationArtifacts
+            .Concat(profile.DimensionalCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var tenantAdminArtifacts = request.TenantAdminCertificationArtifacts
+            .Concat(profile.TenantAdminCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
         return request with
@@ -159,15 +184,46 @@ public sealed class AccountingProductionReadinessService
             PostingRulesLedgerBookNativeCertified = request.PostingRulesLedgerBookNativeCertified || profile.PostingRulesLedgerBookNativeCertified,
             JournalLifecycleLedgerBookNativeCertified = request.JournalLifecycleLedgerBookNativeCertified || profile.JournalLifecycleLedgerBookNativeCertified,
             CloseReportingLedgerBookNativeCertified = request.CloseReportingLedgerBookNativeCertified || profile.CloseReportingLedgerBookNativeCertified,
+            ClosePlanConfigurationLedgerBookNativeCertified = request.ClosePlanConfigurationLedgerBookNativeCertified || profile.ClosePlanConfigurationLedgerBookNativeCertified,
             ExternalGlLedgerBookNativeCertified = request.ExternalGlLedgerBookNativeCertified || profile.ExternalGlLedgerBookNativeCertified,
+            ReconciliationLedgerBookNativeCertified = request.ReconciliationLedgerBookNativeCertified || profile.ReconciliationLedgerBookNativeCertified,
+            DirectLendingLedgerBookNativeCertified = request.DirectLendingLedgerBookNativeCertified || profile.DirectLendingLedgerBookNativeCertified,
+            StrategyLedgerReadLedgerBookNativeCertified = request.StrategyLedgerReadLedgerBookNativeCertified || profile.StrategyLedgerReadLedgerBookNativeCertified,
             LedgerBookWorkflowEvidenceLinks = workflowEvidence,
             PeriodReportDimensionQueriesCertified = request.PeriodReportDimensionQueriesCertified || profile.PeriodReportDimensionQueriesCertified,
             CrossPeriodReportDimensionQueriesCertified = request.CrossPeriodReportDimensionQueriesCertified || profile.CrossPeriodReportDimensionQueriesCertified,
             JournalQueryDimensionFiltersCertified = request.JournalQueryDimensionFiltersCertified || profile.JournalQueryDimensionFiltersCertified,
             ExternalExportDimensionMappingCertified = request.ExternalExportDimensionMappingCertified || profile.ExternalExportDimensionMappingCertified,
-            DimensionalReportingEvidenceLinks = dimensionalEvidence
+            LedgerLineDimensionsPersistedCertified = request.LedgerLineDimensionsPersistedCertified || profile.LedgerLineDimensionsPersistedCertified,
+            TrialBalanceDimensionFiltersCertified = request.TrialBalanceDimensionFiltersCertified || profile.TrialBalanceDimensionFiltersCertified,
+            ReportPackageDimensionProvenanceCertified = request.ReportPackageDimensionProvenanceCertified || profile.ReportPackageDimensionProvenanceCertified,
+            DimensionalReportingEvidenceLinks = dimensionalEvidence,
+            RetainedEvidence = retainedEvidence,
+            WorkflowCertificationArtifacts = workflowArtifacts,
+            DimensionalCertificationArtifacts = dimensionalArtifacts,
+            TenantAdminCertificationArtifacts = tenantAdminArtifacts
         };
     }
+
+    private static IReadOnlyList<string> BuildProductionProfileWorkflowEvidence(
+        AccountingProductionCertificationProfileDto profile)
+        => RetainedProductionProfileEvidence(profile).ToArray();
+
+    private static IReadOnlyList<string> BuildProductionProfileDimensionalEvidence(
+        AccountingProductionCertificationProfileDto profile)
+        => RetainedProductionProfileEvidence(profile).ToArray();
+
+    private static IEnumerable<string> RetainedProductionProfileEvidence(AccountingProductionCertificationProfileDto profile)
+        => profile.EvidenceReferences
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Where(static item => !IsLegacyFullCertificationEvidence(item));
+
+    private static bool IsLegacyFullCertificationEvidence(string reference)
+        => reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase);
 
     private static AccountingProductionReadinessRequestDto MergeTenantAdministrationProfile(
         AccountingProductionReadinessRequestDto request,
@@ -196,9 +252,128 @@ public sealed class AccountingProductionReadinessService
             AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured,
             BrowserAccountingAdminSurfaceConfigured = profile.BrowserAccountingAdminSurfaceConfigured,
             WpfAccountingAdminSurfaceConfigured = profile.WpfAccountingAdminSurfaceConfigured,
+            ChartAdministrationStudioConfigured = profile.ChartAdministrationStudioConfigured,
+            RuleTestPromotionStudioConfigured = profile.RuleTestPromotionStudioConfigured,
+            CloseSetupStudioConfigured = profile.CloseSetupStudioConfigured,
+            ProviderMappingStudioConfigured = profile.ProviderMappingStudioConfigured,
+            TenantCompanyReportGroupSetupStudioConfigured = profile.TenantCompanyReportGroupSetupStudioConfigured,
+            AuditReviewToolingConfigured = profile.AuditReviewToolingConfigured,
+            BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured,
+            PerformanceValidationConfigured = profile.PerformanceValidationConfigured,
+            DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured,
+            LedgerBookAdministrationStudioConfigured = profile.LedgerBookAdministrationStudioConfigured,
+            PostingRuleAuthoringStudioConfigured = profile.PostingRuleAuthoringStudioConfigured,
+            ApprovalQueueStudioConfigured = profile.ApprovalQueueStudioConfigured,
+            DimensionMappingStudioConfigured = profile.DimensionMappingStudioConfigured,
+            ImplementationSandboxConfigured = profile.ImplementationSandboxConfigured,
             TenantAdministrationEvidenceLinks = evidence
         };
     }
+
+    private static IReadOnlyList<AccountingWorkflowCertificationArtifactDto> CertifiedWorkflowArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId)
+        => ledgerBookId.HasValue
+            ? request.WorkflowCertificationArtifacts
+                .Where(artifact =>
+                    artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    HasCompleteCertificationMetadata(
+                        artifact.CertificationId,
+                        artifact.CertifiedBy,
+                        artifact.CertifiedAtUtc,
+                        artifact.SourceService) &&
+                    artifact.LedgerBookId == ledgerBookId.Value &&
+                    string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                    ScopeMatches(artifact.TenantId, request.TenantId) &&
+                    ScopeMatches(artifact.CompanyId, request.CompanyId))
+                .ToArray()
+            : [];
+
+    private static IReadOnlyList<AccountingDimensionalCertificationArtifactDto> CertifiedDimensionalArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId)
+        => ledgerBookId.HasValue
+            ? request.DimensionalCertificationArtifacts
+                .Where(artifact =>
+                    artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    HasCompleteCertificationMetadata(
+                        artifact.CertificationId,
+                        artifact.CertifiedBy,
+                        artifact.CertifiedAtUtc,
+                        artifact.SourceService) &&
+                    artifact.LedgerBookId == ledgerBookId.Value &&
+                    !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+                    string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                    ScopeMatches(artifact.TenantId, request.TenantId) &&
+                    ScopeMatches(artifact.CompanyId, request.CompanyId))
+                .ToArray()
+            : [];
+
+    private static IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> CertifiedTenantAdminArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
+        => request.TenantAdminCertificationArtifacts
+            .Where(artifact =>
+                artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                HasCompleteCertificationMetadata(
+                    artifact.CertificationId,
+                    artifact.CertifiedBy,
+                    artifact.CertifiedAtUtc,
+                    artifact.SourceService) &&
+                string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                ScopeMatches(artifact.TenantId, request.TenantId) &&
+                ScopeMatches(artifact.CompanyId, request.CompanyId) &&
+                request.LedgerBookId.HasValue &&
+                artifact.LedgerBookId == request.LedgerBookId.Value)
+            .ToArray();
+
+    private static bool ScopeMatches(string? artifactScope, string? requestScope)
+        => !string.IsNullOrWhiteSpace(artifactScope) &&
+           !string.IsNullOrWhiteSpace(requestScope) &&
+           string.Equals(TrimOrNull(artifactScope), TrimOrNull(requestScope), StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasCompleteCertificationMetadata(
+        string? certificationId,
+        string? certifiedBy,
+        DateTimeOffset certifiedAtUtc,
+        string? sourceService)
+        => !string.IsNullOrWhiteSpace(certificationId) &&
+           !string.IsNullOrWhiteSpace(certifiedBy) &&
+           certifiedAtUtc != default &&
+           certifiedAtUtc.Offset == TimeSpan.Zero &&
+           !string.IsNullOrWhiteSpace(sourceService);
+
+    private static bool HasPassedWorkflowLane(
+        IEnumerable<AccountingWorkflowCertificationArtifactDto> artifacts,
+        AccountingWorkflowCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static bool HasPassedDimensionalLane(
+        IEnumerable<AccountingDimensionalCertificationArtifactDto> artifacts,
+        AccountingDimensionalCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static bool HasPassedTenantAdminLane(
+        IEnumerable<AccountingTenantAdminCertificationArtifactDto> artifacts,
+        AccountingTenantAdminCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingWorkflowCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingDimensionalCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingTenantAdminCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
 
     private async Task<LedgerBookComponentResult> BuildLedgerBookComponentAsync(
         AccountingProductionReadinessRequestDto request,
@@ -206,15 +381,26 @@ public sealed class AccountingProductionReadinessService
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
-        var workflowEvidence = NormalizeEvidenceReferences(request.LedgerBookWorkflowEvidenceLinks);
+        var workflowArtifacts = CertifiedWorkflowArtifacts(request, fundProfileId, request.LedgerBookId);
+        var workflowEvidence = NormalizeEvidenceReferences(
+            request.LedgerBookWorkflowEvidenceLinks.Concat(workflowArtifacts.SelectMany(ArtifactEvidenceReferences)));
         var workflowReadiness = new AccountingLedgerBookWorkflowReadinessDto(
-            request.LedgerBookId,
-            request.PostingRulesLedgerBookNativeCertified,
-            request.JournalLifecycleLedgerBookNativeCertified,
-            request.CloseReportingLedgerBookNativeCertified,
-            request.ExternalGlLedgerBookNativeCertified,
-            workflowEvidence);
-        var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness);
+            LedgerBookId: request.LedgerBookId,
+            PostingRulesLedgerBookNativeCertified: request.PostingRulesLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.PostingRules),
+            JournalLifecycleLedgerBookNativeCertified: request.JournalLifecycleLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle),
+            CloseReportingLedgerBookNativeCertified: request.CloseReportingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.CloseReporting),
+            ClosePlanConfigurationLedgerBookNativeCertified: request.ClosePlanConfigurationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration),
+            ExternalGlLedgerBookNativeCertified: request.ExternalGlLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ExternalGl),
+            ReconciliationLedgerBookNativeCertified: request.ReconciliationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.Reconciliation),
+            DirectLendingLedgerBookNativeCertified: request.DirectLendingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection),
+            StrategyLedgerReadLedgerBookNativeCertified: request.StrategyLedgerReadLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads),
+            EvidenceReferences: workflowEvidence,
+            RetainedEvidence: request.RetainedEvidence,
+            TenantId: request.TenantId,
+            CompanyId: request.CompanyId,
+            FundProfileId: fundProfileId,
+            CertificationArtifacts: workflowArtifacts);
+        var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness, request, fundProfileId);
         var service = _services.GetService<ILedgerBookService>();
         if (service is null)
         {
@@ -262,7 +448,7 @@ public sealed class AccountingProductionReadinessService
             "Ledger books",
             status,
             status == AccountingProductionReadinessStatusDto.Ready ? 100 : status == AccountingProductionReadinessStatusDto.ReviewRequired ? 70 : 20,
-            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
+            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified across posting, lifecycle, close/reporting, close-plan setup, external GL, reconciliation, direct lending, and strategy-ledger reads; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
             issues,
             UiApiRoutes.LedgerBookRolloutAssessment,
             workflowReadiness.EvidenceReferences));
@@ -271,9 +457,20 @@ public sealed class AccountingProductionReadinessService
     }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildLedgerBookWorkflowIssues(
-        AccountingLedgerBookWorkflowReadinessDto readiness)
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "ledger-books.workflow-legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.LedgerBooks,
+            "Ledger-book workflow readiness includes legacy full-token evidence.",
+            "Replace workflow-certification/full or production-certification/full evidence with certified workflow artifacts or lane-specific retained evidence before relying on the control.",
+            readiness.EvidenceReferences,
+            "workflow-certification/full",
+            "production-certification/full");
         if (!readiness.HasLedgerBookScope)
         {
             issues.Add(Issue(
@@ -281,7 +478,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.LedgerBooks,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Accounting workflow certification is not scoped to a Meridian ledger book.",
-                "Select the target ledger book before certifying posting rules, journal lifecycle, close/reporting, and external-GL workflows as ledger-book-native."));
+                "Select the target ledger book before certifying posting rules, journal lifecycle, close/reporting, external-GL, reconciliation, direct-lending, and strategy-ledger workflows as ledger-book-native."));
         }
 
         if (!readiness.HasRetainedEvidence)
@@ -291,7 +488,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.LedgerBooks,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Ledger-book-native workflow certification has no retained evidence links.",
-                "Attach retained evidence identifying the selected ledger book and the certified posting-rule, journal-lifecycle, close/reporting, and external-GL workflow checks before production rollout."));
+                "Attach retained evidence identifying the selected ledger book and the certified posting-rule, journal-lifecycle, close/reporting, external-GL, reconciliation, direct-lending, and strategy-ledger workflow checks before production rollout."));
         }
         else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
         {
@@ -303,7 +500,6 @@ public sealed class AccountingProductionReadinessService
                 "Retain workflow certification evidence that names the selected ledgerBookId before production rollout.",
                 readiness.EvidenceReferences));
         }
-
         if (!readiness.PostingRulesLedgerBookNativeCertified)
         {
             issues.Add(Issue(
@@ -312,6 +508,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Posting rule execution has not been certified as ledger-book-native.",
                 "Prove source-event predicates, generated posting candidates, evidence, and draft handoff all preserve the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasPostingRulesLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.posting-rules-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting rule execution certification lacks retained posting-rule workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and posting-rule, Rules Studio, or posting-candidate workflow before production rollout.",
+                readiness.EvidenceReferences));
         }
 
         if (!readiness.JournalLifecycleLedgerBookNativeCertified)
@@ -323,6 +529,16 @@ public sealed class AccountingProductionReadinessService
                 "Journal entry lifecycle has not been certified as ledger-book-native.",
                 "Prove draft, validation, submission, approval, posting, correction, close-lock, and audit transitions cannot cross ledger-book scope."));
         }
+        else if (!readiness.HasJournalLifecycleLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.journal-lifecycle-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal entry lifecycle certification lacks retained lifecycle workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and journal-entry lifecycle workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.CloseReportingLedgerBookNativeCertified)
         {
@@ -332,6 +548,36 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Close and reporting workflows have not been certified as ledger-book-native.",
                 "Prove close checklists, period locks, report packages, certification, and restatement workflows consume only the selected ledger book and its dimensions."));
+        }
+        else if (!readiness.HasCloseReportingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-reporting-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting certification lacks retained close or report workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and close-management, report-package, or restatement workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ClosePlanConfigurationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-plan-configuration-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration has not been certified as ledger-book-native.",
+                "Prove materiality policy setup, checklist configuration, dependencies, sign-off requirements, and retained evidence are scoped to the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasClosePlanConfigurationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-plan-configuration-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration certification lacks retained setup evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and close-plan configuration, close setup, checklist, dependency, sign-off, or materiality-policy workflow before production rollout.",
+                readiness.EvidenceReferences));
         }
 
         if (!readiness.ExternalGlLedgerBookNativeCertified)
@@ -343,6 +589,76 @@ public sealed class AccountingProductionReadinessService
                 "External GL import, reconciliation, mapping, and guarded export workflows have not been certified as ledger-book-native.",
                 "Prove provider imports, reconciliation snapshots, mapping profiles, and export packages are bound to the selected Meridian ledger book."));
         }
+        else if (!readiness.HasExternalGlLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.external-gl-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL certification lacks retained external-GL workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and external-GL import, reconciliation, mapping, or guarded-export workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ReconciliationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.reconciliation-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reconciliation workflows have not been certified as ledger-book-native.",
+                "Prove break queues, statement reconciliation, casework, and retained reconciliation snapshots are bound to the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasReconciliationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.reconciliation-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reconciliation certification lacks retained reconciliation workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and reconciliation, break-queue, statement-reconciliation, or reconciliation-case workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.DirectLendingLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.direct-lending-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Direct-lending accounting projections have not been certified as ledger-book-native.",
+                "Prove loan-account, borrower, accrual, and direct-lending projection workflows retain the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasDirectLendingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.direct-lending-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Direct-lending certification lacks retained direct-lending workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and direct-lending, loan-account, borrower, or direct-lending-projection workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.StrategyLedgerReadLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.strategy-ledger-reads-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Strategy ledger reads have not been certified as ledger-book-native.",
+                "Prove strategy-run trial-balance, journal, and drill-through reads preserve the selected ledger book and fail closed on cross-book data before production rollout."));
+        }
+        else if (!readiness.HasStrategyLedgerReadLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.strategy-ledger-reads-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Strategy ledger-read certification lacks retained strategy-ledger evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and strategy-ledger, strategy-run, run-ledger, or strategy-ledger-read workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
 
         return issues;
     }
@@ -350,10 +666,11 @@ public sealed class AccountingProductionReadinessService
     private async Task<RulesStudioComponentResult> BuildRulesStudioComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
-        var dimensionalReportingReadiness = BuildDimensionalReportingReadiness(request);
+        var dimensionalReportingReadiness = await BuildDimensionalReportingReadinessAsync(request, fundProfileId, ct).ConfigureAwait(false);
         var service = _services.GetService<IAccountingConfigurationService>();
         if (service is null)
         {
@@ -365,6 +682,20 @@ public sealed class AccountingProductionReadinessService
                 "No accounting configuration service is registered.",
                 [Issue("rules-studio.service-missing", AccountingProductionReadinessAreaDto.RulesStudio, AccountingConfigurationValidationSeverityDto.Critical, "Accounting configuration service is not registered.", "Register IAccountingConfigurationService before accounting configuration rollout.")],
                 UiApiRoutes.LedgerAccountingConfiguration));
+            var unavailablePostingRuleIssues = new List<AccountingProductionReadinessIssueDto>
+            {
+                Issue("posting-rules.configuration-missing", AccountingProductionReadinessAreaDto.PostingRules, AccountingConfigurationValidationSeverityDto.Critical, "Posting-rule execution cannot be assessed without accounting configuration.", "Register accounting configuration, Rules Studio, and posting-rule candidate services before production rollout.")
+            };
+            AddPostingRulesWorkflowIssues(workflowReadiness, unavailablePostingRuleIssues);
+            components.Add(Component(
+                AccountingProductionReadinessAreaDto.PostingRules,
+                "Posting rule execution",
+                AccountingProductionReadinessStatusDto.Unavailable,
+                0,
+                "Posting-rule execution cannot be assessed without accounting configuration.",
+                unavailablePostingRuleIssues,
+                UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates,
+                workflowReadiness.EvidenceReferences));
             components.Add(Component(
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 "Dimensional accounting",
@@ -376,7 +707,7 @@ public sealed class AccountingProductionReadinessService
             return new RulesStudioComponentResult(null, dimensionalReportingReadiness);
         }
 
-        var workspace = await service.GetWorkspaceAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await service.GetWorkspaceAsync(fundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var summary = workspace.RulesStudio?.Summary;
         var rulesIssues = new List<AccountingProductionReadinessIssueDto>();
         rulesIssues.AddRange(workspace.ValidationIssues.Select(issue => Issue(
@@ -409,8 +740,13 @@ public sealed class AccountingProductionReadinessService
             rulesIssues.Add(Issue("posting-rules.generated-postings-missing", AccountingProductionReadinessAreaDto.PostingRules, AccountingConfigurationValidationSeverityDto.Warning, "No active posting rule generates multi-line postings.", "Convert template-only mappings into governed generated posting rules for production source events."));
         }
 
+        var postingRuleIssues = rulesIssues
+            .Where(static issue => issue.Area == AccountingProductionReadinessAreaDto.PostingRules)
+            .ToList();
+        AddPostingRulesWorkflowIssues(workflowReadiness, postingRuleIssues);
+
         var dimensionalIssues = BuildDimensionalIssues(workspace);
-        dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness));
+        dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness, request, fundProfileId));
         components.Add(Component(
             AccountingProductionReadinessAreaDto.RulesStudio,
             "Rules Studio",
@@ -424,17 +760,18 @@ public sealed class AccountingProductionReadinessService
         components.Add(Component(
             AccountingProductionReadinessAreaDto.PostingRules,
             "Posting rule execution",
-            activeGeneratedPostingRuleCount == 0 ? AccountingProductionReadinessStatusDto.ReviewRequired : AccountingProductionReadinessStatusDto.Ready,
-            activeGeneratedPostingRuleCount == 0 ? 65 : 100,
-            $"{activeGeneratedPostingRuleCount} active generated-posting rule(s) are configured for governed draft candidates.",
-            rulesIssues.Where(static issue => issue.Area == AccountingProductionReadinessAreaDto.PostingRules).ToArray(),
-            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates));
+            ResolveIssueStatus(postingRuleIssues),
+            ScoreFromIssues(postingRuleIssues, hasPositiveEvidence: activeGeneratedPostingRuleCount > 0 && workflowReadiness.HasPostingRulesLedgerBookNativeEvidence),
+            $"{activeGeneratedPostingRuleCount} active generated-posting rule(s) are configured for governed draft candidates; posting-rule workflow {(workflowReadiness.PostingRulesLedgerBookNativeCertified ? "certified" : "not certified")}.",
+            postingRuleIssues,
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates,
+            workflowReadiness.EvidenceReferences));
         components.Add(Component(
             AccountingProductionReadinessAreaDto.DimensionalAccounting,
             "Dimensional accounting",
             ResolveIssueStatus(dimensionalIssues),
             ScoreFromIssues(dimensionalIssues, hasPositiveEvidence: dimensionalReportingReadiness.HasRetainedEvidence),
-            $"Rules/generated postings plus {dimensionalReportingReadiness.CompletedControlCount}/{dimensionalReportingReadiness.RequiredControlCount} report/query/export dimension control(s) were inspected for canonical LedgerDimensionSet coverage.",
+            $"Rules/generated postings plus {dimensionalReportingReadiness.CompletedControlCount}/{dimensionalReportingReadiness.RequiredControlCount} ledger/query/report/export dimension control(s) were inspected for canonical LedgerDimensionSet coverage.",
             dimensionalIssues,
             UiApiRoutes.LedgerAccountingConfiguration,
             dimensionalReportingReadiness.EvidenceReferences));
@@ -442,20 +779,85 @@ public sealed class AccountingProductionReadinessService
         return new RulesStudioComponentResult(summary, dimensionalReportingReadiness);
     }
 
-    private static AccountingDimensionalReportingReadinessDto BuildDimensionalReportingReadiness(
-        AccountingProductionReadinessRequestDto request)
-        => new(
-            request.LedgerBookId,
-            request.PeriodReportDimensionQueriesCertified,
-            request.CrossPeriodReportDimensionQueriesCertified,
-            request.JournalQueryDimensionFiltersCertified,
-            request.ExternalExportDimensionMappingCertified,
-            NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks));
+    private static void AddPostingRulesWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-workflow-scope-missing",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying source-event predicates, generated posting candidates, and governed journal-draft handoff."));
+            return;
+        }
+
+        if (!readiness.PostingRulesLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution has not been certified as ledger-book-native.",
+                "Prove source-event predicates, generated posting candidates, evidence, and draft handoff all preserve the selected ledger book."));
+        }
+        else if (!readiness.HasPostingRulesLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and posting-rule, Rules Studio, or posting-candidate workflow.",
+                readiness.EvidenceReferences));
+        }
+    }
+
+    private static Task<AccountingDimensionalReportingReadinessDto> BuildDimensionalReportingReadinessAsync(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var dimensionalArtifacts = CertifiedDimensionalArtifacts(request, fundProfileId, request.LedgerBookId);
+        var evidenceReferences = NormalizeEvidenceReferences(
+            request.DimensionalReportingEvidenceLinks
+                .Concat(dimensionalArtifacts.SelectMany(ArtifactEvidenceReferences)));
+        return Task.FromResult(new AccountingDimensionalReportingReadinessDto(
+            LedgerBookId: request.LedgerBookId,
+            PeriodReportDimensionQueriesCertified: request.PeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.PeriodReports),
+            CrossPeriodReportDimensionQueriesCertified: request.CrossPeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports),
+            JournalQueryDimensionFiltersCertified: request.JournalQueryDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.JournalFilters),
+            ExternalExportDimensionMappingCertified: request.ExternalExportDimensionMappingCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings),
+            LedgerLineDimensionsPersistedCertified: request.LedgerLineDimensionsPersistedCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence),
+            TrialBalanceDimensionFiltersCertified: request.TrialBalanceDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters),
+            ReportPackageDimensionProvenanceCertified: request.ReportPackageDimensionProvenanceCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance),
+            EvidenceReferences: evidenceReferences,
+            RetainedEvidence: request.RetainedEvidence,
+            TenantId: request.TenantId,
+            CompanyId: request.CompanyId,
+            FundProfileId: fundProfileId,
+            CertificationArtifacts: dimensionalArtifacts));
+    }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
-        AccountingDimensionalReportingReadinessDto readiness)
+        AccountingDimensionalReportingReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "dimensions.reporting-legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.DimensionalAccounting,
+            "Dimensional reporting readiness includes legacy full-token evidence.",
+            "Replace dimensions/report-query-certification/full, dimensions/full, or production-certification/full evidence with certified dimensional artifacts or lane-specific retained evidence.",
+            readiness.EvidenceReferences,
+            "dimensions/report-query-certification/full",
+            "dimensions/full",
+            "production-certification/full");
         if (!readiness.HasLedgerBookScope)
         {
             issues.Add(Issue(
@@ -463,7 +865,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification is not scoped to a Meridian ledger book.",
-                "Select the target ledger book before certifying period reports, cross-period reports, journal filters, and export dimension mappings."));
+                "Select the target ledger book before certifying ledger-line persistence, trial-balance filters, period reports, cross-period reports, journal filters, report packages, and export dimension mappings."));
         }
 
         if (!readiness.HasRetainedEvidence)
@@ -473,7 +875,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification has no retained evidence links.",
-                "Attach retained evidence identifying the selected ledger book and the certified report/query/export dimension checks before production rollout."));
+                "Attach retained evidence identifying the selected ledger book and the certified ledger-line, report/query, provenance, and export dimension checks before production rollout."));
         }
         else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
         {
@@ -483,6 +885,18 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification evidence does not identify the selected ledger book.",
                 "Retain dimensional reporting evidence that names the selected ledgerBookId before production rollout.",
+                readiness.EvidenceReferences));
+        }
+        if (readiness.HasRetainedEvidence &&
+            readiness.HasLedgerBookScopedEvidence &&
+            !readiness.HasExplicitDimensionScopeEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-dimension-scope-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification evidence does not identify the explicit dimension scope.",
+                "Retain dimensional reporting evidence with a dimension-scope or ledger-dimension-set marker before production rollout.",
                 readiness.EvidenceReferences));
         }
 
@@ -495,6 +909,33 @@ public sealed class AccountingProductionReadinessService
                 "Period report dimension queries have not been certified.",
                 "Prove period trial balance, financial statements, NAV, and investor package filters retain canonical dimensions for the selected ledger book."));
         }
+        else if (!readiness.HasPeriodReportDimensionQueryEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.period-reports-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Period report dimension certification lacks retained period-report evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and period report, trial-balance, financial-statement, NAV, or investor-package dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "period-report",
+                     "period-reports",
+                     "trial-balance",
+                     "financial-statement",
+                     "nav",
+                     "investor-package"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.period-reports-evidence-rollout-scope-mismatch",
+                "Period report dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain period report, trial-balance, financial-statement, NAV, or investor-package dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.CrossPeriodReportDimensionQueriesCertified)
         {
@@ -504,6 +945,30 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Cross-period report dimension queries have not been certified.",
                 "Prove comparative and roll-forward report filters retain canonical dimensions across accounting periods for the selected ledger book."));
+        }
+        else if (!readiness.HasCrossPeriodReportDimensionQueryEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.cross-period-reports-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Cross-period report dimension certification lacks retained cross-period evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and cross-period, comparative, or roll-forward report dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "cross-period",
+                     "comparative",
+                     "roll-forward"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.cross-period-reports-evidence-rollout-scope-mismatch",
+                "Cross-period report dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain cross-period, comparative, or roll-forward report dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
         }
 
         if (!readiness.JournalQueryDimensionFiltersCertified)
@@ -515,6 +980,31 @@ public sealed class AccountingProductionReadinessService
                 "Journal query dimension filters have not been certified.",
                 "Prove ledger journal drill-through, audit, and evidence queries filter by canonical dimensions instead of account-name or route heuristics."));
         }
+        else if (!readiness.HasJournalQueryDimensionFilterEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.journal-query-filters-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal query dimension certification lacks retained journal-filter evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and journal query, journal filter, or ledger journal dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "journal-query",
+                     "journal-filter",
+                     "journal-dimension",
+                     "ledger-journal"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.journal-query-filters-evidence-rollout-scope-mismatch",
+                "Journal query dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain journal query, journal filter, or ledger journal dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.ExternalExportDimensionMappingCertified)
         {
@@ -525,11 +1015,142 @@ public sealed class AccountingProductionReadinessService
                 "External export dimension mapping has not been certified.",
                 "Prove guarded export packages preserve fund, entity, ledger-book, and external-GL dimension mappings before production export review."));
         }
+        else if (!readiness.HasExternalExportDimensionMappingEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.external-export-mapping-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External export dimension mapping certification lacks retained export-mapping evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and external export, external-GL mapping, or GL export dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "external-export",
+                     "export-dimension",
+                     "external-gl-mapping",
+                     "gl-export"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.external-export-mapping-evidence-rollout-scope-mismatch",
+                "External export dimension mapping certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain external export, external-GL mapping, or GL export dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.LedgerLineDimensionsPersistedCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.ledger-line-persistence-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posted ledger-line dimension persistence has not been certified.",
+                "Prove posted journal lines retain canonical LedgerDimensionSet scope before production reporting or export certification."));
+        }
+        else if (!readiness.HasLedgerLineDimensionPersistenceEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.ledger-line-persistence-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-line dimension persistence certification lacks retained ledger-line evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and ledger-line, line-dimension, posted-ledger-line, or journal-line-dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "ledger-line",
+                     "line-dimension",
+                     "posted-ledger-line",
+                     "journal-line-dimension"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.ledger-line-persistence-evidence-rollout-scope-mismatch",
+                "Ledger-line dimension persistence certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain ledger-line, line-dimension, posted-ledger-line, or journal-line-dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.TrialBalanceDimensionFiltersCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.trial-balance-filters-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Trial-balance dimension filters have not been certified.",
+                "Prove period and aggregate trial-balance routes filter by canonical fund, entity, book, instrument, cost-center, counterparty, and external-GL dimensions."));
+        }
+        else if (!readiness.HasTrialBalanceDimensionFilterEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.trial-balance-filters-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Trial-balance dimension filter certification lacks retained trial-balance evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and trial-balance-filter, trial-balance-dimension, or ledger-report-filter checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "trial-balance-filter",
+                     "trial-balance-dimension",
+                     "ledger-report-filter"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.trial-balance-filters-evidence-rollout-scope-mismatch",
+                "Trial-balance dimension filter certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain trial-balance-filter, trial-balance-dimension, or ledger-report-filter evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ReportPackageDimensionProvenanceCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.report-package-provenance-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Report-package dimensional provenance has not been certified.",
+                "Prove report packages, NAV packages, and report-line provenance retain canonical dimensions from posted ledger lines through certification and export."));
+        }
+        else if (!readiness.HasReportPackageDimensionProvenanceEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.report-package-provenance-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Report-package dimensional provenance certification lacks retained report-package evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and report-package-provenance, report-line-provenance, package-dimension, or NAV-package checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "report-package-provenance",
+                     "report-line-provenance",
+                     "package-dimension",
+                     "nav-package"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.report-package-provenance-evidence-rollout-scope-mismatch",
+                "Report-package dimensional provenance certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain report-package-provenance, report-line-provenance, package-dimension, or NAV-package evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         return issues;
     }
 
-    private void BuildJournalLifecycleComponent(ICollection<AccountingProductionReadinessComponentDto> components)
+    private void BuildJournalLifecycleComponent(
+        ICollection<AccountingProductionReadinessComponentDto> components,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness)
     {
         var hasWorkbench = _services.GetService<IManualJournalEntryWorkbenchService>() is not null;
         var hasLifecycle = _services.GetService<IManualJournalEntryLifecycleService>() is not null;
@@ -539,19 +1160,61 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("journal-lifecycle.service-missing", AccountingProductionReadinessAreaDto.JournalLifecycle, AccountingConfigurationValidationSeverityDto.Critical, "Manual journal workbench or lifecycle service is not registered.", "Register the governed manual journal lifecycle service before production rollout."));
         }
 
+        AddJournalLifecycleWorkflowIssues(workflowReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.JournalLifecycle,
             "Journal lifecycle",
             ResolveIssueStatus(issues),
-            hasWorkbench && hasLifecycle ? 100 : 0,
-            hasWorkbench && hasLifecycle
-                ? "Governed manual journal workbench and lifecycle transition service are registered."
-                : "Journal lifecycle services are not fully registered.",
+            ScoreFromIssues(issues, hasPositiveEvidence: hasWorkbench && hasLifecycle && workflowReadiness.HasJournalLifecycleLedgerBookNativeEvidence),
+            hasWorkbench && hasLifecycle && workflowReadiness.JournalLifecycleLedgerBookNativeCertified && workflowReadiness.HasJournalLifecycleLedgerBookNativeEvidence
+                ? "Governed manual journal services are registered and certified with retained ledger-book-native workflow evidence."
+                : "Journal lifecycle services, ledger-book-native certification, or retained workflow evidence are incomplete.",
             issues,
-            UiApiRoutes.LedgerManualJournalEntryWorkbench));
+            UiApiRoutes.LedgerManualJournalEntryWorkbench,
+            workflowReadiness.EvidenceReferences));
     }
 
-    private void BuildCloseReportingComponent(ICollection<AccountingProductionReadinessComponentDto> components)
+    private static void AddJournalLifecycleWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle production readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying journal draft, approval, posting, correction, and close-lock transitions."));
+            return;
+        }
+
+        if (!readiness.JournalLifecycleLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle has not been certified as ledger-book-native.",
+                "Prove draft, validation, submission, approval, posting, correction, close-lock, and audit transitions remain inside the selected ledger book."));
+        }
+        else if (!readiness.HasJournalLifecycleLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and journal-entry lifecycle workflow.",
+                readiness.EvidenceReferences));
+        }
+    }
+
+    private void BuildCloseReportingComponent(
+        ICollection<AccountingProductionReadinessComponentDto> components,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
+        AccountingDimensionalReportingReadinessDto dimensionalReportingReadiness)
     {
         var hasClose = _services.GetService<IAccountingCloseManagementService>() is not null;
         var hasReports = _services.GetService<IAccountingReportPackageService>() is not null;
@@ -566,40 +1229,148 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("reporting.service-missing", AccountingProductionReadinessAreaDto.CloseReporting, AccountingConfigurationValidationSeverityDto.Critical, "Accounting report package service is not registered.", "Register accounting report package certification before production reporting rollout."));
         }
 
+        AddCloseReportingWorkflowIssues(workflowReadiness, issues);
+        AddCloseReportingDimensionalIssues(dimensionalReportingReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.CloseReporting,
             "Close and reporting",
             ResolveIssueStatus(issues),
-            hasClose && hasReports ? 100 : 0,
-            hasClose && hasReports
-                ? "Close management and accounting report package services are registered."
-                : "Close/reporting production services are incomplete.",
+            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence && workflowReadiness.HasClosePlanConfigurationLedgerBookNativeEvidence && dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount),
+            hasClose && hasReports &&
+            workflowReadiness.CloseReportingLedgerBookNativeCertified &&
+            workflowReadiness.HasCloseReportingLedgerBookNativeEvidence &&
+            workflowReadiness.ClosePlanConfigurationLedgerBookNativeCertified &&
+            workflowReadiness.HasClosePlanConfigurationLedgerBookNativeEvidence &&
+            dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount
+                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native setup, workflow, and dimensional reporting evidence."
+                : "Close/reporting services, close-plan setup certification, retained workflow evidence, or dimensional reporting evidence are incomplete.",
             issues,
-            UiApiRoutes.LedgerReportsAccountingPackage));
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            workflowReadiness.EvidenceReferences.Concat(dimensionalReportingReadiness.EvidenceReferences).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()));
+    }
+
+    private static void AddCloseReportingWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting production readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying close plans, period locks, reporting packages, certifications, and restatements."));
+            return;
+        }
+
+        if (!readiness.CloseReportingLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close and reporting workflows have not been certified as ledger-book-native.",
+                "Prove close checklists, period locks, report packages, certification, and restatement workflows consume only the selected ledger book and its dimensions."));
+        }
+        else if (!readiness.HasCloseReportingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and close-management, report-package, or restatement workflow.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ClosePlanConfigurationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "close-reporting.close-plan-configuration-not-certified",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration has not been certified for the selected ledger book.",
+                "Prove materiality policy setup, checklist configuration, dependencies, sign-off requirements, and close-plan evidence remain inside the selected ledger book."));
+        }
+        else if (!readiness.HasClosePlanConfigurationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "close-reporting.close-plan-configuration-evidence-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration certification lacks retained setup evidence for the selected ledger book.",
+                "Attach retained close-plan configuration, close setup, checklist, dependency, sign-off, or materiality-policy evidence naming the selected ledger book.",
+                readiness.EvidenceReferences));
+        }
+    }
+
+    private static void AddCloseReportingDimensionalIssues(
+        AccountingDimensionalReportingReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "close-reporting.dimension-ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting dimensional readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying period reports, cross-period reports, journal filters, and export dimension mappings."));
+            return;
+        }
+
+        if (readiness.CompletedControlCount < readiness.RequiredControlCount)
+        {
+            issues.Add(Issue(
+                "close-reporting.dimension-controls-incomplete",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting dimensional report, query, or export controls are incomplete for the selected ledger book.",
+                "Certify period reports, cross-period reports, journal dimension filters, and external-export dimension mappings with retained ledger-book-scoped evidence before production close/reporting rollout.",
+                readiness.EvidenceReferences));
+        }
     }
 
     private async Task<ExternalGlCounts> BuildExternalGlComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
         var service = _services.GetService<AccountingSystemIntegrationService>();
         if (service is null)
         {
+            var serviceIssues = new List<AccountingProductionReadinessIssueDto>
+            {
+                Issue("external-gl.service-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "Accounting-system integration service is not registered.", "Register guarded external-GL import/mapping services before production rollout.")
+            };
+            AddExternalGlWorkflowIssues(workflowReadiness, serviceIssues);
+
             components.Add(Component(
                 AccountingProductionReadinessAreaDto.ExternalGl,
                 "External GL",
                 AccountingProductionReadinessStatusDto.Unavailable,
                 0,
                 "No accounting-system integration service is registered.",
-                [Issue("external-gl.service-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "Accounting-system integration service is not registered.", "Register guarded external-GL import/mapping services before production rollout.")],
-                UiApiRoutes.AccountingSystemProviders));
+                serviceIssues,
+                UiApiRoutes.AccountingSystemProviders,
+                workflowReadiness.EvidenceReferences));
             return new ExternalGlCounts(0, 0, false);
         }
 
         var providers = await service.ListProvidersAsync(ct).ConfigureAwait(false);
-        var mappings = await service.ListMappingProfilesAsync(request.ProviderId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var mappings = await service
+            .ListMappingProfilesAsync(
+                request.ProviderId,
+                fundProfileId,
+                request.LedgerBookId,
+                ct,
+                request.TenantId,
+                request.CompanyId)
+            .ConfigureAwait(false);
         var certifiedMappings = mappings.Count(static profile => profile.CertificationState == AccountingCertificationStateDto.Certified);
         var livePostingEnabled = providers.Any(static provider =>
             provider.State == AccountingSystemProviderStateDto.Available && provider.SupportsPosting);
@@ -638,23 +1409,65 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("external-gl.live-posting-disabled", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Info, "Live external GL posting remains disabled by product policy.", "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists."));
         }
 
+        AddExternalGlWorkflowIssues(workflowReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.ExternalGl,
             "External GL",
             ResolveIssueStatus(issues),
-            request.LedgerBookId.HasValue && certifiedMappings > 0 ? 85 : 45,
-            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; live posting {(livePostingEnabled ? "enabled" : "disabled")}.",
+            ScoreFromIssues(issues, hasPositiveEvidence: certifiedMappings > 0 || workflowReadiness.HasExternalGlLedgerBookNativeEvidence),
+            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; external-GL workflow {(workflowReadiness.ExternalGlLedgerBookNativeCertified ? "certified" : "not certified")}; live posting {(livePostingEnabled ? "enabled" : "disabled")}.",
             issues,
-            UiApiRoutes.AccountingSystemMappingProfiles));
+            UiApiRoutes.AccountingSystemMappingProfiles,
+            workflowReadiness.EvidenceReferences));
 
         return new ExternalGlCounts(providers.Count, certifiedMappings, livePostingEnabled);
     }
 
+    private static void AddExternalGlWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-workflow-scope-missing",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL workflow readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying import, reconciliation, mapping, and guarded export workflows."));
+            return;
+        }
+
+        if (!readiness.ExternalGlLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL workflows have not been certified as ledger-book-native.",
+                "Prove provider imports, reconciliation snapshots, mapping profiles, and guarded export packages are bound to the selected Meridian ledger book."));
+        }
+        else if (!readiness.HasExternalGlLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL certification lacks retained external-GL workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and external-GL import, reconciliation, mapping, or guarded-export workflow.",
+                readiness.EvidenceReferences));
+        }
+    }
+
     private static AccountingTenantAdministrationReadinessDto BuildTenantAdministrationComponent(
         AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
         ICollection<AccountingProductionReadinessComponentDto> components)
     {
+        var tenantAdminArtifacts = CertifiedTenantAdminArtifacts(request, fundProfileId);
         var evidenceReferences = request.TenantAdministrationEvidenceLinks
+            .Concat(tenantAdminArtifacts.SelectMany(ArtifactEvidenceReferences))
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -662,15 +1475,42 @@ public sealed class AccountingProductionReadinessService
         var readiness = new AccountingTenantAdministrationReadinessDto(
             TrimOrNull(request.TenantId),
             TrimOrNull(request.CompanyId),
-            request.TenantScopeConfigured,
-            request.AdminRoleProfileConfigured,
-            request.ScopedAccessPoliciesConfigured,
-            request.ReportingGroupsConfigured,
-            request.AccountingAdminSurfaceConfigured,
-            request.BrowserAccountingAdminSurfaceConfigured,
-            request.WpfAccountingAdminSurfaceConfigured,
-            evidenceReferences);
+            request.TenantScopeConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.TenantScope),
+            request.AdminRoleProfileConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile),
+            request.ScopedAccessPoliciesConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies),
+            request.ReportingGroupsConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ReportingGroups),
+            request.AccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface),
+            request.BrowserAccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface),
+            request.WpfAccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface),
+            request.ChartAdministrationStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio),
+            request.RuleTestPromotionStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio),
+            request.CloseSetupStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio),
+            request.ProviderMappingStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio),
+            request.TenantCompanyReportGroupSetupStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio),
+            evidenceReferences,
+            AuditReviewToolingConfigured: request.AuditReviewToolingConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling),
+            BulkImportExportSafeguardsConfigured: request.BulkImportExportSafeguardsConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards),
+            PerformanceValidationConfigured: request.PerformanceValidationConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation),
+            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook),
+            LedgerBookAdministrationStudioConfigured: request.LedgerBookAdministrationStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio),
+            PostingRuleAuthoringStudioConfigured: request.PostingRuleAuthoringStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio),
+            ApprovalQueueStudioConfigured: request.ApprovalQueueStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio),
+            DimensionMappingStudioConfigured: request.DimensionMappingStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio),
+            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox),
+            RetainedEvidence: request.RetainedEvidence,
+            FundProfileId: fundProfileId,
+            LedgerBookId: request.LedgerBookId,
+            CertificationArtifacts: tenantAdminArtifacts);
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "tenant-admin.legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.TenantAdministration,
+            "Tenant administration readiness includes legacy full-token evidence.",
+            "Replace tenant-admin/full or tenant-administration/full evidence with a certified tenant-administration artifact or lane-specific retained evidence.",
+            evidenceReferences,
+            "tenant-admin/full",
+            "tenant-administration/full");
         if (!readiness.HasTenantScope)
         {
             issues.Add(Issue(
@@ -693,6 +1533,20 @@ public sealed class AccountingProductionReadinessService
                 evidenceReferences));
         }
 
+        if (readiness.HasRetainedEvidence &&
+            readiness.HasTenantScope &&
+            readiness.HasCompanyScope &&
+            !readiness.HasTenantCompanyScopedEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.evidence-scope-mismatch",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant administration evidence does not identify the requested tenant and company.",
+                "Retain tenant administration evidence that names the selected tenant and company before certifying enterprise accounting setup controls.",
+                evidenceReferences));
+        }
+
         if (!readiness.TenantScopeConfigured)
         {
             issues.Add(Issue(
@@ -701,6 +1555,32 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Tenant-scoped accounting configuration has not been certified.",
                 "Certify tenant-scoped ledger, provider, evidence, and workstation storage setup before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasTenantScopeEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant-scoped accounting configuration certification lacks retained tenant-scope evidence.",
+                "Attach tenant administration evidence for tenant scope, tenant storage, tenant ledger, or provider setup before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "tenant-scope",
+                     "tenant-storage",
+                     "tenant-ledger",
+                     "tenant-provider"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant-scoped accounting configuration certification lacks retained evidence for the selected ledger book.",
+                "Attach tenant-scope, tenant-storage, tenant-ledger, or provider setup evidence that names the selected ledgerBookId before certifying book-native tenant setup.",
                 evidenceReferences));
         }
 
@@ -714,6 +1594,31 @@ public sealed class AccountingProductionReadinessService
                 "Configure and retain approval evidence for accounting administrator role profiles before production rollout.",
                 evidenceReferences));
         }
+        else if (!readiness.HasAdminRoleProfileEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.role-profile-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administrator role profile certification lacks retained role-profile evidence.",
+                "Attach tenant administration evidence for admin role or accounting role-profile setup before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "admin-role",
+                     "role-profile",
+                     "accounting-admin-role"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.role-profile-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administrator role profile certification lacks retained evidence for the selected ledger book.",
+                "Attach admin-role or accounting role-profile evidence that names the selected ledgerBookId before certifying book-native administrator access.",
+                evidenceReferences));
+        }
 
         if (!readiness.ScopedAccessPoliciesConfigured)
         {
@@ -723,6 +1628,31 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Scoped access policies for accounting workflows have not been certified.",
                 "Configure fund, entity, account, and report-package scoped access before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasScopedAccessPolicyEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.scoped-access-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Scoped access policy certification lacks retained access-policy evidence.",
+                "Attach tenant administration evidence for scoped access policies, accounting entitlements, or report-package access before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "scoped-access",
+                     "access-policy",
+                     "entitlement"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.scoped-access-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Scoped access policy certification lacks retained evidence for the selected ledger book.",
+                "Attach scoped-access, entitlement, or report-package access evidence that names the selected ledgerBookId before certifying book-native accounting authorization.",
                 evidenceReferences));
         }
 
@@ -736,6 +1666,31 @@ public sealed class AccountingProductionReadinessService
                 "Retain reporting group and entitlement setup evidence before investor, board, tax, or compliance delivery.",
                 evidenceReferences));
         }
+        else if (!readiness.HasReportingGroupEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.reporting-groups-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Reporting delivery group certification lacks retained reporting-group evidence.",
+                "Attach tenant administration evidence for reporting groups, delivery groups, or report-group entitlements before production reporting delivery.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "reporting-group",
+                     "report-group",
+                     "delivery-group"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.reporting-groups-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reporting delivery group certification lacks retained evidence for the selected ledger book.",
+                "Attach reporting-group, delivery-group, or report-entitlement evidence that names the selected ledgerBookId before certifying production reporting delivery.",
+                evidenceReferences));
+        }
 
         if (!readiness.AccountingAdminSurfaceConfigured)
         {
@@ -745,6 +1700,32 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Production rollout still needs a full tenant/company/report-group setup operator surface over these shared controls.",
                 "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.operator-surface-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Accounting administration operator-surface certification lacks retained setup-surface evidence.",
+                "Attach tenant administration evidence for the aggregate accounting admin, operator, or setup surface before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "accounting-admin-surface",
+                     "operator-surface",
+                     "admin-studio",
+                     "setup-surface"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.operator-surface-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administration operator-surface certification lacks retained evidence for the selected ledger book.",
+                "Attach aggregate accounting admin or setup-surface evidence that names the selected ledgerBookId before certifying enterprise configuration controls.",
                 evidenceReferences));
         }
 
@@ -758,6 +1739,31 @@ public sealed class AccountingProductionReadinessService
                 "Bind the browser accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
                 evidenceReferences));
         }
+        else if (!readiness.HasBrowserAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.browser-admin-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Browser accounting administration studio certification lacks retained browser setup evidence.",
+                "Attach tenant administration evidence for browser accounting admin-studio or browser setup coverage before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "browser-admin-studio",
+                     "browser-accounting-admin",
+                     "browser-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.browser-admin-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Browser accounting administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach browser accounting admin-studio evidence that names the selected ledgerBookId before certifying book-native setup controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.WpfAccountingAdminSurfaceConfigured)
         {
@@ -767,6 +1773,549 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "WPF accounting administration studio coverage has not been certified.",
                 "Bind the WPF accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasWpfAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.wpf-admin-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "WPF accounting administration studio certification lacks retained WPF setup evidence.",
+                "Attach tenant administration evidence for WPF accounting admin-studio or desktop setup coverage before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "wpf-admin-studio",
+                     "desktop-accounting-admin",
+                     "wpf-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.wpf-admin-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "WPF accounting administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach WPF accounting admin-studio evidence that names the selected ledgerBookId before certifying book-native desktop setup controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ChartAdministrationStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Enterprise chart administration coverage has not been certified.",
+                "Bind chart-of-accounts, ledger-book chart, account template, and activation controls into the shared accounting configuration studio before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasChartAdministrationStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Chart administration studio certification lacks retained chart setup evidence.",
+                "Attach tenant administration evidence for chart administration, ledger-book chart, or chart-of-accounts setup.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "chart-admin",
+                     "chart-administration",
+                     "chart-of-accounts",
+                     "ledger-book-chart"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Chart administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach chart administration evidence that names the selected ledgerBookId before certifying book-native chart setup controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.RuleTestPromotionStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Rules Studio test and promotion queue coverage has not been certified.",
+                "Bind rule authoring, saved test cases, dry-run preview, generated postings, and promotion approvals into the shared enterprise accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasRuleTestPromotionStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Rules Studio test and promotion queue certification lacks retained rule setup evidence.",
+                "Attach tenant administration evidence for Rules Studio, rule tests, generated-posting preview, or promotion queues.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "rule-test-promotion",
+                     "rules-studio",
+                     "rule-tests",
+                     "promotion-queue"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Rules Studio test and promotion certification lacks retained evidence for the selected ledger book.",
+                "Attach Rules Studio evidence that names the selected ledgerBookId before certifying book-native rule-test and promotion controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.CloseSetupStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Close setup studio coverage has not been certified.",
+                "Bind close checklist, dependency graph, sign-off matrix, materiality policy, late-adjustment, period-lock, and close-calendar setup into the shared configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasCloseSetupStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Close setup studio certification lacks retained close setup evidence.",
+                "Attach tenant administration evidence for close setup, close checklist, close calendar, or materiality policy setup.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "close-setup",
+                     "close-checklist",
+                     "close-calendar",
+                     "materiality-policy"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close setup studio certification lacks retained evidence for the selected ledger book.",
+                "Attach close setup evidence that names the selected ledgerBookId before certifying book-native close and period controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ProviderMappingStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Provider and external-GL mapping setup coverage has not been certified.",
+                "Bind QuickBooks, Xero, NetSuite, dimension mapping, import evidence, reconciliation, and guarded export setup into the shared enterprise configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasProviderMappingStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Provider mapping studio certification lacks retained provider or external-GL setup evidence.",
+                "Attach tenant administration evidence for provider mapping, external-GL mapping, or mapping-profile setup.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "provider-mapping",
+                     "external-gl-mapping",
+                     "gl-mapping",
+                     "mapping-profile"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Provider mapping studio certification lacks retained evidence for the selected ledger book.",
+                "Attach provider or external-GL mapping setup evidence that names the selected ledgerBookId before certifying book-native mapping controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.TenantCompanyReportGroupSetupStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Tenant, company, and report-group setup studio coverage has not been certified.",
+                "Bind tenant/company selection, scoped access, admin roles, reporting groups, and delivery group setup into the shared enterprise accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasTenantCompanyReportGroupSetupStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Tenant, company, and report-group setup studio certification lacks retained setup evidence.",
+                "Attach tenant administration evidence for tenant/company setup, report-group setup, or company report-group controls.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "tenant-company-report-group",
+                     "tenant-company-setup",
+                     "report-group-setup",
+                     "company-report-group"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant, company, and report-group setup studio certification lacks retained evidence for the selected ledger book.",
+                "Attach tenant/company/report-group setup evidence that names the selected ledgerBookId before certifying book-native enterprise setup controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.AuditReviewToolingConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Audit review tooling coverage has not been certified.",
+                "Bind audit review, evidence review, transition audit, and exception-review tooling into the shared accounting administration surface before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasAuditReviewToolingEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Audit review tooling certification lacks retained audit-review evidence.",
+                "Attach tenant administration evidence for audit review, evidence review, audit workbench, or transition-audit tooling.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "audit-review",
+                     "audit-tooling",
+                     "audit-workbench",
+                     "evidence-review"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Audit review tooling certification lacks retained evidence for the selected ledger book.",
+                "Attach audit review or evidence-review tooling evidence that names the selected ledgerBookId before certifying book-native audit controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.BulkImportExportSafeguardsConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Bulk import/export safeguards have not been certified.",
+                "Bind bulk import, guarded export, reconciliation, preview, approval, and rollback safeguards into tenant administration before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasBulkImportExportSafeguardsEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Bulk import/export safeguard certification lacks retained safeguard evidence.",
+                "Attach tenant administration evidence for bulk import/export, guarded export, import preview, rollback, or reconciliation safeguards.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "bulk-import-export",
+                     "bulk-import",
+                     "bulk-export",
+                     "import-export-safeguard"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Bulk import/export safeguard certification lacks retained evidence for the selected ledger book.",
+                "Attach bulk import/export safeguard evidence that names the selected ledgerBookId before certifying book-native import, export, preview, approval, and rollback controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.PerformanceValidationConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Accounting performance validation has not been certified.",
+                "Retain performance, load, capacity, or query-latency validation for accounting configuration, ledger queries, close, reports, and exports before rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasPerformanceValidationEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Performance validation certification lacks retained performance evidence.",
+                "Attach tenant administration evidence for performance validation, load tests, capacity tests, or production query-latency validation.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "performance-validation",
+                     "performance-test",
+                     "load-test",
+                     "capacity-validation"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Performance validation certification lacks retained evidence for the selected ledger book.",
+                "Attach performance, load, capacity, or query-latency validation evidence that names the selected ledgerBookId before certifying book-native production performance controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.DisasterRecoveryRunbookConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Disaster recovery and operating runbooks have not been certified.",
+                "Retain disaster-recovery, restore, replay, escalation, and accounting operating-runbook evidence before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasDisasterRecoveryRunbookEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Disaster recovery runbook certification lacks retained runbook evidence.",
+                "Attach tenant administration evidence for disaster recovery, operating runbooks, restore validation, replay validation, or escalation procedures.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "disaster-recovery",
+                     "dr-runbook",
+                     "operating-runbook",
+                     "recovery-validation"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Disaster recovery runbook certification lacks retained evidence for the selected ledger book.",
+                "Attach disaster-recovery, restore, replay, escalation, or operating-runbook evidence that names the selected ledgerBookId before certifying book-native recovery controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.LedgerBookAdministrationStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Ledger-book administration studio coverage has not been certified.",
+                "Bind ledger-book creation, selection, basis/currency policy, scope, activation, and period setup into the shared enterprise configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasLedgerBookAdministrationStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Ledger-book administration studio certification lacks retained book-administration evidence.",
+                "Attach tenant administration evidence for ledger-book administration, book setup, book activation, or ledger-book period setup.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "ledger-book-admin",
+                     "ledger-book-administration",
+                     "book-administration",
+                     "ledger-book-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-book administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach ledger-book administration evidence that names the selected ledgerBookId before certifying multi-ledger tenant setup controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.PostingRuleAuthoringStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posting-rule authoring studio coverage has not been certified.",
+                "Bind event predicates, scopes, thresholds, generated multi-line postings, formulas, allocations, and dry-run previews into the shared accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasPostingRuleAuthoringStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posting-rule authoring studio certification lacks retained rule-authoring evidence.",
+                "Attach tenant administration evidence for posting-rule authoring, rule setup, generated-posting setup, or dry-run authoring.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "posting-rule-authoring",
+                     "posting-rule-studio",
+                     "rule-authoring",
+                     "posting-rule-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule authoring studio certification lacks retained evidence for the selected ledger book.",
+                "Attach posting-rule authoring evidence that names the selected ledgerBookId before certifying book-native rule authoring controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ApprovalQueueStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Approval queue studio coverage has not been certified.",
+                "Bind rule promotion approvals, journal approvals, configuration approvals, segregation checks, and retained approval evidence into the shared accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasApprovalQueueStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Approval queue studio certification lacks retained approval-queue evidence.",
+                "Attach tenant administration evidence for approval queues, promotion approvals, journal approvals, or configuration approvals.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "approval-queue",
+                     "promotion-approval",
+                     "je-approval",
+                     "configuration-approval"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Approval queue studio certification lacks retained evidence for the selected ledger book.",
+                "Attach approval queue evidence that names the selected ledgerBookId before certifying book-native approval controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.DimensionMappingStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Dimension mapping studio coverage has not been certified.",
+                "Bind fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external-GL dimension mapping setup into the shared configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasDimensionMappingStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Dimension mapping studio certification lacks retained dimension-mapping evidence.",
+                "Attach tenant administration evidence for canonical dimension mapping, external dimension mapping, or GL dimension mapping.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "dimension-mapping",
+                     "dimension-map",
+                     "external-dimension-mapping",
+                     "gl-dimension-mapping"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimension mapping studio certification lacks retained evidence for the selected ledger book.",
+                "Attach dimension mapping evidence that names the selected ledgerBookId before certifying book-native dimension controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ImplementationSandboxConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Implementation sandbox and fixture validation have not been certified.",
+                "Retain sandbox, fixture, migration rehearsal, provider import, rule dry-run, and close/report package validation evidence before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasImplementationSandboxEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Implementation sandbox certification lacks retained sandbox validation evidence.",
+                "Attach tenant administration evidence for implementation sandbox validation, fixture validation, migration rehearsal, or provider-import rehearsal.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "implementation-sandbox",
+                     "sandbox-validation",
+                     "fixture-validation",
+                     "implementation-fixture"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Implementation sandbox certification lacks retained evidence for the selected ledger book.",
+                "Attach sandbox or fixture-validation evidence that names the selected ledgerBookId before certifying book-native implementation controls.",
                 evidenceReferences));
         }
 
@@ -792,11 +2341,12 @@ public sealed class AccountingProductionReadinessService
         return readiness;
     }
 
-    private static void BuildMigrationRolloutComponent(
+    private static IReadOnlyList<AccountingMigrationRolloutPlanItemDto> BuildMigrationRolloutComponent(
         AccountingProductionReadinessRequestDto request,
         ICollection<AccountingProductionReadinessComponentDto> components)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddMigrationRolloutScopeIssues(request, issues);
         AddMigrationControlIssues(
             request,
             issues,
@@ -870,6 +2420,216 @@ public sealed class AccountingProductionReadinessService
             issues,
             route: UiApiRoutes.AccountingSystemProductionReadiness,
             evidenceReferences: evidenceReferences));
+        return BuildMigrationRolloutPlan(request, issues);
+    }
+
+    private static IReadOnlyList<AccountingMigrationRolloutPlanItemDto> BuildMigrationRolloutPlan(
+        AccountingProductionReadinessRequestDto request,
+        IReadOnlyList<AccountingProductionReadinessIssueDto> issues)
+    {
+        return
+        [
+            BuildMigrationRolloutPlanItem(
+                request,
+                issues,
+                AccountingMigrationRunKindDto.LedgerBookScope,
+                request.LedgerBookMigrationCertified,
+                "Certify ledger-book scoping and historical fund-level compatibility paths before production cutover.",
+                1,
+                []),
+            BuildMigrationRolloutPlanItem(
+                request,
+                issues,
+                AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                request.HistoricalJournalBackfillCertified,
+                "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+                2,
+                [AccountingMigrationRunKindDto.LedgerBookScope]),
+            BuildMigrationRolloutPlanItem(
+                request,
+                issues,
+                AccountingMigrationRunKindDto.DimensionalBackfill,
+                request.DimensionalBackfillCertified,
+                "Backfill and verify canonical dimensions across retained journal lines and report inputs.",
+                3,
+                [AccountingMigrationRunKindDto.LedgerBookScope, AccountingMigrationRunKindDto.HistoricalJournalBackfill]),
+            BuildMigrationRolloutPlanItem(
+                request,
+                issues,
+                AccountingMigrationRunKindDto.AccountingConfigurationPromotion,
+                request.AccountingConfigurationPromotionCertified,
+                "Retain promotion evidence for chart, rule, policy, and approval-state migration before rollout.",
+                4,
+                [AccountingMigrationRunKindDto.LedgerBookScope, AccountingMigrationRunKindDto.DimensionalBackfill]),
+            BuildMigrationRolloutPlanItem(
+                request,
+                issues,
+                AccountingMigrationRunKindDto.CloseReportingEvidence,
+                request.CloseReportingEvidenceMigrationCertified,
+                "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
+                5,
+                [
+                    AccountingMigrationRunKindDto.LedgerBookScope,
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    AccountingMigrationRunKindDto.DimensionalBackfill,
+                    AccountingMigrationRunKindDto.AccountingConfigurationPromotion
+                ])
+        ];
+    }
+
+    private static AccountingMigrationRolloutPlanItemDto BuildMigrationRolloutPlanItem(
+        AccountingProductionReadinessRequestDto request,
+        IReadOnlyList<AccountingProductionReadinessIssueDto> issues,
+        AccountingMigrationRunKindDto kind,
+        bool certified,
+        string defaultRequiredAction,
+        int sequence,
+        IReadOnlyList<AccountingMigrationRunKindDto> dependencies)
+    {
+        var kindCode = MigrationKindCode(kind);
+        var dependencyCodes = dependencies
+            .Select(MigrationKindCode)
+            .ToArray();
+        var dependencyBlockingIssueCodes = dependencies
+            .Where(dependency => !IsMigrationDependencyReady(request, issues, dependency))
+            .Select(dependency => $"migration.dependency-{MigrationKindCode(dependency)}-not-ready")
+            .ToArray();
+        var scopedArtifacts = request.MigrationRunArtifacts
+            .Where(artifact => artifact.Kind == kind && IsMigrationArtifactInScope(request, artifact))
+            .OrderByDescending(static artifact => artifact.StartedAtUtc)
+            .ThenByDescending(static artifact => artifact.CompletedAtUtc)
+            .ToArray();
+        var latestArtifact = scopedArtifacts.FirstOrDefault();
+        var evidenceReferences = scopedArtifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var blockingIssues = issues
+            .Where(issue =>
+                issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+                issue.Code.Contains(kindCode, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var status = blockingIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical) ||
+                     dependencyBlockingIssueCodes.Length > 0
+            ? AccountingProductionReadinessStatusDto.Blocked
+            : blockingIssues.Length > 0 || !certified
+                ? AccountingProductionReadinessStatusDto.ReviewRequired
+                : AccountingProductionReadinessStatusDto.Ready;
+        var requiredAction = dependencyBlockingIssueCodes.Length > 0
+            ? $"Complete dependent migration controls first: {string.Join(", ", dependencyCodes)}."
+            : blockingIssues
+            .OrderByDescending(static issue => issue.Severity)
+            .Select(static issue => issue.SuggestedAction)
+            .FirstOrDefault(static action => !string.IsNullOrWhiteSpace(action)) ?? defaultRequiredAction;
+
+        return new AccountingMigrationRolloutPlanItemDto(
+            kind,
+            kindCode,
+            MigrationKindLabel(kind),
+            certified,
+            status,
+            BuildMigrationRolloutScopeLabel(request),
+            requiredAction,
+            latestArtifact?.RunId,
+            latestArtifact?.Status,
+            scopedArtifacts.Sum(static artifact => artifact.MigratedRecordCount),
+            scopedArtifacts.Sum(static artifact => artifact.IssueCount),
+            evidenceReferences,
+            blockingIssues
+                .Select(static issue => issue.Code)
+                .Concat(dependencyBlockingIssueCodes)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            sequence,
+            dependencyCodes,
+            BuildMigrationRolloutActionRoute(request));
+    }
+
+    private static bool IsMigrationKindCertified(
+        AccountingProductionReadinessRequestDto request,
+        AccountingMigrationRunKindDto kind)
+        => kind switch
+        {
+            AccountingMigrationRunKindDto.LedgerBookScope => request.LedgerBookMigrationCertified,
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill => request.HistoricalJournalBackfillCertified,
+            AccountingMigrationRunKindDto.DimensionalBackfill => request.DimensionalBackfillCertified,
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion => request.AccountingConfigurationPromotionCertified,
+            AccountingMigrationRunKindDto.CloseReportingEvidence => request.CloseReportingEvidenceMigrationCertified,
+            _ => false
+        };
+
+    private static bool IsMigrationDependencyReady(
+        AccountingProductionReadinessRequestDto request,
+        IReadOnlyList<AccountingProductionReadinessIssueDto> issues,
+        AccountingMigrationRunKindDto dependency)
+    {
+        var dependencyCode = MigrationKindCode(dependency);
+        return IsMigrationKindCertified(request, dependency) &&
+               !issues.Any(issue =>
+                   issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+                   issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+                   issue.Code.Contains(dependencyCode, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildMigrationRolloutActionRoute(AccountingProductionReadinessRequestDto request)
+    {
+        var route = $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId={Uri.EscapeDataString(NormalizeFundProfileId(request.FundProfileId))}";
+        if (request.LedgerBookId is Guid ledgerBookId)
+        {
+            route += $"&ledgerBookId={ledgerBookId:D}";
+        }
+
+        return route;
+    }
+
+    private static string BuildMigrationRolloutScopeLabel(AccountingProductionReadinessRequestDto request)
+    {
+        var parts = new[]
+        {
+            string.IsNullOrWhiteSpace(request.TenantId) ? "tenant missing" : $"tenant {request.TenantId}",
+            string.IsNullOrWhiteSpace(request.CompanyId) ? "company missing" : $"company {request.CompanyId}",
+            $"fund {NormalizeFundProfileId(request.FundProfileId)}",
+            request.LedgerBookId is null ? "book missing" : $"book {request.LedgerBookId:D}"
+        };
+        return string.Join(" | ", parts);
+    }
+
+    private static void AddMigrationRolloutScopeIssues(
+        AccountingProductionReadinessRequestDto request,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        var evidenceReferences = request.MigrationRunArtifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (string.IsNullOrWhiteSpace(request.TenantId))
+        {
+            issues.Add(Issue(
+                "migration.tenant-scope-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Migration rollout is not scoped to a tenant.",
+                "Select the target tenant before certifying ledger-book migration, historical backfill, dimensional backfill, configuration promotion, or close/reporting evidence migration.",
+                evidenceReferences));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.CompanyId))
+        {
+            issues.Add(Issue(
+                "migration.company-scope-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Migration rollout is not scoped to a company.",
+                "Select the target company before using retained migration run evidence for production accounting rollout.",
+                evidenceReferences));
+        }
     }
 
     private static void AddMigrationControlIssues(
@@ -936,6 +2696,8 @@ public sealed class AccountingProductionReadinessService
                 scopedEvidenceReferences));
         }
 
+        AddCertifiedMigrationRunQualityIssues(kind, issues, scopedArtifacts, scopedEvidenceReferences);
+
         if (kind == AccountingMigrationRunKindDto.DimensionalBackfill)
         {
             AddDimensionalBackfillScopeIssues(request, issues, scopedArtifacts, scopedEvidenceReferences);
@@ -950,6 +2712,43 @@ public sealed class AccountingProductionReadinessService
                 $"{MigrationKindLabel(kind)} is marked certified but has no retained certified migration run artifact.",
                 "Attach the retained certified migration run artifact before production rollout certification.",
                 evidenceReferences));
+        }
+    }
+
+    private static void AddCertifiedMigrationRunQualityIssues(
+        AccountingMigrationRunKindDto kind,
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        IReadOnlyList<AccountingMigrationRunArtifactDto> scopedArtifacts,
+        IReadOnlyList<string> scopedEvidenceReferences)
+    {
+        var certifiedArtifacts = scopedArtifacts
+            .Where(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Certified)
+            .ToArray();
+        if (certifiedArtifacts.Length == 0)
+        {
+            return;
+        }
+
+        if (certifiedArtifacts.Any(static artifact => artifact.CompletedAtUtc is null))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-certified-run-incomplete",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has certified migration run artifacts without a retained completion timestamp.",
+                "Re-run or re-certify the migration with retained completion evidence before production rollout.",
+                scopedEvidenceReferences));
+        }
+
+        if (certifiedArtifacts.Any(static artifact => artifact.IssueCount > 0))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-certified-run-has-issues",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has certified migration run artifacts with unresolved retained issues.",
+                "Resolve retained migration issues and certify a clean rerun before production rollout.",
+                scopedEvidenceReferences));
         }
     }
 
@@ -1004,7 +2803,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.MigrationRollout,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 $"Dimensional backfill certified artifacts are missing canonical production dimension coverage: {string.Join(", ", missingCanonicalDimensions)}.",
-                "Re-run or re-certify the dimensional backfill with retained fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimension coverage before production reporting certification.",
+                "Re-run or re-certify the dimensional backfill with retained fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, organization, portfolio, account, customer, vendor, project, and external-GL dimension coverage before production reporting certification.",
                 scopedEvidenceReferences));
             return;
         }
@@ -1075,6 +2874,36 @@ public sealed class AccountingProductionReadinessService
             yield return "counterparty";
         }
 
+        if (string.IsNullOrWhiteSpace(dimensions.OrganizationId))
+        {
+            yield return "organization";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.PortfolioId))
+        {
+            yield return "portfolio";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.AccountId))
+        {
+            yield return "account";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CustomerId))
+        {
+            yield return "customer";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.VendorId))
+        {
+            yield return "vendor";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.ProjectId))
+        {
+            yield return "project";
+        }
+
         if (dimensions.ExternalGlDimensions.Count == 0 ||
             dimensions.ExternalGlDimensions.Any(static pair =>
                 string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value)))
@@ -1094,8 +2923,24 @@ public sealed class AccountingProductionReadinessService
             return false;
         }
 
-        return request.LedgerBookId is null ||
-            artifact.LedgerBookId == request.LedgerBookId;
+        if (request.LedgerBookId is not null &&
+            artifact.LedgerBookId != request.LedgerBookId)
+        {
+            return false;
+        }
+
+        var requestedTenantId = TrimOrNull(request.TenantId);
+        var artifactTenantId = TrimOrNull(artifact.TenantId);
+        if (requestedTenantId is not null &&
+            !string.Equals(artifactTenantId, requestedTenantId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var requestedCompanyId = TrimOrNull(request.CompanyId);
+        var artifactCompanyId = TrimOrNull(artifact.CompanyId);
+        return requestedCompanyId is null ||
+            string.Equals(artifactCompanyId, requestedCompanyId, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string MigrationKindCode(AccountingMigrationRunKindDto kind)
@@ -1162,9 +3007,200 @@ public sealed class AccountingProductionReadinessService
     {
         IReadOnlyList<string> evidence = evidenceReferences is { Count: > 0 }
             ? evidenceReferences
-            : route is null ? Array.Empty<string>() : [route];
+            : Array.Empty<string>();
         return new(area, label, status, Math.Clamp(score, 0, 100), summary, issues, evidence, route);
     }
+
+    private static bool HasRolloutScope(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
+        => !string.IsNullOrWhiteSpace(request.TenantId) &&
+           !string.IsNullOrWhiteSpace(request.CompanyId) &&
+           !string.IsNullOrWhiteSpace(fundProfileId) &&
+           request.LedgerBookId.HasValue;
+
+    private static bool HasRolloutScopedDimensionEvidence(
+        AccountingDimensionalReportingReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        params string[] aliases)
+    {
+        _ = aliases;
+        return HasRolloutScope(request, fundProfileId) &&
+               readiness.LedgerBookId == request.LedgerBookId &&
+               string.Equals(readiness.TenantId?.Trim(), request.TenantId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(readiness.CompanyId?.Trim(), request.CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(readiness.FundProfileId?.Trim(), fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static AccountingProductionReadinessIssueDto DimensionEvidenceRolloutScopeIssue(
+        string code,
+        string message,
+        string suggestedAction,
+        IReadOnlyList<string> evidenceReferences)
+        => Issue(
+            code,
+            AccountingProductionReadinessAreaDto.DimensionalAccounting,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            message,
+            suggestedAction,
+            evidenceReferences);
+
+    private static void AddLegacyFullTokenWarning(
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        string code,
+        AccountingProductionReadinessAreaDto area,
+        string message,
+        string suggestedAction,
+        IReadOnlyList<string> evidenceReferences,
+        params string[] tokens)
+    {
+        var legacyReferences = evidenceReferences
+            .Where(reference => tokens.Any(token => reference.Contains(token, StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (legacyReferences.Length == 0)
+        {
+            return;
+        }
+
+        issues.Add(Issue(
+            code,
+            area,
+            AccountingConfigurationValidationSeverityDto.Warning,
+            message,
+            suggestedAction,
+            legacyReferences));
+    }
+
+    private static bool HasLedgerBookScopedTenantAdministrationEvidence(
+        AccountingProductionReadinessRequestDto request,
+        IEnumerable<string> evidenceReferences,
+        params string[] aliases)
+    {
+        _ = evidenceReferences;
+        _ = aliases;
+        return request.LedgerBookId.HasValue;
+    }
+
+    private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(
+        IReadOnlyCollection<AccountingProductionReadinessComponentDto> components)
+        =>
+        [
+            BuildProductionGap(
+                "multi-ledger-native-workflows",
+                "Configurable multi-ledger accounting",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.LedgerBooks,
+                    AccountingProductionReadinessAreaDto.PostingRules,
+                    AccountingProductionReadinessAreaDto.JournalLifecycle,
+                    AccountingProductionReadinessAreaDto.CloseReporting,
+                    AccountingProductionReadinessAreaDto.ExternalGl
+                ],
+                "Every posting, journal lifecycle, close/reporting, reconciliation, external-GL, direct-lending, and strategy-ledger workflow must be certified ledger-book-native with retained selected-book evidence.",
+                "Finish ledger-book-scoped workflow evidence and certification across posting rules, JE lifecycle, close/reporting, external GL, reconciliation, direct-lending projections, and strategy-ledger reads."),
+            BuildProductionGap(
+                "enterprise-accounting-configuration-studio",
+                "Enterprise accounting configuration studio",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.TenantAdministration,
+                    AccountingProductionReadinessAreaDto.RulesStudio,
+                    AccountingProductionReadinessAreaDto.PostingRules
+                ],
+                "Browser/WPF setup must expose shared tenant/company setup, chart administration, Rules Studio authoring, regression tests, promotion approvals, approval queues, and implementation sandbox controls.",
+                "Bind browser and WPF accounting setup surfaces to the shared readiness, tenant-administration, production-certification, and Rules Studio contracts with retained setup evidence."),
+            BuildProductionGap(
+                "external-gl-guarded-integration",
+                "External GL guarded integration",
+                components,
+                [AccountingProductionReadinessAreaDto.ExternalGl],
+                "External accounting remains import-first and guarded-export-only until provider imports, mappings, reconciliation snapshots, certification, and export package controls are complete for the selected ledger book.",
+                "Keep live external posting disabled, certify provider mappings and ledger-book-native evidence, and complete guarded export reconciliation safeguards before any later live-posting release gate."),
+            BuildProductionGap(
+                "dimensional-ledger-reporting",
+                "Dimensional ledger and reporting",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                    AccountingProductionReadinessAreaDto.CloseReporting
+                ],
+                "Canonical dimensions must persist through posted ledger lines, trial-balance filters, journal queries, period/cross-period reports, report packages, provenance, and external-export mappings.",
+                "Certify ledger-line dimension persistence, trial-balance filters, report/query provenance, and external-export dimension mappings with retained ledger-book and dimension-scope evidence."),
+            BuildProductionGap(
+                "production-controls-hardening",
+                "Production controls and rollout hardening",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.TenantAdministration,
+                    AccountingProductionReadinessAreaDto.MigrationRollout,
+                    AccountingProductionReadinessAreaDto.CloseReporting
+                ],
+                "Production rollout needs tenant/company administration, migration artifacts, operational runbooks, audit review, bulk import/export safeguards, performance evidence, period-close controls, and retained approvals.",
+                "Complete tenant/company setup evidence, certified clean migration artifacts, operational hardening controls, close controls, and retained approval/evidence packages before production rollout.")
+        ];
+
+    private static AccountingProductionGapDto BuildProductionGap(
+        string code,
+        string label,
+        IReadOnlyCollection<AccountingProductionReadinessComponentDto> components,
+        IReadOnlyList<AccountingProductionReadinessAreaDto> areas,
+        string readySummary,
+        string requiredAction)
+    {
+        var selected = components
+            .Where(component => areas.Contains(component.Area))
+            .ToArray();
+        var issues = selected
+            .SelectMany(static component => component.Issues)
+            .Where(static issue => issue.Severity is AccountingConfigurationValidationSeverityDto.Critical or AccountingConfigurationValidationSeverityDto.Warning)
+            .OrderByDescending(static issue => IssueSeverityRank(issue.Severity))
+            .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var status = selected.Length == 0
+            ? AccountingProductionReadinessStatusDto.Unavailable
+            : ResolveStatus(selected);
+        var highestSeverity = issues.Length == 0
+            ? AccountingConfigurationValidationSeverityDto.Info
+            : issues.Max(static issue => issue.Severity);
+        var blockingIssueCodes = issues
+            .Select(static issue => issue.Code)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static code => code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var routes = selected
+            .Select(static component => component.Route)
+            .Where(static route => !string.IsNullOrWhiteSpace(route))
+            .Select(static route => route!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static route => route, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var summary = status == AccountingProductionReadinessStatusDto.Ready
+            ? readySummary
+            : $"{blockingIssueCodes.Length} blocking production-readiness issue(s) remain across {selected.Length} shared control-plane component(s).";
+
+        return new AccountingProductionGapDto(
+            code,
+            label,
+            status,
+            highestSeverity,
+            summary,
+            requiredAction,
+            areas,
+            blockingIssueCodes,
+            routes,
+            issues);
+    }
+
+    private static int IssueSeverityRank(AccountingConfigurationValidationSeverityDto severity) =>
+        severity switch
+        {
+            AccountingConfigurationValidationSeverityDto.Critical => 3,
+            AccountingConfigurationValidationSeverityDto.Warning => 2,
+            AccountingConfigurationValidationSeverityDto.Info => 1,
+            _ => 0
+        };
 
     private static AccountingProductionReadinessIssueDto Issue(
         string code,

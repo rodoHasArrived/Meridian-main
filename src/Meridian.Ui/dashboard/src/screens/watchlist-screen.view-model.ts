@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { useQuotesStream } from "@/hooks/use-quotes-stream";
+import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
-import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
+import type { MetricSnapshot, QuotesSnapshotItem, QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
@@ -32,6 +34,7 @@ const STATUS_RANK: Record<SymbolRecord["status"], number> = {
 };
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
+export const WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS = 2 * QUOTE_POLL_INTERVAL_MS;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
 export const WATCHLIST_EMPTY_VALUE = "—";
 export const WATCHLIST_NO_QUOTE_LABEL = "No quote";
@@ -218,6 +221,9 @@ export interface WatchlistScreenViewModel {
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
   quoteStatusDetails: string[];
+  quoteFreshnessTimestamp: string | null;
+  quoteFreshnessError: string | null;
+  quoteStreamHealthy: boolean;
   quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
   starterPackGroupLabel: string;
@@ -272,13 +278,17 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const quoteInFlightRef = useRef(false);
   const pendingQuoteSymbolsRef = useRef<readonly string[] | null>(null);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    refreshRevisionRef.current += 1;
-    refreshAbortRef.current?.abort();
-    quoteAbortRef.current?.abort();
-    currentQuoteSymbolsKeyRef.current = "";
-    pendingQuoteSymbolsRef.current = null;
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+      refreshAbortRef.current?.abort();
+      quoteAbortRef.current?.abort();
+      currentQuoteSymbolsKeyRef.current = "";
+      pendingQuoteSymbolsRef.current = null;
+    };
   }, []);
 
   const refresh = useCallback(async () => {
@@ -467,6 +477,33 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   }, [api.removeSymbol, pendingRemoveSymbol, refresh]);
 
   const subscribedSymbols = useMemo(() => symbols?.map((symbol) => symbol.symbol) ?? [], [symbols]);
+  const quotesStream = useQuotesStream(subscribedSymbols);
+
+  const applyQuotesSnapshot = useCallback((response: Pick<QuotesSnapshotResponse, "quotes">) => {
+    const next: Record<string, QuotesSnapshotItem> = {};
+    for (const quote of response.quotes) {
+      next[quote.symbol.toUpperCase()] = quote;
+    }
+
+    setQuotes((current) => {
+      const previous: Record<string, number> = {};
+      for (const [symbol, quote] of Object.entries(current)) {
+        if (quote.midPrice !== null && quote.midPrice !== undefined) {
+          previous[symbol] = quote.midPrice;
+        }
+      }
+      previousMidRef.current = previous;
+      return next;
+    });
+    setQuoteFetchedAt(Date.now());
+    setQuoteError(null);
+  }, []);
+
+  useEffect(() => {
+    if (quotesStream.snapshot) {
+      applyQuotesSnapshot(quotesStream.snapshot);
+    }
+  }, [applyQuotesSnapshot, quotesStream.snapshot]);
 
   const fetchQuotes = useCallback(async (currentSymbols: readonly string[]) => {
     if (currentSymbols.length === 0) {
@@ -490,23 +527,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         return;
       }
 
-      const next: Record<string, QuotesSnapshotItem> = {};
-      for (const quote of response.quotes) {
-        next[quote.symbol.toUpperCase()] = quote;
-      }
-
-      setQuotes((current) => {
-        const previous: Record<string, number> = {};
-        for (const [symbol, quote] of Object.entries(current)) {
-          if (quote.midPrice !== null && quote.midPrice !== undefined) {
-            previous[symbol] = quote.midPrice;
-          }
-        }
-        previousMidRef.current = previous;
-        return next;
-      });
-      setQuoteFetchedAt(Date.now());
-      setQuoteError(null);
+      applyQuotesSnapshot(response);
     } catch (error) {
       if (mountedRef.current && currentQuoteSymbolsKeyRef.current === requestKey) {
         if (!isAbortError(error)) {
@@ -524,7 +545,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         void fetchQuotes(pendingSymbols);
       }
     }
-  }, [api.getLiveQuotesSnapshot]);
+  }, [api.getLiveQuotesSnapshot, applyQuotesSnapshot]);
 
   useEffect(() => {
     currentQuoteSymbolsKeyRef.current = buildQuoteSymbolsKey(subscribedSymbols);
@@ -539,12 +560,19 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     }
 
     void fetchQuotes(subscribedSymbols);
+    if (quotesStream.healthy) {
+      // The SSE stream is delivering; polling stays suspended until it degrades.
+      return () => {
+        quoteAbortRef.current?.abort();
+      };
+    }
+
     const interval = window.setInterval(() => void fetchQuotes(subscribedSymbols), QUOTE_POLL_INTERVAL_MS);
     return () => {
       quoteAbortRef.current?.abort();
       window.clearInterval(interval);
     };
-  }, [fetchQuotes, subscribedSymbols]);
+  }, [fetchQuotes, quotesStream.healthy, subscribedSymbols]);
 
   const refreshQuotes = useCallback(async () => {
     if (subscribedSymbols.length === 0 || quoteRefreshing) {
@@ -663,6 +691,9 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
     quoteStatusDetails: quoteStatus.details,
+    quoteFreshnessTimestamp: quoteFetchedAt ? new Date(quoteFetchedAt).toISOString() : null,
+    quoteFreshnessError: quoteError?.summary ?? null,
+    quoteStreamHealthy: quotesStream.healthy,
     quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
     starterPackGroupLabel: "Watchlist starter packs",
@@ -917,39 +948,7 @@ export function buildWatchlistStats(stats: SymbolStatistics | null): MetricSnaps
   ];
 }
 
-export function formatRelative(iso: string | null, now = Date.now()): string {
-  if (!iso) {
-    return "Never";
-  }
-
-  const timestamp = new Date(iso).getTime();
-  if (Number.isNaN(timestamp)) {
-    return "Never";
-  }
-
-  const diff = now - timestamp;
-  if (diff < 0) {
-    return new Date(iso).toLocaleString();
-  }
-
-  const seconds = Math.round(diff / 1000);
-  if (seconds < 60) {
-    return `${seconds}s ago`;
-  }
-
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
-}
+export { formatRelativeAge as formatRelative } from "@/lib/time";
 
 export function validatePendingSymbol(value: string): string | null {
   return parseWatchlistSymbols(value).length === 0 ? "Enter at least one symbol before adding it." : null;

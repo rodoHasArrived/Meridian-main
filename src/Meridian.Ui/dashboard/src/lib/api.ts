@@ -1,9 +1,18 @@
+import {
+  mapQuantRunResponseToCellResult,
+  quantContextToParameters,
+  quantDataIntervalMinutes,
+} from "./quant-api-mappers";
+
 import type {
   BackfillPreviewResult,
+  BackfillExecutionHistoryResponse,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
   AccountingMigrationRunArtifactList,
+  AccountingMigrationRunKind,
+  AccountingMigrationRunWorkerPlanList,
   AccountingProductionCertificationProfile,
   AccountingProductionCertificationProfileUpsertRequest,
   AccountingProductionReadiness,
@@ -25,8 +34,6 @@ import type {
   BrokerageConnectionStatus,
   CellExecuteRequest,
   CellExecuteResult,
-  CellExecutionContext,
-  CellOutput,
   BrokerageHouseholdPortfolio,
   ChiefOfStaffDecisionRequest,
   ChiefOfStaffEvidenceExport,
@@ -36,17 +43,28 @@ import type {
   ChiefOfStaffSessionSummary,
   ChiefOfStaffTraceExportRequest,
   ClosePeriodPlan,
+  ClosePeriodLockResult,
   CorporateAction,
   CreateLateAdjustmentRequest,
+  LockClosePeriodRequest,
+  ReviewCloseEvidenceRequest,
   ReviewLateAdjustmentRequest,
+  UpsertClosePeriodPlanConfigurationRequest,
   ExternalGlExportPackage,
   ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
+  DataQueryRequest,
+  DataQueryResult,
   DataUploadPreviewResult,
   DataUploadTemplateCatalog,
+  DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
+  DailyValuationBatchLifecycleRequest,
+  DailyValuationBatchLifecycleResult,
+  DailyValuationScheduleWorkItem,
+  DailyValuationScheduledBatchResult,
   EquityCurveSummary,
   EvidenceCompleteness,
   EvidenceGraph,
@@ -56,6 +74,12 @@ import type {
   EvidenceSubject,
   EvidenceTemplate,
   EvidenceVaultIdentity,
+  EvidenceVaultDocumentEntry,
+  EvidenceVaultDocumentQuery,
+  EvidenceVaultDocumentReviewRequest,
+  EvidenceVaultDocumentReviewResponse,
+  EvidenceVaultIntakeRequest,
+  EvidenceVaultIntakeResponse,
   EvidenceVaultLookupRequest,
   EvidenceVaultRequestListEntry,
   EvidenceVaultRequestListQuery,
@@ -71,6 +95,7 @@ import type {
   ExecutionAuditEntry,
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
+  FinancialOperationsCommandCenter,
   ReportingWorkspaceResponse,
   SignOffCloseTaskRequest,
   InvestmentAccountingTransactionLabPreview,
@@ -143,9 +168,18 @@ import type {
   ReconciliationBulkCaseworkRequest,
   ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementConnectorDescriptor,
+  StatementFetchPreviewRequest,
+  StatementFetchSchedule,
+  StatementFetchScheduleUpsertRequest,
+  StatementImportCommitResult,
+  StatementImportPreview,
+  StatementImportSourceKind,
+  StatementMappingProfile,
   StatementRunException,
   StatementRunSummary,
   ReconciliationCaseworkCommand,
+  ReconciliationCaseworkOperationResult,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
@@ -263,24 +297,14 @@ import type {
   PrivateCapitalFundEventCommandCenter,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalReportOutput,
-  FundReportPackGenerateRequest,
-  FundReportPackPreview,
-  FundReportPackPreviewRequest,
-  FundReportPackSnapshot,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
-  ReportPackDeliveryHistory,
-  ReportPackDeliveryRequest,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportTemplateGovernanceRecord,
   RenderReportTemplateRequest,
   RenderReportTemplateResponse,
-  ReportingDueScheduleRunResult,
-  ReportingRunRequest,
-  ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
+  ReportingStarterKitProvisionResult,
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
@@ -308,6 +332,8 @@ import type {
   MaintenanceScheduleHistoryResponse,
   MaintenanceSchedulesResponse
 } from "@/types";
+import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
+import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import {
   AUTH_API_ENDPOINTS,
   ADMIN_OPERATIONS_API_ENDPOINTS,
@@ -338,6 +364,7 @@ import {
   STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   buildReferenceDataWorkbenchEndpoints,
+  securityMasterCoverageDraftEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -396,23 +423,28 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementExceptionsEndpoint,
+  reconciliationStatementFetchScheduleEndpoint,
+  reconciliationStatementFetchScheduleRunEndpoint,
+  reconciliationStatementMappingProfileEndpoint,
   reconciliationStatementRunEndpoint,
   reconciliationStatementRunsEndpoint,
+  STATEMENT_CONNECTOR_API_ENDPOINTS,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
-  reportingPackDeliveriesEndpoint,
-  reportingPackDeliveryFailuresEndpoint,
   reportingTemplateApproveEndpoint,
   reportingTemplateRejectEndpoint,
   reportingTemplateSubmitEndpoint,
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
+  reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -428,7 +460,6 @@ import {
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
   strategyDesignerDraftEndpoint,
-  strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
   symbolSearchEndpoint,
@@ -444,6 +475,7 @@ import {
   workstationFinancialRecordExplorerEndpoint,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
+  workstationFinancialOperationsCommandCenterEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
@@ -499,17 +531,21 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationTradingReadinessEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
   workstationWorkflowPresetUsedEndpoint,
+  evidenceVaultDocumentReviewEndpoint,
   type LedgerJournalQueryOptions,
   type LedgerTrialBalanceQueryOptions,
   type ReferenceDataEndpointDefinition,
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDegradedMode } from "@/lib/system-status";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 const csrfCookieName = "mdc-csrf";
@@ -517,6 +553,8 @@ const csrfHeaderName = "X-CSRF-Token";
 
 export interface ApiRequestOptions {
   signal?: AbortSignal;
+  /** Disable development fixtures for authoritative or security-sensitive read paths. */
+  allowDevelopmentFallback?: boolean;
 }
 
 let developmentFixtureUsage = false;
@@ -707,7 +745,9 @@ async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promis
   });
 
   if (!response.ok) {
-    const fixture = await getDevelopmentFallback<T>(path, response.status);
+    const fixture = options.allowDevelopmentFallback === false
+      ? undefined
+      : await getDevelopmentFallback<T>(path, response.status);
     if (fixture !== undefined) {
       markDevelopmentFixtureUsage();
       return fixture;
@@ -731,10 +771,20 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   }
 
   const { resolveDevFixture } = await import("@/lib/dev-fixtures");
-  return resolveDevFixture<T>(path);
+  const fixture = resolveDevFixture<T>(path);
+  if (fixture !== undefined) {
+    // Keep this loud: without it a developer can work for hours against a broken endpoint
+    // while fixtures silently stand in for real backend failures.
+    console.warn(
+      `[dev-fixture] Backend request failed with ${status} for ${path}; serving development fixture data instead. ` +
+        "Responses on this screen do not reflect the live backend."
+    );
+  }
+
+  return fixture;
 }
 
-function markDevelopmentFixtureUsage() {
+export function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
@@ -884,8 +934,10 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     try {
       return JSON.parse(text) as T;
     } catch {
+      // Deliberately reports the enclosing catch's `error` (the response.json() failure),
+      // not the fallback JSON.parse failure — the original error is the actionable one.
       const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-      throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+      throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
     }
   }
 
@@ -898,7 +950,7 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     return JSON.parse(text) as T;
   } catch (error) {
     const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-    throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+    throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
   }
 }
 
@@ -1058,8 +1110,9 @@ export function getStrategyBriefing(options: ApiRequestOptions = {}) {
   return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
 }
 
-export function getTradingWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
+export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
+  const { fundAccountId, ...requestOptions } = options;
+  return getJson<TradingWorkspaceResponse>(workstationTradingEndpoint(fundAccountId), requestOptions);
 }
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
@@ -1297,7 +1350,7 @@ export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, 
 }
 
 export function getOperationsContinuityWorkflows(
-  filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
+  filters: { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } = {},
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsContinuityWorkflowSummary[]>(workstationOperationsContinuityEndpoint(filters), options);
@@ -1564,6 +1617,30 @@ export function getOperationsCloseCalendar(
   return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
 }
 
+export interface FinancialOperationsCommandCenterQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundAccountId?: string | null;
+  periodId?: string | null;
+  entityId?: string | null;
+}
+
+export function getFinancialOperationsCommandCenter(
+  query: FinancialOperationsCommandCenterQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialOperationsCommandCenter>(
+    workstationFinancialOperationsCommandCenterEndpoint({
+      fundProfileId: query.fundProfileId ?? undefined,
+      ledgerBookId: query.ledgerBookId ?? undefined,
+      fundAccountId: query.fundAccountId ?? undefined,
+      periodId: query.periodId ?? undefined,
+      entityId: query.entityId ?? undefined
+    }),
+    options
+  );
+}
+
 export interface PrivateCapitalCloseCockpitQuery {
   fundProfileId?: string | null;
   ledgerBookId?: string | null;
@@ -1656,6 +1733,13 @@ export function searchEvidenceVault(request: EvidenceVaultLookupRequest, options
   return postJson<EvidenceVaultIdentity[]>(WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, request, options);
 }
 
+export function intakeEvidenceVaultDocument(
+  request: EvidenceVaultIntakeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<EvidenceVaultIntakeResponse>(WORKSTATION_API_ENDPOINTS.evidenceVaultIntake, request, options);
+}
+
 export function listEvidenceVaultRequestLists(
   query: EvidenceVaultRequestListQuery = {},
   options: ApiRequestOptions = {}
@@ -1663,6 +1747,10 @@ export function listEvidenceVaultRequestLists(
   const params = new URLSearchParams();
   if (query.requestListKind) {
     params.set("requestListKind", query.requestListKind);
+  }
+
+  if (query.requestListKindCode) {
+    params.set("requestListKindCode", query.requestListKindCode);
   }
 
   if (query.targetKind) {
@@ -1696,6 +1784,75 @@ export function listEvidenceVaultRequestLists(
   );
 }
 
+export function listEvidenceVaultDocuments(
+  query: EvidenceVaultDocumentQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.classification) {
+    params.set("classification", query.classification);
+  }
+
+  if (query.channelKind) {
+    params.set("channelKind", query.channelKind);
+  }
+
+  if (query.extractionStatus) {
+    params.set("extractionStatus", query.extractionStatus);
+  }
+
+  if (query.reviewStatus) {
+    params.set("reviewStatus", query.reviewStatus);
+  }
+
+  if (query.linkKind) {
+    params.set("linkKind", query.linkKind);
+  }
+
+  if (query.objectId) {
+    params.set("objectId", query.objectId);
+  }
+
+  if (query.subjectKind) {
+    params.set("subjectKind", query.subjectKind);
+  }
+
+  if (query.subjectId) {
+    params.set("subjectId", query.subjectId);
+  }
+
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.scope) {
+    params.set("scope", query.scope);
+  }
+
+  if (query.maxResults !== undefined && query.maxResults !== null) {
+    params.set("maxResults", String(query.maxResults));
+  }
+
+  const suffix = params.toString();
+  return getJson<EvidenceVaultDocumentEntry[]>(
+    suffix ? `${WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments}?${suffix}` : WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments,
+    options
+  );
+}
+
+export function reviewEvidenceVaultDocument(
+  vaultId: string,
+  documentId: string,
+  request: EvidenceVaultDocumentReviewRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<EvidenceVaultDocumentReviewResponse>(
+    evidenceVaultDocumentReviewEndpoint(vaultId, documentId),
+    request,
+    options
+  );
+}
+
 export function getEvidenceTemplates(options: ApiRequestOptions = {}) {
   return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates, options);
 }
@@ -1724,6 +1881,10 @@ export function getDataWorkspace(options: ApiRequestOptions = {}) {
   return getJson<DataWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
 }
 
+export function runDataQuery(request: DataQueryRequest, options: ApiRequestOptions = {}) {
+  return postJson<DataQueryResult>(WORKSTATION_API_ENDPOINTS.dataQuery, request, options);
+}
+
 export function getDataUploadTemplates(options: ApiRequestOptions = {}) {
   return getJson<DataUploadTemplateCatalog>(WORKSTATION_API_ENDPOINTS.dataUploadTemplates, options);
 }
@@ -1736,6 +1897,30 @@ export function previewDataUpload(
   formData.append("templateId", request.templateId);
   formData.append("file", request.file);
   return postFormData<DataUploadPreviewResult>(WORKSTATION_API_ENDPOINTS.dataUploadPreview, formData, options);
+}
+
+export function getOnboardingWorkbookDownloadUrl(templateIds?: string[]): string {
+  const base = WORKSTATION_API_ENDPOINTS.dataUploadWorkbook;
+  const selected = (templateIds ?? []).map((id) => id.trim()).filter(Boolean);
+  if (selected.length === 0) {
+    return base;
+  }
+
+  const query = new URLSearchParams({ templateIds: selected.join(",") });
+  return `${base}?${query.toString()}`;
+}
+
+export function previewDataUploadWorkbook(
+  request: { file: File },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  return postFormData<DataUploadWorkbookPreviewResult>(
+    WORKSTATION_API_ENDPOINTS.dataUploadWorkbookPreview,
+    formData,
+    options
+  );
 }
 
 export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
@@ -1787,8 +1972,29 @@ export function createLedgerBook(
   return postJson<import("@/types").LedgerBook>(WORKSTATION_API_ENDPOINTS.ledgerBooks, request, options);
 }
 
-export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
-  return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
+export interface ManualJournalEntryWorkbenchQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+}
+
+export function getManualJournalEntryWorkbench(
+  query: ManualJournalEntryWorkbenchQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  return getJson<ManualJournalEntryWorkbench>(
+    `${WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
 }
 
 export interface PrivateCapitalActivityQuery {
@@ -1977,6 +2183,43 @@ export function applyManualJournalEntryLifecycleAction(
   return postJson<JournalEntryLifecycleActionResult>(WORKSTATION_API_ENDPOINTS.manualJournalEntryLifecycleAction, request, options);
 }
 
+export function listDailyValuationSchedules(options: ApiRequestOptions = {}) {
+  return getJson<DailyValuationScheduleWorkItem[]>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationSchedules,
+    options
+  );
+}
+
+export function configureDailyValuationSchedule(
+  request: DailyValuationScheduleWorkItem,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<DailyValuationScheduleWorkItem>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationSchedules,
+    request,
+    options
+  );
+}
+
+export function runDueDailyValuationSchedules(options: ApiRequestOptions = {}) {
+  return postJson<DailyValuationScheduledBatchResult>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationRunDue,
+    undefined,
+    options
+  );
+}
+
+export function approveAndPostDailyValuationBatch(
+  request: DailyValuationBatchLifecycleRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<DailyValuationBatchLifecycleResult>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationBatchLifecycle,
+    request,
+    options
+  );
+}
+
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
 }
@@ -2004,6 +2247,28 @@ export function getAccountingMigrationRunArtifacts(
   const suffix = params.toString();
   const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts;
   return getJson<AccountingMigrationRunArtifactList>(route, options);
+}
+
+export function getAccountingMigrationWorkerPlans(
+  query: { fundProfileId?: string | null; ledgerBookId?: string | null; kind?: AccountingMigrationRunKind | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  if (query.kind) {
+    params.set("kind", query.kind);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans;
+  return getJson<AccountingMigrationRunWorkerPlanList>(route, options);
 }
 
 export function getAccountingTenantAdministrationProfile(
@@ -2083,8 +2348,26 @@ export function getLatestAccountingSystemReconciliation(options: ApiRequestOptio
   return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
 }
 
-export function getAccountingSystemMappingProfiles(options: ApiRequestOptions = {}) {
-  return getJson<ExternalGlMappingProfile[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, options);
+export function getAccountingSystemMappingProfiles(
+  query: { providerId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.providerId) {
+    params.set("providerId", query.providerId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles;
+  return getJson<ExternalGlMappingProfile[]>(route, options);
 }
 
 export function upsertAccountingSystemMappingProfile(
@@ -2092,6 +2375,49 @@ export function upsertAccountingSystemMappingProfile(
   options: ApiRequestOptions = {}
 ) {
   return postJson<ExternalGlMappingProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, request, options);
+}
+
+export function listAccountingSystemExportPackages(
+  query: {
+    providerId?: string | null;
+    fundProfileId?: string | null;
+    ledgerBookId?: string | null;
+    certificationState?: string | null;
+    tenantId?: string | null;
+    companyId?: string | null;
+  } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.providerId) {
+    params.set("providerId", query.providerId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  if (query.certificationState) {
+    params.set("certificationState", query.certificationState);
+  }
+
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages;
+  return getJson<ExternalGlExportPackage[]>(route, options);
 }
 
 export function createAccountingSystemExportPackage(
@@ -2122,6 +2448,13 @@ export function getLedgerCloseManagementPeriodPlan(workflowId: string, options: 
   return getJson<ClosePeriodPlan>(endpoint, options);
 }
 
+export function configureLedgerCloseManagementPeriodPlan(
+  request: UpsertClosePeriodPlanConfigurationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlanConfiguration, request, options);
+}
+
 export function createLedgerCloseManagementLateAdjustment(
   request: CreateLateAdjustmentRequest,
   options: ApiRequestOptions = {}
@@ -2141,6 +2474,20 @@ export function signOffLedgerCloseManagementTask(
   options: ApiRequestOptions = {}
 ) {
   return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementTaskSignOffs, request, options);
+}
+
+export function reviewLedgerCloseManagementEvidence(
+  request: ReviewCloseEvidenceRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementEvidenceReview, request, options);
+}
+
+export function lockLedgerCloseManagementPeriod(
+  request: LockClosePeriodRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodLockResult>(WORKSTATION_API_ENDPOINTS.closeManagementPeriodLock, request, options);
 }
 
 export function buildLedgerAccountingReportPackage(
@@ -2164,6 +2511,7 @@ export function certifyLedgerAccountingReportPackage(
 export interface AccountingReportPackageHistoryQuery {
   fundProfileId?: string | null;
   periodId?: string | null;
+  ledgerBookId?: string | null;
 }
 
 export function listLedgerAccountingReportPackages(
@@ -2281,17 +2629,7 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<ReportingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
-export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
-  return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
-}
-
-export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
-}
-
-export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackSnapshot>(FUND_STRUCTURE_API_ENDPOINTS.reportPacks, request, options);
-}
+export const { assessReportingRunReadiness, runReportingNow } = createReportingRunsApi(postJson);
 
 export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportTemplateGovernanceRecord>(
@@ -2348,32 +2686,16 @@ export function rejectReportTemplateDraft(
   );
 }
 
-export function deliverReportPack(
-  reportId: string,
-  request: ReportPackDeliveryRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveriesEndpoint(reportId), request, options);
-}
-
-export function recordReportPackDeliveryFailure(
-  reportId: string,
-  request: ReportPackDeliveryFailureRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveryFailuresEndpoint(reportId), request, options);
-}
-
-export function getReportPackDeliveryHistory(reportId: string, options: ApiRequestOptions = {}) {
-  return getJson<ReportPackDeliveryHistory>(reportingPackDeliveriesEndpoint(reportId), options);
-}
-
 export function listReportingSchedules(options: ApiRequestOptions = {}) {
   return getJson<ReportingScheduleRecord[]>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, options);
 }
 
 export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
+}
+
+export function provisionReportingStarterKit(kitId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingStarterKitProvisionResult>(reportingStarterKitProvisionEndpoint(kitId), undefined, options);
 }
 
 export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
@@ -2386,10 +2708,6 @@ export function resumeReportingSchedule(scheduleId: string, options: ApiRequestO
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRunResult>(reportingScheduleRunNowEndpoint(scheduleId), undefined, options);
-}
-
-export function runDueReportingSchedules(options: ApiRequestOptions = {}) {
-  return postJson<ReportingDueScheduleRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunDue, undefined, options);
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
@@ -2446,8 +2764,15 @@ export function cancelAllOrders() {
   return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
-export function closePosition(positionKey: string) {
-  return postJson<TradingActionResult>(executionPositionCloseEndpoint(), { positionKey });
+export function closePosition(positionKey: string, fundAccountId?: string | null) {
+  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId);
+  return postJson<TradingActionResult>(
+    executionPositionCloseEndpoint(),
+    {
+      positionKey,
+      ...(normalizedFundAccountId ? { fundAccountId: normalizedFundAccountId } : {})
+    }
+  );
 }
 
 // --- Paper session management ---
@@ -2651,9 +2976,9 @@ export function getRunSweeps(limit?: number) {
 
 // --- Security Master search ---
 
-export async function searchSecurities(query: string, take = 25, activeOnly = true) {
+export async function searchSecurities(query: string, take = 25, activeOnly = true, options: ApiRequestOptions = {}) {
   const path = workstationSecurityMasterSearchEndpoint({ query, take, activeOnly });
-  const results = await getJson<SecurityMasterEntry[]>(path);
+  const results = await getJson<SecurityMasterEntry[]>(path, options);
 
   if (import.meta.env.DEV && results.length === 0) {
     const fixtureResults = await getDevelopmentSearchFallback(query, take, activeOnly);
@@ -2665,12 +2990,12 @@ export async function searchSecurities(query: string, take = 25, activeOnly = tr
   return results;
 }
 
-export function getSecurityDetail(securityId: string) {
-  return getJson<SecurityMasterEntry>(workstationSecurityMasterEntryEndpoint(securityId));
+export function getSecurityDetail(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityMasterEntry>(workstationSecurityMasterEntryEndpoint(securityId), options);
 }
 
-export function getSecurityIdentity(securityId: string) {
-  return getJson<SecurityIdentityDrillIn>(workstationSecurityMasterIdentityEndpoint(securityId));
+export function getSecurityIdentity(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityIdentityDrillIn>(workstationSecurityMasterIdentityEndpoint(securityId), options);
 }
 
 export function getSecurityHistory(securityId: string) {
@@ -2703,12 +3028,12 @@ export function upsertSecurityAlias(request: Record<string, unknown>) {
 
 // --- Security Master corporate actions and trading parameters ---
 
-export function getCorporateActions(securityId: string) {
-  return getJson<CorporateAction[]>(securityMasterCorporateActionsEndpoint(securityId));
+export function getCorporateActions(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<CorporateAction[]>(securityMasterCorporateActionsEndpoint(securityId), options);
 }
 
-export function getTradingParameters(securityId: string) {
-  return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId));
+export function getTradingParameters(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId), options);
 }
 
 export function getOperatorOverrides(securityId: string) {
@@ -2760,53 +3085,149 @@ export const getStatementRuns = getReconciliationStatementRuns;
 export const getStatementRun = getReconciliationStatementRun;
 export const getStatementRunExceptions = getReconciliationStatementExceptions;
 
-export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
-  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
+// --- Statement connector library ---
+
+export function getStatementConnectors(options: ApiRequestOptions = {}) {
+  return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
 }
 
-export function getReconciliationBreakDetail(breakId: string) {
-  return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId));
+export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {
+  return getJson<StatementMappingProfile[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, options);
 }
 
-export function getReconciliationBreakAudit(breakId: string) {
-  return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId));
+export function upsertStatementMappingProfile(profile: StatementMappingProfile, options: ApiRequestOptions = {}) {
+  return putJson<StatementMappingProfile>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, profile, options);
 }
+
+export function deleteStatementMappingProfile(profileId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementMappingProfileEndpoint(profileId), options);
+}
+
+export function previewStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  appendOptionalStatementFormField(formData, "externalAccountId", request.externalAccountId);
+  return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
+}
+
+export function commitStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId: string;
+    sourceKind: StatementImportSourceKind;
+    sourceInstitution: string;
+    fundAccountId: string;
+    periodStart: string;
+    periodEnd: string;
+    toleranceProfileId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  formData.append("externalAccountId", request.externalAccountId);
+  formData.append("sourceKind", request.sourceKind);
+  formData.append("sourceInstitution", request.sourceInstitution);
+  formData.append("fundAccountId", request.fundAccountId);
+  formData.append("periodStart", request.periodStart);
+  formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
+}
+
+export function fetchStatementPreview(request: StatementFetchPreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchPreview, request, options);
+}
+
+export function listStatementFetchSchedules(options: ApiRequestOptions = {}) {
+  return getJson<StatementFetchSchedule[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, options);
+}
+
+export function upsertStatementFetchSchedule(
+  request: StatementFetchScheduleUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<StatementFetchSchedule>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, request, options);
+}
+
+export function deleteStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementFetchScheduleEndpoint(scheduleId), options);
+}
+
+export function runStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportCommitResult>(
+    reconciliationStatementFetchScheduleRunEndpoint(scheduleId),
+    undefined,
+    options
+  );
+}
+
+function appendOptionalStatementFormField(formData: FormData, name: string, value: string | null | undefined) {
+  const trimmed = value?.trim();
+  if (trimmed) {
+    formData.append(name, trimmed);
+  }
+}
+
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) { return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId })); }
+
+export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
+
+export function getReconciliationBreakAudit(breakId: string) { return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId)); }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakReviewEndpoint(request.breakId),
     request
   );
 }
 
 export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
 }
 
+export function waiveReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakWaiveEndpoint(request.breakId), request); }
+
+export function supersedeReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSupersedeEndpoint(request.breakId), request); }
+
 export function assignReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakAssignEndpoint(request.breakId), request);
 }
 
 export function transitionReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakTransitionEndpoint(request.breakId), request);
 }
 
 export function addReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakCommentsEndpoint(request.breakId), request);
 }
 
 export function editReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     request
   );
 }
 
 export function deleteReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return deleteJson<ReconciliationBreakQueueItem>(
+  return deleteJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     {},
     request
@@ -2814,19 +3235,19 @@ export function deleteReconciliationBreakComment(request: ReconciliationCasework
 }
 
 export function setReconciliationBreakRootCause(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
 }
 
 export function setReconciliationBreakResolution(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakResolutionEndpoint(request.breakId), request);
 }
 
 export function signOffReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSignOffEndpoint(request.breakId), request);
 }
 
 export function reopenReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakReopenEndpoint(request.breakId), request);
 }
 
 export function dryRunReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
@@ -2842,13 +3263,17 @@ export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
 }
 
 export function getReconciliationCalibrationSummary() {
-  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary);
-}
+  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary); }
 
 // --- Backfill mutations ---
 
-export function getBackfillProgress() {
-  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress);
+export function getBackfillProgress(options: ApiRequestOptions = {}) {
+  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
+}
+
+export function getBackfillExecutionHistory(limit = 100, options: ApiRequestOptions = {}) {
+  const query = new URLSearchParams({ limit: String(Math.max(1, Math.min(limit, 1000))) });
+  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, options);
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
@@ -3135,7 +3560,8 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
       storageHealth: readStorageHealth(payload.storageHealth),
       lastHeartbeatUtc: heartbeat,
       metrics: Array.isArray(payload.metrics) ? payload.metrics as MetricSnapshot[] : [],
-      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : []
+      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : [],
+      degradedMode: readDegradedMode(payload.degradedMode)
     };
   }
 
@@ -3209,60 +3635,13 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         source: "Meridian host",
         timestamp: timestampUtc
       }
-    ]
+    ],
+    degradedMode: readDegradedMode(payload.degradedMode)
   };
 }
 
-function fallbackSystemOverview(): SystemOverviewResponse {
-  const timestampUtc = new Date().toISOString();
-  return {
-    systemStatus: "Degraded",
-    providersOnline: 0,
-    providersTotal: 0,
-    activeRuns: 0,
-    openPositions: 0,
-    activeBackfills: 0,
-    symbolsMonitored: 0,
-    storageHealth: "Warning",
-    lastHeartbeatUtc: timestampUtc,
-    metrics: [],
-    recentEvents: [
-      {
-        id: "status-unavailable",
-        type: "warning",
-        message: "The host returned an unrecognized status payload.",
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ]
-  };
-}
 
-function deriveSystemStatus(
-  isConnected: boolean,
-  isStale: boolean,
-  dropped: number,
-  dropRate: number,
-  queueUtilization: number
-): SystemOverviewResponse["systemStatus"] {
-  if (!isConnected) {
-    return "Offline";
-  }
 
-  return isStale || dropped > 0 || dropRate > 0 || queueUtilization >= 0.8 ? "Degraded" : "Healthy";
-}
-
-function deriveStorageHealth(
-  systemStatus: SystemOverviewResponse["systemStatus"],
-  dropped: number,
-  queueUtilization: number
-): SystemOverviewResponse["storageHealth"] {
-  if (systemStatus === "Offline") {
-    return "Critical";
-  }
-
-  return dropped > 0 || queueUtilization >= 0.8 ? "Warning" : "Healthy";
-}
 
 function buildLegacyStatusMessage(
   systemStatus: SystemOverviewResponse["systemStatus"],
@@ -3317,6 +3696,10 @@ export function getSymbols(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols, options);
 }
 
+export function getCanonicalSymbolRegistry(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").CanonicalSymbolRegistryResponse>(SYMBOL_API_ENDPOINTS.registry, options);
+}
+
 export function getSymbolsStatistics(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics, options);
 }
@@ -3351,6 +3734,50 @@ export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
 }
 
+export function remediateQualityGap(
+  symbol: string,
+  request: import("@/types").QualityGapRemediationRequest
+) {
+  return postJson<import("@/types").QualityGapRemediationResponse>(
+    `${QUALITY_API_ENDPOINTS.gaps}/${encodeURIComponent(symbol)}`,
+    request
+  );
+}
+
+// --- Provider capability matrix and security-master supply surfaces ---
+
+export function getProviderCapabilityMatrix() {
+  return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getProviderCatalog(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderCatalogResponse>(PROVIDER_API_ENDPOINTS.catalog, options);
+}
+
+export function getProviderRateLimits(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderRateLimitsResponse>(PROVIDER_API_ENDPOINTS.rateLimits, options);
+}
+
+export function getProviderConnectionHealth(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderConnectionHealthResponse>(PROVIDER_API_ENDPOINTS.health, options);
+}
+
+export function getCorporateActionInbox() {
+  return getJson<import("@/types").CorporateActionInboxResponse>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInbox);
+}
+
+export function getSecurityMasterCoverageDraft(symbol: string) {
+  return getJson<import("@/types").SecurityMasterDraftProposal>(securityMasterCoverageDraftEndpoint(symbol));
+}
+
+export function getSecurityMasterQualityReport() {
+  return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
+}
+
+export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
+  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+}
+
 export function getQualityAnomalies() {
   return getJson<import("@/types").QualityAnomalyEntry[]>(QUALITY_API_ENDPOINTS.anomalies);
 }
@@ -3363,16 +3790,16 @@ export function getQualityCompleteness() {
   return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>(QUALITY_API_ENDPOINTS.completeness);
 }
 
-export function getRobinhoodConnectionStatus() {
-  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("robinhood"));
+export function getRobinhoodConnectionStatus(options: ApiRequestOptions = {}) {
+  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("robinhood"), options);
 }
 
-export function startRobinhoodConnection() {
-  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("robinhood"));
+export function startRobinhoodConnection(options: ApiRequestOptions = {}) {
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("robinhood"), undefined, options);
 }
 
-export function revokeRobinhoodConnection() {
-  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"));
+export function revokeRobinhoodConnection(options: ApiRequestOptions = {}) {
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"), options);
 }
 
 export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
@@ -3440,6 +3867,36 @@ export function getPortfolioExposure() {
 
 export function getPortfolioSymbolExposure(symbol: string) {
   return getJson<NetSymbolPosition>(portfolioSymbolExposureEndpoint(symbol));
+}
+
+// --- Runtime lifecycle ---
+
+export function getRuntimeLifecycle(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").RuntimeLifecycleSnapshot>(WORKSTATION_API_ENDPOINTS.runtimeLifecycle, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function requestRuntimeShutdown(
+  request: import("@/types").LifecycleShutdownRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").LifecycleShutdownAccepted>(WORKSTATION_API_ENDPOINTS.runtimeShutdown, request, options);
+}
+
+export function getRuntimeShutdownOperation(operationUri: string, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownOperation>(operationUri, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function getLatestRuntimeShutdownReceipt(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownReceipt>(WORKSTATION_API_ENDPOINTS.runtimeShutdownReceiptsLatest, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
 }
 
 // --- Live market data ---
@@ -3554,64 +4011,6 @@ export async function fetchQuantData(request: DataFetchRequest, options: ApiRequ
   };
 }
 
-function quantContextToParameters(context: CellExecutionContext): Record<string, string | number | boolean | null> {
-  return {
-    symbol: context.symbol ?? null,
-    from: context.from ?? null,
-    to: context.to ?? null,
-    interval: context.interval ?? null
-  };
-}
-
-function mapQuantRunResponseToCellResult(
-  cellId: string,
-  response: import("@/types").QuantRunResponse
-): CellExecuteResult {
-  const output: CellOutput[] = [];
-
-  for (const line of response.consoleOutput.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
-    output.push({ kind: "console", text: line, tone: "default" });
-  }
-
-  for (const metric of response.metrics) {
-    output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
-  }
-
-  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
-    output.push({
-      kind: "error",
-      text: diagnostic.line > 0
-        ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
-        : `${diagnostic.severity}: ${diagnostic.message}`,
-      tone: diagnostic.severity.toLowerCase() === "warning" ? "warning" : "danger"
-    });
-  }
-
-  if (response.runtimeError) {
-    output.push({ kind: "error", text: response.runtimeError, tone: "danger" });
-  }
-
-  return {
-    cellId,
-    success: response.success,
-    output,
-    elapsedMs: response.elapsedMs,
-    errorMessage: response.runtimeError ?? response.compilationErrors[0]?.message ?? null
-  };
-}
-
-function quantDataIntervalMinutes(interval: DataFetchRequest["interval"]): number {
-  switch (interval) {
-    case "minute":
-      return 1;
-    case "hourly":
-      return 60;
-    case "daily":
-    default:
-      return 1440;
-  }
-}
-
 export interface FundStructureSetupDraft {
   organization: { organizationId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
   businessLane: { businessId?: string | null; businessKind: string; code: string; name: string; baseCurrency: string; description?: string | null };
@@ -3698,3 +4097,14 @@ export async function validateFundStructureSetupDraft(draft: FundStructureSetupD
 export async function createFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupResult> {
   return postJson<FundStructureSetupResult>(FUND_STRUCTURE_API_ENDPOINTS.setupDraftCreate, draft, options);
 }
+
+export const {
+  getProviderModules,
+  getProviderModuleCatalogue,
+  upsertProviderModule,
+  updateProviderModule,
+  deleteProviderModule,
+  setProviderModuleEnabled,
+  testProviderModule,
+  restartProviderHost
+} = createProviderModulesApi(getJson, postJson, putJson, deleteJson);

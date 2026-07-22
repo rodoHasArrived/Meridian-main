@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 04 — Consolidated Degraded States</title>
+<style>
+  :root {
+    --canvas: #dee3ea; --panel: #ffffff; --panel-2: #f3f5f8;
+    --chrome: #171a1f; --chrome-text: #e6e9ee;
+    --accent: #2f6f8f; --accent-soft: #e4edf2;
+    --border: #c3cbd6; --border-strong: #9aa5b4;
+    --text: #1c222b; --muted: #5a6675;
+    --ready: #2e7d5b; --ready-wash: #e3efe9;
+    --review: #8a6d1f; --review-wash: #f4ecd9;
+    --blocked: #a93b3b; --blocked-wash: #f6e4e4;
+    --sans: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--canvas); color: var(--text); font: 14px/1.45 var(--sans); }
+  .pin {
+    display: inline-block; vertical-align: middle; margin-left: 6px;
+    font: 600 10px/1 var(--mono); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px;
+    padding: 2px 4px; background: var(--accent-soft); cursor: help;
+  }
+  .mock-note { background: #fdf6dd; border-bottom: 1px solid #d8c98a; padding: 6px 14px; font-size: 12px; color: #5c4d12; }
+  .mock-note strong { font-family: var(--mono); }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; max-width: 1440px; margin: 0 auto; }
+  .col > h2 { font-size: 14px; margin: 0 0 4px; }
+  .col > p.caption { margin: 0 0 12px; font-size: 12.5px; color: var(--muted); }
+  .col.bad > h2 { color: var(--blocked); }
+  .col.good > h2 { color: var(--ready); }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 10px; }
+  .panel-head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .panel-head h3 { font-size: 13px; font-weight: 650; margin: 0; }
+  .panel-head .sub { font-size: 12px; color: var(--muted); }
+  .panel-head .btn-mini { margin-left: auto; font: 600 11.5px var(--sans); border: 1px solid var(--border-strong); border-radius: 2px; padding: 3px 8px; background: var(--panel); color: var(--text); }
+  .alarm {
+    margin: 10px 12px; border: 1px solid #d99a9a; border-left: 3px solid var(--blocked);
+    background: var(--blocked-wash); border-radius: 2px; padding: 9px 12px;
+  }
+  .alarm b { color: var(--blocked); font-size: 13px; display: block; }
+  .alarm span { font: 12px var(--mono); color: #7c4a4a; }
+  /* proposed side */
+  .state-panel { border-left: 3px solid var(--review); }
+  .state-body { padding: 14px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; }
+  .state-icon {
+    grid-row: span 3; width: 38px; height: 38px; border: 1px solid #dcc98e; border-radius: 2px;
+    background: var(--review-wash); color: var(--review);
+    display: flex; align-items: center; justify-content: center; font: 600 18px var(--mono);
+  }
+  .state-body b { font-size: 14px; }
+  .state-body .why { color: var(--muted); font-size: 12.5px; }
+  .state-body .affects { font: 11.5px var(--mono); color: var(--muted); }
+  .state-actions { display: flex; gap: 8px; padding: 0 14px 14px 66px; }
+  .btn { font: 600 12.5px var(--sans); border-radius: 2px; padding: 6px 12px; border: 1px solid var(--border-strong); background: var(--panel); color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .collapsed { opacity: .75; }
+  .collapsed .panel-head { border-bottom: 0; }
+  .collapsed .panel-head h3 { color: var(--muted); font-weight: 600; }
+  .dep-chip { font: 600 10.5px var(--mono); color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); border-radius: 2px; padding: 2px 6px; }
+  .skeleton { height: 8px; border-radius: 2px; background: linear-gradient(90deg, #e8ecf1, #f3f5f8, #e8ecf1); margin: 6px 12px; }
+  .skeleton.w60 { width: 60%; } .skeleton.w40 { width: 40%; }
+  .healthy-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .healthy-table td { padding: 7px 12px; border-bottom: 1px solid #e4e8ee; }
+  .healthy-table td:last-child { text-align: right; font: 600 11px var(--mono); color: var(--ready); }
+  .footnote { max-width: 1440px; margin: 0 auto; padding: 0 16px 20px; font-size: 12.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <strong>MOCKUP 04 · Degraded-state consolidation (Data workspace)</strong> — before/after for <strong>P6</strong>: one upstream condition renders
+  <em>one</em> state with the next productive action; dependent panels collapse instead of raising their own alarms. The &ldquo;today&rdquo; column
+  reproduces the four stacked red panels visible in <strong>web-data-workspace.png</strong>.
+  Companion: <strong>docs/development/web-ui-structural-improvement-proposal.md</strong>
+</div>
+
+<div class="compare">
+  <div class="col bad">
+    <h2>Today — one outage, four alarms</h2>
+    <p class="caption">Each dependent panel renders its own full-width red error; red stops meaning &ldquo;blocked&rdquo; and starts meaning &ldquo;normal&rdquo;.</p>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Data quality</h3><span class="sub">Completeness, freshness, gap, and anomaly posture.</span><span class="btn-mini">Refresh</span></div>
+      <div class="alarm"><b>Data quality unavailable</b><span>Data quality dashboard is unavailable.</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Provider capability matrix</h3><span class="sub">Declared provider coverage per instrument type.</span><span class="btn-mini">Refresh</span></div>
+      <div class="alarm"><b>Capability matrix unavailable</b><span>Provider capability matrix is unavailable.</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Corporate action inbox</h3><span class="sub">Staged provider announcements awaiting review.</span><span class="btn-mini">Refresh</span></div>
+      <div class="alarm"><b>Corporate action inbox unavailable</b><span>Corporate-action inbox is unavailable.</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Security master coverage</h3><span class="sub">Active symbols without a validated record (RC001).</span><span class="btn-mini">Refresh</span></div>
+      <div class="alarm"><b>Coverage report unavailable</b><span>Security-master coverage report is unavailable.</span></div>
+    </div>
+  </div>
+
+  <div class="col good">
+    <h2>Proposed — one state, one action</h2>
+    <p class="caption">The condition is stated once with cause, scope, and the next productive action. Dependent panels collapse quietly. <span class="pin" title="P6 — consolidated degraded/connect state; generalizes the guided empty state shipped for Data Live Quotes">P6</span></p>
+
+    <div class="panel state-panel">
+      <div class="state-body">
+        <div class="state-icon">!</div>
+        <b>Data analytics services degraded</b>
+        <span class="why">The analytics backend is not reachable, so quality, capability, corporate-action, and coverage reads are paused. Provider streaming and backfills are unaffected.</span>
+        <span class="affects">AFFECTS&nbsp; data quality &middot; capability matrix &middot; corporate actions &middot; security-master coverage</span>
+      </div>
+      <div class="state-actions">
+        <button class="btn primary">Open diagnostics</button>
+        <button class="btn">Retry now</button>
+        <span style="align-self:center" class="dep-chip">last attempt 12s ago</span>
+      </div>
+    </div>
+
+    <div class="panel collapsed">
+      <div class="panel-head"><h3>Data quality</h3><span class="dep-chip">paused &middot; analytics</span></div>
+      <div class="skeleton w60"></div><div class="skeleton w40" style="margin-bottom:12px"></div>
+    </div>
+    <div class="panel collapsed">
+      <div class="panel-head"><h3>Provider capability matrix</h3><span class="dep-chip">paused &middot; analytics</span></div>
+      <div class="skeleton w60"></div><div class="skeleton w40" style="margin-bottom:12px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Provider posture</h3><span class="sub">Unaffected surfaces keep rendering normally.</span></div>
+      <table class="healthy-table">
+        <tr><td>Alpaca paper</td><td>HEALTHY</td></tr>
+        <tr><td>Databento</td><td>HEALTHY</td></tr>
+        <tr><td>Interactive Brokers</td><td>HEALTHY</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="footnote">
+  Rule of thumb: a screen renders at most one degraded/connect state per upstream condition; anything that depends on that condition
+  collapses to a labeled skeleton. Red is reserved for blocked work and destructive actions (proposal P8) — an unavailable read is
+  amber &ldquo;review/paused&rdquo;, not an alarm.
+</p>
+
+</body>
+</html>

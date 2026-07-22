@@ -81,6 +81,16 @@ public static class ProviderCredentialCatalog
             AffectedWorkflows: ["Reference data", "Historical backfill"],
             RecommendedActionWhenMissing: "Add the Nasdaq Data Link API key before routing reference-data repair."),
         new(
+            ProviderId: "twelvedata",
+            DisplayName: "Twelve Data",
+            Capability: ProviderConnectionCapabilityDto.Data,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("ApiKey", ["TWELVEDATA_API_KEY", "TWELVEDATA__APIKEY", "TWELVEDATA_APIKEY"])
+            ],
+            AffectedWorkflows: ["Historical backfill", "Symbol search", "Market data validation"],
+            RecommendedActionWhenMissing: "Add the Twelve Data API key before routing backfill or symbol-search repair through Twelve Data."),
+        new(
             ProviderId: "openfigi",
             DisplayName: "OpenFIGI",
             Capability: ProviderConnectionCapabilityDto.Data,
@@ -181,6 +191,9 @@ public static class ProviderCredentialCatalog
         ["alpha-vantage"] = "alphavantage",
         ["nasdaq"] = "nasdaqdatalink",
         ["nasdaq-data-link"] = "nasdaqdatalink",
+        ["twelve-data"] = "twelvedata",
+        ["twelve_data"] = "twelvedata",
+        ["twelveData"] = "twelvedata",
         ["interactivebrokers"] = "ib",
         ["interactive-brokers"] = "ib",
         ["plaid-api"] = "plaid",

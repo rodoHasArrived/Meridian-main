@@ -166,6 +166,10 @@ public sealed class LedgerReadService
             PortfolioId: scope.PortfolioId,
             BookId: scope.BookId,
             AccountId: accountId,
+            OrganizationId: scope.OrganizationId,
+            CustomerId: scope.CustomerId,
+            VendorId: scope.VendorId,
+            ProjectId: scope.ProjectId,
             ExternalGlDimensions: scope.ExternalGlDimensions);
 
     private static decimal SumBalance(

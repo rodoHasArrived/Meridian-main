@@ -10,7 +10,7 @@ namespace Meridian.Platform.Scheduling;
 /// </summary>
 public sealed class OperationalScheduler : IOperationalScheduler
 {
-    private readonly ITradingCalendarProvider _calendarProvider;
+    private readonly IOperationalTradingCalendar _calendarProvider;
     private readonly List<MaintenanceWindow> _maintenanceWindows = new();
     private readonly object _windowLock = new();
 
@@ -54,7 +54,7 @@ public sealed class OperationalScheduler : IOperationalScheduler
             Priority: 5)
     };
 
-    public OperationalScheduler(ITradingCalendarProvider calendarProvider)
+    public OperationalScheduler(IOperationalTradingCalendar calendarProvider)
     {
         _calendarProvider = calendarProvider ?? throw new ArgumentNullException(nameof(calendarProvider));
     }

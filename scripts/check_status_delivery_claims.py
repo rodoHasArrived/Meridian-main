@@ -12,8 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_DOCS = (
-    "docs/status/production-status.md",
-    "docs/status/provider-validation-matrix.md",
+    "docs/reference/provider-validation-matrix.md",
 )
 
 DENYLIST_PHRASES = (
@@ -73,10 +72,17 @@ PASS_PACKET_REFERENCE_RE = re.compile(
 )
 
 
+def _is_archive_migration_stub(lowered_text: str) -> bool:
+    return "**status:** archive-migration-stub" in lowered_text
+
+
 def validate_doc(path: Path) -> list[str]:
     errors: list[str] = []
     text = path.read_text(encoding="utf-8")
     lowered = text.lower()
+
+    if _is_archive_migration_stub(lowered):
+        return errors
 
     if not PASS_PACKET_REFERENCE_RE.search(text):
         errors.append(

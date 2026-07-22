@@ -1,15 +1,20 @@
 import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
+import { MetricCard } from "@/components/data/concrete";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import {
+  readinessToneToSeverityPanelClass,
+  readinessToneToSeverityStatus,
+  semanticToneToMetricCardTone
+} from "@/lib/shared-tone-mappings";
 import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
-  type ReadinessConsoleLevel,
   type ReadinessConsoleNextAction,
   type ReadinessConsoleRecoveryState,
   type ReadinessConsoleRowAction,
@@ -31,21 +36,8 @@ interface OperatorReadinessConsoleProps {
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
   reporting: ReportingWorkspaceResponse | null;
+  fundAccountId?: string | null;
 }
-
-const levelBadge: Record<ReadinessConsoleLevel, "success" | "warning" | "danger" | "outline"> = {
-  ready: "success",
-  review: "warning",
-  blocked: "danger",
-  neutral: "outline"
-};
-
-const levelPanel: Record<ReadinessConsoleLevel, string> = {
-  ready: "border-success/35 bg-success/10",
-  review: "border-warning/35 bg-warning/10",
-  blocked: "border-danger/35 bg-danger/10",
-  neutral: "border-border/70 bg-secondary/25"
-};
 
 const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
   "latest-runs": TrendingUp,
@@ -63,14 +55,13 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
       </span>
     )
   },
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "target",
@@ -78,9 +69,6 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-medium text-foreground">{row.action?.label ?? "Review item"}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
-          {row.action?.route ?? row.meta}
-        </span>
       </span>
     )
   }
@@ -93,24 +81,18 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
       </span>
     )
   },
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "detail",
     label: "Detail",
     render: (row) => <span className="block min-w-[12rem] text-xs leading-5 text-foreground/80">{row.detail}</span>
-  },
-  {
-    id: "source",
-    label: "Source",
-    render: (row) => <span className="block min-w-[10rem] break-words font-mono text-[11px] text-muted-foreground">{row.meta}</span>
   }
 ];
 
@@ -119,14 +101,16 @@ export function OperatorReadinessConsole({
   trading,
   data,
   accounting,
-  reporting
+  reporting,
+  fundAccountId
 }: OperatorReadinessConsoleProps) {
   const vm = useOperatorReadinessConsoleViewModel({
     strategy,
     trading,
     data,
     accounting,
-    reporting
+    reporting,
+    fundAccountId
   });
 
   return (
@@ -148,47 +132,43 @@ export function OperatorReadinessConsole({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ConsoleChip label="As of" value={vm.asOf} />
           <ConsoleChip label="Inbox" value={vm.inboxSummary} />
-          <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", levelPanel[vm.overallLevel])}>
-            {vm.overallLabel}
-          </span>
+          <SeverityBadge status={readinessToneToSeverityStatus(vm.overallLevel)} label={vm.overallLabel} />
         </div>
       </section>
 
+      <section
+        className="panel-surface px-4 py-4"
+        role="group"
+        aria-label="Readiness gate pipeline"
+      >
+        <div className="eyebrow-label mb-3">Readiness pipeline</div>
+        <GateRail
+          gates={vm.checkpointGates.map((gate) => ({
+            key: gate.id,
+            label: gate.label,
+            status: readinessToneToSeverityStatus(gate.level),
+            statusLabel: gate.value
+          }))}
+        />
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className={cn("panel-surface-strong border", levelPanel[vm.overallLevel])}>
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="eyebrow-label">Trading Readiness</div>
-                <CardTitle className="mt-2 flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  {vm.title}
-                </CardTitle>
-                <CardDescription className="mt-2">{vm.subtitle}</CardDescription>
-              </div>
-              <Badge variant={levelBadge[vm.overallLevel]}>{vm.overallLabel}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm leading-6 text-foreground/85">{vm.overallDetail}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <ConsoleChip label="Snapshot" value={vm.asOf} />
-              <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
-            </div>
-            <PrimaryNextAction action={vm.nextAction} />
-            {vm.inboxLoadingLabel ? (
-              <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
-            ) : null}
-            {vm.inboxErrorRecovery ? (
-              <InboxErrorRecovery
-                recovery={vm.inboxErrorRecovery}
-                onRetry={vm.refreshInbox}
-                disabled={vm.inboxRefreshDisabled}
-                disabledReason={vm.inboxRefreshDisabledReason}
-                busy={vm.inboxRefreshBusy}
-              />
-            ) : null}
-            <div className="flex flex-wrap gap-2">
+        <ReadinessPanel
+          state={readinessToneToSeverityStatus(vm.overallLevel)}
+          statusLabel={vm.overallLabel}
+          title={(
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+              <span className="min-w-0">{vm.title}</span>
+            </span>
+          )}
+          detail={vm.subtitle}
+          score={vm.asOf}
+          role="region"
+          ariaLabel="Trading readiness summary"
+          className="h-full"
+          actions={(
+            <>
               <Button asChild variant="secondary" size="sm">
                 <Link to="/trading">Trading cockpit</Link>
               </Button>
@@ -212,22 +192,39 @@ export function OperatorReadinessConsole({
                 <RefreshCcw className="h-4 w-4" aria-hidden="true" />
                 {vm.inboxRefreshLabel}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          )}
+        >
+          <p className="text-sm leading-6 text-foreground/85">{vm.overallDetail}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <ConsoleChip label="Snapshot" value={vm.asOf} />
+            <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
+          </div>
+          <PrimaryNextAction action={vm.nextAction} />
+          {vm.inboxLoadingLabel ? (
+            <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
+          ) : null}
+          {vm.inboxErrorRecovery ? (
+            <InboxErrorRecovery
+              recovery={vm.inboxErrorRecovery}
+              onRetry={vm.refreshInbox}
+              disabled={vm.inboxRefreshDisabled}
+              disabledReason={vm.inboxRefreshDisabledReason}
+              busy={vm.inboxRefreshBusy}
+            />
+          ) : null}
+        </ReadinessPanel>
 
-        <Card aria-labelledby="api-contract-coverage-title" className="panel-surface">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="eyebrow-label">API Contract Coverage</div>
-                <CardTitle id="api-contract-coverage-title">Shared sources</CardTitle>
-                <CardDescription>Local API payload health for readiness review.</CardDescription>
-              </div>
-              <ConsoleChip label="Sources" value={String(vm.apiSources.length)} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
+        <TechnicalDetails
+          label="Technical source health"
+          description="API contract coverage and endpoint-level diagnostics for support review."
+          className="panel-surface h-fit"
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-foreground">Shared sources</span>
+            <ConsoleChip label="Sources" value={String(vm.apiSources.length)} />
+          </div>
+          <div className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
             {vm.apiSources.map((source) => (
               <div
                 key={source.id}
@@ -237,13 +234,13 @@ export function OperatorReadinessConsole({
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{source.label}</span>
-                  <Badge variant={levelBadge[source.level]} aria-label={source.statusAriaLabel}>{source.status}</Badge>
+                  <SeverityBadge status={readinessToneToSeverityStatus(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
                 <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </TechnicalDetails>
       </section>
 
       <section
@@ -267,10 +264,15 @@ export function OperatorReadinessConsole({
             aria-describedby={metric.detailId}
             className="grid gap-2"
           >
-            <MetricCard {...metric} />
+            <MetricCard
+              label={metric.label}
+              value={metric.value}
+              delta={metric.delta}
+              tone={semanticToneToMetricCardTone(metric.tone)}
+            />
             <p
               id={metric.detailId}
-              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", levelPanel[metric.level])}
+              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", readinessToneToSeverityPanelClass(metric.level))}
             >
               {metric.detail}
             </p>
@@ -355,25 +357,17 @@ function SelectedWorkItemDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected work item</span>
-        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
         </div>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <TechnicalDetails label="Audit details" className="mt-3">
+          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <DetailFieldList fields={detail.fields} />
+        </TechnicalDetails>
         {detail.action ? (
           <div className="mt-3">
             <Button asChild variant={detail.action.variant} size="sm">
@@ -420,14 +414,16 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
     <div
       role="group"
       aria-label={action.ariaLabel}
-      className={cn("rounded-lg border px-3 py-3", levelPanel[action.level])}
+      className={cn("rounded-lg border px-3 py-3", readinessToneToSeverityPanelClass(action.level))}
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="eyebrow-label">Primary next action</div>
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
-          <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+          <TechnicalDetails label="Action context" className="mt-2">
+            <p className="break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+          </TechnicalDetails>
         </div>
         {actionButton}
       </div>
@@ -504,25 +500,17 @@ function SelectedEvidenceDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected evidence</span>
-        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
         </div>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <TechnicalDetails label="Audit details" className="mt-3">
+          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <DetailFieldList fields={detail.fields} />
+        </TechnicalDetails>
         {detail.action ? (
           <div className="mt-3">
             <Button asChild variant={detail.action.variant} size="sm">
@@ -540,30 +528,42 @@ function SelectedEvidenceDetail({
 
 function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   return (
-    <div
+    <ReadinessPanel
+      state={readinessToneToSeverityStatus(row.level)}
+      statusLabel={row.value}
+      title={row.label}
+      detail={row.detail}
+      detailId={row.detailId}
       role="group"
-      aria-label={row.ariaLabel}
-      aria-describedby={row.detailId}
-      className={cn("rounded-lg border bg-card px-3 py-3 shadow-[var(--shadow-panel)]", levelPanel[row.level])}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-foreground">{row.label}</div>
-          <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{row.meta}</div>
-        </div>
-        <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
-      </div>
-      <p id={row.detailId} className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
-      {row.action ? (
-        <div className="mt-3">
-          <Button asChild variant={row.action.variant} size="sm">
-            <Link to={row.action.route} aria-label={row.action.ariaLabel}>
-              {row.action.label}
-            </Link>
-          </Button>
-        </div>
+      ariaLabel={row.ariaLabel}
+      actions={row.action ? (
+        <Button asChild variant={row.action.variant} size="sm">
+          <Link to={row.action.route} aria-label={row.action.ariaLabel}>
+            {row.action.label}
+          </Link>
+        </Button>
       ) : null}
-    </div>
+    >
+      <TechnicalDetails label="Evidence details">
+        <p className="break-words font-mono text-xs text-muted-foreground">{row.meta}</p>
+      </TechnicalDetails>
+    </ReadinessPanel>
+  );
+}
+
+function DetailFieldList({ fields }: { fields: ReadinessConsoleSelectedWorkItemDetail["fields"] }) {
+  return (
+    <dl className="mt-3 grid gap-2">
+      {fields.map((field) => (
+        <div
+          key={field.label}
+          className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+        >
+          <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+          <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

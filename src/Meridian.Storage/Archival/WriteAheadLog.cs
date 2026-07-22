@@ -24,6 +24,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private readonly string _walDirectory;
     private readonly WalOptions _options;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
+    private readonly SemaphoreSlim _truncateLock = new(1, 1);
 
     // Prometheus counters for WAL recovery observability (2.3)
     private static readonly Counter WalRecoveryEventsTotal = Metrics.CreateCounter(
@@ -48,6 +49,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private int _uncommittedRecords;
     private DateTime _lastFlushTime = DateTime.UtcNow;
     private bool _disposed;
+    private CancellationTokenSource? _flushLoopCts;
+    private Task? _flushLoopTask;
+    private Exception? _backgroundFlushFailure;
     private long _corruptedRecordCount;
     private long _skippedRecordCount;
 
@@ -145,6 +149,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         // Start a new WAL file
         await StartNewWalFileAsync(ct);
+        StartDelayedFlushLoop();
 
         _log.Information("WAL initialized, current sequence: {Sequence}", _currentSequence);
     }
@@ -165,6 +170,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     private async Task<WalRecord> AppendSerializedPayloadAsync(string payload, string recordType, CancellationToken ct)
     {
+        ThrowIfBackgroundFlushFailed();
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -247,6 +253,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public async Task FlushAsync(CancellationToken ct = default)
     {
+        ThrowIfBackgroundFlushFailed();
         await _writeLock.WaitAsync(ct);
         try
         {
@@ -273,17 +280,77 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         if (_options.SyncMode != WalSyncMode.NoSync)
         {
-            // Use async flush to avoid blocking the thread with a synchronous fsync syscall.
             // The underlying FileStream was opened with FileOptions.WriteThrough, which bypasses
-            // the .NET managed buffer and ensures data reaches the OS kernel buffer on each write.
-            // FlushAsync submits any remaining OS buffer data; the OS handles physical persistence
-            // asynchronously. This eliminates the millisecond-level blocking caused by fsync(2)
-            // while maintaining the durability guarantees required in most crash scenarios.
+            // the .NET managed buffer and pushes data to the OS kernel buffer on each write.
+            // FlushAsync submits any remaining OS buffer data without the millisecond-level
+            // blocking of a synchronous fsync(2) — sufficient for BatchedSync's balanced guarantee.
             await _currentWalFile.FlushAsync(ct).ConfigureAwait(false);
+
+            if (_options.SyncMode == WalSyncMode.EveryWrite)
+            {
+                // EveryWrite is documented as the "most durable" mode, so it must force contents to
+                // physical disk (fsync) rather than trusting WriteThrough + async flush. There is no
+                // async flush-to-disk API, so this synchronous call is intentional: it is the cost
+                // callers accept when they opt into the strongest durability guarantee.
+                _currentWalFile.Flush(flushToDisk: true);
+            }
         }
 
         _uncommittedRecords = 0;
         _lastFlushTime = DateTime.UtcNow;
+    }
+
+    private void StartDelayedFlushLoop()
+    {
+        if (_flushLoopTask is not null ||
+            _options.SyncMode != WalSyncMode.BatchedSync ||
+            _options.MaxFlushDelay <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        _flushLoopCts = new CancellationTokenSource();
+        _flushLoopTask = RunDelayedFlushLoopAsync(_flushLoopCts.Token);
+    }
+
+    private async Task RunDelayedFlushLoopAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(_options.MaxFlushDelay);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    if (_uncommittedRecords > 0 &&
+                        DateTime.UtcNow - _lastFlushTime >= _options.MaxFlushDelay)
+                    {
+                        await FlushInternalAsync(ct).ConfigureAwait(false);
+                    }
+                }
+                finally
+                {
+                    _writeLock.Release();
+                }
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            _backgroundFlushFailure = ex;
+            _log.Error(ex, "Lifecycle-owned delayed WAL flush failed");
+        }
+    }
+
+    private void ThrowIfBackgroundFlushFailed()
+    {
+        if (_backgroundFlushFailure is not null)
+        {
+            throw new IOException("The delayed WAL flush loop failed; new writes are blocked.", _backgroundFlushFailure);
+        }
     }
 
     /// <summary>
@@ -356,26 +423,70 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     /// <summary>
     /// Truncate WAL files that have been fully committed.
+    /// Eligibility normally comes from segment-name metadata alone: file names embed the
+    /// monotonic sequence counter at creation, so a completed segment's records are bounded
+    /// by its successor's embedded base and no record scan is needed. Segments whose names
+    /// do not parse (or whose ordering cannot be trusted) fall back to a full record scan.
+    /// Runs under its own lock so appends and commits are never stalled behind truncation
+    /// I/O such as archive compression.
     /// </summary>
     public async Task TruncateAsync(long throughSequence, CancellationToken ct = default)
     {
-        await _writeLock.WaitAsync(ct);
+        await _truncateLock.WaitAsync(ct);
         try
         {
+            // List first, then snapshot the active path. The active path only ever moves to
+            // newly created files, so every listed file that is not the snapshot-active one
+            // is provably closed: it is either already-rotated, or the snapshot-active file
+            // itself (skipped below). Snapshotting before listing would allow a rotation in
+            // between to slip a still-open, near-empty segment into the listing under a
+            // stale active path — and the scan fallback would see it as fully committed.
             var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-                .OrderBy(f => f)
+                .OrderBy(f => f, StringComparer.Ordinal)
                 .ToList();
+
+            var activeWalPath = _currentWalPath;
+
+            var inferredBounds = TryInferSegmentUpperBounds(walFiles, activeWalPath);
 
             foreach (var walFile in walFiles)
             {
-                // Check if this file is fully committed
-                long maxSequence = 0;
-                await foreach (var record in ReadWalFileAsync(walFile, ct))
+                if (string.Equals(walFile, activeWalPath, StringComparison.Ordinal))
+                    continue;
+
+                bool fullyCommitted;
+                if (inferredBounds != null && inferredBounds.TryGetValue(walFile, out var upperBound))
                 {
-                    maxSequence = Math.Max(maxSequence, record.Sequence);
+                    // Name-derived bound: every record in this segment has a sequence at or
+                    // below the successor segment's embedded base, so committed-ness is a
+                    // metadata comparison. Record scanning is not required, but deletion still
+                    // requires a valid header so corrupt segments remain available for recovery.
+                    fullyCommitted = upperBound <= throughSequence;
+                }
+                else
+                {
+                    // Fallback: scan the records to find the segment's max sequence.
+                    long maxSequence = 0;
+                    await foreach (var record in ReadWalFileAsync(walFile, ct))
+                    {
+                        maxSequence = Math.Max(maxSequence, record.Sequence);
+                    }
+
+                    fullyCommitted = maxSequence <= throughSequence;
                 }
 
-                if (maxSequence <= throughSequence && walFile != _currentWalPath)
+                // A corrupt header can make the scan fallback enumerate zero records, and segment
+                // metadata cannot prove that a corrupt file is safe to remove. Never delete such
+                // a file — it may still hold the only copy of unreplayed records.
+                if (fullyCommitted && !await HasValidHeaderAsync(walFile, ct))
+                {
+                    _log.Error(
+                        "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
+                        walFile);
+                    continue;
+                }
+
+                if (fullyCommitted)
                 {
                     // Archive or delete the WAL file
                     if (_options.ArchiveAfterTruncate)
@@ -384,21 +495,119 @@ public sealed class WriteAheadLog : IAsyncDisposable
                         Directory.CreateDirectory(archiveDir);
                         var archivePath = Path.Combine(archiveDir, Path.GetFileName(walFile) + ".gz");
 
-                        await using var input = File.OpenRead(walFile);
-                        await using var output = File.Create(archivePath);
-                        await using var gzip = new GZipStream(output, CompressionLevel.Optimal);
-                        await input.CopyToAsync(gzip, ct);
+                        // Fully write, flush, and close the compressed archive before touching the
+                        // original. Disposing the GZipStream flushes its trailer; fsyncing the output
+                        // guarantees the bytes reach disk.
+                        await using (var input = File.OpenRead(walFile))
+                        await using (var output = new FileStream(
+                            archivePath,
+                            FileMode.Create,
+                            FileAccess.Write,
+                            FileShare.None,
+                            bufferSize: 64 * 1024,
+                            FileOptions.WriteThrough | FileOptions.Asynchronous))
+                        {
+                            // leaveOpen so disposing the GZipStream (which flushes its trailer)
+                            // does not close 'output' before we fsync it below.
+                            await using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true))
+                            {
+                                await input.CopyToAsync(gzip, ct);
+                            }
+
+                            await output.FlushAsync(ct);
+                            // Force an OS-level fsync so the archive is durable on every OS/filesystem
+                            // before the original WAL file is removed.
+                            output.Flush(flushToDisk: true);
+                        }
+
+                        // Persist the archive rename and verify the archive actually landed before
+                        // deleting the only remaining copy of the records.
+                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+
+                        var archiveInfo = new FileInfo(archivePath);
+                        if (!archiveInfo.Exists || archiveInfo.Length == 0)
+                        {
+                            _log.Error(
+                                "Refusing to delete WAL file {File}: archive {Archive} is missing or empty",
+                                walFile, archivePath);
+                            continue;
+                        }
                     }
 
                     File.Delete(walFile);
+                    // post-commit (the WAL file is already gone): must not observe cancellation.
+                    await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None);
                     _log.Information("Truncated WAL file {File}", walFile);
                 }
             }
         }
         finally
         {
-            _writeLock.Release();
+            _truncateLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Derives, from segment names alone, an upper bound on each completed segment's max
+    /// record sequence: names embed the value of the monotonic sequence counter at creation
+    /// ("wal_{utcstamp}_{sequence:D12}"), so every record in a segment has a sequence at or
+    /// below the base embedded in the next-created segment's name.
+    /// Returns null — sending every file down the record-scan fallback — unless every name
+    /// parses, the bases are non-decreasing in sorted order, and the active segment sorts
+    /// last (all three fail together only when foreign files or clock anomalies make name
+    /// order untrustworthy as creation order).
+    /// </summary>
+    private static Dictionary<string, long>? TryInferSegmentUpperBounds(
+        List<string> sortedWalFiles,
+        string? activeWalPath)
+    {
+        if (sortedWalFiles.Count == 0
+            || activeWalPath == null
+            || !string.Equals(sortedWalFiles[^1], activeWalPath, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var baseSequences = new long[sortedWalFiles.Count];
+        for (var i = 0; i < sortedWalFiles.Count; i++)
+        {
+            if (!TryParseSegmentBaseSequence(sortedWalFiles[i], out baseSequences[i])
+                || (i > 0 && baseSequences[i] < baseSequences[i - 1]))
+            {
+                return null;
+            }
+        }
+
+        var bounds = new Dictionary<string, long>(StringComparer.Ordinal);
+        for (var i = 0; i < sortedWalFiles.Count - 1; i++)
+        {
+            bounds[sortedWalFiles[i]] = baseSequences[i + 1];
+        }
+
+        return bounds;
+    }
+
+    /// <summary>
+    /// Parses the creation-time base sequence out of a segment file name of the form
+    /// "wal_yyyyMMdd_HHmmss_############.wal" with an optional "_N" disambiguator.
+    /// </summary>
+    private static bool TryParseSegmentBaseSequence(string walFilePath, out long baseSequence)
+    {
+        baseSequence = 0;
+        var parts = Path.GetFileNameWithoutExtension(walFilePath).Split('_');
+        if (parts.Length is not (4 or 5)
+            || !string.Equals(parts[0], "wal", StringComparison.Ordinal)
+            || parts[3].Length != 12)
+        {
+            return false;
+        }
+
+        if (parts.Length == 5 && !int.TryParse(parts[4], NumberStyles.None, CultureInfo.InvariantCulture, out _))
+        {
+            return false;
+        }
+
+        return long.TryParse(parts[3], NumberStyles.None, CultureInfo.InvariantCulture, out baseSequence);
     }
 
     private async Task StartNewWalFileAsync(CancellationToken ct)
@@ -553,16 +762,58 @@ public sealed class WriteAheadLog : IAsyncDisposable
         using var reader = new StreamReader(stream);
 
         // Skip header
-        var header = await reader.ReadLineAsync();
-        if (header == null || !header.StartsWith(WalMagic))
+        var header = await reader.ReadLineAsync(ct);
+        if (header == null)
         {
-            _log.Warning("Invalid WAL header in {File}", walFile);
+            // Zero-byte file from a crash immediately after creation: nothing to recover.
+            _log.Warning("Empty WAL file {File}", walFile);
             yield break;
         }
 
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        if (!header.StartsWith(WalMagic))
         {
-            var line = await reader.ReadLineAsync();
+            // A non-empty file with the wrong magic may still hold records. Header corruption
+            // follows the same policy as record corruption; TruncateAsync independently refuses
+            // to delete files whose header is invalid, so skipping here cannot cause deletion.
+            Interlocked.Increment(ref _corruptedRecordCount);
+            Interlocked.Increment(ref _skippedRecordCount);
+
+            switch (_options.CorruptionMode)
+            {
+                case WalCorruptionMode.Alert:
+                    _log.Error(
+                        "Invalid WAL header in {File}; skipping the file. It is preserved on disk for inspection",
+                        walFile);
+                    try
+                    { CorruptionDetected?.Invoke(1); }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Exception in CorruptionDetected event handler; ignoring to continue recovery");
+                    }
+                    break;
+
+                case WalCorruptionMode.Halt:
+                    throw new InvalidDataException(
+                        $"Invalid WAL header in '{walFile}'; refusing to treat the file as empty. " +
+                        "Inspect the file or run RepairAsync before recovery can proceed.");
+
+                case WalCorruptionMode.Skip:
+                default:
+                    _log.Warning("Invalid WAL header in {File}; skipping the file", walFile);
+                    break;
+            }
+
+            yield break;
+        }
+
+        while (!reader.EndOfStream)
+        {
+            // Cancellation must throw rather than silently end the enumeration: callers
+            // treat a completed scan as a full read of the file — TruncateAsync deletes
+            // files and sequence recovery picks the next sequence number based on it.
+            ct.ThrowIfCancellationRequested();
+
+            var line = await reader.ReadLineAsync(ct);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -620,6 +871,19 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 Payload = payload
             };
         }
+    }
+
+    /// <summary>
+    /// Checks whether a WAL file starts with the expected magic header.
+    /// An empty (zero-record) file counts as valid: it holds nothing to lose.
+    /// </summary>
+    private static async Task<bool> HasValidHeaderAsync(string walFile, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        var header = await reader.ReadLineAsync(ct);
+        return header == null || header.StartsWith(WalMagic);
     }
 
     private async Task<long> GetLastSequenceNumberAsync(CancellationToken ct)
@@ -698,8 +962,6 @@ public sealed class WriteAheadLog : IAsyncDisposable
             }
         }
     }
-
-    private static ReadOnlySpan<byte> PipeSeparator => "|"u8;
 
     /// <summary>
     /// Repairs all WAL files by scanning every record, validating checksums,
@@ -822,11 +1084,24 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     }
 
                     await writer.FlushAsync();
+
+                    // Force the repaired contents to physical disk before the atomic rename, so a
+                    // crash immediately after the rename cannot surface a temp file whose bytes
+                    // never left the OS cache. Mirrors the truncate path's flush-to-disk.
+                    await outStream.FlushAsync(ct).ConfigureAwait(false);
+                    outStream.Flush(flushToDisk: true);
                 }
 
-                // Replace original with repaired file
-                File.Delete(walFile);
-                File.Move(tempPath, walFile);
+                // Replace the original with the repaired file in a single atomic rename.
+                // A prior File.Delete + File.Move sequence had a crash window between the two
+                // calls in which the WAL file could be lost entirely; File.Move(overwrite: true)
+                // is an atomic replace on the same volume.
+                File.Move(tempPath, walFile, overwrite: true);
+
+                // Make the rename durable so the repaired file survives a crash or power loss.
+                // post-commit (the repaired file is already in place): must not observe cancellation.
+                await AtomicFileWriter.SyncDirectoryAsync(
+                    Path.GetDirectoryName(walFile) ?? _walDirectory, CancellationToken.None);
 
                 repairedFiles++;
 
@@ -856,7 +1131,21 @@ public sealed class WriteAheadLog : IAsyncDisposable
         if (_disposed)
             return;
 
+        // Fixed acquisition order (write, then truncate) cannot deadlock: truncation never
+        // takes the write lock and writers never take the truncate lock. Holding both here
+        // guarantees no in-flight truncation observes the disposed semaphores.
+        if (_flushLoopCts is not null)
+        {
+            await _flushLoopCts.CancelAsync().ConfigureAwait(false);
+        }
+
+        if (_flushLoopTask is not null)
+        {
+            await _flushLoopTask.ConfigureAwait(false);
+        }
+
         await _writeLock.WaitAsync();
+        await _truncateLock.WaitAsync();
         try
         {
             if (_disposed)
@@ -866,7 +1155,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (_currentWriter != null)
             {
-                await _currentWriter.FlushAsync();
+                await FlushInternalAsync(CancellationToken.None).ConfigureAwait(false);
+                if (_currentWalFile is not null && _options.SyncMode != WalSyncMode.NoSync)
+                {
+                    _currentWalFile.Flush(flushToDisk: true);
+                }
                 await _currentWriter.DisposeAsync();
                 // _currentWriter.DisposeAsync() already closes the underlying _currentWalFile stream
                 // so we should not attempt to flush or dispose it again
@@ -876,8 +1169,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
         }
         finally
         {
+            _truncateLock.Release();
             _writeLock.Release();
             _writeLock.Dispose();
+            _truncateLock.Dispose();
+            _flushLoopCts?.Dispose();
         }
     }
 
@@ -988,11 +1284,12 @@ public sealed class WalOptions
 
     /// <summary>
     /// Controls how the WAL behaves when corrupted records are detected during recovery.
-    /// Defaults to <see cref="WalCorruptionMode.Skip"/> to preserve backwards compatibility.
-    /// Set to <see cref="WalCorruptionMode.Alert"/> in production so monitoring systems are
-    /// notified, or <see cref="WalCorruptionMode.Halt"/> to require manual operator review.
+    /// Defaults to <see cref="WalCorruptionMode.Alert"/> so corruption is never silent:
+    /// the durability backstop must not discard records without an operator signal.
+    /// Set to <see cref="WalCorruptionMode.Halt"/> to require manual operator review, or
+    /// opt into <see cref="WalCorruptionMode.Skip"/> only when silent-skip is acceptable.
     /// </summary>
-    public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Skip;
+    public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Alert;
 }
 
 /// <summary>

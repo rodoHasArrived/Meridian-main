@@ -85,8 +85,12 @@ public sealed class LoanAccountingProjector
                 var interest = GetDecimal(root, "interestAmount");
                 var commitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var penalty = GetDecimal(root, "penaltyAmount");
+                var pikInterest = GetDecimal(root, "pikInterestAmount");
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, interest, 0m);
                 Add("InterestIncome", LedgerAccountType.Revenue, 0m, interest);
+                // PIK interest capitalizes into loan principal instead of a cash receivable.
+                Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
+                Add("InterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, commitmentFee, 0m);
                 Add("CommitmentFeeIncome", LedgerAccountType.Revenue, 0m, commitmentFee);
                 Add("PenaltyReceivable", LedgerAccountType.Asset, penalty, 0m);
@@ -98,8 +102,11 @@ public sealed class LoanAccountingProjector
                 var reversedInterest = GetDecimal(root, "interestAmount");
                 var reversedCommitmentFee = GetDecimal(root, "commitmentFeeAmount");
                 var reversedPenalty = GetDecimal(root, "penaltyAmount");
+                var reversedPikInterest = GetDecimal(root, "pikInterestAmount");
                 Add("InterestIncome", LedgerAccountType.Revenue, reversedInterest, 0m);
                 Add("AccruedInterestReceivable", LedgerAccountType.Asset, 0m, reversedInterest);
+                Add("InterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
+                Add("LoanPrincipal", LedgerAccountType.Asset, 0m, reversedPikInterest);
                 Add("CommitmentFeeIncome", LedgerAccountType.Revenue, reversedCommitmentFee, 0m);
                 Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, reversedCommitmentFee);
                 Add("PenaltyIncome", LedgerAccountType.Revenue, reversedPenalty, 0m);
@@ -243,6 +250,7 @@ public sealed class LoanAccountingProjector
                     SourceEventId: sourceEventId,
                     CorrelationId: metadata.CorrelationId,
                     CausationId: postingCommandId,
+                    ExpectedVersion: period.Version,
                     SourceEventType: eventType,
                     ApprovalState: adjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
                         ? AccountingPostingApprovalStateDto.Approved

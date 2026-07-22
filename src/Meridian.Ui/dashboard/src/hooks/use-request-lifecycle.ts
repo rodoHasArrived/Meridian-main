@@ -19,6 +19,8 @@ export interface RequestLifecycleStatus {
   error: string | null;
   startedAt: string | null;
   settledAt: string | null;
+  /** Timestamp of the most recent successful settle; survives later failures. */
+  lastSucceededAt: string | null;
   staleDiscardCount: number;
   backoff: RequestBackoffMetadata;
 }
@@ -32,6 +34,11 @@ export interface RequestLifecycleToken {
   safeSetState: <T>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => boolean;
 }
 
+export interface RequestRetryContext {
+  /** 1-based attempt number the retry should run as (failed attempt + 1). */
+  attempt: number;
+}
+
 export interface RequestLifecycleOptions {
   operation: string;
   idleMessage?: string;
@@ -43,6 +50,13 @@ export interface RequestLifecycleOptions {
   maxRetries?: number;
   baseBackoffMs?: number;
   backoffMultiplier?: number;
+  /**
+   * Runs the retry that backoff metadata advertises. `nextRetryDelayMs` (and the
+   * "Retrying in Xs" affordance derived from it) is only populated when this is
+   * provided, so surfaces never promise a retry that nothing will execute.
+   * Leave unset for mutations — only idempotent reads should auto-retry.
+   */
+  onRetry?: (context: RequestRetryContext) => void;
 }
 
 export interface StartRequestOptions {
@@ -72,12 +86,20 @@ export function useRequestLifecycle({
   failureMessage = "Refresh failed.",
   maxRetries = 0,
   baseBackoffMs = DEFAULT_BASE_BACKOFF_MS,
-  backoffMultiplier = DEFAULT_BACKOFF_MULTIPLIER
+  backoffMultiplier = DEFAULT_BACKOFF_MULTIPLIER,
+  onRetry
 }: RequestLifecycleOptions) {
   const mountedRef = useRef(true);
   const versionRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
   const inFlightRef = useRef(false);
+  const attemptRef = useRef(0);
+  const retryTimerRef = useRef<number | null>(null);
+  const onRetryRef = useRef(onRetry);
+
+  useEffect(() => {
+    onRetryRef.current = onRetry;
+  }, [onRetry]);
   const [status, setStatus] = useState<RequestLifecycleStatus>(() => ({
     operation,
     phase: "idle",
@@ -87,6 +109,7 @@ export function useRequestLifecycle({
     error: null,
     startedAt: null,
     settledAt: null,
+    lastSucceededAt: null,
     staleDiscardCount: 0,
     backoff: {
       attempt: 0,
@@ -113,6 +136,13 @@ export function useRequestLifecycle({
     return true;
   }, [isCurrentVersion]);
 
+  const clearScheduledRetry = useCallback(() => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  }, []);
+
   const markStale = useCallback((version: number) => {
     if (!mountedRef.current || versionRef.current === version) {
       return;
@@ -127,6 +157,7 @@ export function useRequestLifecycle({
   }, [staleMessage]);
 
   const abort = useCallback(() => {
+    clearScheduledRetry();
     versionRef.current += 1;
     controllerRef.current?.abort();
     controllerRef.current = null;
@@ -141,14 +172,26 @@ export function useRequestLifecycle({
         settledAt: new Date().toISOString()
       }));
     }
-  }, [abortedMessage]);
+  }, [abortedMessage, clearScheduledRetry]);
 
   const invalidate = useCallback(() => {
+    clearScheduledRetry();
     versionRef.current += 1;
     controllerRef.current?.abort();
     controllerRef.current = null;
     inFlightRef.current = false;
-  }, []);
+    if (mountedRef.current) {
+      const settledAt = new Date().toISOString();
+      setStatus((current) => ({
+        ...current,
+        phase: current.inFlight ? "stale" : current.phase,
+        inFlight: false,
+        version: versionRef.current,
+        message: current.inFlight ? staleMessage : current.message,
+        settledAt: current.inFlight ? settledAt : current.settledAt
+      }));
+    }
+  }, [clearScheduledRetry, staleMessage]);
 
   const start = useCallback((options: StartRequestOptions = {}): RequestLifecycleToken | null => {
     if (!mountedRef.current) {
@@ -159,6 +202,7 @@ export function useRequestLifecycle({
       return null;
     }
 
+    clearScheduledRetry();
     versionRef.current += 1;
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -168,6 +212,7 @@ export function useRequestLifecycle({
     const startedAt = new Date().toISOString();
     const attempt = Math.max(1, options.attempt ?? 1);
     const retryCount = Math.max(0, attempt - 1);
+    attemptRef.current = attempt;
 
     setStatus((current) => ({
       ...current,
@@ -195,7 +240,7 @@ export function useRequestLifecycle({
       isCurrent: () => isCurrentVersion(version),
       safeSetState: <T,>(setter: Dispatch<SetStateAction<T>>, value: SetStateAction<T>) => safeSetState(version, setter, value)
     };
-  }, [isCurrentVersion, maxRetries, operation, runningMessage, safeSetState]);
+  }, [clearScheduledRetry, isCurrentVersion, maxRetries, operation, runningMessage, safeSetState]);
 
   const succeed = useCallback((token: RequestLifecycleToken, options: SettleRequestOptions = {}) => {
     if (!isCurrentVersion(token.version)) {
@@ -203,10 +248,12 @@ export function useRequestLifecycle({
       return false;
     }
 
+    clearScheduledRetry();
     if (controllerRef.current?.signal === token.signal) {
       controllerRef.current = null;
     }
     inFlightRef.current = false;
+    const settledAt = new Date().toISOString();
     setStatus((current) => ({
       ...current,
       phase: "succeeded",
@@ -214,14 +261,15 @@ export function useRequestLifecycle({
       version: token.version,
       message: options.message ?? successMessage,
       error: null,
-      settledAt: new Date().toISOString(),
+      settledAt,
+      lastSucceededAt: settledAt,
       backoff: {
         ...current.backoff,
         nextRetryDelayMs: null
       }
     }));
     return true;
-  }, [isCurrentVersion, markStale, successMessage]);
+  }, [clearScheduledRetry, isCurrentVersion, markStale, successMessage]);
 
   const fail = useCallback((token: RequestLifecycleToken, error: unknown, options: FailRequestOptions = {}) => {
     if (!isCurrentVersion(token.version)) {
@@ -234,30 +282,44 @@ export function useRequestLifecycle({
     }
     inFlightRef.current = false;
     const display = describeApiError(error, options.fallback ?? failureMessage);
-    setStatus((current) => {
-      const canRetry = current.backoff.retryCount < maxRetries;
-      const nextRetryDelayMs = canRetry
-        ? Math.round(baseBackoffMs * Math.pow(backoffMultiplier, Math.max(0, current.backoff.retryCount)))
-        : null;
-      return {
-        ...current,
-        phase: "failed",
-        inFlight: false,
-        version: token.version,
-        message: options.message ?? display.summary,
-        error: display.summary,
-        settledAt: new Date().toISOString(),
-        backoff: {
-          attempt: current.backoff.attempt || 1,
-          retryCount: current.backoff.retryCount,
-          nextRetryDelayMs,
-          maxRetries
+    const failedAttempt = Math.max(1, attemptRef.current);
+    const retryCount = failedAttempt - 1;
+    // Advertise a retry delay only when a retry is actually scheduled below.
+    const willRetry = typeof onRetryRef.current === "function" && retryCount < maxRetries;
+    const nextRetryDelayMs = willRetry
+      ? Math.round(baseBackoffMs * Math.pow(backoffMultiplier, retryCount))
+      : null;
+    if (nextRetryDelayMs !== null) {
+      clearScheduledRetry();
+      retryTimerRef.current = window.setTimeout(() => {
+        retryTimerRef.current = null;
+        // A newer request (manual refresh, poll tick) supersedes the pending retry.
+        if (!mountedRef.current || versionRef.current !== token.version) {
+          return;
         }
-      };
-    });
+        onRetryRef.current?.({ attempt: failedAttempt + 1 });
+      }, nextRetryDelayMs);
+    }
+    setStatus((current) => ({
+      ...current,
+      phase: "failed",
+      inFlight: false,
+      version: token.version,
+      message: options.message ?? display.summary,
+      error: display.summary,
+      settledAt: new Date().toISOString(),
+      backoff: {
+        attempt: failedAttempt,
+        retryCount,
+        nextRetryDelayMs,
+        maxRetries
+      }
+    }));
     return true;
-  }, [backoffMultiplier, baseBackoffMs, failureMessage, isCurrentVersion, markStale, maxRetries]);
+  }, [backoffMultiplier, baseBackoffMs, clearScheduledRetry, failureMessage, isCurrentVersion, markStale, maxRetries]);
 
+  // Must not clear the scheduled retry: callers invoke finish() in a finally
+  // block right after fail() has armed the retry timer.
   const finish = useCallback((token: RequestLifecycleToken) => {
     if (!isCurrentVersion(token.version)) {
       markStale(token.version);
@@ -280,6 +342,10 @@ export function useRequestLifecycle({
       controllerRef.current?.abort();
       controllerRef.current = null;
       inFlightRef.current = false;
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
     };
   }, []);
 

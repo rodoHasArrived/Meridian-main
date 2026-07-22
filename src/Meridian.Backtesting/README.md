@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Backtesting
@@ -33,10 +33,43 @@ This layer should keep simulation behavior isolated from live execution while pr
 
 ## Important workflows
 
+Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
+total basis by the projected monetary principal, and then recompute per-unit basis. The historical
+adjuster therefore uses the same held-face/factor economics as the governed production proof while
+remaining a rebuildable simulation rather than an accounting write path.
+
 Use this module for strategy backtests, simulation runtime behavior, and backtesting evidence.
 Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and
 external engine runs can flow through the same strategy-run repository, comparison, diff, and
 portfolio drill-in surfaces.
+Backtest Studio requests may carry operator-facing acceptance criteria plus retained evidence,
+accounting-record, approval, paper-validation, and governed-report references. The orchestrator
+persists those links onto the shared strategy-run entry at start and preserves them when the run
+completes, keeping W6 limited to evidence linkage rather than broad Studio UX expansion.
+
+## Execution realism and result trustworthiness
+
+- `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
+  strictly later than the event that generated it, eliminating same-bar look-ahead. Under
+  next-bar timing a `Day` order expires at the end of the first day on which its symbol traded
+  after submission (its intended session), so daily-bar strategies still fill. `SameBar` restores
+  the legacy behaviour and is flagged in the result's bias disclosure.
+- `BacktestRequest.FillConservatism` defaults to `Conservative`: limit orders require the bar to
+  trade strictly through the limit (gaps fill at the open; a bare touch does not fill), and stop
+  fills anchor to the worse of the stop and the open so they can never beat the stop price.
+  `Optimistic` restores legacy touch/midpoint behaviour and is flagged in the bias disclosure.
+- `BacktestRequest.DelistingPolicy` defaults to `LiquidateAtLastPrice`: positions in symbols whose
+  data goes silent for more than `DelistingGraceDays` are force-liquidated at the last observed
+  price adjusted by `DelistingHaircutPercent`, instead of being marked at a stale price forever.
+  Every forced liquidation is recorded on the result.
+- Every `BacktestResult` carries a `BiasDisclosureReport` (fill timing, limit/stop realism,
+  universe provenance/survivorship, corporate-action handling, Security Master gaps, delisting
+  liquidations, in-sample caveat). UI surfaces render it as a bias-disclosure panel next to the
+  numbers; keep it populated when adding new engine paths.
+- `WalkForward.WalkForwardService` wraps `BatchBacktestService` in a walk-forward / out-of-sample
+  harness: per rolling (or anchored) training window it sweeps the parameter grid, selects the best
+  set by a configurable objective, evaluates it once on the adjacent unseen test window, and stitches
+  the test windows into aggregate OOS metrics with train-vs-test degradation reporting.
 
 ## API / contract notes
 
@@ -52,6 +85,10 @@ portfolio drill-in surfaces.
 - `BacktestStudioRunRequest`, `BacktestStudioRunHandle`, `BacktestStudioRunStatus`, and
   `IBacktestStudioEngine` live in this module so native and external Studio engines share the
   Backtesting-owned orchestration contract instead of depending on the application layer.
+- `BacktestStudioRunRequest` carries the W6 evidence-loop metadata consumed by
+  `BacktestStudioRunOrchestrator`: operator acceptance criteria, retained evidence references,
+  accounting-record references, approval references, paper-validation references, and governed
+  report references.
 - `BacktestPreflightService` consumes the shared `ISecurityValidationGateService` contract from
   `Meridian.Contracts.Services`, keeping Security Master trust-gate validation optional for hosts
   while preserving fail-closed preflight behavior when the gate reports blocking issues.
@@ -75,6 +112,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | Roadmap item | Title |
 | --- | --- |
 | `W3-CONT-001` | Research to paper continuity |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 
@@ -99,4 +137,4 @@ Keep backtesting deterministic and separate from live broker actions.
 ## Related docs
 
 - `docs/source/generated/source-roadmap-traceability.md`
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`

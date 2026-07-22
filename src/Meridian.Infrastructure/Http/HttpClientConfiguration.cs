@@ -39,6 +39,10 @@ public static class HttpClientNames
     public const string AlpacaSymbolSearch = "alpaca-symbol-search";
     public const string PolygonSymbolSearch = "polygon-symbol-search";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
+    public const string AlphaVantageSymbolSearch = "alpha-vantage-symbol-search";
+    public const string TiingoSymbolSearch = "tiingo-symbol-search";
+    public const string FredSymbolSearch = "fred-symbol-search";
+    public const string TwelveDataSymbolSearch = "twelvedata-symbol-search";
     public const string OpenFigi = "openfigi";
     public const string EdgarSymbolSearch = "edgar-symbol-search";
     public const string EdgarSecurityMaster = "edgar-security-master";
@@ -171,6 +175,15 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        services.AddHttpClient(HttpClientNames.TiingoSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.tiingo.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
         // Yahoo Finance Historical client
         services.AddHttpClient(HttpClientNames.YahooFinanceHistorical)
             .ConfigureHttpClient(client =>
@@ -209,6 +222,15 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        services.AddHttpClient(HttpClientNames.AlphaVantageSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.alphavantage.co/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
         // Alpha Vantage Historical client
         services.AddHttpClient(HttpClientNames.AlphaVantageHistorical)
             .ConfigureHttpClient(client =>
@@ -240,8 +262,27 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        services.AddHttpClient(HttpClientNames.FredSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.stlouisfed.org/fred/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
+            })
+            .AddSharedResiliencePolicy();
+
         // Twelve Data Historical client
         services.AddHttpClient(HttpClientNames.TwelveDataHistorical)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.twelvedata.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        services.AddHttpClient(HttpClientNames.TwelveDataSymbolSearch)
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri("https://api.twelvedata.com/");
@@ -358,7 +399,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
-        // IB Client Portal client (uses custom SSL handler for self-signed certificates)
+        // IB Client Portal client (accepts self-signed certificates from loopback hosts only)
         services.AddHttpClient(HttpClientNames.IBClientPortal)
             .ConfigureHttpClient(client =>
             {
@@ -366,7 +407,7 @@ public static class HttpClientConfiguration
             })
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                ServerCertificateCustomValidationCallback = ValidateIbClientPortalCertificate
             })
             .AddSharedResiliencePolicy();
 
@@ -489,6 +530,15 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.TiingoHistorical, onStateChanged);
 
+        services.AddHttpClient(HttpClientNames.TiingoSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.tiingo.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.TiingoSymbolSearch, onStateChanged);
+
         // Yahoo Finance Historical client
         services.AddHttpClient(HttpClientNames.YahooFinanceHistorical)
             .ConfigureHttpClient(client =>
@@ -527,6 +577,15 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.FinnhubSymbolSearch, onStateChanged);
 
+        services.AddHttpClient(HttpClientNames.AlphaVantageSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.alphavantage.co/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.AlphaVantageSymbolSearch, onStateChanged);
+
         // Alpha Vantage Historical client
         services.AddHttpClient(HttpClientNames.AlphaVantageHistorical)
             .ConfigureHttpClient(client =>
@@ -558,6 +617,16 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.FredHistorical, onStateChanged);
 
+        services.AddHttpClient(HttpClientNames.FredSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.stlouisfed.org/fred/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.FredSymbolSearch, onStateChanged);
+
         // Twelve Data Historical client
         services.AddHttpClient(HttpClientNames.TwelveDataHistorical)
             .ConfigureHttpClient(client =>
@@ -567,6 +636,15 @@ public static class HttpClientConfiguration
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.TwelveDataHistorical, onStateChanged);
+
+        services.AddHttpClient(HttpClientNames.TwelveDataSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.twelvedata.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.TwelveDataSymbolSearch, onStateChanged);
 
         // Robinhood Historical client (unofficial API; auth header set per-provider via env var)
         services.AddHttpClient(HttpClientNames.RobinhoodHistorical)
@@ -676,7 +754,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.PortfolioImport, onStateChanged);
 
-        // IB Client Portal client (uses custom SSL handler for self-signed certificates)
+        // IB Client Portal client (accepts self-signed certificates from loopback hosts only)
         services.AddHttpClient(HttpClientNames.IBClientPortal)
             .ConfigureHttpClient(client =>
             {
@@ -684,7 +762,7 @@ public static class HttpClientConfiguration
             })
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                ServerCertificateCustomValidationCallback = ValidateIbClientPortalCertificate
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.IBClientPortal, onStateChanged);
 
@@ -706,6 +784,25 @@ public static class HttpClientConfiguration
 
         return services;
     }
+
+    /// <summary>
+    /// Certificate validation for the IB Client Portal named client. IB Gateway serves a
+    /// self-signed certificate on localhost, so certificate errors are tolerated for loopback
+    /// hosts only. The previous <c>DangerousAcceptAnyServerCertificateValidator</c> accepted any
+    /// certificate from any host, leaving a brokerage-credential path with no MITM protection
+    /// when the configured base URL was not local.
+    /// </summary>
+    internal static bool ValidateIbClientPortalCertificate(
+        HttpRequestMessage request,
+        System.Security.Cryptography.X509Certificates.X509Certificate2? certificate,
+        System.Security.Cryptography.X509Certificates.X509Chain? chain,
+        System.Net.Security.SslPolicyErrors sslPolicyErrors)
+    {
+        if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
+            return true;
+
+        return request.RequestUri is { IsLoopback: true };
+    }
 }
 
 /// <summary>
@@ -714,10 +811,10 @@ public static class HttpClientConfiguration
 /// </summary>
 /// <remarks>
 /// This is a transitional pattern. New code should inject IHttpClientFactory directly.
-/// 
+///
 /// Thread Safety: This class uses static fields and is designed to be thread-safe for the
 /// common initialization pattern where Initialize() is called once during startup.
-/// 
+///
 /// Disposal Handling: If the underlying IServiceProvider is disposed (e.g., during test cleanup),
 /// CreateClient() will catch ObjectDisposedException and fall back to creating a new HttpClient.
 /// This ensures graceful degradation and test isolation.

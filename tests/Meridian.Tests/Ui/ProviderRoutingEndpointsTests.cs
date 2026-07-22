@@ -116,9 +116,10 @@ public sealed class ProviderRoutingEndpointsTests
 
         previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var preview = await ReadAsync<RoutePreviewResponse>(previewResponse);
-        preview.IsRoutable.Should().BeTrue();
-        preview.SelectedConnectionId.Should().Be("polygon");
-        preview.SelectedProviderFamilyId.Should().Be("polygon");
+        preview.IsRoutable.Should().BeFalse();
+        preview.SelectedConnectionId.Should().BeNull();
+        preview.SelectedProviderFamilyId.Should().BeNull();
+        preview.Candidates.Should().BeEmpty();
     }
 
     [Fact]
@@ -427,14 +428,18 @@ public sealed class ProviderRoutingEndpointsTests
         });
 
         var app = builder.Build();
-        if (permissions is not null)
+        app.Use(async (context, next) =>
         {
-            app.Use(async (context, next) =>
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-routing-test-operator";
+            if (permissions is not null)
             {
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
-                await next();
-            });
-        }
+            }
+
+            await next();
+        });
 
         app.UseRateLimiter();
         app.MapProviderEndpoints(new JsonSerializerOptions

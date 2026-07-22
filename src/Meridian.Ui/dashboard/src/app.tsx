@@ -1,32 +1,49 @@
-import { Component, lazy, Suspense, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
-  Bell,
-  ChevronDown,
-  GitBranch,
-  LoaderCircle,
-  Menu,
-  Search,
-  X
+  LoaderCircle
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
+import "@/styles/app-shell.css";
+import { meridianBrandAssets } from "@/design-system/assets";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
-  readOperatingScopeFromSearch,
-  removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
-  type AppShellWorkflowContinuityViewModel,
-  type AppShellOperatingScopeInput,
-  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  operatingScopeDimensionsForRoute,
+  readOperatingScopeFromSearch,
+  removeOperatingScopeFromSearch,
+  type AppShellOperatingScopeInput
+} from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { ScopePicker } from "@/components/meridian/scope-picker";
+import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
+import {
+  compactOperatingScope,
+  hasOperatingScopeValues,
+  mergeOperatingScopes,
+  operatingScopesEqual,
+  readStoredOperatingScope,
+  writeStoredOperatingScope
+} from "@/lib/operating-scope/persistence";
+import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
+import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
+import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
+import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
+import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
+import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
+import { applyDensity, writeStoredDensity } from "@/lib/density";
+import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/data/skeleton";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -42,56 +59,140 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { markWorkflowPresetUsed } from "@/lib/api";
-import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
+import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import {
+  useCommandPaletteActions,
+  type CommandPaletteActionItem
+} from "@/components/meridian/command-palette.actions";
+import { CopyLinkButton } from "@/components/meridian/copy-link-button";
+import { SaveViewButton } from "@/components/meridian/save-view-dialog";
+import { NotificationCenter } from "@/components/meridian/notification-center";
+import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
+import { DesignSystemMasthead } from "@/design-system/primitives";
+import {
+  WorkstationStatusBar,
+  buildWorkstationStatusItems
+} from "@/components/meridian/workstation-status-bar";
+import { ActivityLogProvider } from "@/lib/activity-log/store";
+import {
+  OnboardingCoachMark,
+  useOnboardingTour
+} from "@/components/meridian/onboarding-tour";
+import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
+import { PriceAlertsProvider } from "@/lib/price-alerts/service";
+import {
+  reportWorkstationRouteError,
+  type WorkstationRouteErrorContext
+} from "@/lib/route-error-telemetry";
 import { cn } from "@/lib/utils";
-import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
+import { legacyWorkspaceRedirect, resolveWorkstationRouteBreadcrumbLabel, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import { FirstRunScreen } from "@/features/first-run/first-run-screen";
+import type { FirstRunStatus } from "@/features/first-run/types";
+import { apiGetJson } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
-const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
+// Lazy route modules and data-backed panels often mount hash targets after the
+// shell route change. Wait briefly before falling back to the workbench landmark,
+// then always disconnect the MutationObserver on a longer watchdog.
+const ROUTE_FOCUS_FALLBACK_DELAY_MS = 4_000;
+const ROUTE_FOCUS_WATCHDOG_DELAY_MS = 15_000;
+
+const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
+const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
-const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: module.AccountingScreen })));
+const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
-const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
-const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
+const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
+const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
+const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
+const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
+const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
+const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
+const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
+const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
+const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
+const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
+const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
+const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
+const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
+const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen").then((module) => ({ default: module.ReportLibraryScreen })));
+const ReportRunParametersScreen = lazy(() => import("@/screens/report-run-parameters-screen").then((module) => ({ default: module.ReportRunParametersScreen })));
 const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-record-release-screen").then((module) => ({ default: module.OperationsRecordReleaseScreen })));
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
-const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
+const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
-const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
-const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
-const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: module.StrategyScreen })));
-const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
+const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
+const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
-const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
-const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: module.TradingScreen })));
-const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
+const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
+const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
 
 export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <AppShell />
+        <ActivityLogProvider>
+          <AppRoot />
+        </ActivityLogProvider>
       </ToastProvider>
     </PriceAlertsProvider>
   );
 }
 
-function AppShell() {
+/**
+ * Chrome-less companion panes (`/panes/*`) render before — and instead of — the
+ * full workstation shell, so a pop-out window carries no masthead, navigation, or
+ * workstation data loading. Everything else renders the shell.
+ */
+function AppRoot() {
+  const { pathname } = useLocation();
+  const [firstRun, setFirstRun] = useState<FirstRunStatus | null>(null);
+  const [firstRunChecked, setFirstRunChecked] = useState(false);
+  useEffect(() => {
+    let active = true;
+    apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus)
+      .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
+      .catch(() => { if (active) setFirstRunChecked(true); });
+    return () => { active = false; };
+  }, []);
+
+  if (isCompanionPaneRoute(pathname)) {
+    return <CompanionPaneWindow />;
+  }
+  if (firstRunChecked && firstRun && !firstRun.isComplete && pathname !== "/setup") {
+    return <Navigate to="/setup" replace />;
+  }
+  if (pathname === "/setup") {
+    // onStatusChange lifts completion back into this component's state so the
+    // redirect guard above releases the user instead of bouncing them to /setup.
+    return <FirstRunScreen initialStatus={firstRun} onStatusChange={setFirstRun} />;
+  }
+  return <AppShell firstRunStatus={firstRun} />;
+}
+
+function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
   const suppressScopePersistRef = useRef(false);
   const navigate = useNavigate();
   const { hash, pathname, search } = useLocation();
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
-  const routeOperatingScope = readOperatingScopeFromSearch(search);
-  const operatingScopeInput = mergeOperatingScopes(storedOperatingScope, routeOperatingScope);
+  const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
+  const operatingScopeInput = useMemo(
+    () => mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
+    [storedOperatingScope, routeOperatingScope]
+  );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   const {
     session,
@@ -104,6 +205,7 @@ function AppShell() {
     accounting,
     reporting,
     brokerageConnection,
+    robinhoodConnection,
     providerConnections,
     providerReadiness,
     providerRoutingConnections,
@@ -126,6 +228,7 @@ function AppShell() {
     error,
     workspaceErrors,
     refreshStatus,
+    portfolioRefreshStatus,
     refresh,
     refreshPortfolio,
     refreshProviderRouting,
@@ -142,6 +245,42 @@ function AppShell() {
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
     });
+
+  const screenActionItems = useCommandPaletteActions();
+  const presetPinActionItems = useMemo<CommandPaletteActionItem[]>(
+    () => (workflowPresets?.presets ?? []).map((preset) => ({
+      id: `preset-pin:${preset.presetId}`,
+      verbLabel: preset.isPinned ? `Unpin preset ${preset.name}` : `Pin preset ${preset.name}`,
+      description: preset.isPinned
+        ? `Remove ${preset.name} from the pinned presets shown first in the palette.`
+        : `Keep ${preset.name} at the top of the palette preset list.`,
+      keywords: ["preset", "pin", preset.workflowTitle],
+      run: () => pinWorkflowPreset(preset.presetId, !preset.isPinned).then((updated) => {
+        upsertWorkflowPreset(updated);
+        return {
+          title: updated.isPinned ? `Pinned ${updated.name}.` : `Unpinned ${updated.name}.`,
+          tone: "success" as const
+        };
+      })
+    })),
+    [upsertWorkflowPreset, workflowPresets]
+  );
+  const scopeActionItem = useMemo<CommandPaletteActionItem>(
+    () => ({
+      id: "operating-scope-edit",
+      verbLabel: "Set operating scope…",
+      description: "Set the subject, fund account, and provider carried across the workstation.",
+      keywords: ["scope", "fund account", "subject", "filter"],
+      run: async () => {
+        setScopePickerOpen(true);
+      }
+    }),
+    []
+  );
+  const paletteActionItems = useMemo(
+    () => [scopeActionItem, ...presetPinActionItems, ...screenActionItems],
+    [scopeActionItem, presetPinActionItems, screenActionItems]
+  );
 
   useEffect(() => {
     if (suppressScopePersistRef.current) {
@@ -173,6 +312,41 @@ function AppShell() {
     navigate(`${pathname}${removeOperatingScopeFromSearch(search)}${hash}`, { replace: true });
   };
 
+  // Replace the operating scope from the picker: persist it and reflect the
+  // applicable dimensions into the current route so URL-reading screens filter,
+  // preserving any non-scope query params already on the route.
+  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+    const compacted = compactOperatingScope(next);
+    suppressScopePersistRef.current = false;
+    writeStoredOperatingScope(compacted);
+    setStoredOperatingScope(compacted);
+    const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
+    const scopeState = buildOperatingScopeFromSearch("", compacted);
+    navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
+  };
+
+  // Replay a saved layout: apply density and operating scope, re-open the recorded
+  // companion panes, then navigate the captured route. Window placement across
+  // monitors is browser-permission-limited, so a restored pop-out may open where the
+  // browser chooses and be dragged once — the arrangement otherwise restores whole.
+  const handleRestoreLayout = (plan: LayoutRestorePlan) => {
+    writeStoredDensity(plan.density);
+    applyDensity(plan.density);
+
+    const compacted = compactOperatingScope(plan.operatingScope);
+    suppressScopePersistRef.current = false;
+    writeStoredOperatingScope(compacted);
+    setStoredOperatingScope(compacted);
+
+    setOpenCompanionPaneIds(plan.panes);
+    plan.panes.forEach((paneId) => openCompanionPane(paneId));
+
+    navigate(plan.route);
+  };
+
+  const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
+  const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
+
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
       const command = resolveAppShellCommandPaletteShortcut({
@@ -196,7 +370,15 @@ function AppShell() {
     return () => window.removeEventListener("keydown", handleCommandShortcut);
   }, [commandOpen, setCommandOpen]);
 
-  const shell = buildAppShellViewState({
+  // Tell any open companion panes when the main workstation window goes away, so
+  // they can surface that their source is gone rather than silently going stale.
+  useEffect(() => {
+    const handlePageHide = () => broadcastCompanionState({ type: "session-expired" });
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, []);
+
+  const shell = useMemo(() => buildAppShellViewState({
     pathname,
     search,
     hash,
@@ -219,8 +401,44 @@ function AppShell() {
       workflowSummary
     },
     operatingContextScope: operatingScopeInput
-  });
-  const breadcrumbItems = buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate);
+  }), [
+    pathname,
+    search,
+    hash,
+    operatingContextSymbol,
+    commandOpen,
+    loading,
+    error,
+    workflowError,
+    workspaceErrors,
+    usingDevelopmentFixtures,
+    session,
+    overview,
+    strategy,
+    trading,
+    portfolio,
+    data,
+    accounting,
+    reporting,
+    workflowSummary,
+    operatingScopeInput
+  ]);
+  const breadcrumbItems = useMemo(
+    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
+    [pathname, shell.activeWorkspace, navigate]
+  );
+  const headerWorkspace = useMemo(
+    () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
+    [pathname, shell.activeWorkspace]
+  );
+  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => ({
+    routeKey: `${pathname}${search}${hash}`,
+    pathname,
+    search,
+    hash,
+    workspaceLabel: shell.activeWorkspace.label,
+    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
+  }), [hash, pathname, search, shell.activeWorkspace]);
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -271,60 +489,27 @@ function AppShell() {
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {routeAnnouncement}
       </div>
-      <header className="workstation-masthead">
-        <div className="workstation-brand-group">
-          <button
-            type="button"
-            className="workstation-nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            aria-label="Open workspace navigation"
-            aria-expanded={navOpen}
-            aria-haspopup="dialog"
-            onClick={() => setNavOpen(true)}
-          >
-            <Menu className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <div className="workstation-brand">
-            <img src={meridianMarkUrl} alt="" aria-hidden="true" />
-            <div className="workstation-brand-copy min-w-0">
-              <div className="name">Meridian</div>
-              <div className="sub">Operator workstation</div>
-            </div>
-          </div>
-        </div>
+      <DesignSystemMasthead
+        brandMarkSrc={meridianBrandAssets.markLight}
+        workspaceLabel={headerWorkspace.label}
+        navOpen={navOpen}
+        onOpenNavigation={() => setNavOpen(true)}
+        commandTrigger={shell.commandPaletteTrigger}
+        onOpenCommandPalette={() => setCommandOpen(true)}
+        trustStrip={shell.trustStrip}
+        session={session}
+        actions={(
+          <>
+            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
+            <ActivationHeaderProgress status={firstRunStatus} />
+            <ActivityCenter />
+            <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
+          </>
+        )}
+      />
 
-        <button
-          type="button"
-          className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          onClick={() => setCommandOpen(true)}
-          aria-label={shell.commandPaletteTrigger.label}
-          aria-controls={shell.commandPaletteTrigger.controlsId}
-          aria-expanded={shell.commandPaletteTrigger.expanded}
-          aria-haspopup={shell.commandPaletteTrigger.hasPopup}
-        >
-          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="workstation-search-placeholder">{shell.commandPaletteTrigger.placeholder}</span>
-          <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
-        </button>
-
-        <WorkstationTrustStrip viewModel={shell.trustStrip} />
-
-        <div className="workstation-actions">
-          <PriceAlertsBell />
-          {session ? (
-            <div
-              className="workstation-session-card"
-              role="group"
-              aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
-            >
-              <Badge variant={session.environment} dot>{session.environment}</Badge>
-              <span className="workstation-session-name">{session.displayName}</span>
-              <span className="workstation-session-role text-muted-foreground">{session.role}</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">Loading session…</span>
-          )}
-        </div>
-      </header>
+      <DegradedModeBanner degradedMode={overview?.degradedMode} />
+      <DataProvenanceBanner provenance={usingDevelopmentFixtures ? "seeded" : "real"} />
 
       <div className="workstation-shell">
         <WorkspaceNav
@@ -337,11 +522,28 @@ function AppShell() {
           ref={workbenchRef}
           id="workbench-content"
           className="workbench grid grid-rows-[auto_auto_minmax(0,1fr)]"
+          aria-label={`${headerWorkspace.label} workbench`}
+          aria-busy={loading || refreshStatus.inFlight}
           tabIndex={-1}
         >
           <WorkspaceHeader
+            actions={(
+              <>
+                <LayoutSwitcher
+                  route={`${pathname}${search}`}
+                  operatingScope={operatingScopeInput}
+                  onRestore={handleRestoreLayout}
+                />
+                <CopyLinkButton />
+                <SaveViewButton
+                  workflowLibrary={workflowLibrary}
+                  workflowError={workflowError}
+                  onPresetSaved={upsertWorkflowPreset}
+                />
+              </>
+            )}
             breadcrumbItems={breadcrumbItems}
-            workspace={shell.activeWorkspace}
+            workspace={headerWorkspace}
             session={session}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
@@ -349,15 +551,22 @@ function AppShell() {
           <WorkflowContinuityDock
             viewModel={shell.workflowContinuity}
             onClearOperatingContext={handleClearOperatingContext}
+            onEditOperatingContext={() => setScopePickerOpen(true)}
+            scopeDimensionsInEffect={scopeDimensionsInEffect}
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
+              <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
-                  <Route path="/" element={<Navigate to="/trading" replace />} />
+                  <Route path="/" element={(
+                    <DailyControlTowerScreen
+                      viewModel={shell.workflowContinuity}
+                      trustStrip={shell.trustStrip}
+                    />
+                  )} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
                       strategy={strategy}
@@ -365,10 +574,13 @@ function AppShell() {
                       data={data}
                       accounting={accounting}
                       reporting={reporting}
+                      fundAccountId={operatingScopeInput.fundAccountId}
                     />
                   )} />
-                  <Route path="/trading/*" element={<TradingScreen data={trading} />} />
+                  <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
+                  <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}
@@ -378,22 +590,39 @@ function AppShell() {
                       brokerageConnection={brokerageConnection}
                       brokeragePortfolio={brokeragePortfolio}
                       multiAssetCoverage={portfolioMultiAssetCoverage}
+                      refreshStatus={portfolioRefreshStatus}
                     />
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
+                  <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
+                  <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
+                  <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
+                  <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
+                  <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
+                  <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
+                  <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
+                  <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
+                  <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
+                  <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
+                  <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />
+                  <Route path="/reporting/preview" element={<ReportPreviewValidationScreen data={reporting} />} />
+                  <Route path="/reporting/runs/detail" element={<ReportRunDetailScreen data={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
-                  <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
+                  <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
-                  <Route path="/data/quotes" element={<LiveQuotesScreen />} />
-                  <Route path="/data/watchlist" element={<WatchlistScreen />} />
-                  <Route path="/data/alerts" element={<PriceAlertsScreen />} />
+                  <Route path="/data/quotes" element={<MarketDataScreen />} />
+                  <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(
@@ -420,6 +649,7 @@ function AppShell() {
                       accounting={accounting}
                       reporting={reporting}
                       brokerageConnection={brokerageConnection}
+                      robinhoodConnection={robinhoodConnection}
                       providerConnections={providerConnections}
                       providerRoutingConnections={providerRoutingConnections}
                       providerRoutingBindings={providerRoutingBindings}
@@ -440,9 +670,9 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/strategy/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/accounting/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
                     <Route path="*" element={<NotFoundScreen />} />
                   </Routes>
                 </Suspense>
@@ -452,6 +682,14 @@ function AppShell() {
         </main>
       </div>
 
+      <WorkstationStatusBar
+        items={buildWorkstationStatusItems({
+          workspaceLabel: headerWorkspace.label,
+          refreshing: loading || refreshStatus.inFlight,
+          hasError: Boolean(error)
+        })}
+      />
+
       <CommandPalette
         open={commandOpen}
         onOpenChange={setCommandOpen}
@@ -459,9 +697,18 @@ function AppShell() {
         workflowPresets={workflowPresets}
         workflowError={workflowError}
         operatorFocusItems={shell.workflowContinuity.operatorFocusCommandItems}
+        actionItems={paletteActionItems}
         operatingContextSymbol={operatingContextSymbol}
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}
+      />
+      <OnboardingCoachMark controller={onboardingTour} />
+      <ScopePicker
+        open={scopePickerOpen}
+        onOpenChange={setScopePickerOpen}
+        scope={operatingScopeInput}
+        fundAccounts={scopeFundAccountOptions}
+        onApply={handleSetOperatingScope}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent
@@ -504,6 +751,18 @@ function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
     default:
       return "trading";
   }
+}
+
+function buildHeaderWorkspaceSummary(pathname: string, workspace: WorkspaceSummary): WorkspaceSummary {
+  if (pathname !== "/") {
+    return workspace;
+  }
+
+  return {
+    ...workspace,
+    label: "Daily Control Tower",
+    description: "Ranked operator decisions across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
+  };
 }
 
 function focusRouteTargetWhenReady(
@@ -559,9 +818,9 @@ function focusRouteTargetWhenReady(
 
     focusElementById(fallbackElementId, root);
     fallbackTimeout = null;
-  }, 4000);
+  }, ROUTE_FOCUS_FALLBACK_DELAY_MS);
 
-  targetTimeout = window.setTimeout(cleanup, 15000);
+  targetTimeout = window.setTimeout(cleanup, ROUTE_FOCUS_WATCHDOG_DELAY_MS);
 
   return cleanup;
 }
@@ -571,13 +830,17 @@ function buildWorkspaceBreadcrumbItems(
   workspace: WorkspaceSummary,
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
-  const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
+  if (pathname === "/") {
+    return [{ label: "Workstation", current: true }];
+  }
+
+  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
     {
       label: "Workstation",
-      onClick: () => navigate("/trading")
+      onClick: () => navigate("/")
     },
     {
       label: workspace.label,
@@ -588,197 +851,11 @@ function buildWorkspaceBreadcrumbItems(
   ];
 }
 
-function resolveRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
-  const segments = pathname.split("/").filter(Boolean);
-  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
-  if (routeSegments.length === 0) {
-    return workspace.label;
-  }
-
-  return routeSegments.map(formatRouteSegmentLabel).join(" / ");
-}
-
-function formatRouteSegmentLabel(segment: string): string {
-  const knownLabels: Record<string, string> = {
-    alerts: "Alerts",
-    approvals: "Approvals",
-    "capital-accounts": "Capital Accounts",
-    "covered-call": "Covered Call",
-    designer: "Designer",
-    "entity-setup": "Entity Setup",
-    evidence: "Evidence",
-    "family-office": "Family Office",
-    "formula-workbench": "Formula Workbench",
-    ledger: "Ledger",
-    "operations-continuity": "Operations Continuity",
-    "operations-record": "Operations Record",
-    providers: "Providers",
-    "quant-lab": "Quant Lab",
-    quotes: "Quotes",
-    readiness: "Readiness",
-    "security-master": "Security Master",
-    watchlist: "Watchlist"
-  };
-
-  return knownLabels[segment] ?? segment.split("-").map((part) => (
-    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
-  )).join(" ");
-}
-
-function WorkflowContinuityDock({
-  viewModel,
-  onClearOperatingContext
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-  onClearOperatingContext?: () => void;
-}) {
-  const visibleSteps = viewModel.steps.filter((step) => step.active || step.next);
-  const dockSteps = visibleSteps.length > 0 ? visibleSteps : viewModel.steps.slice(0, 2);
-  const decision = viewModel.decisionBrief;
-
-  return (
-    <section
-      className="workflow-continuity-dock"
-      aria-label={viewModel.ariaLabel}
-      aria-describedby="workflow-continuity-screenreader-summary"
-    >
-      <p id="workflow-continuity-screenreader-summary" className="sr-only">
-        {viewModel.title}. {viewModel.summary} Current route {viewModel.routeLabel}. Next action: {viewModel.nextActionLabel}.
-      </p>
-      <div className="workflow-continuity-context">
-        <div className="flex min-w-0 items-center gap-2">
-          <GitBranch className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="eyebrow-label">{viewModel.contextLabel}</div>
-            <h2 className="workflow-continuity-title">{viewModel.title}</h2>
-          </div>
-        </div>
-        <p className="workflow-continuity-summary">{viewModel.summary}</p>
-        <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
-          <span>{viewModel.contextValue}</span>
-          <span>{viewModel.routeLabel}</span>
-          {viewModel.operatingScope.hasScope && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
-            <button
-              type="button"
-              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              onClick={onClearOperatingContext}
-              aria-label={viewModel.clearSubjectAriaLabel}
-              title={viewModel.clearSubjectAriaLabel}
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-          ) : null}
-        </div>
-        {viewModel.operatingScope.items.length > 0 ? (
-          <dl className="workflow-continuity-scope" aria-label={viewModel.operatingScope.label}>
-            {viewModel.operatingScope.items.map((item) => (
-              <div key={item.id} className="workflow-continuity-scope-chip" aria-label={item.ariaLabel}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-      </div>
-
-      <article
-        className={cn(
-          "workflow-continuity-decision",
-          `workflow-continuity-decision-${decision.statusTone}`
-        )}
-        aria-labelledby="workflow-decision-title"
-      >
-        <div className="workflow-continuity-decision-copy">
-          <div className="workflow-continuity-decision-head">
-            <span className="eyebrow-label">{decision.label}</span>
-            <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
-          </div>
-          <h3 id="workflow-decision-title">{decision.title}</h3>
-          <p>{decision.summary}</p>
-          <div className="workflow-continuity-decision-reason">
-            <span>{decision.reasonLabel}</span>
-            <span>{decision.reason}</span>
-          </div>
-          {decision.evidenceLabel ? (
-            <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
-          ) : null}
-        </div>
-        <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
-          <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
-            <span>{decision.actionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </article>
-
-      <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-        {dockSteps.map((step) => (
-          <Link
-            key={step.id}
-            to={step.href}
-            aria-label={step.ariaLabel}
-            aria-current={step.active ? "step" : undefined}
-            className={cn(
-              "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              `workflow-continuity-step-${step.statusTone}`,
-              step.active && "workflow-continuity-step-active",
-              step.next && "workflow-continuity-step-next"
-            )}
-          >
-            <span className="workflow-continuity-step-label">{step.label}</span>
-            <span className="workflow-continuity-step-description">{step.description}</span>
-            <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
-        <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
-          <span>{viewModel.nextActionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
-
-      <details
-        className="workflow-continuity-operator-flow"
-        aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
-      >
-        <summary>
-          <span>
-            <span className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</span>
-            <span className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</span>
-          </span>
-          <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
-        </summary>
-        <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
-          {viewModel.primaryOperatorFlowSteps.map((step) => (
-            <Link
-              key={step.id}
-              to={step.href}
-              aria-label={step.ariaLabel}
-              aria-current={step.active ? "step" : undefined}
-              className={cn(
-                "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                `workflow-continuity-step-${step.statusTone}`,
-                step.active && "workflow-continuity-step-active"
-              )}
-            >
-              <span className="workflow-continuity-step-label">{step.label}</span>
-              <span className="workflow-continuity-step-description">{step.description}</span>
-              <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-            </Link>
-          ))}
-        </nav>
-      </details>
-    </section>
-  );
-}
-
 class RouteErrorBoundary extends Component<
-  { children: ReactNode; routeKey: string },
+  { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext },
   { hasError: boolean; routeKey: string }
 > {
-  constructor(props: { children: ReactNode; routeKey: string }) {
+  constructor(props: { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext }) {
     super(props);
     this.state = { hasError: false, routeKey: props.routeKey };
   }
@@ -799,7 +876,7 @@ class RouteErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Meridian workstation route failed to render.", error, info.componentStack);
+    reportWorkstationRouteError(this.props.context, error, info);
   }
 
   render() {
@@ -807,9 +884,9 @@ class RouteErrorBoundary extends Component<
       return (
         <RouteRecoveryPanel
           title="Workbench route failed"
-          detail="Meridian could not render this route. Return to Trading or retry after refreshing live data."
-          actionLabel="Open Trading"
-          actionHref="/trading"
+          detail={`Meridian could not render ${this.props.context.routeLabel} in ${this.props.context.workspaceLabel}. Return to the Daily Control Tower or retry after refreshing live data.`}
+          actionLabel="Open Daily Control Tower"
+          actionHref="/"
         />
       );
     }
@@ -823,8 +900,8 @@ function NotFoundScreen() {
     <RouteRecoveryPanel
       title="Workbench route not found"
       detail="The requested workstation route is not available in this Meridian build."
-      actionLabel="Open Trading"
-      actionHref="/trading"
+      actionLabel="Open Daily Control Tower"
+      actionHref="/"
     />
   );
 }
@@ -863,192 +940,15 @@ function RouteRecoveryPanel({
   );
 }
 
-const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
-
-function readStoredOperatingScope(): AppShellOperatingScopeInput {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed: unknown = raw.trim().startsWith("{") ? JSON.parse(raw) : raw;
-    if (typeof parsed === "string") {
-      return { symbol: parsed };
-    }
-
-    if (parsed && typeof parsed === "object") {
-      const record = parsed as Record<string, unknown>;
-      return {
-        symbol: readStoredScopeString(record.symbol),
-        fundAccountId: readStoredScopeString(record.fundAccountId),
-        runId: readStoredScopeString(record.runId),
-        provider: readStoredScopeString(record.provider),
-        from: readStoredScopeString(record.from),
-        to: readStoredScopeString(record.to),
-        date: readStoredScopeString(record.date),
-        asOf: readStoredScopeString(record.asOf)
-      };
-    }
-  } catch {
-    return {};
-  }
-
-  return {};
-}
-
-function writeStoredOperatingScope(scope: AppShellOperatingScopeInput) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    const nextScope = compactOperatingScope(scope);
-    if (!hasOperatingScopeValues(nextScope)) {
-      window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
-      return;
-    }
-
-    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify(nextScope));
-  } catch {
-    // Browser storage can be unavailable in private or locked-down contexts.
-  }
-}
-
-function readStoredScopeString(value: unknown): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value : null;
-}
-
-function mergeOperatingScopes(
-  storedScope: AppShellOperatingScopeInput,
-  routeScope: AppShellOperatingScopeInput
-): AppShellOperatingScopeInput {
-  return compactOperatingScope({
-    symbol: routeScope.symbol ?? storedScope.symbol ?? null,
-    fundAccountId: routeScope.fundAccountId ?? storedScope.fundAccountId ?? null,
-    runId: routeScope.runId ?? storedScope.runId ?? null,
-    provider: routeScope.provider ?? storedScope.provider ?? null,
-    from: routeScope.from ?? storedScope.from ?? null,
-    to: routeScope.to ?? storedScope.to ?? null,
-    date: routeScope.date ?? storedScope.date ?? null,
-    asOf: routeScope.asOf ?? storedScope.asOf ?? null
-  });
-}
-
-function compactOperatingScope(scope: AppShellOperatingScopeInput): AppShellOperatingScopeInput {
-  return {
-    ...(scope.symbol ? { symbol: scope.symbol } : {}),
-    ...(scope.fundAccountId ? { fundAccountId: scope.fundAccountId } : {}),
-    ...(scope.runId ? { runId: scope.runId } : {}),
-    ...(scope.provider ? { provider: scope.provider } : {}),
-    ...(scope.from ? { from: scope.from } : {}),
-    ...(scope.to ? { to: scope.to } : {}),
-    ...(scope.date ? { date: scope.date } : {}),
-    ...(scope.asOf ? { asOf: scope.asOf } : {})
-  };
-}
-
-function hasOperatingScopeValues(scope: AppShellOperatingScopeInput): boolean {
-  return Boolean(
-    scope.symbol
-    || scope.fundAccountId
-    || scope.runId
-    || scope.provider
-    || scope.from
-    || scope.to
-    || scope.date
-    || scope.asOf
-  );
-}
-
-function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShellOperatingScopeInput): boolean {
-  const compactLeft = compactOperatingScope(left);
-  const compactRight = compactOperatingScope(right);
-  return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
-}
-
-function WorkstationTrustStrip({
-  viewModel
-}: {
-  viewModel: AppShellTrustStripState;
-}) {
-  return (
-    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
-      {viewModel.items.map((item) => {
-        const content = (
-          <>
-            <span className="workstation-trust-label">{item.label}</span>
-            <span className="workstation-trust-value">{item.value}</span>
-            <span className="sr-only">
-              {item.detail}
-              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
-            </span>
-          </>
-        );
-
-        return item.href ? (
-          <Link
-            key={item.id}
-            to={item.href}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
-          >
-            {content}
-          </Link>
-        ) : (
-          <span
-            key={item.id}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={item.ariaLabel}
-          >
-            {content}
-          </span>
-        );
-      })}
-    </section>
-  );
-}
-
-function PriceAlertsBell() {
-  const { unacknowledgedCount } = usePriceAlerts();
-  const hasUnread = unacknowledgedCount > 0;
-  if (!hasUnread) {
-    return null;
-  }
-
-  const label = `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`;
-
-  return (
-    <Link
-      to="/data/alerts"
-      aria-label={label}
-      title={label}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-    >
-      <Bell className="h-4 w-4" aria-hidden="true" />
-      <span
-        aria-hidden="true"
-        className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
-      >
-        {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
-      </span>
-    </Link>
-  );
-}
-
 function LegacyWorkspaceRedirect() {
   const location = useLocation();
-  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
+  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/"} replace />;
 }
 
 function WorkspaceRouteFallback({ title }: { title: string }) {
   return (
     <PanelSurface role="status" aria-live="polite" className="flex items-center gap-3 p-4">
-      <LoaderCircle className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+      <Skeleton variant="circle" width={16} aria-hidden="true" />
       <div>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>

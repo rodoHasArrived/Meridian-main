@@ -19,6 +19,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -141,9 +142,10 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_ShouldExposeBootstrapPayloads()
+    public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_WithoutBackingServices_ShouldReturnServiceUnavailable()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         UiApiRoutes.WorkstationStrategy.Should().Be("/api/workstation/strategy");
@@ -153,24 +155,27 @@ public sealed partial class WorkstationEndpointsTests
         UiApiRoutes.WorkstationReportingStructuredExport.Should().Be("/api/workstation/reporting/structured-exports/{exportId}");
         UiApiRoutes.WorkstationTrading.Should().Be("/api/workstation/trading");
 
-        using var strategy = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategy);
-        using var data = await ReadJsonAsync(client, UiApiRoutes.WorkstationData);
-        using var accounting = await ReadJsonAsync(client, UiApiRoutes.WorkstationAccounting);
-        using var reporting = await ReadJsonAsync(client, UiApiRoutes.WorkstationReporting);
-        using var trading = await ReadJsonAsync(client, UiApiRoutes.WorkstationTrading);
-        using var legacyResearch = await ReadJsonAsync(client, UiApiRoutes.WorkstationResearch);
-        using var legacyDataOperations = await ReadJsonAsync(client, UiApiRoutes.WorkstationDataOperations);
-        using var legacyGovernance = await ReadJsonAsync(client, UiApiRoutes.WorkstationGovernance);
+        // Workspace read surfaces must fail honestly with 503 when their backing services are
+        // not registered instead of serving fabricated fallback payloads as live data.
+        var workspaceRoutes = new[]
+        {
+            UiApiRoutes.WorkstationStrategy,
+            UiApiRoutes.WorkstationData,
+            UiApiRoutes.WorkstationAccounting,
+            UiApiRoutes.WorkstationReporting,
+            UiApiRoutes.WorkstationTrading,
+            UiApiRoutes.WorkstationResearch,
+            UiApiRoutes.WorkstationDataOperations,
+            UiApiRoutes.WorkstationGovernance
+        };
 
-        strategy.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
-        data.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
-        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
-        ContainsStringValue(trading.RootElement, "Kill-switch can be engaged manually from Accounting review.").Should().BeTrue();
-        ContainsStringValue(trading.RootElement, "governance lane").Should().BeFalse();
-        legacyResearch.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
-        legacyDataOperations.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
-        legacyGovernance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+        foreach (var route in workspaceRoutes)
+        {
+            var response = await client.GetAsync(route);
+            response.StatusCode.Should().Be(
+                HttpStatusCode.ServiceUnavailable,
+                $"{route} has no backing services registered and must not fabricate data");
+        }
     }
 
     [Fact]
@@ -250,56 +255,41 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackPayloads()
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableInsteadOfFabricatedPayloads()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
+        // The session bootstrap payload stays available with honest zeroed workspace counters.
         using var session = await ReadJsonAsync(client, "/api/workstation/session");
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Meridian Operator");
         session.RootElement.GetProperty("role").GetString().Should().Be("Strategy Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
         session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("strategy");
         session.RootElement.GetProperty("commandCount").GetInt32().Should().Be(6);
+        session.RootElement.GetProperty("workspaceSummary").GetProperty("totalRuns").GetInt32().Should().Be(0);
 
-        using var research = await ReadJsonAsync(client, "/api/workstation/research");
-        research.RootElement.GetProperty("metrics").EnumerateArray()
-            .Should()
-            .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
-                               metric.GetProperty("value").GetString() == "24");
-
-        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
-        governance.RootElement.GetProperty("metrics").EnumerateArray()
-            .Should()
-            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
-                               metric.GetProperty("value").GetString() == "4");
-        governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-
-        using var accounting = await ReadJsonAsync(client, "/api/workstation/accounting");
-        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-
-        using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
-        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
-
-        using var data = await ReadJsonAsync(client, "/api/workstation/data");
-        data.RootElement.GetProperty("exports").EnumerateArray()
-            .Should()
-            .Contain(export => export.GetProperty("target").GetString() == "strategy pack");
-        ContainsStringValue(data.RootElement, "research pack").Should().BeFalse();
-
-        var runs = research.RootElement.GetProperty("runs");
-        runs.GetArrayLength().Should().Be(1);
-        runs[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
-        runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
-        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
-            .Should()
-            .Contain("Mean Reversion FX");
-        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("statusBadgeLabel").GetString()
-            .Should()
-            .Be("PAPER");
-
-        using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
-        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
+        // Workspace payload endpoints must not invent runs, breaks, providers, backfills, or
+        // exports when the backing read services are missing: they respond 503 with a problem
+        // detail naming the missing service.
+        foreach (var route in new[]
+        {
+            "/api/workstation/research",
+            "/api/workstation/strategy",
+            "/api/workstation/governance",
+            "/api/workstation/accounting",
+            "/api/workstation/reporting",
+            "/api/workstation/data"
+        })
+        {
+            var response = await client.GetAsync(route);
+            response.StatusCode.Should().Be(
+                HttpStatusCode.ServiceUnavailable,
+                $"{route} must not serve fabricated fallback data");
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Contain("registered", $"{route} problem detail must name the missing service");
+        }
     }
 
     [Fact]
@@ -606,7 +596,8 @@ public sealed partial class WorkstationEndpointsTests
         assigned.Workflow.Timeline.Should().Contain(entry =>
             entry.EventType == "reconciliation-break-escalated" &&
             entry.Actor == "ops-user" &&
-            entry.CorrelationId == null);
+            !string.IsNullOrWhiteSpace(entry.CorrelationId) &&
+            entry.CorrelationId == assigned.Outcome.CorrelationId);
     }
 
     [Fact]
@@ -1123,7 +1114,42 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsPayload_WithoutManageCredentials_ShouldNotExposeConnectionSummary()
     {
-        await using var app = await CreateAppAsync();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics-no-creds", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "_status"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+
+        var metrics = new ProviderMetricsStatus(
+            Timestamp: new DateTimeOffset(2026, 4, 24, 17, 0, 0, TimeSpan.Zero),
+            Providers:
+            [
+                new ProviderMetrics(
+                    ProviderId: "yahoo",
+                    ProviderType: "Historical bars",
+                    IsConnected: true,
+                    TradesReceived: 0,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 2400,
+                    ConnectionAttempts: 1,
+                    ConnectionFailures: 0,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 4,
+                    AverageLatencyMs: 42,
+                    MinLatencyMs: 25,
+                    MaxLatencyMs: 80,
+                    DataQualityScore: 0.96,
+                    ConnectionSuccessRate: 1,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero))
+            ],
+            TotalProviders: 1,
+            HealthyProviders: 1);
+        await File.WriteAllTextAsync(
+            Path.Combine(root, "_status", "providers.json"),
+            JsonSerializer.Serialize(metrics, ServerJsonOptions));
+
+        // Default test permissions do not include ManageCredentials, so connection summaries
+        // must stay hidden even though real provider metrics are available.
+        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath));
         using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
@@ -1139,6 +1165,9 @@ public sealed partial class WorkstationEndpointsTests
         var observability = CreateRecoveredKernelObservability();
         await using var app = await CreateAppAsync(services =>
         {
+            // Real read services keep the data/governance surfaces live; without them these
+            // endpoints honestly return 503 instead of fabricated fallback payloads.
+            RegisterRunReadServices(services);
             services.AddSingleton(observability);
         });
 
@@ -1291,33 +1320,20 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackStrategyBriefing()
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableStrategyBriefing()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
+        // Without a strategy run read service the briefing endpoints must not invent runs,
+        // watchlists, alerts, or insight tiles: they respond 503.
         var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var briefing = await response.Content.ReadFromJsonAsync<StrategyBriefingDto>(ServerJsonOptions);
-
-        briefing.Should().NotBeNull();
-        briefing!.Workspace.TotalRuns.Should().Be(24);
-        briefing.Workspace.LatestRunId.Should().Be("run-strategy-001");
-        briefing.Workspace.Summary.Should().Be("Strategy is organized around briefing context first, then run studio drill-ins.");
-        briefing.InsightFeed.Summary.Should().Contain("pinned Strategy tiles");
-        briefing.InsightFeed.Summary.Should().NotContain("pinned research tiles");
-        briefing.InsightFeed.Widgets.Should().HaveCount(3);
-        briefing.Watchlists.Should().HaveCount(2);
-        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-strategy-001");
-        briefing.Alerts.Should().NotBeEmpty();
-        briefing.WhatChanged.Should().NotBeEmpty();
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("not registered");
 
         var legacyResponse = await client.GetAsync(UiApiRoutes.WorkstationResearchBriefing);
-        legacyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var legacyBriefing = await legacyResponse.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
-        legacyBriefing.Should().NotBeNull();
-        legacyBriefing!.Workspace.TotalRuns.Should().Be(briefing.Workspace.TotalRuns);
+        legacyResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
     [Fact]
@@ -1531,12 +1547,12 @@ public sealed partial class WorkstationEndpointsTests
             datasetReference: "dataset/us/equities",
             feedReference: "synthetic:equities",
             fundProfileId: fundProfileId).Complete(BuildBacktestResultWithSymbol("AAPL")) with
-            {
-                RunId = "run-wave2-backtest",
-                AuditReference = "audit-run-wave2-backtest",
-                FundProfileId = fundProfileId,
-                FundDisplayName = "Wave 2 Readiness Fund"
-            });
+        {
+            RunId = "run-wave2-backtest",
+            AuditReference = "audit-run-wave2-backtest",
+            FundProfileId = fundProfileId,
+            FundDisplayName = "Wave 2 Readiness Fund"
+        });
 
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
@@ -1786,10 +1802,10 @@ public sealed partial class WorkstationEndpointsTests
             startedAt: new DateTimeOffset(2026, 4, 25, 14, 0, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
             feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
-            {
-                RunId = "run-api-backtest",
-                AuditReference = "audit-run-api-backtest"
-            });
+        {
+            RunId = "run-api-backtest",
+            AuditReference = "audit-run-api-backtest"
+        });
 
         var client = app.GetTestClient();
 
@@ -2444,10 +2460,14 @@ public sealed partial class WorkstationEndpointsTests
                 fundAccountId,
                 new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(brokerageSync);
+            });
+            var client = app.GetTestClient();
 
-            var readiness = await app
-                .GetTestClient()
+            var readiness = await client
                 .GetFromJsonAsync<TradingOperatorReadinessDto>(
                     $"/api/workstation/trading/readiness?fundAccountId={fundAccountId:D}",
                     ServerJsonOptions);
@@ -2463,6 +2483,16 @@ public sealed partial class WorkstationEndpointsTests
                 item.FundAccountId == fundAccountId &&
                 item.Workspace == "Settings" &&
                 item.TargetRoute == "/settings#alpaca-provider-setup");
+
+            var trading = await client.GetFromJsonAsync<WorkstationTradingPayload>(
+                $"/api/workstation/trading?fundAccountId={fundAccountId:D}",
+                ServerJsonOptions);
+            trading.Should().NotBeNull();
+            trading!.Readiness.BrokerageSync.Should().NotBeNull();
+            trading.Readiness.BrokerageSync!.FundAccountId.Should().Be(fundAccountId);
+            trading.Readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == fundAccountId);
         }
         finally
         {
@@ -3981,6 +4011,16 @@ public sealed partial class WorkstationEndpointsTests
             item.ExceptionRoute == "accounting-variance-escalation");
         queue.Should().NotContain(item =>
             string.Equals(item.ExceptionRoute, "governance-variance-escalation", StringComparison.OrdinalIgnoreCase));
+        var seededBreaks = queue.Where(item => item.RunId == runId).ToArray();
+        seededBreaks.Should().OnlyContain(item =>
+            item.Measures != null && item.Measures.Count == 3 &&
+            item.BlockedOutputs != null && item.BlockedOutputs.Count > 0);
+        foreach (var measure in seededBreaks
+                     .SelectMany(item => item.Measures!)
+                     .Where(measure => measure.Expected.HasValue && measure.Actual.HasValue))
+        {
+            measure.Variance.Should().Be(measure.Actual!.Value - measure.Expected!.Value);
+        }
     }
 
     [Fact]
@@ -4101,6 +4141,14 @@ public sealed partial class WorkstationEndpointsTests
         second.Count(item => item.SourceType == "statement").Should().Be(1);
 
         var statementBreak = second.Single(item => item.SourceType == "statement");
+        statementBreak.Measures.Should().ContainSingle(measure =>
+            measure.Kind == ReconciliationBreakMeasureKindDto.Value &&
+            measure.Expected == 20m &&
+            measure.Actual == 10m &&
+            measure.Variance == -10m);
+        var retainedEvidence = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(statementBreak);
+        retainedEvidence.Measures.Should().ContainSingle(measure =>
+            measure.Kind == ReconciliationBreakMeasureKindDto.Value && measure.Variance == -10m);
         var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
             ServerJsonOptions);
@@ -4255,13 +4303,14 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var updated = await response.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
-        updated.Should().NotBeNull();
-        updated!.RunId.Should().Be(runId);
-        updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
-        updated.AssignedTo.Should().Be("ops-review");
-        updated.SignoffStatus.Should().Be("in-review");
-        updated.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
+        var operation = await response.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        operation.Should().NotBeNull();
+        operation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        operation.Item!.RunId.Should().Be(runId);
+        operation.Item.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        operation.Item.AssignedTo.Should().Be("ops-review");
+        operation.Item.SignoffStatus.Should().Be("in-review");
+        operation.Item.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -4294,7 +4343,9 @@ public sealed partial class WorkstationEndpointsTests
                 ResolvedBy: "qa-resolve",
                 ResolutionNote: "Skipping review should fail.",
                 OperatorRationale: "Attempted without review."));
-        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.OK);
+        var blockedResolve = await invalidResolve.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        blockedResolve!.Outcome.State.Should().Be(OperationTerminalState.Blocked);
 
         var review = await client.PostAsJsonAsync(
             $"/api/workstation/reconciliation/break-queue/{breakId}/review",
@@ -4315,11 +4366,134 @@ public sealed partial class WorkstationEndpointsTests
                 OperatorRationale: "Evidence reconciled against source records."));
         resolve.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
-        resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
-        resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("ready-for-signoff");
+        var resolvedOperation = await resolve.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        resolvedOperation.Should().NotBeNull();
+        resolvedOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        resolvedOperation.Item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolvedOperation.Item.ResolvedBy.Should().Be("ops-user");
+        resolvedOperation.Item.SignoffStatus.Should().Be("ready-for-signoff");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueDispositionRoutes_ShouldDeriveExecutorAndRetainIndependentApprovalEvidence()
+    {
+        await using var app = await CreateAppAsync();
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        var measures = new[]
+        {
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Value, 100m, 90m, -10m, 1m, "USD"),
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Quantity, null, null, null, null, "units", "Quantity was not supplied."),
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.CostBasis, null, null, null, null, "USD", "Cost basis was not supplied.")
+        };
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-waive-route", null) with
+        {
+            Measures = measures,
+            BlockedOutputs = ["FinalReport", "PeriodClose"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-supersede-route", null) with
+        {
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("replacement-break-route", null) with
+        {
+            Severity = ReconciliationBreakSeverity.Low,
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-nonmaterial-route", null) with
+        {
+            Severity = ReconciliationBreakSeverity.Low,
+            Variance = 0.1m,
+            ToleranceBand = 1m,
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        var waiveCurrent = (await repository.GetByIdAsync("break-waive-route"))!;
+        var supersedeCurrent = (await repository.GetByIdAsync("break-supersede-route"))!;
+        var nonMaterialCurrent = (await repository.GetByIdAsync("break-nonmaterial-route"))!;
+        var client = app.GetTestClient();
+
+        var waiveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakWaive, "breakId", waiveCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                waiveCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "waive-route-command",
+                CorrelationId: "waive-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: waiveCurrent.Version,
+                Reason: "Approved policy exception.",
+                EvidenceLinks: ["evidence:waive-route"],
+                Privileged: true,
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft,
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:waive-route"));
+        waiveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var waiveOperation = await waiveResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        waiveOperation.Should().NotBeNull();
+        waiveOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        waiveOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        waiveOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Waived);
+        waiveOperation.Item.ResolvedBy.Should().Be("ops-user");
+        waiveOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+        waiveOperation.Item.DispositionApprovalReference.Should().Be("approval:waive-route");
+
+        var supersedeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakSupersede, "breakId", supersedeCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                supersedeCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "supersede-route-command",
+                CorrelationId: "supersede-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: supersedeCurrent.Version,
+                Reason: "Corrected source created a replacement break.",
+                EvidenceLinks: ["evidence:supersede-route"],
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:supersede-route",
+                SupersedingBreakId: "replacement-break-route"));
+        supersedeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var supersedeOperation = await supersedeResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        supersedeOperation.Should().NotBeNull();
+        supersedeOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        supersedeOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        supersedeOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Superseded);
+        supersedeOperation.Item.SupersedingBreakId.Should().Be("replacement-break-route");
+        supersedeOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+
+        var nonMaterialResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakWaive, "breakId", nonMaterialCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                nonMaterialCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "waive-nonmaterial-route-command",
+                CorrelationId: "waive-nonmaterial-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: nonMaterialCurrent.Version,
+                Reason: "Documented immaterial exception.",
+                EvidenceLinks: ["evidence:waive-nonmaterial-route"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft,
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:waive-nonmaterial-route"));
+        nonMaterialResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var waivedOperation = await nonMaterialResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        waivedOperation.Should().NotBeNull();
+        waivedOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        waivedOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        waivedOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Waived);
+        waivedOperation.Item.ResolvedBy.Should().Be("ops-user");
+        waivedOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+        waivedOperation.Item.DispositionApprovalReference.Should().Be("approval:waive-nonmaterial-route");
+        var retainedAudit = await repository.GetAuditHistoryAsync(nonMaterialCurrent.BreakId);
+        var waiverAudit = retainedAudit.Last(item => item.EventType == "Waived");
+        waiverAudit.Actor.Should().Be("ops-user");
+        waiverAudit.Source.Should().Be("workstation-reconciliation-casework");
+        retainedAudit.Should().Contain(item => item.EventType == "SlaChanged");
+        retainedAudit.Should().NotContain(static item => item.Source == "browser-workstation");
     }
 
     [Fact]
@@ -4708,7 +4882,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceRows()
+    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceAndOperationsWorkbench()
     {
         var securityId = Guid.Parse("69696969-6969-6969-6969-696969696969");
         var effectiveFrom = new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero);
@@ -4770,6 +4944,33 @@ public sealed partial class WorkstationEndpointsTests
             item.Symbol == "AAPL" &&
             item.ProviderSource == "Identifier" &&
             item.ConfidenceScore >= 85m);
+        passport.ReferenceDataWorkbench.Should().NotBeNull();
+        passport.ReferenceDataWorkbench!.Sections.Should().Contain(section =>
+            section.SectionId == "provider-evidence" &&
+            section.Status == "Ready");
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "identifier-confidence" &&
+            section.Summary.Contains("identifier", StringComparison.OrdinalIgnoreCase));
+        passport.ReferenceDataWorkbench.OperationsHandoffs.Should().NotBeEmpty();
+        passport.OperationsWorkbench.Should().NotBeNull();
+        passport.OperationsWorkbench!.Panels.Select(panel => panel.PanelId).Should().Contain(
+            [
+                "identity",
+                "provider-evidence",
+                "terms",
+                "operations-readiness",
+                "handoff"
+            ]);
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "valuation" &&
+            readiness.Label == "Valuation-ready");
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "ledger" &&
+            readiness.Label == "Ledger-ready");
+        passport.OperationsWorkbench.Handoffs.Should().Contain(handoff =>
+            handoff.Owner == "Security Master steward" &&
+            handoff.ImpactedOutputs.Contains("Security Master") &&
+            handoff.Route!.StartsWith("/workstation/accounting/security-master", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -5712,9 +5913,9 @@ public sealed partial class WorkstationEndpointsTests
             strategyName: "Lineage Endpoint Strategy",
             runType: RunType.Paper,
             startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)) with
-            {
-                ParentRunId = "lineage-endpoint-backtest"
-            });
+        {
+            ParentRunId = "lineage-endpoint-backtest"
+        });
 
         var client = app.GetTestClient();
         using var timeline = await ReadJsonAsync(client, "/api/workstation/runs/lineage-timeline?mode=paper,backtest&limit=10");
@@ -5911,7 +6112,11 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ReportingWorkspace_ShouldReturnTypedReportingPayloadWithProfiles()
     {
-        await using var app = await CreateAppAsync();
+        // The reporting workspace rides on the accounting payload, which requires the strategy
+        // run read service; without it the endpoint returns 503 instead of fabricated data.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
@@ -5967,14 +6172,21 @@ public sealed partial class WorkstationEndpointsTests
             ],
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
-                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]),
+            accessContext: new ReportAccessQueryContext(
+                ActorPrincipalId: "report.author",
+                CompanyId: "tenant-test",
+                TenantId: "tenant-test",
+                RequireBoundScope: true));
 
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton(new ReportPackRunReadService(
                 new DefaultReportingTemplateCatalog(),
                 workflowService: workflow));
-        }, currentUserRoleProfileName: "ops-control");
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting,
+            currentUserRoleProfileName: "ops-control");
         var client = app.GetTestClient();
         var requestedRoutes = new List<string>();
 
@@ -6128,7 +6340,8 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton(new ReportPackRunReadService(
                 new DefaultReportingTemplateCatalog(),
                 workflowService: workflow));
-        });
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var strangerClient = strangerApp.GetTestClient();
         var strangerResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
         var strangerAnalyticsResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");
@@ -6957,11 +7170,15 @@ public sealed partial class WorkstationEndpointsTests
         string? feedReference = null,
         string? fundProfileId = null)
     {
+        var completedAt = startedAt.AddMinutes(30);
         return StrategyRunEntry.Start(strategyId, strategyName, runType) with
         {
             RunId = runId,
             StartedAt = startedAt,
-            EndedAt = startedAt.AddMinutes(30),
+            EndedAt = completedAt,
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
+            LifecycleEventAtUtc = completedAt,
+            Reason = "Strategy run completed.",
             DatasetReference = datasetReference,
             FeedReference = feedReference,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
@@ -7854,13 +8071,17 @@ public sealed partial class WorkstationEndpointsTests
                 ["entityScopeId"] = "entity-book",
                 ["ledgerBookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
+                ["organizationId"] = "org-ops",
+                ["customerId"] = "customer-investor-services",
+                ["vendorId"] = "vendor-custodian",
+                ["projectId"] = "project-close-automation",
                 ["externalGl.Department"] = "InvestmentOps"
             }
         });
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&ledgerBookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGl.Department=InvestmentOps");
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&ledgerBookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&organizationId=org-ops&customerId=customer-investor-services&vendorId=vendor-custodian&projectId=project-close-automation&externalGl.Department=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7875,6 +8096,10 @@ public sealed partial class WorkstationEndpointsTests
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
             dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("organizationId").GetString().Should().Be("org-ops");
+            dimensions.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+            dimensions.GetProperty("vendorId").GetString().Should().Be("vendor-custodian");
+            dimensions.GetProperty("projectId").GetString().Should().Be("project-close-automation");
             dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
         }
 
@@ -7891,6 +8116,13 @@ public sealed partial class WorkstationEndpointsTests
         bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
         bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var projectMismatch = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?projectId=project-tax-close");
+
+        projectMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var projectMismatchDoc = await JsonDocument.ParseAsync(await projectMismatch.Content.ReadAsStreamAsync());
+        projectMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drilltb-dim/ledger/trial-balance?externalGl.Department=FundAccounting");
@@ -7929,13 +8161,17 @@ public sealed partial class WorkstationEndpointsTests
                 ["entityScopeId"] = "entity-book",
                 ["bookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
+                ["organizationId"] = "org-ops",
+                ["customerId"] = "customer-investor-services",
+                ["vendorId"] = "vendor-custodian",
+                ["projectId"] = "project-close-automation",
                 ["externalGl.Department"] = "InvestmentOps"
             }
         });
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&bookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
+            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&bookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&organizationId=org-ops&customerId=customer-investor-services&vendorId=vendor-custodian&projectId=project-close-automation&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7950,6 +8186,10 @@ public sealed partial class WorkstationEndpointsTests
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
             dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("organizationId").GetString().Should().Be("org-ops");
+            dimensions.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+            dimensions.GetProperty("vendorId").GetString().Should().Be("vendor-custodian");
+            dimensions.GetProperty("projectId").GetString().Should().Be("project-close-automation");
             dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
         }
 
@@ -7966,6 +8206,13 @@ public sealed partial class WorkstationEndpointsTests
         bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
         bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var vendorMismatch = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?vendorId=vendor-admin");
+
+        vendorMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var vendorMismatchDoc = await JsonDocument.ParseAsync(await vendorMismatch.Content.ReadAsStreamAsync());
+        vendorMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drillj-dim/ledger/journal?externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting");
@@ -8221,6 +8468,9 @@ public sealed partial class WorkstationEndpointsTests
             return Task.FromResult<SecurityDetailDto?>(detail);
         }
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             var detail = _details.Values.FirstOrDefault(item =>
@@ -8323,6 +8573,9 @@ public sealed partial class WorkstationEndpointsTests
         }
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+            => Task.CompletedTask;
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
             => Task.CompletedTask;
     }
 
@@ -8561,7 +8814,7 @@ public sealed partial class WorkstationEndpointsTests
                 StatementReference: "row-42",
                 Description: "Cash delta",
                 StatementAmount: 10m,
-                BookAmount: 0m,
+                BookAmount: 20m,
                 Delta: 10m,
                 Tolerance: 1m,
                 Currency: "USD",

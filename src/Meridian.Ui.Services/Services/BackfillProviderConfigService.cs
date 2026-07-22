@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Services;
 
@@ -12,18 +13,27 @@ namespace Meridian.Ui.Services;
 /// Provides metadata descriptors, fallback chain preview, dry-run planning,
 /// and audit trail for provider configuration changes.
 /// </summary>
-public sealed class BackfillProviderConfigService
+public sealed class BackfillProviderConfigService : IBackfillProviderConfigAuditReader
 {
     private static readonly Lazy<BackfillProviderConfigService> _instance = new(() => new BackfillProviderConfigService());
-    private readonly ApiClientService _apiClient;
+    private readonly Func<CancellationToken, Task<BackfillProviderStatusDto[]?>> _fetchProviderStatusesAsync;
     private readonly List<ProviderConfigAuditEntryDto> _auditLog = new();
     private readonly object _auditLock = new();
 
     public static BackfillProviderConfigService Instance => _instance.Value;
 
     private BackfillProviderConfigService()
+        : this(async ct => (await ApiClientService.Instance.GetWithResponseAsync<BackfillProviderStatusDto[]>(
+            "/api/backfill/providers/statuses",
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill provider statuses"))
     {
-        _apiClient = ApiClientService.Instance;
+    }
+
+    internal BackfillProviderConfigService(
+        Func<CancellationToken, Task<BackfillProviderStatusDto[]?>> fetchProviderStatusesAsync)
+    {
+        _fetchProviderStatusesAsync = fetchProviderStatusesAsync
+            ?? throw new ArgumentNullException(nameof(fetchProviderStatusesAsync));
     }
 
     /// <summary>
@@ -378,7 +388,7 @@ public sealed class BackfillProviderConfigService
     /// <summary>
     /// Gets the audit log of provider configuration changes.
     /// </summary>
-    public List<ProviderConfigAuditEntryDto> GetAuditLog(int maxEntries = 100)
+    public IReadOnlyList<ProviderConfigAuditEntryDto> GetAuditLog(int maxEntries = 100)
     {
         lock (_auditLock)
         {
@@ -420,8 +430,7 @@ public sealed class BackfillProviderConfigService
 
         try
         {
-            var statuses = await _apiClient.GetAsync<BackfillProviderStatusDto[]>(
-                "/api/backfill/providers/statuses", ct);
+            var statuses = await _fetchProviderStatusesAsync(ct);
 
             if (statuses != null)
             {

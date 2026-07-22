@@ -23,7 +23,8 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var explorer = await service.GetExplorerAsync(explorerId, tenantId, context.RequestAborted).ConfigureAwait(false);
+            var query = BuildFinancialRecordExplorerQuery(context);
+            var explorer = await service.GetExplorerAsync(explorerId, tenantId, query, context.RequestAborted).ConfigureAwait(false);
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
@@ -84,5 +85,46 @@ public static partial class WorkstationEndpoints
         .Produces<FinancialRecordExplorerSavedViewDto>(200)
         .Produces(400)
         .Produces(404);
+    }
+
+    private static FinancialRecordExplorerQueryDto? BuildFinancialRecordExplorerQuery(HttpContext context)
+    {
+        var query = context.Request.Query;
+        var viewId = query["viewId"].FirstOrDefault()?.Trim() ?? string.Empty;
+        var searchText = query["searchText"].FirstOrDefault()?.Trim() ?? string.Empty;
+        var filters = query["filter"]
+            .Select(ParseFinancialRecordExplorerFilter)
+            .Where(static filter => filter is not null)
+            .Cast<FinancialRecordExplorerFilterDto>()
+            .ToArray();
+
+        return string.IsNullOrWhiteSpace(viewId) &&
+               string.IsNullOrWhiteSpace(searchText) &&
+               filters.Length == 0
+            ? null
+            : new FinancialRecordExplorerQueryDto(viewId, searchText, filters);
+    }
+
+    private static FinancialRecordExplorerFilterDto? ParseFinancialRecordExplorerFilter(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var separator = value.IndexOf(':', StringComparison.Ordinal);
+        if (separator <= 0 || separator == value.Length - 1)
+        {
+            return null;
+        }
+
+        var filterId = value[..separator].Trim();
+        var filterValue = value[(separator + 1)..].Trim();
+        if (string.IsNullOrWhiteSpace(filterId) || string.IsNullOrWhiteSpace(filterValue))
+        {
+            return null;
+        }
+
+        return new FinancialRecordExplorerFilterDto(filterId, filterId, filterValue);
     }
 }

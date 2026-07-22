@@ -61,7 +61,11 @@ public sealed partial class WorkstationEndpointsTests
         UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster,
         UserRole? currentUserRole = null,
         string? currentUserRoleProfileName = null,
-        string? currentUserCompanyId = "tenant-test")
+        string? currentUserCompanyId = "tenant-test",
+        string currentUserName = "ops-user",
+        bool? mapLedgerApi = null,
+        string? currentUserTenantId = null,
+        [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -77,7 +81,11 @@ public sealed partial class WorkstationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
+            var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
+                !string.IsNullOrWhiteSpace(testActor.ToString())
+                    ? testActor.ToString().Trim()
+                    : currentUserName;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             if (currentUserRole.HasValue)
             {
@@ -93,7 +101,12 @@ public sealed partial class WorkstationEndpointsTests
             {
                 var companyId = currentUserCompanyId.Trim();
                 context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = companyId;
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] =
+                    string.IsNullOrWhiteSpace(currentUserTenantId) ? companyId : currentUserTenantId.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(currentUserTenantId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentUserTenantId.Trim();
             }
 
             await next();
@@ -116,10 +129,20 @@ public sealed partial class WorkstationEndpointsTests
         }
 
         app.MapWorkstationEndpoints(jsonOptions);
-        app.MapLedgerEndpoints(jsonOptions);
+        if (mapLedgerApi ?? IsLedgerEndpointTestFile(callerFilePath))
+        {
+            app.MapLedgerEndpoints(jsonOptions);
+        }
 
         await app.StartAsync();
         return app;
+    }
+
+    private static bool IsLedgerEndpointTestFile(string callerFilePath)
+    {
+        var fileName = Path.GetFileName(callerFilePath);
+        return string.Equals(fileName, "WorkstationEndpointsTests.Wave4.cs", StringComparison.Ordinal) ||
+            string.Equals(fileName, "WorkstationEndpointsTests.AccountingConfiguration.cs", StringComparison.Ordinal);
     }
 
     private static void RegisterRunReadServices(IServiceCollection services)
@@ -228,7 +251,8 @@ public sealed partial class WorkstationEndpointsTests
                 Symbol: "OPS",
                 SecurityId: securityId),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)

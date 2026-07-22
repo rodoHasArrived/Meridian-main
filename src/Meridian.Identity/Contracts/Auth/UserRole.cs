@@ -46,5 +46,29 @@ public enum UserRole
     /// <summary>
     /// Read-only guest access to market data and analytics dashboards only.
     /// </summary>
-    ReadOnly
+    ReadOnly,
+
+    /// <summary>
+    /// Fund accountant. Operates daily report packages, delivery readiness, and
+    /// fund-accounting evidence for assigned funds.
+    /// </summary>
+    FundAccountant,
+
+    /// <summary>
+    /// Reporting analyst. Manages report runs, schedules, output review, and
+    /// supporting reporting evidence before approval.
+    /// </summary>
+    ReportingAnalyst,
+
+    /// <summary>
+    /// Controller. Approves and publishes governed report packs with retained
+    /// sign-off context.
+    /// </summary>
+    Controller,
+
+    /// <summary>
+    /// Compliance user. Reviews reporting evidence, approvals, delivery posture,
+    /// and retained audit context.
+    /// </summary>
+    Compliance
 }

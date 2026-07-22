@@ -55,7 +55,8 @@ public sealed record WorkflowPresetDto(
     bool IsPinned,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset? LastUsedAt);
+    DateTimeOffset? LastUsedAt,
+    string? ViewStateEnvelope = null);
 
 /// <summary>
 /// Shared preset catalog projection for the workstation workflow library.
@@ -74,7 +75,8 @@ public sealed record WorkflowPresetSaveRequest(
     string WorkflowId,
     string? ActionId,
     IReadOnlyList<string>? Tags,
-    bool IsPinned);
+    bool IsPinned,
+    string? ViewStateEnvelope = null);
 
 /// <summary>
 /// Request to update a workflow preset's pinned state.

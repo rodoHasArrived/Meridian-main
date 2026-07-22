@@ -1,0 +1,39 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ================================================================= -->
+    <!-- DATA PROVENANCE BADGE                                             -->
+    <!--                                                                   -->
+    <!-- Shared, persistent, non-dismissable badge that labels simulated,  -->
+    <!-- seeded, or sample data so no operator mistakes it for real. The   -->
+    <!-- co-equal browser client renders the same signal via               -->
+    <!-- components/meridian/data-provenance-banner.tsx; the C# seam is     -->
+    <!-- Meridian.Contracts.Operations.DataProvenance. There is            -->
+    <!-- deliberately no close affordance in this style.                   -->
+    <!-- ================================================================= -->
+
+    <Style x:Key="DataProvenanceBadgeBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource BadgeDangerBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeDangerBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="DataProvenanceBadgeLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource BadgeDangerForegroundBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style x:Key="DataProvenanceBadgeDetailStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource BadgeDangerForegroundBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Opacity" Value="0.85" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+
+</ResourceDictionary>

@@ -44,7 +44,8 @@ public sealed record EvidenceArtifactCaptureDto(
     DateTimeOffset? ReceivedAt,
     string? ReceivedBy,
     string? SourceReference,
-    string? ReceiptHash);
+    string? ReceiptHash,
+    EvidenceDocumentIntakeChannelDto? ChannelKind = null);
 
 public sealed record EvidenceArtifactExtractionFieldDto(
     string FieldName,
@@ -56,6 +57,224 @@ public sealed record EvidenceArtifactExtractionFieldDto(
     string? ValidationMessage,
     string? LinkedRecordKind,
     string? LinkedRecordId);
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentClassificationDto>))]
+public enum EvidenceDocumentClassificationDto
+{
+    Unknown = 0,
+    Statement = 1,
+    Invoice = 2,
+    CapitalNotice = 3,
+    CustodianFile = 4,
+    BankEvidence = 5,
+    ValuationSupport = 6,
+    Agreement = 7,
+    TaxSupport = 8,
+    AuditRequestSupport = 9,
+    BankStatement = 10,
+    AdminPackage = 11,
+    TaxAuditSupport = 12
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentIntakeChannelDto>))]
+public enum EvidenceDocumentIntakeChannelDto
+{
+    Unknown = 0,
+    Upload = 1,
+    Email = 2,
+    Sftp = 3,
+    Api = 4,
+    PortalDownload = 5,
+    LocalFile = 6,
+    ImportedFileReference = 7
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceExtractionStatusDto>))]
+public enum EvidenceExtractionStatusDto
+{
+    NotExtracted = 0,
+    Extracted = 1,
+    NeedsReview = 2,
+    Accepted = 3,
+    Rejected = 4,
+    Pending = 5
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentLinkKindDto>))]
+public enum EvidenceDocumentLinkKindDto
+{
+    Unknown = 0,
+    Period = 1,
+    Portfolio = 2,
+    Account = 3,
+    Instrument = 4,
+    Journal = 5,
+    ReconciliationCase = 6,
+    ReportLine = 7,
+    CloseTask = 8,
+    Fund = 9,
+    StatementRun = 10,
+    StatementImport = 11
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentReviewStatusDto>))]
+public enum EvidenceDocumentReviewStatusDto
+{
+    Unreviewed = 0,
+    NeedsReview = 1,
+    Accepted = 2,
+    Rejected = 3
+}
+
+public sealed record EvidenceDocumentLinkDto(
+    EvidenceDocumentLinkKindDto LinkKind,
+    string ObjectId,
+    string? Label = null,
+    string? Route = null,
+    string? Relationship = null);
+
+public sealed record EvidenceDocumentReviewStateDto(
+    EvidenceDocumentReviewStatusDto Status,
+    string? Reviewer = null,
+    DateTimeOffset? ReviewedAt = null,
+    string? Notes = null)
+{
+    public IReadOnlyList<EvidenceDocumentConfirmedFieldDto> ConfirmedFields { get; init; } = [];
+}
+
+public sealed record EvidenceDocumentConfirmedFieldDto(
+    string FieldName,
+    string ConfirmedValue,
+    string ConfirmedBy,
+    DateTimeOffset ConfirmedAt,
+    string? SourceFieldName = null,
+    string? Notes = null);
+
+public sealed record EvidenceDocumentAuditEventDto(
+    DateTimeOffset RecordedAt,
+    string Actor,
+    string Action,
+    string Summary,
+    string? CorrelationId = null);
+
+public sealed record EvidenceDocumentAuthorityDto(
+    bool CanSupport = true,
+    bool CanBlock = true,
+    bool CanSuggest = true,
+    bool CanLink = true,
+    bool CanApprove = false,
+    bool CanPost = false,
+    bool CanCertify = false,
+    bool CanRelease = false,
+    string Boundary = "Evidence documents can support, block, suggest, and link; they cannot approve, post, certify, or release.");
+
+public sealed record EvidenceDocumentSourceRecordDto(
+    string SourceHashSha256,
+    DateTimeOffset ReceivedAt,
+    string SourceChannel,
+    EvidenceDocumentIntakeChannelDto? ChannelKind,
+    string? Actor,
+    string? TenantId,
+    string? Scope,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? ReceiptHash = null);
+
+public sealed record EvidenceRequestDto(
+    string RequestId,
+    string RequestKind,
+    EvidenceValidationSeverityDto Severity,
+    string Status,
+    string Summary,
+    string? TargetKind = null,
+    string? TargetId = null,
+    string? BlockedOutput = null);
+
+public sealed record EvidenceDocumentDto(
+    string DocumentId,
+    string FileName,
+    EvidenceDocumentClassificationDto Classification,
+    string SourceHashSha256,
+    DateTimeOffset ReceivedAt,
+    string SourceChannel,
+    string? Actor,
+    string? TenantId,
+    string? Scope,
+    EvidenceExtractionStatusDto ExtractionStatus,
+    IReadOnlyList<EvidenceDocumentLinkDto> ObjectLinks,
+    EvidenceDocumentReviewStateDto ReviewerState,
+    IReadOnlyList<EvidenceDocumentAuditEventDto> AuditTrail)
+{
+    public string? ContentType { get; init; }
+    public string? SourceSystem { get; init; }
+    public string? SourceReference { get; init; }
+    public string? VaultId { get; init; }
+    public string? ArtifactId { get; init; }
+    public string? ManifestRoute { get; init; }
+    public string? ExtractorId { get; init; }
+    public EvidenceDocumentIntakeChannelDto? ChannelKind { get; init; }
+    public EvidenceDocumentSourceRecordDto? SourceRecord { get; init; }
+    public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+    public EvidenceDocumentAuthorityDto Authority { get; init; } = new();
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceManifestPackageKindDto>))]
+public enum EvidenceManifestPackageKindDto
+{
+    Unknown = 0,
+    EvidencePacket = 1,
+    CloseBinder = 2,
+    AuditPacket = 3,
+    ReportSupportPackage = 4,
+    TaxSupportPackage = 5,
+    OperationalEventSupportPackage = 6
+}
+
+public sealed record EvidenceManifestDto(
+    string ManifestId,
+    DateTimeOffset FrozenAt,
+    string PackageKind,
+    string PackageId,
+    string ContentHashSha256,
+    IReadOnlyList<EvidenceDocumentDto> Documents,
+    IReadOnlyList<EvidenceRequestDto> Requests,
+    IReadOnlyList<EvidenceDocumentLinkDto> ObjectLinks)
+{
+    public EvidenceManifestPackageKindDto PackageKindCode { get; init; } = EvidenceManifestPackageKindDto.Unknown;
+}
+
+public sealed record EvidenceDocumentExtractionRequestDto(
+    string FileName,
+    string? ContentType,
+    string IntakeChannel,
+    string? SourceSystem,
+    string? SourceReference,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto> ManualFields);
+
+public sealed record EvidenceDocumentExtractionResultDto(
+    EvidenceExtractionStatusDto Status,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto> Fields,
+    string ExtractorId,
+    string? Summary);
+
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentIntakeSourceKindDto>))]
+public enum EvidenceDocumentIntakeSourceKindDto
+{
+    UploadedContent = 0,
+    LocalFile = 1,
+    ImportedFileReference = 2,
+    Email = 3,
+    Sftp = 4,
+    Api = 5,
+    PortalDownload = 6
+}
+
+public sealed record EvidenceDocumentIntakeSourceDto(
+    EvidenceDocumentIntakeSourceKindDto SourceKind,
+    string? Path = null,
+    string? Uri = null,
+    string? DisplayName = null,
+    string? ExpectedContentHashSha256 = null);
 
 public sealed partial record EvidenceArtifactRefDto
 {
@@ -194,6 +413,8 @@ public sealed record EvidenceVaultIdentityDto(
     public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
     public IReadOnlyList<EvidenceRequestListDto> RequestLists { get; init; } = [];
     public IReadOnlyList<EvidenceSupportRequestDto> SupportRequests { get; init; } = [];
+    public IReadOnlyList<EvidenceDocumentDto> Documents { get; init; } = [];
+    public EvidenceManifestDto? ManifestSnapshot { get; init; }
 }
 
 public sealed record EvidenceVaultArtifactDto(
@@ -210,6 +431,7 @@ public sealed record EvidenceVaultArtifactDto(
 {
     public EvidenceArtifactCaptureDto? Capture { get; init; }
     public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+    public EvidenceDocumentDto? Document { get; init; }
 }
 
 public sealed record EvidenceSupportRequestDto(
@@ -224,6 +446,18 @@ public sealed record EvidenceSupportRequestDto(
     string? WorkItemId,
     string? BlockedOutput);
 
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceRequestListKindDto>))]
+public enum EvidenceRequestListKindDto
+{
+    Unknown = 0,
+    Evidence = 1,
+    Close = 2,
+    Audit = 3,
+    Tax = 4,
+    ReportPackage = 5,
+    OperationalEvent = 6
+}
+
 public sealed record EvidenceRequestListDto(
     string RequestListId,
     string RequestListKind,
@@ -235,10 +469,14 @@ public sealed record EvidenceRequestListDto(
     IReadOnlyList<string> RequestIds,
     IReadOnlyList<string> EvidenceKinds,
     IReadOnlyList<string> BlockedOutputs,
-    string Summary);
+    string Summary)
+{
+    public EvidenceRequestListKindDto RequestListKindCode { get; init; } = EvidenceRequestListKindDto.Unknown;
+}
 
 public sealed record EvidenceVaultRequestListQueryDto(
     string? RequestListKind = null,
+    EvidenceRequestListKindDto? RequestListKindCode = null,
     string? TargetKind = null,
     string? TargetId = null,
     string? Status = null,
@@ -264,14 +502,55 @@ public sealed record EvidenceVaultRequestListEntryDto(
     string SubjectId,
     string ManifestRoute,
     DateTimeOffset RetainedAt,
+    IReadOnlyList<EvidenceSupportRequestDto> SupportRequests)
+{
+    public EvidenceRequestListKindDto RequestListKindCode { get; init; } = EvidenceRequestListKindDto.Unknown;
+}
+
+public sealed record EvidenceVaultDocumentQueryDto(
+    EvidenceDocumentClassificationDto? Classification = null,
+    EvidenceDocumentIntakeChannelDto? ChannelKind = null,
+    EvidenceExtractionStatusDto? ExtractionStatus = null,
+    EvidenceDocumentReviewStatusDto? ReviewStatus = null,
+    EvidenceDocumentLinkKindDto? LinkKind = null,
+    string? ObjectId = null,
+    string? SubjectKind = null,
+    string? SubjectId = null,
+    string? TenantId = null,
+    string? Scope = null,
+    int? MaxResults = null);
+
+public sealed record EvidenceVaultDocumentEntryDto(
+    EvidenceDocumentDto Document,
+    string VaultId,
+    string SubjectKind,
+    string SubjectId,
+    string ManifestRoute,
+    DateTimeOffset RetainedAt,
+    string StorageKind,
+    int OpenRequestCount,
     IReadOnlyList<EvidenceSupportRequestDto> SupportRequests);
+
+public sealed record EvidenceVaultDocumentReviewRequestDto(
+    EvidenceDocumentReviewStatusDto Status,
+    string Reviewer,
+    string? Notes = null,
+    EvidenceExtractionStatusDto? ExtractionStatus = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<EvidenceDocumentConfirmedFieldDto> ConfirmedFields { get; init; } = [];
+}
+
+public sealed record EvidenceVaultDocumentReviewResponseDto(
+    EvidenceVaultDocumentEntryDto Entry,
+    EvidenceDocumentAuditEventDto AuditEvent);
 
 public sealed record EvidenceVaultIntakeRequestDto(
     string SubjectKind,
     string SubjectId,
     string IntakeChannel,
     string FileName,
-    string ContentBase64,
+    string? ContentBase64 = null,
     string? ContentType = null,
     string? SourceSystem = null,
     string? SourceReference = null,
@@ -279,7 +558,19 @@ public sealed record EvidenceVaultIntakeRequestDto(
     string? ExpectedContentHashSha256 = null,
     IReadOnlyList<EvidenceArtifactExtractionFieldDto>? ExtractedFields = null,
     EvidenceSubjectLinkageDto? Linkage = null,
-    EvidenceLifecycleMetadataDto? Lifecycle = null);
+    EvidenceLifecycleMetadataDto? Lifecycle = null)
+{
+    public EvidenceDocumentClassificationDto Classification { get; init; } = EvidenceDocumentClassificationDto.Unknown;
+    public string? Actor { get; init; }
+    public string? TenantId { get; init; }
+    public string? Scope { get; init; }
+    public EvidenceExtractionStatusDto? ExtractionStatus { get; init; }
+    public EvidenceDocumentIntakeChannelDto? IntakeChannelKind { get; init; }
+    public string? ExtractorId { get; init; }
+    public EvidenceDocumentReviewStateDto? ReviewerState { get; init; }
+    public IReadOnlyList<EvidenceDocumentLinkDto> ObjectLinks { get; init; } = [];
+    public EvidenceDocumentIntakeSourceDto? IntakeSource { get; init; }
+}
 
 public sealed record EvidenceVaultIntakeResponseDto(
     string IntakeId,
@@ -293,7 +584,10 @@ public sealed record EvidenceVaultIntakeResponseDto(
     DateTimeOffset CapturedAt,
     EvidenceArtifactCaptureDto Capture,
     IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields,
-    EvidenceVaultIdentityDto VaultIdentity);
+    EvidenceVaultIdentityDto VaultIdentity)
+{
+    public EvidenceDocumentDto? Document { get; init; }
+}
 
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net.WebSockets;
 using Meridian.Core.Config;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Configuration;
@@ -9,28 +10,41 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
 
 namespace Meridian.Infrastructure.Adapters.Synthetic;
 
-[DataSource("synthetic", "Synthetic Market Data", DataSources.DataSourceType.Hybrid, DataSourceCategory.Free, Description = "Deterministic synthetic real-time and historical market data for offline development.")]
+[DataSource("synthetic", "Synthetic Market Data", DataSources.DataSourceType.Realtime, DataSourceCategory.Free, Description = "Deterministic synthetic real-time market data for offline development.")]
 public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearchProvider
 {
     private readonly SyntheticMarketDataConfig _config;
     private readonly IMarketEventPublisher _publisher;
     private readonly ConcurrentDictionary<int, SyntheticSubscription> _tradeSubscriptions = new();
     private readonly ConcurrentDictionary<int, SyntheticSubscription> _depthSubscriptions = new();
+    private readonly ProviderConnectionSupervisor _connectionSupervisor;
     private int _nextSubscriptionId;
     private int _streamEventCounter;
     private volatile bool _connected;
+    private bool _disposed;
 
     public SyntheticMarketDataClient(IMarketEventPublisher publisher, SyntheticMarketDataConfig? config = null)
     {
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _config = config ?? new SyntheticMarketDataConfig(Enabled: true);
+        _connectionSupervisor = new ProviderConnectionSupervisor(
+            providerName: ProviderDisplayName,
+            maxReconnectAttempts: 0,
+            retryBaseDelay: TimeSpan.Zero,
+            maxRetryDelay: TimeSpan.Zero);
+        _connectionSupervisor.StateChanged += OnConnectionSupervisorStateChanged;
     }
 
     public bool IsEnabled => _config.Enabled;
+
+    /// <inheritdoc/>
+    public bool IsSimulated => true;
+
     public string ProviderId => "synthetic";
     public string ProviderDisplayName => "Synthetic Market Data";
     public string ProviderDescription => "Synthetic trades, BBO quotes, level-2 order books, and reference data for offline development.";
@@ -49,18 +63,69 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
     public string DisplayName => ProviderDisplayName;
     public int Priority => ProviderPriority;
 
-    public Task ConnectAsync(CancellationToken ct = default)
+    /// <inheritdoc />
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <inheritdoc />
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
-        _connected = true;
-        return Task.CompletedTask;
+        if (!IsEnabled)
+        {
+            return new WebSocketConnectionDiagnostics(
+                ProviderName: ProviderDisplayName,
+                LifecycleState: ProviderConnectionLifecycleState.Disabled,
+                WebSocketState: WebSocketState.None,
+                IsConnected: false,
+                IsReconnecting: false,
+                ReconnectAttempts: 0,
+                LastConnectedAt: null,
+                LastDisconnectedAt: null,
+                LastHeartbeatReceivedAt: null,
+                LastMessageReceivedAt: null,
+                LastReconnectAttemptAt: null,
+                LastError: null,
+                LastFailureKind: null,
+                ConnectionAge: null,
+                IdleDuration: null,
+                ActiveSubscriptions: _tradeSubscriptions.Count + _depthSubscriptions.Count);
+        }
+
+        var supervisor = _connectionSupervisor.GetSnapshot();
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: ProviderDisplayName,
+            LifecycleState: supervisor.LifecycleState,
+            WebSocketState: WebSocketState.None,
+            IsConnected: supervisor.IsConnected,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt,
+            LastHeartbeatReceivedAt: null,
+            LastMessageReceivedAt: null,
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
+            LastError: supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
+            IdleDuration: null,
+            ActiveSubscriptions: _tradeSubscriptions.Count + _depthSubscriptions.Count,
+            FailedSubscriptions: _tradeSubscriptions.Values.Count(static subscription => subscription.PublishTask.IsFaulted)
+                + _depthSubscriptions.Values.Count(static subscription => subscription.PublishTask.IsFaulted));
     }
 
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public Task ConnectAsync(CancellationToken ct = default)
     {
-        _connected = false;
-        await CancelSubscriptionsAsync(_tradeSubscriptions, ct).ConfigureAwait(false);
-        await CancelSubscriptionsAsync(_depthSubscriptions, ct).ConfigureAwait(false);
+        if (!IsEnabled)
+        {
+            ct.ThrowIfCancellationRequested();
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+            return Task.CompletedTask;
+        }
+
+        return _connectionSupervisor.ConnectAsync(ConnectTransportAsync, ct);
     }
+
+    public Task DisconnectAsync(CancellationToken ct = default)
+        => _connectionSupervisor.DisconnectAsync(DisconnectTransportAsync, ct);
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
@@ -108,9 +173,41 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
 
     public async ValueTask DisposeAsync()
     {
-        await DisconnectAsync().ConfigureAwait(false);
+        if (_disposed)
+            return;
+
+        try
+        {
+            await DisconnectAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _disposed = true;
+            _connected = false;
+            _connectionSupervisor.StateChanged -= OnConnectionSupervisorStateChanged;
+            await _connectionSupervisor.DisposeAsync().ConfigureAwait(false);
+        }
+
         GC.SuppressFinalize(this);
     }
+
+    private Task ConnectTransportAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _connected = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task DisconnectTransportAsync(CancellationToken ct)
+    {
+        _connected = false;
+        await CancelSubscriptionsAsync(_tradeSubscriptions, ct).ConfigureAwait(false);
+        await CancelSubscriptionsAsync(_depthSubscriptions, ct).ConfigureAwait(false);
+    }
+
+    private void OnConnectionSupervisorStateChanged(ProviderConnectionSupervisorSnapshot _)
+        => ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
 
     private async Task ApplyStreamingScenarioAsync(CancellationToken ct)
     {
@@ -250,13 +347,22 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
 
         if (pending.Count > 0)
         {
-            await Task.WhenAll(pending.Select(subscription => subscription.PublishTask))
-                .WaitAsync(ct)
-                .ConfigureAwait(false);
+            try
+            {
+                await Task.WhenAll(pending.Select(subscription => subscription.PublishTask))
+                    .WaitAsync(ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                // Subscription lifetime cancellation is the expected way to stop the loops.
+            }
+            finally
+            {
+                foreach (var subscription in pending)
+                    subscription.Cts.Dispose();
+            }
         }
-
-        foreach (var subscription in pending)
-            subscription.Cts.Dispose();
     }
 
     private static async Task DelayAsync(TimeSpan delay, CancellationToken ct)

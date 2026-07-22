@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-16T04:04:46Z",
+  "generatedAtUtc": "2026-07-12T02:59:24Z",
   "repository": "Meridian-main",
   "activeScope": {
     "productThesis": "Meridian proves operational records from source evidence to governed output.",
@@ -95,84 +95,20 @@
     ],
     "decisionRecords": [
       {
-        "path": "docs/adr/001-provider-abstraction.md",
-        "title": "Meridian ADR: ADR-001: Provider Abstraction Pattern"
-      },
-      {
-        "path": "docs/adr/002-tiered-storage-architecture.md",
-        "title": "Meridian ADR: ADR-002: Tiered Storage Architecture"
-      },
-      {
-        "path": "docs/adr/003-microservices-decomposition.md",
-        "title": "Meridian ADR: ADR-003: Microservices Decomposition"
-      },
-      {
-        "path": "docs/adr/004-async-streaming-patterns.md",
-        "title": "Meridian ADR: ADR-004: Async Streaming Patterns"
-      },
-      {
-        "path": "docs/adr/005-attribute-based-discovery.md",
-        "title": "Meridian ADR: ADR-005: Attribute-Based Provider Discovery"
-      },
-      {
-        "path": "docs/adr/006-domain-events-polymorphic-payload.md",
-        "title": "Meridian ADR: ADR-006: Domain Events Polymorphic Payload Pattern"
-      },
-      {
-        "path": "docs/adr/007-write-ahead-log-durability.md",
-        "title": "Meridian ADR: ADR-007: Write-Ahead Log (WAL) + Event Pipeline Durability"
-      },
-      {
-        "path": "docs/adr/008-multi-format-composite-storage.md",
-        "title": "Meridian ADR: ADR-008: Multi-Format Composite Storage Sink Pattern"
-      },
-      {
-        "path": "docs/adr/009-fsharp-interop.md",
-        "title": "Meridian ADR: ADR-009: F# Type-Safe Domain with C# Interop Bridge"
-      },
-      {
-        "path": "docs/adr/010-httpclient-factory.md",
-        "title": "Meridian ADR: ADR-010: HttpClientFactory for HTTP Client Lifecycle Management"
-      },
-      {
-        "path": "docs/adr/011-centralized-configuration-and-credentials.md",
-        "title": "Meridian ADR: ADR-011: Centralized Configuration and Credential Management"
-      },
-      {
-        "path": "docs/adr/012-monitoring-and-alerting-pipeline.md",
-        "title": "Meridian ADR: ADR-012: Unified Monitoring and Alerting Pipeline"
-      },
-      {
-        "path": "docs/adr/013-bounded-channel-policy.md",
-        "title": "Meridian ADR: ADR-013: Bounded Channel Pipeline Policy with Backpressure"
-      },
-      {
-        "path": "docs/adr/014-json-source-generators.md",
-        "title": "Meridian ADR: ADR-014: High-Performance JSON Serialization via Source Generators"
-      },
-      {
-        "path": "docs/adr/015-strategy-execution-contract.md",
-        "title": "Meridian ADR: ADR-015: Strategy Execution Contract"
-      },
-      {
-        "path": "docs/adr/016-custody-cash-reconciliation-break-typing.md",
-        "title": "Meridian ADR: ADR 016: Distinct custody-position and cash reconciliation breaks with shared workflow envelope"
-      },
-      {
-        "path": "docs/adr/016-platform-architecture-migration.md",
-        "title": "Meridian ADR: ADR-016: Platform Architecture Migration Mandate"
-      },
-      {
         "path": "docs/adr/017-modular-operational-monolith.md",
         "title": "ADR-017: Modular Operational Monolith"
       },
       {
-        "path": "docs/adr/_template.md",
-        "title": "Meridian ADR: ADR-XXX: [Title]"
+        "path": "docs/adr/018-declarative-statement-mapping-profiles.md",
+        "title": "ADR-018: Declarative Statement Mapping Profiles and the Statement Connector Library"
       },
       {
         "path": "docs/adr/README.md",
-        "title": "Architectural Decision Records (ADRs) \u2014 migration index"
+        "title": "Architectural Decision Records (ADRs)"
+      },
+      {
+        "path": "docs/adr/_template.md",
+        "title": "ADR-XXX: [Title]"
       }
     ]
   },
@@ -355,6 +291,7 @@
       "project_references": [
         "src/Meridian.Contracts/Meridian.Contracts.csproj",
         "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
         "src/Meridian.FSharp/Meridian.FSharp.fsproj",
         "src/Meridian.Identity/Meridian.Identity.csproj",
         "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
@@ -613,6 +550,7 @@
       "project_references": [
         "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
         "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
         "src/Meridian.Platform/Meridian.Platform.csproj",
         "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
         "src/Meridian.Reporting/Meridian.Reporting.csproj",
@@ -665,7 +603,8 @@
       "project_references": [
         "src/Meridian.Application/Meridian.Application.csproj",
         "src/Meridian.Contracts/Meridian.Contracts.csproj",
-        "src/Meridian.Storage/Meridian.Storage.csproj"
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "tests/Meridian.TestSupport/Meridian.TestSupport.csproj"
       ]
     },
     {
@@ -692,6 +631,14 @@
       "project_references": [
         "src/Meridian.QuantScript/Meridian.QuantScript.csproj"
       ]
+    },
+    {
+      "name": "Meridian.TestSupport",
+      "path": "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+      "target_frameworks": [
+        "net10.0"
+      ],
+      "project_references": []
     },
     {
       "name": "Meridian.Tests",
@@ -724,7 +671,8 @@
         "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
         "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
         "src/Meridian.Workflow/Meridian.Workflow.csproj",
-        "src/Meridian/Meridian.csproj"
+        "src/Meridian/Meridian.csproj",
+        "tests/Meridian.TestSupport/Meridian.TestSupport.csproj"
       ]
     },
     {
@@ -752,7 +700,7 @@
     }
   ],
   "counts": {
-    "projects": 41,
+    "projects": 42,
     "constitutionDocs": 3,
     "domainDocs": 3,
     "contextPacks": 2

@@ -13,26 +13,36 @@ on:
         default: "scripts/dev/web-screenshot-routes.json"
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
-  group: web-screenshot-capture-${{ github.ref }}
-  cancel-in-progress: false
+  # The workflow always checks out the default branch and writes the fixed
+  # automation/web-screenshot-capture branch, so every dispatch must share one
+  # concurrency lane. Otherwise duplicate dispatches can queue and reopen a
+  # screenshot PR from the same base after the first PR merges.
+  group: web-screenshot-capture
+  cancel-in-progress: true
 
 env:
   CI: true
-  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 720
+  PLAYWRIGHT_INSTALL_ATTEMPTS: 2
+  PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 1200
 
 jobs:
   capture-web-screenshots:
     name: Capture Web Workstation Screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 50
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6.0.2
         with:
+          # Always capture and propose the refresh from the canonical default branch so a
+          # dispatch from a feature branch cannot publish that branch's commits into the
+          # automation/web-screenshot-capture PR alongside the screenshots.
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           fetch-depth: 1
 
@@ -44,42 +54,62 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
+        # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
+        # run is reproducible and cannot silently drift the dependency tree.
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright system dependencies
+        run: npx --prefix src/Meridian.Ui/dashboard playwright install-deps chromium
 
       - name: Install Playwright browser
         run: |
           set -euo pipefail
+          install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
           install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
+
           run_playwright_install() {
             set +e
-            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install "$@"
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium
             install_exit_code=$?
             set -e
             return "$install_exit_code"
           }
 
-          if run_playwright_install --with-deps chromium; then
-            echo "[INFO] Playwright browser and dependency install completed."
-          else
-            playwright_install_exit_code=$?
-            if [ "$playwright_install_exit_code" -eq 124 ]; then
-              echo "::warning::Playwright dependency install timed out after ${install_timeout_seconds}s; retrying browser-only install."
+          attempt=1
+          while [ "$attempt" -le "$install_attempts" ]; do
+            echo "[INFO] Installing Playwright Chromium browser (attempt ${attempt}/${install_attempts}; timeout ${install_timeout_seconds}s)."
+            if run_playwright_install; then
+              echo "[INFO] Playwright Chromium browser install completed."
+              exit 0
             else
-              echo "::warning::Playwright dependency install failed with exit code ${playwright_install_exit_code}; retrying browser-only install."
+              install_exit_code=$?
             fi
 
-            if run_playwright_install chromium; then
-              echo "[INFO] Playwright browser-only install completed."
-            else
-              browser_only_install_exit_code=$?
-              if [ "$browser_only_install_exit_code" -eq 124 ]; then
-                echo "::error::Playwright browser-only install timed out after ${install_timeout_seconds}s."
+            if [ "$attempt" -eq "$install_attempts" ]; then
+              if [ "$install_exit_code" -eq 124 ]; then
+                echo "::error::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}."
               else
-                echo "::error::Playwright browser-only install failed with exit code ${browser_only_install_exit_code}."
+                echo "::error::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}."
               fi
-              exit "$browser_only_install_exit_code"
+              exit "$install_exit_code"
             fi
-          fi
+
+            if [ "$install_exit_code" -eq 124 ]; then
+              echo "::warning::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}; retrying."
+            else
+              echo "::warning::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}; retrying."
+            fi
+
+            attempt=$((attempt + 1))
+          done
 
       - name: Validate web output directory
         id: validate_output_dir
@@ -116,7 +146,6 @@ jobs:
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots
         id: capture_web
-        continue-on-error: true
         env:
           OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
           ROUTES_CONFIG: ${{ inputs.config }}
@@ -159,10 +188,41 @@ jobs:
           fi
 
       - name: Upload screenshot artifacts
-        if: ${{ steps.capture_web.outcome == 'success' }}
+        # Upload whatever screenshots were captured even when some routes failed
+        # to render, so a partial run still surfaces the screens that worked.
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload capture manifest
+        # The run manifest records per-route pass/fail status, browser render
+        # errors, and the tail of the dev-server logs. Uploading it on every run
+        # (including failures) makes a broken capture diagnosable without a
+        # re-run.
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: web-screenshots-manifest-${{ github.run_number }}
+          path: artifacts/web-screenshots/manifest.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Open screenshot refresh pull request
+        if: ${{ steps.capture_web.outcome == 'success' }}
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: automation/web-screenshot-capture
+          base: ${{ github.event.repository.default_branch }}
+          title: "chore: refresh web workstation screenshot catalog"
+          commit-message: "chore: refresh web workstation screenshot catalog"
+          body: |
+            Automated refresh of the web workstation screenshot catalog captured by the
+            Web Screenshot Capture workflow. Review the rendered routes before merging.
+          add-paths: |
+            ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
+          delete-branch: true

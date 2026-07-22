@@ -82,6 +82,34 @@ internal static class AccountingWorkspacePresentationService
         ];
     }
 
+    internal static IReadOnlyList<WorkspaceQueueItem> BuildCloseSupportDecisionQueue(FinancialOperationsCommandCenterDto? commandCenter)
+    {
+        var decision = commandCenter?.CloseSupportDecision;
+        if (decision is null)
+        {
+            return [];
+        }
+
+        return decision.Decisions
+            .OrderByDescending(static row => row.IsBlocking)
+            .ThenBy(static row => row.Category, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.Label, StringComparer.OrdinalIgnoreCase)
+            .Select(static row => new WorkspaceQueueItem
+            {
+                Title = $"{row.Category} - {row.Label}",
+                Detail = $"{row.Detail} {row.RequiredAction}".Trim(),
+                StatusLabel = row.Status,
+                CountLabel = row.IsBlocking ? "Blocking" : "Review",
+                Tone = row.IsBlocking ? WorkspaceTone.Warning : WorkspaceTone.Info,
+                IsBlocked = row.IsBlocking,
+                PrimaryActionId = MapCloseSupportDecisionAction(row.Category),
+                PrimaryActionLabel = row.IsBlocking ? "Resolve" : "Review",
+                SecondaryActionId = "FundAuditTrail",
+                SecondaryActionLabel = "Evidence"
+            })
+            .ToArray();
+    }
+
     internal static IReadOnlyList<WorkspaceQueueItem> BuildReconciliationQueue(ReconciliationSummary reconciliation, FundLedgerSummary? ledger) =>
     [
         new WorkspaceQueueItem { Title = "Reconciliation review queue", Detail = reconciliation.OpenBreakCount > 0 ? $"{reconciliation.OpenBreakCount} open break(s) across {reconciliation.RunCount} recent run(s) with {reconciliation.BreakAmountTotal:C0} at risk." : $"{reconciliation.RunCount} reconciliation run(s) are currently matched and ready for sign-off.", StatusLabel = reconciliation.OpenBreakCount > 0 ? "Approval hold" : "Matched", CountLabel = reconciliation.OpenBreakCount > 0 ? $"{reconciliation.OpenBreakCount} open" : $"{reconciliation.RunCount} reviewed", Tone = reconciliation.OpenBreakCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success, PrimaryActionId = "FundReconciliation", PrimaryActionLabel = "Review Breaks", SecondaryActionId = "FundTrialBalance", SecondaryActionLabel = "Trial Balance" },
@@ -492,6 +520,16 @@ internal static class AccountingWorkspacePresentationService
 
         return string.Join(", ", reporting.ReportPackDistributions.Select(static distribution => distribution.Recipient));
     }
+
+    private static string MapCloseSupportDecisionAction(string category) => category switch
+    {
+        "Unresolved exceptions" => "FundReconciliation",
+        "Approvals" => "AccountingApprovals",
+        "NAV/report dependencies" => "FundCashFinancing",
+        "Retained evidence gaps" => "FundAuditTrail",
+        "Lock/reopen posture" => "FundAccountingConfigure",
+        _ => "FundLedger"
+    };
 
     private static FinancialOperationsWorkflowStep CreateFinancialOperationsWorkflowStep(
         string id,

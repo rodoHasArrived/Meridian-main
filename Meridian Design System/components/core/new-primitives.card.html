@@ -1,0 +1,76 @@
+<!-- @dsCard group="Core" viewport="860x560" name="Timestamp · Delta · TagInput · SplitPane" subtitle="Content-rule primitives and the resizable rail" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>New primitives</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { Timestamp, Delta, TagInput, SplitPane, Eyebrow, KeyValueGrid } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Box({ t, children }) {
+  return (
+    <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+      <Eyebrow>{t}</Eyebrow>
+      {children}
+    </div>
+  );
+}
+
+function App() {
+  const [tags, setTags] = useState(["AAPL", "NVDA", "TLT"]);
+  const now = Date.now();
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 820 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+        <Box t="Timestamp">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+            <Timestamp value={now} />
+            <Timestamp value={now} format="time" />
+            <Timestamp value={now - 372000} format="relative" />
+          </div>
+        </Box>
+        <Box t="Delta">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+            <Delta value={1.84} suffix="%" />
+            <Delta value={-4118.22} />
+            <Delta value={0} suffix="%" />
+            <Delta value={12.4} suffix=" bps" arrow />
+          </div>
+        </Box>
+        <Box t="TagInput">
+          <TagInput value={tags} onChange={setTags} uppercase placeholder="Add symbol…" aria-label="Watchlist symbols" />
+        </Box>
+      </div>
+      <Box t="SplitPane — drag the divider, or focus it and use arrow keys">
+        <div style={{ height: 220, border: "1px solid var(--border)" }}>
+          <SplitPane direction="horizontal" initial={260} min={180} max={480}>
+            <div style={{ padding: 12, fontSize: 13, color: "var(--text-secondary)" }}>
+              Run list rail — fixed pane, resizable 180–480px.
+            </div>
+            <div style={{ padding: 12 }}>
+              <KeyValueGrid columns={2} items={[
+                { label: "Run", value: "momentum.v4 · #2214" },
+                { label: "State", value: "Completed" },
+                { label: "Sharpe", value: "1.31" },
+                { label: "Max DD", value: "-8.2%" },
+              ]} />
+            </div>
+          </SplitPane>
+        </div>
+      </Box>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

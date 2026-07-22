@@ -30,7 +30,7 @@ public sealed class AggregatePortfolioViewModelTests
 
         state.IsVisible.Should().BeTrue();
         state.Title.Should().Be("Aggregate portfolio unavailable");
-        state.Detail.Should().Contain("local workstation host");
+        state.Detail.Should().Contain("local workstation service");
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class AggregatePortfolioViewModelTests
 
         state.IsVisible.Should().BeTrue();
         state.Title.Should().Be("Waiting for aggregate portfolio");
-        state.Detail.Should().Contain("local workstation host");
+        state.Detail.Should().Contain("local workstation service");
     }
 
     [Fact]

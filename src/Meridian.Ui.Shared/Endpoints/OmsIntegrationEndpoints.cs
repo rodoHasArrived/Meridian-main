@@ -20,7 +20,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageOrders))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             try
@@ -37,7 +37,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             return Results.Json(handler.Snapshot(), jsonOptions);
@@ -47,7 +47,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewDiagnostics))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             return Results.Json(handler.AdapterDiagnostics(), jsonOptions);
@@ -57,7 +57,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageOrders))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             try
@@ -74,7 +74,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             return Results.Json(handler.RotateSigningKey(request), jsonOptions);
@@ -84,7 +84,7 @@ public static class OmsIntegrationEndpoints
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewDiagnostics))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             return Results.Json(handler.AuditTrail(take ?? 200), jsonOptions);

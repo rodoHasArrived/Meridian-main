@@ -7,7 +7,13 @@ namespace Meridian.Contracts.SecurityMaster;
 public enum SecurityStatusDto
 {
     Active,
-    Inactive
+    Inactive,
+    /// <summary>
+    /// Read-tolerance member: a status written by a newer node that this node does not recognize.
+    /// Treated as not-Active by filters, so unrecognized states degrade to conservative visibility
+    /// instead of failing every read of the row.
+    /// </summary>
+    Unknown
 }
 
 public sealed record SecuritySummaryDto(
@@ -46,16 +52,32 @@ public sealed record SecurityMasterConflict(
     string ProviderB,
     string ValueB,
     DateTimeOffset DetectedAt,
-    string Status);
+    string Status)
+{
+    /// <summary>The source the resolver chose as the winner; set atomically when the conflict resolves.</summary>
+    public string? ResolvedWinnerSource { get; init; }
+
+    /// <summary>The actor who resolved the conflict; set atomically when the conflict resolves.</summary>
+    public string? ResolvedBy { get; init; }
+
+    /// <summary>The resolver-supplied reason; set atomically when the conflict resolves.</summary>
+    public string? ResolvedReason { get; init; }
+
+    /// <summary>When the conflict was resolved; set atomically when the conflict resolves.</summary>
+    public DateTimeOffset? ResolvedAt { get; init; }
+}
 
 /// <summary>
-/// Request to resolve or dismiss a golden record conflict.
+/// Request to resolve or dismiss a golden record conflict. <see cref="ChosenWinnerSource"/> records
+/// the operator-selected winning source so the resolution and its winner are captured atomically
+/// with the conflict's open→resolved transition.
 /// </summary>
 public sealed record ResolveConflictRequest(
     Guid ConflictId,
     string Resolution,
     string ResolvedBy,
-    string? Reason = null);
+    string? Reason = null,
+    string? ChosenWinnerSource = null);
 
 public sealed record SecurityProjectionRecord(
     Guid SecurityId,
@@ -113,10 +135,26 @@ public sealed record TradingParametersDto(
     decimal? MarginRequirementPct,
     string? TradingHoursUtc,
     decimal? CircuitBreakerThresholdPct,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    public bool? IsMarginable { get; init; }
+    public bool? IsShortable { get; init; }
+    public bool? IsEasyToBorrow { get; init; }
+    public bool? IsFractionable { get; init; }
+    public decimal? MinimumOrderSize { get; init; }
+    public decimal? MinimumTradeIncrement { get; init; }
+    public decimal? PriceIncrement { get; init; }
+}
 
 /// <summary>
 /// A single corporate action event envelope returned by the corporate actions query.
+/// <para><see cref="LifecycleState"/> holds a writeable
+/// <see cref="CorporateActionLifecycleStates"/> value; null reads as Confirmed for events
+/// written before lifecycle support. <see cref="SupersedesCorpActId"/> marks this event as
+/// an amendment (or, with a Cancelled state, a cancellation) of a prior event — the store
+/// stays append-only and readers fold chains via the effective-state projector.
+/// <see cref="RedemptionPricePercentOfPar"/> carries BondCall/BondMaturityRedemption
+/// pricing as a percent of par.</para>
 /// </summary>
 public sealed record CorporateActionDto(
     Guid CorpActId,
@@ -132,7 +170,11 @@ public sealed record CorporateActionDto(
     Guid? AcquirerSecurityId,
     decimal? ExchangeRatio,
     decimal? SubscriptionPricePerShare,
-    decimal? RightsPerShare);
+    decimal? RightsPerShare,
+    DateOnly? RecordDate = null,
+    string? LifecycleState = null,
+    Guid? SupersedesCorpActId = null,
+    decimal? RedemptionPricePercentOfPar = null);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

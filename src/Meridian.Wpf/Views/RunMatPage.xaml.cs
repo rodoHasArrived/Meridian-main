@@ -20,7 +20,21 @@ public partial class RunMatPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.InitializeAsync();
+        try
+        {
+            await _viewModel.InitializeAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Run Mat page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

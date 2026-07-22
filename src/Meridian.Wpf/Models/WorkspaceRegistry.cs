@@ -74,6 +74,7 @@ public static class WorkspaceRegistry
                 new("ReportingShell", "Reporting Workspace", "\uE9D9"),
                 new("FundReportPack", "Report Packs", "\uE8A5"),
                 new("ReportRunStatus", "Report Runs", "\uE768"),
+                new("ReportLineProvenanceExplorer", "Report Evidence", "\uE8D7"),
                 new("Dashboard", "Dashboard", "\uE9D9"),
                 new("AnalysisExport", "Analysis Export", "\uEDE1"),
                 new("ExportPresets", "Export Presets", "\uE8FD"),

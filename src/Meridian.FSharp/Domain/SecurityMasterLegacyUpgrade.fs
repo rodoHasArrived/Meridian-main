@@ -36,202 +36,24 @@ module SecurityMasterLegacyUpgrade =
 
     let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
 
+    /// Builds the canonical classification for a legacy kind from the single
+    /// <see cref="AssetClassRegistry"/> source of truth, layering on the two
+    /// instrument-data-dependent sub-type refinements the registry cannot express
+    /// structurally (demand vs. time deposits, and free-text OtherSecurity sub-types).
     let private classificationFromKind (kind: SecurityKind) =
+        let classification = AssetClassRegistry.classification kind
         match kind with
-        | SecurityKind.Equity _ ->
-            {
-                AssetClass = AssetClass.Equity
-                Family = Some AssetFamily.CommonEquity
-                SubType = SecuritySubType.CommonShare
-                TypeName = "Equity"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Option _ ->
-            {
-                AssetClass = AssetClass.Derivative
-                Family = Some AssetFamily.ListedDerivative
-                SubType = SecuritySubType.OptionContract
-                TypeName = "Option"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Future _ ->
-            {
-                AssetClass = AssetClass.Derivative
-                Family = Some AssetFamily.ListedDerivative
-                SubType = SecuritySubType.FutureContract
-                TypeName = "Future"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Bond _ ->
-            {
-                AssetClass = AssetClass.FixedIncome
-                Family = Some AssetFamily.CorporateDebt
-                SubType = SecuritySubType.CorporateBond
-                TypeName = "Bond"
-                IssuerType = Some "Corporate"
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.FxSpot _ ->
-            {
-                AssetClass = AssetClass.Other
-                Family = None
-                SubType = SecuritySubType.OtherSubType "FxSpot"
-                TypeName = "FxSpot"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
         | SecurityKind.Deposit terms ->
-            {
-                AssetClass = AssetClass.CashEquivalent
-                Family = Some AssetFamily.BankProduct
+            { classification with
                 SubType =
                     if String.Equals(terms.DepositType, "DemandDeposit", StringComparison.OrdinalIgnoreCase) then
                         SecuritySubType.DemandDeposit
                     else
-                        SecuritySubType.TimeDeposit
-                TypeName = "Deposit"
-                IssuerType = Some "Bank"
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.MoneyMarketFund _ ->
-            {
-                AssetClass = AssetClass.Fund
-                Family = Some AssetFamily.MoneyMarket
-                SubType = SecuritySubType.MoneyMarketFund
-                TypeName = "MoneyMarketFund"
-                IssuerType = Some "FundVehicle"
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.CertificateOfDeposit _ ->
-            {
-                AssetClass = AssetClass.CashEquivalent
-                Family = Some AssetFamily.BankProduct
-                SubType = SecuritySubType.CertificateOfDeposit
-                TypeName = "CertificateOfDeposit"
-                IssuerType = Some "Bank"
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.CommercialPaper _ ->
-            {
-                AssetClass = AssetClass.CashEquivalent
-                Family = Some AssetFamily.CorporateDebt
-                SubType = SecuritySubType.CommercialPaper
-                TypeName = "CommercialPaper"
-                IssuerType = Some "Corporate"
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.TreasuryBill _ ->
-            {
-                AssetClass = AssetClass.FixedIncome
-                Family = Some AssetFamily.Sovereign
-                SubType = SecuritySubType.TreasuryBill
-                TypeName = "TreasuryBill"
-                IssuerType = Some "Sovereign"
-                RiskCountry = Some "US"
-                Taxonomy = None
-            }
-        | SecurityKind.Repo _ ->
-            {
-                AssetClass = AssetClass.Financing
-                Family = Some AssetFamily.RepurchaseAgreement
-                SubType = SecuritySubType.Repo
-                TypeName = "Repo"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.CashSweep _ ->
-            {
-                AssetClass = AssetClass.CashEquivalent
-                Family = Some AssetFamily.StructuredCash
-                SubType = SecuritySubType.CashSweep
-                TypeName = "CashSweep"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
+                        SecuritySubType.TimeDeposit }
         | SecurityKind.OtherSecurity terms ->
-            {
-                AssetClass = AssetClass.Other
-                Family = None
-                SubType = SecuritySubType.OtherSubType (terms.SubType |> Option.defaultValue terms.Category)
-                TypeName = "OtherSecurity"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Swap _ ->
-            {
-                AssetClass = AssetClass.Derivative
-                Family = Some AssetFamily.ListedDerivative
-                SubType = SecuritySubType.SwapContract
-                TypeName = "Swap"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.DirectLoan _ ->
-            {
-                AssetClass = AssetClass.PrivateCredit
-                Family = Some AssetFamily.PrivateLoan
-                SubType = SecuritySubType.DirectLoan
-                TypeName = "DirectLoan"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Commodity _ ->
-            {
-                AssetClass = AssetClass.Other
-                Family = Some (AssetFamily.OtherFamily "Commodity")
-                SubType = SecuritySubType.OtherSubType "Commodity"
-                TypeName = "Commodity"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.CryptoCurrency _ ->
-            {
-                AssetClass = AssetClass.Other
-                Family = Some (AssetFamily.OtherFamily "Crypto")
-                SubType = SecuritySubType.OtherSubType "CryptoCurrency"
-                TypeName = "CryptoCurrency"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Cfd _ ->
-            {
-                AssetClass = AssetClass.Derivative
-                Family = Some AssetFamily.ListedDerivative
-                SubType = SecuritySubType.OtherSubType "Cfd"
-                TypeName = "Cfd"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
-        | SecurityKind.Warrant _ ->
-            {
-                AssetClass = AssetClass.Derivative
-                Family = Some AssetFamily.ListedDerivative
-                SubType = SecuritySubType.OtherSubType "Warrant"
-                TypeName = "Warrant"
-                IssuerType = None
-                RiskCountry = None
-                Taxonomy = None
-            }
+            { classification with
+                SubType = SecuritySubType.OtherSubType (terms.SubType |> Option.defaultValue terms.Category) }
+        | _ -> classification
 
     let private termsFromKind (kind: SecurityKind) =
         match kind with
@@ -586,6 +408,128 @@ module SecurityMasterLegacyUpgrade =
                             IssuerCountry = None
                         }
             }
+        | SecurityKind.StructuredCredit terms ->
+            {
+                SecurityTermModules.empty with
+                    Issuer =
+                        Some {
+                            IssuerName = terms.PoolId
+                            InstitutionName = None
+                            IssuerProgram = Some terms.CollateralType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+                    Coupon =
+                        Some {
+                            CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
+                            CouponRate = None
+                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            DayCount = None
+                        }
+                    FloatingRate =
+                        Some {
+                            ReferenceIndex = Some terms.CouponOrIndex
+                            SpreadBps = None
+                            ResetFrequency = terms.FactorSchedule
+                            FloorRate = None
+                            CapRate = None
+                        }
+                    StructuredProduct =
+                        Some {
+                            Factor = terms.CurrentFactor
+                            FactorDate = None
+                            WeightedAvgCoupon = None
+                            WeightedAvgMaturityMonths = None
+                            WeightedAvgLoanAgeMos = None
+                            CollateralType = Some terms.CollateralType
+                            PoolIdentifier = terms.PoolId
+                            TrancheClass = Some terms.Tranche
+                            PrepaymentAssumption = None
+                            AverageLifeYears = None
+                            IsInterestOnly = terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
+                            IsPrincipalOnly = terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                            NotionalBalance = Some terms.OriginalFace
+                            Originator = None
+                            CreditEnhancementPct = None
+                        }
+            }
+        | SecurityKind.PrivateFundInterest terms ->
+            {
+                SecurityTermModules.empty with
+                    Fund =
+                        Some {
+                            FundFamily = Some terms.GpSponsor
+                            WeightedAverageMaturityDays = None
+                            SweepEligible = None
+                            LiquidityFeeEligible = None
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.GpSponsor
+                            InstitutionName = None
+                            IssuerProgram = Some terms.Strategy
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.PrivateCompanyEquity terms ->
+            {
+                SecurityTermModules.empty with
+                    EquityBehavior =
+                        Some {
+                            ShareClass = Some terms.ShareClass
+                            VotingRights = None
+                            DistributionType = None
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.Issuer
+                            InstitutionName = None
+                            IssuerProgram = Some terms.Round
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.RealEstateHolding terms ->
+            {
+                SecurityTermModules.empty with
+                    Issuer =
+                        Some {
+                            IssuerName = terms.Sponsor
+                            InstitutionName = None
+                            IssuerProgram = Some terms.PropertyType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = Some "RealEstate"
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.CommitmentGuarantee terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = Some terms.EffectiveDate
+                            MaturityDate = terms.ExpiryDate
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.Counterparty
+                            InstitutionName = None
+                            IssuerProgram = terms.Beneficiary
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
         | SecurityKind.Commodity terms ->
             {
                 SecurityTermModules.empty with
@@ -631,6 +575,17 @@ module SecurityMasterLegacyUpgrade =
                             MarginRequirementPct = None
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
+                        }
+            }
+        | SecurityKind.InvestmentFund terms ->
+            {
+                SecurityTermModules.empty with
+                    Fund =
+                        Some {
+                            FundFamily = terms.FundFamily
+                            WeightedAverageMaturityDays = None
+                            SweepEligible = None
+                            LiquidityFeeEligible = None
                         }
             }
 

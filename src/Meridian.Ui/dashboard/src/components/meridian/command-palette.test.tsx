@@ -1,9 +1,16 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { axe } from "jest-axe";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { ToastProvider } from "@/components/ui/toast";
 import { renderWithRouter } from "@/test/render";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
+import type { CommandPaletteEntitySearchServices } from "@/components/meridian/command-palette.entity-search";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function getRenderedCommandCount(kind: "workstation" | "shared" = "workstation") {
   const pattern = kind === "workstation" ? /^(\d+) workstation commands$/ : /^(\d+) commands$/;
@@ -48,13 +55,26 @@ describe("CommandPalette", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, {
+      initialEntries: ["/data"]
+    });
+
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target),
+      summaries: violation.nodes.map((node) => node.failureSummary)
+    }))).toEqual([]);
+  });
+
   it("keeps Tab focus inside the modal command surface", () => {
     const onOpenChange = vi.fn();
 
-    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings#alpaca-provider-setup"] });
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings/providers/alpaca/setup"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Alpaca provider setup, current route");
+    const lastCommand = screen.getByLabelText("Alpaca guided setup, current route");
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -71,11 +91,11 @@ describe("CommandPalette", () => {
     });
 
     expect(screen.getByLabelText("Settings, current workspace")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Alpaca guided setup route")).toHaveAttribute(
       "href",
-      "/settings#alpaca-provider-setup"
+      "/settings/providers/alpaca/setup"
     );
-    expect(screen.queryByLabelText("Alpaca provider setup, current route")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Alpaca guided setup, current route")).not.toBeInTheDocument();
   });
 
   it("closes when a workspace command is selected", async () => {
@@ -103,11 +123,67 @@ describe("CommandPalette", () => {
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
-    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Alpaca guided setup route")).toHaveAttribute(
       "href",
-      "/settings#alpaca-provider-setup"
+      "/settings/providers/alpaca/setup"
     );
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
+  });
+
+  it("renders debounced entity search results as command groups", async () => {
+    const user = userEvent.setup();
+    const services: CommandPaletteEntitySearchServices = {
+      searchSymbols: vi.fn().mockResolvedValue([
+        {
+          symbol: "AAPL",
+          status: "Active",
+          provider: "Polygon",
+          lastEventAt: "2026-01-01T00:00:00Z",
+          eventCount: 42,
+          hasHistoricalData: true
+        }
+      ]),
+      searchSecurities: vi.fn().mockResolvedValue([
+        {
+          securityId: "sec-aapl",
+          displayName: "Apple Inc.",
+          status: "Active",
+          classification: {
+            assetClass: "Equity",
+            subType: "Common",
+            primaryIdentifierKind: "Ticker",
+            primaryIdentifierValue: "AAPL"
+          },
+          economicDefinition: {
+            currency: "USD",
+            version: 1,
+            effectiveFrom: null,
+            effectiveTo: null,
+            subType: "Common",
+            assetFamily: "Equity",
+            issuerType: "Corporate"
+          }
+        }
+      ])
+    };
+
+    renderWithRouter(
+      <CommandPalette open onOpenChange={vi.fn()} entitySearchServices={services} />,
+      { initialEntries: ["/data"] }
+    );
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "aapl");
+
+    expect(await screen.findByLabelText("Entities: 2 entities")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open symbol AAPL in Live quotes")).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=AAPL"
+    );
+    expect(screen.getByLabelText("Open security Apple Inc. in Security Master detail")).toHaveAttribute(
+      "href",
+      "/accounting/security-master/detail?securityId=sec-aapl"
+    );
+    expect(screen.getByText("2 entity results")).toBeInTheDocument();
   });
 
   it("opens the first filtered command when Enter is pressed from search", async () => {
@@ -306,5 +382,102 @@ describe("CommandPalette", () => {
 
     expect(onPresetUsed).toHaveBeenCalledWith("preset-1");
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("runs a non-confirm action immediately and reports the result as a toast", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const run = vi.fn().mockResolvedValue({ title: "Pinned Morning close.", tone: "success" as const });
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={onOpenChange}
+          actionItems={[
+            {
+              id: "preset-pin:morning",
+              verbLabel: "Pin preset Morning close",
+              description: "Keep Morning close at the top of the palette preset list.",
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/trading"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: /Pin preset Morning close/ }));
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(await screen.findByText("Pinned Morning close.")).toBeInTheDocument();
+  });
+
+  it("requires a second activation for confirm actions and disarms on Escape without closing", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const run = vi.fn().mockResolvedValue(undefined);
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={onOpenChange}
+          actionItems={[
+            {
+              id: "reporting-run-exports",
+              verbLabel: "Run exports report: Monthly NAV pack",
+              description: "Start the selected on-demand exports report run.",
+              confirm: true,
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/reporting"] }
+    );
+
+    const actionButton = screen.getByRole("button", { name: /Run exports report/ });
+    await user.click(actionButton);
+
+    expect(run).not.toHaveBeenCalled();
+    expect(screen.getByText(/Press Enter again to confirm/)).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.queryByText(/Press Enter again to confirm/)).not.toBeInTheDocument();
+
+    await user.click(actionButton);
+    await user.click(actionButton);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("surfaces action failures as danger toasts", async () => {
+    const user = userEvent.setup();
+    const run = vi.fn().mockRejectedValue(new Error("preset service offline"));
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={vi.fn()}
+          actionItems={[
+            {
+              id: "preset-pin:morning",
+              verbLabel: "Pin preset Morning close",
+              description: "Keep Morning close at the top of the palette preset list.",
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/trading"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: /Pin preset Morning close/ }));
+
+    expect(await screen.findByText("preset service offline")).toBeInTheDocument();
   });
 });

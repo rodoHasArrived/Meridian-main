@@ -277,7 +277,8 @@ public sealed class StrategyRunReadServiceTests
             unrealizedPnl: 4_000m,
             fillCount: 3,
             sharpeRatio: 1.1,
-            maxDrawdown: 2_500m) with { RunType = RunType.Paper, ParentRunId = "lineage-backtest" };
+            maxDrawdown: 2_500m) with
+        { RunType = RunType.Paper, ParentRunId = "lineage-backtest" };
         var live = BuildCompletedRun(
             runId: "lineage-live",
             strategyId: "lineage-strategy",
@@ -289,7 +290,8 @@ public sealed class StrategyRunReadServiceTests
             unrealizedPnl: 4_000m,
             fillCount: 4,
             sharpeRatio: 1.2,
-            maxDrawdown: 2_000m) with { RunType = RunType.Live, ParentRunId = "lineage-paper" };
+            maxDrawdown: 2_000m) with
+        { RunType = RunType.Live, ParentRunId = "lineage-paper" };
 
         await store.RecordRunAsync(backtest);
         await store.RecordRunAsync(paper);

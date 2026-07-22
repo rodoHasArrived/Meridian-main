@@ -48,8 +48,24 @@ public partial class LiveDataViewerPage : Page
         Unloaded += OnPageUnloaded;
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _vm.ActivateAsync();
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _vm.ActivateAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Live Data Viewer page failed to load.", ex);
+        }
+    }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _vm.Deactivate();

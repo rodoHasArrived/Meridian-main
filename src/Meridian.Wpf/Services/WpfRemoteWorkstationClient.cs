@@ -60,14 +60,14 @@ public sealed class WpfRemoteWorkstationClient : IRemoteWorkstationClient
     public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
         => _apiClientService.UiApi.GetWithResponseAsync<StatusResponse>(UiApiRoutes.Status, ct);
 
-    public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
-        => _apiClientService.GetAsync<T>(endpoint, ct);
+    public async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+        => (await _apiClientService.GetWithResponseAsync<T>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get remote workstation resource");
 
     public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
         => _apiClientService.GetWithResponseAsync<T>(endpoint, ct);
 
-    public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
-        => _apiClientService.PostAsync<T>(endpoint, body, ct);
+    public async Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+        => (await _apiClientService.PostWithResponseAsync<T>(endpoint, body, ct).ConfigureAwait(false)).DataOrLoggedNull("Post remote workstation resource");
 
     public Task<ApiResponse<T>> PostWithResponseAsync<T>(
         string endpoint,

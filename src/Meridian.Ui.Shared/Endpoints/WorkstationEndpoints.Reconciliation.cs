@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
@@ -131,7 +133,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
             HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
+            [FromServices] IReconciliationApiService? service,
+            [FromServices] IAccountQueryService? accounts) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -146,6 +149,12 @@ public static partial class WorkstationEndpoints
             if (!TryResolveCurrentUser(context, out var currentUser))
             {
                 return Results.Unauthorized();
+            }
+
+            var accountGuard = await RequireStatementRunAccountAccessAsync(request, accounts, context).ConfigureAwait(false);
+            if (accountGuard is not null)
+            {
+                return accountGuard;
             }
 
             var trustedRequest = request with { ImportedBy = currentUser };
@@ -247,7 +256,8 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
-            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            if (service is null)
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             return Results.Json(await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         })
         .WithName("ListStatementExceptions")
@@ -530,5 +540,71 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(501);
 
+    }
+
+    private static async Task<IResult?> RequireStatementRunAccountAccessAsync(
+        StatementRunCreateDto request,
+        IAccountQueryService? accounts,
+        HttpContext context)
+    {
+        // The retained-book provider treats FundAccountId as an authority to load internal positions
+        // and cash. Resolve it server-side before importing so a reconciliation mutator cannot select
+        // another account and receive its unmatched internal records as breaks.
+        if (accounts is null || !Guid.TryParse(request.FundAccountId, out var accountId))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var account = await accounts.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+        if (account is null || !account.IsActive || !IsStatementSourceBoundToAccount(request, account))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return null;
+        }
+
+        // Do not fall back to a broad role permission when scoped authorization is unavailable.
+        // This route returns account-level reconciliation evidence, so the absence of the scoped
+        // authorizer must fail closed rather than silently grant every reconciliation mutator access.
+        if (context.RequestServices.GetService<IScopedAuthorizationService>() is null)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
+            context,
+            UserPermission.ManageDirectLending,
+            AccessScopeKindDto.Account,
+            accountId,
+            context.RequestAborted).ConfigureAwait(false);
+        return allowed ? null : EndpointHelpers.Forbidden();
+    }
+
+    private static bool IsStatementSourceBoundToAccount(StatementRunCreateDto request, AccountSummaryDto account)
+    {
+        var externalAccountId = request.ExternalAccountId?.Trim();
+        var sourceInstitution = request.SourceInstitution?.Trim();
+        if (string.IsNullOrWhiteSpace(externalAccountId) || string.IsNullOrWhiteSpace(sourceInstitution))
+        {
+            return false;
+        }
+
+        var externalAccountMatches = new[]
+        {
+            account.AccountCode,
+            account.CustodianDetails?.SubAccountNumber,
+            account.BankDetails?.AccountNumber,
+            account.BankDetails?.Iban
+        }.Any(candidate => string.Equals(candidate?.Trim(), externalAccountId, StringComparison.OrdinalIgnoreCase));
+        var institutionMatches = new[]
+        {
+            account.Institution,
+            account.BankDetails?.BankName
+        }.Any(candidate => string.Equals(candidate?.Trim(), sourceInstitution, StringComparison.OrdinalIgnoreCase));
+
+        return externalAccountMatches && institutionMatches;
     }
 }

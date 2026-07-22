@@ -18,21 +18,69 @@
       "activeBackfills": 1,
       "symbolsMonitored": 128,
       "storageHealth": "Warning",
-      "lastHeartbeatUtc": "2026-04-28T18:15:00Z",
+      "lastHeartbeatUtc": "2026-07-13T18:55:00Z",
       "metrics": [
-        { "id": "providers", "label": "Providers Online", "value": "3 / 4", "delta": "1 degraded", "tone": "warning" },
-        { "id": "runs", "label": "Active Runs", "value": "2", "delta": "+1", "tone": "default" },
-        { "id": "positions", "label": "Open Positions", "value": "5", "delta": "+2", "tone": "default" },
-        { "id": "backfills", "label": "Active Backfills", "value": "1", "delta": "review", "tone": "warning" }
+        {
+          "id": "providers",
+          "label": "Providers Online",
+          "value": "3 / 4",
+          "delta": "1 degraded",
+          "tone": "warning"
+        },
+        {
+          "id": "runs",
+          "label": "Active Runs",
+          "value": "2",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "positions",
+          "label": "Open Positions",
+          "value": "5",
+          "delta": "+2",
+          "tone": "default"
+        },
+        {
+          "id": "backfills",
+          "label": "Active Backfills",
+          "value": "1",
+          "delta": "review",
+          "tone": "warning"
+        }
       ],
       "recentEvents": []
     },
     "/api/workstation/trading": {
       "metrics": [
-        { "id": "pnl", "label": "Net P&L", "value": "+$3,100", "delta": "+2.1%", "tone": "success" },
-        { "id": "orders", "label": "Open Orders", "value": "4", "delta": "+1", "tone": "default" },
-        { "id": "fills", "label": "Fills", "value": "13", "delta": "+3", "tone": "success" },
-        { "id": "risk", "label": "Risk", "value": "Observe", "delta": "0%", "tone": "warning" }
+        {
+          "id": "pnl",
+          "label": "Net P&L",
+          "value": "+$3,100",
+          "delta": "+2.1%",
+          "tone": "success"
+        },
+        {
+          "id": "orders",
+          "label": "Open Orders",
+          "value": "4",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "fills",
+          "label": "Fills",
+          "value": "13",
+          "delta": "+3",
+          "tone": "success"
+        },
+        {
+          "id": "risk",
+          "label": "Risk",
+          "value": "Observe",
+          "delta": "0%",
+          "tone": "warning"
+        }
       ],
       "positions": [
         {
@@ -78,7 +126,10 @@
         "var95": "$9,000",
         "maxDrawdown": "-1.1%",
         "buyingPowerUsed": "58%",
-        "activeGuardrails": ["Cap per single-name", "Throttle at 70%"]
+        "activeGuardrails": [
+          "Cap per single-name",
+          "Throttle at 70%"
+        ]
       },
       "brokerage": {
         "provider": "Interactive Brokers",
@@ -91,6 +142,41 @@
         "notes": "Adapter wiring from screenshot fixtures."
       },
       "readiness": null
+    },
+    "/api/risk/rules": [
+      {
+        "ruleName": "PositionLimit",
+        "state": "Healthy",
+        "summary": "All loaded positions remain within governed limits.",
+        "isBreached": false,
+        "threshold": "$50,000 per symbol",
+        "currentValue": "$18,900",
+        "asOf": "2026-07-13T18:55:00Z",
+        "recentViolations": []
+      },
+      {
+        "ruleName": "OrderRateThrottle",
+        "state": "Observe",
+        "summary": "Order throughput is below the intervention threshold.",
+        "isBreached": false,
+        "threshold": "60 orders per minute",
+        "currentValue": "13 orders per minute",
+        "asOf": "2026-07-13T18:55:00Z",
+        "recentViolations": [
+          "No intervention required; monitor during the next execution burst."
+        ]
+      }
+    ],
+    "/api/risk/rules/DrawdownCircuitBreaker/config": {
+      "ruleName": "DrawdownCircuitBreaker",
+      "defaultMaxPositionSize": 50000,
+      "symbolPositionLimits": {
+        "AAPL": 25000,
+        "MSFT": 20000,
+        "NVDA": 15000
+      },
+      "maxDrawdownPercent": 5,
+      "maxOrdersPerMinute": 60
     },
     "/api/workstation/trading/readiness": {
       "asOf": "2026-04-28T18:15:00Z",
@@ -132,7 +218,10 @@
         "approvalStatus": "pending",
         "manualOverrideId": null,
         "approvedBy": null,
-        "approvalChecklist": ["DK1 trust packet", "Replay consistency"]
+        "approvalChecklist": [
+          "DK1 trust packet",
+          "Replay consistency"
+        ]
       },
       "trustGate": {
         "gateId": "dk1-provider-trust",
@@ -144,7 +233,12 @@
         "packetPath": "artifacts/dk1-pilot-parity-packet.json",
         "sourceSummary": "wave1-validation-summary.json",
         "requiredSampleCount": 4,
-        "readySampleCount": 4
+        "readySampleCount": 4,
+        "validatedEvidenceDocumentCount": 2,
+        "requiredOwners": [],
+        "blockers": [],
+        "detail": "Provider trust samples and retained evidence are ready for operator review.",
+        "operatorSignoff": null
       },
       "brokerageSync": null,
       "workItems": [
@@ -188,12 +282,109 @@
         }
       ]
     },
+    "/api/workstation/security-master/securities": [
+      {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "status": "Active",
+        "classification": {
+          "assetClass": "Equity",
+          "subType": "Common Stock",
+          "primaryIdentifierKind": "Ticker",
+          "primaryIdentifierValue": "AAPL"
+        },
+        "economicDefinition": {
+          "currency": "USD",
+          "version": 3,
+          "effectiveFrom": "2020-01-01",
+          "effectiveTo": null,
+          "subType": null,
+          "assetFamily": null,
+          "issuerType": null
+        }
+      }
+    ],
+    "/api/workstation/security-master/securities/sec-dev-001": {
+      "securityId": "sec-dev-001",
+      "displayName": "Apple Inc.",
+      "status": "Active",
+      "classification": {
+        "assetClass": "Equity",
+        "subType": "Common Stock",
+        "primaryIdentifierKind": "Ticker",
+        "primaryIdentifierValue": "AAPL"
+      },
+      "economicDefinition": {
+        "currency": "USD",
+        "version": 3,
+        "effectiveFrom": "2020-01-01",
+        "effectiveTo": null,
+        "subType": "Common Stock",
+        "assetFamily": "Equity",
+        "issuerType": "Corporate"
+      }
+    },
+    "/api/workstation/security-master/securities/sec-dev-001/identity": {
+      "securityId": "sec-dev-001",
+      "displayName": "Apple Inc.",
+      "assetClass": "Equity",
+      "status": "Active",
+      "version": 3,
+      "effectiveFrom": "2020-01-01",
+      "effectiveTo": null,
+      "identifiers": [
+        {
+          "kind": "Ticker",
+          "value": "AAPL",
+          "isPrimary": true,
+          "validFrom": "2020-01-01",
+          "validTo": null,
+          "provider": "Meridian screenshot fixture"
+        }
+      ],
+      "aliases": []
+    },
+    "/api/security-master/sec-dev-001/corporate-actions": [],
+    "/api/security-master/sec-dev-001/trading-parameters": {
+      "securityId": "sec-dev-001",
+      "lotSize": 100,
+      "tickSize": 0.01,
+      "contractMultiplier": null,
+      "marginRequirementPct": 25,
+      "tradingHoursUtc": "13:30-20:00",
+      "circuitBreakerThresholdPct": 10,
+      "asOf": "2026-06-30T00:00:00Z"
+    },
     "/api/workstation/portfolio": {
       "metrics": [
-        { "id": "equity", "label": "Total Equity", "value": "$312,400", "delta": "+1.2%", "tone": "success" },
-        { "id": "cash", "label": "Cash", "value": "$87,500", "delta": "-0.3%", "tone": "default" },
-        { "id": "positions", "label": "Positions", "value": "3", "delta": "0", "tone": "default" },
-        { "id": "pnl", "label": "Unrealized P&L", "value": "+$9,451", "delta": "+3.1%", "tone": "success" }
+        {
+          "id": "equity",
+          "label": "Total Equity",
+          "value": "$312,400",
+          "delta": "+1.2%",
+          "tone": "success"
+        },
+        {
+          "id": "cash",
+          "label": "Cash",
+          "value": "$87,500",
+          "delta": "-0.3%",
+          "tone": "default"
+        },
+        {
+          "id": "positions",
+          "label": "Positions",
+          "value": "3",
+          "delta": "0",
+          "tone": "default"
+        },
+        {
+          "id": "pnl",
+          "label": "Unrealized P&L",
+          "value": "+$9,451",
+          "delta": "+3.1%",
+          "tone": "success"
+        }
       ],
       "positions": [
         {
@@ -260,10 +451,34 @@
       "entity": "portfolio",
       "asOfUtc": "2026-06-02T00:00:00.0000000Z",
       "metrics": [
-        { "id": "multi-asset-classes", "label": "Asset classes", "value": "8", "delta": "covered", "tone": "default" },
-        { "id": "multi-asset-ready", "label": "Ready", "value": "2", "delta": "definition + evidence", "tone": "default" },
-        { "id": "multi-asset-review", "label": "Review required", "value": "6", "delta": "evidence gaps", "tone": "warning" },
-        { "id": "multi-asset-blocked", "label": "Blocked", "value": "0", "delta": "close gates", "tone": "success" }
+        {
+          "id": "multi-asset-classes",
+          "label": "Asset classes",
+          "value": "8",
+          "delta": "covered",
+          "tone": "default"
+        },
+        {
+          "id": "multi-asset-ready",
+          "label": "Ready",
+          "value": "2",
+          "delta": "definition + evidence",
+          "tone": "default"
+        },
+        {
+          "id": "multi-asset-review",
+          "label": "Review required",
+          "value": "6",
+          "delta": "evidence gaps",
+          "tone": "warning"
+        },
+        {
+          "id": "multi-asset-blocked",
+          "label": "Blocked",
+          "value": "0",
+          "delta": "close gates",
+          "tone": "success"
+        }
       ],
       "assetClasses": [
         {
@@ -339,10 +554,34 @@
     },
     "/api/workstation/strategy": {
       "metrics": [
-        { "id": "runs", "label": "Runs", "value": "24", "delta": "+8%", "tone": "success" },
-        { "id": "queued", "label": "Queued", "value": "3", "delta": "0%", "tone": "default" },
-        { "id": "review", "label": "Needs Review", "value": "2", "delta": "-1%", "tone": "warning" },
-        { "id": "promotions", "label": "Promotions", "value": "5", "delta": "+2", "tone": "default" }
+        {
+          "id": "runs",
+          "label": "Runs",
+          "value": "24",
+          "delta": "+8%",
+          "tone": "success"
+        },
+        {
+          "id": "queued",
+          "label": "Queued",
+          "value": "3",
+          "delta": "0%",
+          "tone": "default"
+        },
+        {
+          "id": "review",
+          "label": "Needs Review",
+          "value": "2",
+          "delta": "-1%",
+          "tone": "warning"
+        },
+        {
+          "id": "promotions",
+          "label": "Promotions",
+          "value": "5",
+          "delta": "+2",
+          "tone": "default"
+        }
       ],
       "runs": [
         {
@@ -373,6 +612,44 @@
         }
       ]
     },
+    "/api/quant/templates": {
+      "templates": [
+        {
+          "id": "hello-quant-lab",
+          "title": "Hello Quant Lab",
+          "description": "Print a metric and verify the local script runtime path.",
+          "source": "Print(\"Hello from the Quant Lab fixture.\");\nPrintMetric(\"answer\", 42);\n"
+        },
+        {
+          "id": "parameter-sweep-preview",
+          "title": "Parameter sweep preview",
+          "description": "Exercise parameter extraction with a lookback and fee toggle.",
+          "source": "var lookback = Parameter(\"lookback\", 20);\nvar includeFees = Parameter(\"includeFees\", true);\nPrintMetric(\"lookback\", lookback);\nPrintMetric(\"fees\", includeFees ? 1 : 0);\n"
+        }
+      ]
+    },
+    "/api/quant/parameters": {
+      "parameters": [
+        {
+          "name": "lookback",
+          "label": "Lookback",
+          "typeName": "int",
+          "defaultValue": "20",
+          "min": 1,
+          "max": 252,
+          "description": "Rolling window length for the fixture run."
+        },
+        {
+          "name": "includeFees",
+          "label": "Include fees",
+          "typeName": "bool",
+          "defaultValue": "true",
+          "min": null,
+          "max": null,
+          "description": "Toggle transaction-cost assumptions in the fixture run."
+        }
+      ]
+    },
     "/api/workstation/strategy/designer/templates": [
       {
         "templateId": "quality-momentum-rotation",
@@ -380,14 +657,23 @@
         "description": "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
         "category": "Equity rotation",
         "sourcePrototype": "Strategy Designer screenshot fixture",
-        "tags": ["momentum", "quality", "risk-gate"],
+        "tags": [
+          "momentum",
+          "quality",
+          "risk-gate"
+        ],
         "document": {
           "documentId": "strategy-designer-fixture-1",
           "name": "Quality momentum rotation",
           "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
           "version": "1.0",
           "datasetReference": "fixture://strategy-designer/quality-momentum",
-          "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+          "universe": [
+            "AAPL",
+            "MSFT",
+            "NVDA",
+            "QQQ"
+          ],
           "cells": [
             {
               "cellId": "universe",
@@ -395,8 +681,13 @@
               "kind": "universe",
               "purpose": "Seed the candidate universe with liquid large-cap equities.",
               "source": "Provider historical bars / security master",
-              "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
-              "parameters": { "minimumDollarVolume": "25000000" },
+              "fieldRefs": [
+                "PRICE",
+                "AVG_DOLLAR_VOLUME_20D"
+              ],
+              "parameters": {
+                "minimumDollarVolume": "25000000"
+              },
               "disabledReason": null
             },
             {
@@ -405,8 +696,13 @@
               "kind": "score",
               "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
               "source": "Meridian factor library",
-              "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
-              "parameters": { "lookback": "63" },
+              "fieldRefs": [
+                "MOMENTUM_63D",
+                "VOLATILITY_20D"
+              ],
+              "parameters": {
+                "lookback": "63"
+              },
               "disabledReason": null
             }
           ],
@@ -421,7 +717,10 @@
               "rationale": "Keep low-liquidity symbols out of the scoring pass."
             }
           ],
-          "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+          "metadata": {
+            "evidenceLane": "browser-screenshot",
+            "fixture": "true"
+          },
           "createdAt": "2026-05-15T15:00:00Z",
           "updatedAt": "2026-05-15T15:00:00Z"
         }
@@ -437,7 +736,11 @@
         "description": "Canonical last or close price resolved through Meridian providers.",
         "isEnabled": true,
         "disabledReason": null,
-        "synonyms": ["close", "last", "bar.close"]
+        "synonyms": [
+          "close",
+          "last",
+          "bar.close"
+        ]
       },
       {
         "fieldId": "MOMENTUM_63D",
@@ -448,7 +751,10 @@
         "description": "Return over the last 63 trading sessions.",
         "isEnabled": true,
         "disabledReason": null,
-        "synonyms": ["return", "trend"]
+        "synonyms": [
+          "return",
+          "trend"
+        ]
       },
       {
         "fieldId": "AMX_PRIVATE_SCORE",
@@ -459,7 +765,11 @@
         "description": "Analyst model extension field kept disabled until provenance is attached.",
         "isEnabled": false,
         "disabledReason": "No Meridian canonical source",
-        "synonyms": ["analyst", "custom", "amx"]
+        "synonyms": [
+          "analyst",
+          "custom",
+          "amx"
+        ]
       }
     ],
     "/api/workstation/strategy/designer/drafts": [
@@ -480,7 +790,12 @@
       "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
       "version": "1.0",
       "datasetReference": "fixture://strategy-designer/quality-momentum",
-      "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+      "universe": [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "QQQ"
+      ],
       "cells": [
         {
           "cellId": "universe",
@@ -488,8 +803,13 @@
           "kind": "universe",
           "purpose": "Seed the candidate universe with liquid large-cap equities.",
           "source": "Provider historical bars / security master",
-          "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
-          "parameters": { "minimumDollarVolume": "25000000" },
+          "fieldRefs": [
+            "PRICE",
+            "AVG_DOLLAR_VOLUME_20D"
+          ],
+          "parameters": {
+            "minimumDollarVolume": "25000000"
+          },
           "disabledReason": null
         },
         {
@@ -498,8 +818,13 @@
           "kind": "score",
           "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
           "source": "Meridian factor library",
-          "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
-          "parameters": { "lookback": "63" },
+          "fieldRefs": [
+            "MOMENTUM_63D",
+            "VOLATILITY_20D"
+          ],
+          "parameters": {
+            "lookback": "63"
+          },
           "disabledReason": null
         }
       ],
@@ -514,16 +839,43 @@
           "rationale": "Keep low-liquidity symbols out of the scoring pass."
         }
       ],
-      "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+      "metadata": {
+        "evidenceLane": "browser-screenshot",
+        "fixture": "true"
+      },
       "createdAt": "2026-05-15T15:00:00Z",
       "updatedAt": "2026-05-15T15:00:00Z"
     },
     "/api/workstation/accounting": {
       "metrics": [
-        { "id": "breaks", "label": "Open Breaks", "value": "2", "delta": "+1", "tone": "warning" },
-        { "id": "drift", "label": "Timing Drift", "value": "1", "delta": "0%", "tone": "warning" },
-        { "id": "coverage", "label": "Security Gaps", "value": "0", "delta": "0%", "tone": "success" },
-        { "id": "audit", "label": "Audit Ready", "value": "4", "delta": "+2", "tone": "success" }
+        {
+          "id": "breaks",
+          "label": "Open Breaks",
+          "value": "2",
+          "delta": "+1",
+          "tone": "warning"
+        },
+        {
+          "id": "drift",
+          "label": "Timing Drift",
+          "value": "1",
+          "delta": "0%",
+          "tone": "warning"
+        },
+        {
+          "id": "coverage",
+          "label": "Security Gaps",
+          "value": "0",
+          "delta": "0%",
+          "tone": "success"
+        },
+        {
+          "id": "audit",
+          "label": "Audit Ready",
+          "value": "4",
+          "delta": "+2",
+          "tone": "success"
+        }
       ],
       "reconciliationQueue": [
         {
@@ -578,7 +930,10 @@
       },
       "reporting": {
         "profileCount": 3,
-        "recommendedProfiles": ["excel", "investor-pdf"],
+        "recommendedProfiles": [
+          "excel",
+          "investor-pdf"
+        ],
         "profiles": [
           {
             "id": "excel",
@@ -636,19 +991,51 @@
             "route": "/reporting/report-packs?recipient=investor-relations"
           }
         ],
-        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "reportPackTargets": [
+          "board",
+          "strategy",
+          "investor-relations"
+        ],
         "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
+        "dailyWork": [
+          {
+            "workItemId": "approval-needed:report-run-board-202605",
+            "kind": "approval-needed",
+            "title": "Board Close Pack awaits approval",
+            "statusLabel": "Awaiting approval",
+            "detail": "Accounting approval is still pending before the Board reporting committee delivery can be released.",
+            "tone": "warning",
+            "owner": "Fund Controller",
+            "dueAtUtc": "2026-05-03T20:00:00Z",
+            "primaryActionLabel": "Review approval",
+            "primaryActionHref": "/reporting/report-packs?recipient=board",
+            "evidenceGaps": [
+              "Accounting approval is still pending."
+            ],
+            "context": [
+              "Board Close Pack",
+              "Board reporting committee"
+            ],
+            "secondaryActionLabel": "Review evidence",
+            "secondaryActionHref": "/reporting/evidence?subject=report-run-board-202605"
+          }
+        ],
         "templates": [
           {
             "templateId": "investor-monthly-statement",
             "family": "InvestorStatement",
             "name": "Investor Monthly Statement",
             "version": "1.0.0",
-            "sections": ["cover", "performance", "positions", "flows"],
+            "sections": [
+              "cover",
+              "performance",
+              "positions",
+              "flows"
+            ],
             "lifecycleStatus": "Approved",
             "isBuiltIn": true,
             "isLatestApproved": true,
-            "approvalSummary": "Built-in approved template for InvestorStatement.",
+            "approvalSummary": "Built-in approved investor statement template.",
             "authoringRoute": "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
           },
           {
@@ -656,11 +1043,17 @@
             "family": "BoardPack",
             "name": "Board Close Pack",
             "version": "2",
-            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "sections": [
+              "close-summary",
+              "reconciliation",
+              "approval-log",
+              "evidence-bundle",
+              "distribution"
+            ],
             "lifecycleStatus": "InReview",
             "isBuiltIn": false,
             "isLatestApproved": false,
-            "approvalSummary": "Controller-authored v2 package is waiting for reporting committee approval.",
+            "approvalSummary": "Controller-authored board pack v2 is waiting for reporting committee approval.",
             "authoringRoute": "/api/fund-structure/reporting/templates/board-close-pack/versions/2"
           }
         ],
@@ -679,7 +1072,11 @@
               "publication-manifest:manifest-restated-demo",
               "restatement:pricing-correction"
             ],
-            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "auditActions": [
+              "Generated",
+              "EvidenceBundled",
+              "ControllerReviewed"
+            ],
             "failureReason": null,
             "drilldownLinks": [
               {
@@ -723,8 +1120,13 @@
             "attemptCount": 1,
             "sectionCount": 4,
             "lineageLinkedSections": 4,
-            "artifacts": ["publication-manifest:manifest-investor-202605"],
-            "auditActions": ["Generated", "Published"],
+            "artifacts": [
+              "publication-manifest:manifest-investor-202605"
+            ],
+            "auditActions": [
+              "Generated",
+              "Published"
+            ],
             "failureReason": null,
             "drilldownLinks": [],
             "nextActions": []
@@ -736,7 +1138,10 @@
             "fundProfileId": "demo-fund",
             "fundAccountId": "demo-account",
             "period": "2026-05",
-            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "templateId": {
+              "name": "monthly-board-pack",
+              "version": 1
+            },
             "state": "Restated",
             "version": 2,
             "createdAt": "2026-05-27T10:00:00Z",
@@ -815,40 +1220,137 @@
           }
         ]
       },
+      "closePlans": [
+        {
+          "periodId": "2026-06",
+          "fundAccountId": "fund-alpha",
+          "status": "ApprovalReview",
+          "approvals": [
+            {
+              "approvalId": "close-2026-06-controller-review",
+              "label": "Controller review of the June close package",
+              "status": "Pending review",
+              "owner": "Fund Controller",
+              "dueAtUtc": "2026-07-13T20:00:00Z",
+              "changedSummary": "Cash variance evidence and the final trial balance were added.",
+              "evidenceCount": 3,
+              "downstreamEffect": "Approval releases the governed report-pack handoff.",
+              "riskSummary": "One reconciliation variance remains under documented review."
+            }
+          ]
+        }
+      ],
       "controlCenter": {
         "closeReadiness": "At risk",
-        "portfolioFilterOptions": ["all-portfolios", "paper-index", "direct-lending"],
-        "accountFilterOptions": ["operating-cash", "public-investments", "trading-expenses"],
+        "portfolioFilterOptions": [
+          "all-portfolios",
+          "paper-index",
+          "direct-lending"
+        ],
+        "accountFilterOptions": [
+          "operating-cash",
+          "public-investments",
+          "trading-expenses"
+        ],
         "blockerSeverityDistribution": [
-          { "severity": "Critical", "count": 1 },
-          { "severity": "Warning", "count": 2 }
+          {
+            "severity": "Critical",
+            "count": 1
+          },
+          {
+            "severity": "Warning",
+            "count": 2
+          }
         ],
         "agingCurves": [
-          { "bucket": "0-1d", "count": 2 },
-          { "bucket": "2-3d", "count": 1 },
-          { "bucket": "4d+", "count": 1 }
+          {
+            "bucket": "0-1d",
+            "count": 2
+          },
+          {
+            "bucket": "2-3d",
+            "count": 1
+          },
+          {
+            "bucket": "4d+",
+            "count": 1
+          }
         ],
         "ownerWorkload": [
-          { "owner": "fund-controller", "openCount": 3 },
-          { "owner": "reporting-ops", "openCount": 1 }
+          {
+            "owner": "fund-controller",
+            "openCount": 3
+          },
+          {
+            "owner": "reporting-ops",
+            "openCount": 1
+          }
         ],
         "slaBreachCount": 1,
         "trendSnapshots": [
-          { "metric": "Open breaks", "value": 2, "trend": "+1 today" },
-          { "metric": "Pending approvals", "value": 1, "trend": "unchanged" },
-          { "metric": "Evidence gaps", "value": 5, "trend": "-2 today" },
-          { "metric": "Distribution blockers", "value": 1, "trend": "new" }
+          {
+            "metric": "Open breaks",
+            "value": 2,
+            "trend": "+1 today"
+          },
+          {
+            "metric": "Pending approvals",
+            "value": 1,
+            "trend": "unchanged"
+          },
+          {
+            "metric": "Evidence gaps",
+            "value": 5,
+            "trend": "-2 today"
+          },
+          {
+            "metric": "Distribution blockers",
+            "value": 1,
+            "trend": "new"
+          }
         ],
         "drillLinks": [
-          { "label": "Review exceptions", "href": "/accounting/exceptions" },
-          { "label": "Open approvals", "href": "/accounting/approvals" },
-          { "label": "Report evidence", "href": "/reporting/evidence" }
+          {
+            "label": "Review exceptions",
+            "href": "/accounting/exceptions"
+          },
+          {
+            "label": "Open approvals",
+            "href": "/accounting/approvals"
+          },
+          {
+            "label": "Report evidence",
+            "href": "/reporting/evidence"
+          }
         ],
         "alerts": [
-          { "tone": "danger", "message": "Critical cash variance breached SLA for run-42." },
-          { "tone": "warning", "message": "Board report pack is pending controller approval." }
+          {
+            "tone": "danger",
+            "message": "Critical cash variance breached SLA for run-42."
+          },
+          {
+            "tone": "warning",
+            "message": "Board report pack is pending controller approval."
+          }
         ]
       }
+    },
+    "/api/accounting-system/production-readiness": {
+      "generatedAtUtc": "2026-07-13T18:50:00Z",
+      "fundProfileId": "default-fund",
+      "ledgerBookId": "book-primary",
+      "status": "Ready",
+      "score": 100,
+      "criticalIssueCount": 0,
+      "warningIssueCount": 0,
+      "externalGlProviderCount": 2,
+      "certifiedExternalGlMappingProfileCount": 1,
+      "externalGlLivePostingEnabled": false,
+      "migrationRunArtifacts": [],
+      "migrationRolloutPlan": [],
+      "productionGaps": [],
+      "components": [],
+      "issues": []
     },
     "/api/accounting-system/providers": [
       {
@@ -860,9 +1362,13 @@
         "supportsJournalEntries": true,
         "supportsTrialBalance": true,
         "supportsPosting": false,
-        "statusLabel": "Ready for fixture import",
-        "statusDetail": "Read-only external GL import and reconciliation are available for contract-first validation.",
-        "evidenceKinds": ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+        "statusLabel": "Fixture import loaded",
+        "statusDetail": "A retained read-only external GL import is loaded for reconciliation review; posting remains disabled.",
+        "evidenceKinds": [
+          "QuickBooksAccount",
+          "QuickBooksJournalEntry",
+          "QuickBooksTrialBalance"
+        ]
       },
       {
         "providerId": "quickbooks",
@@ -875,7 +1381,11 @@
         "supportsPosting": false,
         "statusLabel": "OAuth adapter planned",
         "statusDetail": "Live QuickBooks Online OAuth and posting/export are outside the contract-first slice.",
-        "evidenceKinds": ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+        "evidenceKinds": [
+          "QuickBooksAccount",
+          "QuickBooksJournalEntry",
+          "QuickBooksTrialBalance"
+        ]
       }
     ],
     "/api/accounting-system/import/latest": {
@@ -892,14 +1402,56 @@
         "chartAccountCount": 4,
         "journalEntryCount": 2,
         "trialBalanceLineCount": 4,
-        "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
-        "warnings": ["External posting/export is disabled for the contract-first slice."]
+        "evidenceReferences": [
+          "quickbooks-fixture:chart-of-accounts",
+          "quickbooks-fixture:journal",
+          "quickbooks-fixture:trial-balance"
+        ],
+        "warnings": [
+          "External posting/export is disabled for the contract-first slice."
+        ]
       },
       "chartAccounts": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "displayName": "Operating Cash", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1000" },
-        { "externalAccountId": "qbo-1500", "accountCode": "Assets:Investments:Public", "displayName": "Public Investments", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1500" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "displayName": "Investment Income", "accountType": "Income", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "displayName": "Trading Expenses", "accountType": "Expense", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "displayName": "Operating Cash",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-1500",
+          "accountCode": "Assets:Investments:Public",
+          "displayName": "Public Investments",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1500"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "displayName": "Investment Income",
+          "accountType": "Income",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "displayName": "Trading Expenses",
+          "accountType": "Expense",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-6100"
+        }
       ],
       "journalEntries": [
         {
@@ -911,17 +1463,348 @@
           "totalCredits": 250000,
           "evidenceRef": "quickbooks-fixture:journal:qbo-je-100",
           "lines": [
-            { "externalLineId": "qbo-je-100-1", "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "description": "Capital contribution received", "debit": 250000, "credit": 0, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1" },
-            { "externalLineId": "qbo-je-100-2", "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "description": "Capital contribution offset", "debit": 0, "credit": 250000, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2" }
+            {
+              "externalLineId": "qbo-je-100-1",
+              "externalAccountId": "qbo-1000",
+              "accountCode": "Assets:Cash:Operating",
+              "description": "Capital contribution received",
+              "debit": 250000,
+              "credit": 0,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1"
+            },
+            {
+              "externalLineId": "qbo-je-100-2",
+              "externalAccountId": "qbo-4000",
+              "accountCode": "Income:Investment",
+              "description": "Capital contribution offset",
+              "debit": 0,
+              "credit": 250000,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2"
+            }
           ]
         }
       ],
       "trialBalance": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "accountName": "Operating Cash", "accountType": "Asset", "debit": 248750, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "accountName": "Investment Income", "accountType": "Income", "debit": 0, "credit": 250000, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "accountName": "Trading Expenses", "accountType": "Expense", "debit": 1250, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "accountName": "Operating Cash",
+          "accountType": "Asset",
+          "debit": 248750,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "accountName": "Investment Income",
+          "accountType": "Income",
+          "debit": 0,
+          "credit": 250000,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "accountName": "Trading Expenses",
+          "accountType": "Expense",
+          "debit": 1250,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100"
+        }
       ]
     },
+    "/api/ledger/journal-entry-workbench": {
+      "fundProfileId": "default-fund",
+      "ledgerBookId": "book-primary",
+      "loadedAtUtc": "2026-06-30T17:00:00Z",
+      "ledgerBooks": [],
+      "chartOfAccounts": [
+        {
+          "nodeId": "cash",
+          "path": "Assets:Cash",
+          "accountName": "Cash",
+          "accountType": "Asset",
+          "isArchived": false
+        },
+        {
+          "nodeId": "investment-income",
+          "path": "Income:Investment",
+          "accountName": "Investment income",
+          "accountType": "Revenue",
+          "isArchived": false
+        }
+      ],
+      "drafts": [
+        {
+          "journalEntryId": "manual-je-fixture",
+          "status": "Draft",
+          "fundProfileId": "default-fund",
+          "ledgerBookId": "book-primary",
+          "accountingBasis": "Primary",
+          "accountingDate": "2026-06-30",
+          "periodId": "2026-06",
+          "entityId": "fund-alpha",
+          "fundNodeId": "fund-alpha",
+          "currency": "USD",
+          "memo": "Month-end investment income adjustment",
+          "preparedBy": "Ops Desk",
+          "createdAtUtc": "2026-06-30T16:45:00Z",
+          "updatedAtUtc": "2026-06-30T17:00:00Z",
+          "version": 1,
+          "lines": [
+            {
+              "lineId": "manual-je-fixture-debit",
+              "side": "Debit",
+              "amount": 1250,
+              "currency": "USD",
+              "accountPath": "Assets:Cash",
+              "entityId": "fund-alpha",
+              "securityId": null,
+              "securityDisplayName": null,
+              "description": "Cash adjustment"
+            },
+            {
+              "lineId": "manual-je-fixture-credit",
+              "side": "Credit",
+              "amount": 1250,
+              "currency": "USD",
+              "accountPath": "Income:Investment",
+              "entityId": "fund-alpha",
+              "securityId": null,
+              "securityDisplayName": null,
+              "description": "Investment income adjustment"
+            }
+          ],
+          "evidenceLinks": [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je-fixture"
+          ],
+          "evidenceAttachments": [],
+          "validationIssues": [],
+          "totalDebits": 1250,
+          "totalCredits": 1250,
+          "imbalance": 0,
+          "approvalId": null,
+          "submittedAtUtc": null,
+          "submittedBy": null,
+          "entryType": "General",
+          "treasuryContext": null
+        }
+      ],
+      "auditTrail": [],
+      "privateCapitalActivity": null
+    },
+    "/api/ledger/private-capital/capital-account-workbench": {
+      "fundProfileId": "default-fund",
+      "ledgerBookId": "book-primary",
+      "projectedAtUtc": "2026-07-13T18:50:00Z",
+      "capitalAccountId": "capital-lp-1",
+      "investorId": "lp-1",
+      "currency": "USD",
+      "workbenchRoute": "/api/ledger/private-capital/capital-account-workbench",
+      "statusLabel": "Ready",
+      "statusReason": "One investor capital account and its published statement lineage are loaded from retained accounting evidence.",
+      "investorAccountCount": 1,
+      "fundEventCount": 0,
+      "statementCount": 1,
+      "restatementLineageCount": 0,
+      "auditDrillThroughCount": 1,
+      "netCapitalActivity": 0,
+      "investorAccounts": [
+        {
+          "accountKey": "capital-lp-1|lp-1|USD",
+          "capitalAccountId": "capital-lp-1",
+          "investorId": "lp-1",
+          "currency": "USD",
+          "activityRoute": "/accounting/capital-accounts?capitalAccountId=capital-lp-1",
+          "readiness": "Ready",
+          "readinessLabel": "Statement ready",
+          "readinessReason": "Opening balance and publication evidence are retained for the selected period.",
+          "nextAction": "Review published statement",
+          "nextActionRoute": "/reporting/report-packs",
+          "openingNetActivity": 250000,
+          "endingNetActivity": 250000,
+          "netCapitalActivity": 0,
+          "contributions": 0,
+          "distributions": 0,
+          "subscriptions": 0,
+          "redemptions": 0,
+          "managementFees": 0,
+          "fundEventCount": 0,
+          "postedFundEventCount": 0,
+          "approvalQueueCount": 0,
+          "publishedReportOutputCount": 1,
+          "evidenceLinkCount": 2,
+          "validationIssueCount": 0,
+          "evidenceCategorySummary": "Opening balance and publication evidence retained.",
+          "evidenceLinks": [
+            "/reporting/evidence?subject=capital-lp-1-opening-balance",
+            "/reporting/evidence?subject=capital-lp-1-statement"
+          ],
+          "evidenceCategories": [],
+          "fundEventRecords": [],
+          "subledgerEntries": [],
+          "ledgerImpacts": [],
+          "reportOutputs": [],
+          "validationIssues": [],
+          "paymentIntentEvidence": null
+        }
+      ],
+      "allocationRules": [
+        {
+          "ruleId": "opening-balance-evidence",
+          "capitalAccountId": "capital-lp-1",
+          "investorId": "lp-1",
+          "categoryId": "source-support",
+          "label": "Opening balance support",
+          "basis": "The investor opening balance must retain source and publication evidence.",
+          "isSatisfied": true,
+          "reason": "Both required evidence records are retained.",
+          "route": "/reporting/evidence?subject=capital-lp-1-opening-balance",
+          "evidenceLinkCount": 2,
+          "evidenceLinks": [
+            "/reporting/evidence?subject=capital-lp-1-opening-balance",
+            "/reporting/evidence?subject=capital-lp-1-statement"
+          ],
+          "requiredEvidence": [
+            "Opening balance support",
+            "Published statement"
+          ],
+          "ruleVersion": "1.0",
+          "effectiveFrom": "2026-06-01",
+          "effectiveTo": null,
+          "formula": null,
+          "approvalState": "Approved",
+          "approvalReference": "June close approval",
+          "replayTrace": null,
+          "inputs": [],
+          "relatedFundEventIds": []
+        }
+      ],
+      "statementLineage": [
+        {
+          "lineageId": "capital-lp-1-june-statement",
+          "capitalAccountId": "capital-lp-1",
+          "investorId": "lp-1",
+          "reportOutputId": "lp-1-june-statement",
+          "reportOutputType": "CapitalAccountStatement",
+          "displayName": "LP 1 June capital statement",
+          "reportRoute": "/reporting/report-packs",
+          "reportPackId": "june-capital-statements",
+          "reportWorkflowState": "Published",
+          "isPublished": true,
+          "isReportReady": true,
+          "publicationManifestId": "june-capital-statements-manifest",
+          "retainedManifestPath": "Retained publication manifest",
+          "publicationEvidenceHash": "Verified publication evidence",
+          "publishedAtUtc": "2026-07-13T18:45:00Z",
+          "publishedBy": "Reporting Operations",
+          "reportLineProvenanceCount": 3,
+          "hasRestatementLineage": false,
+          "restatementStatus": "No restatement required.",
+          "restatementReasonCode": null,
+          "restatementPriorVersionReportId": null,
+          "restatementApprover": null,
+          "restatementChangedLineCount": 0,
+          "restatementEvidenceLinkCount": 0,
+          "reportOutputRoute": "/reporting/report-packs",
+          "evidenceRoute": "/reporting/evidence?subject=capital-lp-1-statement",
+          "capitalAccountSubledgerRoute": "/accounting/capital-accounts?capitalAccountId=capital-lp-1",
+          "evidenceLinks": [
+            "/reporting/evidence?subject=capital-lp-1-statement"
+          ],
+          "restatementEvidenceLinks": [],
+          "restatementChangedLines": []
+        }
+      ],
+      "auditDrillThroughs": [
+        {
+          "drillThroughId": "capital-lp-1-statement-evidence",
+          "kind": "statement",
+          "label": "Published statement evidence",
+          "summary": "Review the retained June statement and publication record.",
+          "route": "/reporting/evidence?subject=capital-lp-1-statement",
+          "isAvailable": true,
+          "evidenceLinkCount": 1,
+          "evidenceLinks": [
+            "/reporting/evidence?subject=capital-lp-1-statement"
+          ],
+          "relatedIds": [
+            "capital-lp-1",
+            "lp-1-june-statement"
+          ]
+        }
+      ],
+      "validationIssues": [],
+      "liveCapabilities": [
+        "Investor capital account projection",
+        "Statement lineage"
+      ],
+      "plannedCapabilities": []
+    },
+    "/api/workstation/runs/run-42/ledger/trial-balance": [
+      {
+        "accountName": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-cash",
+        "balance": 120500,
+        "entryCount": 3,
+        "security": null,
+        "entityScopeDisplayName": "Fund Alpha",
+        "sourceJournalEntryId": "je-cash-1",
+        "approvalIds": [
+          "approval-je-1"
+        ]
+      }
+    ],
+    "/api/workstation/operations/continuity/close-calendar": {
+      "generatedAtUtc": "2026-06-30T02:00:00Z",
+      "items": [
+        {
+          "workflowId": "workflow-close-1",
+          "fundAccountId": "fund-alpha",
+          "periodId": "2026-06",
+          "status": "LedgerPostingDraft",
+          "version": 1,
+          "nextDueDate": "2026-07-03",
+          "nextDueTaskId": "trial-balance",
+          "nextDueLabel": "Run trial balance",
+          "nextDueOwner": "Controller",
+          "readinessSeverity": "Warning",
+          "readinessScore": 68,
+          "isReadyToClose": false,
+          "blockerCount": 1,
+          "openChecklistCount": 2,
+          "requiredApprovalCount": 2,
+          "completedApprovalCount": 1,
+          "route": "/accounting/operations-continuity"
+        }
+      ]
+    },
+    "/api/workstation/runs/run-42/ledger/journal": [
+      {
+        "journalEntryId": "je-cash-1",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "lineCount": 2,
+        "accountScopeDisplayName": "Cash",
+        "entityScopeDisplayName": "Fund Alpha",
+        "dimensions": {
+          "instrumentId": "cash-usd"
+        }
+      }
+    ],
     "/api/accounting-system/import/preview": {
       "summary": {
         "importId": "qbo-fixture-20260131",
@@ -936,14 +1819,56 @@
         "chartAccountCount": 4,
         "journalEntryCount": 2,
         "trialBalanceLineCount": 4,
-        "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
-        "warnings": ["External posting/export is disabled for the contract-first slice."]
+        "evidenceReferences": [
+          "quickbooks-fixture:chart-of-accounts",
+          "quickbooks-fixture:journal",
+          "quickbooks-fixture:trial-balance"
+        ],
+        "warnings": [
+          "External posting/export is disabled for the contract-first slice."
+        ]
       },
       "chartAccounts": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "displayName": "Operating Cash", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1000" },
-        { "externalAccountId": "qbo-1500", "accountCode": "Assets:Investments:Public", "displayName": "Public Investments", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1500" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "displayName": "Investment Income", "accountType": "Income", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "displayName": "Trading Expenses", "accountType": "Expense", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "displayName": "Operating Cash",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-1500",
+          "accountCode": "Assets:Investments:Public",
+          "displayName": "Public Investments",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1500"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "displayName": "Investment Income",
+          "accountType": "Income",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "displayName": "Trading Expenses",
+          "accountType": "Expense",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-6100"
+        }
       ],
       "journalEntries": [
         {
@@ -955,15 +1880,63 @@
           "totalCredits": 250000,
           "evidenceRef": "quickbooks-fixture:journal:qbo-je-100",
           "lines": [
-            { "externalLineId": "qbo-je-100-1", "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "description": "Capital contribution received", "debit": 250000, "credit": 0, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1" },
-            { "externalLineId": "qbo-je-100-2", "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "description": "Capital contribution offset", "debit": 0, "credit": 250000, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2" }
+            {
+              "externalLineId": "qbo-je-100-1",
+              "externalAccountId": "qbo-1000",
+              "accountCode": "Assets:Cash:Operating",
+              "description": "Capital contribution received",
+              "debit": 250000,
+              "credit": 0,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1"
+            },
+            {
+              "externalLineId": "qbo-je-100-2",
+              "externalAccountId": "qbo-4000",
+              "accountCode": "Income:Investment",
+              "description": "Capital contribution offset",
+              "debit": 0,
+              "credit": 250000,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2"
+            }
           ]
         }
       ],
       "trialBalance": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "accountName": "Operating Cash", "accountType": "Asset", "debit": 248750, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "accountName": "Investment Income", "accountType": "Income", "debit": 0, "credit": 250000, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "accountName": "Trading Expenses", "accountType": "Expense", "debit": 1250, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "accountName": "Operating Cash",
+          "accountType": "Asset",
+          "debit": 248750,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "accountName": "Investment Income",
+          "accountType": "Income",
+          "debit": 0,
+          "credit": 250000,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "accountName": "Trading Expenses",
+          "accountType": "Expense",
+          "debit": 1250,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100"
+        }
       ]
     },
     "/api/accounting-system/reconciliation/latest": {
@@ -982,7 +1955,11 @@
       "totalMeridianCredits": 0,
       "postingEnabled": false,
       "postingDisabledReason": "External GL posting/export is disabled until the provider-neutral evidence and reconciliation path is proven.",
-      "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
+      "evidenceReferences": [
+        "quickbooks-fixture:chart-of-accounts",
+        "quickbooks-fixture:journal",
+        "quickbooks-fixture:trial-balance"
+      ],
       "rows": [
         {
           "rowId": "gl-recon-qbo-1000",
@@ -1030,13 +2007,66 @@
     },
     "/api/workstation/reporting": {
       "metrics": [
-        { "id": "packs", "label": "Report Packs", "value": "4", "delta": "+1", "tone": "success" },
-        { "id": "pending", "label": "Pending Review", "value": "1", "delta": "+1", "tone": "warning" },
-        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "0", "tone": "success" },
-        { "id": "approved", "label": "Approved", "value": "3", "delta": "+2", "tone": "success" }
+        {
+          "id": "packs",
+          "label": "Report Packs",
+          "value": "4",
+          "delta": "+1",
+          "tone": "success"
+        },
+        {
+          "id": "pending",
+          "label": "Pending Review",
+          "value": "1",
+          "delta": "+1",
+          "tone": "warning"
+        },
+        {
+          "id": "exports",
+          "label": "Exports Ready",
+          "value": "3",
+          "delta": "0",
+          "tone": "success"
+        },
+        {
+          "id": "approved",
+          "label": "Approved",
+          "value": "3",
+          "delta": "+2",
+          "tone": "success"
+        }
       ],
-      "reconciliationQueue": [],
-      "breakQueue": [],
+      "reconciliationQueue": [
+        {
+          "runId": "run-42",
+          "strategyName": "Paper Index Mean Reversion",
+          "mode": "paper",
+          "status": "Review",
+          "lastUpdated": "3m ago",
+          "breakCount": 1,
+          "openBreakCount": 1,
+          "reconciliationStatus": "BreaksOpen"
+        }
+      ],
+      "breakQueue": [
+        {
+          "breakId": "run-42-cash",
+          "runId": "run-42",
+          "strategyName": "Paper Index Mean Reversion",
+          "category": "AmountMismatch",
+          "status": "Open",
+          "variance": 500,
+          "reason": "Cash variance is above the reporting tolerance.",
+          "assignedTo": "Fund Controller",
+          "detectedAt": "2026-07-13T18:40:00Z",
+          "lastUpdatedAt": "2026-07-13T18:52:00Z",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "resolvedBy": null,
+          "resolvedAt": null,
+          "resolutionNote": null
+        }
+      ],
       "cashFlow": {
         "totalCash": 120000,
         "totalLedgerCash": 120500,
@@ -1049,7 +2079,12 @@
       },
       "reporting": {
         "profileCount": 3,
-        "recommendedProfiles": ["excel", "investor-pdf"],
+        "fundProfileId": "demo-fund",
+        "selectedFundProfileId": "demo-fund",
+        "recommendedProfiles": [
+          "excel",
+          "investor-pdf"
+        ],
         "profiles": [
           {
             "id": "excel",
@@ -1089,7 +2124,7 @@
             "pendingItems": 1,
             "pendingSummary": "1 report pack still needs approval before Board reporting committee delivery.",
             "owner": "fund-controller",
-            "dueAtUtc": "2026-05-03T20:00:00Z",
+            "dueAtUtc": "2026-07-14T20:00:00Z",
             "lastSentAtUtc": null,
             "route": "/reporting/report-packs?recipient=board"
           },
@@ -1102,24 +2137,56 @@
             "pendingItems": 0,
             "pendingSummary": "Investor relations distribution is ready after evidence bundle validation.",
             "owner": "reporting-ops",
-            "dueAtUtc": "2026-05-04T18:00:00Z",
-            "lastSentAtUtc": "2026-04-04T18:05:00Z",
+            "dueAtUtc": "2026-08-04T18:00:00Z",
+            "lastSentAtUtc": "2026-07-04T18:05:00Z",
             "route": "/reporting/report-packs?recipient=investor-relations"
           }
         ],
-        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "reportPackTargets": [
+          "board",
+          "strategy",
+          "investor-relations"
+        ],
         "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
+        "dailyWork": [
+          {
+            "workItemId": "approval-needed:report-run-board-202605",
+            "kind": "approval-needed",
+            "title": "Board Close Pack awaits approval",
+            "statusLabel": "Awaiting approval",
+            "detail": "Accounting approval is still pending before the Board reporting committee delivery can be released.",
+            "tone": "warning",
+            "owner": "Fund Controller",
+            "dueAtUtc": "2026-07-14T20:00:00Z",
+            "primaryActionLabel": "Review approval",
+            "primaryActionHref": "/reporting/report-packs?recipient=board",
+            "evidenceGaps": [
+              "Accounting approval is still pending."
+            ],
+            "context": [
+              "Board Close Pack",
+              "Board reporting committee"
+            ],
+            "secondaryActionLabel": "Review evidence",
+            "secondaryActionHref": "/reporting/evidence?subject=report-run-board-202605"
+          }
+        ],
         "templates": [
           {
             "templateId": "investor-monthly-statement",
             "family": "InvestorStatement",
             "name": "Investor Monthly Statement",
             "version": "1.0.0",
-            "sections": ["cover", "performance", "positions", "flows"],
+            "sections": [
+              "cover",
+              "performance",
+              "positions",
+              "flows"
+            ],
             "lifecycleStatus": "Approved",
             "isBuiltIn": true,
             "isLatestApproved": true,
-            "approvalSummary": "Built-in approved template for InvestorStatement.",
+            "approvalSummary": "Built-in approved investor statement template.",
             "authoringRoute": "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
           },
           {
@@ -1127,11 +2194,17 @@
             "family": "BoardPack",
             "name": "Board Close Pack",
             "version": "2",
-            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "sections": [
+              "close-summary",
+              "reconciliation",
+              "approval-log",
+              "evidence-bundle",
+              "distribution"
+            ],
             "lifecycleStatus": "InReview",
             "isBuiltIn": false,
             "isLatestApproved": false,
-            "approvalSummary": "Controller-authored v2 package is waiting for reporting committee approval.",
+            "approvalSummary": "Controller-authored board pack v2 is waiting for reporting committee approval.",
             "authoringRoute": "/api/fund-structure/reporting/templates/board-close-pack/versions/2"
           }
         ],
@@ -1150,7 +2223,11 @@
               "publication-manifest:manifest-restated-demo",
               "restatement:pricing-correction"
             ],
-            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "auditActions": [
+              "Generated",
+              "EvidenceBundled",
+              "ControllerReviewed"
+            ],
             "failureReason": null,
             "drilldownLinks": [
               {
@@ -1194,8 +2271,13 @@
             "attemptCount": 1,
             "sectionCount": 4,
             "lineageLinkedSections": 4,
-            "artifacts": ["publication-manifest:manifest-investor-202605"],
-            "auditActions": ["Generated", "Published"],
+            "artifacts": [
+              "publication-manifest:manifest-investor-202605"
+            ],
+            "auditActions": [
+              "Generated",
+              "Published"
+            ],
             "failureReason": null,
             "drilldownLinks": [],
             "nextActions": []
@@ -1207,7 +2289,10 @@
             "fundProfileId": "demo-fund",
             "fundAccountId": "demo-account",
             "period": "2026-05",
-            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "templateId": {
+              "name": "monthly-board-pack",
+              "version": 1
+            },
             "state": "Restated",
             "version": 2,
             "createdAt": "2026-05-27T10:00:00Z",
@@ -1284,15 +2369,121 @@
               ]
             }
           }
-        ]
+        ],
+        "schedules": [
+          {
+            "scheduleId": "investor-monthly",
+            "templateId": "investor-monthly-statement",
+            "cronExpression": "0 8 1 * *",
+            "nextAsOfDate": "2026-07-31",
+            "dueAtUtc": "2026-08-01T15:00:00Z",
+            "maxRetries": 1,
+            "requestedBy": "Reporting Operations",
+            "state": "Active",
+            "createdAtUtc": "2026-06-01T15:00:00Z",
+            "updatedAtUtc": "2026-07-13T18:50:00Z",
+            "lastRunAtUtc": "2026-07-01T15:02:00Z",
+            "lastRunId": "report-run-investor-202607",
+            "runCount": 1,
+            "description": "Monthly governed investor statement delivery.",
+            "deliveryTargets": [
+              {
+                "distributionId": "investor-relations-monthly",
+                "formats": [
+                  "Pdf",
+                  "Xlsx"
+                ],
+                "deliveryMode": "SecureLink",
+                "note": "Release after controller approval."
+              }
+            ],
+            "datasetRows": null,
+            "datasetSourceId": null,
+            "brandingThemeId": null,
+            "brandingThemeOverride": null
+          }
+        ],
+        "scheduleDeliveryPlans": [
+          {
+            "planId": "investor-monthly-delivery",
+            "scheduleId": "investor-monthly",
+            "templateId": "investor-monthly-statement",
+            "distributionId": "investor-relations-monthly",
+            "recipient": "Investor relations",
+            "recipientRole": "Investor Relations",
+            "channel": "Secure portal",
+            "deliveryMode": "SecureLink",
+            "formats": [
+              "Pdf",
+              "Xlsx"
+            ],
+            "isReady": true,
+            "readinessSummary": "Template, recipient, and retained evidence checks are ready.",
+            "route": "/reporting/scheduled",
+            "dueAtUtc": "2026-08-01T15:00:00Z",
+            "nextAsOfDate": "2026-07-31",
+            "owner": "Reporting Operations",
+            "note": "Release after controller approval.",
+            "lastDeliveryAttemptId": "investor-monthly-202607",
+            "lastDeliveryState": "Delivered",
+            "lastDeliveryAtUtc": "2026-07-01T15:05:00Z",
+            "lastDeliveryPackageRoute": "/reporting/report-packs",
+            "lastDeliverySecureLink": null,
+            "versionStamp": "1",
+            "readinessBlockers": []
+          }
+        ],
+        "accessAudit": {
+          "evaluationScope": "Reporting Operations for demo-fund",
+          "summary": "The current operator can review the selected fund's templates, packs, schedules, and delivery evidence.",
+          "principalScopes": [
+            "Demo Fund",
+            "Reporting Operations"
+          ],
+          "visibleTemplateCount": 2,
+          "hiddenTemplateCount": 0,
+          "visibleReportPackCount": 1,
+          "hiddenReportPackCount": 0,
+          "visibleScheduleCount": 1,
+          "hiddenScheduleCount": 0,
+          "visibleDeliveryAttemptCount": 1,
+          "hiddenDeliveryAttemptCount": 0,
+          "visibleStructuredExportCount": 0,
+          "hiddenStructuredExportCount": 0,
+          "denialReasons": []
+        }
       }
     },
     "/api/workstation/data": {
       "metrics": [
-        { "id": "providers", "label": "Providers Healthy", "value": "4", "delta": "0", "tone": "success" },
-        { "id": "backfills", "label": "Backfills Running", "value": "2", "delta": "+1", "tone": "default" },
-        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "+1", "tone": "success" },
-        { "id": "review", "label": "Needs Review", "value": "1", "delta": "+1", "tone": "warning" }
+        {
+          "id": "providers",
+          "label": "Providers Healthy",
+          "value": "2",
+          "delta": "0",
+          "tone": "success"
+        },
+        {
+          "id": "backfills",
+          "label": "Backfills Running",
+          "value": "2",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "exports",
+          "label": "Exports Ready",
+          "value": "3",
+          "delta": "+1",
+          "tone": "success"
+        },
+        {
+          "id": "review",
+          "label": "Needs Review",
+          "value": "1",
+          "delta": "+1",
+          "tone": "warning"
+        }
       ],
       "providers": [
         {
@@ -1347,7 +2538,333 @@
           "rows": "124k",
           "updatedAt": "4m ago"
         }
+      ],
+      "uploadTemplates": {
+        "acceptedFileExtensions": [
+          ".csv"
+        ],
+        "maxPreviewRows": 10,
+        "maxFileBytes": 5242880,
+        "templates": [
+          {
+            "templateId": "broker-execution-import",
+            "label": "Broker execution import",
+            "description": "Retained broker fills that enter validation before reconciliation or accounting workflows consume them.",
+            "dataDomain": "Trading",
+            "targetWorkflow": "Import -> Validate -> Reconcile -> Approve -> Report",
+            "fileName": "meridian-broker-execution-template.csv",
+            "contentType": "text/csv",
+            "headerLine": "trade_id,trade_date,account_code,symbol,side,quantity,price,currency,source_system,source_document_id",
+            "fields": [
+              {
+                "name": "trade_id",
+                "label": "Trade ID",
+                "required": true,
+                "example": "TRD-10001",
+                "description": "Stable trade or fill identifier from the broker."
+              },
+              {
+                "name": "symbol",
+                "label": "Symbol",
+                "required": true,
+                "example": "AAPL",
+                "description": "Ticker or source security code used for reconciliation."
+              },
+              {
+                "name": "quantity",
+                "label": "Quantity",
+                "required": true,
+                "example": "100",
+                "description": "Executed quantity for the retained fill."
+              },
+              {
+                "name": "price",
+                "label": "Price",
+                "required": true,
+                "example": "187.25",
+                "description": "Execution price in trade currency."
+              }
+            ],
+            "sampleRows": [
+              "TRD-10001,2026-07-13,FUND-A-ALPACA,AAPL,Buy,100,187.25,USD,Alpaca,confirm-20260713-001"
+            ],
+            "validationNotes": [
+              "Rows remain preview-only until validation and reconciliation approve downstream use.",
+              "Retain source_system and source_document_id for every imported broker confirmation."
+            ],
+            "sourceKinds": [
+              "BrokerFill",
+              "TradeConfirmation"
+            ],
+            "setupChecklist": [
+              "Confirm account codes map to the intended Meridian entity.",
+              "Retain the source broker file before previewing rows."
+            ],
+            "mappingGuidance": [
+              "Map broker execution identifiers to trade_id without regenerating them.",
+              "Use signed quantity consistently with the side column."
+            ]
+          }
+        ]
+      }
+    },
+    "/api/workstation/data/ingestion-operations": {
+      "generatedAt": "2026-07-14T18:00:00Z",
+      "summary": {
+        "total": 5,
+        "queued": 1,
+        "running": 2,
+        "paused": 0,
+        "failed": 1,
+        "completed": 1,
+        "cancelled": 0,
+        "resumable": 3
+      },
+      "providers": ["alpaca", "databento", "polygon"],
+      "jobs": [
+        {
+          "jobId": "ING-4102",
+          "workloadType": "Historical backfill",
+          "state": "Running",
+          "provider": "databento",
+          "symbols": ["AAPL", "MSFT", "NVDA"],
+          "createdAt": "2026-07-14T16:40:00Z",
+          "startedAt": "2026-07-14T16:41:00Z",
+          "completedAt": null,
+          "progressPercent": 62.5,
+          "isResumable": true,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4102",
+          "actions": [
+            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null },
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4103",
+          "workloadType": "Intraday import",
+          "state": "Running",
+          "provider": "alpaca",
+          "symbols": ["SPY"],
+          "createdAt": "2026-07-14T17:05:00Z",
+          "startedAt": "2026-07-14T17:06:00Z",
+          "completedAt": null,
+          "progressPercent": 88.0,
+          "isResumable": true,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4103",
+          "actions": [
+            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4098",
+          "workloadType": "Historical backfill",
+          "state": "Failed",
+          "provider": "polygon",
+          "symbols": ["TSLA", "AMD"],
+          "createdAt": "2026-07-14T15:10:00Z",
+          "startedAt": "2026-07-14T15:12:00Z",
+          "completedAt": null,
+          "progressPercent": 34.0,
+          "isResumable": true,
+          "attemptCount": 2,
+          "maxRetries": 3,
+          "nextRetryAt": "2026-07-14T18:20:00Z",
+          "errorMessage": "Provider rate limit exceeded during range 2026-06-01..2026-06-30.",
+          "evidenceRoute": "/data/evidence?subjectId=ING-4098",
+          "actions": [
+            { "action": "retry", "label": "Retry", "enabled": true, "disabledReason": null },
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4104",
+          "workloadType": "Corporate actions sync",
+          "state": "Queued",
+          "provider": "databento",
+          "symbols": ["QQQ"],
+          "createdAt": "2026-07-14T17:45:00Z",
+          "startedAt": null,
+          "completedAt": null,
+          "progressPercent": 0.0,
+          "isResumable": false,
+          "attemptCount": 0,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": null,
+          "actions": [
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4090",
+          "workloadType": "Historical backfill",
+          "state": "Completed",
+          "provider": "alpaca",
+          "symbols": ["IWM"],
+          "createdAt": "2026-07-14T14:00:00Z",
+          "startedAt": "2026-07-14T14:01:00Z",
+          "completedAt": "2026-07-14T14:38:00Z",
+          "progressPercent": 100.0,
+          "isResumable": false,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4090",
+          "actions": []
+        }
       ]
+    },
+    "/api/workstation/data/storage-assurance": {
+      "generatedAt": "2026-07-14T18:00:00Z",
+      "health": {
+        "status": "Healthy",
+        "rootLabel": "meridian-data",
+        "totalBytes": 5498631680,
+        "fileCount": 18420,
+        "readable": true,
+        "writable": true,
+        "orphanCount": 3,
+        "temporaryFileCount": 12,
+        "message": null
+      },
+      "quality": {
+        "status": "Available",
+        "filesAnalyzed": 18420,
+        "averageScore": 0.982,
+        "lowQualityFileCount": 24,
+        "recommendations": ["Re-run canonicalization for providers with soft failures."],
+        "message": null
+      },
+      "canonicalization": {
+        "enabled": true,
+        "version": 7,
+        "eventsTotal": 148213,
+        "successTotal": 147880,
+        "softFailTotal": 301,
+        "hardFailTotal": 32,
+        "matchRatePercent": 99.8,
+        "providers": [
+          { "provider": "alpaca", "total": 60112, "success": 60050, "softFail": 55, "hardFail": 7, "matchRatePercent": 99.9 },
+          { "provider": "databento", "total": 71001, "success": 70820, "softFail": 160, "hardFail": 21, "matchRatePercent": 99.7 }
+        ]
+      },
+      "capacity": {
+        "usedBytes": 5498631680,
+        "availableBytes": 21474836480,
+        "usedPercent": 25.6,
+        "estimatedDaysRemaining": 214,
+        "status": "Healthy"
+      },
+      "tiers": [
+        { "tier": "Hot", "fileCount": 5210, "totalBytes": 1610612736 },
+        { "tier": "Warm", "fileCount": 9800, "totalBytes": 2684354560 },
+        { "tier": "Cold", "fileCount": 3410, "totalBytes": 1203664384 }
+      ],
+      "alerts": [
+        {
+          "alertId": "ALERT-118",
+          "severity": "Warning",
+          "subject": "Soft canonicalization failures rising",
+          "message": "Databento soft failures increased 18% over the last 24 hours.",
+          "detectedAt": "2026-07-14T12:30:00Z"
+        }
+      ],
+      "permissions": { "canView": true, "canRunQualityCheck": true, "canMigrate": true, "canDelete": true }
+    },
+    "/api/quality/dashboard": {
+      "overallScore": 98.7,
+      "completenessScore": 99.2,
+      "freshnessScore": 98.5,
+      "anomalyRate": 0.04,
+      "symbols": [
+        {
+          "symbol": "AAPL",
+          "completenessScore": 99.4,
+          "freshnessScore": 99.1,
+          "gapCount": 0,
+          "anomalyCount": 0,
+          "health": "Healthy"
+        },
+        {
+          "symbol": "MSFT",
+          "completenessScore": 99.1,
+          "freshnessScore": 98.8,
+          "gapCount": 0,
+          "anomalyCount": 0,
+          "health": "Healthy"
+        }
+      ],
+      "recentGaps": [],
+      "recentAnomalies": []
+    },
+    "/api/providers/capability-matrix": {
+      "generatedAt": "2026-07-13T12:00:00Z",
+      "instrumentTypes": [
+        "Equity",
+        "Option"
+      ],
+      "providers": [
+        {
+          "providerId": "alpaca",
+          "declaredInstrumentTypes": [
+            "Equity",
+            "Option"
+          ],
+          "surfaces": {
+            "streaming": true,
+            "historical": true,
+            "symbolSearch": true,
+            "corporateActions": false,
+            "optionsChain": true,
+            "brokerage": true
+          },
+          "cells": [
+            {
+              "instrumentType": "Equity",
+              "supported": true,
+              "stream": true,
+              "backfill": true,
+              "corporateActions": false,
+              "symbolSearch": true,
+              "optionsChain": false
+            },
+            {
+              "instrumentType": "Option",
+              "supported": true,
+              "stream": true,
+              "backfill": true,
+              "corporateActions": false,
+              "symbolSearch": true,
+              "optionsChain": true
+            }
+          ]
+        }
+      ],
+      "discoveryFailures": []
+    },
+    "/api/security-master/corporate-actions/inbox": {
+      "lastIngestAt": "2026-07-13T11:55:00Z",
+      "stagedCount": 0,
+      "appliedLastRun": 3,
+      "duplicatesSkippedLastRun": 1,
+      "staged": [],
+      "errors": []
+    },
+    "/api/security-master/quality-report/latest": {
+      "runAt": "2026-07-13T11:50:00Z",
+      "securitiesScanned": 284,
+      "violationCount": 0,
+      "violations": []
     },
     "/api/brokerage-connections/alpaca/status": {
       "providerId": "alpaca",
@@ -1356,14 +2873,17 @@
       "isConfigured": true,
       "isConnected": true,
       "authorizationUrl": null,
-      "connectedAt": "2026-05-07T11:50:00Z",
+      "connectedAt": "2026-07-13T18:55:00Z",
       "expiresAt": null,
       "lastError": null,
       "warnings": [],
-      "scopes": ["trading:account", "brokerage-sync:read"],
+      "scopes": [
+        "trading:account",
+        "brokerage-sync:read"
+      ],
       "environment": "paper",
       "externalAccountId": "PA-DEMO",
-      "verifiedAt": "2026-05-07T11:50:00Z",
+      "verifiedAt": "2026-07-13T18:55:00Z",
       "maskedKeyId": "********DEMO"
     },
     "/api/portfolio/household": {
@@ -1412,6 +2932,132 @@
         }
       ]
     },
+    "/api/portfolio/cash-ladder": {
+      "engineVersion": "portfolio-cash-ladder-v1",
+      "asOfDate": "2026-07-05",
+      "horizonDays": 14,
+      "baseCurrency": "USD",
+      "scenarioId": "base",
+      "openingCash": 50000,
+      "minimumCashThreshold": 10000,
+      "buckets": [
+        {
+          "bucketStart": "2026-07-05",
+          "bucketEnd": "2026-07-11",
+          "label": "Jul 5 - Jul 11",
+          "inflows": 3500,
+          "outflows": -1000,
+          "netFlow": 2500,
+          "cumulativeCash": 52500,
+          "breachesMinimumBalance": false,
+          "sources": [
+            {
+              "source": "Coupons & interest",
+              "amount": 3500,
+              "flowCount": 2
+            },
+            {
+              "source": "Capital activity",
+              "amount": -1000,
+              "flowCount": 1
+            }
+          ]
+        },
+        {
+          "bucketStart": "2026-07-12",
+          "bucketEnd": "2026-07-18",
+          "label": "Jul 12 - Jul 18",
+          "inflows": 0,
+          "outflows": -48000,
+          "netFlow": -48000,
+          "cumulativeCash": 4500,
+          "breachesMinimumBalance": true,
+          "sources": [
+            {
+              "source": "Capital activity",
+              "amount": -48000,
+              "flowCount": 1
+            }
+          ]
+        }
+      ],
+      "contributions": [
+        {
+          "securityId": "sec-fixture-bond-1",
+          "displayName": "Meridian 5.875% 2031",
+          "assetClass": "Bond",
+          "projectionRunId": "11111111-2222-3333-4444-555555555555",
+          "projectionEngineVersion": "asset-obligation-projection-v1",
+          "termsVersionId": "66666666-7777-8888-9999-000000000000",
+          "termsHash": "security-master:3",
+          "sourceDomain": "SecurityMaster",
+          "sourceEntityId": "sec-fixture-bond-1",
+          "flowType": "Coupon",
+          "sourceLane": "Coupons & interest",
+          "dueDate": "2026-07-10",
+          "amount": 3500,
+          "currency": "USD",
+          "baseAmount": 3500,
+          "scenarioAdjustment": null
+        },
+        {
+          "securityId": "fixture-investor-redemption",
+          "displayName": "Investor redemption",
+          "assetClass": "CapitalActivity",
+          "projectionRunId": null,
+          "projectionEngineVersion": null,
+          "termsVersionId": null,
+          "termsHash": null,
+          "sourceDomain": "PartnershipLedger",
+          "sourceEntityId": "inv-1",
+          "flowType": "Redemption",
+          "sourceLane": "Capital activity",
+          "dueDate": "2026-07-14",
+          "amount": -48000,
+          "currency": "USD",
+          "baseAmount": -48000,
+          "scenarioAdjustment": "Adverse move applied."
+        }
+      ],
+      "availableScenarios": [
+        {
+          "scenarioId": "base",
+          "displayName": "Base projection",
+          "description": "No stress applied; contractual flows and retained capital activity remain unchanged.",
+          "modeledEffects": [
+            "Contractual coupons and maturities",
+            "Retained capital activity"
+          ],
+          "assumptions": [
+            "1:1 FX translation",
+            "No new purchases or withdrawals"
+          ]
+        },
+        {
+          "scenarioId": "early-call",
+          "displayName": "Early call",
+          "description": "Callable instruments are redeemed at the earliest eligible date.",
+          "modeledEffects": [
+            "Callable bond principal returns sooner",
+            "Later coupons are removed"
+          ],
+          "assumptions": [
+            "Par call treatment",
+            "No reinvestment"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Quantities use current portfolio holdings.",
+        "Projection terms are read-only screenshot fixtures."
+      ],
+      "warnings": [
+        "One bucket breaches the minimum balance threshold."
+      ],
+      "generatedAt": "2026-07-05T12:00:00Z",
+      "securitiesEvaluated": 3,
+      "securitiesWithFlows": 1
+    },
     "/api/workstation/workflows": {
       "generatedAt": "2026-04-28T18:15:00Z",
       "workflows": [
@@ -1424,8 +3070,14 @@
           "entryPageTag": "TradingShell",
           "tone": "Warning",
           "actions": [],
-          "evidenceTags": ["readiness gates", "replay verification"],
-          "marketPatternTags": ["paper trading", "live readiness gate"]
+          "evidenceTags": [
+            "readiness gates",
+            "replay verification"
+          ],
+          "marketPatternTags": [
+            "paper trading",
+            "live readiness gate"
+          ]
         }
       ],
       "actions": []
@@ -1483,20 +3135,23 @@
         "displayName": "Alpaca paper",
         "capability": "Brokerage",
         "credentialState": "Configured",
-        "credentialSource": "Operator",
+        "credentialSource": "LocalEncryptedStore",
         "verificationState": "Verified",
         "health": "Healthy",
         "fallbackActive": false,
-        "lastVerifiedAt": "2026-05-07T11:50:00Z",
-        "lastSuccessfulAt": "2026-05-07T11:50:00Z",
+        "lastVerifiedAt": "2026-07-13T18:55:00Z",
+        "lastSuccessfulAt": "2026-07-13T18:55:00Z",
         "lastFailureAt": null,
         "lastError": null,
         "maskedKeyPreview": "********DEMO",
         "environment": "paper",
         "externalAccountId": "PA-DEMO",
-        "affectedWorkflows": ["Trading readiness", "Portfolio brokerage sync"],
+        "affectedWorkflows": [
+          "Trading readiness",
+          "Portfolio brokerage sync"
+        ],
         "recommendedAction": "Keep provider in paper mode for workstation capture.",
-        "actionHref": "/workstation/settings/integrations"
+        "actionHref": "/workstation/settings/providers/alpaca/setup"
       }
     ],
     "/api/provider-routing/connections": [
@@ -1511,7 +3166,10 @@
         "institutionId": "alpaca",
         "externalAccountId": "PA-DEMO",
         "scope": null,
-        "tags": ["paper", "brokerage"],
+        "tags": [
+          "paper",
+          "brokerage"
+        ],
         "description": "Paper brokerage route for screenshots.",
         "productionReady": true
       }
@@ -1538,7 +3196,10 @@
         "healthStatus": "Healthy",
         "isProductionReady": true,
         "isCertificationFresh": true,
-        "signals": ["latency:p50=18ms", "continuity:stable"]
+        "signals": [
+          "latency:p50=18ms",
+          "continuity:stable"
+        ]
       }
     ],
     "/api/workstation/workflow-summary": {
@@ -1546,6 +3207,1203 @@
       "totalWorkflows": 1,
       "activeWorkflows": 1,
       "reviewRequired": 1
-    }
+    },
+    "/api/workstation/reconciliation/statement-connectors": [
+      {
+        "connectorId": "csv-mapped",
+        "displayName": "Custodian/Broker CSV (mapping profile)",
+        "fileExtensions": [
+          ".csv",
+          ".txt"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": true,
+        "defaultProfileId": "canonical-csv-v1"
+      },
+      {
+        "connectorId": "ofx",
+        "displayName": "OFX / QFX statement",
+        "fileExtensions": [
+          ".ofx",
+          ".qfx"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": true,
+        "defaultProfileId": "ofx-bank-v1"
+      },
+      {
+        "connectorId": "ib-flex",
+        "displayName": "Interactive Brokers Flex Report (XML)",
+        "fileExtensions": [
+          ".xml"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": false,
+        "defaultProfileId": "ib-flex-v1"
+      },
+      {
+        "connectorId": "alpaca-activity",
+        "displayName": "Alpaca account activity",
+        "fileExtensions": [
+          ".json"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": true,
+        "requiresMappingProfile": false,
+        "defaultProfileId": "alpaca-activity-v1"
+      }
+    ],
+    "/api/workstation/reconciliation/statement-mapping-profiles": [
+      {
+        "schemaVersion": 1,
+        "profileId": "canonical-csv-v1",
+        "displayName": "Canonical CSV (v1)",
+        "format": "csv",
+        "csv": {
+          "delimiter": ",",
+          "quote": "\"",
+          "hasHeader": true
+        },
+        "culture": null,
+        "dateFormats": null,
+        "fields": [
+          {
+            "canonicalField": "Account",
+            "sourceColumn": "Account",
+            "aliases": null,
+            "required": true
+          },
+          {
+            "canonicalField": "SecurityIdentifier",
+            "sourceColumn": "Symbol",
+            "aliases": [
+              "Ticker"
+            ],
+            "required": false
+          },
+          {
+            "canonicalField": "ActivityType",
+            "sourceColumn": "ActivityType",
+            "aliases": [
+              "Type"
+            ],
+            "required": true
+          },
+          {
+            "canonicalField": "Quantity",
+            "sourceColumn": "Quantity",
+            "aliases": null,
+            "required": false
+          },
+          {
+            "canonicalField": "Price",
+            "sourceColumn": "Price",
+            "aliases": null,
+            "required": false
+          },
+          {
+            "canonicalField": "CashAmount",
+            "sourceColumn": "Amount",
+            "aliases": [
+              "CashAmount"
+            ],
+            "required": false
+          },
+          {
+            "canonicalField": "TradeDate",
+            "sourceColumn": "TradeDate",
+            "aliases": [
+              "Date"
+            ],
+            "required": true
+          }
+        ],
+        "activityCodes": [
+          {
+            "sourceCode": "BUY",
+            "canonicalActivityType": "Buy"
+          },
+          {
+            "sourceCode": "SELL",
+            "canonicalActivityType": "Sell"
+          },
+          {
+            "sourceCode": "DIV",
+            "canonicalActivityType": "Dividend"
+          }
+        ],
+        "lastAcceptedFingerprint": null,
+        "isBuiltIn": true,
+        "notes": "Demo fixture mirroring the built-in canonical CSV mapping profile."
+      }
+    ],
+    "/api/fund-structure/reporting/runs/report-run-investor-202605": {
+      "runId": "report-run-investor-202605",
+      "seriesId": "report-series-investor-monthly-statement",
+      "revision": 1,
+      "templateId": "investor-monthly-statement",
+      "templateVersion": "1.0.0",
+      "scope": {
+        "tenantId": "tenant-demo",
+        "organizationId": "org-demo",
+        "companyId": "company-demo",
+        "fundId": "demo-fund",
+        "bookId": "primary-gl",
+        "periodId": "2026-05"
+      },
+      "access": {
+        "policyId": "investor-statement-distribution",
+        "policyVersion": "3",
+        "mode": "Restricted",
+        "ownerPrincipalId": "controller-1",
+        "allowOwnerAccess": true,
+        "principals": [
+          {
+            "kind": "User",
+            "principalId": "controller-1"
+          },
+          {
+            "kind": "Group",
+            "principalId": "investor-reporting-approvers"
+          },
+          {
+            "kind": "Company",
+            "principalId": "company-demo"
+          }
+        ],
+        "policyHash": "sha256:25c8410656d507a9dde6302b436ae8e7fd06a7e10d8fcd45adf9df5ba60d7a6e"
+      },
+      "snapshot": {
+        "snapshotId": "close-snapshot-202605",
+        "snapshotHash": "sha256:595c41b11cc11b6a0f6e478b02a8fd945b619bc2160ffcb722da1bc578c35d8f",
+        "reconciliationCheckpointId": "reconciliation-checkpoint-202605",
+        "capturedAtUtc": "2026-06-01T01:55:00Z",
+        "sourceCheckpointId": "ledger-sequence-482119",
+        "sourceCheckpointHash": "sha256:1e5330056e67fc8d1184d519e117677a276a77c49bac376064e6842790dfeca7",
+        "reconciliationCheckpointHash": "sha256:8d87e71c52338b00381d94ddfdd05002051f9128e8b5aac55805602c93683628",
+        "parametersCanonicalJson": "{\"accountingBasis\":\"Gaap\",\"asOfDate\":\"2026-05-31\",\"consolidationLevel\":\"Investor\",\"finality\":\"Final\",\"includeEvidenceAppendix\":true,\"includeSupportingSchedules\":true,\"ledgerBook\":{\"ledgerBookCode\":\"Primary GL\",\"ledgerBookId\":null},\"outputFormat\":\"Pdf\",\"periodId\":\"2026-05\",\"presentationCurrency\":\"USD\",\"scope\":{\"dimensions\":{\"externalGlDimensions\":{\"Department\":\"Investor Reporting\"},\"fundId\":\"demo-fund\",\"investorId\":\"investor-anchor-lp\",\"strategyId\":\"multi-strategy\"},\"entityId\":null,\"entityScopeKind\":\"Investor\",\"fundProfileId\":\"demo-fund\",\"investorId\":\"investor-anchor-lp\",\"portfolioId\":null},\"templateParameters\":{\"benchmarkId\":\"blended-credit-benchmark\",\"statementSections\":\"cover-performance-positions-flows\"}}",
+        "parametersHash": "sha256:9f251072aa8af19f3b759744243a75ec7d0f5eea73b6c5efc2df2d4e42e65ee5"
+      },
+      "creationAuthority": {
+        "actorId": "reporting-scheduler",
+        "tenantId": "tenant-demo",
+        "organizationId": "org-demo",
+        "companyId": "company-demo",
+        "permissions": [
+          "CreateRun"
+        ],
+        "origin": "ScheduledAutomation",
+        "correlationId": "corr-investor-202605-create",
+        "principalIds": [
+          "reporting-scheduler"
+        ]
+      },
+      "createdAtUtc": "2026-06-01T02:05:00Z",
+      "restatementOfRunId": null,
+      "executionState": "Succeeded",
+      "governanceState": "Released",
+      "version": 6,
+      "readiness": {
+        "receiptId": "readiness-receipt-investor-202605",
+        "receiptHash": "sha256:0010e7c53222048a8a772820bf4c5c12b6f810916fcf249c422f0b63ff69c6fd",
+        "evaluatedAtUtc": "2026-06-01T02:18:00Z",
+        "isReady": true,
+        "checks": [
+          {
+            "checkId": "LedgerReconciled",
+            "passed": true,
+            "evidenceIds": [
+              "evidence-reconciliation-202605"
+            ],
+            "failureReason": null
+          },
+          {
+            "checkId": "PricingComplete",
+            "passed": true,
+            "evidenceIds": [
+              "evidence-pricing-202605"
+            ],
+            "failureReason": null
+          },
+          {
+            "checkId": "CapitalActivityPosted",
+            "passed": true,
+            "evidenceIds": [
+              "evidence-capital-activity-202605"
+            ],
+            "failureReason": null
+          },
+          {
+            "checkId": "PeriodLocked",
+            "passed": true,
+            "evidenceIds": [
+              "evidence-period-lock-202605"
+            ],
+            "failureReason": null
+          }
+        ]
+      },
+      "approval": {
+        "authority": {
+          "actorId": "cfo-1",
+          "tenantId": "tenant-demo",
+          "organizationId": "org-demo",
+          "companyId": "company-demo",
+          "permissions": [
+            "ApproveRun"
+          ],
+          "origin": "HumanOperator",
+          "correlationId": "corr-investor-202605-approve",
+          "principalIds": [
+            "cfo-1",
+            "investor-reporting-approvers"
+          ]
+        },
+        "approvedAtUtc": "2026-06-01T13:20:00Z",
+        "decisionNote": "May 2026 investor statements tie out to the certified close snapshot. Approved for release."
+      },
+      "release": {
+        "authority": {
+          "actorId": "cfo-1",
+          "tenantId": "tenant-demo",
+          "organizationId": "org-demo",
+          "companyId": "company-demo",
+          "permissions": [
+            "ReleaseRun"
+          ],
+          "origin": "HumanOperator",
+          "correlationId": "corr-investor-202605-release",
+          "principalIds": [
+            "cfo-1",
+            "investor-reporting-approvers"
+          ]
+        },
+        "releasedAtUtc": "2026-06-01T14:05:00Z",
+        "manifestId": "manifest-investor-202605",
+        "manifestHash": "sha256:62997165ba94ec044009dc303f63ba393cb4e4875bb39b26cbcf422c5fb2656b",
+        "artifacts": [
+          {
+            "artifactId": "investor-statement-202605-pdf",
+            "artifactHash": "sha256:23b79f951f67fb76903710253646b2d8e097161fbe8fbb04e4146d5ec2c040b7",
+            "byteLength": 862134,
+            "fileName": "Investor Monthly Statement 2026-05.pdf",
+            "contentType": "application/pdf"
+          },
+          {
+            "artifactId": "investor-statement-202605-supporting-schedules",
+            "artifactHash": "sha256:083c58bfcfba7b32ed6baac68fd63969de53f2ca66da2001e8057fcadf24cd6c",
+            "byteLength": 214788,
+            "fileName": "Supporting Schedules 2026-05.xlsx",
+            "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          },
+          {
+            "artifactId": "investor-statement-202605-evidence-appendix",
+            "artifactHash": "sha256:11f3ff7b226513d5dd17afb9368b52f2a90f7597bc38179579da6b75e2523e33",
+            "byteLength": 4318902,
+            "fileName": "Evidence Appendix 2026-05.zip",
+            "contentType": "application/zip"
+          }
+        ],
+        "evidenceIds": [
+          "evidence-reconciliation-202605",
+          "evidence-pricing-202605",
+          "evidence-capital-activity-202605",
+          "evidence-period-lock-202605"
+        ]
+      },
+      "auditTrail": [
+        {
+          "eventId": "event-investor-202605-1",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 1,
+          "occurredAtUtc": "2026-06-01T02:05:00Z",
+          "action": "RunCreated",
+          "authority": {
+            "actorId": "reporting-scheduler",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "CreateRun"
+            ],
+            "origin": "ScheduledAutomation",
+            "correlationId": "corr-investor-202605-create",
+            "principalIds": [
+              "reporting-scheduler"
+            ]
+          },
+          "permissionUsed": "CreateRun",
+          "fromExecutionState": null,
+          "toExecutionState": "Queued",
+          "fromGovernanceState": null,
+          "toGovernanceState": "Draft",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Scheduled May 2026 investor statement run created against the certified close snapshot.",
+          "previousHash": null,
+          "hash": "sha256:330cb05f1137dc6e1057ce7567159c83b5f09ab2ca240d40c539a4467e79f481"
+        },
+        {
+          "eventId": "event-investor-202605-2",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 2,
+          "occurredAtUtc": "2026-06-01T02:12:00Z",
+          "action": "RunExecuted",
+          "authority": {
+            "actorId": "reporting-scheduler",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "CreateRun"
+            ],
+            "origin": "ScheduledAutomation",
+            "correlationId": "corr-investor-202605-create",
+            "principalIds": [
+              "reporting-scheduler"
+            ]
+          },
+          "permissionUsed": "CreateRun",
+          "fromExecutionState": "Queued",
+          "toExecutionState": "Succeeded",
+          "fromGovernanceState": "Draft",
+          "toGovernanceState": "Draft",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Generation completed across 4 lineage-linked sections.",
+          "previousHash": "sha256:330cb05f1137dc6e1057ce7567159c83b5f09ab2ca240d40c539a4467e79f481",
+          "hash": "sha256:e9fe14ab39a3a8c7d9253d7038507aa592abf1826144dcd71f76b2d887518bfc"
+        },
+        {
+          "eventId": "event-investor-202605-3",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 3,
+          "occurredAtUtc": "2026-06-01T02:20:00Z",
+          "action": "RunValidated",
+          "authority": {
+            "actorId": "controller-1",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "ValidateRun",
+              "SubmitRun"
+            ],
+            "origin": "HumanOperator",
+            "correlationId": "corr-investor-202605-review",
+            "principalIds": [
+              "controller-1"
+            ]
+          },
+          "permissionUsed": "ValidateRun",
+          "fromExecutionState": "Succeeded",
+          "toExecutionState": "Succeeded",
+          "fromGovernanceState": "Draft",
+          "toGovernanceState": "Validated",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Server readiness receipt recorded with every check passing.",
+          "previousHash": "sha256:e9fe14ab39a3a8c7d9253d7038507aa592abf1826144dcd71f76b2d887518bfc",
+          "hash": "sha256:ac0c6b6501d546878d1bd977217c92406eeaec81c8592656524e758353991b75"
+        },
+        {
+          "eventId": "event-investor-202605-4",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 4,
+          "occurredAtUtc": "2026-06-01T11:40:00Z",
+          "action": "RunSubmitted",
+          "authority": {
+            "actorId": "controller-1",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "ValidateRun",
+              "SubmitRun"
+            ],
+            "origin": "HumanOperator",
+            "correlationId": "corr-investor-202605-review",
+            "principalIds": [
+              "controller-1"
+            ]
+          },
+          "permissionUsed": "SubmitRun",
+          "fromExecutionState": "Succeeded",
+          "toExecutionState": "Succeeded",
+          "fromGovernanceState": "Validated",
+          "toGovernanceState": "InReview",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Submitted to the investor reporting approver group.",
+          "previousHash": "sha256:ac0c6b6501d546878d1bd977217c92406eeaec81c8592656524e758353991b75",
+          "hash": "sha256:4bdf1950e2b17606fce2e9d9d9939ca623545c0ca1c9a1d8a55d56cc36366196"
+        },
+        {
+          "eventId": "event-investor-202605-5",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 5,
+          "occurredAtUtc": "2026-06-01T13:20:00Z",
+          "action": "RunApproved",
+          "authority": {
+            "actorId": "cfo-1",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "ApproveRun"
+            ],
+            "origin": "HumanOperator",
+            "correlationId": "corr-investor-202605-approve",
+            "principalIds": [
+              "cfo-1",
+              "investor-reporting-approvers"
+            ]
+          },
+          "permissionUsed": "ApproveRun",
+          "fromExecutionState": "Succeeded",
+          "toExecutionState": "Succeeded",
+          "fromGovernanceState": "InReview",
+          "toGovernanceState": "Approved",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Approved after tie-out to the certified reconciliation checkpoint.",
+          "previousHash": "sha256:4bdf1950e2b17606fce2e9d9d9939ca623545c0ca1c9a1d8a55d56cc36366196",
+          "hash": "sha256:539e2f556cb42b177b6604232093ab4fbaa76e1123a83ec74c124d246a29c8d9"
+        },
+        {
+          "eventId": "event-investor-202605-6",
+          "aggregateKind": "GovernedReportingRun",
+          "aggregateId": "report-run-investor-202605",
+          "aggregateVersion": 6,
+          "occurredAtUtc": "2026-06-01T14:05:00Z",
+          "action": "RunReleased",
+          "authority": {
+            "actorId": "cfo-1",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "ReleaseRun"
+            ],
+            "origin": "HumanOperator",
+            "correlationId": "corr-investor-202605-release",
+            "principalIds": [
+              "cfo-1",
+              "investor-reporting-approvers"
+            ]
+          },
+          "permissionUsed": "ReleaseRun",
+          "fromExecutionState": "Succeeded",
+          "toExecutionState": "Succeeded",
+          "fromGovernanceState": "Approved",
+          "toGovernanceState": "Released",
+          "fromRestatementState": null,
+          "toRestatementState": null,
+          "note": "Immutable manifest released for governed distribution.",
+          "previousHash": "sha256:539e2f556cb42b177b6604232093ab4fbaa76e1123a83ec74c124d246a29c8d9",
+          "hash": "sha256:0d868b1d21b2fe939a1d64b7d3407bb33d65d39a7e89d116954f3892798bbe38"
+        }
+      ],
+      "normalizedParameters": {
+        "scope": {
+          "fundProfileId": "demo-fund",
+          "entityScopeKind": "Investor",
+          "entityId": null,
+          "portfolioId": null,
+          "investorId": "investor-anchor-lp",
+          "dimensions": {
+            "fundId": "demo-fund",
+            "strategyId": "multi-strategy",
+            "investorId": "investor-anchor-lp",
+            "externalGlDimensions": {
+              "Department": "Investor Reporting"
+            }
+          }
+        },
+        "periodId": "2026-05",
+        "asOfDate": "2026-05-31",
+        "ledgerBook": {
+          "ledgerBookId": null,
+          "ledgerBookCode": "Primary GL"
+        },
+        "accountingBasis": "Gaap",
+        "presentationCurrency": "USD",
+        "consolidationLevel": "Investor",
+        "outputFormat": "Pdf",
+        "finality": "Final",
+        "includeSupportingSchedules": true,
+        "includeEvidenceAppendix": true,
+        "templateParameters": {
+          "statementSections": "cover-performance-positions-flows",
+          "benchmarkId": "blended-credit-benchmark"
+        }
+      },
+      "actionAvailability": [
+        {
+          "action": "ValidateRun",
+          "isAllowed": false,
+          "blockedReason": "The released revision is immutable.",
+          "expectedVersion": 6
+        },
+        {
+          "action": "SubmitRun",
+          "isAllowed": false,
+          "blockedReason": "The released revision is immutable.",
+          "expectedVersion": 6
+        },
+        {
+          "action": "ApproveRun",
+          "isAllowed": false,
+          "blockedReason": "The revision is already approved.",
+          "expectedVersion": 6
+        },
+        {
+          "action": "ReleaseRun",
+          "isAllowed": false,
+          "blockedReason": "The revision is already released.",
+          "expectedVersion": 6
+        },
+        {
+          "action": "RequestRestatement",
+          "isAllowed": true,
+          "blockedReason": null,
+          "expectedVersion": 6
+        }
+      ]
+    },
+    "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement": {
+      "seriesId": "report-series-investor-monthly-statement",
+      "runs": [
+        {
+          "runId": "report-run-investor-202605",
+          "seriesId": "report-series-investor-monthly-statement",
+          "revision": 1,
+          "templateId": "investor-monthly-statement",
+          "templateVersion": "1.0.0",
+          "scope": {
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "fundId": "demo-fund",
+            "bookId": "primary-gl",
+            "periodId": "2026-05"
+          },
+          "access": {
+            "policyId": "investor-statement-distribution",
+            "policyVersion": "3",
+            "mode": "Restricted",
+            "ownerPrincipalId": "controller-1",
+            "allowOwnerAccess": true,
+            "principals": [
+              {
+                "kind": "User",
+                "principalId": "controller-1"
+              },
+              {
+                "kind": "Group",
+                "principalId": "investor-reporting-approvers"
+              },
+              {
+                "kind": "Company",
+                "principalId": "company-demo"
+              }
+            ],
+            "policyHash": "sha256:25c8410656d507a9dde6302b436ae8e7fd06a7e10d8fcd45adf9df5ba60d7a6e"
+          },
+          "snapshot": {
+            "snapshotId": "close-snapshot-202605",
+            "snapshotHash": "sha256:595c41b11cc11b6a0f6e478b02a8fd945b619bc2160ffcb722da1bc578c35d8f",
+            "reconciliationCheckpointId": "reconciliation-checkpoint-202605",
+            "capturedAtUtc": "2026-06-01T01:55:00Z",
+            "sourceCheckpointId": "ledger-sequence-482119",
+            "sourceCheckpointHash": "sha256:1e5330056e67fc8d1184d519e117677a276a77c49bac376064e6842790dfeca7",
+            "reconciliationCheckpointHash": "sha256:8d87e71c52338b00381d94ddfdd05002051f9128e8b5aac55805602c93683628",
+            "parametersCanonicalJson": "{\"accountingBasis\":\"Gaap\",\"asOfDate\":\"2026-05-31\",\"consolidationLevel\":\"Investor\",\"finality\":\"Final\",\"includeEvidenceAppendix\":true,\"includeSupportingSchedules\":true,\"ledgerBook\":{\"ledgerBookCode\":\"Primary GL\",\"ledgerBookId\":null},\"outputFormat\":\"Pdf\",\"periodId\":\"2026-05\",\"presentationCurrency\":\"USD\",\"scope\":{\"dimensions\":{\"externalGlDimensions\":{\"Department\":\"Investor Reporting\"},\"fundId\":\"demo-fund\",\"investorId\":\"investor-anchor-lp\",\"strategyId\":\"multi-strategy\"},\"entityId\":null,\"entityScopeKind\":\"Investor\",\"fundProfileId\":\"demo-fund\",\"investorId\":\"investor-anchor-lp\",\"portfolioId\":null},\"templateParameters\":{\"benchmarkId\":\"blended-credit-benchmark\",\"statementSections\":\"cover-performance-positions-flows\"}}",
+            "parametersHash": "sha256:9f251072aa8af19f3b759744243a75ec7d0f5eea73b6c5efc2df2d4e42e65ee5"
+          },
+          "creationAuthority": {
+            "actorId": "reporting-scheduler",
+            "tenantId": "tenant-demo",
+            "organizationId": "org-demo",
+            "companyId": "company-demo",
+            "permissions": [
+              "CreateRun"
+            ],
+            "origin": "ScheduledAutomation",
+            "correlationId": "corr-investor-202605-create",
+            "principalIds": [
+              "reporting-scheduler"
+            ]
+          },
+          "createdAtUtc": "2026-06-01T02:05:00Z",
+          "restatementOfRunId": null,
+          "executionState": "Succeeded",
+          "governanceState": "Released",
+          "version": 6,
+          "readiness": {
+            "receiptId": "readiness-receipt-investor-202605",
+            "receiptHash": "sha256:0010e7c53222048a8a772820bf4c5c12b6f810916fcf249c422f0b63ff69c6fd",
+            "evaluatedAtUtc": "2026-06-01T02:18:00Z",
+            "isReady": true,
+            "checks": [
+              {
+                "checkId": "LedgerReconciled",
+                "passed": true,
+                "evidenceIds": [
+                  "evidence-reconciliation-202605"
+                ],
+                "failureReason": null
+              },
+              {
+                "checkId": "PricingComplete",
+                "passed": true,
+                "evidenceIds": [
+                  "evidence-pricing-202605"
+                ],
+                "failureReason": null
+              },
+              {
+                "checkId": "CapitalActivityPosted",
+                "passed": true,
+                "evidenceIds": [
+                  "evidence-capital-activity-202605"
+                ],
+                "failureReason": null
+              },
+              {
+                "checkId": "PeriodLocked",
+                "passed": true,
+                "evidenceIds": [
+                  "evidence-period-lock-202605"
+                ],
+                "failureReason": null
+              }
+            ]
+          },
+          "approval": {
+            "authority": {
+              "actorId": "cfo-1",
+              "tenantId": "tenant-demo",
+              "organizationId": "org-demo",
+              "companyId": "company-demo",
+              "permissions": [
+                "ApproveRun"
+              ],
+              "origin": "HumanOperator",
+              "correlationId": "corr-investor-202605-approve",
+              "principalIds": [
+                "cfo-1",
+                "investor-reporting-approvers"
+              ]
+            },
+            "approvedAtUtc": "2026-06-01T13:20:00Z",
+            "decisionNote": "May 2026 investor statements tie out to the certified close snapshot. Approved for release."
+          },
+          "release": {
+            "authority": {
+              "actorId": "cfo-1",
+              "tenantId": "tenant-demo",
+              "organizationId": "org-demo",
+              "companyId": "company-demo",
+              "permissions": [
+                "ReleaseRun"
+              ],
+              "origin": "HumanOperator",
+              "correlationId": "corr-investor-202605-release",
+              "principalIds": [
+                "cfo-1",
+                "investor-reporting-approvers"
+              ]
+            },
+            "releasedAtUtc": "2026-06-01T14:05:00Z",
+            "manifestId": "manifest-investor-202605",
+            "manifestHash": "sha256:62997165ba94ec044009dc303f63ba393cb4e4875bb39b26cbcf422c5fb2656b",
+            "artifacts": [
+              {
+                "artifactId": "investor-statement-202605-pdf",
+                "artifactHash": "sha256:23b79f951f67fb76903710253646b2d8e097161fbe8fbb04e4146d5ec2c040b7",
+                "byteLength": 862134,
+                "fileName": "Investor Monthly Statement 2026-05.pdf",
+                "contentType": "application/pdf"
+              },
+              {
+                "artifactId": "investor-statement-202605-supporting-schedules",
+                "artifactHash": "sha256:083c58bfcfba7b32ed6baac68fd63969de53f2ca66da2001e8057fcadf24cd6c",
+                "byteLength": 214788,
+                "fileName": "Supporting Schedules 2026-05.xlsx",
+                "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              },
+              {
+                "artifactId": "investor-statement-202605-evidence-appendix",
+                "artifactHash": "sha256:11f3ff7b226513d5dd17afb9368b52f2a90f7597bc38179579da6b75e2523e33",
+                "byteLength": 4318902,
+                "fileName": "Evidence Appendix 2026-05.zip",
+                "contentType": "application/zip"
+              }
+            ],
+            "evidenceIds": [
+              "evidence-reconciliation-202605",
+              "evidence-pricing-202605",
+              "evidence-capital-activity-202605",
+              "evidence-period-lock-202605"
+            ]
+          },
+          "auditTrail": [
+            {
+              "eventId": "event-investor-202605-1",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 1,
+              "occurredAtUtc": "2026-06-01T02:05:00Z",
+              "action": "RunCreated",
+              "authority": {
+                "actorId": "reporting-scheduler",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "CreateRun"
+                ],
+                "origin": "ScheduledAutomation",
+                "correlationId": "corr-investor-202605-create",
+                "principalIds": [
+                  "reporting-scheduler"
+                ]
+              },
+              "permissionUsed": "CreateRun",
+              "fromExecutionState": null,
+              "toExecutionState": "Queued",
+              "fromGovernanceState": null,
+              "toGovernanceState": "Draft",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Scheduled May 2026 investor statement run created against the certified close snapshot.",
+              "previousHash": null,
+              "hash": "sha256:330cb05f1137dc6e1057ce7567159c83b5f09ab2ca240d40c539a4467e79f481"
+            },
+            {
+              "eventId": "event-investor-202605-2",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 2,
+              "occurredAtUtc": "2026-06-01T02:12:00Z",
+              "action": "RunExecuted",
+              "authority": {
+                "actorId": "reporting-scheduler",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "CreateRun"
+                ],
+                "origin": "ScheduledAutomation",
+                "correlationId": "corr-investor-202605-create",
+                "principalIds": [
+                  "reporting-scheduler"
+                ]
+              },
+              "permissionUsed": "CreateRun",
+              "fromExecutionState": "Queued",
+              "toExecutionState": "Succeeded",
+              "fromGovernanceState": "Draft",
+              "toGovernanceState": "Draft",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Generation completed across 4 lineage-linked sections.",
+              "previousHash": "sha256:330cb05f1137dc6e1057ce7567159c83b5f09ab2ca240d40c539a4467e79f481",
+              "hash": "sha256:e9fe14ab39a3a8c7d9253d7038507aa592abf1826144dcd71f76b2d887518bfc"
+            },
+            {
+              "eventId": "event-investor-202605-3",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 3,
+              "occurredAtUtc": "2026-06-01T02:20:00Z",
+              "action": "RunValidated",
+              "authority": {
+                "actorId": "controller-1",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "ValidateRun",
+                  "SubmitRun"
+                ],
+                "origin": "HumanOperator",
+                "correlationId": "corr-investor-202605-review",
+                "principalIds": [
+                  "controller-1"
+                ]
+              },
+              "permissionUsed": "ValidateRun",
+              "fromExecutionState": "Succeeded",
+              "toExecutionState": "Succeeded",
+              "fromGovernanceState": "Draft",
+              "toGovernanceState": "Validated",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Server readiness receipt recorded with every check passing.",
+              "previousHash": "sha256:e9fe14ab39a3a8c7d9253d7038507aa592abf1826144dcd71f76b2d887518bfc",
+              "hash": "sha256:ac0c6b6501d546878d1bd977217c92406eeaec81c8592656524e758353991b75"
+            },
+            {
+              "eventId": "event-investor-202605-4",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 4,
+              "occurredAtUtc": "2026-06-01T11:40:00Z",
+              "action": "RunSubmitted",
+              "authority": {
+                "actorId": "controller-1",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "ValidateRun",
+                  "SubmitRun"
+                ],
+                "origin": "HumanOperator",
+                "correlationId": "corr-investor-202605-review",
+                "principalIds": [
+                  "controller-1"
+                ]
+              },
+              "permissionUsed": "SubmitRun",
+              "fromExecutionState": "Succeeded",
+              "toExecutionState": "Succeeded",
+              "fromGovernanceState": "Validated",
+              "toGovernanceState": "InReview",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Submitted to the investor reporting approver group.",
+              "previousHash": "sha256:ac0c6b6501d546878d1bd977217c92406eeaec81c8592656524e758353991b75",
+              "hash": "sha256:4bdf1950e2b17606fce2e9d9d9939ca623545c0ca1c9a1d8a55d56cc36366196"
+            },
+            {
+              "eventId": "event-investor-202605-5",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 5,
+              "occurredAtUtc": "2026-06-01T13:20:00Z",
+              "action": "RunApproved",
+              "authority": {
+                "actorId": "cfo-1",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "ApproveRun"
+                ],
+                "origin": "HumanOperator",
+                "correlationId": "corr-investor-202605-approve",
+                "principalIds": [
+                  "cfo-1",
+                  "investor-reporting-approvers"
+                ]
+              },
+              "permissionUsed": "ApproveRun",
+              "fromExecutionState": "Succeeded",
+              "toExecutionState": "Succeeded",
+              "fromGovernanceState": "InReview",
+              "toGovernanceState": "Approved",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Approved after tie-out to the certified reconciliation checkpoint.",
+              "previousHash": "sha256:4bdf1950e2b17606fce2e9d9d9939ca623545c0ca1c9a1d8a55d56cc36366196",
+              "hash": "sha256:539e2f556cb42b177b6604232093ab4fbaa76e1123a83ec74c124d246a29c8d9"
+            },
+            {
+              "eventId": "event-investor-202605-6",
+              "aggregateKind": "GovernedReportingRun",
+              "aggregateId": "report-run-investor-202605",
+              "aggregateVersion": 6,
+              "occurredAtUtc": "2026-06-01T14:05:00Z",
+              "action": "RunReleased",
+              "authority": {
+                "actorId": "cfo-1",
+                "tenantId": "tenant-demo",
+                "organizationId": "org-demo",
+                "companyId": "company-demo",
+                "permissions": [
+                  "ReleaseRun"
+                ],
+                "origin": "HumanOperator",
+                "correlationId": "corr-investor-202605-release",
+                "principalIds": [
+                  "cfo-1",
+                  "investor-reporting-approvers"
+                ]
+              },
+              "permissionUsed": "ReleaseRun",
+              "fromExecutionState": "Succeeded",
+              "toExecutionState": "Succeeded",
+              "fromGovernanceState": "Approved",
+              "toGovernanceState": "Released",
+              "fromRestatementState": null,
+              "toRestatementState": null,
+              "note": "Immutable manifest released for governed distribution.",
+              "previousHash": "sha256:539e2f556cb42b177b6604232093ab4fbaa76e1123a83ec74c124d246a29c8d9",
+              "hash": "sha256:0d868b1d21b2fe939a1d64b7d3407bb33d65d39a7e89d116954f3892798bbe38"
+            }
+          ],
+          "normalizedParameters": {
+            "scope": {
+              "fundProfileId": "demo-fund",
+              "entityScopeKind": "Investor",
+              "entityId": null,
+              "portfolioId": null,
+              "investorId": "investor-anchor-lp",
+              "dimensions": {
+                "fundId": "demo-fund",
+                "strategyId": "multi-strategy",
+                "investorId": "investor-anchor-lp",
+                "externalGlDimensions": {
+                  "Department": "Investor Reporting"
+                }
+              }
+            },
+            "periodId": "2026-05",
+            "asOfDate": "2026-05-31",
+            "ledgerBook": {
+              "ledgerBookId": null,
+              "ledgerBookCode": "Primary GL"
+            },
+            "accountingBasis": "Gaap",
+            "presentationCurrency": "USD",
+            "consolidationLevel": "Investor",
+            "outputFormat": "Pdf",
+            "finality": "Final",
+            "includeSupportingSchedules": true,
+            "includeEvidenceAppendix": true,
+            "templateParameters": {
+              "statementSections": "cover-performance-positions-flows",
+              "benchmarkId": "blended-credit-benchmark"
+            }
+          },
+          "actionAvailability": [
+            {
+              "action": "ValidateRun",
+              "isAllowed": false,
+              "blockedReason": "The released revision is immutable.",
+              "expectedVersion": 6
+            },
+            {
+              "action": "SubmitRun",
+              "isAllowed": false,
+              "blockedReason": "The released revision is immutable.",
+              "expectedVersion": 6
+            },
+            {
+              "action": "ApproveRun",
+              "isAllowed": false,
+              "blockedReason": "The revision is already approved.",
+              "expectedVersion": 6
+            },
+            {
+              "action": "ReleaseRun",
+              "isAllowed": false,
+              "blockedReason": "The revision is already released.",
+              "expectedVersion": 6
+            },
+            {
+              "action": "RequestRestatement",
+              "isAllowed": true,
+              "blockedReason": null,
+              "expectedVersion": 6
+            }
+          ]
+        }
+      ],
+      "restatementRequests": []
+    },
+    "/api/fund-structure/reporting/distribution/transports": {
+      "canQueueDelivery": true,
+      "canIssueAccessGrant": true,
+      "canRevokeAccessGrant": true,
+      "actionDisabledReasonCode": null,
+      "transports": [
+        {
+          "transportId": "secure-portal",
+          "displayName": "Secure portal",
+          "deliveryMode": "SecurePortal",
+          "isExternal": false,
+          "requiresDestination": false,
+          "usesGovernedRecipientScope": true,
+          "issuesAccessGrant": true,
+          "supportsProviderReceipts": false,
+          "isConfigured": true,
+          "isInfrastructureReady": true,
+          "infrastructureDisabledReasonCode": null,
+          "isReady": true,
+          "disabledReasonCode": null
+        },
+        {
+          "transportId": "secure-email",
+          "displayName": "Secure email",
+          "deliveryMode": "Email",
+          "isExternal": true,
+          "requiresDestination": true,
+          "usesGovernedRecipientScope": true,
+          "issuesAccessGrant": true,
+          "supportsProviderReceipts": true,
+          "isConfigured": true,
+          "isInfrastructureReady": true,
+          "infrastructureDisabledReasonCode": null,
+          "isReady": true,
+          "disabledReasonCode": null
+        },
+        {
+          "transportId": "investor-sftp",
+          "displayName": "Investor SFTP drop",
+          "deliveryMode": "Sftp",
+          "isExternal": true,
+          "requiresDestination": true,
+          "usesGovernedRecipientScope": false,
+          "issuesAccessGrant": false,
+          "supportsProviderReceipts": false,
+          "isConfigured": false,
+          "isInfrastructureReady": false,
+          "infrastructureDisabledReasonCode": "TRANSPORT_NOT_CONFIGURED",
+          "isReady": false,
+          "disabledReasonCode": "TRANSPORT_NOT_CONFIGURED"
+        }
+      ]
+    },
+    "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries": [
+      {
+        "jobId": "delivery-investor-202605-portal",
+        "runId": "report-run-investor-202605",
+        "packageId": "package-investor-202605",
+        "releaseVersion": "1",
+        "artifactManifestHashSha256": "sha256:62997165ba94ec044009dc303f63ba393cb4e4875bb39b26cbcf422c5fb2656b",
+        "distributionId": "investor-monthly-distribution",
+        "transportId": "secure-portal",
+        "recipient": "investor-anchor-lp",
+        "recipientKind": "Company",
+        "destination": "Secure portal package",
+        "subject": "Investor Monthly Statement — May 2026",
+        "state": "Delivered",
+        "attemptCount": 1,
+        "maxAttempts": 3,
+        "createdAtUtc": "2026-06-01T14:08:00Z",
+        "updatedAtUtc": "2026-06-01T14:09:00Z",
+        "nextAttemptAtUtc": null,
+        "lastErrorCode": null,
+        "lastError": null,
+        "providerMessageId": null,
+        "accessGrantId": "grant-investor-202605-portal",
+        "receipts": [
+          {
+            "receiptId": "receipt-investor-202605-portal-queued",
+            "kind": "Queued",
+            "occurredAtUtc": "2026-06-01T14:08:00Z",
+            "providerReference": null,
+            "evidenceReference": "evidence-distribution-202605",
+            "detail": "Queued against the released manifest."
+          },
+          {
+            "receiptId": "receipt-investor-202605-portal-delivered",
+            "kind": "Delivered",
+            "occurredAtUtc": "2026-06-01T14:09:00Z",
+            "providerReference": null,
+            "evidenceReference": "evidence-distribution-202605",
+            "detail": "Package published to the governed investor portal."
+          }
+        ]
+      },
+      {
+        "jobId": "delivery-investor-202605-email",
+        "runId": "report-run-investor-202605",
+        "packageId": "package-investor-202605",
+        "releaseVersion": "1",
+        "artifactManifestHashSha256": "sha256:62997165ba94ec044009dc303f63ba393cb4e4875bb39b26cbcf422c5fb2656b",
+        "distributionId": "investor-monthly-distribution",
+        "transportId": "secure-email",
+        "recipient": "investor-anchor-lp",
+        "recipientKind": "Company",
+        "destination": "statements@anchor-lp.example",
+        "subject": "Investor Monthly Statement — May 2026",
+        "state": "Retrying",
+        "attemptCount": 2,
+        "maxAttempts": 3,
+        "createdAtUtc": "2026-06-01T14:08:00Z",
+        "updatedAtUtc": "2026-06-01T14:31:00Z",
+        "nextAttemptAtUtc": "2026-06-01T15:01:00Z",
+        "lastErrorCode": "PROVIDER_THROTTLED",
+        "lastError": "The transport provider throttled the send and the job is awaiting its next attempt.",
+        "providerMessageId": null,
+        "accessGrantId": "grant-investor-202605-email",
+        "receipts": [
+          {
+            "receiptId": "receipt-investor-202605-email-queued",
+            "kind": "Queued",
+            "occurredAtUtc": "2026-06-01T14:08:00Z",
+            "providerReference": null,
+            "evidenceReference": "evidence-distribution-202605",
+            "detail": "Queued against the released manifest."
+          },
+          {
+            "receiptId": "receipt-investor-202605-email-deferred",
+            "kind": "Deferred",
+            "occurredAtUtc": "2026-06-01T14:31:00Z",
+            "providerReference": "provider-defer-2f81",
+            "evidenceReference": "evidence-distribution-202605",
+            "detail": "Provider returned a retryable throttle response."
+          }
+        ]
+      }
+    ],
+    "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants": [
+      {
+        "grantId": "grant-investor-202605-portal",
+        "runId": "report-run-investor-202605",
+        "packageId": "package-investor-202605",
+        "audience": "investor-anchor-lp",
+        "audienceKind": "Company",
+        "artifactIds": [
+          "investor-statement-202605-pdf",
+          "investor-statement-202605-supporting-schedules",
+          "investor-statement-202605-evidence-appendix"
+        ],
+        "state": "Active",
+        "createdAtUtc": "2026-06-01T14:08:00Z",
+        "expiresAtUtc": "2026-06-08T14:08:00Z",
+        "maxUses": 5,
+        "useCount": 2,
+        "lastUsedAtUtc": "2026-06-02T09:14:00Z",
+        "revokedAtUtc": null,
+        "revokedBy": null,
+        "revocationReason": null,
+        "allowPackageRead": true
+      },
+      {
+        "grantId": "grant-investor-202605-email",
+        "runId": "report-run-investor-202605",
+        "packageId": "package-investor-202605",
+        "audience": "investor-anchor-lp",
+        "audienceKind": "Company",
+        "artifactIds": [
+          "investor-statement-202605-pdf"
+        ],
+        "state": "Revoked",
+        "createdAtUtc": "2026-06-01T14:08:00Z",
+        "expiresAtUtc": "2026-06-08T14:08:00Z",
+        "maxUses": 3,
+        "useCount": 0,
+        "lastUsedAtUtc": null,
+        "revokedAtUtc": "2026-06-01T16:45:00Z",
+        "revokedBy": "controller-1",
+        "revocationReason": "Superseded by the portal grant after the email transport throttled.",
+        "allowPackageRead": false
+      }
+    ]
   }
 }

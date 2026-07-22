@@ -20,6 +20,7 @@ paths       = [
 ]
 stopwords   = [
     "your-api-key",
+    "your-key",
 ]
 
 [[allowlists]]
@@ -27,7 +28,7 @@ id          = "config-validation-test-placeholders"
 description = "Config validation tests use deliberately fake Alpaca credentials"
 condition   = "AND"
 paths       = [
-    '''tests/Meridian\.Tests/Config/ConfigValidationPipelineTests\.cs''',
+    '''tests/Meridian\.Tests/(Application/|Core/)?Config/ConfigValidationPipelineTests\.cs''',
 ]
 stopwords   = [
     "VALIDSECRET",
@@ -39,9 +40,10 @@ id          = "polygon-client-test-placeholder"
 description = "Polygon client tests use a deliberately fake API key"
 condition   = "AND"
 paths       = [
-    '''tests/Meridian\.Tests/Providers/PolygonMarketDataClientTests\.cs''',
+    '''tests/Meridian\.Tests/(Infrastructure/)?Providers/PolygonMarketDataClientTests\.cs''',
 ]
 stopwords   = [
+    "abcdefghijklmnopqrstuvwxyz123456",
     "valid_environment_api_key",
 ]
 
@@ -50,8 +52,65 @@ id          = "polygon-subscription-test-placeholder"
 description = "Polygon subscription tests use a deliberately fake API key"
 condition   = "AND"
 paths       = [
-    '''tests/Meridian\.Tests/Providers/PolygonSubscriptionTests\.cs''',
+    '''tests/Meridian\.Tests/(Infrastructure/)?Providers/PolygonSubscriptionTests\.cs''',
 ]
 stopwords   = [
     "valid_polygon_api_key",
+]
+
+[[allowlists]]
+id          = "finnhub-credential-schema-labels"
+description = "Finnhub provider metadata documents environment-variable names, not credential values"
+condition   = "AND"
+paths       = [
+    '''src/Meridian\.Infrastructure/Adapters/Finnhub/Finnhub(CorporateAction|HistoricalData)Provider\.cs''',
+    '''docs/docfx/api/Meridian\.Infrastructure\.Adapters\.Finnhub\.FinnhubHistoricalDataProvider\.yml''',
+]
+stopwords   = [
+    "FINNHUB_API_KEY",
+    "FINNHUB__APIKEY",
+]
+
+[[allowlists]]
+id          = "provider-validation-doc-placeholders"
+description = "Provider validation docs describe generic API payload evidence, not secret material"
+condition   = "AND"
+paths       = [
+    '''docs/(reference|status)/provider-validation-matrix\.md''',
+]
+stopwords   = [
+    "API payload",
+]
+
+[[allowlists]]
+id          = "provider-setup-handler-aliases"
+description = "Provider setup registry contains provider aliases rather than credential values"
+condition   = "AND"
+paths       = [
+    '''src/Meridian\.DataIntegration/Credentials/ProviderSetupHandlers\.cs''',
+]
+stopwords   = [
+    "plaidapi",
+]
+
+[[allowlists]]
+id          = "accounting-configure-wpf-fixture-key"
+description = "Accounting Configure tests assert deterministic fixture identifiers"
+condition   = "AND"
+paths       = [
+    '''tests/Meridian\.Wpf\.Tests/ViewModels/AccountingConfigureViewModelTests\.cs''',
+]
+stopwords   = [
+    "7e0be005-49e1-46eb-9d4f-89d75e2328bd",
+]
+
+[[allowlists]]
+id          = "ib-brokerage-comment-placeholder"
+description = "IB brokerage tests mention a fixed-income field name in comments"
+condition   = "AND"
+paths       = [
+    '''tests/Meridian\.Tests/Infrastructure/Providers/IBBrokerageGatewayTests\.cs''',
+]
+stopwords   = [
+    "AccruedInterest",
 ]

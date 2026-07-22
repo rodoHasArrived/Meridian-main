@@ -10,6 +10,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -28,7 +29,9 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Free streaming data is available via Cboe One + IEX (non-consolidated).
 /// </remarks>
 [DataSource("ibkr", "Interactive Brokers", DataSourceType.Historical, DataSourceCategory.Broker,
-    Priority = 10, Description = "Historical OHLCV data via Interactive Brokers TWS API")]
+    Priority = 10,
+    EnabledByDefault = false,
+    Description = "Historical OHLCV data via Interactive Brokers TWS API")]
 [ImplementsAdr("ADR-001", "Interactive Brokers historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
@@ -441,12 +444,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
     private static DateOnly ParseBarDate(string ibDate)
     {
         // IB returns dates in format: "yyyyMMdd" for daily bars
-        if (ibDate.Length >= 8 && DateOnly.TryParseExact(
-            ibDate.Substring(0, 8),
-            "yyyyMMdd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out var date))
+        if (ibDate.Length >= 8 &&
+            ProviderDateParsing.TryParseProviderDate(ibDate.Substring(0, 8), "yyyyMMdd", out var date))
         {
             return date;
         }
@@ -543,7 +542,9 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Registers in the provider list so users can see IB is available but requires IBAPI.
 /// </summary>
 [DataSource("ibkr", "Interactive Brokers", DataSourceType.Historical, DataSourceCategory.Broker,
-    Priority = 80, Description = "Stub provider — build with IBAPI to enable real IB historical data")]
+    Priority = 80,
+    EnabledByDefault = false,
+    Description = "Stub provider — build with IBAPI to enable real IB historical data")]
 [ImplementsAdr("ADR-001", "Interactive Brokers historical data provider stub")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
@@ -584,7 +585,14 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
 
     public ProviderCapabilities ProviderCapabilities { get; } = new()
     {
+        SupportsBackfill = true,
+        SupportsIntraday = true,
+        SupportsAdjustedPrices = true,
         SupportedMarkets = new[] { "US", "EU", "APAC" },
+        DeclaredMarketDataCapabilities = new[]
+        {
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { "Equity", "Option", "Future", "Forex", "Bond" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Historical", "Account and market-data subscription may be required", 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), "IB historical bar timestamp", "Entitlement-dependent; unavailable without an IBAPI-enabled build")
+        },
         MaxRequestsPerWindow = 60,
         RateLimitWindow = TimeSpan.FromMinutes(10),
         MinRequestDelay = TimeSpan.FromSeconds(15)

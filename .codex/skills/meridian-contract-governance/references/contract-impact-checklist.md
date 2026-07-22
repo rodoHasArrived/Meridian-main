@@ -13,7 +13,7 @@ workstation payloads.
 
 ## Compatibility Choices
 
-- Prefer additive fields and tolerant readers when browser and WPF consumers are active.
+- Prefer additive fields and tolerant readers for browser consumers and retained WPF compatibility.
 - Use adapter shims when a UI surface cannot move in the same change.
 - Version route or payload shape only when simultaneous consumer updates are risky.
 - Require migration notes when persisted records or retained evidence are affected.

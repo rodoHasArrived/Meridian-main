@@ -22,4 +22,9 @@
     <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Shared\CorporateActions\*.cs" Link="Shared\CorporateActions\%(Filename)%(Extension)" />
+    <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

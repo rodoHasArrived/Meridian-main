@@ -840,6 +840,7 @@ public static class DataSourceConfigurationExtensions
             "realtime" => DataSourceType.Realtime,
             "historical" => DataSourceType.Historical,
             "hybrid" or "both" => DataSourceType.Hybrid,
+            "reference" => DataSourceType.Reference,
             _ => DataSourceType.Hybrid
         };
     }
@@ -870,4 +871,3 @@ public static class DataSourceConfigurationExtensions
             .Select(kvp => kvp.Key);
     }
 }
-

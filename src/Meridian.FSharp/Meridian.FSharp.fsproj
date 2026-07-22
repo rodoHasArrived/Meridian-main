@@ -35,9 +35,6 @@
     <Compile Include="Domain/SettlementInstructionCommands.fs" />
     <Compile Include="Domain/DirectLending.fs" />
 
-    <!-- Comprehensive security master domain — self-contained, no inter-domain dependencies -->
-    <Compile Include="Domain/SecMasterDomain.fs" />
-
     <!-- Validation layer: depends on Domain -->
     <Compile Include="Validation/ValidationTypes.fs" />
     <Compile Include="Validation/TradeValidator.fs" />
@@ -48,6 +45,7 @@
     <Compile Include="Calculations/Spread.fs" />
     <Compile Include="Calculations/Imbalance.fs" />
     <Compile Include="Calculations/Aggregations.fs" />
+    <Compile Include="Calculations/SecurityCalculations.fs" />
 
     <!-- Canonicalization layer: rule-heavy mapping logic -->
     <Compile Include="Canonicalization/MappingRules.fs" />

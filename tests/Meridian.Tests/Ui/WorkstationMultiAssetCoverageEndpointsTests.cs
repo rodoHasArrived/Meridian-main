@@ -34,13 +34,104 @@ public sealed partial class WorkstationEndpointsTests
             "ledgerMapping",
             "assetOperations",
             "closeReadiness");
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "private-loan-credit" &&
+            pack.AutomationDepth == "DeepAccountingAutomation" &&
+            pack.ContractSchema.Rates.Contains("reference rate") &&
+            pack.LifecycleEvents.Contains("Draw") &&
+            pack.LifecycleEvents.Contains("Repayment") &&
+            pack.LifecycleCoverage.Any(coverage =>
+                coverage.LifecycleEvent == "Draw" &&
+                coverage.AccountingAutomationStatus == "AutomatedTemplateAvailable" &&
+                coverage.JournalTemplateIds.Contains("asset-pack.principal-draw")) &&
+            pack.ValuationMethods.Contains("DiscountedCashFlow") &&
+            pack.AccountingRules.JournalTemplateEvents.Contains("principal repayment") &&
+            pack.AccountingRules.JournalTemplates.Any(template =>
+                template.LifecycleEvent == "Draw" &&
+                template.TemplateId == "asset-pack.principal-draw" &&
+                template.AccountingBases.Contains("GAAP") &&
+                template.CurrencyScopes.Contains("transaction currency") &&
+                template.EntityScopes.Contains("book")) &&
+            pack.RegistryValidationStatus == "Valid" &&
+            pack.RegistryValidationIssues.Count == 0 &&
+            pack.ValidationRules.RequiredFields.Contains("source evidence or operator rationale") &&
+            pack.AdmissionPolicy.RequiresJournalTemplateBeforeAutomatedPosting &&
+            pack.AdmissionPolicy.AccountingPostingPolicy.Contains("idempotency key") &&
+            pack.ReportingTaxonomy.Risk.Contains("credit risk") &&
+            pack.LedgerExtensionPolicy.Contains("core ledger", StringComparison.OrdinalIgnoreCase));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "fixed-income" &&
+            pack.AssetClasses.Contains("StructuredCredit"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "private-fund-partnership" &&
+            pack.AssetClasses.Contains("PrivateFundInterest") &&
+            pack.AssetClasses.Contains("PrivateCompanyEquity"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "real-estate" &&
+            pack.AssetClasses.Contains("RealEstateHolding"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "commitment-guarantee" &&
+            pack.AssetClasses.Contains("CommitmentGuarantee"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "controlled-other-asset" &&
+            pack.AutomationDepth == "WideCapture" &&
+            pack.AssetClasses.Contains("Art") &&
+            pack.AssetClasses.Contains("InsurancePolicy") &&
+            pack.AssetClasses.Contains("Vehicle") &&
+            pack.LifecycleCoverage.Any(coverage =>
+                coverage.LifecycleEvent == "Maturity" &&
+                coverage.AccountingAutomationStatus == "ManualReviewRequired") &&
+            pack.AdmissionPolicy.AllowsWideCapture &&
+            pack.AdmissionPolicy.AccountingPostingPolicy.Contains("accounting automation remains disabled") &&
+            pack.ValuationMethods.Contains("Appraisal") &&
+            pack.ValidationRules.IncompatibleCombinations.Contains("deep accounting automation without journal template coverage"));
+        payload.AssetPacks
+            .Where(static pack => pack.PackId != "controlled-other-asset")
+            .Should()
+            .OnlyContain(static pack => pack.AutomationDepth == "DeepAccountingAutomation");
+        payload.AssetPacks.Should().OnlyContain(static pack =>
+            pack.RegistryValidationStatus == "Valid" &&
+            pack.RegistryValidationIssues.Count == 0);
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "DirectLoan" &&
             row.ReconciliationSignals["breaks"].Contains("loan schedule", StringComparison.OrdinalIgnoreCase) &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "AssetOperations") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "LoanScheduleEvidence") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "CommitmentCovenantEvidence") &&
-            row.DrillThroughTargets.Any(static target => target.TargetType == "PaydownObligationLedger"));
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PaydownObligationLedger") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "DirectLendingRuleKernel"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "Bond" &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FactorCorporateActionEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "StructuredCredit" &&
+            row.EvidenceRequirements.Any(static requirement =>
+                requirement.Category == "ProviderEvidence" &&
+                requirement.Label.Contains("Trustee report", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredCreditTrusteeEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FactorScheduleEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredCollateralTape") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredValuationEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "PrivateFundInterest" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Capital account schedule", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FundAdministratorStatement") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CapitalAccountScheduleEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "PrivateCompanyEquity" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Cap table", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CapTableEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PrivateCompanyValuationEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "RealEstateHolding" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Rent roll", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PropertyManagerEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "RealEstateAppraisalEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "CommitmentGuarantee" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Fee schedule", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CommitmentAgreementEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ReleaseExpiryEvidence"));
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "CustomAsset" &&
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance") &&
@@ -86,6 +177,16 @@ public sealed partial class WorkstationEndpointsTests
         bond!.Subject.AssetClass.Should().Be("Bond");
         loan.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Interest");
         bond.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Coupon");
+        loan.TermsObligationsTimeline.Should().NotBeNull();
+        bond.TermsObligationsTimeline.Should().NotBeNull();
+        loan.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EventLane == "Interest" &&
+            timelineEvent.ExpectedAmount == 100m);
+        bond.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Coupon" &&
+            timelineEvent.EventLane == "Coupon" &&
+            timelineEvent.ExpectedAmount == 100m);
         loan.Readiness.Capabilities.Should().BeEquivalentTo(bond.Readiness.Capabilities);
     }
 

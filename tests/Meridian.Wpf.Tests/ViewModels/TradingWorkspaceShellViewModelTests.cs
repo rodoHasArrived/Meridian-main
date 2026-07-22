@@ -233,7 +233,8 @@ public sealed class TradingWorkspaceShellViewModelTests
                 FillCount: 18,
                 CashTransactionCount: 2,
                 SecurityMissingCount: 0,
-                Warnings: []));
+                Warnings: []),
+            readyForLiveOperation: true);
 
         var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
             activeRun: CreateActiveRun("live-31", "Gamma Rotation", "Live"),
@@ -247,6 +248,64 @@ public sealed class TradingWorkspaceShellViewModelTests
         hero.PrimaryActionId.Should().Be("PositionBlotter");
         hero.SecondaryActionId.Should().Be("RunRisk");
         hero.Detail.Should().Contain("Brokerage sync healthy");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithLiveRunAndOnlyPaperReadiness_RequiresLiveReadiness()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true,
+            readyForLiveOperation: false);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("live-paper-only", "Gamma Rotation", "Live"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Gamma Live Desk");
+
+        hero.FocusLabel.Should().Be("Operator review");
+        hero.BadgeText.Should().Be("Attention");
+        hero.PrimaryActionId.Should().Be("NotificationCenter");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithLiveRunAndW7RequirementFailure_RoutesToRequirementOwner()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true,
+            readyForLiveOperation: false,
+            liveOperationRequirements:
+            [
+                new TradingLiveOperationRequirementDto(
+                    RequirementId: "governance-signoff",
+                    Label: "Governance sign-off",
+                    Status: TradingAcceptanceGateStatusDto.Blocked,
+                    Detail: "Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED.",
+                    ChecklistItem: "GOVERNANCE_SIGNOFF_REVIEWED",
+                    EvidenceReference: null,
+                    ChecklistSatisfied: true,
+                    EvidenceSatisfied: false,
+                    BlockerCode: "promotion:evidenceReferences:GOVERNANCE_SIGNOFF_REVIEWED")
+            ]);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("live-w7-review", "Gamma Rotation", "Live"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Gamma Live Desk");
+
+        hero.FocusLabel.Should().Be("Operator review");
+        hero.Summary.Should().Be("Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED.");
+        hero.Detail.Should().Contain("Governance sign-off");
+        hero.HandoffTitle.Should().Be("Complete governance sign-off");
+        hero.PrimaryActionId.Should().Be("NotificationCenter");
+        hero.PrimaryActionLabel.Should().Be("Open Alerts");
     }
 
     [Fact]
@@ -299,10 +358,10 @@ public sealed class TradingWorkspaceShellViewModelTests
     [Fact]
     public void ResolveOperatorWorkItemActionId_MapsTopBlockerTaxonomyToConsistentRepairRoutes()
     {
-        var replay = new OperatorWorkItemDto("replay-stale", OperatorWorkItemKindDto.PaperReplay, "Replay stale", "Replay evidence is stale.", OperatorWorkItemToneDto.Warning, new DateTimeOffset(2026,5,1,0,0,0,TimeSpan.Zero));
-        var signoff = new OperatorWorkItemDto("signoff-missing", OperatorWorkItemKindDto.ProviderTrustGate, "Missing sign-off", "Missing operator sign-off evidence.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,1,TimeSpan.Zero));
-        var provider = new OperatorWorkItemDto("provider-trust-degraded", OperatorWorkItemKindDto.ProviderTrustGate, "Provider trust degraded", "Provider trust degraded.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,2,TimeSpan.Zero));
-        var brokerage = new OperatorWorkItemDto("brokerage-sync-incomplete", OperatorWorkItemKindDto.BrokerageSync, "Brokerage sync incomplete", "Brokerage sync incomplete.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026,5,1,0,0,3,TimeSpan.Zero), TargetRoute: $"{UiApiRoutes.FundAccountBrokerageSyncAccounts}?fundAccountId=9c37d51f-2eba-40f5-9c86-6c9eb3863b8b", TargetPageTag: "TradingShell");
+        var replay = new OperatorWorkItemDto("replay-stale", OperatorWorkItemKindDto.PaperReplay, "Replay stale", "Replay evidence is stale.", OperatorWorkItemToneDto.Warning, new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero));
+        var signoff = new OperatorWorkItemDto("signoff-missing", OperatorWorkItemKindDto.ProviderTrustGate, "Missing sign-off", "Missing operator sign-off evidence.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026, 5, 1, 0, 0, 1, TimeSpan.Zero));
+        var provider = new OperatorWorkItemDto("provider-trust-degraded", OperatorWorkItemKindDto.ProviderTrustGate, "Provider trust degraded", "Provider trust degraded.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026, 5, 1, 0, 0, 2, TimeSpan.Zero));
+        var brokerage = new OperatorWorkItemDto("brokerage-sync-incomplete", OperatorWorkItemKindDto.BrokerageSync, "Brokerage sync incomplete", "Brokerage sync incomplete.", OperatorWorkItemToneDto.Critical, new DateTimeOffset(2026, 5, 1, 0, 0, 3, TimeSpan.Zero), TargetRoute: $"{UiApiRoutes.FundAccountBrokerageSyncAccounts}?fundAccountId=9c37d51f-2eba-40f5-9c86-6c9eb3863b8b", TargetPageTag: "TradingShell");
 
         TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(replay).Should().Be("ReplayVerification");
         TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(signoff).Should().Be("ProviderHealth");
@@ -560,7 +619,9 @@ public sealed class TradingWorkspaceShellViewModelTests
         IReadOnlyList<OperatorWorkItemDto>? workItems = null,
         IReadOnlyList<TradingAcceptanceGateDto>? acceptanceGates = null,
         TradingAcceptanceGateStatusDto overallStatus = TradingAcceptanceGateStatusDto.Ready,
-        bool readyForPaperOperation = true)
+        bool readyForPaperOperation = true,
+        bool readyForLiveOperation = false,
+        IReadOnlyList<TradingLiveOperationRequirementDto>? liveOperationRequirements = null)
         => new(
             AsOf: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
             ActiveSession: CreateSession(),
@@ -585,7 +646,9 @@ public sealed class TradingWorkspaceShellViewModelTests
         {
             AcceptanceGates = acceptanceGates ?? CreateReadyGates(),
             OverallStatus = overallStatus,
-            ReadyForPaperOperation = readyForPaperOperation
+            ReadyForPaperOperation = readyForPaperOperation,
+            ReadyForLiveOperation = readyForLiveOperation,
+            LiveOperationRequirements = liveOperationRequirements ?? []
         };
 
     private static ActiveRunContext CreateActiveRun(string runId, string strategyName, string modeLabel)

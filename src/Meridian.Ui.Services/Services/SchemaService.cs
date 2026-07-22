@@ -1,9 +1,9 @@
 namespace Meridian.Ui.Services;
 
 /// <summary>
-/// Default schema service for the shared UI services layer.
-/// Platform-specific projects (WPF) override this with their own implementations
-/// by setting the Instance property during app startup.
+/// Default schema service for the shared UI services layer, backed entirely by
+/// <see cref="SchemaServiceBase"/>. The WPF host extends the same base with desktop
+/// persistence (see <c>Meridian.Wpf.Services.SchemaService</c>).
 /// </summary>
 public sealed class SchemaService : SchemaServiceBase
 {

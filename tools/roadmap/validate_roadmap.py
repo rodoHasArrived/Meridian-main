@@ -13,10 +13,13 @@ import argparse
 import datetime as dt
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
+CANONICAL_ROADMAP_SCHEMA_ID = "meridian.roadmap-items"
+CANONICAL_ROADMAP_VALIDATOR = Path("build/scripts/docs/validate-roadmap-registry.py")
 SHA_PATTERN = re.compile(r"^[0-9a-fA-F]{7,40}$")
 CANONICAL = {
     "status": {"not_started", "in_progress", "blocked", "completed", "cancelled"},
@@ -25,7 +28,7 @@ CANONICAL = {
     "evidence_posture": {"none", "draft", "partial", "verified", "audited"},
     "completion_term": {"done", "complete", "completed", "closed", "shipped"},
 }
-REQUIRED_FIELDS = {"id", "status", "health", "priority", "evidence_posture", "completion_term", "owner", "last_updated"}
+REQUIRED_FIELDS = {"id", "title", "owner", "status", "health", "priority", "evidence_posture", "completion_term", "exit_criteria", "links", "created_at", "last_updated"}
 ALLOWED_FIELDS = REQUIRED_FIELDS | {"title", "summary", "exit_criteria", "links", "evidence", "created_at", "target_date", "notes", "extensions"}
 
 
@@ -199,11 +202,56 @@ def load_yaml(path: Path) -> dict[str, Any]:
         text = handle.read()
 
     yaml_module = _try_import_yaml()
-    payload = yaml_module.safe_load(text) if yaml_module is not None else _minimal_yaml_load(text)
+    if yaml_module is not None:
+        try:
+            payload = yaml_module.safe_load(text)
+        except yaml_module.YAMLError:
+            fallback_payload = _minimal_yaml_load(text)
+            if not _is_canonical_roadmap_registry(fallback_payload):
+                raise
+            payload = fallback_payload
+    else:
+        payload = _minimal_yaml_load(text)
     payload = payload or {}
     if not isinstance(payload, dict):
         raise ValueError("Top-level roadmap payload must be a mapping/object.")
     return payload
+
+
+def _is_canonical_roadmap_registry(roadmap: dict[str, Any]) -> bool:
+    schema = roadmap.get("schema")
+    return isinstance(schema, dict) and schema.get("id") == CANONICAL_ROADMAP_SCHEMA_ID
+
+
+def _find_canonical_registry_root(path: Path) -> Path | None:
+    resolved_path = path.resolve()
+    for candidate in resolved_path.parents:
+        validator = candidate / CANONICAL_ROADMAP_VALIDATOR
+        canonical_roadmap = candidate / "docs" / "roadmap" / "data" / "roadmap-items.yml"
+        if validator.is_file() and canonical_roadmap.is_file() and canonical_roadmap.resolve() == resolved_path:
+            return candidate
+    return None
+
+
+def run_canonical_registry_validation(path: Path) -> int:
+    root = _find_canonical_registry_root(path)
+    if root is None:
+        print(
+            "Error: canonical roadmap registry validation requires "
+            "docs/roadmap/data/roadmap-items.yml inside a Meridian repository.",
+            file=sys.stderr,
+        )
+        return 2
+
+    validator = root / CANONICAL_ROADMAP_VALIDATOR
+    completed = subprocess.run(
+        [sys.executable, str(validator), "--root", str(root), "--summary"],
+        cwd=root,
+        check=False,
+    )
+    if completed.returncode == 0:
+        print("Roadmap validation passed.")
+    return completed.returncode
 
 
 def _is_non_empty(value: Any) -> bool:
@@ -413,6 +461,9 @@ def run_roadmap_validation(path: Path) -> int:
     except Exception as exc:
         print(f"Error: failed to parse roadmap YAML: {exc}", file=sys.stderr)
         return 2
+
+    if _is_canonical_roadmap_registry(roadmap):
+        return run_canonical_registry_validation(path)
 
     errors = validate_roadmap(roadmap)
     if errors:

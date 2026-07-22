@@ -49,4 +49,8 @@ public sealed record FundFinancialOperationsQueueRow(
     string EvidenceLabel,
     string ActionLabel,
     string SourceTarget,
-    bool IsBlocked);
+    bool IsBlocked,
+    string SeverityLabel = "Review",
+    string SlaLabel = "SLA not recorded",
+    string BlockerType = "Review",
+    string CloseReportImpact = "Close/report review");

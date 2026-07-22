@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# C# formatting is enforced with LF by .editorconfig and dotnet format.
+*.cs text eol=lf

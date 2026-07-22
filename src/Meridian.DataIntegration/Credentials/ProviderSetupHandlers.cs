@@ -183,8 +183,10 @@ public sealed class AlpacaProviderSetupHandler : ProviderSetupHandlerBase
         var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         var apiKey = NullIfBlank(context.ApiKey);
         var apiSecret = NullIfBlank(context.ApiSecret);
-        if (apiKey is not null) values["KeyId"] = apiKey;
-        if (apiSecret is not null) values["SecretKey"] = apiSecret;
+        if (apiKey is not null)
+            values["KeyId"] = apiKey;
+        if (apiSecret is not null)
+            values["SecretKey"] = apiSecret;
         return values;
     }
 
@@ -242,6 +244,13 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new GenericReadOnlyDataProviderSetupHandler("finnhub"),
+            new GenericReadOnlyDataProviderSetupHandler("tiingo"),
+            new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),
+            new GenericReadOnlyDataProviderSetupHandler("nasdaqdatalink", aliases: ["nasdaq", "nasdaq-data-link"]),
+            new GenericReadOnlyDataProviderSetupHandler("twelvedata", aliases: ["twelve-data", "twelvedata-api"]),
+            new GenericReadOnlyDataProviderSetupHandler("openfigi", aliases: ["open-figi", "openfigi-api"]),
+            new GenericReadOnlyDataProviderSetupHandler("stooq"),
             new GenericReadOnlyDataProviderSetupHandler("yahoo", DataSourceKind.Yahoo, ["yahoo-finance", "yahoofinance"]),
             new GenericReadOnlyDataProviderSetupHandler("synthetic", DataSourceKind.Synthetic, ["custom"])
         ];

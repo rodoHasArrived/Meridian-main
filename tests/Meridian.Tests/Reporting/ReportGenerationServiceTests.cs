@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Reporting;
@@ -117,10 +118,266 @@ public sealed class ReportGenerationServiceTests
         report.AssetClassSections.Select(section => section.AssetClass).Should().Contain("FixedIncome");
     }
 
+    [Fact]
+    public async Task GenerateAsync_WithLineDimensions_RetainsCanonicalLedgerDimensionEnvelope()
+    {
+        var securityId = Guid.NewGuid();
+        var instrumentId = Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8");
+        var positionId = Guid.Parse("5e78f0cb-8412-4c6e-9a88-d9a64b5c3f0d");
+        var query = new StubSecurityMasterQueryService(
+            detailsBySymbol: new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = BuildDetail(securityId, "AAPL", "Equity")
+            },
+            economicsBySecurityId: new Dictionary<Guid, SecurityEconomicDefinitionRecord>());
+        var service = new ReportGenerationService(query);
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-1",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp",
+            CapitalAccountId: "capital-account-alpha",
+            InstrumentId: instrumentId,
+            TaxLotId: "tax-lot-alpha",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-alpha",
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "account-investments",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-admin",
+            ProjectId: "project-close")
+        {
+            PositionId = positionId
+        };
+        var ledgerBook = new FundLedgerBook("fund-1");
+        ledgerBook.FundLedger.PostLines(
+            new DateTimeOffset(2026, 4, 10, 14, 0, 0, TimeSpan.Zero),
+            "Dimensioned investment activity",
+            [
+                (new LedgerAccount("Position AAPL", LedgerAccountType.Asset, "AAPL"), 100m, 0m, dimensions),
+                (new LedgerAccount("Capital", LedgerAccountType.Equity), 0m, 100m, dimensions)
+            ]);
+
+        var report = await service.GenerateAsync(new ReportRequest(
+            FundId: "fund-1",
+            AsOf: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            FundLedger: ledgerBook));
+
+        var row = report.TrialBalance.Single(r => string.Equals(r.Symbol, "AAPL", StringComparison.OrdinalIgnoreCase));
+        row.Dimensions.Should().BeEquivalentTo(new LedgerDimensionSetDto(
+            FundId: "fund-1",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp",
+            CapitalAccountId: "capital-account-alpha",
+            InstrumentId: instrumentId,
+            TaxLotId: "tax-lot-alpha",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-alpha",
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "account-investments",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-admin",
+            ProjectId: "project-close")
+        {
+            PositionId = positionId
+        });
+    }
+
+    [Fact]
+    public async Task GenerateAsync_UsesOneAsOfBoundaryForBalancesDimensionsAndReceipt()
+    {
+        var securityId = Guid.NewGuid();
+        var query = new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = BuildDetail(securityId, "AAPL", "Equity")
+            },
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>
+            {
+                [securityId] = BuildEconomicDefinition(
+                    securityId,
+                    "Equity",
+                    "PublicEquity",
+                    "CommonStock",
+                    "Corporate",
+                    "US",
+                    SecurityIdentifierKind.Isin,
+                    "US0378331005")
+            });
+        var service = new ReportGenerationService(query);
+        var asOf = new DateTimeOffset(2026, 4, 11, 12, 0, 0, TimeSpan.Zero);
+        var pastDimensions = new LedgerLineDimensionSet(EntityId: "entity-as-of");
+        var futureDimensions = new LedgerLineDimensionSet(EntityId: "entity-future");
+        var position = new LedgerAccount("Position AAPL", LedgerAccountType.Asset, "AAPL");
+        var capital = new LedgerAccount("Capital", LedgerAccountType.Equity);
+        var ledgerBook = new FundLedgerBook("fund-1");
+        ledgerBook.FundLedger.PostLines(
+            asOf.AddHours(-1),
+            "As-of activity",
+            [
+                (position, 100m, 0m, pastDimensions),
+                (capital, 0m, 100m, pastDimensions)
+            ]);
+        ledgerBook.FundLedger.PostLines(
+            asOf.AddHours(1),
+            "Future activity",
+            [
+                (position, 75m, 0m, futureDimensions),
+                (capital, 0m, 75m, futureDimensions)
+            ]);
+
+        var report = await service.GenerateAsync(new ReportRequest(
+            "fund-1",
+            asOf,
+            ledgerBook,
+            SnapshotSource: new ReportingSnapshotSourceContext(
+                "durable-ledger",
+                "global-sequence:17",
+                IsAuthoritative: true)));
+
+        var row = report.TrialBalance.Single(item => item.Symbol == "AAPL");
+        row.NetBalance.Should().Be(100m);
+        row.Dimensions!.EntityId.Should().Be("entity-as-of");
+        report.SnapshotReceipt.Should().NotBeNull();
+        report.SnapshotReceipt!.LedgerEntryCount.Should().Be(1);
+        report.SnapshotReceipt.LedgerLineCount.Should().Be(2);
+        report.SnapshotReceipt.CertificationStatus.Should().Be(
+            ReportingSnapshotCertificationStatus.Certifiable);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_FreezesHistoricalReferenceDataAndProducesDeterministicReceipt()
+    {
+        var securityId = Guid.NewGuid();
+        var historicalDetail = BuildDetail(securityId, "AAPL", "Equity") with
+        {
+            DisplayName = "Apple Historical",
+            Currency = "GBP",
+            Version = 3
+        };
+        var historicalEconomic = BuildEconomicDefinition(
+            securityId,
+            "Equity",
+            "HistoricalFamily",
+            "HistoricalCommonStock",
+            "HistoricalIssuer",
+            "GB",
+            SecurityIdentifierKind.Isin,
+            "GB0000000001") with
+        {
+            Version = 3
+        };
+        var asOf = new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero);
+        var historicalReference = new SecurityMasterReportingReference(
+            historicalDetail,
+            historicalEconomic,
+            asOf,
+            SecurityMasterReportingResolutionMode.HistoricalEvent,
+            EventGlobalSequence: 41,
+            EventStreamVersion: 3,
+            EventTimestamp: asOf.AddDays(-1));
+        var query = new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = BuildDetail(securityId, "AAPL", "Equity") with
+                {
+                    DisplayName = "Apple Current",
+                    Currency = "USD",
+                    Version = 9
+                }
+            },
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>
+            {
+                [securityId] = historicalEconomic with
+                {
+                    AssetFamily = "CurrentFamily",
+                    Version = 9
+                }
+            },
+            new Dictionary<string, SecurityMasterReportingReference>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = historicalReference
+            });
+        var service = new ReportGenerationService(query);
+        var ledgerBook = BuildLedgerBookWithSymbols(["AAPL"]);
+        var request = new ReportRequest(
+            "fund-1",
+            asOf,
+            ledgerBook,
+            SnapshotSource: new ReportingSnapshotSourceContext(
+                "durable-ledger",
+                "global-sequence:41",
+                IsAuthoritative: true));
+
+        var first = await service.GenerateAsync(request);
+        var second = await service.GenerateAsync(request);
+
+        var row = first.TrialBalance.Single(item => item.Symbol == "AAPL");
+        row.DisplayName.Should().Be("Apple Historical");
+        row.Currency.Should().Be("GBP");
+        row.AssetFamily.Should().Be("HistoricalFamily");
+        row.SubType.Should().Be("HistoricalCommonStock");
+        row.PrimaryIdentifierValue.Should().Be("GB0000000001");
+        first.SnapshotReceipt!.CertificationStatus.Should().Be(
+            ReportingSnapshotCertificationStatus.Certifiable);
+        first.SnapshotReceipt.ContentHash.Should().Be(second.SnapshotReceipt!.ContentHash);
+        first.SnapshotReceipt.SnapshotId.Should().Be(second.SnapshotReceipt.SnapshotId);
+        query.ReportingReferenceCalls.Should().Be(2);
+        query.LegacyDetailCalls.Should().Be(0);
+        query.LegacyEconomicCalls.Should().Be(0);
+        query.LastReportingAsOf.Should().Be(asOf);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_NamedSourceWithoutExplicitAuthorityOrCheckpoint_RemainsNonCertifiable()
+    {
+        var query = new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(),
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>());
+        var service = new ReportGenerationService(query);
+        var asOf = new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero);
+        var ledgerBook = new FundLedgerBook("fund-1");
+        ledgerBook.FundLedger.PostLines(
+            asOf.AddHours(-1),
+            "Cash seed",
+            [
+                (new LedgerAccount("Cash", LedgerAccountType.Asset), 100m, 0m),
+                (new LedgerAccount("Capital", LedgerAccountType.Equity), 0m, 100m)
+            ]);
+
+        var report = await service.GenerateAsync(new ReportRequest(
+            "fund-1",
+            asOf,
+            ledgerBook,
+            SnapshotSource: new ReportingSnapshotSourceContext("named-only")));
+
+        report.SnapshotReceipt!.CertificationStatus.Should().Be(
+            ReportingSnapshotCertificationStatus.NonCertifiable);
+        report.SnapshotReceipt.CertificationBlockers.Should().Contain(
+            "ledger-source-non-authoritative:named-only");
+        report.SnapshotReceipt.CertificationBlockers.Should().Contain(
+            "ledger-source-checkpoint-missing:named-only");
+    }
+
     private static FundLedgerBook BuildLedgerBookWithSymbols(IReadOnlyList<string> symbols)
     {
         var ledgerBook = new FundLedgerBook("fund-1");
-        var timestamp = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
+        var timestamp = new DateTimeOffset(2026, 4, 10, 14, 0, 0, TimeSpan.Zero);
 
         foreach (var symbol in symbols)
         {
@@ -198,24 +455,43 @@ public sealed class ReportGenerationServiceTests
 
     private static JsonElement EmptyJsonElement() => JsonDocument.Parse("{}").RootElement.Clone();
 
-    private sealed class StubSecurityMasterQueryService : SecurityMasterQueryService
+    private sealed class StubSecurityMasterQueryService :
+        SecurityMasterQueryService,
+        ISecurityMasterReportingQueryService
     {
         private readonly IReadOnlyDictionary<string, SecurityDetailDto> _detailsBySymbol;
         private readonly IReadOnlyDictionary<Guid, SecurityEconomicDefinitionRecord> _economicsBySecurityId;
+        private readonly IReadOnlyDictionary<string, SecurityMasterReportingReference>? _reportingReferencesBySymbol;
 
         public StubSecurityMasterQueryService(
             IReadOnlyDictionary<string, SecurityDetailDto> detailsBySymbol,
-            IReadOnlyDictionary<Guid, SecurityEconomicDefinitionRecord> economicsBySecurityId)
+            IReadOnlyDictionary<Guid, SecurityEconomicDefinitionRecord> economicsBySecurityId,
+            IReadOnlyDictionary<string, SecurityMasterReportingReference>? reportingReferencesBySymbol = null)
         {
             _detailsBySymbol = detailsBySymbol;
             _economicsBySecurityId = economicsBySecurityId;
+            _reportingReferencesBySymbol = reportingReferencesBySymbol;
         }
+
+        public int ReportingReferenceCalls { get; private set; }
+
+        public int LegacyDetailCalls { get; private set; }
+
+        public int LegacyEconomicCalls { get; private set; }
+
+        public DateTimeOffset? LastReportingAsOf { get; private set; }
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(_detailsBySymbol.Values.FirstOrDefault(detail => detail.SecurityId == securityId));
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
-            => Task.FromResult(_detailsBySymbol.TryGetValue(identifierValue, out var detail) ? detail : null);
+        {
+            LegacyDetailCalls++;
+            return Task.FromResult(_detailsBySymbol.TryGetValue(identifierValue, out var detail) ? detail : null);
+        }
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
@@ -224,7 +500,43 @@ public sealed class ReportGenerationServiceTests
             => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
 
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult(_economicsBySecurityId.TryGetValue(securityId, out var definition) ? definition : null);
+        {
+            LegacyEconomicCalls++;
+            return Task.FromResult(_economicsBySecurityId.TryGetValue(securityId, out var definition) ? definition : null);
+        }
+
+        public Task<SecurityMasterReportingReference?> GetReportingReferenceByIdentifierAsOfAsync(
+            SecurityIdentifierKind identifierKind,
+            string identifierValue,
+            string? provider,
+            DateTimeOffset asOfUtc,
+            CancellationToken ct = default)
+        {
+            ReportingReferenceCalls++;
+            LastReportingAsOf = asOfUtc;
+            if (_reportingReferencesBySymbol is not null)
+            {
+                return Task.FromResult(
+                    _reportingReferencesBySymbol.TryGetValue(identifierValue, out var reference)
+                        ? reference
+                        : null);
+            }
+
+            if (!_detailsBySymbol.TryGetValue(identifierValue, out var detail))
+            {
+                return Task.FromResult<SecurityMasterReportingReference?>(null);
+            }
+
+            _economicsBySecurityId.TryGetValue(detail.SecurityId, out var economicDefinition);
+            return Task.FromResult<SecurityMasterReportingReference?>(new SecurityMasterReportingReference(
+                detail,
+                economicDefinition,
+                asOfUtc,
+                SecurityMasterReportingResolutionMode.HistoricalEvent,
+                EventGlobalSequence: detail.Version,
+                EventStreamVersion: detail.Version,
+                EventTimestamp: detail.EffectiveFrom));
+        }
 
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
             => Task.FromResult<TradingParametersDto?>(null);
@@ -243,7 +555,12 @@ public sealed class ReportGenerationServiceTests
     {
         var securityMaster = Substitute.For<SecurityMasterQueryService>();
         securityMaster
-            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "UNKN", null, Arg.Any<CancellationToken>())
+            .GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "UNKN",
+                null,
+                Arg.Any<CancellationToken>(),
+                Arg.Any<DateTimeOffset?>())
             .Returns(new SecurityDetailDto(
                 SecurityId: Guid.NewGuid(),
                 AssetClass: null!,
@@ -276,6 +593,10 @@ public sealed class ReportGenerationServiceTests
         report.AssetClassSections.Should().ContainSingle();
         report.AssetClassSections[0].AssetClass.Should().Be("Unclassified");
         report.AssetClassSections[0].Rows.Should().ContainSingle(r => r.Symbol == "UNKN");
+        report.SnapshotReceipt!.CertificationStatus.Should().Be(
+            ReportingSnapshotCertificationStatus.NonCertifiable);
+        report.SnapshotReceipt.CertificationBlockers.Should().Contain(
+            "security-master-non-historical:UNKN:LegacyQueryFallback");
     }
 
     [Fact]
@@ -283,10 +604,20 @@ public sealed class ReportGenerationServiceTests
     {
         var securityMaster = Substitute.For<SecurityMasterQueryService>();
         securityMaster
-            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "AAPL", null, Arg.Any<CancellationToken>())
+            .GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "AAPL",
+                null,
+                Arg.Any<CancellationToken>(),
+                Arg.Any<DateTimeOffset?>())
             .Returns(BuildDetail("Equity", "Apple Inc.", "USD"));
         securityMaster
-            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "CUSIP_037833100", null, Arg.Any<CancellationToken>())
+            .GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "CUSIP_037833100",
+                null,
+                Arg.Any<CancellationToken>(),
+                Arg.Any<DateTimeOffset?>())
             .Returns(BuildDetail("Equity", "Apple Legacy Line", null));
 
         var service = new ReportGenerationService(securityMaster);
@@ -316,7 +647,7 @@ public sealed class ReportGenerationServiceTests
     private static FundLedgerBook BuildFundLedger(string fundId, params (string Symbol, decimal Balance)[] rows)
     {
         var book = new FundLedgerBook(fundId);
-        var asOf = new DateTimeOffset(2026, 4, 20, 12, 0, 0, TimeSpan.Zero);
+        var asOf = new DateTimeOffset(2026, 4, 19, 12, 0, 0, TimeSpan.Zero);
 
         foreach (var (symbol, balance) in rows)
         {

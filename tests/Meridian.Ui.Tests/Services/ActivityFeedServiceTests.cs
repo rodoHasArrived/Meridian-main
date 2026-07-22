@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
+using System.Text.Json;
 
 namespace Meridian.Ui.Tests.Services;
 
@@ -478,21 +479,32 @@ public sealed class ActivityFeedServiceTests
     }
 
     [Fact]
-    public void MergeLoadedActivities_ShouldSeedServerEventDeduplication()
+    public async Task MergeLoadedActivities_ShouldSeedServerEventDeduplication()
     {
         using var fixture = new PathFixture("mdc-activity-server-seed");
-        var svc = new ActivityFeedService(new FixedConfigService(fixture.ConfigPath, null));
         const string id = "server:loaded-event";
+        var dataRoot = Path.Combine(fixture.RootPath, "retained-data");
+        var activityLogDirectory = Path.Combine(dataRoot, "_logs");
+        Directory.CreateDirectory(activityLogDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(activityLogDirectory, "activity_log.json"),
+            JsonSerializer.Serialize(
+                new[]
+                {
+                    new ActivityItem
+                    {
+                        Id = id,
+                        Title = "Persisted server event",
+                        Type = ActivityType.DataQualityIssue
+                    }
+                },
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 
-        svc.MergeLoadedActivities(
-        [
-            new ActivityItem
-            {
-                Id = id,
-                Title = "Persisted server event",
-                Type = ActivityType.DataQualityIssue
-            }
-        ]);
+        var svc = new ActivityFeedService(new FixedConfigService(
+            fixture.ConfigPath,
+            new AppConfigDto { DataRoot = "retained-data" }));
+
+        await WaitForActivityAsync(svc, id);
 
         var duplicateAdded = svc.AddServerEventIfNew(new ActivityItem
         {
@@ -503,6 +515,22 @@ public sealed class ActivityFeedServiceTests
 
         duplicateAdded.Should().BeFalse();
         svc.Activities.Count(activity => activity.Id == id).Should().Be(1);
+    }
+
+    private static async Task WaitForActivityAsync(ActivityFeedService service, string id)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (service.Activities.Any(activity => activity.Id == id))
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        service.Activities.Should().Contain(activity => activity.Id == id);
     }
 
     private static T GetPrivateField<T>(object instance, string fieldName)

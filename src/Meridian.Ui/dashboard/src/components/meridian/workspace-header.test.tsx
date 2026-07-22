@@ -38,4 +38,19 @@ describe("WorkspaceHeader", () => {
     expect(screen.queryByLabelText("8 commands available in the command palette")).not.toBeInTheDocument();
     expect(screen.getByText("Refreshing Trading workspace data.")).toHaveClass("sr-only");
   });
+
+  it("renders shell-provided actions before the refresh button", () => {
+    render(
+      <WorkspaceHeader
+        workspace={workspaceForKey("trading")}
+        session={session}
+        onRefresh={vi.fn()}
+        actions={<button type="button">Copy link to this view</button>}
+      />
+    );
+
+    const buttons = screen.getAllByRole("button");
+    expect(buttons[0]).toHaveTextContent("Copy link to this view");
+    expect(screen.getByRole("button", { name: /Refresh Trading workspace data/ })).toBeInTheDocument();
+  });
 });

@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
+using System.Net.WebSockets;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -33,13 +35,25 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly string _ruleId;
     private readonly SemaphoreSlim _switchLock = new(1, 1);
     private readonly CancellationTokenSource _cts = new();
+    private readonly object _diagnosticsSync = new();
+    private readonly Dictionary<string, Action<WebSocketConnectionDiagnostics>> _providerDiagnosticsHandlers =
+        new(StringComparer.OrdinalIgnoreCase);
 
     private volatile IMarketDataClient _activeClient;
     private volatile string _activeProviderId;
+    private ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
+    private bool _isConnected;
+    private bool _isReconnecting;
+    private DateTimeOffset? _lastConnectedAt;
+    private DateTimeOffset? _lastDisconnectedAt;
+    private string? _lastError;
+    private ProviderFailureKind? _lastFailureKind;
     private readonly ConcurrentDictionary<string, SymbolConfig> _activeDepthSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SymbolConfig> _activeTradeSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _depthSubIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _tradeSubIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, int> _depthSubscriberCounts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, int> _tradeSubscriberCounts = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Creates a new failover-aware client.
@@ -69,6 +83,15 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         _failoverService.OnFailoverTriggered += HandleFailoverTriggered;
         _failoverService.OnFailoverRecovered += HandleFailoverRecovered;
+        foreach (var (providerId, client) in _providers)
+        {
+            var capturedProviderId = providerId;
+            var capturedClient = client;
+            Action<WebSocketConnectionDiagnostics> handler = snapshot =>
+                HandleProviderDiagnosticsChanged(capturedProviderId, capturedClient, snapshot);
+            _providerDiagnosticsHandlers[providerId] = handler;
+            client.ConnectionDiagnosticsChanged += handler;
+        }
 
         _log.Information("FailoverAwareMarketDataClient initialized with {ProviderCount} providers, active: {ActiveProvider}, rule: {RuleId}",
             _providers.Count, _activeProviderId, _ruleId);
@@ -77,32 +100,104 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public bool IsEnabled => _activeClient.IsEnabled;
 
+    /// <inheritdoc />
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <inheritdoc />
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    {
+        var activeClient = _activeClient;
+        var activeSnapshot = activeClient.GetConnectionDiagnosticsSnapshot();
+
+        lock (_diagnosticsSync)
+        {
+            return activeSnapshot with
+            {
+                ProviderName = ProviderDisplayName,
+                LifecycleState = _lifecycleState,
+                IsConnected = _isConnected,
+                IsReconnecting = _isReconnecting,
+                LastConnectedAt = _lastConnectedAt ?? activeSnapshot.LastConnectedAt,
+                LastDisconnectedAt = _lastDisconnectedAt ?? activeSnapshot.LastDisconnectedAt,
+                LastError = _lastError ?? activeSnapshot.LastError,
+                LastFailureKind = _lastFailureKind ?? activeSnapshot.LastFailureKind,
+                ConnectionAge = _isConnected && _lastConnectedAt.HasValue
+                    ? DateTimeOffset.UtcNow - _lastConnectedAt.Value
+                    : null,
+                ActiveSubscriptions = _activeDepthSubscriptions.Count + _activeTradeSubscriptions.Count
+            };
+        }
+    }
+
     public async Task ConnectAsync(CancellationToken ct = default)
     {
+        UpdateDiagnostics(ProviderConnectionLifecycleState.Connecting, isConnected: false);
         try
         {
             await _activeClient.ConnectAsync(ct);
             _failoverService.RecordSuccess(_activeProviderId);
+            UpdateDiagnostics(
+                ProviderConnectionLifecycleState.Connected,
+                isConnected: true,
+                connectedAt: DateTimeOffset.UtcNow);
             _log.Information("Connected to active provider {ProviderId}", _activeProviderId);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested || _cts.IsCancellationRequested)
         {
+            UpdateDiagnostics(ProviderConnectionLifecycleState.Configured, isConnected: false);
             throw;
         }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to connect to active provider {ProviderId}, attempting failover", _activeProviderId);
             _failoverService.RecordFailure(_activeProviderId, $"ConnectAsync failed: {ex.Message}");
+            UpdateDiagnostics(
+                ProviderConnectionLifecycleState.Reconnecting,
+                isConnected: false,
+                isReconnecting: true,
+                error: ex);
 
             // Attempt immediate failover connection
-            await TryFailoverConnectAsync(ct);
+            try
+            {
+                await TryFailoverConnectAsync(ct);
+            }
+            catch
+            {
+                UpdateDiagnostics(
+                    ProviderConnectionLifecycleState.Failed,
+                    isConnected: false,
+                    error: ex);
+                throw;
+            }
         }
     }
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        await _activeClient.DisconnectAsync(ct);
-        _log.Information("Disconnected from active provider {ProviderId}", _activeProviderId);
+        UpdateDiagnostics(ProviderConnectionLifecycleState.Disconnecting, isConnected: _isConnected);
+        try
+        {
+            await _activeClient.DisconnectAsync(ct);
+            UpdateDiagnostics(
+                ProviderConnectionLifecycleState.Disconnected,
+                isConnected: false,
+                disconnectedAt: DateTimeOffset.UtcNow);
+            _log.Information("Disconnected from active provider {ProviderId}", _activeProviderId);
+        }
+        catch (OperationCanceledException)
+        {
+            RefreshDiagnosticsFromActiveProvider();
+            throw;
+        }
+        catch (Exception ex)
+        {
+            UpdateDiagnostics(
+                ProviderConnectionLifecycleState.Failed,
+                isConnected: false,
+                error: ex);
+            throw;
+        }
     }
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
@@ -110,7 +205,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         ArgumentNullException.ThrowIfNull(cfg);
 
         if (_depthSubIds.TryGetValue(cfg.Symbol, out var existingId))
+        {
+            _depthSubscriberCounts.AddOrUpdate(cfg.Symbol, 1, static (_, current) => current + 1);
             return existingId;
+        }
 
         try
         {
@@ -119,6 +217,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             {
                 _activeDepthSubscriptions[cfg.Symbol] = cfg;
                 _depthSubIds[cfg.Symbol] = id;
+                _depthSubscriberCounts[cfg.Symbol] = 1;
                 _failoverService.RecordSuccess(_activeProviderId);
             }
             return id;
@@ -134,13 +233,25 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public void UnsubscribeMarketDepth(int subscriptionId)
     {
-        // Find and remove the symbol for this subscription ID
+        var shouldUnsubscribeUpstream = true;
         var symbol = _depthSubIds.FirstOrDefault(kvp => kvp.Value == subscriptionId).Key;
         if (symbol != null)
         {
-            _activeDepthSubscriptions.TryRemove(symbol, out _);
-            _depthSubIds.TryRemove(symbol, out _);
+            if (_depthSubscriberCounts.TryGetValue(symbol, out var subscriberCount) && subscriberCount > 1)
+            {
+                _depthSubscriberCounts[symbol] = subscriberCount - 1;
+                shouldUnsubscribeUpstream = false;
+            }
+            else
+            {
+                _depthSubscriberCounts.TryRemove(symbol, out _);
+                _activeDepthSubscriptions.TryRemove(symbol, out _);
+                _depthSubIds.TryRemove(symbol, out _);
+            }
         }
+
+        if (!shouldUnsubscribeUpstream)
+            return;
 
         try
         {
@@ -157,7 +268,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         ArgumentNullException.ThrowIfNull(cfg);
 
         if (_tradeSubIds.TryGetValue(cfg.Symbol, out var existingId))
+        {
+            _tradeSubscriberCounts.AddOrUpdate(cfg.Symbol, 1, static (_, current) => current + 1);
             return existingId;
+        }
 
         try
         {
@@ -166,6 +280,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             {
                 _activeTradeSubscriptions[cfg.Symbol] = cfg;
                 _tradeSubIds[cfg.Symbol] = id;
+                _tradeSubscriberCounts[cfg.Symbol] = 1;
                 _failoverService.RecordSuccess(_activeProviderId);
             }
             return id;
@@ -181,12 +296,25 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public void UnsubscribeTrades(int subscriptionId)
     {
+        var shouldUnsubscribeUpstream = true;
         var symbol = _tradeSubIds.FirstOrDefault(kvp => kvp.Value == subscriptionId).Key;
         if (symbol != null)
         {
-            _activeTradeSubscriptions.TryRemove(symbol, out _);
-            _tradeSubIds.TryRemove(symbol, out _);
+            if (_tradeSubscriberCounts.TryGetValue(symbol, out var subscriberCount) && subscriberCount > 1)
+            {
+                _tradeSubscriberCounts[symbol] = subscriberCount - 1;
+                shouldUnsubscribeUpstream = false;
+            }
+            else
+            {
+                _tradeSubscriberCounts.TryRemove(symbol, out _);
+                _activeTradeSubscriptions.TryRemove(symbol, out _);
+                _tradeSubIds.TryRemove(symbol, out _);
+            }
         }
+
+        if (!shouldUnsubscribeUpstream)
+            return;
 
         try
         {
@@ -220,6 +348,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         foreach (var kvp in _providers)
         {
+            if (_providerDiagnosticsHandlers.TryGetValue(kvp.Key, out var handler))
+                kvp.Value.ConnectionDiagnosticsChanged -= handler;
+
             try
             {
                 await kvp.Value.DisposeAsync();
@@ -297,28 +428,44 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             var previousClient = _activeClient;
 
             _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderKey);
+            UpdateDiagnostics(
+                ProviderConnectionLifecycleState.Reconnecting,
+                isConnected: _isConnected,
+                isReconnecting: true);
 
-            // 1. Connect the new provider
-            await newClient.ConnectAsync(ct);
-
-            // 2. Re-subscribe all active symbols on the new provider
-            await ResubscribeAsync(newClient, ct);
-
-            // 3. Swap the active client
-            _activeClient = newClient;
-            _activeProviderId = newProviderKey;
-
-            // 4. Disconnect the old provider gracefully
             try
             {
-                await previousClient.DisconnectAsync(ct);
-            }
-            catch (Exception ex)
-            {
-                _log.Warning(ex, "Error disconnecting previous provider {ProviderId} during failover", previousId);
-            }
+                // 1. Connect the new provider
+                await newClient.ConnectAsync(ct);
 
-            _log.Information("Provider switch complete: now using {ProviderId}", newProviderKey);
+                // 2. Re-subscribe all active symbols on the new provider
+                await ResubscribeAsync(newClient, ct);
+
+                // 3. Swap the active client
+                _activeClient = newClient;
+                _activeProviderId = newProviderKey;
+                UpdateDiagnostics(
+                    ProviderConnectionLifecycleState.Connected,
+                    isConnected: true,
+                    connectedAt: DateTimeOffset.UtcNow);
+
+                // 4. Disconnect the old provider gracefully
+                try
+                {
+                    await previousClient.DisconnectAsync(ct);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Error disconnecting previous provider {ProviderId} during failover", previousId);
+                }
+
+                _log.Information("Provider switch complete: now using {ProviderId}", newProviderKey);
+            }
+            catch
+            {
+                RefreshDiagnosticsFromActiveProvider();
+                throw;
+            }
         }
         finally
         {
@@ -344,6 +491,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                     _activeClient = kvp.Value;
                     _activeProviderId = kvp.Key;
                     _failoverService.RecordSuccess(kvp.Key);
+                    UpdateDiagnostics(
+                        ProviderConnectionLifecycleState.Connected,
+                        isConnected: true,
+                        connectedAt: DateTimeOffset.UtcNow);
                     _log.Information("Failover connect succeeded to {ProviderId}", kvp.Key);
                     return;
                 }
@@ -424,5 +575,72 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         }
 
         return Task.CompletedTask;
+    }
+
+    private void HandleProviderDiagnosticsChanged(
+        string providerId,
+        IMarketDataClient provider,
+        WebSocketConnectionDiagnostics snapshot)
+    {
+        if (!ReferenceEquals(provider, _activeClient) ||
+            !string.Equals(providerId, _activeProviderId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        lock (_diagnosticsSync)
+        {
+            _lifecycleState = snapshot.LifecycleState;
+            _isConnected = snapshot.IsConnected;
+            _isReconnecting = snapshot.IsReconnecting;
+            _lastConnectedAt = snapshot.LastConnectedAt ?? _lastConnectedAt;
+            _lastDisconnectedAt = snapshot.LastDisconnectedAt ?? _lastDisconnectedAt;
+            _lastError = snapshot.LastError;
+            _lastFailureKind = snapshot.LastFailureKind;
+        }
+
+        PublishDiagnostics();
+    }
+
+    private void RefreshDiagnosticsFromActiveProvider()
+        => HandleProviderDiagnosticsChanged(
+            _activeProviderId,
+            _activeClient,
+            _activeClient.GetConnectionDiagnosticsSnapshot());
+
+    private void UpdateDiagnostics(
+        ProviderConnectionLifecycleState lifecycleState,
+        bool isConnected,
+        bool isReconnecting = false,
+        DateTimeOffset? connectedAt = null,
+        DateTimeOffset? disconnectedAt = null,
+        Exception? error = null)
+    {
+        lock (_diagnosticsSync)
+        {
+            _lifecycleState = lifecycleState;
+            _isConnected = isConnected;
+            _isReconnecting = isReconnecting;
+            if (connectedAt.HasValue)
+                _lastConnectedAt = connectedAt;
+            if (disconnectedAt.HasValue)
+                _lastDisconnectedAt = disconnectedAt;
+            _lastError = error?.Message;
+            _lastFailureKind = error is null ? null : ProviderFailureClassifier.Classify(error);
+        }
+
+        PublishDiagnostics();
+    }
+
+    private void PublishDiagnostics()
+    {
+        try
+        {
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Failover connection diagnostics subscriber failed for {ProviderId}", _activeProviderId);
+        }
     }
 }

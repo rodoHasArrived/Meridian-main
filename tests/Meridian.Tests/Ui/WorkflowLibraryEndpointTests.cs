@@ -9,6 +9,7 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -102,6 +103,7 @@ public sealed class WorkflowLibraryEndpointTests
         builder.Services.AddWorkflowLibrary();
 
         await using var app = builder.Build();
+        app.Use(AddTestTenantContext);
         app.MapWorkstationEndpoints(ServerJsonOptions);
         await app.StartAsync();
 
@@ -236,6 +238,138 @@ public sealed class WorkflowLibraryEndpointTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRoundTripViewStateEnvelope()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        const string envelope = "eyJ2IjoxLCJzY3JlZW4iOiJyZXBvcnRpbmctZXhwb3J0cyIsInN0YXRlIjp7fX0";
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: "saved-view",
+                Name: "Saved view",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false,
+                ViewStateEnvelope: envelope),
+            ServerJsonOptions);
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<WorkflowPresetDto>(ServerJsonOptions);
+        saved!.ViewStateEnvelope.Should().Be(envelope);
+
+        var pinResponse = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets/saved-view/pin",
+            new WorkflowPresetPinRequest(true),
+            ServerJsonOptions);
+        var pinned = await pinResponse.Content.ReadFromJsonAsync<WorkflowPresetDto>(ServerJsonOptions);
+        pinned!.ViewStateEnvelope.Should().Be(envelope);
+
+        var usedResponse = await client.PostAsync("/api/workstation/workflows/presets/saved-view/used", content: null);
+        var used = await usedResponse.Content.ReadFromJsonAsync<WorkflowPresetDto>(ServerJsonOptions);
+        used!.ViewStateEnvelope.Should().Be(envelope);
+
+        var libraryResponse = await client.GetAsync("/api/workstation/workflows/presets");
+        var library = await libraryResponse.Content.ReadFromJsonAsync<WorkflowPresetLibraryDto>(ServerJsonOptions);
+        library!.Presets.Should().ContainSingle(preset =>
+            preset.PresetId == "saved-view" && preset.ViewStateEnvelope == envelope);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldDefaultViewStateEnvelopeToNull()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: "plain-preset",
+                Name: "Plain preset",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false),
+            ServerJsonOptions);
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<WorkflowPresetDto>(ServerJsonOptions);
+        saved!.ViewStateEnvelope.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectOversizedViewStateEnvelope()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/workflows/presets",
+            new WorkflowPresetSaveRequest(
+                PresetId: "oversized-view",
+                Name: "Oversized view",
+                Description: null,
+                WorkflowId: "data-provider-recovery",
+                ActionId: null,
+                Tags: [],
+                IsPinned: false,
+                ViewStateEnvelope: new string('v', 4097)),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("cannot exceed 4096");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldLoadLegacySnapshotsWithoutViewState()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
+        var snapshotPath = Path.Combine(root, "workstation", "workflows", "workflow-presets.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(snapshotPath)!);
+        await File.WriteAllTextAsync(snapshotPath, """
+        {
+          "version": 1,
+          "presets": [
+            {
+              "presetId": "legacy-preset",
+              "name": "Legacy preset",
+              "description": null,
+              "workflowId": "data-provider-recovery",
+              "workflowTitle": "Data Provider Recovery",
+              "actionId": null,
+              "actionLabel": "Open workflow",
+              "workspaceId": "data",
+              "workspaceTitle": "Data",
+              "targetPageTag": "ProviderHealth",
+              "tags": [],
+              "isPinned": false,
+              "createdAt": "2026-06-01T00:00:00+00:00",
+              "updatedAt": "2026-06-01T00:00:00+00:00",
+              "lastUsedAt": null
+            }
+          ]
+        }
+        """);
+
+        await using var app = await CreateWorkflowPresetAppAsync(root);
+        var client = app.GetTestClient();
+
+        var libraryResponse = await client.GetAsync("/api/workstation/workflows/presets");
+        libraryResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var library = await libraryResponse.Content.ReadFromJsonAsync<WorkflowPresetLibraryDto>(ServerJsonOptions);
+        library!.Presets.Should().ContainSingle(preset =>
+            preset.PresetId == "legacy-preset" && preset.ViewStateEnvelope == null);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkflowPresets_ShouldRejectUnknownWorkflow()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workflow-presets", Guid.NewGuid().ToString("N"));
@@ -365,8 +499,17 @@ public sealed class WorkflowLibraryEndpointTests
         builder.Services.AddWorkflowLibrary();
 
         var app = builder.Build();
+        app.Use(AddTestTenantContext);
         app.MapWorkstationEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private static async Task AddTestTenantContext(HttpContext context, Func<Task> next)
+    {
+        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = "workflow-test-operator";
+        await next();
     }
 }

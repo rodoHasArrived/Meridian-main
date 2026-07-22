@@ -725,9 +725,13 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Ignore trade fetch errors — non-critical
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Order book trade fetch failed; non-critical.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
         finally
         {
@@ -769,6 +773,10 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(OrderBookViewModel)));
         }
 
         cts.Dispose();

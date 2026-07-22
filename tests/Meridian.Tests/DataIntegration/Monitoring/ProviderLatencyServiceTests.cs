@@ -48,6 +48,22 @@ public sealed class ProviderLatencyServiceTests : IDisposable
     }
 
     [Fact]
+    public void RecordLatency_NormalizesCaseAndWhitespaceProviderNames()
+    {
+        // Act
+        _service.RecordLatency(" Alpaca ", 10.0);
+        _service.RecordLatency("ALPACA", 20.0);
+
+        // Assert
+        var histogram = _service.GetHistogram("alpaca");
+        histogram.Should().NotBeNull();
+        histogram!.Provider.Should().Be("alpaca");
+        histogram.SampleCount.Should().Be(2);
+        histogram.MeanMs.Should().BeApproximately(15.0, 0.1);
+        _service.GetAllHistograms().Should().ContainSingle();
+    }
+
+    [Fact]
     public void GetSummary_ShouldIdentifyFastestAndSlowest()
     {
         // Arrange

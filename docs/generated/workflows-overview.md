@@ -4,7 +4,7 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `22`
+- Workflow count: `25`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
@@ -20,11 +20,14 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
 | `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/meridian-ci.yml` | Meridian CI | pull_request, push, merge_group, workflow_dispatch |
+| `.github/workflows/production-certification.yml` | Production Certification | workflow_dispatch, schedule, push |
 | `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
 | `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_dispatch |
 | `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |
 | `.github/workflows/roadmap-tools-manual.yml` | Roadmap Tools (Manual) | workflow_dispatch |
 | `.github/workflows/robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |
+| `.github/workflows/schema-control.yml` | PostgreSQL Schema Control | pull_request, workflow_dispatch |
 | `.github/workflows/targeted-test.yml` | Targeted Test | workflow_dispatch |
 | `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch |
 | `.github/workflows/windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |

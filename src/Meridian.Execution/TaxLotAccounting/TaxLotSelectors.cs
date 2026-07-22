@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.TaxLotAccounting;
 
@@ -55,24 +56,28 @@ public static class TaxLotSelectors
                     $"Cannot close {quantityToClose} shares; only {totalOpen} open.");
 
             var ordered = orderFunc(openLots).ToList();
+            var consumption = LotConsumption.Consume(
+                ordered, quantityToClose, static lot => lot.AbsoluteQuantity);
+
             var relieved = new List<RelievedLot>();
             var remaining = new List<TaxLot>();
-            var toRelieve = quantityToClose;
+            var sliceIndex = 0;
 
             foreach (var lot in ordered)
             {
-                if (toRelieve == 0)
+                if (sliceIndex < consumption.Slices.Count
+                    && consumption.Slices[sliceIndex].Lot.LotId == lot.LotId)
+                {
+                    var slice = consumption.Slices[sliceIndex++];
+                    var take = (long)slice.Quantity;
+                    relieved.Add(new RelievedLot(lot, take, closePrice));
+                    if (!slice.ClosesLot)
+                        remaining.Add(lot.WithReducedQuantity(take));
+                }
+                else
                 {
                     remaining.Add(lot);
-                    continue;
                 }
-
-                var take = Math.Min(toRelieve, lot.AbsoluteQuantity);
-                relieved.Add(new RelievedLot(lot, take, closePrice));
-                toRelieve -= take;
-
-                if (lot.AbsoluteQuantity > take)
-                    remaining.Add(lot.WithReducedQuantity(take));
             }
 
             return new TaxLotReliefResult(relieved, remaining);
@@ -93,31 +98,29 @@ public static class TaxLotSelectors
                 throw new ArgumentOutOfRangeException(nameof(quantityToClose), "Must be positive.");
 
             var lotMap = openLots.ToDictionary(l => l.LotId);
+            var selectedLots = lotIds.Select(id => lotMap.TryGetValue(id, out var lot)
+                ? lot
+                : throw new InvalidOperationException($"Lot {id} not found in open positions."));
+
+            var consumption = LotConsumption.Consume(
+                selectedLots, quantityToClose, static lot => lot.AbsoluteQuantity);
+
+            if (!consumption.FullyConsumed)
+                throw new InvalidOperationException(
+                    $"Specified lots did not cover the full close quantity; {consumption.Shortfall} shares remain.");
+
             var relieved = new List<RelievedLot>();
             var remaining = openLots.ToDictionary(l => l.LotId);
-            var toRelieve = quantityToClose;
-
-            foreach (var id in lotIds)
+            foreach (var slice in consumption.Slices)
             {
-                if (toRelieve == 0)
-                    break;
+                var take = (long)slice.Quantity;
+                relieved.Add(new RelievedLot(slice.Lot, take, closePrice));
 
-                if (!lotMap.TryGetValue(id, out var lot))
-                    throw new InvalidOperationException($"Lot {id} not found in open positions.");
-
-                var take = Math.Min(toRelieve, lot.AbsoluteQuantity);
-                relieved.Add(new RelievedLot(lot, take, closePrice));
-                toRelieve -= take;
-
-                if (lot.AbsoluteQuantity > take)
-                    remaining[id] = lot.WithReducedQuantity(take);
+                if (slice.ClosesLot)
+                    remaining.Remove(slice.Lot.LotId);
                 else
-                    remaining.Remove(id);
+                    remaining[slice.Lot.LotId] = slice.Lot.WithReducedQuantity(take);
             }
-
-            if (toRelieve > 0)
-                throw new InvalidOperationException(
-                    $"Specified lots did not cover the full close quantity; {toRelieve} shares remain.");
 
             return new TaxLotReliefResult(relieved, [.. remaining.Values]);
         }

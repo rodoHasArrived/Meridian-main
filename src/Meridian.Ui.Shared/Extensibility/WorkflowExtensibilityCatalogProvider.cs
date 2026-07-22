@@ -99,14 +99,22 @@ public sealed class WorkflowExtensibilityCatalogProvider : IExtensibilityCatalog
     private static string ResolveOwningContext(string workspaceId, string targetPageTag)
     {
         var text = $"{workspaceId} {targetPageTag}";
-        if (ContainsAny(text, "report")) return "Reporting";
-        if (ContainsAny(text, "accounting", "ledger", "trialbalance", "capitalaccount")) return "Accounting";
-        if (ContainsAny(text, "reconciliation", "operations", "close")) return "Operations Continuity";
-        if (ContainsAny(text, "portfolio", "position", "exposure")) return "Portfolio";
-        if (ContainsAny(text, "security", "instrument", "provider", "data", "backfill", "import")) return "Data";
-        if (ContainsAny(text, "trading", "execution")) return "Trading";
-        if (ContainsAny(text, "strategy", "backtest")) return "Strategy";
-        if (ContainsAny(text, "setting", "access", "permission")) return "Settings";
+        if (ContainsAny(text, "report"))
+            return "Reporting";
+        if (ContainsAny(text, "accounting", "ledger", "trialbalance", "capitalaccount"))
+            return "Accounting";
+        if (ContainsAny(text, "reconciliation", "operations", "close"))
+            return "Operations Continuity";
+        if (ContainsAny(text, "portfolio", "position", "exposure"))
+            return "Portfolio";
+        if (ContainsAny(text, "security", "instrument", "provider", "data", "backfill", "import"))
+            return "Data";
+        if (ContainsAny(text, "trading", "execution"))
+            return "Trading";
+        if (ContainsAny(text, "strategy", "backtest"))
+            return "Strategy";
+        if (ContainsAny(text, "setting", "access", "permission"))
+            return "Settings";
         return string.IsNullOrWhiteSpace(workspaceId) ? "Workstation" : workspaceId;
     }
 

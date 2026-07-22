@@ -121,18 +121,13 @@ public sealed class SystemHealthServiceTests
     [InlineData(10)]
     [InlineData(50)]
     [InlineData(100)]
-    public async Task GetRecentEventsAsync_WithLimit_AcceptsValidLimits(int limit)
+    public void BuildRecentEventsRoute_WithLimit_AcceptsValidLimits(int limit)
     {
-        // Arrange
-        var service = SystemHealthService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // Act - Test signature accepts different limits
-        var act = async () => await service.GetRecentEventsAsync(limit, cts.Token);
+        // Act
+        var route = SystemHealthService.BuildRecentEventsRoute(limit);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>();
+        route.Should().Contain($"limit={limit}");
     }
 
     [Fact]
@@ -204,25 +199,18 @@ public sealed class SystemHealthServiceTests
     [InlineData(5)]
     [InlineData(25)]
     [InlineData(250)]
-    public async Task GetRecentEventsAsync_WithVariousLimits_AcceptsAllValues(int limit)
+    public void GetRecentEventsAsync_WithVariousLimits_AcceptsAllValues(int limit)
     {
-        // Arrange
-        var service = SystemHealthService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // Act - Test that method accepts different limit values
-        var act = async () => await service.GetRecentEventsAsync(limit, cts.Token);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>();
+        SystemHealthService.BuildRecentEventsRoute(limit)
+            .Should()
+            .Be($"/api/health/events?limit={limit}");
     }
 
     [Fact]
     public async Task GetHealthSummaryAsync_WithoutCancellation_AcceptsDefaultToken()
     {
         // Arrange
-        var service = SystemHealthService.Instance;
+        var service = new SystemHealthService(new NullSystemHealthApiClient());
 
         // Act - Call without cancellation token (uses default)
         // API is unavailable in test environment; method should return null gracefully
@@ -282,18 +270,11 @@ public sealed class SystemHealthServiceTests
 
     [Theory]
     [InlineData("IEX")]
-    public async Task TestConnectionAsync_WithVariousProviders_AcceptsAllNames(string provider)
+    public void BuildProviderTestRoute_WithVariousProviders_AcceptsAllNames(string provider)
     {
-        // Arrange
-        var service = SystemHealthService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        var route = SystemHealthService.BuildProviderTestRoute(provider);
 
-        // Act
-        var act = async () => await service.TestConnectionAsync(provider, cts.Token);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>();
+        route.Should().Be($"/api/health/providers/{provider}/test");
     }
 
     [Fact]
@@ -365,5 +346,20 @@ public sealed class SystemHealthServiceTests
 
         // Assert - Verify async behavior
         await act.Should().ThrowAsync<Exception>();
+    }
+
+    private sealed class NullSystemHealthApiClient : ISystemHealthApiClient
+    {
+        public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<T?>(null);
+        }
+
+        public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<T?>(null);
+        }
     }
 }

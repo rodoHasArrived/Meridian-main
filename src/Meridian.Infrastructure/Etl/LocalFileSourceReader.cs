@@ -16,8 +16,10 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
 
     public Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
     {
-        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? "*.csv" : source.FilePattern!;
-        var files = Directory.EnumerateFiles(source.Location, pattern, SearchOption.TopDirectoryOnly)
+        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? "*.csv;*.xlsx" : source.FilePattern!;
+        var files = ExpandPatterns(pattern)
+            .SelectMany(p => Directory.EnumerateFiles(source.Location, p, SearchOption.TopDirectoryOnly))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .Select(path =>
             {
@@ -40,4 +42,45 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
         await using var stream = new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
         return await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
     }
+
+    public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
+    {
+        var action = source.DeleteAfterSuccess ? EtlSourcePostProcessingAction.Delete : source.PostProcessingAction;
+        if (action == EtlSourcePostProcessingAction.LeaveInPlace ||
+            (succeeded && action == EtlSourcePostProcessingAction.MoveToError) ||
+            (!succeeded && action != EtlSourcePostProcessingAction.MoveToError))
+        {
+            return Task.CompletedTask;
+        }
+
+        switch (action)
+        {
+            case EtlSourcePostProcessingAction.Delete when File.Exists(file.Path):
+                File.Delete(file.Path);
+                break;
+            case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
+                MoveLocalFile(file.Path, source.ArchiveLocation);
+                break;
+            case EtlSourcePostProcessingAction.MoveToError when !string.IsNullOrWhiteSpace(source.ErrorLocation):
+                MoveLocalFile(file.Path, source.ErrorLocation);
+                break;
+            case EtlSourcePostProcessingAction.WriteDoneMarker:
+                File.WriteAllText(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"));
+                break;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static void MoveLocalFile(string path, string directory)
+    {
+        Directory.CreateDirectory(directory);
+        var destination = Path.Combine(directory, Path.GetFileName(path));
+        if (File.Exists(destination))
+            File.Delete(destination);
+        File.Move(path, destination);
+    }
+
+    private static IEnumerable<string> ExpandPatterns(string pattern)
+        => pattern.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }

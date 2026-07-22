@@ -13,6 +13,7 @@
     <Compile Include="DomainTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="ValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="CalculationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
+    <Compile Include="SecurityCalculationsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="CanonicalizationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
     <Compile Include="PipelineTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
     <Compile Include="RiskPolicyTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
@@ -23,6 +24,7 @@
     <Compile Include="TradingReadinessRulesTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
     <Compile Include="TradingTransitionTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
     <Compile Include="LedgerKernelTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
+    <Compile Include="FundEconomicsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="ReconciliationCaseWorkflowTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="PeriodManagementTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="DeterministicInvariantTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger' Or '$(FSharpTestSlice)' == 'Operations'" />

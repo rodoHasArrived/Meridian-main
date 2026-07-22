@@ -84,7 +84,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         EnsureHumanOrigin(request.ActionOrigin, "grant scoped access assignments");
         var normalized = ValidateCreate(request, actor);
         var now = DateTimeOffset.UtcNow;
-        var auditId = BuildAuditId("access-grant", now);
+        var auditId = IdentityGovernanceNormalization.NewAuditId("access-grant", now, maxLength: 46);
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? $"access-grant-{Guid.NewGuid():N}"
             : request.CorrelationId.Trim();
@@ -125,8 +125,8 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "revoke scoped access assignments");
-        var resolvedActor = NormalizeRequired(actor, nameof(actor));
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.NormalizeRequired(actor, nameof(actor));
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var existing = await _store.GetAsync(request.AssignmentId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Access assignment '{request.AssignmentId}' was not found.");
 
@@ -136,7 +136,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         }
 
         var now = DateTimeOffset.UtcNow;
-        var auditId = BuildAuditId("access-revoke", now);
+        var auditId = IdentityGovernanceNormalization.NewAuditId("access-revoke", now, maxLength: 46);
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? $"access-revoke-{Guid.NewGuid():N}"
             : request.CorrelationId.Trim();
@@ -239,12 +239,10 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
 
     private static ValidatedCreateRequest ValidateCreate(UserAccessAssignmentCreateRequestDto request, string actor)
     {
-        var principalId = NormalizeRequired(request.PrincipalId, nameof(request.PrincipalId));
-        var resolvedActor = string.IsNullOrWhiteSpace(actor)
-            ? NormalizeRequired(request.RequestedBy, nameof(request.RequestedBy))
-            : actor.Trim();
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
-        var roleName = NormalizeRequired(request.Role, nameof(request.Role));
+        var principalId = IdentityGovernanceNormalization.NormalizeRequired(request.PrincipalId, nameof(request.PrincipalId));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var roleName = IdentityGovernanceNormalization.NormalizeRequired(request.Role, nameof(request.Role));
         if (!Enum.TryParse<UserRole>(roleName, ignoreCase: true, out var role))
         {
             throw new ArgumentException($"Unknown role '{request.Role}'.", nameof(request));
@@ -323,17 +321,6 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         return scopeId;
     }
 
-    private static string NormalizeRequired(string? value, string parameterName)
-    {
-        var normalized = value?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            throw new ArgumentException($"{parameterName} is required.", parameterName);
-        }
-
-        return normalized;
-    }
-
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
@@ -369,12 +356,6 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         Guid? scopeId,
         string reason)
         => new(false, actor, permission, scopeKind, scopeId, reason);
-
-    private static string BuildAuditId(string prefix, DateTimeOffset now)
-    {
-        var value = $"{prefix}-{now:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}";
-        return value[..Math.Min(46, value.Length)];
-    }
 
     private static UserAccessAssignmentAuditEventDto BuildAuditEvent(
         string eventType,

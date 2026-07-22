@@ -19,7 +19,13 @@ For every AI/systems task in this repository, use this canonical order:
 5. `docs/engineering/README.md` or `docs/product/README.md` / `docs/operators/README.md` as applicable
 6. `docs/documentation-ownership.md` for archive/generation ownership
 7. `docs/documentation-inventory.md` to update migration state and phase notes
-8. Targeted validation command set (`check-*` and structure checks)
+8. For memory-aware Codex tasks, inspect `.codex/memory/index.yml`; route named scopes through
+   `.codex/memory/tasks/<task-id>.yml`; route long-running work through
+   `.codex/memory/goals/<goal-id>.yml`; load only selected entries; emit compact receipts; and keep
+   canonical docs, source, tests, scripts, scoped `AGENTS.md`, and selected skills authoritative
+   over memory.
+9. Targeted validation command set (`check-*` and structure checks), including
+   `python build/scripts/docs/check-codex-memory.py --summary` after Codex memory changes
 
 Classify AI/doc changes in this rebuild model:
 
@@ -44,7 +50,7 @@ Classify AI/doc changes in this rebuild model:
 | Compact context packets | [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`work-modes.md`](work-modes.md) | Required vs optional context split, validation-reuse tracking, and summarized evidence budgets |
 | AI tooling and validators | [`tooling/README.md`](tooling/README.md) | Script/tool selection, safe usage notes, and narrow proof lanes |
 | Local contention-aware .NET validation | [`tooling/README.md`](tooling/README.md) | `buildctl test` local lock, active-process checks, isolated outputs, and `.ai/validation-runs` evidence |
-| Hosted targeted testing | [GitHub workflows README](../../.github/workflows/README.md) | Manual `Targeted Test` workflow for a selected .NET test project plus filter when local capacity blocks validation |
+| Hosted targeted testing | [GitHub workflows README](../../.github/workflows/README.md) | Manual `Targeted Test` workflow with curated modes for .NET, browser, docs/source, WPF, route, and desktop-smoke validation |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
@@ -116,7 +122,10 @@ Before changing any AI/helping-agent guidance:
 Validate AI catalog consistency with:
 
 ```bash
-python3 build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```

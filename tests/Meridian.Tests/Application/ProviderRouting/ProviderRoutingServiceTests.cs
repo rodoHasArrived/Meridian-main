@@ -2,6 +2,8 @@ using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
+using Meridian.Contracts.Operations;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -206,6 +208,46 @@ public sealed class ProviderRoutingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProviderFamilyCatalog_RegistersAndResolvesEachOptionalTypedCapabilityIndependently()
+    {
+        using var registry = new ProviderRegistry();
+        var provider = new OptionalCapabilitiesProvider();
+        registry.Register(provider);
+
+        var catalog = new ProviderFamilyCatalogService(
+            registry,
+            Array.Empty<IOptionsChainProvider>(),
+            Array.Empty<ICorporateActionProvider>());
+
+        var family = catalog.GetFamily(provider.ProviderId);
+
+        family.Should().NotBeNull();
+        foreach (var (capability, serviceType) in OptionalCapabilities)
+        {
+            family!.CapabilityDescriptors.Should().ContainSingle(descriptor => descriptor.Kind == capability);
+
+            var resolved = await family.ResolveCapabilityAsync(capability);
+            resolved.Should().BeSameAs(provider);
+            serviceType.IsInstanceOfType(resolved).Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public void ProviderFamilyCatalog_DoesNotInferOptionalCapabilitiesFromMetadataAlone()
+    {
+        using var registry = new ProviderRegistry();
+        var provider = new MetadataOnlyProvider();
+        registry.Register(provider);
+
+        var catalog = new ProviderFamilyCatalogService(
+            registry,
+            Array.Empty<IOptionsChainProvider>(),
+            Array.Empty<ICorporateActionProvider>());
+
+        catalog.GetFamily(provider.ProviderId).Should().BeNull();
+    }
+
+    [Fact]
     public async Task RouteAsync_RebuildsCachedSnapshotWhenConfigChanges()
     {
         await SaveConfigAsync(new AppConfig(
@@ -330,6 +372,77 @@ public sealed class ProviderRoutingServiceTests : IDisposable
 
         public IProviderFamilyAdapter? GetFamily(string providerFamilyId)
             => new FakeAdapter(providerFamilyId);
+    }
+
+    private static readonly (ProviderCapabilityKind Capability, Type ServiceType)[] OptionalCapabilities =
+    [
+        (ProviderCapabilityKind.News, typeof(IProviderNewsService)),
+        (ProviderCapabilityKind.Scanner, typeof(IProviderScannerService)),
+        (ProviderCapabilityKind.PnLStream, typeof(IProviderPnlStream)),
+        (ProviderCapabilityKind.TradingCalendar, typeof(ITradingCalendarProvider)),
+        (ProviderCapabilityKind.MarketRules, typeof(IMarketRuleProvider)),
+        (ProviderCapabilityKind.InstrumentDiscovery, typeof(IProviderInstrumentDiscoveryService))
+    ];
+
+    private sealed class OptionalCapabilitiesProvider :
+        IProviderNewsService,
+        IProviderScannerService,
+        IProviderPnlStream,
+        ITradingCalendarProvider,
+        IMarketRuleProvider,
+        IProviderInstrumentDiscoveryService
+    {
+        public string ProviderId => "optional-capabilities";
+
+        public string ProviderDisplayName => "Optional capabilities";
+
+        public string ProviderDescription => "Test provider for optional routing capabilities";
+
+        public int ProviderPriority => 100;
+
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.None;
+
+        public Task<IReadOnlyList<ProviderNewsArticle>> GetNewsAsync(ProviderNewsRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ProviderNewsArticle>>([]);
+
+        public Task<IReadOnlyList<ProviderScannerResult>> ScanAsync(ProviderScannerRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ProviderScannerResult>>([]);
+
+        public async IAsyncEnumerable<ProviderPnlUpdate> StreamAsync(ProviderPnlStreamRequest request, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        public Task<ProviderTradingCalendarResponse> GetTradingCalendarAsync(ProviderTradingCalendarRequest request, CancellationToken ct = default)
+            => Task.FromResult(new ProviderTradingCalendarResponse(
+                Sessions: [],
+                Closures: [],
+                Provenance: new ProviderCalendarProvenance(
+                    ProviderId,
+                    SourceReference: "test/calendar",
+                    RetrievedAtUtc: DateTimeOffset.UtcNow,
+                    SourceAsOfUtc: null,
+                    DataProvenance: DataProvenance.Simulated)));
+
+        public Task<ProviderMarketRule?> GetMarketRuleAsync(MarketRuleRequest request, CancellationToken ct = default)
+            => Task.FromResult<ProviderMarketRule?>(null);
+
+        public Task<IReadOnlyList<ProviderInstrument>> DiscoverAsync(ProviderInstrumentDiscoveryRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ProviderInstrument>>([]);
+    }
+
+    private sealed class MetadataOnlyProvider : IProviderMetadata
+    {
+        public string ProviderId => "metadata-only";
+
+        public string ProviderDisplayName => "Metadata only";
+
+        public string ProviderDescription => "Does not implement an optional capability interface";
+
+        public int ProviderPriority => 100;
+
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.None;
     }
 
     private sealed class FakeAdapter : IProviderFamilyAdapter

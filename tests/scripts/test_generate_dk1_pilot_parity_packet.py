@@ -51,6 +51,18 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             self.assertTrue(packet["operatorSignoff"]["validForDk1Exit"])
             self.assertEqual("valid", packet["operatorSignoff"]["packetBindingStatus"])
             self.assertEqual(packet["operatorSignoff"]["packetReview"]["generatedAtUtc"], packet["generatedAtUtc"])
+            search_dependency_review = packet["searchDependencyReview"]
+            self.assertEqual("represented", search_dependency_review["status"])
+            self.assertEqual(2, search_dependency_review["requiredCount"])
+            self.assertEqual(2, search_dependency_review["representedCount"])
+            self.assertEqual(
+                {"OpenFIGI", "EDGAR"},
+                {row["provider"] for row in search_dependency_review["dependencies"]},
+            )
+            self.assertEqual(
+                2,
+                packet["operatorSignoff"]["packetReview"]["representedSearchDependencyCount"],
+            )
             self.assertEqual([], packet["operatorSignoff"]["missingOwners"])
             self.assertEqual(
                 ["Data", "Provider Reliability", "Trading"],
@@ -110,6 +122,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             self.assertTrue(str(packet_review_node.get("sourceSummary", "")).strip())
             self.assertTrue(str(packet_review_node.get("path", "")).strip())
             self.assertTrue(str(packet_review_node.get("status", "")).strip())
+            self.assertEqual("represented", packet_review_node.get("searchDependencyReviewStatus"))
 
             self.assertEqual(str(summary_path), packet_review_node.get("sourceSummary"))
             self.assertEqual(str(packets[0]), packet_review_node.get("path"))
@@ -172,6 +185,47 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             self.assertEqual("invalid", packet["operatorSignoff"]["packetBindingStatus"])
             self.assertIn("packetPath", packet["operatorSignoff"]["packetBindingMissingRequirements"])
             self.assertIn("packetGeneratedAtUtc", packet["operatorSignoff"]["packetBindingMissingRequirements"])
+
+    def test_operator_signoff_path_rejects_stale_search_dependency_binding(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            summary_path = temp_path / "wave1-validation-summary.json"
+            signoff_path = temp_path / "dk1-operator-signoff.json"
+
+            summary_path.write_text(json.dumps(_build_passing_summary()), encoding="utf-8")
+            packet_review = _write_reviewed_packet(temp_path, summary_path)
+            stale_review = dict(packet_review)
+            stale_review["representedSearchDependencyCount"] = 1
+            signoff_path.write_text(json.dumps(_build_signed_signoff(stale_review)), encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    pwsh,
+                    "-NoProfile",
+                    "-File",
+                    str(SCRIPT_PATH),
+                    "-SummaryJsonPath",
+                    str(summary_path),
+                    "-OperatorSignoffPath",
+                    str(signoff_path),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(0, result.returncode)
+            packet = json.loads((temp_path / "dk1-pilot-parity-packet.json").read_text(encoding="utf-8"))
+            self.assertEqual("invalid", packet["operatorSignoff"]["packetBindingStatus"])
+            self.assertIn(
+                "packetRepresentedSearchDependencyCount",
+                packet["operatorSignoff"]["packetBindingMissingRequirements"],
+            )
 
 
 def _build_passing_summary() -> dict[str, object]:
@@ -298,6 +352,7 @@ def _build_ready_packet(summary_path: Path, generated_at: str) -> dict[str, obje
         ("DK1 baseline trust thresholds", "calibration", "docs/status/evidence/dk1-baseline-trust-thresholds.md"),
         ("Provider validation matrix", "parity", "docs/reference/provider-validation-matrix.md"),
     ]
+    search_dependencies = _build_search_dependencies()
     return {
         "generatedAtUtc": generated_at,
         "sourceSummary": str(summary_path),
@@ -313,6 +368,12 @@ def _build_ready_packet(summary_path: Path, generated_at: str) -> dict[str, obje
                 }
                 for sample_id in samples
             ],
+        },
+        "searchDependencyReview": {
+            "requiredCount": len(search_dependencies),
+            "representedCount": len(search_dependencies),
+            "status": "represented",
+            "dependencies": search_dependencies,
         },
         "trustRationaleContract": {
             "status": "validated",
@@ -343,6 +404,10 @@ def _build_packet_review(packet_path: Path, packet: dict[str, object]) -> dict[s
     assert isinstance(samples, list)
     documents = packet["evidenceDocuments"]
     assert isinstance(documents, list)
+    search_review = packet["searchDependencyReview"]
+    assert isinstance(search_review, dict)
+    search_dependencies = search_review["dependencies"]
+    assert isinstance(search_dependencies, list)
     trust_contract = packet["trustRationaleContract"]
     baseline_contract = packet["baselineThresholdContract"]
     assert isinstance(trust_contract, dict)
@@ -362,8 +427,36 @@ def _build_packet_review(packet_path: Path, packet: dict[str, object]) -> dict[s
         ),
         "trustRationaleContractStatus": trust_contract["status"],
         "baselineThresholdContractStatus": baseline_contract["status"],
+        "requiredSearchDependencyCount": search_review["requiredCount"],
+        "representedSearchDependencyCount": sum(
+            1 for dependency in search_dependencies if dependency["status"] == "represented"
+        ),
+        "searchDependencyReviewStatus": search_review["status"],
         "validForOperatorReview": True,
     }
+
+
+def _build_search_dependencies() -> list[dict[str, object]]:
+    return [
+        {
+            "provider": "OpenFIGI",
+            "dependency": "Identifier mapping API",
+            "risk": "Quota, uptime, and mapping ambiguity can degrade symbol-search confidence.",
+            "governanceAction": "Represent in DK1 packet searchDependencyReview.",
+            "evidenceAnchors": ["OpenFigiClientTests", "OpenFigiClientAmbiguityTests"],
+            "status": "represented",
+            "missingRequirements": [],
+        },
+        {
+            "provider": "EDGAR",
+            "dependency": "SEC company ticker and reference-data endpoints",
+            "risk": "Public endpoint availability can degrade reference-data lookup quality.",
+            "governanceAction": "Represent in DK1 packet searchDependencyReview.",
+            "evidenceAnchors": ["EdgarSymbolSearchProviderTests", "EdgarReferenceDataProviderTests"],
+            "status": "represented",
+            "missingRequirements": [],
+        },
+    ]
 
 
 if __name__ == "__main__":

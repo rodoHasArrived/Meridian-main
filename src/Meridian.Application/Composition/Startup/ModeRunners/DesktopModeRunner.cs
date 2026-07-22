@@ -37,6 +37,14 @@ public sealed class DesktopModeRunner
 
         try
         {
+            if (ct.IsCancellationRequested || ctx.Lifecycle.IsShutdownRequested)
+            {
+                _log.Information(
+                    "Desktop mode shutdown requested before collector startup ({Reason})",
+                    ctx.Lifecycle.ShutdownReason ?? "cancellation-requested");
+                return 0;
+            }
+
             var backfillRequested = ctx.CliArgs.Backfill || (ctx.Config.Backfill?.Enabled == true);
             if (backfillRequested)
             {
@@ -45,8 +53,29 @@ public sealed class DesktopModeRunner
 
             return await new CollectorModeRunner(_log).RunAsync(ctx, ct);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested || ctx.Lifecycle.ShutdownToken.IsCancellationRequested)
+        {
+            _log.Information(
+                "Desktop mode shutdown requested during runtime execution ({Reason})",
+                ctx.Lifecycle.ShutdownReason ?? "cancellation-requested");
+            return 0;
+        }
         finally
         {
+            if (ctx.Lifecycle.IsShutdownRequested &&
+                ctx.Lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle &&
+                !runtimeLifecycle.TerminationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, runtimeLifecycle.TerminationToken);
+                }
+                catch (OperationCanceledException) when (runtimeLifecycle.TerminationToken.IsCancellationRequested)
+                {
+                    // The in-process shutdown sequence persisted its receipt and released the host.
+                }
+            }
+
             using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             try
             {

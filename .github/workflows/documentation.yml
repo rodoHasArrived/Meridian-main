@@ -14,24 +14,28 @@ on:
       - reopened
     paths:
       - "docs/**"
+      - ".codex/memory/**"
       - "build/scripts/docs/**"
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/documentation.yml"
   push:
     branches:
       - main
     paths:
       - "docs/**"
+      - ".codex/memory/**"
       - "build/scripts/docs/**"
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/documentation.yml"
 
 permissions:
@@ -54,7 +58,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -66,6 +70,13 @@ jobs:
 
       - name: Check AI inventory
         run: python3 build/scripts/docs/check-ai-inventory.py --summary
+
+      - name: Check Codex memory
+        run: |
+          python build/scripts/docs/check-codex-memory.py --summary
+          python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+          python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+          python -m unittest build.scripts.docs.tests.test_check_codex_memory
 
       - name: Check AI handoff
         run: python3 build/scripts/docs/check-ai-handoff.py
@@ -89,7 +100,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -99,7 +110,7 @@ jobs:
           node-version: "24"
 
       - name: Install diagram dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
 
       - name: Run docs automation profile
         run: |
@@ -116,16 +127,11 @@ jobs:
       - name: Render WPF UI diagrams
         run: npm run generate-diagrams
 
-      - name: Install PlantUML
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz plantuml
-
       - name: Render UML diagrams
         continue-on-error: true
         run: |
-          plantuml -tpng docs/diagrams/uml/*.puml
-          plantuml -tsvg docs/diagrams/uml/*.puml
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tpng /data/*.puml
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tsvg /data/*.puml
 
       - name: Refresh workflow overview
         run: python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md

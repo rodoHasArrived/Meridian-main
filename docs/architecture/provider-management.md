@@ -1,16 +1,17 @@
 # Provider Management Architecture
 
-**Version:** 3.6 | **Last Updated:** 2026-06-06
+**Version:** 3.7 | **Last Updated:** 2026-06-30
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
 See also:
 
-- [ADR-001: Provider Abstraction](../adr/001-provider-abstraction.md)
-- [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md)
-- [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md)
+- [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md)
+- [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md)
+- [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md)
 - [Provider Implementation Guide](../development/provider-implementation.md)
 - [Provider Capability Matrix](../reference/provider-capability-matrix.md)
+- [Provider Backfill Operations](../operators/provider-backfill-operations.md)
 
 ---
 
@@ -49,8 +50,9 @@ UI / API Layer
                                 │              Finnhub, AlphaVantage, NasdaqDataLink,
                                 │              IB, StockSharp
                                 │   (base: BaseHistoricalDataProvider)
-                                └── Symbol Search: Alpaca, Finnhub, Polygon,
-                                                   OpenFIGI, StockSharp
+                                └── Symbol Search: Alpaca, AlphaVantage,
+                                                   Finnhub, Polygon, Tiingo,
+                                                   TwelveData, OpenFIGI, StockSharp
                                     (base: BaseSymbolSearchProvider)
 ```
 
@@ -219,12 +221,14 @@ All locations relative to `src/Meridian.Infrastructure/Adapters/`.
 |----------|-------|-----------|-------------|------------------|
 | Alpaca | `AlpacaHistoricalDataProvider` | With account | 200/min | Bars, trades, quotes, auctions, intraday |
 | Polygon | `PolygonHistoricalDataProvider` | Limited | Varies | Bars, trades, quotes, aggregates |
-| Tiingo | `TiingoHistoricalDataProvider` | Yes | 500/hour | Daily bars, adjusted prices |
+| Tiingo | `TiingoHistoricalDataProvider`, `TiingoSymbolSearchProvider`, `TiingoCorporateActionProvider` | Yes | 50/hour | Daily bars, adjusted prices, utilities symbol search, adjusted-EOD dividend/split extraction |
 | Yahoo Finance | `YahooFinanceHistoricalDataProvider` | Yes | Unofficial | Daily bars |
 | Stooq | `StooqHistoricalDataProvider` | Yes | Low | Daily bars |
-| Finnhub | `FinnhubHistoricalDataProvider` | Yes | 60/min | Daily bars |
-| Alpha Vantage | `AlphaVantageHistoricalDataProvider` | Yes | 5/min | Daily bars |
-| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | Limited | Varies | Various |
+| Finnhub | `FinnhubHistoricalDataProvider` | Yes | 60/min | Daily and intraday bars |
+| FRED | `FredHistoricalDataProvider`, `FredSymbolSearchProvider` | Yes | 120/min | Economic series observations mapped to synthetic daily bars, credential-gated series search |
+| Alpha Vantage | `AlphaVantageHistoricalDataProvider`, `AlphaVantageSymbolSearchProvider`, `AlphaVantageCorporateActionProvider` | Yes | 5/min | Daily bars, intraday bars, keyword symbol search, adjusted-daily dividend/split extraction |
+| Twelve Data | `TwelveDataHistoricalDataProvider`, `TwelveDataSymbolSearchProvider`, `TwelveDataCorporateActionProvider` | Yes | 8/min | Daily bars, credential-gated `/symbol_search` discovery, paid-plan `/dividends` and `/splits` corporate actions |
+| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkSymbolSearchProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, credential-gated dataset-code search, adjusted dataset dividend/split extraction |
 | Interactive Brokers | `IBHistoricalDataProvider` | With account | IB pacing | All types |
 | StockSharp | `StockSharpHistoricalDataProvider` | With account | Varies | Multi-exchange |
 
@@ -236,13 +240,22 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 
 | Provider | Class | Filterable | Exchanges | Rate Limit |
 |----------|-------|------------|-----------|------------|
-| Alpaca | `AlpacaSymbolSearchProviderRefactored` | Yes | US, Crypto | 200/min |
-| Finnhub | `FinnhubSymbolSearchProviderRefactored` | Yes | US, International | 60/min |
+| Alpaca | `AlpacaSymbolSearchProvider` | Yes | US, Crypto | 200/min |
+| Alpha Vantage | `AlphaVantageSymbolSearchProvider` | Yes | Region-scoped global keyword results | 5/min |
+| Tiingo | `TiingoSymbolSearchProvider` | Yes | Tiingo utilities search results with client-side asset/exchange filtering | 50/hour |
+| Twelve Data | `TwelveDataSymbolSearchProvider` | Yes | `/symbol_search` results with client-side asset/exchange filtering | 8/min |
+| Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
 | StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |
 
-All located under `src/Meridian.Infrastructure/Adapters/Core/`.
+Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
+
+`SymbolSearchService` remains the shared aggregation boundary for UI and workflow consumers. It
+normalizes provider symbols, drops malformed blank-symbol rows, attributes sparse rows to the
+provider that returned them, promotes exact ticker matches ahead of fuzzy rows, and uses
+multi-provider agreement plus provider priority as deterministic tie-breakers. These rules reduce
+secondary-provider ambiguity without promoting any inventory provider to full search-quality parity.
 
 ---
 
@@ -260,12 +273,13 @@ Orchestrates automatic failover between streaming providers. Monitors provider h
 2. A periodic timer evaluates each rule against provider health state.
 3. When a provider's consecutive failures exceed the rule's `FailoverThreshold`, the service finds the next healthy backup provider.
 4. `OnFailoverTriggered` event signals `FailoverAwareMarketDataClient` to switch.
-5. Auto-recovery occurs when the primary provider's consecutive successes reach `RecoveryThreshold`.
+5. Auto-recovery occurs when the primary provider's consecutive successes reach
+   `RecoveryThreshold` and its recent latency window is within `MaxLatencyMs`, when configured.
 
 **Failover triggers:**
 
 - Consecutive operation failures exceeding the threshold
-- Average latency exceeding `MaxLatencyMs` configured on the rule
+- Recent-window average latency exceeding `MaxLatencyMs` configured on the rule
 - Connection lost events from `ConnectionHealthMonitor`
 - Missed heartbeats (2+ consecutive)
 
@@ -285,6 +299,14 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 - On connect failure: iterates backup providers until one succeeds
 - Thread-safe switching via `SemaphoreSlim`
 - Reports capabilities of the currently active underlying provider
+
+Provider health snapshots keep a bounded recent latency window for streaming failover decisions.
+This makes `MaxLatencyMs` routing responsive to current SLA breaches while allowing stale latency
+spikes to decay after sustained healthy samples. When a latency breach triggers failover, backup
+selection also applies the same `MaxLatencyMs` health rule so routing skips backups whose current
+recent-latency window is already outside the rule threshold. Recovery uses that same threshold so
+success pings alone do not route back to a primary provider that is still breaching the current
+latency SLA.
 
 ### StreamingFailoverRegistry
 
@@ -383,6 +405,50 @@ Backfill job queue with priority-based ordering:
 
 Background service that dequeues jobs from `PriorityBackfillQueue` (or `BackfillRequestQueue`) and executes them through `CompositeHistoricalDataProvider`.
 
+### Backfill Ordering and Gap-Remediation Contract
+
+The operator-facing backfill contract is documented in
+[Provider Backfill Operations](../operators/provider-backfill-operations.md). The current
+architecture supports the following deterministic semantics:
+
+- `HistoricalBackfillService` caps per-request symbol concurrency with `MaxConcurrentSymbols`; when
+  unset, it uses the configured backfill job concurrency.
+- `SymbolPriorities` sort symbols by lower numeric priority first, with case-insensitive keys.
+  Without priorities, serial execution (`MaxConcurrentSymbols=1`) preserves input order.
+- Cost preview and execution trim symbols, drop blanks, and de-duplicate symbols case-insensitively
+  while preserving the first-seen order and spelling, preventing duplicate provider fetches from
+  casing or whitespace variants in the same request.
+- Concurrent multi-symbol runs do not guarantee completion order. Treat per-symbol validation
+  signals, execution history, and checkpoints as the evidence boundary instead of task completion
+  sequence.
+- `ResumeFromCheckpoint=true` skips fully covered symbols and advances partially covered symbols to
+  the day after the recorded checkpoint. Fresh non-resume runs clear only matching-granularity
+  checkpoints, so intraday and daily lanes do not wipe each other.
+- `PriorityBackfillQueue` orders jobs by `Critical`, `High`, `Normal`, `Low`, then `Deferred`, and
+  keeps dependency-blocked jobs paused until all dependencies complete.
+
+`AutoGapRemediationService` adds guardrails plus retained SLA classification and status projection,
+not a complete cross-provider SLA engine. It requires minimum gap duration/size, applies symbol and
+provider cooldowns, limits concurrent remediation attempts, suppresses duplicate completed attempts
+by idempotency key, and allows transient failures to retry. Same-provider, same-window gap-analyzer
+scan results are batched into a single deterministic remediation execution with uppercase, sorted
+symbols and retained execution history. Each system-triggered execution now retains SLA tier,
+due-time, owner-assignment, downstream-workflow, and reason-code warnings so critical paper,
+reconciliation, accounting, or reporting blockers are distinguishable from standard repairs.
+`EvaluateRemediationSla` projects those retained execution-history fields into overdue, due-soon,
+failed, open, and completed status items with owner-assignment counts for operator read models.
+Cross-provider fallback and promotion-grade closure remain operator-governed: the run is not
+considered remediated until execution history, per-symbol validation signals, and a follow-up gap or
+quality check prove the affected interval acceptable for the blocked downstream workflow.
+For bounded daily backfill checks, `CrossSourceBackfillReconciliationService` can compare a
+baseline provider against one or more comparison providers and retain structured price/volume drift,
+missing-session, and provider-error evidence. Batch reconciliation normalizes symbols to uppercase,
+de-duplicates them, preserves first-seen request order, and returns per-symbol evidence so operators
+can audit a multi-symbol remediation without inferring order from provider completion timing. The
+result also emits a closure decision and ordered review-symbol list so clean evidence is explicitly
+separated from provider-error or discrepancy blockers. It is proof material for the
+operator-governed closure flow, not autonomous SLA enforcement.
+
 ### Rate Limiting
 
 **`ProviderRateLimitTracker`** and **`RateLimiter`** (`Infrastructure/Adapters/RateLimiting/`) enforce per-provider request pacing derived from provider metadata. The `IRateLimitAwareProvider` interface allows providers to report real-time rate limit status and emit `OnRateLimitHit` events.
@@ -468,7 +534,13 @@ Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully 
 
 **Events:** `OnProviderDegraded`, `OnProviderRecovered`
 
-**Key APIs:** `GetScore(providerName)`, `GetAllScores()`, `GetProvidersByHealth()`, `IsDegraded(providerName)`
+**Key APIs:** `GetScore(providerName)`, `GetAllScores()`, `GetProvidersByHealth()`, `IsDegraded(providerName)`.
+Score discovery includes providers seen through connection health, latency histograms, or error
+tracking so latency-only secondary-provider evidence is visible in health rankings.
+When a provider has no streaming connection signal, scoring switches to a request-only mode and
+rebalances across available latency and error-rate evidence. This keeps severe historical-provider
+latency or request-failure telemetry from being capped below the degradation threshold simply
+because the provider is not a streaming adapter.
 
 Provider degradation calibration datasets, incident windows, kernel profiles, calibration
 snapshots, promotion gate policy, governance workflow, and calibration report generation also live
@@ -784,3 +856,11 @@ export TIINGO__TOKEN=your-token
 - Kept provider calibration command and status endpoint composition in Application as consumers of
   the Data Integration-owned provider telemetry, health, scoring, calibration, and data-quality
   evidence models.
+
+## Migration Notes (v3.6 -> v3.7)
+
+- Added the historical backfill ordering, checkpoint/resume, priority queue, and gap-remediation
+  contract that links architecture guidance to the canonical provider backfill operator runbook.
+- Clarified that current auto-remediation is guardrail automation with retained SLA classification
+  metadata and status projection, while cross-provider SLA closure still requires retained execution,
+  validation-signal, and follow-up quality evidence plus later governance timer enforcement.

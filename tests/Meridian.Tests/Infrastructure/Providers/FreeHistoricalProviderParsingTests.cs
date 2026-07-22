@@ -214,7 +214,7 @@ public sealed class StooqParsingTests
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WhenHttp404_ThrowsInvalidOperationException()
+    public async Task GetDailyBarsAsync_WhenHttp404_ReturnsEmpty()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.NotFound)
@@ -224,9 +224,9 @@ public sealed class StooqParsingTests
         using var httpClient = new HttpClient(handler);
         using var provider = new StooqHistoricalDataProvider(httpClient: httpClient);
 
-        Func<Task> act = () => provider.GetDailyBarsAsync("INVALID", null, null, CancellationToken.None);
+        var bars = await provider.GetDailyBarsAsync("INVALID", null, null, CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        bars.Should().BeEmpty();
     }
 
     [Fact]
@@ -662,7 +662,7 @@ public sealed class AlphaVantageParsingTests
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WhenRateLimited_ThrowsHttpRequestException()
+    public async Task GetDailyBarsAsync_WhenRateLimited_ThrowsTypedRateLimitException()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.OK)
@@ -674,7 +674,7 @@ public sealed class AlphaVantageParsingTests
 
         Func<Task> act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
-        await act.Should().ThrowAsync<HttpRequestException>()
+        await act.Should().ThrowAsync<Meridian.Core.Exceptions.RateLimitException>()
             .WithMessage("*rate limit*");
     }
 }

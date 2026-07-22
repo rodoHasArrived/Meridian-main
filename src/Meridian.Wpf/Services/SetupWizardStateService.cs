@@ -152,6 +152,7 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
             var statusText = provisioningResult switch
             {
                 ConfigurationProvisioningResult.CreatedDefault => "Created a new default configuration at startup.",
+                ConfigurationProvisioningResult.RestoredLastKnownGood => "Recovered configuration from the last-known-good copy at startup.",
                 ConfigurationProvisioningResult.RepairedInvalid => "Repaired an invalid configuration at startup and restored defaults.",
                 _ => "Loaded existing valid configuration."
             };

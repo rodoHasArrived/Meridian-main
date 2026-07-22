@@ -34,6 +34,9 @@ concurrency:
 
 env:
   CI: true
+  # Bind the free-text version input to an environment variable so it is never
+  # interpolated directly into a pwsh run block (avoids shell/script injection).
+  VERSION: ${{ inputs.version }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -53,12 +56,17 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-publish-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -72,11 +80,55 @@ jobs:
           pwsh ./build/scripts/publish/publish.ps1 `
             -Platform '${{ inputs.runtime }}' `
             -Project '${{ inputs.project }}' `
-            -Version '${{ inputs.version }}' `
+            -Version "$env:VERSION" `
             -Configuration Release `
             -OutputDir artifacts/publish/publish-smoke `
             -OutputRetentionDays 0 `
             -OutputRetainLatest 0
+
+      - name: Prepare published WebWorkstation artifact for installed startup
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          $artifactHost = Resolve-Path 'artifacts/publish/publish-smoke/win-x64/web-workstation'
+          $installSmokeHost = 'artifacts/publish/web-workstation/win-x64'
+          New-Item -ItemType Directory -Path $installSmokeHost -Force | Out-Null
+          Copy-Item -Path (Join-Path $artifactHost '*') -Destination $installSmokeHost -Recurse -Force
+          dotnet publish src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj `
+            -c Release -r win-x64 -o $installSmokeHost --self-contained true `
+            -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:PublishTrimmed=false
+
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'GitHub Windows runner has no PostgreSQL runtime for installed startup smoke.' }
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+          Copy-Item -LiteralPath $payload -Destination (Join-Path $installSmokeHost 'database') -Recurse -Force
+
+      - name: Start the published WebWorkstation artifact with required authentication
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/install/smoke-web-workstation-install.ps1 `
+            -RuntimeIdentifier win-x64 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -OutputRoot artifacts/publish/publish-smoke/installed-startup `
+            -SkipHostPublish `
+            -SkipDashboardBuild `
+            -SkipNpmInstall
+
+      - name: Generate release evidence manifest
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project '${{ inputs.project }}' `
+            --runtime '${{ inputs.runtime }}' `
+            --version "$env:VERSION" `
+            --artifact-root artifacts/publish/publish-smoke `
+            --output artifacts/publish/publish-smoke/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane publish-smoke
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v7.0.1

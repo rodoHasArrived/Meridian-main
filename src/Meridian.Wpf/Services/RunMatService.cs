@@ -419,9 +419,13 @@ public sealed class RunMatService
                 process.Kill(entireProcessTree: true);
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Best-effort cancellation.
+            LoggingService.Instance.LogDebug(
+                "Best-effort process kill failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

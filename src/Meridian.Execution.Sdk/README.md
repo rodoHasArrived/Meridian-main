@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-05-20
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Execution.Sdk
@@ -27,11 +27,23 @@ This layer should hold reusable execution contracts without binding them to one 
 ## Important workflows
 
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
+`BrokerageOrderPlacementGate` is the shared pre-submit safety gate for HTTP endpoints and the OMS:
+non-paper gateways must have a matching `BrokerageConfiguration`, while the paper gateway keeps
+the default paper-first behavior. Gateways that implement `IExecutionGatewayModeProvider` expose
+typed paper/simulation/live mode metadata so live-readiness checks do not infer safety posture from
+gateway-id strings.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
 splits, dividends, amortization, paydowns, and factor updates when the upstream feed supplies
 account-scoped evidence.
+`OrderRequest.FundAccountId` carries account scope for W7 live-order validation so shared
+readiness gates can verify broker sync and open-order reconciliation against the same governed
+account that the operator selected. `ExecutionOrderMetadataPolicy` treats broker-account routing,
+manual override identifiers, asset class routing, and live-readiness evidence references as
+server-owned metadata. Endpoint callers may name a run for validation, but retained live-readiness
+evidence must be supplied by server-side execution gates and is stripped before broker submission if
+a caller attempts to provide it.
 
 ## Diagrams
 

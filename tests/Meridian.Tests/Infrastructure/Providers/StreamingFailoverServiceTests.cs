@@ -97,6 +97,20 @@ public sealed class StreamingFailoverServiceTests : IDisposable
     }
 
     [Fact]
+    public void RecordLatency_IgnoresInvalidLatencySamples()
+    {
+        _service.RegisterProvider("primary");
+
+        _service.RecordLatency("primary", 20.0);
+        _service.RecordLatency("primary", double.NaN);
+        _service.RecordLatency("primary", double.PositiveInfinity);
+        _service.RecordLatency("primary", -1.0);
+
+        var snap = _service.GetProviderHealthSnapshots().First(s => s.ProviderId == "primary");
+        snap.AverageLatencyMs.Should().BeApproximately(20.0, 0.01);
+    }
+
+    [Fact]
     public void Start_LoadsRules()
     {
         _service.RegisterProvider("primary");
@@ -289,6 +303,158 @@ public sealed class StreamingFailoverServiceTests : IDisposable
         _service.RecordFailure(" PRIMARY ", "timeout");
 
         _service.GetActiveProviderId("normalized-rule").Should().Be("backup1");
+    }
+
+    [Fact]
+    public void Scenario_ProviderLatencySla_RecentBurstTriggersFailoverBeforeFailureThreshold()
+    {
+        var latencyRule = new FailoverRuleConfig(
+            Id: "latency-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: new[] { "backup1" },
+            FailoverThreshold: 99,
+            RecoveryThreshold: 2,
+            MaxLatencyMs: 100);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { latencyRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(config);
+
+        for (var i = 0; i < 5; i++)
+        {
+            _service.RecordLatency("primary", 250.0);
+        }
+
+        _service.GetActiveProviderId("latency-rule").Should().Be("backup1");
+    }
+
+    [Fact]
+    public void Scenario_ProviderLatencySla_StaleLatencySpikeDecaysBeforeFailoverEvaluation()
+    {
+        var latencyRule = new FailoverRuleConfig(
+            Id: "latency-decay-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: new[] { "backup1" },
+            FailoverThreshold: 99,
+            RecoveryThreshold: 2,
+            MaxLatencyMs: 100);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { latencyRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+
+        for (var i = 0; i < 10; i++)
+        {
+            _service.RecordLatency("primary", 2_000.0);
+        }
+
+        for (var i = 0; i < 25; i++)
+        {
+            _service.RecordLatency("primary", 10.0);
+        }
+
+        _service.Start(config);
+        _service.RecordLatency("primary", 10.0);
+
+        var snap = _service.GetProviderHealthSnapshots().First(s => s.ProviderId == "primary");
+        snap.AverageLatencyMs.Should().BeApproximately(10.0, 0.01);
+        _service.GetActiveProviderId("latency-decay-rule").Should().Be("primary");
+    }
+
+    [Fact]
+    public void Scenario_ProviderLatencySla_FailoverSkipsBackupWithActiveLatencyBreach()
+    {
+        var latencyRule = new FailoverRuleConfig(
+            Id: "latency-candidate-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: new[] { "backup1", "backup2" },
+            FailoverThreshold: 99,
+            RecoveryThreshold: 2,
+            MaxLatencyMs: 100);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { latencyRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.RegisterProvider("backup2");
+        _service.Start(config);
+
+        for (var i = 0; i < 5; i++)
+        {
+            _service.RecordLatency("backup1", 250.0);
+        }
+
+        for (var i = 0; i < 5; i++)
+        {
+            _service.RecordLatency("primary", 250.0);
+        }
+
+        _service.GetActiveProviderId("latency-candidate-rule").Should().Be("backup2");
+    }
+
+    [Fact]
+    public void Scenario_ProviderLatencySla_PrimarySuccessesDoNotRecoverWhileLatencyStillBreaches()
+    {
+        var latencyRule = new FailoverRuleConfig(
+            Id: "latency-recovery-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: new[] { "backup1" },
+            FailoverThreshold: 99,
+            RecoveryThreshold: 2,
+            MaxLatencyMs: 100);
+
+        var config = new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: new[] { latencyRule });
+
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(config);
+
+        FailoverTriggeredEvent? triggeredEvent = null;
+        FailoverRecoveredEvent? recoveredEvent = null;
+        _service.OnFailoverTriggered += evt => triggeredEvent = evt;
+        _service.OnFailoverRecovered += evt => recoveredEvent = evt;
+
+        for (var i = 0; i < 5; i++)
+        {
+            _service.RecordLatency("primary", 250.0);
+        }
+
+        _service.GetActiveProviderId("latency-recovery-rule").Should().Be("backup1");
+        triggeredEvent.Should().NotBeNull();
+        triggeredEvent!.Value.Reason.Should().Contain("Latency");
+
+        _service.RecordSuccess("primary");
+        _service.RecordSuccess("primary");
+
+        _service.GetActiveProviderId("latency-recovery-rule").Should().Be("backup1");
+        recoveredEvent.Should().BeNull("success pings do not prove the primary is inside the latency SLA window");
+
+        for (var i = 0; i < 20; i++)
+        {
+            _service.RecordLatency("primary", 10.0);
+        }
+
+        _service.GetActiveProviderId("latency-recovery-rule").Should().Be("primary");
+        recoveredEvent.Should().NotBeNull();
+        recoveredEvent!.Value.ToProviderId.Should().Be("primary");
+
+        var snap = _service.GetProviderHealthSnapshots().First(s => s.ProviderId == "primary");
+        snap.AverageLatencyMs.Should().BeApproximately(10.0, 0.01);
     }
 
 }

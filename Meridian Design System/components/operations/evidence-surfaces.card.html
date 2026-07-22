@@ -1,0 +1,75 @@
+<!-- @dsCard group="Operations" viewport="1100x680" name="LogTail · EventTimeline" subtitle="Evidence surfaces — raw process output and the who-did-what audit trail" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Evidence surfaces</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { LogTail, EventTimeline } = window.MeridianDesignSystem_4f61be;
+
+function Section({ title, children }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const T0 = Date.UTC(2026, 6, 2, 14, 21, 4);
+const LOG = [
+  { ts: T0,          level: "info",  source: "fetch",  text: "XNAS window 2026-06-01..2026-06-30 · 21 sessions · 780 symbols" },
+  { ts: T0 + 800,    level: "info",  source: "fetch",  text: "provider=Polygon · plan rate 100 rps · resume token none" },
+  { ts: T0 + 2400,   level: "debug", source: "fetch",  text: "batch 12/79 · 412,008 bars · 3.1s" },
+  { ts: T0 + 9200,   level: "warn",  source: "verify", text: "AAPL 2026-06-19 short session · expected 210 bars, got 390 schedule rows" },
+  { ts: T0 + 9900,   level: "info",  source: "verify", text: "calendar override applied · XNAS half-day 2026-06-19" },
+  { ts: T0 + 14000,  level: "error", source: "write",  text: "parquet flush failed · s3 timeout · retrying (1/3)" },
+  { ts: T0 + 16500,  level: "info",  source: "write",  text: "retry ok · part-0034.parquet · 61 MB" },
+  { ts: T0 + 21000,  level: "info",  source: "verify", text: "gap scan clean · 0 missing sessions · 0 duplicate bars" },
+  { ts: T0 + 21400,  level: "info",  source: "done",   text: "backfill-7742 complete · 8.61M bars · 4m 12s" },
+];
+
+const EVENTS = [
+  { ts: Date.UTC(2026, 6, 2, 14, 25, 16), action: "Backfill complete", actor: "scheduler", severity: "success",
+    detail: "8.61M bars · 0 gaps · Polygon daily",
+    evidence: { label: "backfill-7742.log", status: "Ready", onOpen: () => {} } },
+  { ts: Date.UTC(2026, 6, 2, 11, 2, 41), action: "Rule threshold raised", actor: "r.alvarez", severity: "warning",
+    detail: "Drawdown breach -5.0% → -8.0% · window 15m",
+    evidence: { label: "change-4118.json", status: "Ready", onOpen: () => {} } },
+  { ts: Date.UTC(2026, 6, 1, 22, 47, 3), action: "Provider failover", actor: "ingest-gw", severity: "danger",
+    detail: "Polygon ws disconnect 43s · promoted Databento to primary" },
+  { ts: Date.UTC(2026, 6, 1, 18, 30, 0), action: "Report pack delivered", actor: "reporter", severity: "accent",
+    detail: "EOD P&L pack · 4 recipients" },
+  { ts: Date.UTC(2026, 6, 1, 13, 12, 55), action: "Symbol registry sync", actor: "scheduler",
+    detail: "12 added · 3 delisted · 0 conflicts" },
+];
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1.2fr 1fr", gap:16, maxWidth:1040, alignItems:"start" }}>
+      <Section title="LogTail · backfill-7742 raw output">
+        <LogTail title="backfill-7742 · Polygon daily" height={300} entries={LOG} />
+        <div style={{ marginTop:10, fontSize:11, color:"var(--text-muted)" }}>
+          Level chips filter in place; follow-tail pauses when the operator scrolls up.
+        </div>
+      </Section>
+      <Section title="EventTimeline · audit trail, newest first">
+        <EventTimeline events={EVENTS} />
+      </Section>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

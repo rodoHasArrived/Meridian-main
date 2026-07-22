@@ -10,7 +10,11 @@ still lives in `../assistant-workflow-contract.md`.
 
 ## Startup Checklist
 
-1. Run `git status --short` and separate existing user-owned changes from the task.
+1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
+   implementation, start from the latest `origin/main` on a `codex/<short-task-name>` branch,
+   unless the user explicitly asks for local `main` work or the checkout is intentionally operating
+   there. Do not bypass GitHub branch protections; open or update a PR targeting `main` for
+   PR-ready publishing.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
@@ -23,11 +27,13 @@ still lives in `../assistant-workflow-contract.md`.
    `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
    `docs/engineering/README.md`, `docs/start/README.md`,
    `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
-   For memory-aware tasks, inspect `.codex/memory/index.yml`; when the work has a named scope, use
-   a `.codex/memory/tasks/<task-id>.yml` descriptor and load only entries selected by the descriptor,
-   current intent, skill, changed paths, branch, or explicit tags. For very long goals, also use a
-   `.codex/memory/goals/<goal-id>.yml` progress inventory. Include a compact memory receipt for
-   selected IDs, match reasons, stale warnings, goal progress, and task/branch scope skips.
+   For memory-aware tasks, inspect `.codex/memory/index.yml` before loading durable memory; when
+   the work has a named scope, use a `.codex/memory/tasks/<task-id>.yml` descriptor and load only
+   entries selected by the descriptor, current intent, skill, changed paths, branch, or explicit
+   tags. For very long goals, also use a `.codex/memory/goals/<goal-id>.yml` progress inventory.
+   Include a compact memory receipt for selected IDs, match reasons, stale warnings, goal progress,
+   and task/branch scope skips. Prefer canonical docs, source, tests, scripts, scoped `AGENTS.md`,
+   and selected `SKILL.md` files when memory disagrees.
 5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
@@ -42,12 +48,19 @@ still lives in `../assistant-workflow-contract.md`.
 11. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
 12. Choose the smallest validation lane from the task-to-proof matrix before editing.
+   For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions
+   `Meridian CI / quality-gate` remains the merge authority.
    For local .NET tests, prefer
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
-   the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-   project under `tests/` plus filter.
+   the branch and dispatch GitHub Actions `Targeted Test` with a whitelisted `mode`; use
+   `mode=dotnet-filtered` with the same repo-relative .NET test project under `tests/` plus filter
+   for .NET slices.
+   After any timed-out generation, build, or test attempt, run
+   `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+   shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+   `VBCSCompiler` PIDs after confirming their command lines point at this checkout.
 13. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
@@ -99,19 +112,25 @@ do not paste raw file contents or broad command output unless the user asks for 
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |
 
-AI-doc proof lane defaults: `python3 build/scripts/docs/check-codex-memory.py --summary`,
+AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --summary`,
+`python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`,
+`python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary`,
+`python -m unittest build.scripts.docs.tests.test_check_codex_memory`,
 `python3 build/scripts/docs/check-ai-inventory.py --summary`,
 `python3 build/scripts/docs/check-codex-skills.py --summary`,
 `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`,
 `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
-with a `tests/` `dotnet_project` and `dotnet_filter` when local resources are the blocker.
+with `mode=dotnet-filtered`, a `tests/` `dotnet_project`, and `dotnet_filter` for .NET slices, or a
+curated non-.NET mode such as `browser-workstation`, `docs-source`, `wpf-dev-loop`, or `wpf-route`.
 
 Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
 `dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
 runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
 and uses `MeridianBuildIsolationKey` output roots by default.
+For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
+only repo-owned abandoned build/test/compiler PIDs before retrying or dispatching hosted proof.
 
 ## Dirty Worktree Protocol
 
@@ -139,13 +158,42 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
   assumptions, codebase drift, merge order, and validation reuse during concurrent changes.
-- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; use
-  task descriptors plus `--explain` for scoped memory routing; use goal inventories for long-running
-  progress tracking; follow `memory-system.md` for promotion, staleness, and disabled user/global
+- Codex memory: inspect `.codex/memory/index.yml` only as a selective repo-local memory catalog;
+  use task descriptors plus `--receipt` for scoped memory routing; use goal inventories for
+  long-running progress tracking; load only selected entries; follow `memory-system.md` for
+  promotion, staleness, disabled user/global tiers, and canonical-doc precedence over memory
   tiers.
+- Receipt example:
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+  Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+  selected: repo:validation -> .codex/memory/repo/validation.md
+
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  goal_inventory_path: .codex/memory/goals/example.yml
+  goal: codex-memory-long-goal-example
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
-- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
+- Validation procedures: `python build/scripts/docs/check-codex-memory.py --summary`, scoped Codex memory receipt checks when memory changes, `python -m unittest build.scripts.docs.tests.test_check_codex_memory`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
 - Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix

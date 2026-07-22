@@ -21,9 +21,10 @@ public sealed class EtlStagingStore
 
     public async Task<EtlStagedFile> StageAsync(string jobId, EtlRemoteFile file, Stream sourceStream, CancellationToken ct = default)
     {
+        var fileName = ValidateFileName(file.Name);
         var jobPath = Path.Combine(_rootPath, jobId);
         Directory.CreateDirectory(jobPath);
-        var destinationPath = Path.Combine(jobPath, file.Name);
+        var destinationPath = Path.Combine(jobPath, fileName);
         string checksum;
         long totalBytes = 0;
 
@@ -47,10 +48,26 @@ public sealed class EtlStagingStore
         {
             OriginalPath = file.Path,
             StagedPath = destinationPath,
-            FileName = file.Name,
+            FileName = fileName,
             ChecksumSha256 = checksum,
             SizeBytes = totalBytes
         };
+    }
+
+    private static string ValidateFileName(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new InvalidOperationException("ETL staged file name is required.");
+
+        if (!Path.GetFileName(fileName).Equals(fileName, StringComparison.Ordinal) ||
+            fileName.Contains('/') ||
+            fileName.Contains('\\') ||
+            fileName is "." or "..")
+        {
+            throw new InvalidOperationException("ETL staged file name must not contain path segments.");
+        }
+
+        return fileName;
     }
 }
 

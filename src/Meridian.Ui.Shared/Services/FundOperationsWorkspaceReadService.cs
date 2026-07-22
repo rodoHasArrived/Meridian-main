@@ -15,6 +15,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -48,6 +49,24 @@ public sealed class FundOperationsWorkspaceReadService
         "riskCountry",
         "lookupQuality",
         "displayName",
+        "fundId",
+        "entityId",
+        "sleeveId",
+        "strategyId",
+        "investorId",
+        "capitalAccountId",
+        "instrumentId",
+        "taxLotId",
+        "costCenterId",
+        "counterpartyId",
+        "organizationId",
+        "portfolioId",
+        "bookId",
+        "accountId",
+        "customerId",
+        "vendorId",
+        "projectId",
+        "externalGlDimensionsJson",
         "netBalance"
     ];
 
@@ -242,6 +261,8 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ReportPackDeliveryService? _reportPackDeliveryService;
     private readonly ReportingScheduleService? _reportingScheduleService;
     private readonly ReportPackRunReadService? _reportPackRunReadService;
+    private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -259,7 +280,9 @@ public sealed class FundOperationsWorkspaceReadService
         ReportPackWorkflowService? reportPackWorkflowService = null,
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ReportingScheduleService? reportingScheduleService = null,
-        ReportPackRunReadService? reportPackRunReadService = null)
+        ReportPackRunReadService? reportPackRunReadService = null,
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -277,6 +300,8 @@ public sealed class FundOperationsWorkspaceReadService
         _reportPackDeliveryService = reportPackDeliveryService;
         _reportingScheduleService = reportingScheduleService;
         _reportPackRunReadService = reportPackRunReadService;
+        _directLendingOperationsReadService = directLendingOperationsReadService;
+        _ledgerJournalStore = ledgerJournalStore;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -320,7 +345,7 @@ public sealed class FundOperationsWorkspaceReadService
         var baseCurrency = ResolveCurrency(query.Currency, accountSummaries);
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
         var ledger = await BuildLedgerSummaryAsync(
             normalizedFundProfileId,
             displayName,
@@ -347,6 +372,7 @@ public sealed class FundOperationsWorkspaceReadService
             ledgerBook,
             asOf,
             ct);
+        var directLendingOperationsTask = _directLendingOperationsReadService?.GetOperationsAsync(ct: ct);
 
         await Task.WhenAll(cashTask, reconciliationTask, navTask).ConfigureAwait(false);
 
@@ -354,6 +380,9 @@ public sealed class FundOperationsWorkspaceReadService
         var cashFinancing = cashBuild.Summary;
         var reconciliation = await reconciliationTask.ConfigureAwait(false);
         var nav = await navTask.ConfigureAwait(false);
+        var directLendingOperations = directLendingOperationsTask is null
+            ? null
+            : await directLendingOperationsTask.ConfigureAwait(false);
         var allRuns = await allRunsTask.ConfigureAwait(false);
         var allAccountProjections = await allAccountProjectionsTask.ConfigureAwait(false);
         var crossFundConsolidations = await BuildCrossFundReportingConsolidationsAsync(
@@ -405,7 +434,8 @@ public sealed class FundOperationsWorkspaceReadService
             Reconciliation: reconciliation,
             Nav: nav,
             Reporting: reporting,
-            Governance: governance);
+            Governance: governance,
+            DirectLendingOperations: directLendingOperations);
     }
 
     public async Task<StructuredReportingExportPayloadDto> GetStructuredReportingExportAsync(
@@ -473,7 +503,7 @@ public sealed class FundOperationsWorkspaceReadService
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
         var currency = ResolveCurrency(request.Currency, []);
         var asOf = request.AsOf ?? DateTimeOffset.UtcNow;
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
 
         var report = await _reportGenerationService.GenerateAsync(
             new ReportRequest(
@@ -527,7 +557,7 @@ public sealed class FundOperationsWorkspaceReadService
         var accountProjections = await GetAccountProjectionsAsync(fundId, ct).ConfigureAwait(false);
         var accountSummaries = accountProjections.Select(static projection => projection.Summary).ToArray();
         var currency = ResolveCurrency(request.Currency, accountSummaries);
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
 
         var reportTask = _reportGenerationService.GenerateAsync(
             new ReportRequest(normalizedFundProfileId, asOf, ledgerBook, MapReportKind(request.ReportKind)),
@@ -1359,11 +1389,30 @@ public sealed class FundOperationsWorkspaceReadService
                     Dimensions: BuildFundLedgerDimensions(fundProfileId, scopeKind, scopeId, pair.Key.FinancialAccountId)))
                 .ToArray());
 
-    private static FundLedgerBook BuildLedgerBook(
+    private async Task<FundLedgerBook> BuildLedgerBookAsync(
         string fundProfileId,
-        IReadOnlyList<StrategyRunEntry> runs)
+        IReadOnlyList<StrategyRunEntry> runs,
+        DateTimeOffset asOf,
+        CancellationToken ct)
     {
         var fundLedgerBook = new FundLedgerBook(fundProfileId);
+
+        if (_ledgerJournalStore is not null)
+        {
+            var durableProjection = await _ledgerJournalStore
+                .HydrateFundLedgerAsOfAsync(
+                    fundProfileId,
+                    asOf,
+                    AccountingBasisKindDto.Primary,
+                    ct)
+                .ConfigureAwait(false);
+            foreach (var journalEntry in durableProjection.Journal)
+            {
+                fundLedgerBook.FundLedger.Post(journalEntry);
+            }
+
+            return fundLedgerBook;
+        }
 
         foreach (var run in runs)
         {
@@ -1883,6 +1932,24 @@ public sealed class FundOperationsWorkspaceReadService
         row.RiskCountry,
         row.LookupQuality,
         row.DisplayName,
+        row.Dimensions?.FundId,
+        row.Dimensions?.EntityId,
+        row.Dimensions?.SleeveId,
+        row.Dimensions?.StrategyId,
+        row.Dimensions?.InvestorId,
+        row.Dimensions?.CapitalAccountId,
+        FormatStructuredGuid(row.Dimensions?.InstrumentId),
+        row.Dimensions?.TaxLotId,
+        row.Dimensions?.CostCenterId,
+        row.Dimensions?.CounterpartyId,
+        row.Dimensions?.OrganizationId,
+        row.Dimensions?.PortfolioId,
+        row.Dimensions?.BookId,
+        row.Dimensions?.AccountId,
+        row.Dimensions?.CustomerId,
+        row.Dimensions?.VendorId,
+        row.Dimensions?.ProjectId,
+        FormatExternalGlDimensions(row.Dimensions),
         row.NetBalance
     ];
 
@@ -2714,21 +2781,27 @@ public sealed class FundOperationsWorkspaceReadService
             .Select(static profile => profile.Id)
             .ToArray();
         var workflowRecords = FilterReportPackWorkflowRecords(BuildReportPackWorkflowRecords(accounts, asOf), accessContext);
-        var filteredReportingPayload = accessContext is not null
+        var scopedReportingPayload = accessContext is not null
             ? _reportPackRunReadService?.BuildPayload(accessContext)
             : null;
-        var deliveryAttempts = filteredReportingPayload?.DeliveryAttempts
-            ?? _reportPackDeliveryService?.ListAttempts(500)
-            ?? [];
-        var schedules = filteredReportingPayload?.Schedules
+        var dailyWorkPayload = scopedReportingPayload ?? _reportPackRunReadService?.BuildPayload();
+        var deliveryAttempts = scopedReportingPayload?.DeliveryAttempts
+            ?? ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
+                _reportPackDeliveryService?.ListAttempts(500) ?? [],
+                accessContext,
+                workflowRecords);
+        var schedules = scopedReportingPayload?.Schedules
             ?? _reportingScheduleService?.ListSchedules(100)
             ?? [];
-        var scheduleDeliveryPlans = filteredReportingPayload?.ScheduleDeliveryPlans
+        var scheduleDeliveryPlans = scopedReportingPayload?.ScheduleDeliveryPlans
             ?? ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
-        var distributions = filteredReportingPayload?.ReportPackDistributions
+        var distributions = scopedReportingPayload?.ReportPackDistributions
             ?? ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts);
-        var reportLineProvenanceExplorer = filteredReportingPayload?.ReportLineProvenanceExplorer
-            ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(workflowRecords, deliveryAttempts);
+        var reportLineProvenanceExplorer = scopedReportingPayload?.ReportLineProvenanceExplorer
+            ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(
+                workflowRecords,
+                deliveryAttempts,
+                accessContext: accessContext);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
@@ -2767,7 +2840,10 @@ public sealed class FundOperationsWorkspaceReadService
             ScheduleDeliveryPlans: scheduleDeliveryPlans,
             ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
             ReportWriterDatasetSources: reportWriterDatasetSources,
-            AccessAudit: filteredReportingPayload?.AccessAudit);
+            AccessAudit: scopedReportingPayload?.AccessAudit,
+            DailyWork: dailyWorkPayload?.DailyWork,
+            StarterKits: dailyWorkPayload?.StarterKits,
+            StarterKitState: dailyWorkPayload?.StarterKitState);
     }
 
     private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(
@@ -4432,9 +4508,7 @@ public sealed class FundOperationsWorkspaceReadService
             return records;
         }
 
-        return records
-            .Where(record => ReportAccessPolicyEvaluator.Evaluate(record.AccessPolicy, accessContext).IsAccessible)
-            .ToArray();
+        return ReportPackRunReadService.FilterWorkflowRecords(records, accessContext);
     }
 
     private static string ResolveDisplayName(

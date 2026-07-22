@@ -1,5 +1,9 @@
 # Source Documentation Mesh
 
+**Status:** canonical-registry
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This directory maps Meridian source code to plain-English module ownership,
 roadmap traceability, TODOs, diagrams, and validation commands.
 

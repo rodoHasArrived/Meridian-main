@@ -1,0 +1,1750 @@
+{
+  "acl": [
+    {
+      "grantable": false,
+      "grantee": "meridian",
+      "grantor": "meridian",
+      "privilege": "create"
+    },
+    {
+      "grantable": false,
+      "grantee": "meridian",
+      "grantor": "meridian",
+      "privilege": "usage"
+    }
+  ],
+  "comment": null,
+  "comments": [],
+  "composite_types": [],
+  "dependencies": [],
+  "domains": [],
+  "enums": [],
+  "exists": true,
+  "extensions": [],
+  "fingerprint": "4c336b5362a4019a14aafa69a48e98ab382d27eebd20da0ab1591f6b6eccf31b",
+  "foreign_tables": [],
+  "functions": [],
+  "logical_modules": [
+    "money-market"
+  ],
+  "materialized_views": [],
+  "name": "money_market",
+  "owner": "meridian",
+  "partitions": [],
+  "policies": [],
+  "procedures": [],
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'USD'::text",
+          "fingerprint": "7b0d44e0d04d142d04417d855336fe950682d0375d1a726fad42c277f8c45e8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "54c961695b6dc1e21499f2358aa1b8c79de96a303d139c3b07d7578438eaa9e7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fund_family",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "08fe1acbc3e487435dc8d71b1e49bb5745d3b928db4e0b59eda1a6dbb79c07c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_sweep_eligible",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "6e3f29eb8f485b7385f8bfb93fa130dac52805510d214faf1b8032202260de82",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "weighted_average_maturity",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "5a4ce2cec8cab3fc785382275999efeb22a948f57fbfaeaafc5a871f00a32844",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "has_liquidity_fee",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "true",
+          "fingerprint": "df47fe0f69677674d52cf34ea4ad58655b866a6f30e61c61b8993f5081b4c4ab",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_active",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "a7b0a425ec8e2ddc41a4868aecc8856639e517215669298d4a7c608281a059e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "effective_from",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "90b4de3a553c638b6fbb8c77eeb745eccfaa99498d3c578fbdb713d79c896d0c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "effective_to",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "6ae562481862b5af37611e36d8f50ae85df389f5b267628ea6439d6a8d08a49b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "08c449f54f83b1fd5c348a3507a931ce4de096b981e8bef6d84130a7f5ad3538",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_funds_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ac0a2a827493220a567773a751cdb00c55efa3a5d35646d1cab0f8e923a899a0",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_mmf_funds_fund_family ON money_market.mmf_funds USING btree (fund_family) WHERE (fund_family IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "ce98b5800a89008e64cf7b6f29a0b8da6585cdfbb8c258206650e61a8a7cdc54",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "fund_family"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_mmf_funds_fund_family",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "fund_family IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_mmf_funds_is_active ON money_market.mmf_funds USING btree (is_active)",
+          "expression": null,
+          "fingerprint": "ea71721d96babda5b6138b52a8d3c04519102688a1453690cad894e53b2ac6be",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "is_active"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_mmf_funds_is_active",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_funds_pkey ON money_market.mmf_funds USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "facfac25a5908b1950613c6e3721db94b6d59fe2a80b4520e0a7695d77778397",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_funds_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_funds",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "50a2d0d0f863060145178a9e754b5d66c74edf525d2bfe25bdce360d13cb6698",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "liquidity_state",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "0bbf0701b1b5375f7dcfb317c01a3f3941616c74ccae84d3d119d4c4b42d4911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "set_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "4059778e946eb5609bce42efc322049e71eaecd2e390b5c1b4f39243f80efa16",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_liquidity_overrides_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "335d74fdee7cb18345f9b42b259259d01787912c9c41776d3f84c4611d900328",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_liquidity_overrides_pkey ON money_market.mmf_liquidity_overrides USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "3bd09be145b39426ea282e36dafbda280c2d0d414723de7a24b6af8f7de038a3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_liquidity_overrides_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_liquidity_overrides",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "61bdcafe2f1dacb73f9ddc03b8c23be19e44d813d667ac257882beed72f88d2e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "bb6fec47ae8f4d8f2aa24b3f109cd16db1fb1383f62160bfc6880b071d2667ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checkpointed_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a1374b8adc396ecefcc6b93a6cc857251e1a3172fe37f8302c99a21c12208f06",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rebuild_source",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "3d7f7aa46127e4cff9e484b70652b5ed234567f9dd2275ab7ad86317325543a4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_rebuild_checkpoints_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2f2c95573a57024c0f450d4d96be8485cee386511c6d2e14b0d399bb763e1e66",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_rebuild_checkpoints_pkey ON money_market.mmf_rebuild_checkpoints USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "55a5bf0572eb105cc1cfad6d8c8f5edd9683b54c082e0b8a0345dcd165fcfac9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_rebuild_checkpoints_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_rebuild_checkpoints",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "filename",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checksum",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "filename"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (filename)",
+          "delete_action": null,
+          "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "schema_migrations_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON money_market.schema_migrations USING btree (filename)",
+          "expression": null,
+          "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "filename"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "schema_migrations_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    }
+  ],
+  "row_level_security": [
+    {
+      "enabled": false,
+      "fingerprint": "d3fa3c57000fe414b7eb2e38a3dfac27a126c5b6041be679deb982ad4cd0e3a6",
+      "forced": false,
+      "policies": [],
+      "relation": "mmf_funds",
+      "schema": "money_market"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "cc7ab61b40b14ba2c8280fc0f09ff489a3429ce3e21a477eaa17588e2d8d38de",
+      "forced": false,
+      "policies": [],
+      "relation": "mmf_liquidity_overrides",
+      "schema": "money_market"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "652d04fd0821d2e336b7b14e13a8a98443e07c49706e7c0efdcb320191e181b3",
+      "forced": false,
+      "policies": [],
+      "relation": "mmf_rebuild_checkpoints",
+      "schema": "money_market"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "41992f51682d986cea6461b23a6bed92498ddaa6e8e1ef6956f584536b7e4ecf",
+      "forced": false,
+      "policies": [],
+      "relation": "schema_migrations",
+      "schema": "money_market"
+    }
+  ],
+  "security_labels": [],
+  "sequences": [],
+  "tables": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "display_name",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'USD'::text",
+          "fingerprint": "7b0d44e0d04d142d04417d855336fe950682d0375d1a726fad42c277f8c45e8a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "currency",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "54c961695b6dc1e21499f2358aa1b8c79de96a303d139c3b07d7578438eaa9e7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fund_family",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "08fe1acbc3e487435dc8d71b1e49bb5745d3b928db4e0b59eda1a6dbb79c07c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_sweep_eligible",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "6e3f29eb8f485b7385f8bfb93fa130dac52805510d214faf1b8032202260de82",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "weighted_average_maturity",
+          "nullable": true,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "5a4ce2cec8cab3fc785382275999efeb22a948f57fbfaeaafc5a871f00a32844",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "has_liquidity_fee",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "true",
+          "fingerprint": "df47fe0f69677674d52cf34ea4ad58655b866a6f30e61c61b8993f5081b4c4ab",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_active",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "a7b0a425ec8e2ddc41a4868aecc8856639e517215669298d4a7c608281a059e2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "effective_from",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "90b4de3a553c638b6fbb8c77eeb745eccfaa99498d3c578fbdb713d79c896d0c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "effective_to",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "6ae562481862b5af37611e36d8f50ae85df389f5b267628ea6439d6a8d08a49b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "08c449f54f83b1fd5c348a3507a931ce4de096b981e8bef6d84130a7f5ad3538",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_funds_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ac0a2a827493220a567773a751cdb00c55efa3a5d35646d1cab0f8e923a899a0",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_mmf_funds_fund_family ON money_market.mmf_funds USING btree (fund_family) WHERE (fund_family IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "ce98b5800a89008e64cf7b6f29a0b8da6585cdfbb8c258206650e61a8a7cdc54",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "fund_family"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_mmf_funds_fund_family",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "fund_family IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_mmf_funds_is_active ON money_market.mmf_funds USING btree (is_active)",
+          "expression": null,
+          "fingerprint": "ea71721d96babda5b6138b52a8d3c04519102688a1453690cad894e53b2ac6be",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "is_active"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_mmf_funds_is_active",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_funds_pkey ON money_market.mmf_funds USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "facfac25a5908b1950613c6e3721db94b6d59fe2a80b4520e0a7695d77778397",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_funds_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_funds",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "50a2d0d0f863060145178a9e754b5d66c74edf525d2bfe25bdce360d13cb6698",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "liquidity_state",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "0bbf0701b1b5375f7dcfb317c01a3f3941616c74ccae84d3d119d4c4b42d4911",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "set_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "4059778e946eb5609bce42efc322049e71eaecd2e390b5c1b4f39243f80efa16",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_liquidity_overrides_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "335d74fdee7cb18345f9b42b259259d01787912c9c41776d3f84c4611d900328",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_liquidity_overrides_pkey ON money_market.mmf_liquidity_overrides USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "3bd09be145b39426ea282e36dafbda280c2d0d414723de7a24b6af8f7de038a3",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_liquidity_overrides_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_liquidity_overrides",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "61bdcafe2f1dacb73f9ddc03b8c23be19e44d813d667ac257882beed72f88d2e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "bb6fec47ae8f4d8f2aa24b3f109cd16db1fb1383f62160bfc6880b071d2667ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checkpointed_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a1374b8adc396ecefcc6b93a6cc857251e1a3172fe37f8302c99a21c12208f06",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rebuild_source",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (security_id)",
+          "delete_action": null,
+          "fingerprint": "3d7f7aa46127e4cff9e484b70652b5ed234567f9dd2275ab7ad86317325543a4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "mmf_rebuild_checkpoints_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "2f2c95573a57024c0f450d4d96be8485cee386511c6d2e14b0d399bb763e1e66",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX mmf_rebuild_checkpoints_pkey ON money_market.mmf_rebuild_checkpoints USING btree (security_id)",
+          "expression": null,
+          "fingerprint": "55a5bf0572eb105cc1cfad6d8c8f5edd9683b54c082e0b8a0345dcd165fcfac9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "mmf_rebuild_checkpoints_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "mmf_rebuild_checkpoints",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "filename",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checksum",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "filename"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (filename)",
+          "delete_action": null,
+          "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "schema_migrations_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX schema_migrations_pkey ON money_market.schema_migrations USING btree (filename)",
+          "expression": null,
+          "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "filename"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "schema_migrations_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "money_market",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    }
+  ],
+  "triggers": [],
+  "views": []
+}

@@ -12,6 +12,9 @@
             <Setter Property="Padding" Value="14" />
             <Setter Property="Margin" Value="0,0,12,0" />
         </Style>
+        <Style x:Key="MetricValueMonoStyle" TargetType="TextBlock" BasedOn="{StaticResource MetricValueStyle}">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
+        </Style>
         <Style x:Key="ConfigureGridStyle" TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False" />
             <Setter Property="CanUserAddRows" Value="False" />
@@ -218,12 +221,57 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Production Gap Checklist" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessGapRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessGapGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Gap" Binding="{Binding Name}" Width="220" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Summary / Areas" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Ledger-Book Workflow Controls" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessWorkflowRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessWorkflowGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Workflow" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Control Evidence" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Retained Evidence" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Dimensional Reporting Controls" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessDimensionalControlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessDimensionalControlGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Dimension Lane" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Control Evidence" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Retained Evidence" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Migration Rollout Plan" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessMigrationPlanRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationPlanGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Lane" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Scope / Run" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Migration Run Evidence" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ProductionReadinessMigrationArtifactRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationArtifactGrid">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Run" Binding="{Binding Name}" Width="190" />
                                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
                                             <DataGridTextColumn Header="Scope / Dimensions" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Migration Worker Plans" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessMigrationWorkerPlanRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationWorkerPlanGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Plan" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Scope / Counts" Binding="{Binding Detail}" Width="*" />
                                             <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
                                         </DataGrid.Columns>
                                     </DataGrid>
@@ -255,6 +303,18 @@
                                                   IsChecked="{Binding ExternalGlLedgerBookNativeCertified, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingProductionCertificationExternalGlBookCheckBox" />
+                                        <CheckBox Content="Reconciliation by book"
+                                                  IsChecked="{Binding ReconciliationLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationReconciliationBookCheckBox" />
+                                        <CheckBox Content="Direct lending by book"
+                                                  IsChecked="{Binding DirectLendingLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationDirectLendingBookCheckBox" />
+                                        <CheckBox Content="Strategy reads by book"
+                                                  IsChecked="{Binding StrategyLedgerReadLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationStrategyLedgerReadsBookCheckBox" />
                                         <CheckBox Content="Period dimensions"
                                                   IsChecked="{Binding PeriodReportDimensionQueriesCertified, Mode=TwoWay}"
                                                   Margin="0,0,10,6"
@@ -271,6 +331,18 @@
                                                   IsChecked="{Binding ExternalExportDimensionMappingCertified, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingProductionCertificationExportDimensionsCheckBox" />
+                                        <CheckBox Content="Line dimensions"
+                                                  IsChecked="{Binding LedgerLineDimensionsPersistedCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationLedgerLineDimensionsCheckBox" />
+                                        <CheckBox Content="Trial balance filters"
+                                                  IsChecked="{Binding TrialBalanceDimensionFiltersCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationTrialBalanceDimensionsCheckBox" />
+                                        <CheckBox Content="Package provenance"
+                                                  IsChecked="{Binding ReportPackageDimensionProvenanceCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationReportPackageDimensionsCheckBox" />
                                     </UniformGrid>
                                     <TextBox Text="{Binding ProductionCertificationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              MinHeight="32"
@@ -323,26 +395,181 @@
                                                   IsChecked="{Binding AccountingAdminSurfaceConfigured, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingTenantAdminSurfaceCheckBox" />
+                                        <CheckBox Content="WPF admin"
+                                                  IsChecked="{Binding WpfAccountingAdminSurfaceConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminWpfAdminStudioCheckBox" />
+                                        <CheckBox Content="Chart admin"
+                                                  IsChecked="{Binding ChartAdministrationStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminChartAdministrationCheckBox" />
+                                        <CheckBox Content="Rule tests"
+                                                  IsChecked="{Binding RuleTestPromotionStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminRuleTestPromotionCheckBox" />
+                                        <CheckBox Content="Close setup"
+                                                  IsChecked="{Binding CloseSetupStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminCloseSetupCheckBox" />
+                                        <CheckBox Content="Provider maps"
+                                                  IsChecked="{Binding ProviderMappingStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminProviderMappingCheckBox" />
+                                        <CheckBox Content="Tenant/report setup"
+                                                  IsChecked="{Binding TenantCompanyReportGroupSetupStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminReportGroupSetupCheckBox" />
+                                        <CheckBox Content="Audit review"
+                                                  IsChecked="{Binding AuditReviewToolingConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminAuditReviewCheckBox" />
+                                        <CheckBox Content="Bulk safeguards"
+                                                  IsChecked="{Binding BulkImportExportSafeguardsConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminBulkSafeguardsCheckBox" />
+                                        <CheckBox Content="Performance proof"
+                                                  IsChecked="{Binding PerformanceValidationConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminPerformanceValidationCheckBox" />
+                                        <CheckBox Content="Recovery runbook"
+                                                  IsChecked="{Binding DisasterRecoveryRunbookConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminRecoveryRunbookCheckBox" />
+                                        <CheckBox Content="Book admin"
+                                                  IsChecked="{Binding LedgerBookAdministrationStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminLedgerBookAdministrationCheckBox" />
+                                        <CheckBox Content="Rule authoring"
+                                                  IsChecked="{Binding PostingRuleAuthoringStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminPostingRuleAuthoringCheckBox" />
+                                        <CheckBox Content="Approvals"
+                                                  IsChecked="{Binding ApprovalQueueStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminApprovalQueueCheckBox" />
+                                        <CheckBox Content="Dimension maps"
+                                                  IsChecked="{Binding DimensionMappingStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminDimensionMappingCheckBox" />
+                                        <CheckBox Content="Sandbox proof"
+                                                  IsChecked="{Binding ImplementationSandboxConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminImplementationSandboxCheckBox" />
                                     </UniformGrid>
                                     <TextBox Text="{Binding TenantAdministrationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              MinHeight="32"
                                              Margin="0,0,0,10"
                                              AutomationProperties.Name="Retained tenant administration setup evidence"
                                              AutomationProperties.AutomationId="AccountingTenantAdministrationEvidenceTextBox" />
-                                    <Button AutomationProperties.AutomationId="AccountingTenantAdministrationSaveButton"
-                                            Content="Save Tenant Setup"
-                                            Command="{Binding SaveTenantAdministrationProfileCommand}"
-                                            IsEnabled="{Binding CanSaveTenantAdministrationProfile}"
-                                            Style="{StaticResource SecondaryButtonStyle}"
-                                            HorizontalAlignment="Left"
-                                            ToolTip="{Binding TenantAdministrationProfileStatusText}"
-                                            ToolTipService.ShowOnDisabled="True"
-                                            Margin="0,0,0,8" />
+                                    <Border BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="10"
+                                            Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Approval queue setup" Style="{StaticResource CardDescriptionStyle}" />
+                                            <UniformGrid Columns="3" Margin="0,6,0,0">
+                                                <TextBox Text="{Binding ApprovalQueueId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Approval queue id"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueIdTextBox" />
+                                                <TextBox Text="{Binding ApprovalQueueDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Approval queue display name"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueDisplayNameTextBox" />
+                                                <TextBox Text="{Binding ApprovalQueueWorkflowKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,0,8"
+                                                         AutomationProperties.Name="Approval queue workflow kind"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueWorkflowKindTextBox" />
+                                                <TextBox Text="{Binding ApprovalQueueRequiredApprovalRole, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Approval queue approval role"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueRoleTextBox" />
+                                                <TextBox Text="{Binding ApprovalQueueRequiredApprovalCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Approval queue required approval count"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueCountTextBox" />
+                                                <TextBox Text="{Binding ApprovalQueueEvidenceRequirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,0,8"
+                                                         AutomationProperties.Name="Approval queue evidence requirement"
+                                                         AutomationProperties.AutomationId="AccountingApprovalQueueEvidenceRequirementTextBox" />
+                                            </UniformGrid>
+                                            <TextBox Text="{Binding ApprovalQueueSegregationPolicy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     AutomationProperties.Name="Approval queue segregation policy"
+                                                     AutomationProperties.AutomationId="AccountingApprovalQueueSegregationPolicyTextBox" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="10"
+                                            Margin="0,0,0,10"
+                                            AutomationProperties.AutomationId="AccountingDimensionMappingSetupEditor">
+                                        <StackPanel>
+                                            <TextBlock Text="Dimension mapping setup" Style="{StaticResource CardDescriptionStyle}" />
+                                            <UniformGrid Columns="3" Margin="0,6,0,0">
+                                                <TextBox Text="{Binding DimensionMappingId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Dimension mapping id"
+                                                         AutomationProperties.AutomationId="AccountingDimensionMappingIdTextBox" />
+                                                <TextBox Text="{Binding DimensionMappingDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,8,8"
+                                                         AutomationProperties.Name="Dimension mapping display name"
+                                                         AutomationProperties.AutomationId="AccountingDimensionMappingDisplayNameTextBox" />
+                                                <TextBox Text="{Binding DimensionMappingProviderId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,0,8"
+                                                         AutomationProperties.Name="Dimension mapping provider id"
+                                                         AutomationProperties.AutomationId="AccountingDimensionMappingProviderIdTextBox" />
+                                            </UniformGrid>
+                                            <UniformGrid Columns="2" Margin="0,0,0,8">
+                                                <TextBox Text="{Binding DimensionMappingMeridianDimensionsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         MinHeight="72"
+                                                         AcceptsReturn="True"
+                                                         TextWrapping="Wrap"
+                                                         Margin="0,0,8,0"
+                                                         AutomationProperties.Name="Meridian dimension mapping key value rows"
+                                                         AutomationProperties.AutomationId="AccountingDimensionMappingMeridianDimensionsTextBox" />
+                                                <TextBox Text="{Binding DimensionMappingProviderDimensionsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         MinHeight="72"
+                                                         AcceptsReturn="True"
+                                                         TextWrapping="Wrap"
+                                                         AutomationProperties.Name="Provider dimension mapping key value rows"
+                                                         AutomationProperties.AutomationId="AccountingDimensionMappingProviderDimensionsTextBox" />
+                                            </UniformGrid>
+                                            <TextBox Text="{Binding DimensionMappingEvidenceRequirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     AutomationProperties.Name="Dimension mapping evidence requirement"
+                                                     AutomationProperties.AutomationId="AccountingDimensionMappingEvidenceRequirementTextBox" />
+                                        </StackPanel>
+                                    </Border>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <Button AutomationProperties.AutomationId="AccountingTenantAdministrationRetainSandboxProofButton"
+                                                Content="Retain Sandbox Proof"
+                                                Command="{Binding RetainImplementationSandboxProofCommand}"
+                                                IsEnabled="{Binding CanRetainImplementationSandboxProof}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                ToolTip="{Binding ImplementationSandboxProofStatusText}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,8,0" />
+                                        <Button AutomationProperties.AutomationId="AccountingTenantAdministrationSaveButton"
+                                                Content="Save Tenant Setup"
+                                                Command="{Binding SaveTenantAdministrationProfileCommand}"
+                                                IsEnabled="{Binding CanSaveTenantAdministrationProfile}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                ToolTip="{Binding TenantAdministrationProfileStatusText}"
+                                                ToolTipService.ShowOnDisabled="True" />
+                                    </StackPanel>
                                     <TextBlock Text="{Binding TenantAdministrationProfileStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,6"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingTenantAdministrationProfileStatusText" />
+                                    <TextBlock Text="{Binding ImplementationSandboxProofStatusText}"
                                                Style="{StaticResource CardDescriptionStyle}"
                                                Margin="0,0,0,12"
                                                TextWrapping="Wrap"
-                                               AutomationProperties.AutomationId="AccountingTenantAdministrationProfileStatusText" />
+                                               AutomationProperties.AutomationId="AccountingTenantAdministrationSandboxProofStatusText" />
                                     <DataGrid ItemsSource="{Binding TenantAdministrationControlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,0,0,18" AutomationProperties.AutomationId="AccountingTenantAdministrationControlGrid">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Control" Binding="{Binding Name}" Width="170" />
@@ -401,6 +628,87 @@
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
                                     <TextBlock Text="Chart of Accounts" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding ChartAccountSetupStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingChartAccountSetupStatusText" />
+                                    <Grid Margin="0,12,0,8"
+                                          AutomationProperties.AutomationId="AccountingChartAccountSetupEditor">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Node id" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountNodeId, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountNodeIdTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                            <TextBlock Text="Path" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountPath, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountPathTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                            <TextBlock Text="Name" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountName, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountNameTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="3" Margin="0,0,8,0">
+                                            <TextBlock Text="Type" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountType, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountTypeTextBox" />
+                                        </StackPanel>
+                                        <Button Grid.Column="4"
+                                                AutomationProperties.AutomationId="AccountingChartAccountSaveButton"
+                                                Command="{Binding SaveChartAccountCommand}"
+                                                IsEnabled="{Binding CanSaveChartAccount}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding ChartAccountSetupStatusText}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                VerticalAlignment="Bottom"
+                                                Margin="0,0,0,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{StaticResource IconSave}"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="Save account" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="2*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Parent path" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountParentPath, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountParentPathTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                            <TextBlock Text="Financial account id" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountFinancialAccountId, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountFinancialAccountIdTextBox" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Retained evidence" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ChartAccountEvidenceText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,4,0,0"
+                                                     AutomationProperties.AutomationId="AccountingChartAccountEvidenceTextBox" />
+                                        </StackPanel>
+                                    </Grid>
                                     <DataGrid ItemsSource="{Binding ChartRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingChartGrid">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Path" Binding="{Binding Name}" Width="220" />
@@ -487,6 +795,86 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
+                                    <Border BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="12"
+                                            Margin="0,10,0,12"
+                                            AutomationProperties.AutomationId="AccountingPostingRuleDraftEditor">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="12" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,8">
+                                                <TextBlock Text="Rule id" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftRuleId, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftRuleIdTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,8">
+                                                <TextBlock Text="Display name" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftDisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftDisplayNameTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,8">
+                                                <TextBlock Text="Source event" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftSourceEventType, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftSourceEventTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                                                <TextBlock Text="Template id" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftTemplateId, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftTemplateIdTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,8">
+                                                <TextBlock Text="Priority" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftPriority, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftPriorityTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,8">
+                                                <TextBlock Text="Evidence" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftEvidenceText, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftEvidenceTextBox" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="3" Grid.ColumnSpan="3">
+                                                <TextBlock Text="Description" Style="{StaticResource CardDescriptionStyle}" />
+                                                <TextBox Text="{Binding PostingRuleDraftDescription, UpdateSourceTrigger=PropertyChanged}"
+                                                         AutomationProperties.AutomationId="AccountingPostingRuleDraftDescriptionTextBox"
+                                                         TextWrapping="Wrap"
+                                                         AcceptsReturn="True"
+                                                         MinHeight="54" />
+                                                <WrapPanel Margin="0,10,0,0">
+                                                    <Button AutomationProperties.AutomationId="AccountingPostingRuleDraftSaveButton"
+                                                            Command="{Binding SavePostingRuleDraftCommand}"
+                                                            IsEnabled="{Binding CanSavePostingRuleDraft}"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            ToolTip="{Binding PostingRuleDraftStatusText}"
+                                                            ToolTipService.ShowOnDisabled="True"
+                                                            Margin="0,0,8,8">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{StaticResource IconCheckmark}"
+                                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                                       FontSize="14"
+                                                                       VerticalAlignment="Center" />
+                                                            <TextBlock Text="Save rule draft" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                    <TextBlock Text="{Binding PostingRuleDraftStatusText}"
+                                                               Style="{StaticResource CardDescriptionStyle}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"
+                                                               AutomationProperties.AutomationId="AccountingPostingRuleDraftStatusText" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
                                     <TextBlock Text="{Binding RulesStudioActionText}"
                                                Style="{StaticResource CardDescriptionStyle}"
                                                Margin="0,2,0,0"
@@ -601,13 +989,15 @@
 
                                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,10">
                                             <TextBlock Text="Date" Style="{StaticResource MetricLabelStyle}" />
-                                            <TextBox Text="{Binding ManualJournalDraftDateText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                            <TextBox Text="{Binding ManualJournalDraftDateText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,10">
                                             <TextBlock Text="Reference" Style="{StaticResource MetricLabelStyle}" />
-                                            <TextBox Text="{Binding ManualJournalDraftReferenceText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                            <TextBox Text="{Binding ManualJournalDraftReferenceText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,10">
+                                            <TextBlock Text="Ledger Period" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ManualJournalDraftPeriodText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,8" AutomationProperties.AutomationId="AccountingManualJournalPeriodText" />
                                             <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                         </StackPanel>
@@ -941,6 +1331,74 @@
                                 <TextBlock Text="Provider and Posting Posture" Style="{StaticResource CardHeaderStyle}" />
                                 <TextBlock Text="{Binding PostingPostureText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
                                 <Button Content="Refresh External GL Evidence" Command="{Binding RefreshExternalGlCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                                <UniformGrid Columns="3" Margin="0,12,0,0">
+                                    <TextBox Text="{Binding ExternalGlMappingProviderId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Margin="0,0,8,0"
+                                             AutomationProperties.Name="External GL provider id"
+                                             AutomationProperties.AutomationId="ExternalGlMappingProviderIdTextBox" />
+                                    <TextBox Text="{Binding ExternalGlMappingProfileId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Margin="0,0,8,0"
+                                             AutomationProperties.Name="External GL mapping profile id"
+                                             AutomationProperties.AutomationId="ExternalGlMappingProfileIdTextBox" />
+                                    <TextBox Text="{Binding ExternalGlMappingDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             AutomationProperties.Name="External GL mapping display name"
+                                             AutomationProperties.AutomationId="ExternalGlMappingDisplayNameTextBox" />
+                                </UniformGrid>
+                                <TextBox Text="{Binding ExternalGlMappingAccountMappingsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="56"
+                                         Margin="0,8,0,0"
+                                         AcceptsReturn="True"
+                                         AutomationProperties.Name="External GL account mappings"
+                                         AutomationProperties.AutomationId="ExternalGlMappingAccountMappingsTextBox" />
+                                <TextBox Text="{Binding ExternalGlMappingEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="32"
+                                         Margin="0,8,0,0"
+                                         AutomationProperties.Name="External GL mapping evidence"
+                                         AutomationProperties.AutomationId="ExternalGlMappingEvidenceTextBox" />
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Meridian dimensions" Style="{StaticResource CardDescriptionStyle}" />
+                                        <TextBox Text="{Binding ExternalGlMappingMeridianDimensionsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 MinHeight="96"
+                                                 AcceptsReturn="True"
+                                                 AutomationProperties.Name="External GL Meridian dimensions"
+                                                 AutomationProperties.AutomationId="ExternalGlMappingMeridianDimensionsTextBox" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="External dimensions" Style="{StaticResource CardDescriptionStyle}" />
+                                        <TextBox Text="{Binding ExternalGlMappingExternalDimensionsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 MinHeight="96"
+                                                 AcceptsReturn="True"
+                                                 AutomationProperties.Name="External GL provider dimensions"
+                                                 AutomationProperties.AutomationId="ExternalGlMappingExternalDimensionsTextBox" />
+                                    </StackPanel>
+                                </Grid>
+                                <CheckBox Content="Certify mapping profile for guarded export readiness"
+                                          IsChecked="{Binding ExternalGlMappingProfileCertified, Mode=TwoWay}"
+                                          Margin="0,8,0,0"
+                                          AutomationProperties.AutomationId="ExternalGlMappingCertifiedCheckBox" />
+                                <Button Content="Save Provider Mapping"
+                                        Command="{Binding SaveExternalGlMappingProfileCommand}"
+                                        IsEnabled="{Binding CanSaveExternalGlMappingProfile}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        HorizontalAlignment="Left"
+                                        ToolTip="{Binding ExternalGlMappingProfileStatusText}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Margin="0,8,0,0" />
+                                <TextBlock Text="{Binding ExternalGlMappingProfileStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                <DataGrid ItemsSource="{Binding ExternalGlMappingProfileRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ExternalGlMappingProfileGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Profile" Binding="{Binding Name}" Width="220" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="120" />
+                                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="220" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <DataGrid ItemsSource="{Binding ProviderRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingSystemProviderGrid">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Provider" Binding="{Binding Name}" Width="170" />

@@ -1,0 +1,123 @@
+<!-- @dsCard group="Core" viewport="1100x920" name="Combobox · TreeView · Accordion · Callout · VirtualizedList" subtitle="Searchable select, hierarchy, disclosure, inline messaging, windowed list" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>New Components</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const {
+  Combobox, TreeView, Accordion, Callout, VirtualizedList
+} = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children, span }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:6,
+      padding:16, gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const SYMBOLS = [
+  "AAPL","MSFT","NVDA","AMZN","GOOGL","META","TSLA","BRK.B","JPM","V",
+  "UNH","XOM","JNJ","WMT","MA","PG","HD","CVX","LLY","ABBV"
+];
+
+const ACCOUNTS = [
+  { id:"1000", label:"1000 · Assets", meta:"$4.2M", children:[
+    { id:"1100", label:"1100 · Cash & equivalents", meta:"$1.1M", children:[
+      { id:"1110", label:"1110 · Operating account", meta:"$820K" },
+      { id:"1120", label:"1120 · Settlement account", meta:"$280K" },
+    ]},
+    { id:"1200", label:"1200 · Securities", meta:"$3.1M" },
+  ]},
+  { id:"2000", label:"2000 · Liabilities", meta:"$1.4M", children:[
+    { id:"2100", label:"2100 · Margin payable", meta:"$1.4M" },
+  ]},
+  { id:"4000", label:"4000 · Revenue", meta:"$880K" },
+];
+
+const BIG = Array.from({ length: 50000 }, function(_, i){
+  return { id:i, sym: SYMBOLS[i % SYMBOLS.length], px: (50 + (i*7 % 9000)/100).toFixed(2) };
+});
+
+function Demo() {
+  const [sym, setSym] = useState("NVDA");
+  const [acct, setAcct] = useState("1110");
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1040 }}>
+
+      <Section title="Combobox · type-to-filter select">
+        <div style={{ maxWidth:300 }}>
+          <Combobox label="Symbol" options={SYMBOLS} value={sym} onChange={setSym} placeholder="Search symbols…" />
+          <div style={{ marginTop:12, fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)" }}>
+            Selected: <strong style={{ color:"var(--text-primary)" }}>{sym}</strong>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="TreeView · chart of accounts">
+        <TreeView
+          items={ACCOUNTS}
+          defaultExpanded={["1000","1100"]}
+          selectedId={acct}
+          onSelect={function(n){ setAcct(n.id); }}
+        />
+      </Section>
+
+      <Section title="Callout · inline messaging" span={2}>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <Callout tone="info" title="Paper environment">Orders are simulated — no capital is committed.</Callout>
+          <Callout tone="success" title="Reconciled">All 128 transactions matched within ±$0.01 tolerance.</Callout>
+          <Callout tone="warning" title="Provider latency">Polygon last seen 14:02:11Z — quotes may be stale.</Callout>
+          <Callout tone="danger" title="Live environment">Orders placed here execute against real capital.</Callout>
+        </div>
+      </Section>
+
+      <Section title="Accordion · disclosure">
+        <Accordion
+          defaultOpen={[0]}
+          items={[
+            { title:"Data providers", badge:"3 active", content:"Polygon, IBKR, and Databento are connected. Backfill priority follows configured order." },
+            { title:"Quality scans", badge:"0 gaps", content:"Last scan completed 14:00Z across 412,008 bars with no detected gaps." },
+            { title:"Report packs", badge:"weekly", content:"Statement and tax-lot packs render every Friday 20:00Z and deliver to the operator inbox." },
+          ]}
+        />
+      </Section>
+
+      <Section title="VirtualizedList · 50,000 rows">
+        <VirtualizedList
+          items={BIG}
+          rowHeight={30}
+          height={220}
+          renderRow={function(r){
+            return (
+              <div style={{ display:"flex", justifyContent:"space-between", width:"100%" }}>
+                <span>{r.sym}</span>
+                <span style={{ color:"var(--text-muted)", fontVariantNumeric:"tabular-nums" }}>${r.px}</span>
+              </div>
+            );
+          }}
+        />
+        <div style={{ marginTop:8, fontSize:11, color:"var(--text-muted)" }}>
+          Only the visible window renders — smooth at any size.
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

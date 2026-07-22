@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Configuration;
+using Meridian.ProviderSdk;
 using Xunit;
 
 namespace Meridian.Tests.Application.Config;
@@ -176,6 +177,88 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsync_TwelveDataAliasStoresCredentialMetadata()
+    {
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "twelve-data",
+            new Dictionary<string, string?>
+            {
+                ["ApiKey"] = "twelve-data-key"
+            },
+            Environment: null,
+            Actor: "test-operator"));
+
+        var descriptor = ProviderCredentialCatalog.Find("twelve_data");
+        var status = await store.GetStatusAsync("twelvedata");
+        var read = await store.ReadForProviderAsync("twelvedata");
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+
+        descriptor.Should().NotBeNull();
+        descriptor!.ProviderId.Should().Be("twelvedata");
+        descriptor.AffectedWorkflows.Should().Contain("Symbol search");
+        descriptor.RequiredFields.Should().ContainSingle(field =>
+            field.Name == "ApiKey" && field.EnvironmentNames.Contains("TWELVEDATA_API_KEY"));
+        status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        read.Should().NotBeNull();
+        read!.Get("ApiKey").Should().Be("twelve-data-key");
+        vaultText.Should().NotContain("twelve-data-key");
+    }
+
+    [Fact]
+    public void DefaultProviderSetupHandlers_IncludesTwelveDataReadOnlyCredentialHandler()
+    {
+        var handler = DefaultProviderSetupHandlers.Create().Single(h => h.CanHandle("twelve-data"));
+
+        handler.Descriptor.ProviderId.Should().Be("twelvedata");
+        handler.Descriptor.DefaultRoutingMode.Should().Be(ProviderConnectionMode.ReadOnly);
+        handler.Descriptor.EnableBindingsImmediately.Should().BeTrue();
+        handler.Descriptor.AcceptedCredentialFields.Should().ContainSingle(field =>
+            field.Name == "ApiKey" && field.Placeholder == "TWELVEDATA_API_KEY");
+
+        var validation = handler.Validate(new ProviderSetupContext(
+            ProviderIdOrAlias: "twelvedata-api",
+            DisplayName: "Twelve Data",
+            Capabilities: ["data"],
+            Environment: null,
+            ApiKey: "setup-twelve-key"));
+
+        validation.Success.Should().BeTrue();
+        validation.Credentials.Should().Contain("ApiKey", "setup-twelve-key");
+    }
+
+    [Theory]
+    [InlineData("finnhub", "finnhub", "FINNHUB_API_KEY")]
+    [InlineData("tiingo", "tiingo", "TIINGO_API_TOKEN")]
+    [InlineData("alpha-vantage", "alphavantage", "ALPHA_VANTAGE_API_KEY")]
+    [InlineData("nasdaq", "nasdaqdatalink", "NASDAQ_DATA_LINK_API_KEY")]
+    [InlineData("twelve-data", "twelvedata", "TWELVEDATA_API_KEY")]
+    [InlineData("open-figi", "openfigi", "OPENFIGI_API_KEY")]
+    [InlineData("stooq", "stooq", null)]
+    public void DefaultProviderSetupHandlers_IncludesSecondaryReadOnlyDataProviders(
+        string alias,
+        string expectedProviderId,
+        string? expectedApiKeyEnvironment)
+    {
+        var handler = DefaultProviderSetupHandlers.Create().Single(h => h.CanHandle(alias));
+
+        handler.Descriptor.ProviderId.Should().Be(expectedProviderId);
+        handler.Descriptor.DefaultRoutingMode.Should().Be(ProviderConnectionMode.ReadOnly);
+        handler.Descriptor.EnableBindingsImmediately.Should().BeTrue();
+
+        if (expectedApiKeyEnvironment is null)
+        {
+            handler.Descriptor.AcceptedCredentialFields.Should().BeEmpty();
+        }
+        else
+        {
+            handler.Descriptor.AcceptedCredentialFields.Should().ContainSingle(field =>
+                field.Name == "ApiKey" && field.Placeholder == expectedApiKeyEnvironment);
+        }
+    }
+
+    [Fact]
     public async Task SaveAsync_DoesNotPersistPlaintextSecretsInVaultOrAudit()
     {
         var store = new FileProviderCredentialStore(_root);
@@ -236,6 +319,39 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         vaultText.Should().NotContain("unknown-secret");
         auditText.Should().NotContain("AccessToken");
         auditText.Should().NotContain("unknown-secret");
+    }
+
+    [Fact]
+    public async Task SaveAsync_PlaidItemAccessTokenField_IsProviderManagedAndStoredEncrypted()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "plaid",
+            new Dictionary<string, string?>
+            {
+                ["ClientId"] = "plaid-client",
+                ["Secret"] = "plaid-secret"
+            },
+            Environment: "sandbox",
+            Actor: "test-operator"));
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "plaid",
+            new Dictionary<string, string?>
+            {
+                ["AccessToken:item-1"] = "access-token-1"
+            },
+            Environment: "sandbox",
+            Actor: "test-operator"));
+
+        var read = await store.ReadForProviderAsync("plaid");
+        read.Should().NotBeNull();
+        read!.Get("ClientId").Should().Be("plaid-client");
+        read.Get("Secret").Should().Be("plaid-secret");
+        read.Get("AccessToken:item-1").Should().Be("access-token-1");
+
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+        vaultText.Should().NotContain("access-token-1");
     }
 
     [Fact]

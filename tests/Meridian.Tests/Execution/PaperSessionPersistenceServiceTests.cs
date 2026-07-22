@@ -1,6 +1,15 @@
 using FluentAssertions;
+using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.Ledger;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.Ledger;
+using Meridian.Storage;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution;
@@ -1141,6 +1150,644 @@ public sealed class PaperSessionReplayTests : IDisposable
     }
 }
 
+public sealed class PaperTradingAccountingScenarioTests : IDisposable
+{
+    private const decimal InitialCash = 100_000m;
+    private const string TenantId = "tenant-alpha";
+    private const string CompanyId = "company-alpha";
+    private const string FundProfileId = "fund-alpha";
+    private const string EntityId = "entity-master";
+    private const string OperatorUserName = "ops.accountant@meridian.local";
+    private const string OperatorRoleProfileName = "paper-trade-accounting-operator";
+    private const string OperatorRoleDisplayName = "Paper Trade Accounting Operator";
+    private const string SetupCorrelationId = "paper-accounting-real-user-setup";
+
+    private readonly string _tempDir;
+
+    public PaperTradingAccountingScenarioTests()
+    {
+        _tempDir = Path.Combine(
+            Path.GetTempPath(),
+            "meridian_paper_accounting_" + Guid.NewGuid().ToString("N")[..8]);
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_tempDir, recursive: true);
+        }
+        catch
+        {
+            // Best-effort cleanup for temp artifacts.
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_PaperTradeOrderLifecycle_ProducesBalancedLedgerAndGovernedAccountingCandidate()
+    {
+        var ct = CancellationToken.None;
+        var operatorProfile = await SetupOperatorProfileAsync(ct);
+        var store = new JsonlFilePaperSessionStore(
+            Path.Combine(_tempDir, "paper-session"),
+            NullLogger<JsonlFilePaperSessionStore>.Instance);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "execution-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            store,
+            auditTrail);
+
+        var session = await service.CreateSessionAsync(
+            new CreatePaperSessionDto(
+                StrategyId: "paper-accounting-scenario",
+                StrategyName: $"{OperatorRoleDisplayName} accounting review",
+                InitialCash: InitialCash,
+                Symbols: ["AAPL"]),
+            ct);
+        session.StrategyName.Should().Contain(OperatorRoleDisplayName);
+
+        var now = DateTimeOffset.Parse("2026-05-31T15:30:00Z");
+        await service.RecordOrderUpdateAsync(
+            session.SessionId,
+            BuildOrder("paper-buy-1", OrderSide.Buy, 10m, 0m, OrderStatus.Accepted, now.AddMinutes(-30)),
+            ct);
+        await service.RecordOrderUpdateAsync(
+            session.SessionId,
+            BuildOrder("paper-buy-1", OrderSide.Buy, 10m, 10m, OrderStatus.Filled, now.AddMinutes(-25)),
+            ct);
+        await service.RecordFillAsync(
+            session.SessionId,
+            BuildFill("paper-buy-1", OrderSide.Buy, 10m, 200m, commission: 2.50m, now.AddMinutes(-25)),
+            ct);
+
+        await service.RecordOrderUpdateAsync(
+            session.SessionId,
+            BuildOrder("paper-sell-1", OrderSide.Sell, 4m, 4m, OrderStatus.Filled, now.AddMinutes(-10)),
+            ct);
+        await service.RecordFillAsync(
+            session.SessionId,
+            BuildFill("paper-sell-1", OrderSide.Sell, 4m, 230m, commission: 1.25m, now.AddMinutes(-10)),
+            ct);
+
+        var restoredService = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            store,
+            auditTrail);
+        await restoredService.InitialiseAsync(ct);
+        var detail = restoredService.GetSession(session.SessionId);
+
+        detail.Should().NotBeNull();
+        detail!.OrderHistory.Should().HaveCount(3);
+        detail.FillHistory.Should().HaveCount(2);
+        detail.Portfolio.Should().NotBeNull();
+        detail.Portfolio!.Cash.Should().Be(98_916.25m);
+        detail.Portfolio.RealisedPnl.Should().Be(120m);
+        detail.Portfolio.Positions.Should().ContainSingle(position =>
+            position.Symbol == "AAPL" &&
+            position.Quantity == 6m &&
+            position.AverageCostBasis == 200m);
+
+        var ledger = restoredService.GetLedger(session.SessionId);
+        ledger.Should().NotBeNull();
+        var liveLedger = ledger!;
+        liveLedger.GetBalance(LedgerAccounts.Cash).Should().Be(98_916.25m);
+        liveLedger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(1_200m);
+        liveLedger.GetBalance(LedgerAccounts.RealizedGain).Should().Be(120m);
+        liveLedger.GetBalance(LedgerAccounts.CommissionExpense).Should().Be(3.75m);
+        liveLedger.GetBalance(LedgerAccounts.CapitalAccount)
+            .Should()
+            .Be(InitialCash, "opening capital should be retained as equity for the paper account");
+
+        var endingAssets = liveLedger.GetBalance(LedgerAccounts.Cash) + liveLedger.GetBalance(LedgerAccounts.Securities("AAPL"));
+        var endingEquity =
+            liveLedger.GetBalance(LedgerAccounts.CapitalAccount) +
+            liveLedger.GetBalance(LedgerAccounts.RealizedGain) -
+            liveLedger.GetBalance(LedgerAccounts.CommissionExpense);
+        endingAssets.Should().Be(endingEquity);
+
+        var trialBalance = liveLedger.TrialBalance();
+        trialBalance[LedgerAccounts.CapitalAccount].Should().Be(InitialCash);
+        var debitNormalTotal = trialBalance
+            .Where(static item => item.Key.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense)
+            .Sum(static item => item.Value);
+        var creditNormalTotal = trialBalance
+            .Where(static item => item.Key.AccountType is LedgerAccountType.Liability or LedgerAccountType.Equity or LedgerAccountType.Revenue)
+            .Sum(static item => item.Value);
+        debitNormalTotal.Should().Be(creditNormalTotal);
+
+        var replay = await restoredService.VerifyReplayAsync(session.SessionId, ct);
+        replay.Should().NotBeNull();
+        replay!.IsConsistent.Should().BeTrue();
+        replay.MismatchReasons.Should().BeEmpty();
+        replay.ComparedOrderCount.Should().Be(3);
+        replay.ComparedFillCount.Should().Be(2);
+        replay.ComparedLedgerEntryCount.Should().BeGreaterThan(0);
+
+        var evidenceLinks = new[]
+        {
+            $"paper-session://{session.SessionId}/orders/paper-buy-1/fills",
+            $"paper-session://{session.SessionId}/orders/paper-sell-1/fills",
+            $"paper-session://{session.SessionId}/replay/{replay.VerificationAuditId}",
+            $"identity://{CompanyId}/users/{operatorProfile.Username}/role-profile/{operatorProfile.RoleProfileName}",
+            operatorProfile.TenantAdministrationEvidenceLink
+        };
+        var labPreview = new InvestmentAccountingTransactionLabService().Preview(
+            new InvestmentAccountingTransactionLabRequestDto(
+                InvestmentAccountingTransactionKindDto.Trade,
+                FundAccountId: FundProfileId,
+                Symbol: "AAPL",
+                EventDate: new DateOnly(2026, 5, 31),
+                Currency: "USD",
+                Amount: 920m,
+                Quantity: 4m,
+                Price: 230m,
+                FeeAmount: 1.25m,
+                Side: InvestmentAccountingTradeSideDto.Sell,
+                SourceSessionId: session.SessionId,
+                EvidenceIds: evidenceLinks,
+                PreviewMode: InvestmentAccountingPreviewModeDto.BooksBeforeBroker));
+
+        labPreview.JournalPreview.IsBalanced.Should().BeTrue();
+        labPreview.LedgerImpact.HasValidationWarnings.Should().BeFalse();
+        labPreview.TrialBalanceImpact.Should().Contain(line =>
+            line.AccountName == "Cash" &&
+            line.AccountType == "Asset" &&
+            line.BalanceDelta == 918.75m);
+        labPreview.TrialBalanceImpact.Should().Contain(line =>
+            line.AccountName == "Investment Fees" &&
+            line.AccountType == "Expense" &&
+            line.BalanceDelta == 1.25m);
+        labPreview.BooksBeforeBroker.Should().NotBeNull();
+        labPreview.BooksBeforeBroker!.CanStageBrokerAction.Should().BeTrue();
+        labPreview.BooksBeforeBroker.RequiredApprovals.Should().Contain("operator-accounting-approval");
+
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreatePaperTradeCandidateServiceAsync(ledgerBookId, operatorProfile, ct);
+        var candidateRequest = BuildCandidateRequest(
+            session.SessionId,
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            operatorProfile,
+            evidenceLinks);
+        candidateRequest.Actor.Should().Be(operatorProfile.Username);
+        candidateRequest.TenantId.Should().Be(operatorProfile.TenantId);
+        candidateRequest.CompanyId.Should().Be(operatorProfile.CompanyId);
+
+        var candidate = await candidateService.BuildCandidateAsync(candidateRequest, ct);
+
+        candidate.HasBlockingIssues.Should().BeFalse(string.Join("; ", candidate.Issues.Select(issue => issue.Message)));
+        candidate.SelectedRuleId.Should().Be("posting.paper-trade-sale");
+        candidate.IsBalanced.Should().BeTrue();
+        candidate.TotalDebits.Should().Be(920m);
+        candidate.TotalCredits.Should().Be(920m);
+        candidate.CanSubmitForApproval.Should().BeTrue();
+        candidate.CanPostWithoutAdditionalApproval.Should().BeFalse();
+        candidate.PostingCommand.Should().NotBeNull();
+        candidate.PostingCommand!.LedgerBookId.Should().Be(ledgerBookId);
+        candidate.PostingCommand.SourceEventType.Should().Be("PaperTradeFill");
+        candidate.PostingCommand.TreasuryContext.Should().NotBeNull();
+        candidate.PostingCommand.TreasuryContext!.IdempotencyKey.Should().Be($"paper-trade:{session.SessionId}:paper-sell-1");
+        candidate.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "assets/cash" &&
+            line.Side == AccountingTemplateLineSideDto.Debit &&
+            line.Amount == 918.75m);
+        candidate.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "assets/securities/aapl" &&
+            line.Side == AccountingTemplateLineSideDto.Credit &&
+            line.Amount == 800m);
+        candidate.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "income/realized-gains" &&
+            line.Side == AccountingTemplateLineSideDto.Credit &&
+            line.Amount == 120m);
+        candidate.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "expenses/commissions" &&
+            line.Side == AccountingTemplateLineSideDto.Debit &&
+            line.Amount == 1.25m);
+        candidate.GeneratedPostingLines.Should().AllSatisfy(line =>
+        {
+            line.Dimensions.Should().NotBeNull();
+            line.Dimensions!.FundId.Should().Be(FundProfileId);
+            line.Dimensions.EntityId.Should().Be(EntityId);
+            line.Dimensions.OrganizationId.Should().Be(TenantId);
+            line.Dimensions.BookId.Should().Be(ledgerBookId.ToString("D"));
+        });
+        candidate.EvidenceLinks.Should().Contain(operatorProfile.TenantAdministrationEvidenceLink);
+        candidate.PostingCommand.Evidence.Should().Contain(evidence =>
+            evidence.Uri == operatorProfile.TenantAdministrationEvidenceLink &&
+            evidence.RetainedBy == "financial-operations");
+
+        var postService = new AccountingPostingCandidatePostService(candidateService);
+        var automatedPost = async () => await postService.PostCandidateAsync(
+            new PostPostingRuleJournalCandidateRequestDto(
+                candidateRequest,
+                Actor: operatorProfile.Username,
+                ApprovalId: "approval-paper-trade-sell-202605",
+                ApprovalNotes: "Operator reviewed paper trade replay and accounting evidence.",
+                EvidenceLinks: evidenceLinks,
+                CorrelationId: SetupCorrelationId,
+                ActionOrigin: OperationsActionOriginDto.HumanOperator,
+                TenantId: operatorProfile.TenantId,
+                CompanyId: operatorProfile.CompanyId),
+            ct);
+
+        await automatedPost.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Postgres-backed ledger journal store*");
+    }
+
+    private async Task<OperatorProfile> SetupOperatorProfileAsync(CancellationToken ct)
+    {
+        const UserPermission permissions =
+            UserPermission.ViewTrades |
+            UserPermission.ExecuteTrades |
+            UserPermission.ManageOrders |
+            UserPermission.ViewAnalytics |
+            UserPermission.ExportData |
+            UserPermission.ViewConfig |
+            UserPermission.ManageFundStructure;
+
+        var identityRoot = Path.Combine(_tempDir, "identity");
+        var storageOptions = new StorageOptions { RootPath = identityRoot };
+        var roleStore = new FileRolePermissionProfileStore(storageOptions);
+        var roleResult = await roleStore.UpsertAsync(
+            new RolePermissionProfileUpsertRequestDto(
+                ProfileName: OperatorRoleProfileName,
+                DisplayName: OperatorRoleDisplayName,
+                Description: "Can run paper trade accounting reviews and prepare governed posting candidates.",
+                BaseRole: nameof(UserRole.TradeDesk),
+                PermissionNames: RolePermissions.GetPermissionNames(permissions),
+                RequestedBy: OperatorUserName,
+                Rationale: "Realistic paper-trade operator profile for accounting scenario coverage.",
+                CorrelationId: SetupCorrelationId),
+            actor: OperatorUserName,
+            ct);
+
+        roleResult.Profile.Role.Should().Be(OperatorRoleProfileName);
+        roleResult.Profile.DisplayName.Should().Be(OperatorRoleDisplayName);
+        roleResult.Profile.PermissionMask.Should().Be((long)permissions);
+        roleResult.Profile.Permissions.Should().Contain(nameof(UserPermission.ManageFundStructure));
+        roleResult.AuditEvent.Actor.Should().Be(OperatorUserName);
+        roleStore.TryGetProfile(OperatorRoleDisplayName, out var retainedRole).Should().BeTrue();
+        retainedRole.PermissionMask.Should().Be((long)permissions);
+
+        var userStore = new FileUserAccountStore(storageOptions);
+        var userResult = await userStore.UpsertAsync(
+            new UserAccountUpsertRequestDto(
+                Username: OperatorUserName,
+                Role: nameof(UserRole.TradeDesk),
+                RoleProfileName: OperatorRoleProfileName,
+                PermissionNames: RolePermissions.GetPermissionNames(permissions),
+                NewPassword: "PaperAccounting!2026",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: OperatorUserName,
+                Rationale: "Provision paper-trade accounting operator for scenario testing.",
+                CorrelationId: SetupCorrelationId,
+                CompanyId: CompanyId),
+            actor: OperatorUserName,
+            ct);
+
+        userResult.Account.Username.Should().Be(OperatorUserName);
+        userResult.Account.Role.Should().Be(nameof(UserRole.TradeDesk));
+        userResult.Account.RoleProfileName.Should().Be(OperatorRoleProfileName);
+        userResult.Account.CompanyId.Should().Be(CompanyId);
+        userResult.Account.IsDisabled.Should().BeFalse();
+        userResult.Account.PermissionMask.Should().Be((long)permissions);
+        userResult.AuditEvent.Actor.Should().Be(OperatorUserName);
+        userStore.HasAccounts.Should().BeTrue();
+        var loadedAccount = userStore.LoadAccounts().Single(account =>
+            account.Username == OperatorUserName &&
+            account.RoleProfileName == OperatorRoleProfileName &&
+            account.CompanyId == CompanyId);
+        loadedAccount.Permissions.Should().BeEquivalentTo(RolePermissions.GetPermissionNames(permissions));
+
+        var tenantAdministrationEvidence =
+            $"evidence://tenant-admin/full/{TenantId}/{CompanyId}/paper-trade-accounting-setup";
+        var tenantProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
+        var tenantProfile = new AccountingTenantAdministrationProfileDto(
+            TenantId: TenantId,
+            CompanyId: CompanyId,
+            TenantScopeConfigured: true,
+            AdminRoleProfileConfigured: true,
+            ScopedAccessPoliciesConfigured: true,
+            ReportingGroupsConfigured: true,
+            AccountingAdminSurfaceConfigured: true,
+            UpdatedAtUtc: DateTimeOffset.Parse("2026-05-31T14:00:00Z"),
+            UpdatedBy: OperatorUserName,
+            EvidenceReferences: [tenantAdministrationEvidence],
+            CorrelationId: SetupCorrelationId,
+            BrowserAccountingAdminSurfaceConfigured: true,
+            WpfAccountingAdminSurfaceConfigured: true,
+            ChartAdministrationStudioConfigured: true,
+            RuleTestPromotionStudioConfigured: true,
+            CloseSetupStudioConfigured: true,
+            ProviderMappingStudioConfigured: true,
+            TenantCompanyReportGroupSetupStudioConfigured: true,
+            AuditReviewToolingConfigured: true,
+            BulkImportExportSafeguardsConfigured: true,
+            PerformanceValidationConfigured: true,
+            DisasterRecoveryRunbookConfigured: true,
+            LedgerBookAdministrationStudioConfigured: true,
+            PostingRuleAuthoringStudioConfigured: true,
+            ApprovalQueueStudioConfigured: true,
+            DimensionMappingStudioConfigured: true,
+            ImplementationSandboxConfigured: true,
+            ApprovalQueueConfigurations:
+            [
+                new AccountingApprovalQueueConfigurationDto(
+                    "paper-trade-journal-approval",
+                    "Paper trade journal approvals",
+                    "journal-entry",
+                    "AccountingController",
+                    RequiredApprovalCount: 1,
+                    "submitter-cannot-approve",
+                    "Retain paper-trade journal approval evidence before posting.")
+            ],
+            DimensionMappingConfigurations:
+            [
+                new AccountingDimensionMappingConfigurationDto(
+                    "paper-trade-dimensions",
+                    "Paper trade dimension mapping",
+                    "paper-session",
+                    new LedgerDimensionSetDto(FundId: "paper-fund", EntityId: CompanyId, BookId: "paper-book"),
+                    new LedgerDimensionSetDto(PortfolioId: "paper-session", BookId: "paper-book"),
+                    "Retain dimension mapping evidence for paper-trade accounting.")
+            ]);
+        var retainedTenantProfile = await tenantProfileStore.UpsertAsync(
+            new AccountingTenantAdministrationProfileUpsertRequestDto(
+                tenantProfile,
+                Actor: OperatorUserName,
+                CorrelationId: SetupCorrelationId,
+                EvidenceLinks: [tenantAdministrationEvidence],
+                ActionOrigin: OperationsActionOriginDto.HumanOperator),
+            ct);
+
+        retainedTenantProfile.TenantId.Should().Be(TenantId);
+        retainedTenantProfile.CompanyId.Should().Be(CompanyId);
+        retainedTenantProfile.UpdatedBy.Should().Be(OperatorUserName);
+        retainedTenantProfile.AdminRoleProfileConfigured.Should().BeTrue();
+        retainedTenantProfile.LedgerBookAdministrationStudioConfigured.Should().BeTrue();
+        retainedTenantProfile.PostingRuleAuthoringStudioConfigured.Should().BeTrue();
+        retainedTenantProfile.EvidenceReferences.Should().Contain(tenantAdministrationEvidence);
+        var loadedTenantProfile = await tenantProfileStore.GetAsync(TenantId, CompanyId, ct);
+        loadedTenantProfile.Should().BeEquivalentTo(retainedTenantProfile);
+
+        return new OperatorProfile(
+            OperatorUserName,
+            OperatorRoleProfileName,
+            permissions,
+            TenantId,
+            CompanyId,
+            tenantAdministrationEvidence);
+    }
+
+    private static async Task<AccountingPostingCandidateService> CreatePaperTradeCandidateServiceAsync(
+        Guid ledgerBookId,
+        OperatorProfile operatorProfile,
+        CancellationToken ct)
+    {
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
+        await SeedPaperTradeConfigurationAsync(configurationService, ledgerBookId, operatorProfile, ct);
+
+        var policyService = new AccountingPolicyService();
+        await policyService.CreatePolicyAsync(
+            new CreateAccountingPolicyRequest(
+                AccountingBasisKindDto.Gaap,
+                PolicyId: "gaap-paper-trade-v1",
+                Version: "v1",
+                DisplayName: "GAAP paper trade sale treatment",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                RulePack: new AccountingPolicyRulePackDto(
+                    "gaap-paper-trade-rules",
+                    "v1",
+                    [
+                        new AccountingPolicyRuleDto(
+                            "paper-trade.fill.gaap",
+                            AccountingTreatmentKindDto.TaxLotRelief,
+                            RuleVersion: "v1",
+                            SourceEventType: "PaperTradeFill",
+                            RequiresEvidence: true,
+                            RequiresApproval: true,
+                            AllowsAutoPosting: false,
+                            Description: "Post paper trade sale fills from retained session replay evidence.")
+                    ])),
+            ct);
+
+        return new AccountingPostingCandidateService(
+            configurationService,
+            new AccountingJournalDraftService(
+                policyService,
+                new AccountingBasisProjectionService(policyService)));
+    }
+
+    private static async Task SeedPaperTradeConfigurationAsync(
+        AccountingConfigurationService configurationService,
+        Guid ledgerBookId,
+        OperatorProfile operatorProfile,
+        CancellationToken ct)
+    {
+        await UpsertChartNodeAsync(configurationService, "cash", "assets/cash", "Cash", "Asset", ledgerBookId, operatorProfile, ct);
+        await UpsertChartNodeAsync(configurationService, "aapl-investment", "assets/securities/aapl", "AAPL Investment", "Asset", ledgerBookId, operatorProfile, ct);
+        await UpsertChartNodeAsync(configurationService, "realized-gains", "income/realized-gains", "Realized Gains", "Revenue", ledgerBookId, operatorProfile, ct);
+        await UpsertChartNodeAsync(configurationService, "commissions", "expenses/commissions", "Trading Commissions", "Expense", ledgerBookId, operatorProfile, ct);
+
+        await configurationService.UpsertPostingRuleAsync(
+            new UpsertPostingRuleRequest(
+                FundProfileId,
+                new PostingRuleDto(
+                    "posting.paper-trade-sale",
+                    "Paper trade sale fill",
+                    "PaperTradeFill",
+                    TemplateId: "generated",
+                    RuleVersion: "v1",
+                    EffectiveFrom: new DateOnly(2026, 1, 1),
+                    Priority: 100,
+                    Scope: new LedgerDimensionSetDto(
+                        FundId: FundProfileId,
+                        EntityId: EntityId,
+                        OrganizationId: operatorProfile.TenantId,
+                        BookId: ledgerBookId.ToString("D")),
+                    Conditions:
+                    [
+                        new AccountingRuleConditionDto(
+                            "minimum-sale-amount",
+                            "eventAmount",
+                            AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual,
+                            "100")
+                    ],
+                    Formulas:
+                    [
+                        new AccountingRuleFormulaDto("cash-net-proceeds", AccountingRuleFormulaKindDto.FixedAmount, 918.75m),
+                        new AccountingRuleFormulaDto("cost-relief", AccountingRuleFormulaKindDto.FixedAmount, 800m),
+                        new AccountingRuleFormulaDto("realized-gain", AccountingRuleFormulaKindDto.FixedAmount, 120m),
+                        new AccountingRuleFormulaDto("commission-expense", AccountingRuleFormulaKindDto.FixedAmount, 1.25m)
+                    ],
+                    GeneratedPostings:
+                    [
+                        new GeneratedPostingLineDto(
+                            "cash-net-proceeds",
+                            "assets/cash",
+                            AccountingTemplateLineSideDto.Debit,
+                            "cash-net-proceeds",
+                            918.75m,
+                            "USD",
+                            Description: "Debit cash for net sale proceeds"),
+                        new GeneratedPostingLineDto(
+                            "cost-relief",
+                            "assets/securities/aapl",
+                            AccountingTemplateLineSideDto.Credit,
+                            "cost-relief",
+                            800m,
+                            "USD",
+                            Description: "Credit investment cost relieved from AAPL lots"),
+                        new GeneratedPostingLineDto(
+                            "realized-gain",
+                            "income/realized-gains",
+                            AccountingTemplateLineSideDto.Credit,
+                            "realized-gain",
+                            120m,
+                            "USD",
+                            Description: "Credit realized gain from sale"),
+                        new GeneratedPostingLineDto(
+                            "commission-expense",
+                            "expenses/commissions",
+                            AccountingTemplateLineSideDto.Debit,
+                            "commission-expense",
+                            1.25m,
+                            "USD",
+                            Description: "Debit commission expense")
+                    ]),
+                operatorProfile.Username,
+                CorrelationId: SetupCorrelationId,
+                EvidenceLinks: [operatorProfile.TenantAdministrationEvidenceLink],
+                CompanyId: operatorProfile.CompanyId,
+                LedgerBookId: ledgerBookId,
+                TenantId: operatorProfile.TenantId),
+            ct);
+    }
+
+    private static Task UpsertChartNodeAsync(
+        AccountingConfigurationService configurationService,
+        string nodeId,
+        string path,
+        string accountName,
+        string accountType,
+        Guid ledgerBookId,
+        OperatorProfile operatorProfile,
+        CancellationToken ct)
+        => configurationService.UpsertChartNodeAsync(
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId,
+                new ChartOfAccountsNodeDto(nodeId, path, accountName, accountType),
+                operatorProfile.Username,
+                CorrelationId: SetupCorrelationId,
+                EvidenceLinks: [operatorProfile.TenantAdministrationEvidenceLink],
+                CompanyId: operatorProfile.CompanyId,
+                LedgerBookId: ledgerBookId,
+                TenantId: operatorProfile.TenantId),
+            ct);
+
+    private static PostingRuleJournalCandidateRequestDto BuildCandidateRequest(
+        string sessionId,
+        Guid ledgerBookId,
+        Guid periodId,
+        Guid sourceEventId,
+        OperatorProfile operatorProfile,
+        IReadOnlyList<string> evidenceLinks)
+        => new(
+            FundProfileId,
+            "PaperTradeFill",
+            920m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            operatorProfile.Username,
+            ledgerBookId,
+            periodId,
+            DateTimeOffset.Parse("2026-05-31T15:30:00Z"),
+            "Post paper AAPL sale fill after replay verification",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: FundProfileId,
+                EntityId: EntityId,
+                OrganizationId: operatorProfile.TenantId,
+                BookId: ledgerBookId.ToString("D")),
+            CounterpartyId: "broker-paper",
+            InstrumentSymbol: "AAPL",
+            CorrelationId: Guid.Parse("11111111-1111-4111-8111-111111111111"),
+            SourceEventId: sourceEventId,
+            PolicyId: "gaap-paper-trade-v1",
+            TreatmentKind: AccountingTreatmentKindDto.TaxLotRelief,
+            TreasuryContext: new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 5, 31),
+                IdempotencyKey: $"paper-trade:{sessionId}:paper-sell-1",
+                FundEventId: $"fund-event:{FundProfileId}:paper-trade-sale:{sourceEventId:N}",
+                FundEventType: "PaperTradeFill",
+                CapitalAccountId: "capital-account:fund-alpha:master",
+                InvestorId: "investor:paper-strategy",
+                PaymentIntentId: $"payment:{FundProfileId}:paper-trade-sale:{sourceEventId:N}",
+                SettlementReference: $"settlement:{FundProfileId}:paper-trade-sale:{sourceEventId:N}"),
+            EvidenceLinks: evidenceLinks,
+            TenantId: operatorProfile.TenantId,
+            CompanyId: operatorProfile.CompanyId);
+
+    private static OrderState BuildOrder(
+        string orderId,
+        OrderSide side,
+        decimal quantity,
+        decimal filledQuantity,
+        OrderStatus status,
+        DateTimeOffset timestamp) =>
+        new()
+        {
+            OrderId = orderId,
+            Symbol = "AAPL",
+            Side = side,
+            Type = OrderType.Market,
+            Quantity = quantity,
+            FilledQuantity = filledQuantity,
+            Status = status,
+            CreatedAt = timestamp.AddMinutes(-1),
+            LastUpdatedAt = timestamp
+        };
+
+    private static ExecutionReport BuildFill(
+        string orderId,
+        OrderSide side,
+        decimal quantity,
+        decimal price,
+        decimal commission,
+        DateTimeOffset timestamp) =>
+        new()
+        {
+            OrderId = orderId,
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = side,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = quantity,
+            FilledQuantity = quantity,
+            FillPrice = price,
+            Commission = commission,
+            Timestamp = timestamp
+        };
+
+    private sealed record OperatorProfile(
+        string Username,
+        string RoleProfileName,
+        UserPermission Permissions,
+        string TenantId,
+        string CompanyId,
+        string TenantAdministrationEvidenceLink);
+}
 
 internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
 {

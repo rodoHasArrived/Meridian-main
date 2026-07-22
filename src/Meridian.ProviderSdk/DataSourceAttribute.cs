@@ -35,7 +35,7 @@ public sealed class DataSourceAttribute : Attribute
     public string DisplayName { get; }
 
     /// <summary>
-    /// Type of data provided: Realtime, Historical, or Hybrid.
+    /// Type of data provided: Realtime, Historical, Hybrid, or Reference.
     /// </summary>
     public DataSourceType Type { get; }
 
@@ -155,7 +155,7 @@ public static class DataSourceAttributeExtensions
     /// <summary>
     /// Checks if a type is a data source (has DataSourceAttribute and is a concrete class).
     /// Accepts types implementing <see cref="IDataSource"/> or any recognized provider interface
-    /// (IHistoricalDataProvider, IMarketDataClient, ISymbolSearchProvider).
+    /// (IHistoricalDataProvider, IMarketDataClient, ISymbolSearchProvider, ICorporateActionProvider).
     /// </summary>
     public static bool IsDataSource(this Type type)
     {
@@ -169,6 +169,7 @@ public static class DataSourceAttributeExtensions
         return type.GetInterfaces().Any(i =>
             i.FullName == "Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider" ||
             i.FullName == "Meridian.ProviderSdk.IMarketDataClient" ||
-            i.FullName == "Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider");
+            i.FullName == "Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider" ||
+            i.FullName == "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider");
     }
 }

@@ -9,7 +9,7 @@ namespace Meridian.Tests;
 /// Serializes all Prometheus metrics test classes that mutate the shared static
 /// <see cref="Metrics"/> counters, preventing race conditions when tests run in parallel.
 /// </summary>
-[CollectionDefinition("PrometheusMetrics")]
+[CollectionDefinition("PrometheusMetrics", DisableParallelization = true)]
 public sealed class PrometheusMetricsCollection { }
 
 /// <summary>

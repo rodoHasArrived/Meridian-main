@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 
@@ -29,6 +30,7 @@ public sealed class FullNavigationSweepTests
 
             configureServices.Should().NotBeNull();
             AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
+            ConfigureOfflineServiceOverrides(services);
 
             using var serviceProvider = services.BuildServiceProvider();
             var navigationService = NavigationService.Instance;
@@ -121,6 +123,12 @@ public sealed class FullNavigationSweepTests
 
             failures.Should().BeEmpty(string.Join(Environment.NewLine, failures));
         });
+    }
+
+    private static void ConfigureOfflineServiceOverrides(IServiceCollection services)
+    {
+        services.RemoveAll<IWorkstationReconciliationApiClient>();
+        services.AddSingleton<IWorkstationReconciliationApiClient, FakeWorkstationReconciliationApiClient>();
     }
 
     private static string GetNavigationFailureDetail(

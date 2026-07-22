@@ -74,10 +74,11 @@ Use this memory for broad generation, architecture-sensitive refactors, and UI-s
 - Current productization is evidence-led: use source and roadmap status to choose the active slice;
   prior baselines and named productization targets are status signals, not project development
   restrictions.
-- Active operator UI surfaces are `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
+- Active operator UI work is browser-first in `src/Meridian.Ui/dashboard/`; `src/Meridian.Wpf/`
+  product/UI work is deferred until explicitly reactivated.
 - Browser workstation production assets live under `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` are shared API/read-model support
-  surfaces for desktop and browser workstation flows.
+  surfaces for browser workstation flows and retained WPF compatibility.
 - Visible root operator navigation should remain `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`.
 - There is no mobile development lane. Do not create native mobile clients or mobile-first

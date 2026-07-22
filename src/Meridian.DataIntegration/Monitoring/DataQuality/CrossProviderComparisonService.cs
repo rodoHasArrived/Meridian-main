@@ -222,6 +222,30 @@ public sealed class CrossProviderComparisonService : IDisposable
                         RaiseDiscrepancyEvent(discrepancy);
                     }
                 }
+
+                if (latestP1.Volume > 0 && latestP2.Volume > 0)
+                {
+                    var volumeDiff = Math.Abs(latestP1.Volume - latestP2.Volume);
+                    var volumeDiffPercent = volumeDiff / Math.Max(latestP1.Volume, latestP2.Volume) * 100;
+
+                    if ((double)volumeDiffPercent > _config.VolumeDiscrepancyThresholdPercent)
+                    {
+                        var discrepancy = new ProviderDiscrepancy(
+                            Timestamp: timestamp,
+                            DiscrepancyType: "VolumeDifference",
+                            Provider1: providers[i],
+                            Provider2: providers[j],
+                            Field: "Volume",
+                            Value1: latestP1.Volume.ToString("F4"),
+                            Value2: latestP2.Volume.ToString("F4"),
+                            Difference: (double)volumeDiff,
+                            Severity: ClassifyDiscrepancySeverity(volumeDiffPercent)
+                        );
+
+                        tracker.RecordDiscrepancy(discrepancy);
+                        RaiseDiscrepancyEvent(discrepancy);
+                    }
+                }
             }
         }
     }
@@ -264,6 +288,30 @@ public sealed class CrossProviderComparisonService : IDisposable
                             Value2: q2.BidPrice.ToString("F4"),
                             Difference: (double)bidDiff,
                             Severity: ClassifyDiscrepancySeverity(bidDiffPercent)
+                        );
+
+                        tracker.RecordDiscrepancy(discrepancy);
+                        RaiseDiscrepancyEvent(discrepancy);
+                    }
+                }
+
+                if (q1.AskPrice > 0 && q2.AskPrice > 0)
+                {
+                    var askDiff = Math.Abs(q1.AskPrice - q2.AskPrice);
+                    var askDiffPercent = askDiff / Math.Max(q1.AskPrice, q2.AskPrice) * 100;
+
+                    if ((double)askDiffPercent > _config.QuoteDiscrepancyThresholdPercent)
+                    {
+                        var discrepancy = new ProviderDiscrepancy(
+                            Timestamp: timestamp,
+                            DiscrepancyType: "AskPriceDifference",
+                            Provider1: providers[i],
+                            Provider2: providers[j],
+                            Field: "AskPrice",
+                            Value1: q1.AskPrice.ToString("F4"),
+                            Value2: q2.AskPrice.ToString("F4"),
+                            Difference: (double)askDiff,
+                            Severity: ClassifyDiscrepancySeverity(askDiffPercent)
                         );
 
                         tracker.RecordDiscrepancy(discrepancy);

@@ -68,7 +68,7 @@ public static partial class ShellNavigationCatalog
         Page<AccountPortfolioPage>("AccountPortfolio", "Account portfolio", "Review account positions and allocation changes.", "portfolio", "Accounts", "\uE821", 10, ShellNavigationVisibilityTier.Primary, ["account", "portfolio", "review"], ["AggregatePortfolio", "FundPortfolio", "PositionBlotter"]),
         Page<AggregatePortfolioPage>("AggregatePortfolio", "Aggregate portfolio", "Monitor exposure across all accounts.", "portfolio", "Accounts", "\uE821", 20, ShellNavigationVisibilityTier.Primary, ["aggregate", "portfolio", "monitor"], ["AccountPortfolio", "FundPortfolio", "RunPortfolio"]),
         Page<RunPortfolioPage>("RunPortfolio", "Run portfolio", "Review holdings, exposures, and weights for the selected run.", "portfolio", "Run Inspectors", "\uE821", 30, ShellNavigationVisibilityTier.Primary, ["portfolio", "positions", "review"], ["RunLedger", "RunCashFlow", "AccountingShell"], ["PortfolioInspector"]),
-        Page<FinancialRecordExplorerPage>("PortfolioExplorer", "Portfolio explorer", "Inspect source-backed portfolio positions, run evidence, security coverage, and proof relationships.", "portfolio", "Run Inspectors", "\uE821", 35, ShellNavigationVisibilityTier.Secondary, ["portfolio explorer", "financial record", "proof", "positions"], ["RunPortfolio", "AccountPortfolio", "SecurityInstrumentExplorer", "RunLedger"]),
+        Page<FinancialRecordExplorerPage>("PortfolioExplorer", "Portfolio explorer", "Inspect portfolio positions, run evidence, security coverage, and proof relationships.", "portfolio", "Run Inspectors", "\uE821", 35, ShellNavigationVisibilityTier.Secondary, ["portfolio explorer", "financial record", "proof", "positions"], ["RunPortfolio", "AccountPortfolio", "SecurityInstrumentExplorer", "RunLedger"]),
         Page<FundLedgerPage>("FundPortfolio", "Fund portfolio", "Inspect fund-scoped positions and exposure detail.", "portfolio", "Fund", "\uE821", 40, ShellNavigationVisibilityTier.Secondary, ["fund portfolio", "exposure"], ["FundAccounts", "FundCashFinancing", "AggregatePortfolio", "PortfolioExplorer"]),
         Page<FundAccountsPage>("FundAccounts", "Fund accounts", "Inspect account balances, routing, and reconciliation readiness.", "portfolio", "Fund", "\uE8C7", 50, ShellNavigationVisibilityTier.Secondary, ["accounts", "balances"], ["FundPortfolio", "FundBanking", "FundReconciliation"]),
         Page<PortfolioImportPage>("PortfolioImport", "Portfolio import", "Import external portfolio snapshots for reconciliation.", "portfolio", "Import", "\uE8B5", 60, ShellNavigationVisibilityTier.Secondary, ["import", "portfolio", "reconcile"], ["AccountPortfolio", "FundPortfolio", "Symbols", "Backtest", "LeanIntegration", "LiveData", "RunLedger"]),
@@ -168,6 +168,7 @@ public static partial class ShellNavigationCatalog
             [
                 Pane("FundReportPack", PaneDropAction.Replace),
                 Pane("ReportRunStatus", PaneDropAction.SplitLeft),
+                Pane("ReportLineProvenanceExplorer", PaneDropAction.OpenTab),
                 Pane("Dashboard", PaneDropAction.SplitBelow),
                 Pane("AnalysisExport", PaneDropAction.SplitRight),
                 Pane("ExportPresets", PaneDropAction.OpenTab)

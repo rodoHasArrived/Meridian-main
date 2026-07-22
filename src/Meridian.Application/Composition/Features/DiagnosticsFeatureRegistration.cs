@@ -1,5 +1,6 @@
 using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
+using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Monitoring;
@@ -58,17 +59,23 @@ internal sealed class DiagnosticsFeatureRegistration : IServiceFeatureRegistrati
             var errorTracker = sp.GetService<ErrorTracker>();
             var shutdownDiagnostics = sp.GetService<ShutdownDiagnosticsService>();
             var providerRegistry = sp.GetService<ProviderRegistry>();
+            var eventPipeline = sp.GetService<EventPipeline>();
             return new DiagnosticBundleService(
                 config.DataRoot,
                 metrics is null ? null : metrics.GetSnapshot,
                 () => configStore.Load(),
                 errorTracker is null ? null : () => errorTracker.GetLastErrors(10),
                 shutdownDiagnostics is null ? null : () => shutdownDiagnostics.GetSnapshot(),
-                providerRegistry is null ? null : () => GetProviderConnectionDiagnostics(providerRegistry));
+                providerRegistry is null ? null : () => GetProviderConnectionDiagnostics(providerRegistry),
+                eventPipeline is null ? null : () => eventPipeline.GetStatistics());
         });
 
-        // Sample data generator
-        services.AddSingleton<SampleDataGenerator>();
+        // Sample data generation is a development and test capability. Keep it out of the
+        // production graph so packaged workstation startup cannot expose fixture generation.
+        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            services.AddSingleton<SampleDataGenerator>();
+        }
 
         // API documentation service
         services.AddSingleton<ApiDocumentationService>();

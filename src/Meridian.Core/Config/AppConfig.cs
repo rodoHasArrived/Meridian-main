@@ -35,6 +35,13 @@ namespace Meridian.Core.Config;
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
 /// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 /// <param name="FeatureCapabilities">Runtime feature capability overrides.</param>
+/// <param name="ProviderModules">
+/// Declares an arbitrary set of provider modules by family ID, each with credentials
+/// (as environment variable names) and operational settings. When present, the Application
+/// layer resolves credentials from the referenced environment variables and injects them
+/// into each module before registration. Modules not listed here fall back to their
+/// built-in environment variable detection.
+/// </param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
@@ -59,7 +66,37 @@ public sealed record AppConfig(
     bool CoLocationProfile = false,
     ProviderConnectionsConfig? ProviderConnections = null,
     FeatureCapabilityOptions? FeatureCapabilities = null,
-    FundOperationsPersistenceConfig? FundOperationsPersistence = null
+    FundOperationsPersistenceConfig? FundOperationsPersistence = null,
+    ProviderModulesConfig? ProviderModules = null,
+    PipelineRuntimeConfig? Pipeline = null
+)
+{
+    /// <summary>
+    /// Preserves top-level configuration sections this model does not declare (host-level
+    /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and
+    /// <c>Connectivity</c>) across load/save round-trips, so config mutation paths
+    /// (data-source/storage/symbol saves) do not silently drop operator-tuned host settings.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalSections { get; set; }
+}
+
+/// <summary>
+/// Runtime tuning for the event pipeline's flush behaviour. All fields are optional; unset values
+/// fall back to the pipeline's built-in defaults (final flush 30s, periodic sink flush 60s), so
+/// existing configurations keep their current behaviour. Non-positive values are ignored (treated
+/// as unset) by the pipeline registration.
+/// </summary>
+/// <param name="FinalFlushTimeoutSeconds">
+/// Timeout, in seconds, for the final flush during pipeline shutdown before giving up.
+/// </param>
+/// <param name="SinkFlushTimeoutSeconds">
+/// Per-call timeout, in seconds, for periodic sink flushes, preventing a hung sink from stalling
+/// the pipeline indefinitely.
+/// </param>
+public sealed record PipelineRuntimeConfig(
+    int? FinalFlushTimeoutSeconds = null,
+    int? SinkFlushTimeoutSeconds = null
 );
 
 /// <summary>

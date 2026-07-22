@@ -268,7 +268,7 @@ public sealed class ConnectionHealthMonitor : IConnectionHealthMonitor, IDisposa
         ConnectionStatus? firstDisconnected = null;
         foreach (var kvp in _connections)
         {
-            if (string.Equals(kvp.Value.ProviderName, providerName, StringComparison.OrdinalIgnoreCase))
+            if (ProviderMonitoringIdentity.Equals(kvp.Value.ProviderName, providerName))
             {
                 var status = kvp.Value.GetStatus();
                 if (status.IsConnected)

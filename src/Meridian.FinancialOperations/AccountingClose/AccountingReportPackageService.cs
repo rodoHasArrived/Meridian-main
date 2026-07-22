@@ -130,16 +130,24 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             validationIssues.Add(new AccountingConfigurationValidationIssueDto(
                 "ReportEvidenceMissing",
-                AccountingConfigurationValidationSeverityDto.Warning,
+                AccountingConfigurationValidationSeverityDto.Critical,
                 "No retained report evidence links were supplied for the package.",
                 periodId,
                 "Attach close package, ledger, reconciliation, and report-render evidence before certification."));
         }
 
         var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
+        var dimensionScope = BuildReportDimensionScope(packageDimensions, fundProfileId, ledgerBookId);
         validationIssues.AddRange(BuildReportDimensionScopeIssues(request, fundProfileId, ledgerBookId, packageDimensions));
-        validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, evidenceLinks));
-        validationIssues.AddRange(BuildRestatementCertificationIssues(request, fundProfileId, periodId, evidenceLinks, ReadPackages()));
+        validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, ledgerBookId, evidenceLinks));
+        validationIssues.AddRange(BuildRestatementCertificationIssues(
+            request,
+            fundProfileId,
+            periodId,
+            ledgerBookId,
+            packageDimensions,
+            evidenceLinks,
+            ReadPackages()));
 
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var state = hasCritical ? AccountingCertificationStateDto.Draft : AccountingCertificationStateDto.ReadyForReview;
@@ -223,6 +231,14 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             state,
             certification.RecordedAtUtc,
             evidenceLinks,
+            restatement,
+            dimensionScope);
+        var closeReadinessItems = BuildCloseReadinessItems(
+            closePlan,
+            financialStatements,
+            certification,
+            validationIssues,
+            exportArtifacts,
             restatement);
 
         var bundle = new AccountingReportPackageBundleDto(
@@ -235,7 +251,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             exportArtifacts,
             request.CloseWorkflowId,
             tenantId,
-            companyId);
+            companyId,
+            closeReadinessItems,
+            dimensionScope);
         await SavePackageAsync(bundle, ct).ConfigureAwait(false);
         return bundle;
     }
@@ -305,7 +323,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             var package = rows[index];
             if (!HasReportCertificationEvidenceWithProvenance(package, evidenceLinks))
             {
-                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, and exact package period in the same artifact.");
+                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact.");
+            }
+
+            if (!HasRestatementCertificationEvidenceWithPriorPackage(package, evidenceLinks))
+            {
+                throw new ArgumentException("Restatement report package certification evidence must reference the exact prior package being restated in the same retained approval artifact.");
             }
 
             var currentCloseIssues = await BuildCurrentCloseCertificationIssuesAsync(package, ct).ConfigureAwait(false);
@@ -336,6 +359,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             {
                 throw new InvalidOperationException(
                     $"Accounting report package '{package.FinancialStatements.PackageId}' has critical validation issues and cannot be certified.");
+            }
+
+            if (string.Equals(package.Certification.Actor, actor, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Accounting report package '{package.FinancialStatements.PackageId}' must be certified by an actor independent from preparer '{package.Certification.Actor}'.");
             }
 
             var certifiedAtUtc = DateTimeOffset.UtcNow;
@@ -389,7 +418,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         artifact,
                         certifiedAtUtc,
                         evidenceLinks))
-                    .ToArray()
+                    .ToArray(),
+                CloseReadinessItems = CertifyCloseReadinessItems(package.CloseReadinessItems, evidenceLinks)
             };
 
             rows[index] = certified;
@@ -637,6 +667,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingReportPackageRequestDto request,
         string fundProfileId,
         string periodId,
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto packageDimensions,
         IReadOnlyList<string> evidenceLinks,
         IReadOnlyList<AccountingReportPackageBundleDto> retainedPackages)
     {
@@ -685,6 +717,27 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         "Select a prior certified report package for the same fund before restatement certification."));
                 }
 
+                if (ledgerBookId.HasValue &&
+                    priorPackage.FinancialStatements.LedgerBookId != ledgerBookId.Value)
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageLedgerBookMismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for ledger book '{ledgerBookId.Value:D}' references prior package '{priorPackageId}' for ledger book '{priorPackage.FinancialStatements.LedgerBookId?.ToString("D") ?? "unscoped"}'.",
+                        priorPackageId,
+                        "Select a prior certified report package for the same ledger book before restatement certification."));
+                }
+
+                if (!MatchesExactDimensionScope(priorPackage.FinancialStatements.Dimensions, packageDimensions))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageDimensionScopeMismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for period '{periodId}' references prior package '{priorPackageId}' with a different retained dimension scope.",
+                        priorPackageId,
+                        "Select a prior certified report package with the same fund, ledger book, investor, capital-account, entity, strategy, cost-center, counterparty, instrument, tax-lot, and external-GL dimension scope before restatement certification."));
+                }
+
                 if (priorPackage.Certification.State != AccountingCertificationStateDto.Certified)
                 {
                     issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -693,6 +746,16 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         $"Restatement package for period '{periodId}' references prior package '{priorPackageId}' that is not certified.",
                         priorPackageId,
                         "Certify the prior report package before using it as restatement lineage."));
+                }
+
+                if (!HasRestatementPriorPackageEvidence(evidenceLinks, priorPackage))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageEvidenceMissing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for period '{periodId}' references prior package '{priorPackageId}' without retained evidence naming the exact prior package or certification.",
+                        priorPackageId,
+                        "Attach restatement lineage evidence that names the exact prior package or certification id before certification."));
                 }
             }
         }
@@ -710,6 +773,349 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         }
 
         return issues;
+    }
+
+    private static bool HasRestatementPriorPackageEvidence(
+        IReadOnlyList<string> evidenceLinks,
+        AccountingReportPackageBundleDto priorPackage)
+        => evidenceLinks.Any(link =>
+            (link.Contains("restatement", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("prior-package", StringComparison.OrdinalIgnoreCase)) &&
+            (EvidenceReferencesReportIdentifier(link, priorPackage.FinancialStatements.PackageId) ||
+             EvidenceReferencesReportIdentifier(link, priorPackage.Certification.CertificationId)));
+
+    private static IReadOnlyList<AccountingCloseReadinessItemDto> BuildCloseReadinessItems(
+        ClosePeriodPlanDto? closePlan,
+        FinancialStatementPackageDto financialStatements,
+        ReportCertificationDto certification,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        IReadOnlyList<ReportExportArtifactDto> exportArtifacts,
+        RestatementWorkflowDto? restatement)
+    {
+        var criticalIssues = validationIssues
+            .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .ToArray();
+        var restatementEvidenceLinks = restatement?.EvidenceLinks ?? [];
+        var evidenceLinks = NormalizeEvidenceLinks([
+            .. financialStatements.EvidenceLinks,
+            .. certification.EvidenceLinks,
+            .. exportArtifacts.SelectMany(static artifact => artifact.EvidenceLinks),
+            .. restatementEvidenceLinks
+        ]);
+        var rows = new List<AccountingCloseReadinessItemDto>();
+
+        if (closePlan is null)
+        {
+            rows.Add(BuildCloseReadinessItem(
+                "close-workflow-linkage",
+                "CloseWorkflow",
+                "Close workflow linkage",
+                AccountingReadinessStateDto.NeedsAttention,
+                "The package is retained without a close workflow snapshot.",
+                "Build the report package from a close workflow before final certification.",
+                financialStatements,
+                evidenceLinks,
+                IssuesFor(criticalIssues, "ClosePlanMissing", "CloseWorkflowRequired")));
+        }
+        else
+        {
+            var openTasks = closePlan.Tasks
+                .Where(static task => task.Status != CloseTaskStatusDto.SignedOff)
+                .ToArray();
+            var signOffGaps = closePlan.Tasks
+                .Where(static task => task.SignOffs.All(static signOff => signOff.ApprovalState != ManualJournalEntryStatusDto.Approved))
+                .ToArray();
+            var checklistIssues = IssuesFor(criticalIssues, "CloseChecklistIncomplete", "CloseSignOffMissing");
+            rows.Add(BuildCloseReadinessItem(
+                "close-checklist-signoffs",
+                "CloseChecklist",
+                "Close checklist and sign-off matrix",
+                ResolveReadinessState(checklistIssues, openTasks.Length + signOffGaps.Length, certification.State),
+                openTasks.Length == 0 && signOffGaps.Length == 0
+                    ? "Every close checklist task has retained approved sign-off evidence."
+                    : $"{openTasks.Length:N0} task(s) remain open and {signOffGaps.Length:N0} task(s) lack approved sign-off evidence.",
+                "Complete dependencies and retain required role-scoped sign-off evidence before report certification.",
+                financialStatements,
+                closePlan.Tasks.SelectMany(static task => task.EvidenceLinks).Concat(evidenceLinks),
+                checklistIssues));
+
+            var periodLockIssues = IssuesFor(criticalIssues, "PeriodNotLocked");
+            rows.Add(BuildCloseReadinessItem(
+                "period-lock",
+                "PeriodLock",
+                "Period lock",
+                closePlan.IsPeriodLocked
+                    ? ResolveReadinessState(periodLockIssues, 0, certification.State)
+                    : AccountingReadinessStateDto.Blocked,
+                closePlan.IsPeriodLocked
+                    ? "The accounting period is locked after close."
+                    : "The accounting period remains open for late adjustments.",
+                "Lock the period after close approvals before final report certification.",
+                financialStatements,
+                closePlan.Tasks.SelectMany(static task => task.EvidenceLinks).Concat(evidenceLinks),
+                periodLockIssues));
+
+            var pendingLateAdjustments = closePlan.LateAdjustments
+                .Where(adjustment =>
+                    RequiresMaterialLateAdjustmentApproval(adjustment, closePlan.MaterialityPolicy) &&
+                    IsLateAdjustmentDecisionPending(adjustment))
+                .ToArray();
+            var lateAdjustmentIssues = IssuesFor(criticalIssues, "LateAdjustmentApprovalPending");
+            rows.Add(BuildCloseReadinessItem(
+                "late-adjustment-review",
+                "LateAdjustments",
+                "Late adjustment review",
+                ResolveReadinessState(lateAdjustmentIssues, pendingLateAdjustments.Length, certification.State),
+                pendingLateAdjustments.Length == 0
+                    ? "No material late adjustments are pending approval."
+                    : $"{pendingLateAdjustments.Length:N0} material late adjustment(s) still require approval or rejection.",
+                "Approve or reject material late adjustments with retained evidence before certification.",
+                financialStatements,
+                closePlan.LateAdjustments.SelectMany(static adjustment => adjustment.EvidenceLinks).Concat(evidenceLinks),
+                lateAdjustmentIssues));
+        }
+
+        var dimensionIssues = IssuesFor(
+            criticalIssues,
+            "ReportPackageFundDimensionMismatch",
+            "ReportPackageLedgerBookDimensionMismatch",
+            "ReportPackageInvestorDimensionMismatch",
+            "ReportPackageCapitalAccountDimensionMismatch",
+            "ReportPackageDimensionScopeMismatch");
+        rows.Add(BuildCloseReadinessItem(
+            "report-dimension-scope",
+            "ReportDimensions",
+            "Report dimension scope",
+            ResolveReadinessState(dimensionIssues, 0, certification.State),
+            dimensionIssues.Count == 0
+                ? "Report package dimensions align with the selected fund, ledger book, investor, capital account, and explicit scope."
+                : $"{dimensionIssues.Count:N0} report dimension scope blocker(s) require remediation.",
+            "Resolve fund, ledger-book, investor, capital-account, and explicit dimension-scope mismatches before report certification.",
+            financialStatements,
+            evidenceLinks,
+            dimensionIssues));
+
+        rows.Add(BuildCloseReadinessItem(
+            "report-evidence-package",
+            "ReportEvidence",
+            "Report evidence package",
+            ResolveReadinessState(
+                IssuesFor(
+                    criticalIssues,
+                    "ReportEvidenceMissing",
+                    "ReportLedgerEvidenceMissing",
+                    "ReportReconciliationEvidenceMissing",
+                    "ReportRenderEvidenceMissing",
+                    "ReportNavEvidenceMissing",
+                    "ReportLedgerEvidenceMissingLedgerBookScope",
+                    "ReportReconciliationEvidenceMissingLedgerBookScope",
+                    "ReportRenderEvidenceMissingLedgerBookScope",
+                    "ReportNavEvidenceMissingLedgerBookScope",
+                    "ReportLedgerEvidenceScopeMissing",
+                    "ReportReconciliationEvidenceScopeMissing",
+                    "ReportRenderEvidenceScopeMissing",
+                    "ReportNavEvidenceScopeMissing"),
+                evidenceLinks.Count == 0 ? 1 : 0,
+                certification.State),
+            evidenceLinks.Count > 0
+                ? $"{evidenceLinks.Count:N0} retained evidence link(s) support the package."
+                : "No retained report evidence links are attached.",
+            "Attach ledger, reconciliation, rendered report, NAV, certification, and package evidence before certification.",
+            financialStatements,
+            evidenceLinks,
+            IssuesFor(
+                criticalIssues,
+                "ReportEvidenceMissing",
+                "ReportLedgerEvidenceMissing",
+                "ReportReconciliationEvidenceMissing",
+                "ReportRenderEvidenceMissing",
+                "ReportNavEvidenceMissing",
+                "ReportLedgerEvidenceMissingLedgerBookScope",
+                "ReportReconciliationEvidenceMissingLedgerBookScope",
+                "ReportRenderEvidenceMissingLedgerBookScope",
+                "ReportNavEvidenceMissingLedgerBookScope",
+                "ReportLedgerEvidenceScopeMissing",
+                "ReportReconciliationEvidenceScopeMissing",
+                "ReportRenderEvidenceScopeMissing",
+                "ReportNavEvidenceScopeMissing")));
+
+        var uncertifiedExports = exportArtifacts
+            .Count(static artifact => artifact.CertificationState != AccountingCertificationStateDto.Certified);
+        var exportArtifactIssues = BuildReportExportArtifactIssues(financialStatements, exportArtifacts);
+        rows.Add(BuildCloseReadinessItem(
+            "report-export-certification",
+            "ReportExports",
+            "Report export certification",
+            ResolveReadinessState(exportArtifactIssues, uncertifiedExports, certification.State),
+            exportArtifactIssues.Count > 0
+                ? $"{exportArtifactIssues.Count:N0} retained export artifact blocker(s) require remediation."
+                : exportArtifacts.Count > 0
+                ? $"{exportArtifacts.Count - uncertifiedExports:N0}/{exportArtifacts.Count:N0} retained export artifact(s) are certified."
+                : "No retained report export artifacts are attached.",
+            "Certify the report package so every retained export artifact carries certified state, content hash, ledger-book scope, dimension scope, and retained evidence.",
+            financialStatements,
+            exportArtifacts.SelectMany(static artifact => artifact.EvidenceLinks).Concat(evidenceLinks),
+            exportArtifactIssues));
+
+        if (restatement is not null)
+        {
+            rows.Add(BuildCloseReadinessItem(
+                "restatement-workflow",
+                "Restatement",
+                "Restatement workflow",
+                restatement.ApprovalState == ManualJournalEntryStatusDto.Approved
+                    ? AccountingReadinessStateDto.Certified
+                    : AccountingReadinessStateDto.NeedsAttention,
+                $"Restatement '{restatement.RestatementId}' references prior package '{restatement.PriorPackageId}' with approval state '{restatement.ApprovalState}'.",
+                "Retain prior-package lineage and approve the restatement during report certification.",
+                financialStatements,
+                restatement.EvidenceLinks.Concat(evidenceLinks),
+                IssuesFor(
+                    criticalIssues,
+                    "RestatementPriorPackageMissing",
+                    "RestatementPriorPackageNotRetained",
+                    "RestatementPriorPackageNotCertified",
+                    "RestatementEvidenceMissing")));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<AccountingCloseReadinessItemDto> CertifyCloseReadinessItems(
+        IReadOnlyList<AccountingCloseReadinessItemDto> items,
+        IReadOnlyList<string> evidenceLinks)
+        => items
+            .Select(item => item.BlockingIssueCount > 0 || item.State == AccountingReadinessStateDto.Blocked
+                ? item
+                : item with
+                {
+                    State = AccountingReadinessStateDto.Certified,
+                    Summary = $"{item.Label} is certified with retained package approval evidence.",
+                    EvidenceLinks = MergeEvidenceLinks(item.EvidenceLinks, evidenceLinks)
+                })
+            .ToArray();
+
+    private static AccountingCloseReadinessItemDto BuildCloseReadinessItem(
+        string itemId,
+        string category,
+        string label,
+        AccountingReadinessStateDto state,
+        string summary,
+        string requiredAction,
+        FinancialStatementPackageDto financialStatements,
+        IEnumerable<string?> evidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> blockingIssues)
+        => new(
+            itemId,
+            category,
+            label,
+            state,
+            summary,
+            requiredAction,
+            blockingIssues.Count,
+            NormalizeEvidenceLinks(evidenceLinks),
+            blockingIssues,
+            financialStatements.LedgerBookId,
+            financialStatements.Dimensions);
+
+    private static AccountingReadinessStateDto ResolveReadinessState(
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> blockingIssues,
+        int openItemCount,
+        AccountingCertificationStateDto certificationState)
+    {
+        if (blockingIssues.Count > 0)
+        {
+            return AccountingReadinessStateDto.Blocked;
+        }
+
+        if (certificationState == AccountingCertificationStateDto.Certified)
+        {
+            return AccountingReadinessStateDto.Certified;
+        }
+
+        return openItemCount > 0
+            ? AccountingReadinessStateDto.NeedsAttention
+            : AccountingReadinessStateDto.ReadyForReview;
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> IssuesFor(
+        IEnumerable<AccountingConfigurationValidationIssueDto> issues,
+        params string[] codes)
+        => issues
+            .Where(issue => codes.Any(code => string.Equals(issue.Code, code, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportExportArtifactIssues(
+        FinancialStatementPackageDto financialStatements,
+        IReadOnlyList<ReportExportArtifactDto> exportArtifacts)
+    {
+        if (exportArtifacts.Count == 0)
+        {
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting report package '{financialStatements.PackageId}' has no retained export artifacts.",
+                    financialStatements.PackageId,
+                    "Retain report export artifacts with ledger-book scope, dimension scope, evidence, and content hashes before certification.")
+            ];
+        }
+
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        foreach (var artifact in exportArtifacts)
+        {
+            if (string.IsNullOrWhiteSpace(artifact.ContentHash))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactHashMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' is missing a retained content hash.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact and retain its deterministic content hash before certification."));
+            }
+
+            if (artifact.EvidenceLinks.Count == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactEvidenceMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' has no retained evidence links.",
+                    artifact.ArtifactId,
+                    "Attach retained ledger, reconciliation, rendered-report, NAV, or certification evidence to every export artifact."));
+            }
+
+            if (artifact.LedgerBookId != financialStatements.LedgerBookId)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactLedgerBookMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' targets ledger book '{artifact.LedgerBookId?.ToString("D") ?? "unscoped"}' but package '{financialStatements.PackageId}' targets ledger book '{financialStatements.LedgerBookId?.ToString("D") ?? "unscoped"}'.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact from the same ledger book as the retained report package."));
+            }
+
+            var artifactDimensionScope = artifact.DimensionScope;
+            if (!MatchesExactDimensionScope(artifact.Dimensions, financialStatements.Dimensions) ||
+                artifactDimensionScope is null ||
+                !string.Equals(
+                    artifactDimensionScope.ScopeHash,
+                    BuildDimensionScopeHash(financialStatements.Dimensions),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactDimensionScopeMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' does not retain the same dimensional scope as package '{financialStatements.PackageId}'.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact from the same fund, ledger-book, investor, capital-account, and explicit dimension scope as the retained report package."));
+            }
+        }
+
+        return issues
+            .OrderBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static string BuildPackageId(
@@ -739,6 +1145,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportCertificationEvidenceIssues(
         string periodId,
+        Guid? ledgerBookId,
         IReadOnlyList<string> evidenceLinks)
     {
         var requiredEvidence = new (string Code, string Label, string[] Tokens)[]
@@ -751,18 +1158,32 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         foreach (var requirement in requiredEvidence)
         {
-            if (evidenceLinks.Any(link => requirement.Tokens.Any(token =>
-                    link.Contains(token, StringComparison.OrdinalIgnoreCase))))
+            var matchingEvidence = evidenceLinks
+                .Where(link => requirement.Tokens.Any(token =>
+                    link.Contains(token, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+            if (matchingEvidence.Length == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    requirement.Code,
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting report package for period '{periodId}' is missing retained {requirement.Label} evidence.",
+                    periodId,
+                    "Attach ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
+                continue;
+            }
+
+            if (ledgerBookId is null || matchingEvidence.Any(link => EvidenceReferencesLedgerBook(link, ledgerBookId.Value)))
             {
                 continue;
             }
 
             issues.Add(new AccountingConfigurationValidationIssueDto(
-                requirement.Code,
+                $"{requirement.Code}LedgerBookScope",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                $"Accounting report package for period '{periodId}' is missing retained {requirement.Label} evidence.",
+                $"Accounting report package for period '{periodId}' has retained {requirement.Label} evidence, but no link names ledger book '{ledgerBookId.Value:D}'.",
                 periodId,
-                "Attach ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
+                "Attach ledger-book-scoped ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
         }
 
         return issues;
@@ -780,13 +1201,167 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasReportCertificationEvidence([link]) &&
-            link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase));
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PackageId) &&
+            EvidenceReferencesReportIdentifier(link, package.Certification.CertificationId) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PeriodId) &&
+            EvidenceReferencesReportLedgerBook(package, link) &&
+            EvidenceReferencesReportTenantCompanyScope(package, link) &&
+            EvidenceReferencesReportDimensionScope(package, link));
+
+    private static bool HasRestatementCertificationEvidenceWithPriorPackage(
+        AccountingReportPackageBundleDto package,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var restatement = package.NavPackage.Restatement ?? package.FinancialStatements.Restatement;
+        if (restatement is null)
+        {
+            return true;
+        }
+
+        return evidenceLinks.Any(link =>
+            HasReportCertificationEvidence([link]) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PackageId) &&
+            EvidenceReferencesReportIdentifier(link, package.Certification.CertificationId) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PeriodId) &&
+            EvidenceReferencesReportLedgerBook(package, link) &&
+            EvidenceReferencesReportTenantCompanyScope(package, link) &&
+            EvidenceReferencesReportDimensionScope(package, link) &&
+            EvidenceReferencesReportIdentifier(link, restatement.PriorPackageId));
+    }
+
+    private static bool EvidenceReferencesReportIdentifier(string evidenceLink, string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < evidenceLink.Length)
+        {
+            var identifierIndex = evidenceLink.IndexOf(identifier, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (identifierIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(evidenceLink, identifierIndex - 1) &&
+                IsEvidenceTokenBoundary(evidenceLink, identifierIndex + identifier.Length))
+            {
+                return true;
+            }
+
+            searchIndex = identifierIndex + identifier.Length;
+        }
+
+        return false;
+    }
+
+    private static bool EvidenceReferencesReportTenantCompanyScope(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+        => ReferencesOptionalScope(evidenceLink, "tenant", "tenantId", package.TenantId) &&
+           ReferencesOptionalScope(evidenceLink, "company", "companyId", package.CompanyId);
+
+    private static bool ReferencesOptionalScope(
+        string evidenceLink,
+        string pathToken,
+        string queryToken,
+        string? scopeValue)
+    {
+        var normalized = NormalizeOptional(scopeValue);
+        if (normalized is null)
+        {
+            return true;
+        }
+
+        return ReferencesScopedValue(evidenceLink, $"{pathToken}:", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{pathToken}/", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}=", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}:", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}/", normalized);
+    }
+
+    private static bool EvidenceReferencesReportLedgerBook(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+        => TryGetReportLedgerBookId(package, out var ledgerBookId) is false ||
+           EvidenceReferencesLedgerBook(evidenceLink, ledgerBookId);
+
+    private static bool EvidenceReferencesReportDimensionScope(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+    {
+        var dimensions = package.FinancialStatements.Dimensions;
+        if (!HasExplicitDimensionScope(
+                dimensions,
+                package.FinancialStatements.FundProfileId,
+                TryGetReportLedgerBookId(package, out var ledgerBookId) ? ledgerBookId : null))
+        {
+            return true;
+        }
+
+        return ReferencesScopedValue(evidenceLink, "dimension-scope:", BuildDimensionScopeHash(dimensions));
+    }
+
+    private static bool TryGetReportLedgerBookId(AccountingReportPackageBundleDto package, out Guid ledgerBookId)
+    {
+        if (package.FinancialStatements.LedgerBookId is Guid retainedLedgerBookId)
+        {
+            ledgerBookId = retainedLedgerBookId;
+            return true;
+        }
+
+        if (Guid.TryParse(package.FinancialStatements.Dimensions.BookId, out var dimensionLedgerBookId))
+        {
+            ledgerBookId = dimensionLedgerBookId;
+            return true;
+        }
+
+        ledgerBookId = default;
+        return false;
+    }
 
     private static bool EvidenceReferencesLedgerBook(string evidenceLink, Guid ledgerBookId)
-        => evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-           evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    {
+        var ledgerBookIdText = ledgerBookId.ToString("D");
+        var ledgerBookIdCompact = ledgerBookId.ToString("N");
+        return ReferencesScopedValue(evidenceLink, "book:", ledgerBookIdText) ||
+               ReferencesScopedValue(evidenceLink, "ledger-book:", ledgerBookIdText) ||
+               ReferencesScopedValue(evidenceLink, "ledger-book/", ledgerBookIdText) ||
+               ReferencesScopedValue(evidenceLink, "book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(evidenceLink, "ledger-book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(evidenceLink, "ledger-book/", ledgerBookIdCompact);
+    }
+
+    private static bool ReferencesScopedValue(string reference, string prefix, string value)
+    {
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return false;
+            }
+
+            var valueIndex = prefixIndex + prefix.Length;
+            if (reference.Length >= valueIndex + value.Length &&
+                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0 &&
+                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string reference, int index)
+        => index >= reference.Length ||
+           reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
@@ -908,7 +1483,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingCertificationStateDto certificationState,
         DateTimeOffset generatedAtUtc,
         IReadOnlyList<string> evidenceLinks,
-        RestatementWorkflowDto? restatement)
+        RestatementWorkflowDto? restatement,
+        ReportDimensionScopeDto dimensionScope)
     {
         var packageId = financialStatements.PackageId;
         var rows = new List<ReportExportArtifactDto>
@@ -924,7 +1500,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 evidenceLinks,
                 financialStatements.PackageId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions),
+                financialStatements.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "financial-statements-workbook",
@@ -936,7 +1513,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 evidenceLinks,
                 financialStatements.PackageId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions),
+                financialStatements.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "realized-gain-loss",
@@ -948,7 +1526,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 realizedGainLoss.EvidenceLinks,
                 realizedGainLoss.ReportId,
                 realizedGainLoss.LedgerBookId,
-                realizedGainLoss.Dimensions),
+                realizedGainLoss.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "nav-package",
@@ -960,7 +1539,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 navPackage.EvidenceLinks,
                 navPackage.PackageId,
                 navPackage.LedgerBookId,
-                navPackage.Dimensions),
+                navPackage.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "report-line-provenance",
@@ -972,7 +1552,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 financialStatements.LineProvenance.SelectMany(static row => row.EvidenceLinks).ToArray(),
                 $"{financialStatements.PackageId}:line-provenance",
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions)
+                financialStatements.Dimensions,
+                dimensionScope)
         };
 
         rows.AddRange(investorCapitalStatements.Select(statement => BuildReportExportArtifact(
@@ -986,7 +1567,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             statement.EvidenceLinks,
             statement.StatementId,
             statement.LedgerBookId,
-            statement.Dimensions)));
+            statement.Dimensions,
+            dimensionScope)));
 
         if (restatement is not null)
         {
@@ -1001,7 +1583,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 restatement.EvidenceLinks,
                 restatement.RestatementId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions));
+                financialStatements.Dimensions,
+                dimensionScope));
         }
 
         return rows
@@ -1021,7 +1604,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         IReadOnlyList<string> evidenceLinks,
         string? sourceStatementId,
         Guid? ledgerBookId,
-        LedgerDimensionSetDto dimensions)
+        LedgerDimensionSetDto dimensions,
+        ReportDimensionScopeDto dimensionScope)
     {
         var artifactId = $"report-export-{Sanitize(packageId)}-{Sanitize(artifactKind)}-{Sanitize(sourceStatementId ?? "aggregate")}";
         var normalizedEvidence = NormalizeEvidenceLinks(evidenceLinks);
@@ -1050,7 +1634,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             normalizedEvidence,
             sourceStatementId,
             ledgerBookId,
-            dimensions);
+            dimensions,
+            dimensionScope);
     }
 
     private static ReportExportArtifactDto CertifyExportArtifact(
@@ -1117,6 +1702,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certificationState,
             generatedAtUtc.ToString("O"),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
@@ -1140,6 +1730,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 artifact.CertificationState,
                 artifact.ContentHash,
                 artifact.SourceStatementId,
+                artifact.DimensionScope,
                 certificationId = package.Certification.CertificationId,
                 package.Certification.Actor,
                 package.Certification.RecordedAtUtc,
@@ -1163,7 +1754,24 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             artifact.EvidenceLinks,
             artifact.SourceStatementId,
             artifact.LedgerBookId,
-            artifact.Dimensions);
+            artifact.Dimensions,
+            artifact.DimensionScope);
+    }
+
+    private static ReportDimensionScopeDto BuildReportDimensionScope(
+        LedgerDimensionSetDto dimensions,
+        string fundProfileId,
+        Guid? ledgerBookId)
+    {
+        var hasExplicitScope = HasExplicitDimensionScope(dimensions, fundProfileId, ledgerBookId);
+        var scopeHash = BuildDimensionScopeHash(dimensions);
+        return new ReportDimensionScopeDto(
+            ledgerBookId,
+            dimensions,
+            hasExplicitScope,
+            scopeHash,
+            $"dimension-scope:{scopeHash}",
+            BuildScopedDimensionKeys(dimensions));
     }
 
     private static LedgerDimensionSetDto BuildReportPackageDimensions(
@@ -1190,7 +1798,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: dimensions?.AccountId,
             CustomerId: dimensions?.CustomerId,
             VendorId: dimensions?.VendorId,
-            ProjectId: dimensions?.ProjectId);
+            ProjectId: dimensions?.ProjectId)
+        {
+            PositionId = dimensions?.PositionId
+        };
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportDimensionScopeIssues(
@@ -1403,6 +2014,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.InvestorId, filter.InvestorId)
                && MatchesDimensionValue(normalized.CapitalAccountId, filter.CapitalAccountId)
                && MatchesDimensionGuid(normalized.InstrumentId, filter.InstrumentId)
+               && MatchesDimensionGuid(normalized.PositionId, filter.PositionId)
                && MatchesDimensionValue(normalized.TaxLotId, filter.TaxLotId)
                && MatchesDimensionValue(normalized.CostCenterId, filter.CostCenterId)
                && MatchesDimensionValue(normalized.CounterpartyId, filter.CounterpartyId)
@@ -1415,6 +2027,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.ProjectId, filter.ProjectId)
                && MatchesExternalGlDimensions(normalized.ExternalGlDimensions, filter.ExternalGlDimensions);
     }
+
+    private static bool MatchesExactDimensionScope(
+        LedgerDimensionSetDto? left,
+        LedgerDimensionSetDto? right)
+        => MatchesDimensionScope(left, right) && MatchesDimensionScope(right, left);
 
     private static bool MatchesDimensionValue(string? actual, string? expected)
     {
@@ -1465,7 +2082,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
         return HasAnyDimensionScope(normalized) ? normalized : null;
     }
 
@@ -1488,6 +2108,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            || dimensions.InvestorId is not null
            || dimensions.CapitalAccountId is not null
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || dimensions.TaxLotId is not null
            || dimensions.CostCenterId is not null
            || dimensions.CounterpartyId is not null
@@ -1499,6 +2120,53 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            || dimensions.VendorId is not null
            || dimensions.ProjectId is not null
            || dimensions.ExternalGlDimensions.Count > 0;
+
+    private static IReadOnlyList<string> BuildScopedDimensionKeys(LedgerDimensionSetDto dimensions)
+    {
+        var keys = new List<string>();
+        AddDimensionKey(keys, "fundId", dimensions.FundId);
+        AddDimensionKey(keys, "entityId", dimensions.EntityId);
+        AddDimensionKey(keys, "sleeveId", dimensions.SleeveId);
+        AddDimensionKey(keys, "strategyId", dimensions.StrategyId);
+        AddDimensionKey(keys, "investorId", dimensions.InvestorId);
+        AddDimensionKey(keys, "capitalAccountId", dimensions.CapitalAccountId);
+        if (dimensions.InstrumentId.HasValue)
+        {
+            keys.Add("instrumentId");
+        }
+
+        if (dimensions.PositionId.HasValue)
+        {
+            keys.Add("positionId");
+        }
+
+        AddDimensionKey(keys, "taxLotId", dimensions.TaxLotId);
+        AddDimensionKey(keys, "costCenterId", dimensions.CostCenterId);
+        AddDimensionKey(keys, "counterpartyId", dimensions.CounterpartyId);
+        AddDimensionKey(keys, "organizationId", dimensions.OrganizationId);
+        AddDimensionKey(keys, "portfolioId", dimensions.PortfolioId);
+        AddDimensionKey(keys, "bookId", dimensions.BookId);
+        AddDimensionKey(keys, "accountId", dimensions.AccountId);
+        AddDimensionKey(keys, "customerId", dimensions.CustomerId);
+        AddDimensionKey(keys, "vendorId", dimensions.VendorId);
+        AddDimensionKey(keys, "projectId", dimensions.ProjectId);
+        keys.AddRange(dimensions.ExternalGlDimensions
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .Select(static pair => $"externalGl.{pair.Key.Trim()}")
+            .Order(StringComparer.OrdinalIgnoreCase));
+        return keys
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static void AddDimensionKey(List<string> keys, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            keys.Add(key);
+        }
+    }
 
     private static string BuildDimensionScopeHash(LedgerDimensionSetDto dimensions)
     {
@@ -1524,6 +2192,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             string.Join(";", dimensions.ExternalGlDimensions
                 .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(static pair => $"{NormalizeOptional(pair.Key)}={NormalizeOptional(pair.Value)}")));
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
     }
 

@@ -9,9 +9,15 @@ namespace Meridian.Platform.Scheduling;
 /// - Regular, pre-market, and after-hours session times
 /// - Timezone-aware market status queries
 /// </summary>
-public sealed class TradingCalendar : ITradingCalendarProvider
+public sealed class TradingCalendar : IOperationalTradingCalendar, ITradingCalendarProvider
 {
     private readonly TimeZoneInfo _easternTimeZone;
+
+    // Guards every read and write of _holidays. GetHolidays(int) lazily adds years on
+    // demand, so a concurrent reader calling Contains/Any while another thread mutates the
+    // HashSet would corrupt it or throw. _halfDays is populated once in the constructor and
+    // only ever read afterwards, so it needs no synchronization.
+    private readonly Lock _holidaysLock = new();
     private readonly HashSet<DateOnly> _holidays;
     private readonly HashSet<DateOnly> _halfDays;
 
@@ -82,7 +88,7 @@ public sealed class TradingCalendar : ITradingCalendarProvider
         }
 
         // Check if it's a holiday
-        if (_holidays.Contains(date))
+        if (ContainsHoliday(date))
         {
             return new MarketStatus(
                 State: MarketState.Closed,
@@ -187,7 +193,7 @@ public sealed class TradingCalendar : ITradingCalendarProvider
         if (dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return false;
 
-        return !_holidays.Contains(date);
+        return !ContainsHoliday(date);
     }
 
     /// <summary>
@@ -291,21 +297,26 @@ public sealed class TradingCalendar : ITradingCalendarProvider
     /// </summary>
     public IReadOnlyList<MarketHoliday> GetHolidays(int year)
     {
-        // Check if we have holidays for this year, if not, generate them
-        if (!_holidays.Any(d => d.Year == year))
+        // The lazy add and the enumeration below must share one lock so a concurrent
+        // reader never observes a partially mutated set.
+        lock (_holidaysLock)
         {
-            var yearHolidays = GenerateHolidays(year, year);
-            foreach (var h in yearHolidays)
+            // Check if we have holidays for this year, if not, generate them
+            if (!_holidays.Any(d => d.Year == year))
             {
-                _holidays.Add(h);
+                var yearHolidays = GenerateHolidays(year, year);
+                foreach (var h in yearHolidays)
+                {
+                    _holidays.Add(h);
+                }
             }
-        }
 
-        return _holidays
-            .Where(d => d.Year == year)
-            .Select(d => new MarketHoliday(d, GetHolidayName(d)))
-            .OrderBy(h => h.Date)
-            .ToList();
+            return _holidays
+                .Where(d => d.Year == year)
+                .Select(d => new MarketHoliday(d, GetHolidayName(d)))
+                .OrderBy(h => h.Date)
+                .ToList();
+        }
     }
 
     /// <summary>
@@ -357,6 +368,14 @@ public sealed class TradingCalendar : ITradingCalendarProvider
 
     IReadOnlyList<DateOnly> ITradingCalendarProvider.GetHolidays(int year, string market)
         => GetHolidays(year).Select(holiday => holiday.Date).ToList();
+
+    private bool ContainsHoliday(DateOnly date)
+    {
+        lock (_holidaysLock)
+        {
+            return _holidays.Contains(date);
+        }
+    }
 
     private DateTimeOffset GetNextTradingDayOpen(DateOnly currentDate)
     {

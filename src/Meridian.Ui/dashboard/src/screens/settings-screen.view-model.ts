@@ -1,16 +1,29 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import { pluralizeCount } from "@/lib/format";
+import {
+  connectAlpacaConnection,
+  revokeAlpacaConnection,
+  startRobinhoodConnection,
+  revokeRobinhoodConnection
+} from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
-  AUTH_API_ENDPOINTS,
+  formatSettingsUtcMinute
+} from "@/screens/settings-screen.date-format";
+import {
+  buildAssetProfileGovernancePanel,
+  buildOperationsControlCenter,
+  type SettingsAssetProfileGovernancePanel,
+  type SettingsOperationsControlCenter
+} from "@/screens/settings-screen.operations-control";
+import {
   ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
-  FUND_STRUCTURE_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
@@ -48,6 +61,14 @@ import type {
   TradingWorkspaceResponse,
   WorkspaceKey
 } from "@/types";
+
+export type {
+  SettingsAssetProfileGovernancePanel,
+  SettingsAssetProfileRow,
+  SettingsOperationsControlCard,
+  SettingsOperationsControlCenter,
+  SettingsOperationsControlMetric
+} from "@/screens/settings-screen.operations-control";
 
 type AlpacaEnvironment = AlpacaBrokerageConnectionRequest["environment"];
 
@@ -216,6 +237,7 @@ export function buildAlpacaConnectionCommandState({
       : "muted";
   const clearConfirmationReady = !busy && canClear && clearConfirmationPending;
   const validationVisible = form.submitted || form.actionTone === "danger";
+  const storedCredentialsActive = canClear && keyIdMissing && secretKeyMissing && !validationVisible;
   const keyIdError = validationVisible && keyIdMissing;
   const secretKeyError = validationVisible && secretKeyMissing;
   const missingCredentialValue = validationVisible ? "Required" : "Needed";
@@ -275,16 +297,16 @@ export function buildAlpacaConnectionCommandState({
     {
       id: "alpaca-key-id-requirement",
       label: "Key ID",
-      value: keyIdMissing ? missingCredentialValue : "Ready",
-      met: !keyIdMissing,
-      tone: keyIdMissing ? missingCredentialTone : "success"
+      value: storedCredentialsActive ? "Stored" : keyIdMissing ? missingCredentialValue : "Ready",
+      met: storedCredentialsActive || !keyIdMissing,
+      tone: storedCredentialsActive || !keyIdMissing ? "success" : missingCredentialTone
     },
     {
       id: "alpaca-secret-key-requirement",
       label: "Secret key",
-      value: secretKeyMissing ? missingCredentialValue : "Ready",
-      met: !secretKeyMissing,
-      tone: secretKeyMissing ? missingCredentialTone : "success"
+      value: storedCredentialsActive ? "Stored" : secretKeyMissing ? missingCredentialValue : "Ready",
+      met: storedCredentialsActive || !secretKeyMissing,
+      tone: storedCredentialsActive || !secretKeyMissing ? "success" : missingCredentialTone
     },
     {
       id: "alpaca-environment-requirement",
@@ -305,45 +327,51 @@ export function buildAlpacaConnectionCommandState({
     ? "warning"
     : clearConfirmationReady
       ? "warning"
-    : form.actionTone === "danger"
-      ? "danger"
-      : form.actionTone === "success"
-        ? "success"
-        : hasValidationErrors && validationVisible
-          ? "warning"
-          : liveAcknowledgementMissing
-            ? "warning"
-            : "default";
+      : form.actionTone === "danger"
+        ? "danger"
+        : form.actionTone === "success"
+          ? "success"
+          : storedCredentialsActive
+            ? "success"
+            : hasValidationErrors && validationVisible
+              ? "warning"
+              : liveAcknowledgementMissing
+                ? "warning"
+                : "default";
   const formPanelTitle = busy
     ? form.busyAction === "clear"
       ? "Clearing Alpaca credentials"
       : "Testing Alpaca credentials"
     : clearConfirmationReady
       ? "Confirm Alpaca credential clear"
-    : form.actionMessage
-      ? form.actionMessage
-      : liveAcknowledgementMissing && !hasValidationErrors
-        ? "Live endpoint review required"
-        : hasValidationErrors && validationVisible
-          ? "Credentials incomplete"
-          : hasValidationErrors
-            ? "Enter Alpaca credentials"
-            : "Credentials ready for test";
+      : form.actionMessage
+        ? form.actionMessage
+        : storedCredentialsActive
+          ? "Stored credentials active"
+          : liveAcknowledgementMissing && !hasValidationErrors
+            ? "Live endpoint review required"
+            : hasValidationErrors && validationVisible
+              ? "Credentials incomplete"
+              : hasValidationErrors
+                ? "Enter Alpaca credentials"
+                : "Credentials ready for test";
   const formPanelDetail = busy
     ? "Meridian is waiting on the brokerage connection request."
     : clearConfirmationReady
       ? "Confirming will remove the stored Alpaca key reference and block provider-backed workflows until a new connection test succeeds."
-    : form.actionMessage
-      ? hasValidationErrors
-        ? "Review the required fields before the next connection test."
-        : "Credential readiness has been recalculated from the current form state."
-      : liveAcknowledgementMissing && !hasValidationErrors
-        ? "Acknowledge that Meridian will verify live Alpaca brokerage credentials before submitting."
-        : hasValidationErrors && validationVisible
-          ? "Enter the required Alpaca API values before Meridian can call /v2/account."
-          : hasValidationErrors
-            ? "Paste the paper key ID and secret key to enable account verification."
-            : "Submitting will test the account and clear the secret key from the form after the response.";
+      : form.actionMessage
+        ? hasValidationErrors
+          ? "Review the required fields before the next connection test."
+          : "Credential readiness has been recalculated from the current form state."
+        : storedCredentialsActive
+          ? "Existing credentials remain masked. Enter both values only to replace and re-test them."
+          : liveAcknowledgementMissing && !hasValidationErrors
+            ? "Acknowledge that Meridian will verify live Alpaca brokerage credentials before submitting."
+            : hasValidationErrors && validationVisible
+              ? "Enter the required Alpaca API values before Meridian can test the account."
+              : hasValidationErrors
+                ? "Paste the paper key ID and secret key to enable account verification."
+                : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,
@@ -389,6 +417,8 @@ export function buildAlpacaConnectionCommandState({
     clearBusy: form.busyAction === "clear",
     submitDisabledReason: busy
       ? "Alpaca credential request is already running."
+      : storedCredentialsActive
+        ? "Enter both Alpaca credential values to replace and test the stored connection."
       : keyIdMissing
         ? "Enter an Alpaca key ID before testing the connection."
         : secretKeyMissing
@@ -617,6 +647,166 @@ function isActiveAction(
   return mountedRef.current && actionRevisionRef.current === revision;
 }
 
+interface SettingsRobinhoodConnectionDependencies {
+  startConnection?: () => Promise<BrokerageConnectionStatus>;
+  revokeConnection?: () => Promise<BrokerageConnectionStatus>;
+  openAuthorizationUrl?: (url: string) => void;
+}
+
+export interface SettingsRobinhoodConnectionFormViewModel {
+  busy: boolean;
+  busyAction: "connect" | "disconnect" | null;
+  actionMessage: string | null;
+  actionDetails: string[];
+  actionTone: "default" | "success" | "warning" | "danger";
+  statusRole: "status" | "alert";
+  statusClassName: string;
+  authorizationUrl: string | null;
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
+}
+
+function defaultOpenAuthorizationUrl(url: string): void {
+  if (typeof window !== "undefined" && typeof window.open === "function") {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+export function useRobinhoodConnectionViewModel({
+  onRefresh,
+  canConnect,
+  canDisconnect,
+  startConnection = startRobinhoodConnection,
+  revokeConnection = revokeRobinhoodConnection,
+  openAuthorizationUrl = defaultOpenAuthorizationUrl
+}: {
+  onRefresh?: () => Promise<void> | void;
+  canConnect: boolean;
+  canDisconnect: boolean;
+} & SettingsRobinhoodConnectionDependencies): SettingsRobinhoodConnectionFormViewModel {
+  const [busyAction, setBusyAction] = useState<"connect" | "disconnect" | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [actionDetails, setActionDetails] = useState<string[]>([]);
+  const [actionTone, setActionTone] = useState<"default" | "success" | "warning" | "danger">("default");
+  // The Robinhood status endpoint only ever returns authorizationUrl on the connect
+  // response (status refreshes return null), so retain it here to keep the manual
+  // fallback link available after the post-connect refresh and across status polls.
+  const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const actionRevisionRef = useRef(0);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    actionRevisionRef.current += 1;
+  }, []);
+
+  const connect = async () => {
+    if (!canConnect || busyAction !== null) {
+      return;
+    }
+
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
+    setBusyAction("connect");
+    setActionMessage(null);
+    setActionDetails([]);
+    setActionTone("default");
+
+    try {
+      const status = await startConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const nextAuthorizationUrl = status.authorizationUrl?.trim() || null;
+      if (nextAuthorizationUrl) {
+        setAuthorizationUrl(nextAuthorizationUrl);
+        openAuthorizationUrl(nextAuthorizationUrl);
+      }
+
+      await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      setBusyAction(null);
+      setActionMessage(
+        nextAuthorizationUrl
+          ? "Complete Robinhood authorization in the opened tab (or the link below if a popup was blocked), then refresh."
+          : status.isConnected
+            ? "Robinhood connection is active."
+            : status.lastError ?? status.warnings[0] ?? "Robinhood connection updated."
+      );
+      setActionDetails([]);
+      setActionTone(nextAuthorizationUrl || status.isConnected ? "success" : "warning");
+    } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const display = describeApiError(err, "Robinhood connection request failed.");
+      setBusyAction(null);
+      setActionMessage(display.summary);
+      setActionDetails(display.details);
+      setActionTone("danger");
+    }
+  };
+
+  const disconnect = async () => {
+    if (!canDisconnect || busyAction !== null) {
+      return;
+    }
+
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
+    setBusyAction("disconnect");
+    setActionMessage(null);
+    setActionDetails([]);
+    setActionTone("default");
+
+    try {
+      await revokeConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      setAuthorizationUrl(null);
+      setBusyAction(null);
+      setActionMessage("Robinhood connection revoked.");
+      setActionDetails([]);
+      setActionTone("success");
+    } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const display = describeApiError(err, "Robinhood disconnect request failed.");
+      setBusyAction(null);
+      setActionMessage(display.summary);
+      setActionDetails(display.details);
+      setActionTone("danger");
+    }
+  };
+
+  return {
+    busy: busyAction !== null,
+    busyAction,
+    actionMessage,
+    actionDetails,
+    actionTone,
+    statusRole: actionTone === "danger" ? "alert" : "status",
+    statusClassName: actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
+    authorizationUrl,
+    connect,
+    disconnect
+  };
+}
+
 export interface SettingsSessionItem {
   label: string;
   value: string;
@@ -786,12 +976,30 @@ export interface SettingsAlpacaConnectionPanel {
   accountLabel: string;
   maskedKeyIdLabel: string;
   verifiedAtLabel: string;
+  verifiedAtTone: "default" | "success" | "warning" | "danger" | "muted";
   warnings: string[];
   canClear: boolean;
   setupChecklistTitle: string;
   setupChecklistDetail: string;
   setupChecklistAriaLabel: string;
   setupChecklist: SettingsAlpacaSetupStep[];
+}
+
+export interface SettingsRobinhoodConnectionPanel {
+  providerLabel: string;
+  stateLabel: string;
+  statusDetail: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "outline" | "success" | "warning" | "danger";
+  accountLabel: string;
+  connectedAtLabel: string;
+  expiresAtLabel: string;
+  scopesLabel: string;
+  authorizationUrl: string | null;
+  warnings: string[];
+  isConfigured: boolean;
+  canConnect: boolean;
+  canDisconnect: boolean;
 }
 
 export interface SettingsProviderConnectionRow {
@@ -806,17 +1014,24 @@ export interface SettingsProviderConnectionRow {
   credentialStatus: "present" | "missing" | "not-required";
   verificationLabel: string;
   verificationStatus: "verified" | "pending" | "failed";
+  verificationTone: "default" | "success" | "warning" | "danger" | "muted";
   healthLabel: string;
   healthTone: "default" | "success" | "warning" | "danger" | "muted";
   sourceLabel: string;
+  sourceTone: "default" | "success" | "warning" | "danger" | "muted";
   environmentLabel: string;
   maskedKeyPreviewLabel: string;
   lastHeartbeatLabel: string;
+  lastHeartbeatTone: "default" | "success" | "warning" | "danger" | "muted";
+  freshnessStatus: "current" | "delayed" | "stale" | "unavailable";
   fallbackLabel: string;
   fallbackStatus: "active" | "available" | "missing";
   routingBindingsLabel: string;
   trustScoreLabel: string;
   productionStateLabel: string;
+  productionStateTone: "default" | "success" | "warning" | "danger" | "muted";
+  readinessLabel: "Ready" | "Review" | "Blocked";
+  readinessTone: "success" | "warning" | "danger";
   affectedWorkflowsLabel: string;
   affectedWorkflows: string[];
   recommendedAction: string;
@@ -889,65 +1104,6 @@ export interface SettingsRuntimeCapabilitySection {
   toggles: SettingsRuntimeCapabilityToggle[];
 }
 
-export interface SettingsOperationsControlMetric {
-  label: string;
-  value: string;
-  tone: "default" | "success" | "warning" | "danger" | "muted";
-}
-
-export interface SettingsOperationsControlCard {
-  id: string;
-  title: string;
-  description: string;
-  statusLabel: string;
-  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
-  endpointHref: string;
-  routeHref: string;
-  routeLabel: string;
-  routeAriaLabel: string;
-  metrics: SettingsOperationsControlMetric[];
-  detail: string;
-}
-
-export interface SettingsOperationsControlCenter {
-  title: string;
-  summary: string;
-  statusLabel: string;
-  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
-  loadedCountLabel: string;
-  reviewCountLabel: string;
-  listLabel: string;
-  cards: SettingsOperationsControlCard[];
-}
-
-export interface SettingsAssetProfileRow {
-  profileId: string;
-  versionLabel: string;
-  name: string;
-  categoryLabel: string;
-  statusLabel: string;
-  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
-  fieldCountLabel: string;
-  projectedFieldLabel: string;
-  requiredCloseIdentifierLabel: string;
-  accountingImpactLabel: string;
-  effectiveLabel: string;
-}
-
-export interface SettingsAssetProfileGovernancePanel {
-  title: string;
-  summary: string;
-  statusLabel: string;
-  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
-  approvedCountLabel: string;
-  projectedFieldCountLabel: string;
-  closeIdentifierCountLabel: string;
-  listLabel: string;
-  canCreateSecurity: boolean;
-  createDisabledReason: string | null;
-  rows: SettingsAssetProfileRow[];
-}
-
 export interface SettingsScreenViewModel {
   headerChips: SettingsHeaderChip[];
   sessionTitle: string;
@@ -957,12 +1113,16 @@ export interface SettingsScreenViewModel {
   systemTitle: string;
   systemSummary: string;
   systemTone: "default" | "success" | "warning" | "danger";
+  systemFreshness: SettingsFreshnessViewModel;
   systemItems: SettingsSystemItem[];
   hasOverview: boolean;
   recentEventsSection: SettingsRecentEventsSection;
   providerConnectionCenter: SettingsProviderConnectionCenter;
   alpacaConnectionPanel: SettingsAlpacaConnectionPanel;
+  robinhoodConnectionPanel: SettingsRobinhoodConnectionPanel;
   diagnosticLinks: SettingsDiagnosticLink[];
+  diagnosticExceptionLinks: SettingsDiagnosticLink[];
+  diagnosticHealthyLinks: SettingsDiagnosticLink[];
   diagnosticCounts: SettingsDiagnosticCounts;
   diagnosticSummary: string;
   diagnosticListLabel: string;
@@ -988,6 +1148,7 @@ export interface SettingsScreenPayload {
   accounting?: AccountingWorkspaceResponse | null;
   reporting?: ReportingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  robinhoodConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
@@ -1002,6 +1163,14 @@ export interface SettingsScreenPayload {
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
+  evaluatedAt?: Date;
+}
+
+export interface SettingsFreshnessViewModel {
+  label: string;
+  timestampLabel: string;
+  status: "current" | "delayed" | "stale" | "unavailable";
+  tone: "success" | "warning" | "danger" | "muted";
 }
 
 const noopSelectRecentEvent = () => {};
@@ -1042,7 +1211,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "System overview",
     href: WORKSTATION_API_ENDPOINTS.systemStatus,
     description: "System health, provider counts, and active run summary.",
-    ariaLabel: "Open System overview diagnostic endpoint",
+    ariaLabel: "Open System overview diagnostic service",
     isAvailable: (payload) => payload.overview !== null,
     unavailableDetail: "System overview has not loaded in this workstation session."
   },
@@ -1051,7 +1220,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Session info",
     href: WORKSTATION_API_ENDPOINTS.session,
     description: "Current operator session context and environment.",
-    ariaLabel: "Open Session info diagnostic endpoint",
+    ariaLabel: "Open Session info diagnostic service",
     isAvailable: (payload) => payload.session !== null,
     unavailableDetail: "Operator session context has not loaded."
   },
@@ -1060,7 +1229,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Data workspace",
     href: WORKSTATION_API_ENDPOINTS.data,
     description: "Provider posture, backfill queues, and export readiness.",
-    ariaLabel: "Open Data workspace diagnostic endpoint",
+    ariaLabel: "Open Data workspace diagnostic service",
     workspaceKey: "data",
     isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
     unavailableDetail: "Data workspace provider posture has not loaded."
@@ -1070,40 +1239,40 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Strategy workspace",
     href: WORKSTATION_API_ENDPOINTS.strategy,
     description: "Strategy run metrics and active run rows.",
-    ariaLabel: "Open Strategy workspace diagnostic endpoint",
+    ariaLabel: "Open Strategy workspace diagnostic service",
     workspaceKey: "strategy",
     isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
-    unavailableDetail: "Strategy run payload has not loaded."
+    unavailableDetail: "Strategy run data has not loaded."
   },
   {
     id: "trading-workspace",
     label: "Trading workspace",
     href: WORKSTATION_API_ENDPOINTS.trading,
     description: "Live trading positions, orders, fills, and risk.",
-    ariaLabel: "Open Trading workspace diagnostic endpoint",
+    ariaLabel: "Open Trading workspace diagnostic service",
     workspaceKey: "trading",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Trading workspace payload has not loaded."
+    unavailableDetail: "Trading workspace data has not loaded."
   },
   {
     id: "accounting-workspace",
     label: "Accounting workspace",
     href: WORKSTATION_API_ENDPOINTS.accounting,
     description: "Reconciliation queue, cash flow, and accounting evidence.",
-    ariaLabel: "Open Accounting workspace diagnostic endpoint",
+    ariaLabel: "Open Accounting workspace diagnostic service",
     workspaceKey: "accounting",
     isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
-    unavailableDetail: "Accounting workspace payload has not loaded."
+    unavailableDetail: "Accounting workspace data has not loaded."
   },
   {
     id: "reporting-workspace",
     label: "Reporting workspace",
     href: WORKSTATION_API_ENDPOINTS.reporting,
     description: "Reporting profiles and governed report-pack recipients.",
-    ariaLabel: "Open Reporting workspace diagnostic endpoint",
+    ariaLabel: "Open Reporting workspace diagnostic service",
     workspaceKey: "reporting",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
-    unavailableDetail: "Reporting workspace payload has not loaded."
+    unavailableDetail: "Reporting workspace data has not loaded."
   }
 ];
 
@@ -1116,7 +1285,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Paper trading cockpit",
     description: "Trading positions, orders, sessions, replay, promotion, controls, and operator inbox readiness.",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Trading cockpit payload has not loaded.",
+    unavailableDetail: "Trading cockpit data has not loaded.",
     endpoints: [
       { id: "trading-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.trading },
       { id: "trading-readiness", method: "GET", label: "Readiness", href: WORKSTATION_API_ENDPOINTS.tradingReadiness },
@@ -1134,7 +1303,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
     isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
-    unavailableDetail: "Portfolio workspace payload has not loaded.",
+    unavailableDetail: "Portfolio workspace data has not loaded.",
     endpoints: [
       { id: "portfolio-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.portfolio },
       { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: PORTFOLIO_API_ENDPOINTS.aggregate },
@@ -1152,7 +1321,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Accounting and reconciliation",
     description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
-    unavailableDetail: "Accounting workspace payload has not loaded.",
+    unavailableDetail: "Accounting workspace data has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
       { id: "private-capital-activity", method: "GET", label: "Private-capital activity", href: WORKSTATION_API_ENDPOINTS.privateCapitalActivity },
@@ -1176,7 +1345,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Governed reports and exports",
     description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval lanes.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
-    unavailableDetail: "Reporting workspace payload has not loaded.",
+    unavailableDetail: "Reporting workspace data has not loaded.",
     endpoints: [
       { id: "reporting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.reporting },
       { id: "analysis-export", method: "POST", label: "Analysis export", href: EXPORT_API_ENDPOINTS.analysis },
@@ -1190,9 +1359,9 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Strategy",
     route: WORKSTATION_ROUTE_CATALOG.strategy,
     title: "Strategy run library",
-    description: "Strategy workspace payloads, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
+    description: "Strategy workspace data, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
     isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
-    unavailableDetail: "Strategy workspace payload has not loaded.",
+    unavailableDetail: "Strategy workspace data has not loaded.",
     endpoints: [
       { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
       { id: "run-history", method: "GET", label: "Run history", href: WORKSTATION_API_ENDPOINTS.runHistory },
@@ -1210,7 +1379,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Data trust and provider operations",
     description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
-    unavailableDetail: "Data workspace payload has not loaded.",
+    unavailableDetail: "Data workspace data has not loaded.",
     endpoints: [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
@@ -1316,7 +1485,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
       listLabel: "No recent system events",
       countLabel: "0",
       statusLabel: "No recent events",
-      statusDetail: "No system events reported for the active session. Diagnostic endpoints remain available below.",
+      statusDetail: "No system events reported for the active session. Diagnostic services remain available below.",
       state: "empty",
       rows
     };
@@ -1425,51 +1594,90 @@ function eventDetailTone(type: SettingsEventRow["type"]): SettingsRecentEventDet
   return "default";
 }
 
-function formatSettingsUtcMinute(
+const SETTINGS_FRESHNESS_CURRENT_WINDOW_MS = 60 * 60 * 1_000;
+const SETTINGS_FRESHNESS_DELAYED_WINDOW_MS = 24 * 60 * 60 * 1_000;
+
+export function buildSettingsFreshnessViewModel(
   value: string | Date | null | undefined,
-  unavailableLabel = "Unavailable"
-): string {
+  evaluatedAt: Date = new Date()
+): SettingsFreshnessViewModel {
   if (!value) {
-    return unavailableLabel;
+    return {
+      label: "Not reported",
+      timestampLabel: "Not reported",
+      status: "unavailable",
+      tone: "warning"
+    };
   }
 
-  const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) {
-    return unavailableLabel;
+  const observedAt = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(observedAt.getTime()) || Number.isNaN(evaluatedAt.getTime())) {
+    return {
+      label: "Invalid timestamp",
+      timestampLabel: "Invalid timestamp",
+      status: "unavailable",
+      tone: "danger"
+    };
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  const timestampLabel = formatSettingsUtcMinute(observedAt);
+  const ageMs = evaluatedAt.getTime() - observedAt.getTime();
+  if (ageMs < -5 * 60 * 1_000) {
+    return {
+      label: `Clock mismatch · ${timestampLabel}`,
+      timestampLabel,
+      status: "unavailable",
+      tone: "warning"
+    };
+  }
+
+  if (ageMs <= SETTINGS_FRESHNESS_CURRENT_WINDOW_MS) {
+    return {
+      label: `Current · ${timestampLabel}`,
+      timestampLabel,
+      status: "current",
+      tone: "success"
+    };
+  }
+
+  if (ageMs <= SETTINGS_FRESHNESS_DELAYED_WINDOW_MS) {
+    return {
+      label: `Delayed · ${timestampLabel}`,
+      timestampLabel,
+      status: "delayed",
+      tone: "warning"
+    };
+  }
+
+  return {
+    label: `Stale · ${timestampLabel}`,
+    timestampLabel,
+    status: "stale",
+    tone: "danger"
+  };
 }
 
-function formatSettingsDateOnly(value: string | null | undefined, unavailableLabel = "No date"): string {
-  if (!value) {
-    return unavailableLabel;
-  }
-
-  const [year, month, day] = value.split("-").map((part) => Number(part));
-  if (!year || !month || !day) {
-    return unavailableLabel;
-  }
-
-  return `${UTC_MONTH_LABELS[month - 1] ?? "Month"} ${day}, ${year}`;
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null): SettingsAlpacaConnectionPanel {
+function buildAlpacaConnectionPanel(
+  connection: BrokerageConnectionStatus | null,
+  evaluatedAt: Date
+): SettingsAlpacaConnectionPanel {
   const environment = connection?.environment?.trim() || "paper";
   const isLive = environment.toLowerCase() === "live";
   const warnings = [
-    ...(connection?.warnings ?? []),
+    ...(connection?.warnings ?? []).map(providerConnectionErrorDetail),
     ...(isLive ? ["Live Alpaca endpoint is selected. Paper remains the default workstation path."] : [])
   ];
   const state = connection?.state ?? "NotConfigured";
+  const verificationFreshness = buildSettingsFreshnessViewModel(connection?.verifiedAt, evaluatedAt);
+  const connectionNeedsRefresh = state === "Connected" && verificationFreshness.status !== "current";
+  if (connectionNeedsRefresh) {
+    const freshnessDescription = verificationFreshness.status === "unavailable"
+      ? "not reported"
+      : verificationFreshness.status;
+    warnings.unshift(`The last successful Alpaca verification is ${freshnessDescription}. Re-verify before relying on readiness evidence.`);
+  }
   const tone: SettingsAlpacaConnectionPanel["statusTone"] = state === "Connected"
-    ? "success"
+    ? connectionNeedsRefresh ? "warning" : "success"
     : state === "Degraded" || state === "ReauthorizationRequired"
       ? "danger"
       : state === "Disconnected" || state === "AuthorizationPending"
@@ -1479,31 +1687,68 @@ function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null
   return {
     providerLabel: connection?.displayName ?? "Alpaca paper",
     stateLabel: connectionStateLabel(state),
-    statusDetail: connectionStatusDetail(connection),
+    statusDetail: connectionStatusDetail(connection, verificationFreshness),
     statusTone: tone,
     badgeVariant: tone === "default" ? "outline" : tone,
     environmentLabel: environment.toUpperCase(),
     accountLabel: connection?.externalAccountId?.trim() || "Not verified",
     maskedKeyIdLabel: connection?.maskedKeyId?.trim() || "Not stored",
-    verifiedAtLabel: connection?.verifiedAt?.trim() || "Not verified",
+    verifiedAtLabel: verificationFreshness.label,
+    verifiedAtTone: verificationFreshness.tone,
     warnings,
     canClear: connection?.isConfigured === true,
     setupChecklistTitle: "Provider setup checklist",
-    setupChecklistDetail: "Move from demo data to a verified paper connection before relying on readiness evidence.",
+    setupChecklistDetail: connectionNeedsRefresh
+      ? "Re-verify the paper connection before relying on readiness evidence."
+      : state === "Connected"
+        ? "Stored paper credentials and current account verification support the readiness handoff."
+        : "Move from demo data to a verified paper connection before relying on readiness evidence.",
     setupChecklistAriaLabel: "Alpaca provider setup checklist",
-    setupChecklist: buildAlpacaSetupChecklist(connection, isLive)
+    setupChecklist: buildAlpacaSetupChecklist(connection, isLive, verificationFreshness)
+  };
+}
+
+function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | null): SettingsRobinhoodConnectionPanel {
+  const state = connection?.state ?? "NotConfigured";
+  const tone: SettingsRobinhoodConnectionPanel["statusTone"] = state === "Connected"
+    ? "success"
+    : state === "Degraded" || state === "ReauthorizationRequired"
+      ? "danger"
+      : state === "Disconnected" || state === "AuthorizationPending"
+        ? "warning"
+        : "default";
+  const scopes = connection?.scopes ?? [];
+  const isConfigured = connection?.isConfigured === true;
+
+  return {
+    providerLabel: connection?.displayName ?? "Robinhood",
+    stateLabel: connectionStateLabel(state),
+    statusDetail: robinhoodConnectionStatusDetail(connection),
+    statusTone: tone,
+    badgeVariant: tone === "default" ? "outline" : tone,
+    accountLabel: connection?.externalAccountId?.trim() || "Not linked",
+    connectedAtLabel: formatSettingsUtcMinute(connection?.connectedAt, "Not connected"),
+    expiresAtLabel: formatSettingsUtcMinute(connection?.expiresAt, "No expiry recorded"),
+    scopesLabel: scopes.length > 0 ? scopes.join(", ") : "No scopes granted",
+    authorizationUrl: connection?.authorizationUrl?.trim() || null,
+    warnings: connection?.warnings ?? [],
+    isConfigured,
+    canConnect: state !== "Connected",
+    canDisconnect: state !== "NotConfigured" && state !== "Disconnected"
   };
 }
 
 function buildAlpacaSetupChecklist(
   connection: BrokerageConnectionStatus | null,
-  isLive: boolean
+  isLive: boolean,
+  verificationFreshness: SettingsFreshnessViewModel
 ): SettingsAlpacaSetupStep[] {
   const isConfigured = connection?.isConfigured === true;
   const isConnected = connection?.isConnected === true;
   const isFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
   const account = connection?.externalAccountId?.trim();
-  const lastError = connection?.lastError?.trim();
+  const lastError = providerConnectionErrorDetail(connection?.lastError?.trim());
+  const isVerificationFresh = verificationFreshness.status === "current";
 
   return [
     {
@@ -1535,18 +1780,20 @@ function buildAlpacaSetupChecklist(
     {
       id: "alpaca-account-verification",
       label: "Verify account",
-      statusLabel: isConnected ? "Verified" : isFailed ? "Failed" : isConfigured ? "Test needed" : "Blocked",
+      statusLabel: isConnected ? isVerificationFresh ? "Verified" : "Refresh" : isFailed ? "Failed" : isConfigured ? "Test needed" : "Blocked",
       detail: isConnected
-        ? account
-          ? `Alpaca /v2/account returned account ${account}.`
-          : "Alpaca /v2/account returned an account response."
+        ? isVerificationFresh
+          ? account
+            ? `Alpaca verified account ${account}.`
+            : "Alpaca account verification succeeded."
+          : `Last verification is ${verificationFreshness.label.toLowerCase()}. Re-run the account check.`
         : isFailed
           ? lastError || "The last Alpaca verification attempt failed."
           : isConfigured
             ? "Run Connect and test to verify the stored paper account."
             : "Store paper credentials before account verification can run.",
-      tone: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "muted",
-      badgeVariant: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "outline",
+      tone: isConnected ? isVerificationFresh ? "success" : "warning" : isFailed ? "danger" : isConfigured ? "warning" : "muted",
+      badgeVariant: isConnected ? isVerificationFresh ? "success" : "warning" : isFailed ? "danger" : isConfigured ? "warning" : "outline",
       actionLabel: null,
       actionHref: null,
       actionAriaLabel: null
@@ -1554,15 +1801,17 @@ function buildAlpacaSetupChecklist(
     {
       id: "alpaca-readiness-handoff",
       label: "Check readiness",
-      statusLabel: isConnected ? "Ready" : "Blocked",
-      detail: isConnected
+      statusLabel: isConnected && isVerificationFresh ? "Ready" : isConnected ? "Refresh" : "Blocked",
+      detail: isConnected && isVerificationFresh
         ? "Open Trading readiness to confirm brokerage-sync and execution-control evidence."
-        : "Readiness handoff unlocks after account verification succeeds.",
-      tone: isConnected ? "success" : "muted",
-      badgeVariant: isConnected ? "success" : "outline",
-      actionLabel: isConnected ? "Open readiness" : null,
-      actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : null,
-      actionAriaLabel: isConnected ? "Open Trading readiness after Alpaca account verification" : null
+        : isConnected
+          ? "Readiness handoff is paused until the stored connection is re-verified."
+          : "Readiness handoff unlocks after account verification succeeds.",
+      tone: isConnected ? isVerificationFresh ? "success" : "warning" : "muted",
+      badgeVariant: isConnected ? isVerificationFresh ? "success" : "warning" : "outline",
+      actionLabel: isConnected && isVerificationFresh ? "Open readiness" : null,
+      actionHref: isConnected && isVerificationFresh ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : null,
+      actionAriaLabel: isConnected && isVerificationFresh ? "Open Trading readiness after Alpaca account verification" : null
     }
   ];
 }
@@ -1584,16 +1833,24 @@ function connectionStateLabel(state: BrokerageConnectionStatus["state"]): string
   }
 }
 
-function connectionStatusDetail(connection: BrokerageConnectionStatus | null): string {
+function connectionStatusDetail(
+  connection: BrokerageConnectionStatus | null,
+  verificationFreshness: SettingsFreshnessViewModel
+): string {
   if (connection?.isConnected) {
     const account = connection.externalAccountId?.trim();
-    return account
-      ? `Verified Alpaca account ${account} through /v2/account.`
-      : "Verified Alpaca account through /v2/account.";
+    if (verificationFreshness.status === "current") {
+      return account ? `Alpaca account ${account} is verified.` : "Alpaca account verification succeeded.";
+    }
+
+    const historicalAccountDetail = account
+      ? `Alpaca account ${account} was last verified.`
+      : "The Alpaca account was last verified.";
+    return `${historicalAccountDetail} ${verificationFreshness.label}; re-verify before readiness handoff.`;
   }
 
   if (connection?.lastError) {
-    return connection.lastError;
+    return providerConnectionErrorDetail(connection.lastError);
   }
 
   if (connection?.isConfigured) {
@@ -1603,24 +1860,58 @@ function connectionStatusDetail(connection: BrokerageConnectionStatus | null): s
   return "No Alpaca API-key connection is stored.";
 }
 
+function robinhoodConnectionStatusDetail(connection: BrokerageConnectionStatus | null): string {
+  if (connection?.isConnected) {
+    const account = connection.externalAccountId?.trim();
+    return account
+      ? `Read-only Robinhood account ${account} is linked via OAuth.`
+      : "Read-only Robinhood account is linked via OAuth.";
+  }
+
+  if (connection?.lastError) {
+    return connection.lastError;
+  }
+
+  if (connection?.state === "AuthorizationPending" || connection?.authorizationUrl?.trim()) {
+    return "Robinhood authorization is pending. Complete the OAuth consent to finish linking.";
+  }
+
+  if (connection?.isConfigured) {
+    return "Robinhood OAuth is configured but no account is connected yet.";
+  }
+
+  return "No read-only Robinhood connection is configured. Set the ROBINHOOD_BROKERAGE_* OAuth environment variables.";
+}
+
+function providerConnectionErrorDetail(value: string | null | undefined): string {
+  return (value ?? "")
+    .replace(/Alpaca\s+\/v2\/account\s+verification/gi, "Alpaca account verification")
+    .replace(/\/v2\/account/gi, "account verification service")
+    .trim();
+}
+
 function buildProfileAuthenticationPanel(
   session: SessionInfo | null,
   connection: BrokerageConnectionStatus | null,
-  diagnosticStatusVariant: SettingsScreenViewModel["diagnosticStatusVariant"]
+  diagnosticStatusVariant: SettingsScreenViewModel["diagnosticStatusVariant"],
+  evaluatedAt: Date
 ): SettingsProfileAuthenticationPanel {
   const isLiveSession = session?.environment === "live";
   const isConnected = connection?.isConnected === true;
   const isConfigured = connection?.isConfigured === true;
   const connectionFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
+  const verificationFreshness = buildSettingsFreshnessViewModel(connection?.verifiedAt, evaluatedAt);
+  const hasCurrentBrokerageAuthority = isConnected && !connectionFailed && verificationFreshness.status === "current";
+  const brokerageEvidenceNeedsRefresh = isConnected && !connectionFailed && verificationFreshness.status !== "current";
   const account = connection?.externalAccountId?.trim();
   const workspaceLabel = session ? labelizeWorkspaceKey(session.activeWorkspace) : "Workspace unavailable";
   const environmentLabel = session ? session.environment.toUpperCase() : "UNKNOWN";
   const diagnosticBlocked = diagnosticStatusVariant === "danger";
   const statusTone: SettingsProfileAuthenticationPanel["statusTone"] = !session || connectionFailed
     ? "danger"
-    : isLiveSession || (isConfigured && !isConnected)
+    : isLiveSession || brokerageEvidenceNeedsRefresh || (isConfigured && !isConnected)
       ? "warning"
-      : isConnected
+      : hasCurrentBrokerageAuthority
         ? "success"
         : "default";
   const statusLabel = !session
@@ -1629,32 +1920,46 @@ function buildProfileAuthenticationPanel(
       ? "Authorization review"
       : isLiveSession
         ? "Live authority active"
-        : isConnected
+        : hasCurrentBrokerageAuthority
           ? "Access ready"
-          : isConfigured
-            ? "Verification needed"
-            : "Profile loaded";
-  const authorityLabel = isConnected
-    ? "Brokerage verified"
-    : isConfigured
-      ? "Brokerage test needed"
-      : "Brokerage not linked";
-  const authorityDetail = isConnected
-    ? account
-      ? `Alpaca account ${account} is verified for readiness handoffs.`
-      : "Alpaca account verification succeeded."
-    : connectionFailed
-      ? connection?.lastError?.trim() || "Brokerage authorization needs operator review."
-      : isConfigured
-        ? "Stored Alpaca keys still need account verification before readiness handoff."
-        : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
+          : brokerageEvidenceNeedsRefresh
+            ? "Access review"
+            : isConfigured
+              ? "Verification needed"
+              : "Profile loaded";
+  const authorityLabel = connectionFailed
+    ? "Brokerage review required"
+    : hasCurrentBrokerageAuthority
+      ? "Brokerage verified"
+      : brokerageEvidenceNeedsRefresh
+        ? verificationFreshness.status === "delayed"
+          ? "Brokerage evidence delayed"
+          : verificationFreshness.status === "stale"
+            ? "Brokerage evidence stale"
+            : "Brokerage evidence unavailable"
+        : isConfigured
+          ? "Brokerage test needed"
+          : "Brokerage not linked";
+  const authorityDetail = connectionFailed
+    ? connection?.lastError?.trim() || "Brokerage authorization needs operator review."
+    : hasCurrentBrokerageAuthority
+      ? account
+        ? `Alpaca account ${account} is verified for readiness handoffs.`
+        : "Alpaca account verification succeeded."
+      : brokerageEvidenceNeedsRefresh
+        ? `${account ? `Alpaca account ${account}` : "The Alpaca account"} was last verified, but the evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status}. ${verificationFreshness.label}; re-verify before readiness handoff.`
+        : isConfigured
+          ? "Stored Alpaca keys still need account verification before readiness handoff."
+          : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
   const summary = !session
-    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until the session payload returns."
+    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until session data returns."
     : isLiveSession
       ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
-      : isConnected
+      : hasCurrentBrokerageAuthority
         ? `${session.displayName} has a ${session.role} session with verified brokerage authority for ${workspaceLabel}.`
-        : `${session.displayName} has a ${session.role} session in ${environmentLabel}; brokerage authority still needs verification.`;
+        : brokerageEvidenceNeedsRefresh
+          ? `${session.displayName} has a ${session.role} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness handoff.`
+          : `${session.displayName} has a ${session.role} session in ${environmentLabel}; brokerage authority still needs verification.`;
   const notice = !session
     ? {
         title: "Authentication context unavailable",
@@ -1669,14 +1974,21 @@ function buildProfileAuthenticationPanel(
           tone: "danger" as const,
           role: "alert" as const
         }
-      : isLiveSession
+      : brokerageEvidenceNeedsRefresh
         ? {
-            title: "Live environment controls active",
-            detail: "Live mode can affect real brokerage state. Keep the Alpaca provider panel and readiness evidence in view before continuing.",
+            title: "Brokerage verification needs refresh",
+            detail: authorityDetail,
             tone: "warning" as const,
             role: "status" as const
           }
-        : null;
+        : isLiveSession
+          ? {
+              title: "Live environment controls active",
+              detail: "Live mode can affect real brokerage state. Keep the Alpaca provider panel and readiness evidence in view before continuing.",
+              tone: "warning" as const,
+              role: "status" as const
+            }
+          : null;
 
   return {
     regionLabel: "Profile and authentication posture",
@@ -1729,7 +2041,7 @@ function buildProfileAuthenticationPanel(
         id: "brokerage",
         label: "Brokerage authority",
         value: authorityLabel,
-        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted"
+        tone: connectionFailed ? "danger" : hasCurrentBrokerageAuthority ? "success" : isConnected || isConfigured ? "warning" : "muted"
       }
     ],
     stepsTitle: "Access readiness",
@@ -1739,7 +2051,7 @@ function buildProfileAuthenticationPanel(
         id: "operator-session",
         label: "Operator session",
         statusLabel: session ? "Loaded" : "Missing",
-        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session payload has not loaded from the workstation host.",
+        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session data has not loaded from Meridian.",
         tone: session ? "success" : "danger",
         badgeVariant: session ? "success" : "danger",
         actionLabel: null,
@@ -1754,7 +2066,7 @@ function buildProfileAuthenticationPanel(
           ? "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
           : session
             ? `${environmentLabel} mode is active for this workstation session.`
-            : "Operating mode is unknown until the session payload returns.",
+            : "Operating mode is unknown until session data returns.",
         tone: !session ? "danger" : isLiveSession ? "warning" : "success",
         badgeVariant: !session ? "danger" : isLiveSession ? "warning" : "success",
         actionLabel: null,
@@ -1764,13 +2076,25 @@ function buildProfileAuthenticationPanel(
       {
         id: "brokerage-authority",
         label: "Brokerage authority",
-        statusLabel: isConnected ? "Verified" : connectionFailed ? "Review" : isConfigured ? "Test needed" : "Not linked",
+        statusLabel: connectionFailed
+          ? "Review"
+          : hasCurrentBrokerageAuthority
+            ? "Verified"
+            : brokerageEvidenceNeedsRefresh
+              ? verificationFreshness.status === "delayed"
+                ? "Delayed"
+                : verificationFreshness.status === "stale"
+                  ? "Stale"
+                  : "Refresh"
+              : isConfigured
+                ? "Test needed"
+                : "Not linked",
         detail: authorityDetail,
-        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted",
-        badgeVariant: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "outline",
-        actionLabel: isConnected ? "Open readiness" : "Review provider setup",
-        actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
-        actionAriaLabel: isConnected
+        tone: connectionFailed ? "danger" : hasCurrentBrokerageAuthority ? "success" : isConnected || isConfigured ? "warning" : "muted",
+        badgeVariant: connectionFailed ? "danger" : hasCurrentBrokerageAuthority ? "success" : isConnected || isConfigured ? "warning" : "outline",
+        actionLabel: hasCurrentBrokerageAuthority ? "Open readiness" : "Review provider setup",
+        actionHref: hasCurrentBrokerageAuthority ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        actionAriaLabel: hasCurrentBrokerageAuthority
           ? "Open Trading readiness from verified profile authentication posture"
           : "Review Alpaca provider setup from profile authentication posture"
       },
@@ -1779,13 +2103,13 @@ function buildProfileAuthenticationPanel(
         label: "Audit and diagnostics",
         statusLabel: diagnosticBlocked ? "Review" : "Reachable",
         detail: diagnosticBlocked
-          ? "At least one diagnostic payload failed; inspect API reachability before relying on profile state."
+          ? "At least one diagnostic data source failed; inspect service reachability before relying on profile state."
           : "Session, diagnostics, and provider evidence can be inspected without leaving Settings.",
         tone: diagnosticBlocked ? "warning" : "success",
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
-        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
-        actionAriaLabel: "Open Settings diagnostic endpoints from profile authentication posture"
+        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
+        actionAriaLabel: "Open Settings diagnostic services from profile authentication posture"
       }
     ]
   };
@@ -1820,7 +2144,8 @@ function buildProviderConnectionCenter(
   routingConnections: ProviderRoutingConnection[] | null | undefined,
   routingBindings: ProviderRoutingBinding[] | null | undefined,
   trustSnapshots: ProviderRoutingTrustSnapshot[] | null | undefined,
-  refreshing: boolean
+  refreshing: boolean,
+  evaluatedAt: Date
 ): SettingsProviderConnectionCenter {
   const routingConnectionRows = routingConnections ?? [];
   const bindingRows = routingBindings ?? [];
@@ -1833,7 +2158,7 @@ function buildProviderConnectionCenter(
       if (connection) {
         matchedRoutingConnectionIds.add(normalizeProviderRoutingId(connection.connectionId));
       }
-      return buildProviderConnectionRow(row, buildProviderRoutingRowContext(connection, bindingRows, trustRows));
+      return buildProviderConnectionRow(row, buildProviderRoutingRowContext(connection, bindingRows, trustRows), evaluatedAt);
     }),
     ...routingConnectionRows
       .filter((connection) => !matchedRoutingConnectionIds.has(normalizeProviderRoutingId(connection.connectionId)))
@@ -1845,9 +2170,9 @@ function buildProviderConnectionCenter(
   const brokerageRows = rows.filter((row) => row.capabilityGroup === "brokerage");
   const accountingRows = rows.filter((row) => row.capabilityGroup === "accounting");
   const dataRows = rows.filter((row) => row.capabilityGroup === "data");
-  const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
-  const warningCount = rows.filter((row) => row.healthTone === "warning").length;
-  const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
+  const readinessBlockedCount = rows.filter((row) => row.readinessTone === "danger").length;
+  const readinessReviewCount = rows.filter((row) => row.readinessTone === "warning").length;
+  const verifiedCount = rows.filter((row) => row.verificationStatus === "verified").length;
   const routingSummaryLabel = routingConnectionRows.length === 0
     ? "Routing catalog unavailable"
     : `${formatCount(routingConnectionRows.length, "routing connection")} · ${formatCount(bindingRows.length, "binding")} · ${formatCount(trustRows.length, "trust snapshot")}`;
@@ -1856,19 +2181,19 @@ function buildProviderConnectionCenter(
     ? "Unavailable"
     : refreshing
       ? "Refreshing"
-    : blockedCount > 0
-      ? `${blockedCount} blocked`
-      : warningCount > 0
-        ? `${warningCount} need review`
-        : "Continuity ready";
+    : readinessBlockedCount > 0
+      ? `${readinessBlockedCount} blocked`
+      : readinessReviewCount > 0
+        ? `${readinessReviewCount} need review`
+        : "Provider evidence ready";
 
   return {
     title: "Provider Connection Center",
     description: rows.length === 0
       ? "Provider connection evidence has not loaded for this Settings session."
-      : `${verifiedCount}/${rows.length} providers are verified or credential-free; ${routingSummaryLabel}.`,
+      : `${verifiedCount}/${rows.length} provider verification${rows.length === 1 ? "" : "s"} succeeded; ${routingSummaryLabel}.`,
     statusLabel,
-    statusVariant: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    statusVariant: rows.length === 0 ? "warning" : readinessBlockedCount > 0 ? "danger" : readinessReviewCount > 0 ? "warning" : "success",
     routingSummaryLabel,
     refreshAction: {
       label: refreshing ? "Refreshing..." : "Refresh routing",
@@ -1905,10 +2230,41 @@ function buildProviderConnectionCenter(
 
 function buildProviderConnectionRow(
   row: ProviderConnectionRow,
-  routingContext: ProviderRoutingRowContext
+  routingContext: ProviderRoutingRowContext,
+  evaluatedAt: Date
 ): SettingsProviderConnectionRow {
   const healthTone = providerHealthTone(row.health);
   const credentialTone = providerCredentialTone(row.credentialState);
+  const credentialStatus: SettingsProviderConnectionRow["credentialStatus"] = row.credentialState === "NotRequired"
+    ? "not-required"
+    : row.credentialState === "Missing" || row.credentialState === "Partial" || row.credentialState === "Invalid"
+      ? "missing"
+      : "present";
+  const verificationStatus: SettingsProviderConnectionRow["verificationStatus"] = row.verificationState === "Failed"
+    ? "failed"
+    : row.verificationState === "Verified" || row.verificationState === "NotRequired"
+      ? "verified"
+      : "pending";
+  const verificationTone: SettingsProviderConnectionRow["verificationTone"] = verificationStatus === "failed"
+    ? "danger"
+    : verificationStatus === "verified"
+      ? "success"
+      : "warning";
+  const credentialSourceLabel = providerCredentialSourceLabel(row.credentialSource);
+  const sourceReported = row.credentialSource !== "None" && credentialSourceLabel !== "Source not reported";
+  const sourceRequired = credentialStatus !== "not-required";
+  const sourceReady = !sourceRequired || sourceReported;
+  const sourceTone: SettingsProviderConnectionRow["sourceTone"] = sourceReady
+    ? sourceRequired ? "success" : "muted"
+    : "warning";
+  const freshness = buildSettingsFreshnessViewModel(row.lastSuccessfulAt ?? row.lastVerifiedAt, evaluatedAt);
+  const readiness = buildProviderReadiness({
+    verificationStatus,
+    sourceReady,
+    freshnessStatus: freshness.status,
+    healthTone,
+    routingProductionReady: isProviderRoutingProductionReady(routingContext)
+  });
   const routingCapabilityLabels = buildProviderRoutingCapabilityLabels(routingContext.bindings);
   const workflows = row.affectedWorkflows.length > 0
     ? row.affectedWorkflows
@@ -1928,31 +2284,34 @@ function buildProviderConnectionRow(
         : "data",
     credentialLabel: providerCredentialLabel(row.credentialState),
     credentialTone,
-    credentialStatus: row.credentialState === "NotRequired"
-      ? "not-required"
-      : row.credentialState === "Missing" || row.credentialState === "Partial" || row.credentialState === "Invalid"
-        ? "missing"
-        : "present",
+    credentialStatus,
     verificationLabel: providerVerificationLabel(row.verificationState),
-    verificationStatus: row.verificationState === "Failed"
-      ? "failed"
-      : row.verificationState === "Verified" || row.verificationState === "NotRequired"
-        ? "verified"
-        : "pending",
+    verificationStatus,
+    verificationTone,
     healthLabel: providerHealthLabel(row.health),
     healthTone,
-    sourceLabel: providerCredentialSourceLabel(row.credentialSource),
+    sourceLabel: sourceReady
+      ? credentialSourceLabel
+      : row.credentialSource === "None"
+        ? "Not configured"
+        : "Source not reported",
+    sourceTone,
     environmentLabel: row.environment ? row.environment.toUpperCase() : "Not set",
     maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
-    lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
+    lastHeartbeatLabel: freshness.label,
+    lastHeartbeatTone: freshness.tone,
+    freshnessStatus: freshness.status,
     fallbackLabel: row.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(routingContext.bindings),
     fallbackStatus: row.fallbackActive ? "active" : routingContext.bindings.length > 0 ? "available" : "missing",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
-    productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
+    productionStateLabel: readiness.productionStateLabel,
+    productionStateTone: readiness.tone,
+    readinessLabel: readiness.label,
+    readinessTone: readiness.tone,
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
-    recommendedAction: row.recommendedAction,
+    recommendedAction: readiness.recommendedAction ?? row.recommendedAction,
     actionHref: row.actionHref || settingsProviderConnectionRoute(row.providerId),
     actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
     actionAriaLabel: `Open ${row.displayName} provider connection row`,
@@ -1972,6 +2331,34 @@ function buildProviderRoutingConnectionRow(
     ? connection.productionReady ? "success" : "warning"
     : "success";
   const workflows = routingCapabilityLabels.length > 0 ? routingCapabilityLabels : ["Routing capability not bound"];
+  const verificationStatus: SettingsProviderConnectionRow["verificationStatus"] = connection.productionReady
+    ? "verified"
+    : "pending";
+  const verificationTone: SettingsProviderConnectionRow["verificationTone"] = verificationStatus === "verified"
+    ? "success"
+    : "warning";
+  const freshnessStatus: SettingsProviderConnectionRow["freshnessStatus"] = !routingContext.trustSnapshot
+    ? "unavailable"
+    : routingContext.trustSnapshot.isCertificationFresh
+      ? "current"
+      : "stale";
+  const freshnessLabel = freshnessStatus === "current"
+    ? "Certification current"
+    : freshnessStatus === "stale"
+      ? "Certification stale"
+      : "Certification not reported";
+  const freshnessTone: SettingsProviderConnectionRow["lastHeartbeatTone"] = freshnessStatus === "current"
+    ? "success"
+    : freshnessStatus === "stale"
+      ? "danger"
+      : "warning";
+  const readiness = buildProviderReadiness({
+    verificationStatus,
+    sourceReady: true,
+    freshnessStatus,
+    healthTone,
+    routingProductionReady: isProviderRoutingProductionReady(routingContext)
+  });
 
   return {
     providerId: connection.connectionId,
@@ -1986,13 +2373,17 @@ function buildProviderRoutingConnectionRow(
     credentialTone,
     credentialStatus: credentialConfigured ? "present" : "not-required",
     verificationLabel: connection.productionReady ? "Certified" : "Certification pending",
-    verificationStatus: connection.productionReady ? "verified" : "pending",
+    verificationStatus,
+    verificationTone,
     healthLabel: providerRoutingHealthLabel(connection, routingContext.trustSnapshot),
     healthTone,
     sourceLabel: credentialConfigured ? "Vault reference" : "Not required",
+    sourceTone: credentialConfigured ? "success" : "muted",
     environmentLabel: credentialReferenceEnvironmentLabel(connection.credentialReference),
     maskedKeyPreviewLabel: "Hidden by routing API",
-    lastHeartbeatLabel: "Live routing snapshot",
+    lastHeartbeatLabel: freshnessLabel,
+    lastHeartbeatTone: freshnessTone,
+    freshnessStatus,
     fallbackLabel: providerRoutingFallbackLabel(routingContext.bindings),
     fallbackStatus: routingContext.bindings.length === 0
       ? "missing"
@@ -2001,10 +2392,17 @@ function buildProviderRoutingConnectionRow(
         : "available",
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
-    productionStateLabel: providerRoutingProductionStateLabel(connection),
+    productionStateLabel: !connection.productionReady && readiness.tone !== "danger"
+      ? "Certification needed"
+      : readiness.productionStateLabel,
+    productionStateTone: readiness.tone,
+    readinessLabel: readiness.label,
+    readinessTone: readiness.tone,
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
-    recommendedAction: providerRoutingRecommendedAction(connection, routingContext),
+    recommendedAction: connection.productionReady
+      ? readiness.recommendedAction ?? providerRoutingRecommendedAction(connection, routingContext)
+      : providerRoutingRecommendedAction(connection, routingContext),
     actionHref: settingsProviderConnectionRoute(connection.connectionId),
     actionLabel: "Open provider row",
     actionAriaLabel: `Open ${connection.displayName} provider connection row`,
@@ -2087,12 +2485,107 @@ function providerRoutingTrustScoreLabel(snapshot: ProviderRoutingTrustSnapshot |
   return `${formatProviderRoutingScore(snapshot.score)} · ${snapshot.healthStatus}`;
 }
 
-function providerRoutingProductionStateLabel(connection: ProviderRoutingConnection | null): string {
+function isProviderRoutingProductionReady(routingContext: ProviderRoutingRowContext): boolean | null {
+  const connection = routingContext.connection;
   if (!connection) {
-    return "Not in routing catalog";
+    return null;
   }
 
-  return connection.productionReady ? "Production ready" : "Certification needed";
+  return connection.enabled &&
+    connection.productionReady &&
+    routingContext.bindings.length > 0 &&
+    routingContext.trustSnapshot?.isProductionReady === true;
+}
+
+function buildProviderReadiness({
+  verificationStatus,
+  sourceReady,
+  freshnessStatus,
+  healthTone,
+  routingProductionReady
+}: {
+  verificationStatus: SettingsProviderConnectionRow["verificationStatus"];
+  sourceReady: boolean;
+  freshnessStatus: SettingsProviderConnectionRow["freshnessStatus"];
+  healthTone: SettingsProviderConnectionRow["healthTone"];
+  routingProductionReady: boolean | null;
+}): {
+  label: SettingsProviderConnectionRow["readinessLabel"];
+  tone: SettingsProviderConnectionRow["readinessTone"];
+  productionStateLabel: string;
+  recommendedAction: string | null;
+} {
+  if (verificationStatus === "failed") {
+    return {
+      label: "Blocked",
+      tone: "danger",
+      productionStateLabel: "Verification failed",
+      recommendedAction: "Repair the failed provider verification before routing any workflow."
+    };
+  }
+
+  if (healthTone === "danger") {
+    return {
+      label: "Blocked",
+      tone: "danger",
+      productionStateLabel: "Health blocked",
+      recommendedAction: "Resolve the provider health blocker before routing new workflow traffic."
+    };
+  }
+
+  if (verificationStatus !== "verified") {
+    return {
+      label: "Review",
+      tone: "warning",
+      productionStateLabel: "Verification required",
+      recommendedAction: "Verify the provider connection before relying on readiness evidence."
+    };
+  }
+
+  if (!sourceReady) {
+    return {
+      label: "Review",
+      tone: "warning",
+      productionStateLabel: "Source evidence missing",
+      recommendedAction: "Refresh provider credentials so their governed source is reported."
+    };
+  }
+
+  if (freshnessStatus !== "current") {
+    return {
+      label: "Review",
+      tone: "warning",
+      productionStateLabel: "Freshness review required",
+      recommendedAction: "Refresh or re-verify the provider before relying on production readiness."
+    };
+  }
+
+  if (healthTone === "warning") {
+    return {
+      label: "Review",
+      tone: "warning",
+      productionStateLabel: "Health review required",
+      recommendedAction: "Inspect provider health before routing new workflow traffic."
+    };
+  }
+
+  if (routingProductionReady !== true) {
+    return {
+      label: "Review",
+      tone: "warning",
+      productionStateLabel: routingProductionReady === false ? "Certification needed" : "Routing evidence missing",
+      recommendedAction: routingProductionReady === false
+        ? "Run provider certification before production routing."
+        : "Load provider-routing evidence before relying on production readiness."
+    };
+  }
+
+  return {
+    label: "Ready",
+    tone: "success",
+    productionStateLabel: "Production ready",
+    recommendedAction: null
+  };
 }
 
 function providerRoutingHealthLabel(
@@ -2218,7 +2711,7 @@ function formatProviderRoutingScore(score: number): string {
 }
 
 function formatCount(value: number, singular: string): string {
-  return `${value} ${singular}${value === 1 ? "" : "s"}`;
+  return pluralizeCount(value, singular);
 }
 
 function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {
@@ -2268,8 +2761,10 @@ function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialS
       return "External vault";
     case "NotRequired":
       return "Not required";
-    default:
+    case "None":
       return "Not configured";
+    default:
+      return "Source not reported";
   }
 }
 
@@ -2321,6 +2816,8 @@ export function buildSettingsScreenViewModel(
         overview: overviewArg ?? null
       };
   const { session, overview } = payload;
+  const evaluatedAt = payload.evaluatedAt ?? new Date();
+  const systemFreshness = buildSettingsFreshnessViewModel(overview?.lastHeartbeatUtc, evaluatedAt);
   const sessionItems: SettingsSessionItem[] = session
     ? [
         { label: "Display name", value: session.displayName, tone: "default" },
@@ -2340,13 +2837,16 @@ export function buildSettingsScreenViewModel(
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
         { label: "Active backfills", value: String(overview.activeBackfills), tone: "muted" },
         { label: "Storage health", value: overview.storageHealth, tone: storageTone(overview.storageHealth) },
-        { label: "Last heartbeat", value: formatSettingsUtcMinute(overview.lastHeartbeatUtc), tone: "muted" }
+        { label: "Last heartbeat", value: systemFreshness.label, tone: systemFreshness.tone }
       ]
     : [];
 
-  const sysTone = overview ? systemTone(overview.systemStatus) : "default";
+  const statusTone = overview ? systemTone(overview.systemStatus) : "default";
+  const sysTone = statusTone === "success" && systemFreshness.status !== "current"
+    ? "warning"
+    : statusTone;
   const sysSummary = overview
-    ? `${overview.systemStatus} · ${overview.providersOnline}/${overview.providersTotal} providers · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"}`
+    ? `${overview.systemStatus} · ${overview.providersOnline}/${overview.providersTotal} providers · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"} · heartbeat ${systemFreshness.status}`
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
@@ -2361,28 +2861,33 @@ export function buildSettingsScreenViewModel(
     payload.providerRoutingConnections ?? null,
     payload.providerRoutingBindings ?? null,
     payload.providerRoutingTrustSnapshots ?? null,
-    payload.providerRoutingRefreshing === true
+    payload.providerRoutingRefreshing === true,
+    evaluatedAt
   );
-  const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
+  const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null, evaluatedAt);
+  const robinhoodConnectionPanel = buildRobinhoodConnectionPanel(payload.robinhoodConnection ?? null);
 
   return {
-    headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
+    headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel, systemFreshness),
     sessionTitle: session ? `Session - ${session.displayName}` : "Session",
     sessionItems,
     hasSession: session !== null,
     profileAuthenticationPanel: buildProfileAuthenticationPanel(
       session,
       payload.brokerageConnection ?? null,
-      diagnosticSection.diagnosticStatusVariant
+      diagnosticSection.diagnosticStatusVariant,
+      evaluatedAt
     ),
     systemTitle: "System posture",
     systemSummary: sysSummary,
     systemTone: sysTone,
+    systemFreshness,
     systemItems,
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
     providerConnectionCenter,
     alpacaConnectionPanel,
+    robinhoodConnectionPanel,
     runtimeCapabilitySection,
     operationsControlCenter,
     assetProfileGovernancePanel,
@@ -2395,340 +2900,16 @@ function isSettingsScreenPayload(value: SettingsScreenPayload | SessionInfo | nu
   return value !== null && "session" in value && "overview" in value;
 }
 
-function buildAssetProfileGovernancePanel(
-  profiles: SecurityAssetProfileDefinition[] | null,
-  loading: boolean
-): SettingsAssetProfileGovernancePanel {
-  if (!profiles) {
-    return {
-      title: "Asset Profile accounting",
-      summary: loading
-        ? "Asset profiles are loading from Security Master."
-        : "Asset profile catalog has not loaded.",
-      statusLabel: loading ? "Checking" : "Unavailable",
-      statusVariant: loading ? "warning" : "outline",
-      approvedCountLabel: "0",
-      projectedFieldCountLabel: "0",
-      closeIdentifierCountLabel: "0",
-      listLabel: "Asset profile accounting rows",
-      canCreateSecurity: false,
-      createDisabledReason: loading
-        ? "Asset profile catalog is still loading."
-        : "Asset profile catalog has not loaded.",
-      rows: []
-    };
-  }
-
-  const approvedProfiles = profiles.filter((profile) => profile.status === "Approved");
-  const projectedFieldCount = approvedProfiles.reduce(
-    (sum, profile) => sum + profile.fields.filter((field) => field.isProjected || field.isSearchable).length,
-    0
-  );
-  const requiredIdentifierCount = approvedProfiles.reduce(
-    (sum, profile) => sum + profile.identifierPreferences.filter((preference) => preference.isRequiredForClose).length,
-    0
-  );
-  const statusVariant: SettingsAssetProfileGovernancePanel["statusVariant"] =
-    approvedProfiles.length > 0 ? "success" : "warning";
-
-  return {
-    title: "Asset Profile accounting",
-    summary: approvedProfiles.length > 0
-      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for governed Security Master creation.`
-      : "No approved asset profiles are available for Security Master creation.",
-    statusLabel: approvedProfiles.length > 0 ? `${approvedProfiles.length} approved` : "Approval needed",
-    statusVariant,
-    approvedCountLabel: String(approvedProfiles.length),
-    projectedFieldCountLabel: String(projectedFieldCount),
-    closeIdentifierCountLabel: String(requiredIdentifierCount),
-    listLabel: `${profiles.length} asset profile${profiles.length === 1 ? "" : "s"}`,
-    canCreateSecurity: approvedProfiles.length > 0,
-    createDisabledReason: approvedProfiles.length > 0 ? null : "Approve an asset profile before creating custom assets.",
-    rows: profiles.map((profile) => {
-      const projectedFields = profile.fields.filter((field) => field.isProjected || field.isSearchable).length;
-      const requiredIdentifiers = profile.identifierPreferences
-        .filter((preference) => preference.isRequiredForClose)
-        .map((preference) => preference.kind);
-      return {
-        profileId: profile.profileId,
-        versionLabel: `v${profile.version}`,
-        name: profile.name,
-        categoryLabel: profile.subType ? `${profile.category} / ${profile.subType}` : profile.category,
-        statusLabel: profile.status,
-        statusVariant: assetProfileStatusVariant(profile.status),
-        fieldCountLabel: `${profile.fields.length} field${profile.fields.length === 1 ? "" : "s"}`,
-        projectedFieldLabel: `${projectedFields} projected`,
-        requiredCloseIdentifierLabel: requiredIdentifiers.length > 0
-          ? requiredIdentifiers.join(", ")
-          : "No close identifier",
-        accountingImpactLabel: profile.accountingImpactHints.length > 0
-          ? profile.accountingImpactHints.join(", ")
-          : "No accounting hints",
-        effectiveLabel: formatSettingsDateOnly(profile.effectiveFrom)
-      };
-    })
-  };
-}
-
-function assetProfileStatusVariant(
-  status: SecurityAssetProfileDefinition["status"]
-): SettingsAssetProfileRow["statusVariant"] {
-  switch (status) {
-    case "Approved":
-      return "success";
-    case "Draft":
-      return "warning";
-    case "Retired":
-      return "danger";
-    case "Superseded":
-      return "outline";
-    default:
-      return "default";
-  }
-}
-
-function buildOperationsControlCenter(payload: SettingsScreenPayload): SettingsOperationsControlCenter {
-  const cards = [
-    buildLedgerMappingControlCard(payload.ledgerMappingWorkbench ?? null, payload.loading === true),
-    buildRolePermissionControlCard(payload.rolePermissionCatalog ?? null, payload.session, payload.loading === true),
-    buildApprovalPolicyControlCard(payload.operationsApprovalPolicyMatrix ?? null, payload.loading === true),
-    buildCloseCalendarControlCard(payload.operationsCloseCalendar ?? null, payload.loading === true)
-  ];
-  const loadedCount = cards.filter((card) => card.statusVariant !== "outline").length;
-  const reviewCount = cards.filter((card) => card.statusVariant === "warning" || card.statusVariant === "danger").length;
-  const checkingCount = cards.length - loadedCount;
-  const statusVariant: SettingsOperationsControlCenter["statusVariant"] = checkingCount > 0
-    ? "warning"
-    : reviewCount > 0
-      ? "warning"
-      : "success";
-
-  return {
-    title: "Fund operations control center",
-    summary: checkingCount > 0
-      ? `${checkingCount} configuration surface${checkingCount === 1 ? "" : "s"} still loading; ${loadedCount} loaded.`
-      : reviewCount > 0
-        ? `${reviewCount} configuration surface${reviewCount === 1 ? "" : "s"} need operator review before close accounting is clean.`
-        : "Ledger mappings, role authority, approval rules, and close posture are loaded for operator review.",
-    statusLabel: checkingCount > 0
-      ? `${checkingCount} checking`
-      : reviewCount > 0
-        ? `${reviewCount} review`
-        : "Ready",
-    statusVariant,
-    loadedCountLabel: `${loadedCount} / ${cards.length}`,
-    reviewCountLabel: String(reviewCount),
-    listLabel: "Fund operations configuration surfaces",
-    cards
-  };
-}
-
-function buildLedgerMappingControlCard(
-  workbench: LedgerMappingWorkbench | null,
-  loading: boolean
-): SettingsOperationsControlCard {
-  if (!workbench) {
-    return buildUnavailableOperationsControlCard(
-      "ledger-mapping",
-      "Ledger Mapping Workbench",
-      "Maps fund accounts to ledger groups and exposes unmapped posting destinations.",
-      FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench,
-      "/settings#fund-operations-control-center",
-      loading
-    );
-  }
-
-  const unmapped = workbench.unmappedAccountCount;
-  const statusVariant: SettingsOperationsControlCard["statusVariant"] = unmapped > 0 ? "warning" : "success";
-  const firstUnmapped = workbench.accounts.find((account) => account.mapping.requiresUserMapping);
-  return {
-    id: "ledger-mapping",
-    title: "Ledger Mapping Workbench",
-    description: "Maps fund accounts to ledger groups and exposes unmapped posting destinations.",
-    statusLabel: unmapped > 0 ? `${unmapped} unmapped` : "All mapped",
-    statusVariant,
-    endpointHref: FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench,
-    routeHref: "/settings#fund-operations-control-center",
-    routeLabel: "Review mappings",
-    routeAriaLabel: "Review ledger mapping workbench",
-    metrics: [
-      { label: "Accounts", value: String(workbench.accountCount), tone: "default" },
-      { label: "Mapped", value: String(workbench.mappedAccountCount), tone: unmapped === 0 ? "success" : "default" },
-      { label: "Unmapped", value: String(unmapped), tone: unmapped > 0 ? "warning" : "muted" },
-      { label: "Ledger groups", value: String(workbench.ledgerGroups.length), tone: "muted" }
-    ],
-    detail: firstUnmapped
-      ? `${firstUnmapped.accountCode} needs mapping. ${firstUnmapped.recommendedAction}`
-      : `Mapping view generated ${formatSettingsUtcMinute(workbench.asOf)}.`
-  };
-}
-
-function buildRolePermissionControlCard(
-  catalog: RolePermissionCatalog | null,
-  session: SessionInfo | null,
-  loading: boolean
-): SettingsOperationsControlCard {
-  if (!catalog) {
-    return buildUnavailableOperationsControlCard(
-      "role-permissions",
-      "Role and Permission Studio",
-      "Shows built-in roles, permission groups, and the active operator authority profile.",
-      AUTH_API_ENDPOINTS.roles,
-      AUTH_API_ENDPOINTS.roles,
-      loading
-    );
-  }
-
-  const activeRole = session ? catalog.roles.find((role) => (
-    role.role === session.role || role.displayName === session.role
-  )) : null;
-  const permissionCount = activeRole?.permissions.length ?? 0;
-  const statusVariant: SettingsOperationsControlCard["statusVariant"] = session && !activeRole ? "warning" : "success";
-  return {
-    id: "role-permissions",
-    title: "Role and Permission Studio",
-    description: "Shows built-in roles, permission groups, and the active operator authority profile.",
-    statusLabel: activeRole ? `${activeRole.displayName} active` : `${catalog.roles.length} roles`,
-    statusVariant,
-    endpointHref: AUTH_API_ENDPOINTS.roles,
-    routeHref: AUTH_API_ENDPOINTS.roles,
-    routeLabel: "Open catalog",
-    routeAriaLabel: "Open role and permission catalog endpoint",
-    metrics: [
-      { label: "Roles", value: String(catalog.roles.length), tone: "default" },
-      { label: "Permissions", value: String(catalog.permissions.length), tone: "default" },
-      { label: "Current grants", value: activeRole ? String(permissionCount) : "—", tone: activeRole ? "success" : "warning" },
-      { label: "Built-in", value: String(catalog.roles.filter((role) => role.isBuiltIn).length), tone: "muted" }
-    ],
-    detail: activeRole
-      ? activeRole.description
-      : "Active session role was not found in the loaded role catalog."
-  };
-}
-
-function buildApprovalPolicyControlCard(
-  matrix: OperationsApprovalPolicyMatrix | null,
-  loading: boolean
-): SettingsOperationsControlCard {
-  if (!matrix) {
-    return buildUnavailableOperationsControlCard(
-      "approval-policy",
-      "Approval Policy Matrix",
-      "Shows required permissions, reviewer separation, report-pack, and checklist-control approval rules.",
-      WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
-      WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
-      loading
-    );
-  }
-
-  const independentRules = matrix.rows.filter((row) => row.requiresIndependentReviewer).length;
-  const reportPackRules = matrix.rows.filter((row) => row.requiresReportPack).length;
-  const checklistRules = matrix.rows.filter((row) => row.requiresChecklistControlApprovals).length;
-  return {
-    id: "approval-policy",
-    title: "Approval Policy Matrix",
-    description: "Shows required permissions, reviewer separation, report-pack, and checklist-control approval rules.",
-    statusLabel: `${matrix.rows.length} rules`,
-    statusVariant: "success",
-    endpointHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
-    routeHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
-    routeLabel: "Open matrix",
-    routeAriaLabel: "Open approval policy matrix endpoint",
-    metrics: [
-      { label: "Version", value: matrix.version, tone: "muted" },
-      { label: "Rules", value: String(matrix.rows.length), tone: "default" },
-      { label: "Independent", value: String(independentRules), tone: independentRules > 0 ? "success" : "warning" },
-      { label: "Report pack", value: String(reportPackRules), tone: "default" }
-    ],
-    detail: checklistRules > 0
-      ? `${checklistRules} rule${checklistRules === 1 ? "" : "s"} require checklist-control approvals before close.`
-      : `Policy generated ${formatSettingsUtcMinute(matrix.generatedAtUtc)}.`
-  };
-}
-
-function buildCloseCalendarControlCard(
-  calendar: OperationsCloseCalendar | null,
-  loading: boolean
-): SettingsOperationsControlCard {
-  if (!calendar) {
-    return buildUnavailableOperationsControlCard(
-      "close-calendar",
-      "Account Close Calendar",
-      "Tracks period close due dates, blockers, checklist work, and approval progress by fund account.",
-      WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar,
-      "/accounting/operations-continuity",
-      loading
-    );
-  }
-
-  const blocked = calendar.items.filter((item) => item.blockerCount > 0 || item.status === "Blocked").length;
-  const ready = calendar.items.filter((item) => item.isReadyToClose).length;
-  const openChecklist = calendar.items.reduce((sum, item) => sum + item.openChecklistCount, 0);
-  const nextDue = [...calendar.items]
-    .filter((item) => item.nextDueDate)
-    .sort((left, right) => String(left.nextDueDate).localeCompare(String(right.nextDueDate)))[0];
-  const statusVariant: SettingsOperationsControlCard["statusVariant"] = blocked > 0
-    ? "danger"
-    : openChecklist > 0
-      ? "warning"
-      : "success";
-
-  return {
-    id: "close-calendar",
-    title: "Account Close Calendar",
-    description: "Tracks period close due dates, blockers, checklist work, and approval progress by fund account.",
-    statusLabel: blocked > 0 ? `${blocked} blocked` : `${ready}/${calendar.items.length} ready`,
-    statusVariant,
-    endpointHref: WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar,
-    routeHref: nextDue?.route ?? "/accounting/operations-continuity",
-    routeLabel: "Open close workflow",
-    routeAriaLabel: "Open account close workflow",
-    metrics: [
-      { label: "Workflows", value: String(calendar.items.length), tone: "default" },
-      { label: "Ready", value: String(ready), tone: ready > 0 ? "success" : "muted" },
-      { label: "Open checks", value: String(openChecklist), tone: openChecklist > 0 ? "warning" : "success" },
-      { label: "Blockers", value: String(blocked), tone: blocked > 0 ? "danger" : "success" }
-    ],
-    detail: nextDue
-      ? `${nextDue.periodId}: ${nextDue.nextDueLabel ?? "Next close task"} due ${formatSettingsDateOnly(nextDue.nextDueDate)} for ${nextDue.nextDueOwner ?? "unassigned"}.`
-      : `Close calendar generated ${formatSettingsUtcMinute(calendar.generatedAtUtc)}.`
-  };
-}
-
-function buildUnavailableOperationsControlCard(
-  id: string,
-  title: string,
-  description: string,
-  endpointHref: string,
-  routeHref: string,
-  loading: boolean
-): SettingsOperationsControlCard {
-  return {
-    id,
-    title,
-    description,
-    statusLabel: loading ? "Checking" : "Unavailable",
-    statusVariant: "outline",
-    endpointHref,
-    routeHref,
-    routeLabel: "Open endpoint",
-    routeAriaLabel: `Open ${title} endpoint`,
-    metrics: [
-      { label: "Loaded", value: "No", tone: loading ? "muted" : "warning" },
-      { label: "Endpoint", value: "GET", tone: "muted" }
-    ],
-    detail: loading
-      ? "Waiting for the settings bootstrap request to finish."
-      : "This configuration payload did not load in the workstation bootstrap."
-  };
-}
-
 function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
   SettingsScreenViewModel,
-  "diagnosticLinks" | "diagnosticSummary" | "diagnosticListLabel" | "diagnosticStatusLabel" | "diagnosticStatusVariant"
+  "diagnosticLinks" | "diagnosticExceptionLinks" | "diagnosticHealthyLinks" | "diagnosticSummary" | "diagnosticListLabel" | "diagnosticStatusLabel" | "diagnosticStatusVariant"
   | "diagnosticCounts"
 > {
-  const diagnosticLinks = DIAGNOSTIC_ENDPOINTS.map((endpoint) => buildDiagnosticLink(endpoint, payload));
+  const diagnosticLinks = DIAGNOSTIC_ENDPOINTS
+    .map((endpoint) => buildDiagnosticLink(endpoint, payload))
+    .sort((left, right) => diagnosticLinkPriority(left) - diagnosticLinkPriority(right));
+  const diagnosticExceptionLinks = diagnosticLinks.filter((link) => link.tone !== "success");
+  const diagnosticHealthyLinks = diagnosticLinks.filter((link) => link.tone === "success");
   const counts = buildDiagnosticCounts(diagnosticLinks);
 
   const diagnosticStatusLabel = counts.checking > 0
@@ -2739,28 +2920,41 @@ function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
 
   return {
     diagnosticLinks,
+    diagnosticExceptionLinks,
+    diagnosticHealthyLinks,
     diagnosticCounts: counts,
     diagnosticSummary: counts.checking > 0
-      ? `Checking ${counts.checking} diagnostic endpoint${counts.checking === 1 ? "" : "s"}; ${counts.loaded} already loaded.`
+      ? `Checking ${counts.checking} diagnostic service${counts.checking === 1 ? "" : "s"}; ${counts.loaded} already loaded.`
       : counts.failed > 0
-        ? `${counts.failed} diagnostic endpoint${counts.failed === 1 ? "" : "s"} failed to load in the workstation bootstrap. Open the endpoint card for raw API evidence.`
-        : "All diagnostic endpoint payloads represented on this page are loaded.",
-    diagnosticListLabel: "Diagnostic endpoint availability",
+        ? `${counts.failed} diagnostic service${counts.failed === 1 ? "" : "s"} did not load during the workspace refresh. Open diagnostics for technical evidence.`
+        : "All diagnostic services represented on this page are loaded.",
+    diagnosticListLabel: "Diagnostic service availability",
     diagnosticStatusLabel,
     diagnosticStatusVariant: counts.checking > 0 ? "warning" : counts.failed > 0 ? "danger" : "success"
   };
 }
 
+function diagnosticLinkPriority(link: SettingsDiagnosticLink): number {
+  if (link.tone === "danger") {
+    return 0;
+  }
+  if (link.tone === "warning") {
+    return 1;
+  }
+  return link.tone === "success" ? 2 : 3;
+}
+
 function buildSettingsHeaderChips(
   session: SessionInfo | null,
   overview: SystemOverviewResponse | null,
-  diagnosticStatusLabel: string
+  diagnosticStatusLabel: string,
+  systemFreshness: SettingsFreshnessViewModel
 ): SettingsHeaderChip[] {
   return [
     { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
     { label: "Workspace", value: session?.activeWorkspace ?? "—" },
     { label: "Diagnostics", value: diagnosticStatusLabel },
-    { label: "Heartbeat", value: overview ? formatSettingsUtcMinute(overview.lastHeartbeatUtc) : "—" }
+    { label: "Heartbeat", value: overview ? systemFreshness.label : "—" }
   ];
 }
 
@@ -2773,7 +2967,7 @@ function buildRuntimeCapabilitySection(
       description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
       statusLabel: "Checking",
       statusVariant: "warning",
-      summary: "Capability settings are still loading from the local host.",
+      summary: "Capability settings are still loading from Meridian.",
       listLabel: "Runtime feature capability toggles",
       toggles: []
     };
@@ -2825,11 +3019,11 @@ function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<
   return {
     backendCapabilityGroups: groups,
     backendCapabilitySummary: checking > 0
-      ? `Checking ${checking} backend capability group${checking === 1 ? "" : "s"} across the browser workstation.`
+      ? `Checking ${checking} service coverage group${checking === 1 ? "" : "s"} across the browser workstation.`
       : failed > 0
-        ? `${failed} backend capability group${failed === 1 ? "" : "s"} needs API attention before the browser can claim full workflow reachability.`
-        : `${loaded} backend capability group${loaded === 1 ? "" : "s"} are represented by browser routes and mapped API endpoints.`,
-    backendCapabilityListLabel: "Backend capability coverage by workstation route",
+        ? `${failed} service coverage group${failed === 1 ? "" : "s"} needs attention before the browser can claim full workflow reachability.`
+        : `${loaded} service coverage group${loaded === 1 ? "" : "s"} are represented by browser routes and service access points.`,
+    backendCapabilityListLabel: "Service coverage by workstation route",
     backendCapabilityStatusLabel: statusLabel,
     backendCapabilityStatusVariant: checking > 0 ? "warning" : failed > 0 ? "danger" : "success"
   };
@@ -2854,10 +3048,10 @@ function buildBackendCapabilityGroup(
   if (isLoading) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: "Checking",
       statusLabel: "Checking",
-      statusDetail: "Workstation bootstrap is refreshing this capability group.",
+      statusDetail: "Workspace data is refreshing this service group.",
       statusVariant: "warning",
       endpoints
     };
@@ -2866,10 +3060,10 @@ function buildBackendCapabilityGroup(
   if (error) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: "0 loaded",
       statusLabel: "Unavailable",
-      statusDetail: error,
+      statusDetail: formatSettingsVisibleWorkspaceError(error),
       statusVariant: "danger",
       endpoints
     };
@@ -2878,10 +3072,10 @@ function buildBackendCapabilityGroup(
   if (definition.isAvailable(payload)) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: `${endpointCount} mapped`,
       statusLabel: "Surfaced",
-      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints. Concrete GET endpoints open directly; templates and mutating endpoints stay reference-only.`,
+      statusDetail: `${definition.workspaceLabel} has a browser route and mapped service access points. Read-only services open directly; templates and change actions stay reference-only.`,
       statusVariant: "success",
       endpoints
     };
@@ -2889,10 +3083,10 @@ function buildBackendCapabilityGroup(
 
   return {
     ...definition,
-    endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+    endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
     loadedCountLabel: "0 loaded",
     statusLabel: "Unavailable",
-    statusDetail: payload.error ?? definition.unavailableDetail,
+    statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? definition.unavailableDetail),
     statusVariant: "danger",
     endpoints
   };
@@ -2900,6 +3094,25 @@ function buildBackendCapabilityGroup(
 
 function isBrowserNavigableEndpoint(endpoint: CapabilityEndpointDefinition): boolean {
   return endpoint.method === "GET" && !endpoint.href.includes("{");
+}
+
+function formatSettingsVisibleWorkspaceError(error: string | null | undefined): string {
+  const detail = error?.trim();
+  if (!detail) {
+    return "Workspace data unavailable. Try again or open diagnostics.";
+  }
+
+  return looksLikeRawSettingsTechnicalResponse(detail)
+    ? "Workspace data unavailable. Try again or open diagnostics."
+    : detail;
+}
+
+function looksLikeRawSettingsTechnicalResponse(value: string): boolean {
+  return /<!doctype\s+html/i.test(value)
+    || /<html(?:\s|>)/i.test(value)
+    || /\bfile not found\b/i.test(value)
+    || /^404(?:\s|$|:|-)/i.test(value)
+    || /\bhttp\s+error\s+404\b/i.test(value);
 }
 
 function buildDiagnosticCounts(links: SettingsDiagnosticLink[]): SettingsDiagnosticCounts {
@@ -2928,7 +3141,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Checking",
-      statusDetail: "Workstation bootstrap is refreshing this diagnostic payload.",
+      statusDetail: "Workspace data is refreshing this diagnostic service.",
       tone: "warning",
       badgeVariant: "warning",
       isLoading
@@ -2939,7 +3152,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Failed",
-      statusDetail: error,
+      statusDetail: formatSettingsVisibleWorkspaceError(error),
       tone: "danger",
       badgeVariant: "danger",
       isLoading: false
@@ -2950,7 +3163,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Loaded",
-      statusDetail: "Payload is represented in the current workstation view model.",
+      statusDetail: "Data is represented in the current workstation view.",
       tone: "success",
       badgeVariant: "success",
       isLoading: false
@@ -2960,7 +3173,7 @@ function buildDiagnosticLink(
   return {
     ...endpoint,
     statusLabel: "Unavailable",
-    statusDetail: payload.error ?? endpoint.unavailableDetail,
+    statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? endpoint.unavailableDetail),
     tone: "danger",
     badgeVariant: "danger",
     isLoading: false

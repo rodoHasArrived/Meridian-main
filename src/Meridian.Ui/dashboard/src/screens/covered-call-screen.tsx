@@ -1,9 +1,11 @@
-import { AlertCircle, ArrowLeft, ArrowRight, BarChart3, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
-import { useEffect } from "react";
+import { AlertCircle, ArrowLeft, ArrowRight, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { ChartCard, EquityCurve as EquityCurveChart } from "@/components/charts";
+import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   useCoveredCallScreenViewModel,
@@ -16,6 +18,7 @@ import {
 } from "@/screens/covered-call-screen.view-model";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -57,9 +60,11 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
     id: "status",
     label: "Status",
     render: (row) => (
-      <Badge variant={row.statusBadgeVariant} dot aria-label={row.statusAriaLabel}>
-        {row.statusLabel}
-      </Badge>
+      <SeverityBadge
+        status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)}
+        label={row.statusLabel}
+        aria-label={row.statusAriaLabel}
+      />
     )
   }
 ];
@@ -83,7 +88,9 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={row.statusBadgeVariant}>{row.statusLabel}</Badge>
+    render: (row) => (
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+    )
   },
   {
     id: "cagr",
@@ -131,18 +138,14 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
     id: "reason",
     label: "Reason",
     render: (row) => (
-      <Badge variant={row.statusBadgeVariant} dot>
-        {row.exitReasonLabel}
-      </Badge>
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
     )
   },
   {
     id: "status",
     label: "Status",
     render: (row) => (
-      <Badge variant={row.statusBadgeVariant} dot>
-        {row.statusLabel}
-      </Badge>
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   }
 ];
@@ -156,19 +159,17 @@ export function CoveredCallScreen() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
+          Covered Call Backtest
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
-            Covered Call Backtest
-          </CardTitle>
-          <CardDescription>
-            Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure
-            filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <StageStepper navigation={vm.stageNavigation} onSelect={vm.goToStage} />
         </CardContent>
@@ -203,7 +204,7 @@ export function CoveredCallScreen() {
       {vm.stage === "results" ? <ResultsStage vm={vm} /> : null}
 
       <HistoryPanel vm={vm} />
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -272,6 +273,17 @@ function StageStepper({
 }
 
 function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const basicGroups = vm.formFieldGroups.slice(0, 5);
+  const advancedGroups = vm.formFieldGroups.slice(5);
+  const hasAdvancedError = advancedGroups.some((group) => group.fields.some((field) => field.invalid));
+
+  useEffect(() => {
+    if (hasAdvancedError) {
+      setAdvancedOpen(true);
+    }
+  }, [hasAdvancedError]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <Card>
@@ -280,13 +292,46 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>Conservative defaults follow the strategy's documented values.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {vm.formFieldGroups.map((group) => (
+          <div className="eyebrow-label">Basic setup</div>
+          {basicGroups.map((group) => (
             <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
               {group.fields.map((field) => (
                 <CoveredCallFormField key={field.key} vm={vm} field={field} />
               ))}
             </div>
           ))}
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-foreground">Advanced controls</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Liquidity, scoring, exit, dividend, funding, and run-label controls retain conservative defaults.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-expanded={advancedOpen}
+                aria-controls="covered-call-advanced-parameters"
+                onClick={() => setAdvancedOpen((current) => !current)}
+              >
+                {advancedOpen ? "Hide advanced controls" : "Show advanced controls"}
+              </Button>
+            </div>
+            {advancedOpen ? (
+              <div id="covered-call-advanced-parameters" className="mt-4 space-y-3">
+                {advancedGroups.map((group) => (
+                  <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                    {group.fields.map((field) => (
+                      <CoveredCallFormField key={field.key} vm={vm} field={field} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           <div className="flex items-center gap-2 pt-2">
             <Button
@@ -404,7 +449,7 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
             title={panel.selectedDetail.title}
             subtitle={panel.selectedDetail.subtitle}
             description={panel.selectedDetail.description}
-            status={<Badge variant={panel.selectedDetail.statusBadgeVariant} dot>{panel.selectedDetail.statusLabel}</Badge>}
+            status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
             fields={panel.selectedDetail.fields}
             ariaLabel={panel.selectedDetail.ariaLabel}
           />
@@ -603,30 +648,29 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       </Card>
     );
   }
-  const min = Math.min(...points.map((p) => Math.min(p.strategyEquity, p.underlyingEquity)));
-  const max = Math.max(...points.map((p) => Math.max(p.strategyEquity, p.underlyingEquity)));
-  const width = 600;
-  const height = 180;
-  const xScale = (i: number) => (i / (points.length - 1)) * width;
-  const yScale = (v: number) => height - ((v - min) / Math.max(max - min, 1e-6)) * height;
-  const stratPath = points.map((p, i) => `${i === 0 ? "M" : "L"}${xScale(i).toFixed(1)},${yScale(p.strategyEquity).toFixed(1)}`).join(" ");
-  const underPath = points.map((p, i) => `${i === 0 ? "M" : "L"}${xScale(i).toFixed(1)},${yScale(p.underlyingEquity).toFixed(1)}`).join(" ");
+  const strategy = points.map((p) => p.strategyEquity);
+  const underlying = points.map((p) => p.underlyingEquity);
+  const finalStrategy = strategy[strategy.length - 1];
+  const finalUnderlying = underlying[underlying.length - 1];
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />
-          Equity curve
-        </CardTitle>
-        <CardDescription>Strategy vs underlying-only buy-and-hold.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Equity curve" className="h-44 w-full">
-          <path d={underPath} fill="none" stroke="currentColor" strokeOpacity={0.35} strokeWidth={1.2} />
-          <path d={stratPath} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.6} />
-        </svg>
-      </CardContent>
-    </Card>
+    <ChartCard
+      title="Equity curve"
+      subtitle="Strategy vs underlying-only buy-and-hold."
+      readout={[
+        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #2F6F8F)" },
+        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #59636F)" }
+      ]}
+      height={220}
+      style={{ flexShrink: 0 }}
+    >
+      <EquityCurveChart
+        series={[
+          { label: "Strategy", color: "var(--chart-equity, #2F6F8F)", points: strategy },
+          { label: "Underlying", color: "var(--chart-axis, #59636F)", points: underlying, dashed: true, area: false }
+        ]}
+        valueFmt={fmtMoney}
+      />
+    </ChartCard>
   );
 }
 
@@ -660,7 +704,7 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
               title={panel.selectedDetail.title}
               subtitle={panel.selectedDetail.subtitle}
               description={panel.selectedDetail.description}
-              status={<Badge variant={panel.selectedDetail.statusBadgeVariant} dot>{panel.selectedDetail.statusLabel}</Badge>}
+              status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
               fields={panel.selectedDetail.fields}
               ariaLabel={panel.selectedDetail.ariaLabel}
             />

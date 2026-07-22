@@ -8,12 +8,18 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - Run `git status --short` before editing.
 - Treat unrelated worktree changes as user-owned.
 - Choose the smallest safe task scope that satisfies the request.
+- Local work may happen on `main` when the user explicitly requests it or the checkout is
+  intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
+  use a `codex/<short-task-name>` branch unless GitHub repository rules explicitly allow the
+  requested protected-branch flow.
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
-- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and, when a scoped task is known,
-  route through a `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the
-  current task descriptor, intent, skill, changed paths, branch, or explicit tags. Canonical docs
-  and selected skills remain authoritative when memory disagrees. Use
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.
+  When the work has a named scope, issue, prompt family, or planned-path boundary, route through a
+  `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the descriptor,
+  current intent, selected skill, changed paths, branch, or explicit tags; never bulk-load the
+  memory store. Canonical docs, source code, tests, scripts, applicable `AGENTS.md` files, and
+  selected `SKILL.md` files remain authoritative when memory disagrees. Use
   `python build/scripts/docs/check-codex-memory.py --task <descriptor> --receipt --summary` or the
   corresponding `--goal <inventory> --receipt --summary` command to produce the user-visible
   reference/dereference receipt.
@@ -83,9 +89,13 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 - Prefer filtered `dotnet test`, package-local dashboard commands, doc-only checks, and `--no-build`
   after a valid isolated build.
 - When local resource limits, package restore, or MSBuild/output locks make local proof unreliable,
-  push the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-  project under `tests/` plus filter before retrying broad local scripts.
-  Do not omit the .NET filter; the lane is designed to fail closed rather than run a whole test
+  run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build
+  servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`,
+  `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines point
+  at this checkout. Then push the branch and dispatch GitHub Actions `Targeted Test` with a
+  whitelisted `mode` before retrying broad local scripts. For .NET slices, use
+  `mode=dotnet-filtered` with the same repo-relative test project under `tests/` plus filter. Do
+  not omit the .NET filter; that mode is designed to fail closed rather than run a whole test
   project.
 - Use broad suites only when the changed layer or release risk requires them.
 - If `make` is unavailable on Windows, run the target's underlying command directly and report that

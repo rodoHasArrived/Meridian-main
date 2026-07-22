@@ -363,6 +363,150 @@ public sealed class ReportWriterGridEngineTests
             filter.Label == "Core strategy only");
     }
 
+    [Fact]
+    public void RenderGrids_AppliesConditionalFormattingStyleHints()
+    {
+        var rows = new[]
+        {
+            Row(("security", "AAPL"), ("pnl", "15")),
+            Row(("security", "TLT"), ("pnl", "-3")),
+            Row(("security", "CASH"), ("pnl", "0"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "pnl-detail",
+                "PnL Detail",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["security"],
+                Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                FormatRules:
+                [
+                    new ReportWriterFormatRuleDto("pnl", ReportWriterFilterOperatorDto.LessThan, ReportWriterCellStyleDto.Danger, "0"),
+                    new ReportWriterFormatRuleDto("pnl", ReportWriterFilterOperatorDto.GreaterThan, ReportWriterCellStyleDto.Success, "0")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        var winner = rendered.Rows.Single(row => row.Values["security"] == "AAPL");
+        winner.StyleHints.Should().NotBeNull();
+        winner.StyleHints!["pnl"].Should().Be(ReportWriterCellStyleDto.Success);
+        var loser = rendered.Rows.Single(row => row.Values["security"] == "TLT");
+        loser.StyleHints.Should().NotBeNull();
+        loser.StyleHints!["pnl"].Should().Be(ReportWriterCellStyleDto.Danger);
+        rendered.Rows.Single(row => row.Values["security"] == "CASH").StyleHints.Should().BeNull();
+        rendered.Warnings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RenderGrids_BuildsInlineChartFromRenderedRows()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("marketValue", "100"), ("pnl", "10")),
+            Row(("sector", "Rates"), ("marketValue", "40"), ("pnl", "-2"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "sector-pivot",
+                "Sector Pivot",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                ],
+                SortBy: "marketValue",
+                Chart: new ReportWriterChartDefinitionDto(
+                    ReportWriterChartTypeDto.Bar,
+                    "sector",
+                    ["marketValue", "pnl"]))
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Chart.Should().NotBeNull();
+        rendered.Chart!.Type.Should().Be(ReportWriterChartTypeDto.Bar);
+        rendered.Chart.Title.Should().Be("Sector Pivot");
+        rendered.Chart.CategoryField.Should().Be("sector");
+        rendered.Chart.Categories.Should().Equal("Technology", "Rates");
+        rendered.Chart.Series.Should().HaveCount(2);
+        rendered.Chart.Series.Single(series => series.Key == "marketValue").Values.Should().Equal(100m, 40m);
+        rendered.Chart.Series.Single(series => series.Key == "pnl").Values.Should().Equal(10m, -2m);
+        rendered.Chart.Warnings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RenderGrids_ChartWithUnknownValueColumnRetainsWarning()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("marketValue", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "sector-pivot",
+                "Sector Pivot",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Chart: new ReportWriterChartDefinitionDto(
+                    ReportWriterChartTypeDto.Line,
+                    "sector",
+                    ["marketValue", "missingColumn"]))
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Chart.Should().NotBeNull();
+        rendered.Chart!.Warnings.Should().Contain(warning =>
+            warning.Contains("missingColumn", StringComparison.OrdinalIgnoreCase));
+        rendered.Chart.Series.Single(series => series.Key == "missingColumn").Values.Should().Equal(0m);
+    }
+
+    [Fact]
+    public void RenderGrids_DetectsCircularFormulaReferences()
+    {
+        var rows = new[]
+        {
+            Row(("strategy", "Core"), ("marketValue", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "circular",
+                "Circular",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["strategy"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("alpha", "{beta} + 1"),
+                    new ReportWriterFormulaDefinitionDto("beta", "{alpha} + 1"),
+                    new ReportWriterFormulaDefinitionDto("selfRef", "{selfRef} + 1"),
+                    new ReportWriterFormulaDefinitionDto("acyclic", "{marketValue} * 2")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().Contain(w => w.Contains("alpha") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().Contain(w => w.Contains("beta") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().Contain(w => w.Contains("selfRef") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().NotContain(w => w.Contains("acyclic") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+
+        var row = rendered.Rows.Single();
+        row.Values["alpha"].Should().BeEmpty();
+        row.Values["beta"].Should().BeEmpty();
+        row.Values["selfRef"].Should().BeEmpty();
+        // Non-circular formulas alongside a cycle still evaluate.
+        row.Values["acyclic"].Should().Be("200");
+    }
+
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
         values.ToDictionary(static value => value.Key, static value => value.Value, StringComparer.OrdinalIgnoreCase);
 }

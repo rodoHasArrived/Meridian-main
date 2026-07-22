@@ -116,7 +116,8 @@ public sealed class QuantDataContext(
 
     private async Task LogSecMasterHintAsync(string symbol, CancellationToken ct)
     {
-        if (securityMasterQuery is null) return;
+        if (securityMasterQuery is null)
+            return;
         try
         {
             var detail = await securityMasterQuery.GetByIdentifierAsync(

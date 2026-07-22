@@ -17,6 +17,7 @@ public interface ISecurityMasterStore
     Task<SecurityProjectionRecord?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);
     Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<SecurityProjectionRecord>> LoadActiveAsync(CancellationToken ct = default);
     Task<long?> GetCheckpointAsync(string projectionName, CancellationToken ct = default);
     Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);
 }

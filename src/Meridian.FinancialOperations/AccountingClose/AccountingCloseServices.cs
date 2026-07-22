@@ -58,7 +58,7 @@ public sealed class AccountingPostingService
             {
                 var debit = currencyGroup.Where(static line => line.IsDebit).Sum(static line => line.Amount);
                 var credit = currencyGroup.Where(static line => !line.IsDebit).Sum(static line => line.Amount);
-                if (decimal.Round(debit - credit, 2, MidpointRounding.AwayFromZero) != 0m)
+                if (Math.Abs(debit - credit) > LedgerToleranceConstants.Balance)
                 {
                     rejected.Add($"Journal entry {entry.JournalEntryId:D} is out of balance for {currencyGroup.Key}: debits {debit:0.00}, credits {credit:0.00}.");
                 }
@@ -121,13 +121,19 @@ public sealed class AccountingPostingService
 
 public sealed class FxTranslationService
 {
-    public TranslationAdjustment Translate(string ledgerId, DateOnly period, string accountCode, decimal functionalAmount, FxRate rate)
+    public TranslationAdjustment Translate(
+        string ledgerId,
+        DateOnly period,
+        string accountCode,
+        decimal functionalAmount,
+        FxRate rate,
+        LedgerDimensionSetDto? dimensions = null)
     {
         ArgumentNullException.ThrowIfNull(rate);
 
         var reportingAmount = decimal.Round(functionalAmount * rate.Rate, 2, MidpointRounding.AwayFromZero);
         var adjustment = reportingAmount - functionalAmount;
-        var adjustmentId = CreateDeterministicId(ledgerId, period, accountCode, functionalAmount, reportingAmount, rate);
+        var adjustmentId = CreateDeterministicId(ledgerId, period, accountCode, functionalAmount, reportingAmount, rate, dimensions);
         return new TranslationAdjustment(
             adjustmentId,
             ledgerId,
@@ -139,7 +145,8 @@ public sealed class FxTranslationService
             rate.SourceEventId,
             rate.FromCurrency,
             rate.ToCurrency,
-            string.IsNullOrWhiteSpace(rate.RateId) ? rate.SourceEventId : rate.RateId);
+            string.IsNullOrWhiteSpace(rate.RateId) ? rate.SourceEventId : rate.RateId,
+            Dimensions: dimensions);
     }
 
     public ImmutableArray<TranslationAdjustment> TranslateTrialBalance(
@@ -151,7 +158,7 @@ public sealed class FxTranslationService
         ArgumentNullException.ThrowIfNull(lines);
         return lines
             .OrderBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
-            .Select(line => Translate(ledgerId, period, line.AccountCode, line.Net, rate))
+            .Select(line => Translate(ledgerId, period, line.AccountCode, line.Net, rate, line.Dimensions))
             .ToImmutableArray();
     }
 
@@ -161,9 +168,10 @@ public sealed class FxTranslationService
         string accountCode,
         decimal functionalAmount,
         decimal reportingAmount,
-        FxRate rate)
+        FxRate rate,
+        LedgerDimensionSetDto? dimensions)
     {
-        var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId);
+        var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId, TrialBalanceProjectionService.DimensionSignature(dimensions));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return new Guid(hash[..16]);
     }
@@ -232,6 +240,194 @@ public sealed class MonthEndCloseStateMachine
     }
 }
 
+public sealed class CloseEvidencePackageService
+{
+    public CloseEvidencePackage Build(
+        ClosePeriod closePeriod,
+        bool trialBalanceBalanced,
+        IEnumerable<SourceLinkedAuditLine> auditLines)
+    {
+        ArgumentNullException.ThrowIfNull(closePeriod);
+        ArgumentNullException.ThrowIfNull(auditLines);
+
+        var audit = auditLines
+            .OrderBy(static line => line.AccountingPeriod)
+            .ThenBy(static line => line.JournalEntryId)
+            .ToImmutableArray();
+        var checks = closePeriod.Evidence.NormalizedChecks
+            .OrderBy(static check => check.CheckId, StringComparer.OrdinalIgnoreCase)
+            .ToImmutableArray();
+        var approvalHistory = BuildApprovalHistory(checks, audit);
+        var sourceEventIds = checks
+            .Select(static check => check.SourceEventId)
+            .Concat(audit.Select(static line => line.SourceEventId))
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToImmutableArray();
+        var approvalIds = checks
+            .Select(static check => check.ApprovalId)
+            .Concat(audit.Select(static line => line.ApprovalId))
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToImmutableArray();
+        var blockers = closePeriod.Blockers.IsDefault
+            ? ImmutableArray<string>.Empty
+            : closePeriod.Blockers
+                .Where(static blocker => !string.IsNullOrWhiteSpace(blocker))
+                .Select(static blocker => blocker.Trim())
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .ToImmutableArray();
+        var hash = BuildEvidenceHash(
+            closePeriod,
+            trialBalanceBalanced,
+            checks,
+            approvalHistory,
+            sourceEventIds,
+            approvalIds,
+            blockers);
+        var packageId = $"close-evidence-{SanitizeForPackageId(closePeriod.LedgerId)}-{closePeriod.Period:yyyyMMdd}-{hash[..12]}";
+
+        return new CloseEvidencePackage(
+            packageId,
+            closePeriod.LedgerId,
+            closePeriod.Period,
+            closePeriod.State,
+            closePeriod.IsLocked,
+            trialBalanceBalanced,
+            closePeriod.LockedAt,
+            closePeriod.ClosedBy,
+            checks,
+            approvalHistory,
+            sourceEventIds,
+            approvalIds,
+            blockers,
+            hash);
+    }
+
+    private static ImmutableArray<CloseApprovalHistoryEntry> BuildApprovalHistory(
+        ImmutableArray<CloseEvidenceCheck> checks,
+        ImmutableArray<SourceLinkedAuditLine> auditLines)
+        => checks
+            .Select(static check => new CloseApprovalHistoryEntry(
+                NormalizeApprovalId(check.ApprovalId, check.CheckId),
+                NormalizeSourceEventId(check.SourceEventId, check.CheckId),
+                JournalEntryId: null,
+                check.Label,
+                AccountingPeriod: null,
+                ImmutableArray<string>.Empty,
+                check.Required,
+                check.Passed,
+                check.Detail))
+            .Concat(auditLines.Select(static line => new CloseApprovalHistoryEntry(
+                NormalizeApprovalId(line.ApprovalId, line.JournalEntryId.ToString("N")),
+                NormalizeSourceEventId(line.SourceEventId, line.JournalEntryId.ToString("N")),
+                line.JournalEntryId,
+                string.IsNullOrWhiteSpace(line.Description) ? "Posted journal" : line.Description.Trim(),
+                line.AccountingPeriod,
+                line.AccountCodes.IsDefault
+                    ? ImmutableArray<string>.Empty
+                    : line.AccountCodes
+                        .Where(static account => !string.IsNullOrWhiteSpace(account))
+                        .Select(static account => account.Trim())
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Order(StringComparer.OrdinalIgnoreCase)
+                        .ToImmutableArray(),
+                Required: false,
+                Completed: true,
+                Detail: "Posted journal retained source-event and approval lineage.")))
+            .OrderBy(static row => row.AccountingPeriod)
+            .ThenBy(static row => row.ApprovalId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.SourceEventId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.JournalEntryId)
+            .ToImmutableArray();
+
+    private static string BuildEvidenceHash(
+        ClosePeriod closePeriod,
+        bool trialBalanceBalanced,
+        ImmutableArray<CloseEvidenceCheck> checks,
+        ImmutableArray<CloseApprovalHistoryEntry> approvalHistory,
+        ImmutableArray<string> sourceEventIds,
+        ImmutableArray<string> approvalIds,
+        ImmutableArray<string> blockers)
+    {
+        var builder = new StringBuilder();
+        Append(builder, closePeriod.LedgerId);
+        Append(builder, closePeriod.Period.ToString("yyyy-MM-dd"));
+        Append(builder, closePeriod.State.ToString());
+        Append(builder, trialBalanceBalanced ? "balanced" : "out-of-balance");
+        Append(builder, closePeriod.Evidence.TrialBalanceSignedOff ? "trial-signed" : "trial-open");
+        Append(builder, closePeriod.Evidence.ReconciliationSignedOff ? "recon-signed" : "recon-open");
+        Append(builder, closePeriod.Evidence.ApprovalsCompleted ? "approvals-complete" : "approvals-open");
+
+        foreach (var check in checks)
+        {
+            Append(builder, check.CheckId);
+            Append(builder, check.Label);
+            Append(builder, check.Required ? "required" : "optional");
+            Append(builder, check.Passed ? "passed" : "failed");
+            Append(builder, check.SourceEventId);
+            Append(builder, check.ApprovalId);
+            Append(builder, check.Detail);
+        }
+
+        foreach (var row in approvalHistory)
+        {
+            Append(builder, row.ApprovalId);
+            Append(builder, row.SourceEventId);
+            Append(builder, row.JournalEntryId?.ToString("D") ?? string.Empty);
+            Append(builder, row.Label);
+            Append(builder, row.AccountingPeriod?.ToString("yyyy-MM-dd") ?? string.Empty);
+            Append(builder, row.Required ? "required" : "optional");
+            Append(builder, row.Completed ? "completed" : "open");
+            Append(builder, row.Detail);
+            foreach (var account in row.AccountCodes)
+            {
+                Append(builder, account);
+            }
+        }
+
+        foreach (var sourceEventId in sourceEventIds)
+        {
+            Append(builder, sourceEventId);
+        }
+
+        foreach (var approvalId in approvalIds)
+        {
+            Append(builder, approvalId);
+        }
+
+        foreach (var blocker in blockers)
+        {
+            Append(builder, blocker);
+        }
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static void Append(StringBuilder builder, string value)
+        => builder.Append((value ?? string.Empty).Trim()).Append('\u001f');
+
+    private static string NormalizeApprovalId(string approvalId, string fallback)
+        => string.IsNullOrWhiteSpace(approvalId) ? $"approval-{fallback}" : approvalId.Trim();
+
+    private static string NormalizeSourceEventId(string sourceEventId, string fallback)
+        => string.IsNullOrWhiteSpace(sourceEventId) ? $"source-{fallback}" : sourceEventId.Trim();
+
+    private static string SanitizeForPackageId(string ledgerId)
+    {
+        var token = string.Concat((ledgerId ?? string.Empty)
+            .Trim()
+            .Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'))
+            .Trim('-');
+        return token.Length == 0 ? "ledger" : token;
+    }
+}
+
 public sealed class TrialBalanceProjectionService
 {
     public ImmutableArray<TrialBalanceLine> BuildTrialBalance(
@@ -280,7 +476,7 @@ public sealed class TrialBalanceProjectionService
         var materialized = lines.ToArray();
         var totalDebit = materialized.Sum(static line => line.Debit);
         var totalCredit = materialized.Sum(static line => line.Credit);
-        return decimal.Round(totalDebit - totalCredit, 2, MidpointRounding.AwayFromZero) == 0m;
+        return Math.Abs(totalDebit - totalCredit) <= LedgerToleranceConstants.Balance;
     }
 
     public ImmutableArray<RollForwardLine> BuildRollForward(
@@ -295,36 +491,66 @@ public sealed class TrialBalanceProjectionService
         var openingRows = opening.ToArray();
         var activityRows = activity.ToArray();
         var fxRows = fx.ToArray();
-        var accountCodes = openingRows.Select(static row => row.AccountCode)
-            .Concat(activityRows.Select(static row => row.AccountCode))
-            .Concat(fxRows.Select(static row => row.AccountCode))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase);
+        var buckets = openingRows
+            .Select(static row => (row.AccountCode, row.Dimensions))
+            .Concat(activityRows.Select(static row => (row.AccountCode, row.Dimensions)))
+            .Concat(fxRows.Select(static row => (row.AccountCode, row.Dimensions)))
+            .GroupBy(static row => BuildBucketKey(row.AccountCode, row.Dimensions), StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => BuildDimensionSignature(row.Dimensions), StringComparer.OrdinalIgnoreCase);
 
-        return accountCodes.Select(accountCode =>
+        return buckets.Select(bucket =>
         {
-            var openingBalance = openingRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.Net);
-            var activityBalance = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.Net);
-            var adjustment = fxRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.AdjustmentAmount);
-            var sourceEventIds = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
+            var openingBalance = openingRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.Net);
+            var activityBalance = activityRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.Net);
+            var adjustment = fxRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.AdjustmentAmount);
+            var sourceEventIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.SourceEventIds.IsDefault ? ImmutableArray<string>.Empty : row.SourceEventIds)
-                .Concat(fxRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Select(static row => row.SourceEventId))
+                .Concat(fxRows
+                    .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                    .Select(static row => row.SourceEventId))
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToImmutableArray();
-            var approvalIds = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
+            var approvalIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.ApprovalIds.IsDefault ? ImmutableArray<string>.Empty : row.ApprovalIds)
+                .Concat(fxRows
+                    .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                    .Select(static row => row.ApprovalId))
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToImmutableArray();
-            return new RollForwardLine(accountCode, openingBalance, activityBalance, adjustment, openingBalance + activityBalance + adjustment, sourceEventIds, approvalIds);
+            return new RollForwardLine(
+                bucket.AccountCode,
+                openingBalance,
+                activityBalance,
+                adjustment,
+                openingBalance + activityBalance + adjustment,
+                sourceEventIds,
+                approvalIds,
+                bucket.Dimensions);
         }).ToImmutableArray();
     }
 
     private static string BuildBucketKey(string accountCode, LedgerDimensionSetDto? dimensions)
         => string.Concat(NormalizeToken(accountCode), "|", BuildDimensionSignature(dimensions));
+
+    private static bool SameAccountAndDimensions(
+        string leftAccountCode,
+        LedgerDimensionSetDto? leftDimensions,
+        string rightAccountCode,
+        LedgerDimensionSetDto? rightDimensions)
+        => string.Equals(leftAccountCode, rightAccountCode, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(BuildDimensionSignature(leftDimensions), BuildDimensionSignature(rightDimensions), StringComparison.OrdinalIgnoreCase);
 
     private static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
     {
@@ -345,6 +571,7 @@ public sealed class TrialBalanceProjectionService
             Matches(expected.InvestorId, actual.InvestorId) &&
             Matches(expected.CapitalAccountId, actual.CapitalAccountId) &&
             Matches(expected.InstrumentId?.ToString("D"), actual.InstrumentId?.ToString("D")) &&
+            Matches(expected.PositionId?.ToString("D"), actual.PositionId?.ToString("D")) &&
             Matches(expected.TaxLotId, actual.TaxLotId) &&
             Matches(expected.CostCenterId, actual.CostCenterId) &&
             Matches(expected.CounterpartyId, actual.CounterpartyId) &&
@@ -392,6 +619,9 @@ public sealed class TrialBalanceProjectionService
         return true;
     }
 
+    internal static string DimensionSignature(LedgerDimensionSetDto? dimensions)
+        => BuildDimensionSignature(dimensions);
+
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
     {
         if (dimensions is null || !HasAnyDimension(dimensions))
@@ -403,7 +633,7 @@ public sealed class TrialBalanceProjectionService
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{NormalizeToken(pair.Key)}={NormalizeToken(pair.Value)}");
-        return string.Join(
+        var signature = string.Join(
             "|",
             NormalizeToken(dimensions.FundId),
             NormalizeToken(dimensions.EntityId),
@@ -423,6 +653,10 @@ public sealed class TrialBalanceProjectionService
             NormalizeToken(dimensions.VendorId),
             NormalizeToken(dimensions.ProjectId),
             string.Join(",", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
 
     private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
@@ -433,6 +667,7 @@ public sealed class TrialBalanceProjectionService
             !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
             !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
             dimensions.InstrumentId.HasValue ||
+            dimensions.PositionId.HasValue ||
             !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
             !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
             !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

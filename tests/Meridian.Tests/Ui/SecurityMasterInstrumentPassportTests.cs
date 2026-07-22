@@ -1,12 +1,18 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 using NSubstitute;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -48,6 +54,73 @@ public sealed class SecurityMasterInstrumentPassportTests
         passport.Pricing.TickSize.Should().Be(0.01m);
         passport.Usage.IsScoped.Should().BeFalse();
         passport.TrustPosture.TrustScore.Should().BeGreaterThan(0);
+        passport.ClassificationProfile.Should().NotBeNull();
+        passport.ClassificationProfile!.InstrumentType.Should().Be("Equity");
+        passport.ClassificationProfile.DisplayName.Should().Be("Equity");
+        passport.ClassificationProfile.SecurityMasterAssetClass.Should().Be("Equity");
+        passport.ClassificationProfile.DefaultProviderSecurityType.Should().Be("STK");
+        passport.ClassificationProfile.ProviderCapabilities.Should().Contain("Quote");
+        passport.ClassificationProfile.LifecycleEvents.Should().Contain("Dividend");
+        passport.ClassificationProfile.LedgerBehaviorHints.Should().Contain(hint =>
+            hint.Contains("tax-lot", StringComparison.OrdinalIgnoreCase));
+        passport.ReferenceDataWorkbench.Should().NotBeNull();
+        passport.ReferenceDataWorkbench!.Sections.Select(section => section.SectionId).Should().Contain(
+            [
+                "provider-evidence",
+                "identifier-confidence",
+                "terms-obligations",
+                "cash-flow-readiness",
+                "ledger-classification",
+                "operations-handoff"
+            ]);
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "provider-evidence" &&
+            section.Summary.Contains("provider evidence", StringComparison.OrdinalIgnoreCase));
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "ledger-classification" &&
+            section.Summary.Contains("Equity", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Should().NotBeNull();
+        passport.OperationsWorkbench!.Panels.Select(panel => panel.PanelId).Should().Contain(
+            [
+                "identity",
+                "provider-evidence",
+                "terms",
+                "operations-readiness",
+                "handoff"
+            ]);
+        passport.OperationsWorkbench.Readiness.Select(readiness => readiness.ReadinessId).Should().Contain(
+            [
+                "valuation",
+                "reconciliation",
+                "ledger",
+                "close",
+                "report"
+            ]);
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "identity" &&
+            panel.Items.Any(item => item.ItemId == "primary-identifier" && item.Value == "AAPL"));
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "terms" &&
+            panel.Items.Any(item =>
+                item.ItemId == "instrument-type-profile" &&
+                item.Value.Contains("Equity", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("Provider route", StringComparison.OrdinalIgnoreCase)));
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "provider-evidence" &&
+            panel.Items.Any(item =>
+                item.ItemId.StartsWith("source-record-", StringComparison.Ordinal) &&
+                item.Detail.Contains("Source record", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("as of", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("updated by", StringComparison.OrdinalIgnoreCase) &&
+                item.Route!.StartsWith("/workstation/accounting/security-master#source", StringComparison.Ordinal)));
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "ledger" &&
+            readiness.Summary.Contains("ledger", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Handoffs.Should().OnlyContain(handoff =>
+            !string.IsNullOrWhiteSpace(handoff.Owner) &&
+            !string.IsNullOrWhiteSpace(handoff.BlockerReason) &&
+            handoff.ImpactedOutputs.Count > 0 &&
+            !string.IsNullOrWhiteSpace(handoff.Route));
     }
 
     [Fact]
@@ -62,6 +135,79 @@ public sealed class SecurityMasterInstrumentPassportTests
         snapshot!.InstrumentPassport.Should().NotBeNull();
         snapshot.InstrumentPassport!.SecurityId.Should().Be(securityId);
         snapshot.InstrumentPassport.IdentifierSummary.PrimaryIdentifierValue.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task GetTrustSnapshotAsync_ForFundOwnedByAnotherTenant_WithholdsRunsAndImpact()
+    {
+        // SEC-005 slice 2 regression: a fund owned by tenant B must surface no runs (and therefore no
+        // downstream impact) to a tenant-A caller, even though the process-wide run store holds a matching
+        // run. The registry is the authority; a positive "owned by a different tenant" verdict withholds.
+        var securityId = Guid.Parse("D2C0F2C9-3A2B-4D0E-9D2A-0C9B7F2A11AA");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var runStore = new StrategyRunStore();
+        await runStore.RecordRunAsync(FundRun("fund-b"));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.IsAccessibleAsync("fund-b", "tenant-a", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+        var service = CreateService(
+            queryService,
+            strategyRepository: runStore,
+            tenancyRegistry: registry,
+            httpContextAccessor: HttpContextForTenant("tenant-a"));
+
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, "fund-b");
+
+        snapshot.Should().NotBeNull();
+        // The foreign fund scope is sanitized to unscoped at the snapshot entry, so EVERY fund-scoped
+        // evidence path (impact, lots, passport pricing/entitlement) is unscoped — no cross-tenant data.
+        snapshot!.DownstreamImpact.IsScoped.Should().BeFalse("a foreign fund scope is sanitized to unscoped");
+        snapshot.DownstreamImpact.MatchedRunCount.Should().Be(0, "a foreign fund's runs are withheld");
+        snapshot.DownstreamImpact.Severity.Should().Be(
+            SecurityMasterImpactSeverity.Unknown,
+            "a foreign scope must read as unknown, not None — so low-risk gates (bulk resolve) do not treat it as safe");
+    }
+
+    [Fact]
+    public async Task GetTrustSnapshotAsync_ForOwnFund_IncludesRuns()
+    {
+        // Control for the gating test: when the registry confirms the caller owns the fund, the same run
+        // is counted — proving the gate withholds only foreign funds, not all scoped runs.
+        var securityId = Guid.Parse("D2C0F2C9-3A2B-4D0E-9D2A-0C9B7F2A22BB");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var runStore = new StrategyRunStore();
+        await runStore.RecordRunAsync(FundRun("fund-a"));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.IsAccessibleAsync("fund-a", "tenant-a", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        var service = CreateService(
+            queryService,
+            strategyRepository: runStore,
+            tenancyRegistry: registry,
+            httpContextAccessor: HttpContextForTenant("tenant-a"));
+
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, "fund-a");
+
+        snapshot.Should().NotBeNull();
+        snapshot!.DownstreamImpact.MatchedRunCount.Should().Be(1, "the caller owns the fund, so its runs are scoped in");
+    }
+
+    private static StrategyRunEntry FundRun(string fundProfileId)
+        => new(
+            RunId: Guid.NewGuid().ToString("N"),
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy One",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 1, 5, 0, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 1, 5, 1, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            FundProfileId: fundProfileId);
+
+    private static IHttpContextAccessor HttpContextForTenant(string tenantId)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
+        return new HttpContextAccessor { HttpContext = httpContext };
     }
 
     [Fact]
@@ -98,20 +244,279 @@ public sealed class SecurityMasterInstrumentPassportTests
             summary.Contains("identifier", StringComparison.OrdinalIgnoreCase) ||
             summary.Contains("conflict", StringComparison.OrdinalIgnoreCase));
         providerConfidence.ConfidenceReason.Should().Contain("open identifier conflict");
+        passport.OperationsWorkbench!.Panels.Should().Contain(panel =>
+            panel.PanelId == "provider-evidence" &&
+            panel.Items.Any(item =>
+                item.ItemId.StartsWith("provider-conflict-", StringComparison.Ordinal) &&
+                item.Value.Contains("AAPL.O", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task GetInstrumentPassportAsync_SurfacesConflictingTermsInOperationsWorkbench()
+    {
+        var securityId = Guid.Parse("9B4F28C7-489F-4D0F-A0F9-BD3300665688");
+        var conflictId = Guid.Parse("6872AFA1-4E1A-46B7-9482-4E2F7D7437D4");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var service = CreateService(
+            queryService,
+            new StubSecurityMasterConflictService(
+            [
+                new SecurityMasterConflict(
+                    conflictId,
+                    securityId,
+                    "EconomicTermsMismatch",
+                    "EconomicDefinition.MaturityDate",
+                    "fund-admin",
+                    "2031-06-15",
+                    "custodian",
+                    "2031-09-15",
+                    DateTimeOffset.UtcNow.AddMinutes(-7),
+                    "Open")
+            ]));
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+
+        passport!.OperationsWorkbench.Should().NotBeNull();
+        var termsPanel = passport.OperationsWorkbench!.Panels.Should().ContainSingle(panel => panel.PanelId == "terms").Subject;
+        termsPanel.Status.Should().Be("Review");
+        termsPanel.Items.Should().Contain(item =>
+            item.ItemId.StartsWith("terms-conflict-", StringComparison.Ordinal) &&
+            item.Label == "EconomicDefinition.MaturityDate" &&
+            item.Value.Contains("2031-06-15", StringComparison.OrdinalIgnoreCase) &&
+            item.Value.Contains("2031-09-15", StringComparison.OrdinalIgnoreCase) &&
+            item.Route == $"/workstation/accounting/security-master#conflict-{conflictId:D}");
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "reconciliation" &&
+            readiness.Status == "Review" &&
+            readiness.NextAction.Contains("maturity", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Handoffs.Should().Contain(handoff =>
+            handoff.LinkedCases.Contains(conflictId.ToString("D")) &&
+            handoff.Route!.Contains(conflictId.ToString("D"), StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task GetInstrumentPassportAsync_AttachesClearwaterControlSectionsWhenServicesAreRegistered()
+    {
+        var securityId = Guid.Parse("D85825FA-C568-4F9A-A7B8-2D988D975B6D");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var now = DateTimeOffset.UtcNow;
+        var pricingService = Substitute.For<ISecurityMasterPricingService>();
+        pricingService.GetGoldenCopyPriceAsync(securityId, null, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<SecurityPriceGoldenCopyDto?>(new SecurityPriceGoldenCopyDto(
+                securityId,
+                150.25m,
+                SecurityPriceKind.MarketGoldenCopy,
+                "refinitiv",
+                now.AddHours(-2),
+                false,
+                0,
+                [new SecurityComparisonPriceDto("bloomberg", 150.10m, now.AddHours(-3), -0.0998m)])));
+        pricingService.GetPricingHierarchyAsync(securityId, null, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<SecurityPricingHierarchyDto?>(new SecurityPricingHierarchyDto(
+                securityId,
+                null,
+                [
+                    new PricingHierarchyEntryDto(1, "refinitiv", "LSEG/Refinitiv", 3),
+                    new PricingHierarchyEntryDto(2, "bloomberg", "Bloomberg BVAL", 5)
+                ],
+                now,
+                "pricing-ops")));
+
+        var cashFlowService = Substitute.For<ISecurityMasterCashFlowService>();
+        cashFlowService.GetCashFlowSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<SecurityCashFlowSourceDto?>(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.ClientProvided,
+                now.AddDays(-1),
+                true,
+                "controller",
+                now.AddDays(-1))));
+
+        var entitlementService = Substitute.For<IDataVendorEntitlementService>();
+        entitlementService.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<DataVendorEntitlementDto>>(
+            [
+                new DataVendorEntitlementDto(
+                    Guid.Parse("F7266BDE-6389-4BE8-9987-62E85AF34949"),
+                    "LSEG/Refinitiv",
+                    DataVendorDataType.Pricing,
+                    "LSEG-2026",
+                    now.AddMonths(-1),
+                    now.AddMonths(11),
+                    null,
+                    true,
+                    "licensing@example.test",
+                    30,
+                    DataVendorEntitlementStatus.Active,
+                    "licensing-ops",
+                    now.AddMonths(-1))
+            ]));
+
+        var dataQualityService = Substitute.For<ISecurityMasterDataQualityService>();
+        dataQualityService.GetLatestReportAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<SecurityMasterQualityReportDto?>(new SecurityMasterQualityReportDto(
+                now,
+                1,
+                0,
+                [])));
+        var service = CreateService(
+            queryService,
+            pricingService: pricingService,
+            cashFlowService: cashFlowService,
+            entitlementService: entitlementService,
+            dataQualityService: dataQualityService);
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+
+        var sections = passport!.ReferenceDataWorkbench!.Sections.ToDictionary(section => section.SectionId);
+        sections.Keys.Should().Contain(
+            [
+                "pricing-hierarchy",
+                "cash-flow-source-governance",
+                "vendor-entitlements",
+                "data-quality-controls",
+                "manual-change-review"
+            ]);
+        sections["pricing-hierarchy"].Summary.Should().Contain("Golden-copy price");
+        sections["cash-flow-source-governance"].Summary.Should().Contain("ClientProvided");
+        sections["vendor-entitlements"].Summary.Should().Contain("direct-client contract");
+        sections["data-quality-controls"].Status.Should().Be("Ready");
+        sections["manual-change-review"].Summary.Should().Contain("manual change");
+        passport.OperatingModel.Should().NotBeNull();
+        passport.OperatingModel!.ManualChangeApproval.PolicyKey.Should().Be("operations-continuity.security-master-override");
+        passport.OperatingModel.ManualChangeApproval.Gate.Should().Be(OperationsGateKeyDto.SecurityMaster);
+        passport.OperatingModel.ManualChangeApproval.RequiresIndependentReviewer.Should().BeTrue();
+        passport.OperatingModel.Controls.Select(section => section.SectionId).Should().Contain("vendor-entitlements");
+    }
+
+    [Fact]
+    public async Task GetInstrumentPassportAsync_MarksFundScopedVendorEntitlementAsMostSpecific()
+    {
+        var securityId = Guid.Parse("E31F12C6-6C68-4B45-A661-9BA1CE911A35");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var now = DateTimeOffset.UtcNow;
+        var globalEntitlement = new DataVendorEntitlementDto(
+            Guid.Parse("5E1570BC-5A94-4567-90D8-E2E2E239536D"),
+            "LSEG/Refinitiv",
+            DataVendorDataType.Pricing,
+            "LSEG-GLOBAL",
+            now.AddMonths(-1),
+            now.AddMonths(11),
+            null,
+            false,
+            "licensing@example.test",
+            30,
+            DataVendorEntitlementStatus.Active,
+            "licensing-ops",
+            now.AddMonths(-1))
+        {
+            SourceCategory = "Global pricing feed",
+            OperatorMetadata = "Global fallback hierarchy."
+        };
+        var fundEntitlement = globalEntitlement with
+        {
+            EntitlementId = Guid.Parse("88BB266F-896D-4221-8254-0CB432F22E58"),
+            ContractReference = "LSEG-FUND-ALPHA",
+            FundProfileId = "fund-alpha",
+            RequiresDirectClientContract = true,
+            SourceCategory = "Fund pricing feed",
+            ExpectedRefreshCadence = "Daily close",
+            DefaultMaxDaysStale = 1,
+            OperatorMetadata = "Fund Alpha direct-client pricing metadata."
+        };
+        var entitlementService = Substitute.For<IDataVendorEntitlementService>();
+        entitlementService.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<DataVendorEntitlementDto>>([globalEntitlement, fundEntitlement]));
+        var service = CreateService(queryService, entitlementService: entitlementService);
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: "fund-alpha");
+
+        passport!.OperatingModel.Should().NotBeNull();
+        var operatingModel = passport.OperatingModel!;
+        operatingModel.FundProfileId.Should().Be("fund-alpha");
+        var applicable = operatingModel.EntitlementApplicability
+            .Where(item => item.IsApplicable && item.VendorName == "LSEG/Refinitiv" && item.DataType == DataVendorDataType.Pricing)
+            .ToArray();
+        applicable.Should().HaveCount(2);
+        applicable.Single(item => item.Scope == "FundProfile").IsMostSpecific.Should().BeTrue();
+        applicable.Single(item => item.Scope == "Global").IsMostSpecific.Should().BeFalse();
+        operatingModel.OperatorMetadata.Should().Contain(item =>
+            item.MetadataId == $"entitlement-{fundEntitlement.EntitlementId:N}" &&
+            item.ExpectedRefreshCadence == "Daily close" &&
+            item.OperatorMetadata == "Fund Alpha direct-client pricing metadata.");
+    }
+
+    [Fact]
+    public async Task GetOperatingModelAsync_ReturnsSharedPassportOperatingModel()
+    {
+        var securityId = Guid.Parse("7C7C3052-8342-49A4-A635-4D79098B92FC");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var now = DateTimeOffset.UtcNow;
+        var entitlementService = Substitute.For<IDataVendorEntitlementService>();
+        entitlementService.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<DataVendorEntitlementDto>>(
+            [
+                new DataVendorEntitlementDto(
+                    Guid.Parse("88CF6C48-A1EF-4982-9DEB-D083B5D752D6"),
+                    "LSEG/Refinitiv",
+                    DataVendorDataType.Pricing,
+                    "LSEG-FUND-ALPHA",
+                    now.AddMonths(-1),
+                    now.AddMonths(11),
+                    null,
+                    true,
+                    "licensing@example.test",
+                    30,
+                    DataVendorEntitlementStatus.Active,
+                    "licensing-ops",
+                    now.AddMonths(-1))
+                {
+                    FundProfileId = "fund-alpha",
+                    SourceCategory = "Fund pricing feed",
+                    OperatorMetadata = "Fund Alpha direct-client pricing metadata."
+                }
+            ]));
+        var service = CreateService(queryService, entitlementService: entitlementService);
+
+        var operatingModel = await service.GetOperatingModelAsync(securityId, fundProfileId: "fund-alpha");
+
+        operatingModel.Should().NotBeNull();
+        operatingModel!.SecurityId.Should().Be(securityId);
+        operatingModel.FundProfileId.Should().Be("fund-alpha");
+        operatingModel.Stages.Should().Contain(stage => stage.StageId == "reconcile");
+        operatingModel.EntitlementApplicability.Should().Contain(item =>
+            item.IsApplicable &&
+            item.IsMostSpecific &&
+            item.Scope == "FundProfile");
+        operatingModel.ManualChangeApproval.PolicyKey.Should().Be("operations-continuity.security-master-override");
     }
 
     private static SecurityMasterWorkbenchQueryService CreateService(
         StubSecurityMasterQueryService queryService,
-        ISecurityMasterConflictService? conflictService = null) =>
+        ISecurityMasterConflictService? conflictService = null,
+        ISecurityMasterPricingService? pricingService = null,
+        ISecurityMasterCashFlowService? cashFlowService = null,
+        IDataVendorEntitlementService? entitlementService = null,
+        ISecurityMasterDataQualityService? dataQualityService = null,
+        IStrategyRepository? strategyRepository = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        IHttpContextAccessor? httpContextAccessor = null) =>
         new(
             queryService,
             new EmptySecurityValidationService(),
             conflictService ?? new StubSecurityMasterConflictService([]),
             new EmptySecurityMasterIngestStatusService(),
-            Substitute.For<IStrategyRepository>(),
+            strategyRepository ?? Substitute.For<IStrategyRepository>(),
             new PortfolioReadService(),
             new LedgerReadService(),
-            new ReportGenerationService(queryService));
+            new ReportGenerationService(queryService),
+            reconciliationRunService: null,
+            pricingService,
+            cashFlowService,
+            entitlementService,
+            dataQualityService,
+            tenancyRegistry,
+            httpContextAccessor);
 
     private sealed class StubSecurityMasterQueryService(Guid securityId)
         : ContractSecurityMasterQueryService,
@@ -124,6 +529,9 @@ public sealed class SecurityMasterInstrumentPassportTests
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(requestedSecurityId == securityId ? CreateDetail() : null);
         }
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid requestedSecurityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(requestedSecurityId, ct);
 
         public Task<SecurityDetailDto?> GetByIdentifierAsync(
             SecurityIdentifierKind identifierKind,
@@ -308,6 +716,9 @@ public sealed class SecurityMasterInstrumentPassportTests
             Task.FromResult(conflicts.FirstOrDefault(conflict => conflict.ConflictId == request.ConflictId));
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
+            Task.CompletedTask;
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct) =>
             Task.CompletedTask;
     }
 

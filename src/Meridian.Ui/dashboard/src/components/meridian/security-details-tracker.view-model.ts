@@ -1,4 +1,5 @@
 import type { EntitySummaryField } from "@/components/meridian/ui-kit-primitives";
+import { formatAmountWithCode, formatNumber as formatNumberAmount } from "@/lib/format";
 import type { SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
 
 export type SecurityDetailFieldKind = "text" | "number" | "date" | "select" | "boolean";
@@ -909,14 +910,11 @@ function parseDraftNumber(value: string): number | null {
 }
 
 export function formatNumber(value: number, fractionDigits = 4): string {
-  if (!Number.isFinite(value)) return "-";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
+  return formatNumberAmount(value, { maximumFractionDigits: fractionDigits, fallback: "-" });
 }
 
 export function formatCurrency(value: number, currency: string | null): string {
-  if (!Number.isFinite(value)) return "-";
-  const text = value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return currency ? `${text} ${currency}` : text;
+  return formatAmountWithCode(value, currency, { fallback: "-" });
 }
 
 function stableDomId(value: string): string {

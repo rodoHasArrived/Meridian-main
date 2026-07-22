@@ -6,19 +6,25 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Wpf
 
+The desktop workstation is installed as part of the single Meridian product and opened
+on demand from the browser workstation. It is not a separate end-user package or Start
+Menu product.
+
 ## Purpose
 
-WPF workstation is the active Windows desktop operator workstation sharing contracts and read models
-with the browser workstation.
+WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
+the browser workstation. It projects the seven canonical workspaces over shared contracts and read
+models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
+`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 
-This module owns the desktop shell, WPF pages, route hosting, and desktop workstation view models.
+This module owns the retained desktop shell, WPF pages, route hosting, and desktop workstation view models.
 Keep shared contracts and read-model logic in shared UI services when browser and desktop both need
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
@@ -46,6 +52,13 @@ Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
 
+Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
+configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
+when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
+configuration. The Data Sources page remains navigable, displays the recovery outcome and retained
+artifact path, and exposes a retry command after the operator corrects file access or syntax; a
+configuration failure no longer terminates the entire desktop process.
+
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
 instead of a generic ledger page. The page opens on compact action chrome instead of a duplicate
@@ -56,22 +69,52 @@ entry drafts through the shared workbench service with selected ledger-book scop
 validation, submit, and lifecycle actions, shows the shared Rules Studio projection for
 effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
 approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
-through the shared accounting configuration service, renders the shared accounting production-readiness
+through the shared accounting configuration service, authors promotion-gated posting-rule drafts
+with active ledger-book scope, template validation, priority, retained evidence, and audit rows
+through that same shared configuration service, renders the shared accounting production-readiness
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, renders tenant-admin control/evidence progress from the
 shared readiness DTO, persists tenant-admin setup controls and retained evidence through the shared
-accounting tenant administration profile store with WPF accounting admin-studio coverage, renders
+accounting tenant administration profile store with independent WPF accounting admin-studio, chart
+administration, rule-test/promotion setup, close setup, provider mapping,
+tenant/company/report-group setup, ledger-book administration, posting-rule authoring, approval
+queue, dimension mapping, implementation sandbox, audit review, bulk import/export safeguard,
+performance validation, and disaster-recovery runbook controls plus editable approval queue setup
+for queue id, workflow kind, role/count, segregation policy, and evidence requirement plus editable
+dimension mapping setup for mapping id, provider id, Meridian/provider dimension rows, and evidence
+requirements. Desktop save readiness and command execution now block chart, posting-rule,
+provider-mapping, production-certification, approval queue, and dimension mapping saves until
+required operator evidence and typed payloads are complete, matching the shared stores'
+fail-closed invariants, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
-workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
-dimensional report/query/export control counts with retained ledger-book-scoped evidence, renders
+workflow evidence for posting rules, JE lifecycle, close/reporting, external GL, reconciliation,
+close-plan setup, direct-lending projections, and strategy ledger reads, renders
+dimensional ledger/query/report/export control counts with retained ledger-book-scoped evidence, renders
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
-shared Accounting System profile store,
-retained migration-run evidence with ledger-book scope
-and canonical dimensions from the shared production-readiness payload, surfaces
-shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped
+shared Accounting System profile store, adding scoped retained evidence markers for checked
+book-native workflow and dimensional controls before persistence,
+authors retained external-GL provider mapping profiles through the shared Accounting System service
+with provider/profile identifiers, account mappings, editable Meridian/provider dimension maps for
+fund/book plus customer/vendor/project-style scope, human-origin certification evidence, retained
+profile rows, and production-readiness refresh, authors retained chart account nodes through the
+shared accounting configuration chart service with active ledger-book scope, parent path, financial
+account id, and retained setup evidence,
+retains selected-ledger-book implementation-sandbox, sandbox-validation, fixture-validation, and
+implementation-fixture proof through the shared tenant administration profile store,
+retained migration-run evidence plus generated migration rollout plan rows with ledger-book scope,
+latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
+production-readiness payload, renders retained migration worker plans from the shared accounting
+system store with source/migrated row reconciliation, tenant/company/fund/book scope, evidence, and
+canonical dimensions, renders the shared production-gap checklist for configurable
+multi-ledger accounting, enterprise configuration studio coverage, guarded external GL integration,
+dimensional ledger and reporting coverage, and production-control hardening with service-owned issue
+messages beside stable blocker codes, surfaces
+shared ledger-book setup candidate guidance, loads the active open ledger period through the shared ledger-book service for
+manual journal draft validation, and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,
-description, and update timestamps, offers type-specific
+description, and update timestamps, and adds selected-`ledgerBookId` tenant-admin evidence when
+desktop operators save book-administration setup controls without already naming that book, and offers type-specific
 draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
@@ -81,14 +124,62 @@ close-lock lifecycle buttons over the shared journal-entry lifecycle service, sh
 external GL evidence and retained package readiness from the shared QuickBooks, Xero, and NetSuite
 fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
-fund-scoped accounting-basis policy records through the Financial Operations policy service.
+fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
+through Financial Operations services.
+`FundAccountingClose` routes to `AccountingClosePage`, a dedicated WPF close workbench over the
+shared `IAccountingCloseManagementService`. Operators can load a close-period plan by workflow id,
+edit desktop draft fields for materiality thresholds, currency, review role, late-adjustment
+approval posture, select the retained checklist task being edited, and update task owner, due date,
+required approval role/count, required evidence, role-scoped sign-off matrix rows, dependencies, and dependency reasons, then retain task/dependency, sign-off, required-evidence, and
+late-adjustment evidence metadata through the same governed close-plan configuration request used by
+browser close setup, including the loaded configuration timestamp so stale desktop setup edits fail closed
+when a newer retained setup version exists. Dependency reason text can use keyed predecessor entries such as
+`task-pricing: Pricing package must clear`, so desktop setup can preserve a distinct audit rationale for each retained dependency edge.
+Sign-off matrix text uses retained `role | count | evidence` rows and carries unedited task matrices forward in the shared configuration request.
+The workbench exposes governed close-task sign-off, selectable late-adjustment review, selectable blocker/evidence review, and
+period-lock commands over the same shared service, carrying human actor, correlation, workflow,
+period, ledger-book, task, close-package, report-pack, and retained evidence context while reloading
+the returned plan instead of applying desktop-local approval rules. Desktop sign-off administration
+now lets operators select the close task, sign-off role, Approved/Rejected decision, and retained
+notes before calling the shared sign-off service, so WPF can administer matrix rejections as well as
+approvals. Desktop late-adjustment review now lets operators select the retained request id,
+Approved/Rejected decision, and review notes before retaining approval or rejection evidence.
+Desktop blocker/evidence review now lets operators select the active issue code, target id, and
+notes before calling the shared close-management evidence-review command with workflow, period,
+issue, target, ledger-book, correlation id, and human-origin retained close-review evidence;
+returned review rows are displayed beside the blocker without clearing the service-owned validation issue.
+The workbench also renders an ordered close workflow control sequence over setup retention,
+checklist sign-off, late-adjustment request, late-adjustment review, blocker review, and period
+lock, with each step's command, status, evidence, and disabled reason derived from the same loaded
+shared close plan and governed desktop command state.
+The page binds close-plan
+materiality, period-lock, task, dependency, sign-off matrix, late-adjustment, retained-evidence, and
+validation-blocker rows directly from the shared close-plan DTO so desktop review uses the same
+server-owned close-management state as browser. Desktop setup retention now also fails closed before
+calling the shared service when materiality thresholds are negative, materiality currency is
+malformed, review role is blank, the selected close task is missing or unknown, due-date text is not
+`yyyy-MM-dd`, approval count is non-positive, approval role is blank, or required sign-off evidence
+is blank. Desktop operators can now request retained late adjustments from the same close workbench
+with journal-entry id, amount, currency, reason, human-origin stamping, and workflow/period/ledger-book
+evidence before the shared service applies materiality approval rules.
+Accounting Configure implementation-sandbox proof now uses the same retained tenant-administration
+setup payload as the main save path: approval-queue and dimension-mapping configurations are
+validated and preserved with the sandbox evidence before readiness refresh.
+Desktop close-support queue projections consume
+`FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
+lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained
+evidence gaps stay aligned with the browser command center and shared endpoint decisions. The
+desktop Financial Operations queue grid also renders the shared queue-row severity, SLA, blocker
+type, and close/report impact labels instead of deriving those operator fields locally.
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
-and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
-configured workstation data root.
+manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
+run evidence in `workstation/accounting/migration-run-artifacts.json` plus retained migration worker
+plans in `workstation/accounting/migration-run-worker-plans.json` under the configured workstation
+data root.
 
 `FinancialRecordExplorerPage` is the generic WPF consumer for the shared Financial Record Explorer
 DTO. `LedgerExplorer`, `PortfolioExplorer`, `SecurityInstrumentExplorer`, and
@@ -97,12 +188,20 @@ workspaces; the page maps shared columns and rows into `WorkstationTableInspecto
 projects selected-record proof actions, `Used In`, and `Impacts` relationships into the inspector.
 Empty or blocked source DTOs remain visible as disabled action states with server-provided reasons
 rather than desktop-local placeholder balances.
+Saved-view cards on the WPF explorer apply the shared Financial Record Explorer `viewId` query and
+reload the source DTO from the workstation endpoint, so desktop ledger/report-line review uses the
+same server-scoped rows, selected record, summary counts, and proof graph as the browser workstation.
 Proof actions that carry shared Financial Record Explorer API hrefs map back to `LedgerExplorer`,
 `PortfolioExplorer`, `SecurityInstrumentExplorer`, or `ReportLineProvenanceExplorer` page tags so
 report-line drill-throughs stay route-compatible with the browser workstation. Report-line
 provenance rows also carry shared instrument, position or transaction, reconciliation, journal,
 report-line, evidence, and audit-link actions that WPF maps through the same view-model route
 resolver instead of desktop-local lineage rules.
+The generic selected-record field and relationship surfaces also carry factor evidence, holder
+role/book position, economic projection, posting command, approval, immutable journal, and
+ledger/report evidence identities resolved by UI Shared. WPF registers the shared factor projector
+for independent desktop composition but does not calculate factor economics or query the journal in
+the view model.
 
 The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 
@@ -114,8 +213,9 @@ singleton. Watchlist backend synchronization now uses that seam for the optional
 probe while retaining local desktop persistence when the remote host does not provide a watchlist
 payload. Activity Log also loads `/api/logs` through that seam and keeps the local offline
 indicator path when the remote host is unavailable or returns a non-success response. Service
-Manager health checks also use the same seam for deployable desktop clients; its graceful shutdown
-path remains a local managed-process request because it uses the runtime-scoped shutdown token.
+Manager health checks also use the same seam for deployable desktop clients. Lifecycle status,
+readiness checks, latest receipts, restart, and shutdown use the typed `ILifecycleControlClient`;
+the WPF process neither stores a raw shutdown token nor infers backend process ownership.
 Setup Wizard backend readiness checks also use the remote seam, so first-run workstation setup
 validates the configured remote host instead of issuing a page-local direct HTTP health probe.
 The Symbols page Security Master bridge also resolves selected tickers through the same remote
@@ -123,10 +223,14 @@ client and shared workstation Security Master route instead of issuing page-loca
 Ticker Strip quote polling also uses the remote client for `/api/live/{symbol}/quote`, preserving
 the existing no-op offline behavior on non-success responses while keeping the service URL and HTTP
 client lifecycle centralized for deployable desktop workstations.
-After authentication and configuration initialization, WPF now starts the generic host lifecycle so
-shared `IHostedService` registrations, including database-backed projection and outbox workers from
-the shared composition graph, run under the desktop shell and stop through the existing host shutdown
-path on exit.
+Before login is enabled, the startup window queries the host lifecycle projection and requires a
+Ready or Degraded snapshot that is accepting work. Closing WPF ends only the desktop client; it does
+not implicitly stop the persistent installed host or its dedicated database. The compatibility
+`BackendServiceManager` delegates start/stop/status operations to
+`Meridian.LifecycleSupervisor.exe` and refuses direct process termination.
+After local credential validation, WPF establishes a cookie-and-CSRF session with the host using the
+same stored account; the desktop account store resolves the installed `MDC_DATA_ROOT` so the WPF and
+browser workstations authenticate against one operator identity source.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.
@@ -135,7 +239,11 @@ the feature capability gate. The Security Master page projects the workstation t
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
 
-The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, and downstream usage evidence in parity with the browser Accounting workstream.
+The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
+The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
+statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
+panel is read-only over imported position/remittance batches; preview, validation, evidence
+retention, and apply decisions stay behind shared Direct Lending endpoints and services.
 The Settings page also surfaces governed Security Master asset profiles for WPF operators. It lists
 approved profile definitions from the shared `/api/security-master/asset-profiles` route, drafts and
 approves profile variants through the shared governance endpoints, loads lineage, supports rollback,
@@ -157,8 +265,21 @@ Desktop backtest services register the Backtesting-owned `IBacktestPreflightServ
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared
 Backtesting flows.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
-queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
+Fund Ledger trial-balance and journal grids project the canonical ledger dimension envelope from
+shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
+tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
+project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints and inspect
+the returned verified outcome before displaying
+success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
+failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
+HTTP response or compatibility message. Strategy workspace composition resolves the durable
+strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
+artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
+in-memory production history.
+
+After mutation, the desktop refreshes the queue from the shared break read model after
+review/resolve/dismiss and keeps the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
@@ -276,7 +397,28 @@ PDF/XLSX/CSV delivery, secure-portal and email-link distribution, Top-N/contribu
 custom-formula grid validation, cross-fund consolidation roll-ups with shadow-NAV, regulatory and
 warehouse exports, user/group/company access posture, and audit lineage through registered WPF
 targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `ExportPresets`,
-`FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
+`ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local
+reporting logic. The Reporting shell default pane set and command surface now include
+`ReportLineProvenanceExplorer`, matching the browser `/reporting/evidence` route for report-line
+evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
+puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
+status, evidence, and export routes before the decision queue instead of rendering a separate
+page-level hero.
+The same Reporting shell now hosts a thin canonical governance workbench over shared reporting
+contracts and API routes. Desktop operators can round-trip exact template/version, fund/entity,
+book, period, as-of, accounting-basis, currency, consolidation, output, finality, schedule,
+evidence, dimension, and template-parameter inputs; inspect server-owned readiness blockers; and
+advance retained runs through `Draft -> Validated -> InReview -> Approved -> Released`. The WPF
+view model enables lifecycle commands only from caller-specific server `ActionAvailability` entries
+and submits their server-owned expected versions. Secure delivery similarly uses the server transport
+catalog and its explicit queue, grant-issuance, grant-revocation, and per-transport readiness decisions;
+the desktop keeps no transport allow-list and fails closed when either projection is unavailable. The
+one-time recipient link is accepted only when its bearer is fragment-scoped, is kept in memory only
+until the next distribution or run action, and never appears in retained delivery or grant-history
+rows. The
+server continues to own tenant scope, maker-checker authorization, certified snapshot and access-policy
+hashes, immutable artifact references, restatement-as-new-revision behavior, and release-gated secure
+distribution receipts.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -295,6 +437,13 @@ human-review requirement as a read-only WPF signifier before the queue. Each acc
 evidence row now carries both the desktop shell target and canonical `accounting-record/{recordId}`
 subject target so WPF operators can reconcile the row with the same Evidence Workbench subject used
 by the browser and shared evidence endpoints.
+Desktop evidence read-model parity includes the shared Evidence Vault document queue contracts:
+retained document entries carry classification, source hash, source channel, actor, tenant/scope,
+extraction status, reviewer state, linked close/report/accounting objects, open support-request
+count, retained manifest route, and the shared uploaded/local/imported intake-source descriptor
+without giving document intake authority to post or approve accounting records. WPF serialization
+also preserves `EvidenceVaultIdentityDto.ManifestSnapshot` so desktop close, report, tax, and audit
+package views can consume the same frozen document/request/object-link snapshot as the browser.
 `MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
 from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
 `ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,
@@ -399,8 +548,9 @@ rows render through dense shared tables, the selected trial-balance line owns th
 Security Master actions fail closed unless the selected line carries a security or symbol. The Run
 Ledger dense tables and selected-line inspector now surface the shared `LedgerDimensionSetDto`
 scope, including fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot,
-cost center, counterparty, account/portfolio scope, and external GL dimension values, with legacy
-scope labels used only when canonical dimensions are absent. Run Risk
+cost center, counterparty, organization, portfolio, book, account, customer, vendor, project, and
+external GL dimension values, with legacy scope labels used only when canonical dimensions are
+absent. Run Risk
 now follows that focused attribution pattern: the oversized hero is replaced by compact run actions,
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.
@@ -503,7 +653,16 @@ Trading terminal work uses `DenseDataGridControl` for active positions and view-
 selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
 next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
 empty, selected, loading, and error inspector states with caller-supplied automation IDs so
-workspace pages can migrate selected-row detail without changing route/page tags.
+workspace pages can migrate selected-row detail without changing route/page tags. The desktop
+Trading hero now treats active live runs as ready only when the shared `ReadyForLiveOperation`
+posture is true, so paper-ready evidence cannot present a live desk as operator-ready. When the
+shared readiness payload includes `LiveOperationRequirements`, the desktop live-run hero uses the
+first non-ready W7 requirement to name and route the missing evidence item, such as governance
+sign-off, broker execution reconciliation, rollback/kill-switch, or audit-retention proof, instead
+of falling back to a generic readiness review.
+The desktop position blotter also stamps the active account-scoped operating context onto
+close/upsize action requests when the context resolves to a fund-account GUID, so generated broker
+orders evaluate the same account-scoped W7 readiness gate as browser trading actions.
 Trading shell fallback and context-handoff copy routes reconciliation and kill-switch handoffs
 through Accounting wording while preserving retained `GovernanceShell` target tags for route
 compatibility.
@@ -525,6 +684,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -546,6 +706,7 @@ Keep WPF views declarative and move loading, disabled, preview, empty-state, and
 behavior into view models. Do not duplicate product logic that belongs in shared UI services.
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
+Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
 
 ## Related docs
 
@@ -553,4 +714,6 @@ unavailable state rather than seeded sample numbers or plausible-looking derived
 - `docs/screenshots/desktop/README.md` - maintained desktop screenshot evidence index consumed by the generated screen tracker.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`

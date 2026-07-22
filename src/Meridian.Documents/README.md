@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DOCUMENTS
 path: src/Meridian.Documents
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-25
 ---
 
 # src/Meridian.Documents
@@ -22,10 +22,32 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Documents` - registered source module root.
+- `FinancialReportDocumentRenderer.cs` - client-grade QuestPDF (PDF) + ClosedXML (XLSX) renderer that
+  implements the ledger's `ILedgerReportBinaryRenderer` seam. Output is made deterministic (fixed
+  document metadata/timestamps, canonical zip ordering) so re-rendering a pack reproduces the bytes.
+- `DocumentsServiceCollectionExtensions.cs` - `AddFinancialReportDocumentRenderer` composition helper
+  that registers the renderer for the `ILedgerReportBinaryRenderer` seam. The workstation host calls
+  it (see `WorkstationServiceCollectionExtensions`), flipping governed ledger exports off the
+  dependency-free plain-text fallback so the governed report pack is the client deliverable. The
+  shared `LedgerClientReportExportService` (in `Meridian.Ui.Shared`) is the single export seam the
+  browser and WPF workstations both route through.
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+Document intake is implemented through shared contracts and the UI Shared Evidence Vault until this
+design module owns a dedicated runtime service. The active V1 workflow retains uploaded,
+API-supplied, local-file, or imported-file-reference sources as immutable vault artifacts, records
+source hash, received timestamp, source channel, source path/route reference, actor, tenant/scope,
+document classification, object links, extraction status, reviewer state, and audit trail, then
+freezes that metadata into searchable manifests and request lists for close, report, tax, and audit
+packages. The shared vault identity also carries a public frozen manifest snapshot so package
+consumers can read retained documents, support requests, object links, and content hash without
+parsing internal manifest JSON.
+
+OCR and AI extraction must stay behind `IEvidenceDocumentExtractor`. The default implementation only
+normalizes operator-supplied deterministic metadata and fixture fields; later OCR or LLM extraction
+should return the same contract without gaining authority to post journals, approve evidence,
+release payments, or certify reports.
 
 ## Diagrams
 

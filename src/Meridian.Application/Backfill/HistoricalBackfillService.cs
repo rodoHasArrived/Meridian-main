@@ -6,6 +6,7 @@ using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -27,19 +28,22 @@ public sealed class HistoricalBackfillService
     private readonly IEventMetrics _metrics;
     private readonly BackfillJobsConfig _jobsConfig;
     private readonly BackfillStatusStore? _checkpointStore;
+    private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
         ILogger? logger = null,
         IEventMetrics? metrics = null,
         BackfillJobsConfig? jobsConfig = null,
-        BackfillStatusStore? checkpointStore = null)
+        BackfillStatusStore? checkpointStore = null,
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
         _metrics = metrics ?? new DefaultEventMetrics();
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
         _checkpointStore = checkpointStore;
+        _symbolTimelineResolver = symbolTimelineResolver;
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
@@ -48,7 +52,7 @@ public sealed class HistoricalBackfillService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
+        var symbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
         if (symbols.Length == 0)
             throw new InvalidOperationException("At least one symbol is required for backfill.");
 
@@ -79,7 +83,7 @@ public sealed class HistoricalBackfillService
         ArgumentNullException.ThrowIfNull(pipeline);
 
         var started = DateTimeOffset.UtcNow;
-        var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
+        var symbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
         ValidateRequest(request);
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
@@ -184,6 +188,7 @@ public sealed class HistoricalBackfillService
                 DateOnly? firstBarDate = null;
                 DateOnly? lastBarDate = null;
                 long symbolBars = 0;
+                var executionPartitions = BuildExecutionPartitions(provider, request.Granularity, effectiveFrom, request.To);
                 if (request.Granularity.IsIntraday())
                 {
                     if (aggregateProvider is null)
@@ -192,36 +197,51 @@ public sealed class HistoricalBackfillService
                             $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} intraday backfill.");
                     }
 
-                    var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, effectiveFrom, request.To, ct).ConfigureAwait(false);
-                    foreach (var bar in bars)
+                    if (executionPartitions is { Count: > 0 })
                     {
-                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
-                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                        _metrics.IncHistoricalBars();
-                        Interlocked.Increment(ref barsWritten);
-                        symbolBars++;
+                        foreach (var partition in executionPartitions)
+                        {
+                            var bars = await aggregateProvider.GetAggregateBarsAsync(
+                                symbol,
+                                request.Granularity,
+                                partition.From,
+                                BackfillPartitionPlanner.ToInclusiveEnd(partition),
+                                ct).ConfigureAwait(false);
 
-                        var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
-                        if (firstBarDate is null || barDate < firstBarDate.Value)
-                            firstBarDate = barDate;
-                        if (lastBarDate is null || barDate > lastBarDate.Value)
-                            lastBarDate = barDate;
+                            await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                        await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
-                    foreach (var bar in bars)
+                    if (executionPartitions is { Count: > 0 })
                     {
-                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
-                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                        _metrics.IncHistoricalBars();
-                        Interlocked.Increment(ref barsWritten);
-                        symbolBars++;
-                        if (firstBarDate is null || bar.SessionDate < firstBarDate.Value)
-                            firstBarDate = bar.SessionDate;
-                        if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
-                            lastBarDate = bar.SessionDate;
+                        foreach (var partition in executionPartitions)
+                        {
+                            // A range spanning a ticker rename must query the provider with the
+                            // era-correct symbol per chunk, then land under the requested symbol.
+                            var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
+                            var bars = await provider.GetDailyBarsAsync(
+                                eraSymbol,
+                                partition.From,
+                                BackfillPartitionPlanner.ToInclusiveEnd(partition),
+                                ct).ConfigureAwait(false);
+
+                            await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        var eraSymbol = effectiveFrom.HasValue
+                            ? await ResolveEraSymbolAsync(symbol, effectiveFrom.Value, ct).ConfigureAwait(false)
+                            : symbol;
+                        var bars = await provider.GetDailyBarsAsync(eraSymbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                        await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                     }
                 }
 
@@ -238,19 +258,100 @@ public sealed class HistoricalBackfillService
                         ct).ConfigureAwait(false);
                 }
 
-                // Emit validation signal.
+                // Emit validation signal. Recency comes first: a provider whose dataset is
+                // frozen (e.g. Nasdaq WIKI ended March 2018) can return plenty of bars that
+                // still end years before the requested range end, and an open-ended request
+                // (To == null) implicitly expects data through today.
+                var utcToday = DateOnly.FromDateTime(DateTime.UtcNow);
+                var expectedThrough = request.To is { } requestedTo && requestedTo < utcToday ? requestedTo : utcToday;
+                var staleDays = lastBarDate.HasValue ? expectedThrough.DayNumber - lastBarDate.Value.DayNumber : 0;
+                // Only requests that expect data through (roughly) now can be "stale"; an
+                // explicitly historical range that falls short is partial coverage, not staleness.
+                var requestExpectsFreshData = request.To is null ||
+                    request.To.Value.DayNumber >= utcToday.DayNumber - BackfillBarValidation.DefaultStaleToleranceDays;
+                var isStale = requestExpectsFreshData && symbolBars > 0 && lastBarDate.HasValue &&
+                    staleDays > BackfillBarValidation.DefaultStaleToleranceDays;
+
                 var coversRequestedRange =
                     symbolBars > 0 &&
                     firstBarDate.HasValue &&
                     (effectiveFrom is null || firstBarDate.Value <= effectiveFrom.Value) &&
                     (!request.To.HasValue || (lastBarDate.HasValue && lastBarDate.Value >= request.To.Value));
 
-                if (coversRequestedRange)
+                if (isStale)
+                {
+                    var staleReason =
+                        $"Backfilled data is stale: newest bar {lastBarDate:yyyy-MM-dd} is {staleDays} calendar days " +
+                        $"short of the expected range end {expectedThrough:yyyy-MM-dd}. The provider's dataset may be frozen or paywalled.";
+                    _log.Warning(
+                        "Stale backfill for {Symbol} via {Provider}: newest bar {LastBarDate} vs expected {ExpectedThrough} ({StaleDays} days)",
+                        symbol, provider.DisplayName, lastBarDate, expectedThrough, staleDays);
+                    validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, staleReason));
+                }
+                else if (coversRequestedRange)
                     validationSignals.Add(SymbolValidationSignal.Pass(symbol, symbolBars, effectiveFrom, lastBarDate));
                 else if (symbolBars > 0)
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned partial bars that do not cover the requested date range"));
                 else
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned zero bars for the requested date range"));
+
+                async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars)
+                {
+                    var futureCutoff = DateTimeOffset.UtcNow.AddDays(1);
+                    var futureDropped = 0;
+                    foreach (var bar in bars)
+                    {
+                        // A bar ending in the future is provider garbage, not history.
+                        if (bar.EndTime > futureCutoff)
+                        {
+                            futureDropped++;
+                            continue;
+                        }
+
+                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+
+                        var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
+                        if (firstBarDate is null || barDate < firstBarDate.Value)
+                            firstBarDate = barDate;
+                        if (lastBarDate is null || barDate > lastBarDate.Value)
+                            lastBarDate = barDate;
+                    }
+
+                    if (futureDropped > 0)
+                    {
+                        _log.Warning(
+                            "Dropped {FutureDropped} future-dated aggregate bars for {Symbol} from {Provider}",
+                            futureDropped, symbol, provider.Name);
+                    }
+                }
+
+                async Task PublishHistoricalBarsAsync(IReadOnlyList<HistoricalBar> bars)
+                {
+                    bars = BackfillBarValidation.RemoveFutureDatedBars(bars, out var futureDropped);
+                    if (futureDropped > 0)
+                    {
+                        _log.Warning(
+                            "Dropped {FutureDropped} future-dated daily bars for {Symbol} from {Provider}",
+                            futureDropped, symbol, provider.Name);
+                    }
+
+                    foreach (var bar in bars)
+                    {
+                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+                        if (firstBarDate is null || bar.SessionDate < firstBarDate.Value)
+                            firstBarDate = bar.SessionDate;
+                        if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
+                            lastBarDate = bar.SessionDate;
+                    }
+                }
             }
             catch (OperationCanceledException) { throw; }
             catch (RateLimitException ex)
@@ -311,5 +412,82 @@ public sealed class HistoricalBackfillService
             Error: errorSummary,
             SkippedSymbols: skippedSymbols.ToArray(),
             SymbolValidationSignals: validationSignals.ToArray());
+    }
+
+    /// <summary>
+    /// Resolves the era-correct ticker for a chunk starting at <paramref name="chunkStart"/>.
+    /// Intentionally fail-open: any resolution failure falls back to the requested symbol so
+    /// symbology issues can never break a backfill run. Applied to the daily path only —
+    /// intraday aggregate bars cannot currently be re-tagged to the canonical symbol.
+    /// </summary>
+    private async Task<string> ResolveEraSymbolAsync(string symbol, DateOnly chunkStart, CancellationToken ct)
+    {
+        if (_symbolTimelineResolver is null)
+        {
+            return symbol;
+        }
+
+        try
+        {
+            return await _symbolTimelineResolver.ResolveTickerForDateAsync(symbol, chunkStart, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex,
+                "Era-symbol resolution failed for {Symbol} at {ChunkStart}; using the requested symbol",
+                symbol, chunkStart);
+            return symbol;
+        }
+    }
+
+    /// <summary>
+    /// Re-tags bars fetched under an era ticker back to the canonical requested symbol so a
+    /// rename-spanning backfill lands as one continuous series.
+    /// </summary>
+    private static IReadOnlyList<HistoricalBar> RetagBars(
+        IReadOnlyList<HistoricalBar> bars,
+        string canonicalSymbol,
+        string fetchedSymbol)
+    {
+        if (bars.Count == 0 || string.Equals(canonicalSymbol, fetchedSymbol, StringComparison.OrdinalIgnoreCase))
+        {
+            return bars;
+        }
+
+        return bars
+            .Select(bar => new HistoricalBar(
+                canonicalSymbol,
+                bar.SessionDate,
+                bar.Open,
+                bar.High,
+                bar.Low,
+                bar.Close,
+                bar.Volume,
+                bar.Source,
+                bar.SequenceNumber))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<BackfillPartitionEstimate>? BuildExecutionPartitions(
+        IHistoricalDataProvider provider,
+        DataGranularity granularity,
+        DateOnly? fromInclusive,
+        DateOnly? toInclusive)
+    {
+        if (!fromInclusive.HasValue || !toInclusive.HasValue || toInclusive.Value < fromInclusive.Value)
+        {
+            return null;
+        }
+
+        return BackfillPartitionPlanner.Build(
+            provider,
+            granularity,
+            fromInclusive.Value,
+            toInclusive.Value.AddDays(1),
+            symbolCount: 1);
     }
 }

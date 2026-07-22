@@ -12,27 +12,178 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Sequence
 
-DEFAULT_TEST_PROJECTS = [
-    ("core", "tests/Meridian.Tests/Meridian.Tests.csproj"),
-    ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj"),
-    ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj"),
-    ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj"),
-    ("directlending", "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj"),
-    ("fundstructure", "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj"),
-    ("quantscript", "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj"),
+CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
+
+# Test projects that cannot execute on the ubuntu PR lane and are exercised by the
+# windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
+# (EnableDefaultCompileItems=false) and Meridian.LifecycleSupervisor.Tests targets
+# net10.0-windows. verify_test_project_coverage() accepts these as wired.
+WINDOWS_ONLY_TEST_PROJECTS = [
+    "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
 ]
+
+# Projects that are shared support libraries, not runnable test projects.
+SUPPORT_TEST_PROJECTS = {
+    "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+}
+
+DEFAULT_TEST_PROJECTS = [
+    ("core-application", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Application"),
+    (
+        "core-ui-workstation-endpoints",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Ui.WorkstationEndpointsTests",
+    ),
+    (
+        "core-ui-other",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Ui&FullyQualifiedName!~Meridian.Tests.Ui.WorkstationEndpointsTests",
+    ),
+    ("core-infrastructure", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Infrastructure"),
+    ("core-storage", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Storage"),
+    ("core-data", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.DataIntegration"),
+    (
+        "core-execution-strategy",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Execution|FullyQualifiedName~Meridian.Tests.Strategies|"
+            "FullyQualifiedName~Meridian.Tests.Backfill|FullyQualifiedName~Meridian.Tests.SecurityMaster"
+        ),
+    ),
+    (
+        "core-market-instruments",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Integration|FullyQualifiedName~Meridian.Tests.PortfolioRecords|"
+            "FullyQualifiedName~Meridian.Tests.Credentials|FullyQualifiedName~Meridian.Tests.Commodities|"
+            "FullyQualifiedName~Meridian.Tests.CertificatesOfDeposit|FullyQualifiedName~Meridian.Tests.CryptoCurrency|"
+            "FullyQualifiedName~Meridian.Tests.Deposits|FullyQualifiedName~Meridian.Tests.MoneyMarketFunds|"
+            "FullyQualifiedName~Meridian.Tests.Entities|FullyQualifiedName~Meridian.Tests.Futures|"
+            "FullyQualifiedName~Meridian.Tests.Options|FullyQualifiedName~Meridian.Tests.Equity|"
+            "FullyQualifiedName~Meridian.Tests.FixedIncome|FullyQualifiedName~Meridian.Tests.FxSpot"
+        ),
+    ),
+    (
+        "core-platform-domain-root",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Pipeline|FullyQualifiedName~Meridian.Tests.Platform|"
+            "FullyQualifiedName~Meridian.Tests.ProviderSdk|FullyQualifiedName~Meridian.Tests.Providers|"
+            "FullyQualifiedName~Meridian.Tests.Monitoring|FullyQualifiedName~Meridian.Tests.FinancialOperations|"
+            "FullyQualifiedName~Meridian.Tests.Ledger|FullyQualifiedName~Meridian.Tests.Core|"
+            "FullyQualifiedName~Meridian.Tests.Domain|FullyQualifiedName~Meridian.Tests.Models|"
+            "FullyQualifiedName~Meridian.Tests.Reconciliation|FullyQualifiedName~Meridian.Tests.Treasury|"
+            "FullyQualifiedName~Meridian.Tests.Instruments|FullyQualifiedName~Meridian.Tests.Contracts|"
+            "FullyQualifiedName~Meridian.Tests.Risk|FullyQualifiedName~Meridian.Tests.Config|"
+            "FullyQualifiedName~Meridian.Tests.Architecture|FullyQualifiedName~Meridian.Tests.Workflow|"
+            "FullyQualifiedName~Meridian.Tests.Services|FullyQualifiedName~Meridian.Tests.Derivatives|"
+            "FullyQualifiedName~Meridian.Tests.Indicators|FullyQualifiedName~Meridian.Tests.AssetOperations|"
+            "FullyQualifiedName~Meridian.Tests.ReferenceData|FullyQualifiedName~Meridian.Tests.Identity|"
+            "FullyQualifiedName~Meridian.Tests.Wpf|FullyQualifiedName~Meridian.Tests.Compliance|"
+            "FullyQualifiedName~Meridian.Tests.Serialization|FullyQualifiedName~Meridian.Tests.TradingCalendarTests|"
+            "FullyQualifiedName~Meridian.Tests.CronExpressionParserTests|FullyQualifiedName~Meridian.Tests.SymbolSearch|"
+            "FullyQualifiedName~Meridian.Tests.OrderEventPayloadTests|FullyQualifiedName~Meridian.Tests.MarketDepthCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.CliModeResolverTests|FullyQualifiedName~Meridian.Tests.OptionContractSpecTests|"
+            "FullyQualifiedName~Meridian.Tests.L3OrderBookCollectorTests|FullyQualifiedName~Meridian.Tests.OptionQuoteTests|"
+            "FullyQualifiedName~Meridian.Tests.GreeksSnapshotTests|FullyQualifiedName~Meridian.Tests.TradeDataCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.OptionTradeTests|FullyQualifiedName~Meridian.Tests.OptionChainSnapshotTests|"
+            "FullyQualifiedName~Meridian.Tests.GracefulShutdownTests|FullyQualifiedName~Meridian.Tests.OpenInterestUpdateTests|"
+            "FullyQualifiedName~Meridian.Tests.LiveDataAccessTests|FullyQualifiedName~Meridian.Tests.FilePermissionsServiceTests|"
+            "FullyQualifiedName~Meridian.Tests.TradeModelTests|FullyQualifiedName~Meridian.Tests.BboQuotePayloadTests|"
+            "FullyQualifiedName~Meridian.Tests.OrderBookLevelTests|FullyQualifiedName~Meridian.Tests.AlpacaQuoteRoutingTests|"
+            "FullyQualifiedName~Meridian.Tests.PrometheusMetricsTests|FullyQualifiedName~Meridian.Tests.SessionStatsCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.QuoteCollectorTests|FullyQualifiedName~Meridian.Tests.StatementReconciliationServiceTests|"
+            "FullyQualifiedName~Meridian.Tests.WebSocketResiliencePolicyTests|FullyQualifiedName~Meridian.Tests.CompositePublisherTests|"
+            "FullyQualifiedName~Meridian.Tests.ConnectionRetryIntegrationTests|FullyQualifiedName~Meridian.Tests.FilePermissionsDiagnosticTests|"
+            "FullyQualifiedName~Meridian.Tests.WebSocketHeartbeatTests|FullyQualifiedName~Meridian.Tests.PrometheusMetricsUpdaterTests|"
+            "FullyQualifiedName~Meridian.Tests.ExponentialBackoffTests|FullyQualifiedName~Meridian.Tests.CircuitBreakerTests"
+        ),
+    ),
+    (
+        "core-reporting",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Reporting",
+    ),
+    ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
+    ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
+    ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),
+    ("directlending", "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj", None),
+    ("fundstructure", "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj", None),
+    ("quantscript", "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj", None),
+    ("designmodules", "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj", None),
+    ("lifecycle", "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj", None),
+]
+
+_POSITIVE_FILTER_PREFIX = re.compile(r"(?<!!)FullyQualifiedName~([A-Za-z0-9_.]+)")
+
+
+def build_core_remainder_filter(projects: Sequence[tuple[str, str, str | None]]) -> str:
+    """Build a catch-all filter for Meridian.Tests namespaces no explicit core shard matches.
+
+    The shard roster is a hand-maintained whitelist; before this remainder existed, a test
+    namespace that matched no shard fragment (Meridian.Tests.Reporting was one) silently
+    never ran on the PR lane. The remainder shard executes everything in Meridian.Tests
+    minus the prefixes already claimed by the explicit core shards, so a newly created
+    namespace runs automatically instead of being skipped.
+    """
+    excluded: list[str] = []
+    seen: set[str] = set()
+    for _, path, filter_expression in projects:
+        if path != CORE_TEST_PROJECT_PATH or not filter_expression:
+            continue
+        for prefix in _POSITIVE_FILTER_PREFIX.findall(filter_expression):
+            if prefix not in seen:
+                seen.add(prefix)
+                excluded.append(prefix)
+
+    terms = ["FullyQualifiedName~Meridian.Tests"]
+    terms.extend(f"FullyQualifiedName!~{prefix}" for prefix in sorted(excluded))
+    return "&".join(terms)
+
+
+DEFAULT_TEST_PROJECTS.append(
+    ("core-remainder", CORE_TEST_PROJECT_PATH, build_core_remainder_filter(DEFAULT_TEST_PROJECTS))
+)
+
+
+def discover_test_project_paths(repo_root: Path) -> list[str]:
+    tests_dir = repo_root / "tests"
+    paths: list[str] = []
+    for pattern in ("*/*.csproj", "*/*.fsproj"):
+        for project_file in sorted(tests_dir.glob(pattern)):
+            paths.append(project_file.relative_to(repo_root).as_posix())
+    return paths
+
+
+def verify_test_project_coverage(repo_root: Path, projects: Sequence["TestProject"]) -> list[str]:
+    """Return the tests/* projects that no CI lane runs.
+
+    Every runnable project under tests/ must be either in the shard roster (this lane) or in
+    WINDOWS_ONLY_TEST_PROJECTS (the windows-desktop lane). Anything else is a silent coverage
+    gap — exactly how four whole test projects previously never ran on pull requests.
+    """
+    wired = {project.path for project in projects}
+    wired.update(WINDOWS_ONLY_TEST_PROJECTS)
+    return [
+        path
+        for path in discover_test_project_paths(repo_root)
+        if path not in wired and path not in SUPPORT_TEST_PROJECTS
+    ]
 
 
 @dataclass(frozen=True)
 class TestProject:
     name: str
     path: str
+    filter_expression: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,7 +234,7 @@ def parse_args() -> argparse.Namespace:
 
 def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
     if not entries:
-        return [TestProject(name=name, path=path) for name, path in DEFAULT_TEST_PROJECTS]
+        return [TestProject(name=name, path=path, filter_expression=filter_expression) for name, path, filter_expression in DEFAULT_TEST_PROJECTS]
 
     projects: list[TestProject] = []
     for entry in entries:
@@ -98,6 +249,14 @@ def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
     return projects
 
 
+def combine_filters(base_filter: str, project_filter: str | None) -> str:
+    if not project_filter:
+        return base_filter
+    if not base_filter:
+        return project_filter
+    return f"({base_filter})&({project_filter})"
+
+
 def build_dotnet_test_command(
     project: TestProject,
     *,
@@ -105,6 +264,7 @@ def build_dotnet_test_command(
     test_filter: str,
     results_dir: Path,
 ) -> list[str]:
+    combined_filter = combine_filters(test_filter, project.filter_expression)
     return [
         "dotnet",
         "test",
@@ -112,14 +272,70 @@ def build_dotnet_test_command(
         "-c",
         configuration,
         "--no-restore",
+        "--no-build",
         "--filter",
-        test_filter,
+        combined_filter,
+        # Abort and identify a hung test rather than letting the whole CI job wall-clock out.
+        # xunit.runner.json's longRunningTestSeconds only warns; blame-hang actively terminates
+        # the test host after the timeout and emits a sequence file naming the offending test.
+        # Mirrors the full-coverage lane in .github/workflows/ci.yml.
+        "--blame-hang",
+        "--blame-hang-timeout",
+        "10m",
         "--logger",
         f"trx;LogFilePrefix={project.name}",
         "--results-directory",
         str(results_dir),
         "/p:EnableWindowsTargeting=true",
     ]
+
+
+def build_dotnet_build_command(
+    project: TestProject,
+    *,
+    configuration: str,
+) -> list[str]:
+    return [
+        "dotnet",
+        "build",
+        project.path,
+        "-c",
+        configuration,
+        "--no-restore",
+        "/p:EnableWindowsTargeting=true",
+    ]
+
+
+def get_unique_build_projects(projects: Sequence[TestProject]) -> list[TestProject]:
+    seen_paths: set[str] = set()
+    unique_projects: list[TestProject] = []
+    for project in projects:
+        if project.path in seen_paths:
+            continue
+        seen_paths.add(project.path)
+        unique_projects.append(project)
+    return unique_projects
+
+
+def run_builds(
+    projects: Sequence[TestProject],
+    *,
+    configuration: str,
+    dry_run: bool,
+) -> list[TestResult]:
+    results: list[TestResult] = []
+    for project in get_unique_build_projects(projects):
+        command = build_dotnet_build_command(project, configuration=configuration)
+        print(f"::group::dotnet build {project.path}", flush=True)
+        print(" ".join(command), flush=True)
+        if dry_run:
+            exit_code = 0
+        else:
+            completed = subprocess.run(command, check=False)
+            exit_code = completed.returncode
+        print(f"::endgroup::", flush=True)
+        results.append(TestResult(f"build:{project.name}", project.path, exit_code, command))
+    return results
 
 
 def run_tests(
@@ -187,8 +403,38 @@ def main() -> int:
         print(str(exc), file=sys.stderr)
         return 2
 
+    # Only enforce wiring completeness for the default roster: --project overrides are
+    # deliberate narrow runs (e.g. the targeted-test workflow).
+    if not args.project:
+        repo_root = Path(__file__).resolve().parents[3]
+        unwired = verify_test_project_coverage(repo_root, projects)
+        if unwired:
+            print("Test projects not wired to any CI lane:", file=sys.stderr)
+            for path in unwired:
+                print(f"- {path}", file=sys.stderr)
+            print(
+                "Add each project to DEFAULT_TEST_PROJECTS (ubuntu lane) or "
+                "WINDOWS_ONLY_TEST_PROJECTS (windows-desktop lane) in "
+                "build/scripts/ci/run-dotnet-ci-tests.py.",
+                file=sys.stderr,
+            )
+            return 2
+
     results_dir = Path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
+
+    build_results = run_builds(
+        projects,
+        configuration=args.configuration,
+        dry_run=args.dry_run,
+    )
+    build_failures = [result for result in build_results if result.exit_code != 0]
+    if build_failures:
+        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+        print("Failing .NET test project builds:", file=sys.stderr)
+        for result in build_failures:
+            print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
+        return 1
 
     results = run_tests(
         projects,

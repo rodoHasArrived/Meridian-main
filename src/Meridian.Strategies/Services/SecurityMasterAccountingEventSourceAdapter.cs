@@ -1,4 +1,7 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -7,10 +10,14 @@ namespace Meridian.Strategies.Services;
 public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
 {
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
+    private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
 
-    public SecurityMasterAccountingEventSourceAdapter(ISecurityMasterQueryService? securityMasterQueryService = null)
+    public SecurityMasterAccountingEventSourceAdapter(
+        ISecurityMasterQueryService? securityMasterQueryService = null,
+        IAssetOperationsQueryService? assetOperationsQueryService = null)
     {
         _securityMasterQueryService = securityMasterQueryService;
+        _assetOperationsQueryService = assetOperationsQueryService;
     }
 
     public async Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -32,6 +39,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
+        var (periodStart, periodEnd) = ResolvePeriod(detail);
         var definitions = new Dictionary<Guid, SecurityEconomicDefinitionRecord>();
         foreach (var securityId in positions.Select(static position => position.SecurityId!.Value).Distinct())
         {
@@ -58,19 +66,32 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
+        var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
+        if (factorSchedule.Count > 0)
+        {
+            positions = await ResolveDurablePositionsAsync(
+                    positions,
+                    periodEnd,
+                    factorSchedule.Select(static factor => factor.SecurityId).ToHashSet(),
+                    ct)
+                .ConfigureAwait(false);
+        }
+
         var resolvedPositions = positions
             .Where(position => position.SecurityId is Guid securityId && definitions.ContainsKey(securityId))
             .GroupBy(
-                static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}",
+                static position => $"{position.SecurityId!.Value:N}|{position.AccountId}|{position.Symbol}|{position.PositionId:N}",
                 StringComparer.OrdinalIgnoreCase)
             .Select(static group =>
             {
                 var first = group.First();
                 return new SecurityMasterAccountingPosition(
                     first.Symbol,
-                    first.SecurityId,
-                    first.AccountId,
-                    group.Sum(static position => position.ParAmount));
+                     first.SecurityId,
+                     first.AccountId,
+                     group.Sum(static position => position.ParAmount),
+                     PositionId: first.PositionId,
+                     PositionVersion: first.PositionVersion);
             })
             .Where(static position => position.ParAmount != 0m)
             .ToArray();
@@ -80,8 +101,6 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
-        var (periodStart, periodEnd) = ResolvePeriod(detail);
-        var factorSchedule = BuildFactorSchedule(definitions.Values, periodStart, periodEnd);
         return new SecurityMasterAccountingEventRequest(
             request.RunId,
             periodStart,
@@ -90,6 +109,66 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             resolvedPositions,
             FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
             AmountTolerance: request.AmountTolerance);
+    }
+
+    private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
+        IReadOnlyList<SecurityMasterAccountingPosition> positions,
+        DateOnly asOfDate,
+        IReadOnlySet<Guid> factorSecurityIds,
+        CancellationToken ct)
+    {
+        if (_assetOperationsQueryService is null)
+        {
+            return positions.ToList();
+        }
+
+        var details = new Dictionary<Guid, AssetOperationsDetailDto?>();
+        foreach (var securityId in positions
+                     .Where(static position => position.SecurityId.HasValue)
+                     .Select(static position => position.SecurityId!.Value)
+                     .Where(factorSecurityIds.Contains)
+                     .Distinct())
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                details[securityId] = await _assetOperationsQueryService
+                    .GetOperationsAsync(securityId, ct)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                details[securityId] = null;
+            }
+        }
+
+        return positions.Select(position =>
+        {
+            if (position.SecurityId is not Guid securityId ||
+                !details.TryGetValue(securityId, out var detail) ||
+                detail is null)
+            {
+                return position;
+            }
+
+            var candidates = detail.BookPositions
+                .Where(candidate => candidate.SecurityId == securityId)
+                .Where(candidate => position.PositionId is Guid suppliedPositionId
+                    ? candidate.PositionId == suppliedPositionId
+                    : string.Equals(candidate.PrimaryAccountId?.Trim(), position.AccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                .Where(candidate => candidate.EffectiveFrom <= asOfDate &&
+                    (candidate.EffectiveTo is null || candidate.EffectiveTo >= asOfDate))
+                .Where(candidate => string.Equals(candidate.Status?.Trim(), "Active", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            return candidates.Length == 1
+                ? position with
+                {
+                    PositionId = candidates[0].PositionId,
+                    PositionVersion = candidates[0].Version
+                }
+                : position;
+        }).ToList();
     }
 
     private static List<SecurityMasterAccountingPosition> CollectPositions(StrategyRunDetail detail)
@@ -133,7 +212,8 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                 line.Symbol.Trim().ToUpperInvariant(),
                 line.Security.SecurityId,
                 ResolveAccountId(line.AccountScopeId ?? line.FinancialAccountId, detail.Ledger.AccountScopeId),
-                Math.Abs(line.Balance)));
+                Math.Abs(line.Balance),
+                PositionId: line.Dimensions?.PositionId));
         }
 
         return positions;
@@ -230,7 +310,12 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         priorFactor.Value,
                         currentFactor.Value,
                         ReadString(item, "source") ?? ReadString(definition.Provenance, "source") ?? "security-master",
-                        ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute")));
+                        ReadString(item, "evidenceLink") ?? ReadString(item, "evidenceId") ?? ReadString(item, "evidenceRoute"),
+                        ReadString(item, "sourceContentHash") ??
+                        ReadString(item, "contentHash") ??
+                        ReadString(item, "sourceHash") ??
+                        ReadString(definition.Provenance, "sourceContentHash") ??
+                        HashFactorRow(item)));
                 }
             }
         }
@@ -240,6 +325,9 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             .ThenBy(static entry => entry.AsOfDate)
             .ToArray();
     }
+
+    private static string HashFactorRow(JsonElement item)
+        => $"sha256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(item.GetRawText()))).ToLowerInvariant()}";
 
     private static IEnumerable<JsonElement> EnumerateFactorScheduleArrays(SecurityEconomicDefinitionRecord definition)
     {

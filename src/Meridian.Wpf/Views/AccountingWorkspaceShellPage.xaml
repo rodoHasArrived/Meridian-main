@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
@@ -59,6 +60,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -68,7 +70,11 @@
                                           CommandInvoked="OnCommandBarCommandInvoked"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceAccounting" />
 
-        <Border Grid.Row="1"
+        <controls:WorkspaceAttentionRibbon Grid.Row="1"
+                                           DataContext="{Binding AttentionRibbon}"
+                                           Margin="0,12,0,16" />
+
+        <Border Grid.Row="2"
                 Background="{StaticResource ConsoleBackgroundMediumBrush}"
                 BorderBrush="{StaticResource ConsoleBorderBrush}"
                 BorderThickness="1"
@@ -110,14 +116,14 @@
                         <Border Margin="0,18,0,0"
                                 Padding="14,12"
                                 CornerRadius="12"
-                                Background="#2D200F"
-                                BorderBrush="#875A24"
+                                Background="{StaticResource AccountingHeroSurfaceBrush}"
+                                BorderBrush="{StaticResource AccountingHeroBorderBrush}"
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="Selected Lane"
                                            FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="#E1B980" />
+                                           Foreground="{StaticResource AccountingHeroLabelBrush}" />
                                 <TextBlock x:Name="AccountingHeroLaneText"
                                            Margin="0,6,0,0"
                                            FontSize="18"
@@ -127,13 +133,13 @@
                                 <TextBlock x:Name="AccountingHeroSummaryText"
                                            Margin="0,4,0,0"
                                            FontSize="12"
-                                           Foreground="#F2DEC0"
+                                           Foreground="{StaticResource AccountingHeroSummaryBrush}"
                                            TextWrapping="Wrap"
                                            Text="Fund operations posture is ready for review." />
                                 <TextBlock x:Name="AccountingHeroDetailText"
                                            Margin="0,8,0,0"
                                            FontSize="12"
-                                           Foreground="#D7C2A4"
+                                           Foreground="{StaticResource AccountingHeroDetailBrush}"
                                            TextWrapping="Wrap"
                                            Text="Keep the selected Accounting lane visible before moving into the queue wall." />
                             </StackPanel>
@@ -400,7 +406,7 @@
             </StackPanel>
         </Border>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.15*" />
                 <ColumnDefinition Width="16" />
@@ -732,7 +738,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Margin="0,12,0,0"
                 Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>
@@ -747,7 +753,7 @@
         </Border>
 
         <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
-                                                 Grid.Row="4"
+                                                 Grid.Row="5"
                                                  Margin="0,8,0,0"
                                                  IsCompact="True" />
     </Grid>

@@ -12,6 +12,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.TwelveData;
@@ -27,6 +28,10 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
 [ImplementsAdr("ADR-001", "TwelveData historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("TWELVEDATA_API_KEY",
+    EnvironmentVariables = new[] { "TWELVEDATA_API_KEY", "TWELVEDATA__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Twelve Data API key from https://twelvedata.com/account/api-keys")]
 public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.twelvedata.com/time_series";
@@ -131,7 +136,7 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
             if (string.IsNullOrEmpty(value.Datetime))
                 continue;
 
-            if (!DateOnly.TryParseExact(value.Datetime, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+            if (!ProviderDateParsing.TryParseProviderDate(value.Datetime, "yyyy-MM-dd", out var sessionDate))
                 continue;
 
             if (from.HasValue && sessionDate < from.Value)

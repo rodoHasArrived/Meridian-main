@@ -147,6 +147,9 @@ public sealed class ProviderReadinessEndpointTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageCredentials;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-readiness-test-operator";
             await next();
         });
         app.UseRateLimiter();

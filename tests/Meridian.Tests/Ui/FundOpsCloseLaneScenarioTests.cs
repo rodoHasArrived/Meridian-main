@@ -281,7 +281,16 @@ public sealed class FundOpsCloseLaneScenarioTests
                 reconciled.Workflow.Version,
                 "ops-user",
                 ResolutionStatus: "Resolved",
-                Rationale: "Timing difference confirmed with custodian — T+1 settlement"));
+                Rationale: "Timing difference confirmed with custodian — T+1 settlement",
+                EvidenceLinks:
+                [
+                    new OperationsEvidenceLinkDto(
+                        "evidence-break-resolution",
+                        "Custodian settlement confirmation",
+                        "/evidence/fund-ops/break-resolution",
+                        "custodian",
+                        DateTimeOffset.UtcNow)
+                ]));
 
         resolved.Success.Should().BeTrue("break case resolution should succeed");
 
@@ -401,8 +410,8 @@ public sealed class FundOpsCloseLaneScenarioTests
             ]);
         blockedClose.NextActions.Select(action => action.Code).Should().Contain(
             [
-                "REPORT_PACK_REQUIRED",
-                "APPROVAL_REQUIRED"
+                "RESOLVE_REPORT_PACK_REQUIRED",
+                "RESOLVE_APPROVAL_REQUIRED"
             ]);
 
         // The approval state stays at Pending — the blocked submit must not record an approval submission.
@@ -747,7 +756,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

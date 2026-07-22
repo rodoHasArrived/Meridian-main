@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -240,9 +241,10 @@ public sealed class OpenFigiClient : IDisposable
             if (data?.Data is null || data.Data.Count == 0)
                 return Array.Empty<FigiMapping>();
 
-            return data.Data
+            return OrderMappingsForPreference(
+                    data.Data.Select(MapToFigiMapping),
+                    exchangeCode)
                 .Take(limit)
-                .Select(MapToFigiMapping)
                 .ToList();
         }
         catch (Exception ex)
@@ -263,14 +265,28 @@ public sealed class OpenFigiClient : IDisposable
         if (resultList.Count == 0)
             return resultList;
 
-        var tickers = resultList.Select(r => r.Symbol).Distinct().ToList();
-        var figiMappings = await BulkLookupByTickersAsync(tickers, ct: ct).ConfigureAwait(false);
+        var figiMappings = new Dictionary<(string Symbol, string Exchange), IReadOnlyList<FigiMapping>>();
+        foreach (var group in resultList.GroupBy(r => NormalizeOpenFigiExchangeCode(r.Exchange) ?? string.Empty))
+        {
+            var tickers = group
+                .Select(r => r.Symbol.ToUpperInvariant())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            var exchangeCode = string.IsNullOrEmpty(group.Key) ? null : group.Key;
+            var groupMappings = await BulkLookupByTickersAsync(tickers, exchangeCode, ct: ct).ConfigureAwait(false);
+
+            foreach (var (symbol, mappings) in groupMappings)
+            {
+                figiMappings[(symbol.ToUpperInvariant(), group.Key)] = mappings;
+            }
+        }
 
         return resultList.Select(r =>
         {
-            if (figiMappings.TryGetValue(r.Symbol, out var mappings) && mappings.Count > 0)
+            var exchangeCode = NormalizeOpenFigiExchangeCode(r.Exchange) ?? string.Empty;
+            if (figiMappings.TryGetValue((r.Symbol.ToUpperInvariant(), exchangeCode), out var mappings) && mappings.Count > 0)
             {
-                var best = mappings.First();
+                var best = ChooseBestMapping(mappings, exchangeCode);
                 return r with
                 {
                     Figi = best.Figi,
@@ -309,7 +325,17 @@ public sealed class OpenFigiClient : IDisposable
 
                 if ((int)response.StatusCode == 429)
                 {
-                    throw new HttpRequestException("OpenFIGI rate limit exceeded (429)");
+                    var retryAfter = response.Headers.RetryAfter?.Delta;
+                    if (!retryAfter.HasValue && response.Headers.RetryAfter?.Date is { } retryAt)
+                    {
+                        var delay = retryAt - DateTimeOffset.UtcNow;
+                        retryAfter = delay > TimeSpan.Zero ? delay : null;
+                    }
+
+                    throw new RateLimitException(
+                        "OpenFIGI rate limit exceeded (429)",
+                        provider: Name,
+                        retryAfter: retryAfter);
                 }
 
                 return Enumerable.Repeat<IReadOnlyList<FigiMapping>>(Array.Empty<FigiMapping>(), requests.Count).ToList();
@@ -321,7 +347,7 @@ public sealed class OpenFigiClient : IDisposable
             if (data is null)
                 return Enumerable.Repeat<IReadOnlyList<FigiMapping>>(Array.Empty<FigiMapping>(), requests.Count).ToList();
 
-            return data.Select(r =>
+            return data.Select((r, index) =>
             {
                 if (r.Error is not null)
                 {
@@ -329,7 +355,10 @@ public sealed class OpenFigiClient : IDisposable
                     return Array.Empty<FigiMapping>();
                 }
 
-                return (IReadOnlyList<FigiMapping>)(r.Data?.Select(MapToFigiMapping).ToList() ?? Array.Empty<FigiMapping>().ToList());
+                var preferredExchange = index < requests.Count ? requests[index].ExchCode : null;
+                return (IReadOnlyList<FigiMapping>)(r.Data is null
+                    ? Array.Empty<FigiMapping>().ToList()
+                    : OrderMappingsForPreference(r.Data.Select(MapToFigiMapping), preferredExchange));
             }).ToList();
         }
         catch (JsonException ex)
@@ -352,6 +381,46 @@ public sealed class OpenFigiClient : IDisposable
             ShareClassFigi: item.ShareClassFigi,
             SecurityDescription: item.SecurityDescription
         );
+    }
+
+    private static FigiMapping ChooseBestMapping(IReadOnlyList<FigiMapping> mappings, string? preferredExchangeCode)
+        => OrderMappingsForPreference(mappings, preferredExchangeCode).First();
+
+    private static List<FigiMapping> OrderMappingsForPreference(
+        IEnumerable<FigiMapping> mappings,
+        string? preferredExchangeCode)
+    {
+        var mappingList = mappings.ToList();
+        var normalizedExchangeCode = NormalizeOpenFigiExchangeCode(preferredExchangeCode);
+        if (normalizedExchangeCode is null)
+        {
+            return mappingList;
+        }
+
+        return mappingList
+            .OrderByDescending(mapping => string.Equals(
+                NormalizeOpenFigiExchangeCode(mapping.ExchangeCode),
+                normalizedExchangeCode,
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private static string? NormalizeOpenFigiExchangeCode(string? exchange)
+    {
+        var normalized = exchange?.Trim().ToUpperInvariant();
+        if (string.IsNullOrEmpty(normalized))
+        {
+            return null;
+        }
+
+        return normalized switch
+        {
+            "NASDAQ" or "XNAS" => "UW",
+            "NYSE" or "XNYS" => "UN",
+            "NYSE ARCA" or "NYSEARCA" or "ARCA" or "ARCX" => "UP",
+            "NYSE AMERICAN" or "NYSEAMERICAN" or "AMEX" or "XASE" => "UA",
+            _ => normalized
+        };
     }
 
     public void Dispose()

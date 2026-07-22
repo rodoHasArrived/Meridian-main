@@ -135,7 +135,7 @@ describe("WatchlistScreen", () => {
   it("renders sorted rows through the dense table with live quote labels", async () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    const table = await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    const table = await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     const rows = within(table).getAllByRole("row");
 
     await waitFor(() => expect(within(rows[1]).getByText("188.05 x 200")).toBeInTheDocument());
@@ -148,6 +148,23 @@ describe("WatchlistScreen", () => {
     expect(within(rows[1]).getByRole("link", { name: /View live quotes for AAPL/i })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
   });
 
+  it("opens a row context menu from the more-actions trigger and inspects the symbol", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
+
+    await user.click(screen.getByRole("button", { name: "More actions for AAPL" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Copy symbol" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Open live quote" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("menuitem", { name: "Inspect symbol" }));
+
+    const table = await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
+    expect(within(table).getByRole("row", { name: /AAPL. Status Active/i })).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("requests live quotes only for the subscribed symbols", async () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
@@ -157,6 +174,14 @@ describe("WatchlistScreen", () => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalled();
     });
     expect(vi.mocked(api.getLiveQuotesSnapshot).mock.calls[0]?.[0]).toEqual(["MSFT", "AAPL"]);
+  });
+
+  it("shows a freshness chip once live quotes have loaded", async () => {
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
+
+    expect(screen.getByLabelText(/Watchlist quotes updated/)).toBeInTheDocument();
   });
 
   it("lets operators manually refresh live quotes", async () => {
@@ -205,7 +230,7 @@ describe("WatchlistScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/collector offline/i);
-    expect(within(alert).getByText("Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Service unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open provider setup from watchlist live-quotes/i })).toHaveAttribute(
       "href",
@@ -223,7 +248,7 @@ describe("WatchlistScreen", () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     expect(await screen.findByText(/Live prices for 1 of 2 symbols/i, undefined, fullSuiteTimeout)).toBeInTheDocument();
-    const table = screen.getByRole("table", { name: /subscribed symbol watchlist/i });
+    const table = screen.getByRole("treegrid", { name: /subscribed symbol watchlist/i });
     expect(within(table).getByText("188.05 x 200")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("No quote");
   });
@@ -232,7 +257,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.type(screen.getByLabelText("Add symbol"), " spy ");
     await user.click(screen.getByRole("button", { name: /Add SPY to watchlist/i }));
 
@@ -249,7 +274,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.type(screen.getByLabelText("Add symbol"), " spy, dia qqq spy ");
     await user.click(screen.getByRole("button", { name: /Add 3 symbols to watchlist: SPY, DIA, QQQ/i }));
 
@@ -272,7 +297,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Add US core starter pack: SPY, QQQ, AAPL, MSFT/i }));
 
     await waitFor(() => expect(api.bulkAddSymbols).toHaveBeenCalledWith(["SPY", "QQQ", "AAPL", "MSFT"]));
@@ -301,12 +326,12 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Starter pack request could not reach the configured provider.");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/symbols/bulk.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Provider offline")).toBeInTheDocument();
     expect(within(alert).getByText("provider: Reconnect provider credentials before retrying the starter pack.")).toBeInTheDocument();
     expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-invalid", "true");
@@ -340,14 +365,14 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
     expect(api.removeSymbol).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("MSFT cannot be removed while reconciliation is still pending.");
-    expect(within(alert).getByText("Endpoint returned 409 for /api/symbols/MSFT.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Watchlist removal blocked")).toBeInTheDocument();
     expect(within(alert).getByText("symbol: Resolve the pending reconciliation break before removing this symbol.")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
@@ -359,7 +384,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
     await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
@@ -372,7 +397,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
 
     expect(api.removeSymbol).not.toHaveBeenCalled();
@@ -391,7 +416,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     const msftRow = screen.getByRole("row", { name: /Select MSFT watchlist row/i });
     const detail = screen.getByRole("complementary", { name: /selected watchlist symbol detail/i });
     expect(msftRow).toHaveAttribute("aria-controls", "watchlist-selected-symbol-detail");
@@ -422,7 +447,7 @@ describe("WatchlistScreen", () => {
 
     vi.mocked(api.getSymbols).mockResolvedValueOnce([]);
     const emptyRender = renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
-    expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toHaveTextContent(/No symbols configured/i);
+    expect(await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i })).toHaveTextContent(/No symbols configured/i);
     emptyRender.unmount();
     cleanup();
     vi.mocked(api.getSymbols).mockClear();
@@ -435,7 +460,7 @@ describe("WatchlistScreen", () => {
 
     await userEvent.setup().click(screen.getByRole("button", { name: /Retry symbol watchlist load/i }));
 
-    expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toBeInTheDocument();
+    expect(await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i })).toBeInTheDocument();
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 });

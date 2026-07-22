@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
@@ -39,10 +41,13 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterById, async (
             Guid securityId,
+            DateTimeOffset? asOf,
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
-            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            var detail = asOf.HasValue
+                ? await queryService.GetByIdAsOfAsync(securityId, asOf.Value, ct).ConfigureAwait(false)
+                : await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -57,7 +62,7 @@ public static class SecurityMasterEndpoints
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterValidation, async (
             Guid securityId,
-            [FromServices] AppSecurityMaster.ISecurityValidationService validationService,
+            [FromServices] AppSecurityMaster.Validation.ISecurityValidationService validationService,
             CancellationToken ct) =>
         {
             var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
@@ -610,31 +615,143 @@ public static class SecurityMasterEndpoints
             Guid securityId,
             CorporateActionDto dto,
             HttpContext context,
-            [FromServices] ISecurityMasterEventStore eventStore,
+            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
             CancellationToken ct) =>
         {
-            if (dto.SecurityId != securityId)
+            try
             {
-                return Results.BadRequest("Corporate action SecurityId must match route parameter");
+                var actor = ResolveActor(context);
+                var result = await commandService.AppendAsync(
+                    new SecurityMasterCorporateActionAppendRequestDto(
+                        securityId,
+                        dto,
+                        SourceSystem: "workstation-http",
+                        Actor: actor,
+                        SourceRecordId: null,
+                        Reason: "HTTP corporate action append",
+                        CorrelationId: context.TraceIdentifier),
+                    ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
             }
-
-            var validationError = ValidateCorporateAction(dto);
-            if (validationError is not null)
+            catch (ArgumentException ex)
             {
-                return Results.BadRequest(validationError);
+                return Results.BadRequest(ex.Message);
             }
-
-            await eventStore.AppendCorporateActionAsync(dto, ct).ConfigureAwait(false);
-            return Results.Ok();
         })
         .WithName("AppendSecurityMasterCorporateAction")
         .Accepts<CorporateActionDto>("application/json")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
+            AppSecurityMaster.CorporateActions.CorporateActionIngestRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionIngestOrchestrator orchestrator,
+            CancellationToken ct) =>
+        {
+            var actor = ResolveActor(context);
+            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActions.CorporateActionIngestRequest()) with
+            {
+                Actor = actor,
+                CorrelationId = context.TraceIdentifier
+            };
+
+            var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
+            context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("IngestSecurityMasterCorporateActions")
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Returns staged corporate-action proposals from the most recent ingest sweep for
+        /// the workbench inbox badge and review list.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
+            Results.Json(inboxState.GetInbox(), jsonOptions))
+        .WithName("GetSecurityMasterCorporateActionInbox")
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
+        /// corporate action through the governed command service under the operator's identity.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
+            AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState,
+            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
+            CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.BadRequest("An apply request is required.");
+
+            var actor = ResolveActor(context);
+            if (!inboxState.TryTakeStaged(request.SecurityId, request.ActionType, request.ExDate, out var proposal))
+                return Results.NotFound("No staged proposal matches the requested security, action type, and ex-date.");
+
+            try
+            {
+                var result = await commandService.AppendAsync(
+                    new SecurityMasterCorporateActionAppendRequestDto(
+                        SecurityId: proposal.SecurityId,
+                        CorporateAction: AppSecurityMaster.CorporateActions.CorporateActionProposalMapper.ToCorporateAction(proposal),
+                        SourceSystem: proposal.WinningSource,
+                        Actor: actor,
+                        SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
+                        Reason: proposal.DissentingSources.Count == 0
+                            ? "Operator applied staged corporate-action proposal from the inbox."
+                            : $"Operator applied staged proposal over dissent from {string.Join(", ", proposal.DissentingSources)}.",
+                        CorrelationId: context.TraceIdentifier),
+                    ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        })
+        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
+        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Pre-builds a machine-proposed security-master draft for an unmastered symbol so the
+        /// operator can review and submit it instead of typing the record from scratch.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCoverageDraft, async (
+            string symbol,
+            [FromServices] AppSecurityMaster.SecurityMasterDraftProposalService draftService,
+            CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return Results.BadRequest("A symbol is required.");
+
+            var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
+            return Results.Json(draft, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCoverageDraft")
+        .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
@@ -804,6 +921,62 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        /// <summary>
+        /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
+        /// transitioning the persisted approval status and appending to the durable audit trail.
+        /// Requires the <c>ModifySecurityMaster</c> permission; the reviewer is server-derived from the
+        /// authenticated principal.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns the merged overrides snapshot after the decision is applied, <c>404</c> when
+        /// no overrides exist for the security, or <c>400</c> when the decision is not Approved or
+        /// Rejected.</para>
+        /// </remarks>
+        group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
+            Guid securityId,
+            OperatorOverrideDecisionRequest request,
+            HttpContext context,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            // The reviewer identity is server-derived from the authenticated principal, never taken
+            // from the request body, so a client cannot attribute a decision to someone else.
+            var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
+            try
+            {
+                var updated = await store
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
+            {
+                // Expected domain condition: no overlay exists to decide on.
+                return Results.NotFound();
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("not Pending", StringComparison.Ordinal))
+            {
+                // Expected domain condition: the overlay exists but is not in a reviewable (Pending) state.
+                return Results.Conflict(new { error = exception.Message });
+            }
+            // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
+            // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
+        })
+        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .Accepts<OperatorOverrideDecisionRequest>("application/json")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,
@@ -827,6 +1000,29 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        // Clearwater-model extensions. These map only when a real (non-null) implementation is
+        // registered: when Security Master is unconfigured the NullSecurityMaster* fallbacks are
+        // still present in DI, and their write/run paths throw, so mapping against them would turn
+        // requests into 500s instead of leaving the routes unavailable.
+        if (app.Services.GetService<ISecurityMasterPricingService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterPricingService))
+            MapPricingEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityMasterCashFlowService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterCashFlowService))
+            MapCashFlowEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<IDataVendorEntitlementService>()
+            is not (null or AppSecurityMaster.NullDataVendorEntitlementService))
+            MapEntitlementEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityMasterDataQualityService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterDataQualityService))
+            MapQualityReportEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
+            MapExceptionAgingEndpoints(group, jsonOptions);
     }
 
     private static ValueTask<object?> RequireModifySecurityMasterPermission(
@@ -891,31 +1087,6 @@ public static class SecurityMasterEndpoints
             : null;
     }
 
-    private static string? ValidateCorporateAction(CorporateActionDto dto)
-    {
-        if (string.Equals(dto.EventType, "StockSplit", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!dto.SplitRatio.HasValue)
-            {
-                return "StockSplit corporate actions must include SplitRatio.";
-            }
-
-            if (dto.SplitRatio.Value <= 0m || dto.SplitRatio.Value > 1_000m)
-            {
-                return "StockSplit SplitRatio must be greater than 0 and less than or equal to 1000.";
-            }
-        }
-
-        if (string.Equals(dto.EventType, "Dividend", StringComparison.OrdinalIgnoreCase) &&
-            dto.DividendPerShare.HasValue &&
-            dto.DividendPerShare.Value < 0m)
-        {
-            return "DividendPerShare must be greater than or equal to 0.";
-        }
-
-        return null;
-    }
-
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
         AppSecurityMaster.SecurityMasterIngestStatusSnapshot snapshot,
         int openConflicts)
@@ -954,5 +1125,305 @@ public static class SecurityMasterEndpoints
                 },
             RetrievedAtUtc = DateTimeOffset.UtcNow
         };
+    }
+
+    // ── Pricing Hierarchy & Golden Copy ──────────────────────────────────────
+
+    private static void MapPricingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet(UiApiRoutes.SecurityMasterPricingHierarchy, async (
+            Guid securityId,
+            string? accountId,
+            [FromServices] ISecurityMasterPricingService pricingService,
+            CancellationToken ct) =>
+        {
+            var hierarchy = await pricingService
+                .GetPricingHierarchyAsync(securityId, accountId, ct).ConfigureAwait(false);
+            return hierarchy is null ? Results.NotFound() : Results.Json(hierarchy, jsonOptions);
+        })
+        .WithName("GetSecurityMasterPricingHierarchy")
+        .Produces<SecurityPricingHierarchyDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPut(UiApiRoutes.SecurityMasterPricingHierarchy, async (
+            Guid securityId,
+            SecurityPricingHierarchyDto? request,
+            HttpContext context,
+            [FromServices] ISecurityMasterPricingService pricingService,
+            CancellationToken ct) =>
+        {
+            if (request is null || request.SecurityId != securityId)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["securityId"] = ["Request SecurityId must match the route parameter."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            await pricingService
+                .UpsertPricingHierarchyAsync(request with { UpdatedBy = actor }, ct)
+                .ConfigureAwait(false);
+            return Results.NoContent();
+        })
+        .WithName("UpsertSecurityMasterPricingHierarchy")
+        .Accepts<SecurityPricingHierarchyDto>("application/json")
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        group.MapPost(UiApiRoutes.SecurityMasterRecordRawPrice, async (
+            Guid securityId,
+            RecordRawPriceRequest? request,
+            HttpContext context,
+            [FromServices] ISecurityMasterPricingService pricingService,
+            CancellationToken ct) =>
+        {
+            if (request is null || request.SecurityId != securityId)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["securityId"] = ["Request SecurityId must match the route parameter."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            await pricingService
+                .RecordRawPriceAsync(request with { RecordedBy = actor }, ct)
+                .ConfigureAwait(false);
+            return Results.NoContent();
+        })
+        .WithName("RecordSecurityMasterRawPrice")
+        .Accepts<RecordRawPriceRequest>("application/json")
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        group.MapGet(UiApiRoutes.SecurityMasterPriceGoldenCopy, async (
+            Guid securityId,
+            string? accountId,
+            [FromServices] ISecurityMasterPricingService pricingService,
+            CancellationToken ct) =>
+        {
+            var golden = await pricingService
+                .GetGoldenCopyPriceAsync(securityId, accountId, ct).ConfigureAwait(false);
+            return golden is null ? Results.NotFound() : Results.Json(golden, jsonOptions);
+        })
+        .WithName("GetSecurityMasterPriceGoldenCopy")
+        .Produces<SecurityPriceGoldenCopyDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet(UiApiRoutes.SecurityMasterPriceComparison, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterPricingService pricingService,
+            CancellationToken ct) =>
+        {
+            var comparison = await pricingService
+                .GetComparisonPricesAsync(securityId, ct).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetSecurityMasterPriceComparison")
+        .Produces<IReadOnlyList<SecurityComparisonPriceDto>>(StatusCodes.Status200OK);
+    }
+
+    // ── Cash Flow Source Assignments ─────────────────────────────────────────
+
+    private static void MapCashFlowEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet(UiApiRoutes.SecurityMasterCashFlowSource, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterCashFlowService cashFlowService,
+            CancellationToken ct) =>
+        {
+            var source = await cashFlowService
+                .GetCashFlowSourceAsync(securityId, ct).ConfigureAwait(false);
+            return source is null ? Results.NotFound() : Results.Json(source, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCashFlowSource")
+        .Produces<SecurityCashFlowSourceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPut(UiApiRoutes.SecurityMasterCashFlowSource, async (
+            Guid securityId,
+            UpsertCashFlowSourceRequest? request,
+            HttpContext context,
+            [FromServices] ISecurityMasterCashFlowService cashFlowService,
+            CancellationToken ct) =>
+        {
+            if (request is null || request.SecurityId != securityId)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["securityId"] = ["Request SecurityId must match the route parameter."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out _))
+                return Results.Unauthorized();
+
+            await cashFlowService.UpsertCashFlowSourceAsync(request, ct).ConfigureAwait(false);
+            return Results.NoContent();
+        })
+        .WithName("UpsertSecurityMasterCashFlowSource")
+        .Accepts<UpsertCashFlowSourceRequest>("application/json")
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        group.MapGet(UiApiRoutes.SecurityMasterCashFlowProjections, async (
+            Guid securityId,
+            string? scenario,
+            [FromServices] ISecurityMasterCashFlowService cashFlowService,
+            CancellationToken ct) =>
+        {
+            var parsed = Enum.TryParse<StructuredCashFlowScenario>(scenario, ignoreCase: true, out var s)
+                ? s
+                : StructuredCashFlowScenario.Base;
+
+            var projection = await cashFlowService
+                .GetProjectionAsync(securityId, parsed, ct).ConfigureAwait(false);
+            return projection is null ? Results.NotFound() : Results.Json(projection, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCashFlowProjections")
+        .Produces<StructuredCashFlowProjectionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+    }
+
+    // ── Data Vendor Entitlements ─────────────────────────────────────────────
+
+    private static void MapEntitlementEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet(UiApiRoutes.DataVendorEntitlements, async (
+            [FromServices] IDataVendorEntitlementService entitlementService,
+            CancellationToken ct) =>
+        {
+            var all = await entitlementService.GetAllAsync(ct).ConfigureAwait(false);
+            return Results.Json(all, jsonOptions);
+        })
+        .WithName("GetDataVendorEntitlements")
+        .Produces<IReadOnlyList<DataVendorEntitlementDto>>(StatusCodes.Status200OK);
+
+        group.MapGet(UiApiRoutes.DataVendorEntitlementsExpiring, async (
+            int withinDays,
+            [FromServices] IDataVendorEntitlementService entitlementService,
+            CancellationToken ct) =>
+        {
+            var expiring = await entitlementService
+                .GetExpiringAsync(withinDays <= 0 ? 30 : withinDays, ct).ConfigureAwait(false);
+            return Results.Json(expiring, jsonOptions);
+        })
+        .WithName("GetExpiringDataVendorEntitlements")
+        .Produces<IReadOnlyList<DataVendorEntitlementDto>>(StatusCodes.Status200OK);
+
+        group.MapPost(UiApiRoutes.DataVendorEntitlements, async (
+            UpsertDataVendorEntitlementRequest? request,
+            HttpContext context,
+            [FromServices] IDataVendorEntitlementService entitlementService,
+            CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = ["A data vendor entitlement request is required."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            var result = await entitlementService
+                .UpsertAsync(request with { Actor = actor }, ct).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("CreateDataVendorEntitlement")
+        .Accepts<UpsertDataVendorEntitlementRequest>("application/json")
+        .Produces<DataVendorEntitlementDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        group.MapDelete(UiApiRoutes.DataVendorEntitlementById, async (
+            Guid entitlementId,
+            HttpContext context,
+            [FromServices] IDataVendorEntitlementService entitlementService,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            try
+            {
+                await entitlementService.DeactivateAsync(entitlementId, actor, ct).ConfigureAwait(false);
+                return Results.NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.NotFound(ex.Message);
+            }
+        })
+        .WithName("DeactivateDataVendorEntitlement")
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+    }
+
+    // ── Data Quality Reports ─────────────────────────────────────────────────
+
+    private static void MapQualityReportEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapPost(UiApiRoutes.SecurityMasterQualityReportRun, async (
+            HttpContext context,
+            [FromServices] ISecurityMasterDataQualityService qualityService,
+            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            var report = await qualityService.RunQualityChecksAsync(ct).ConfigureAwait(false);
+            var actor = EndpointAuthorization.TryResolveActor(context, out var username) ? username : null;
+            await caseworkService.SyncQualityViolationCasesAsync(report, actor, ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("RunSecurityMasterQualityReport")
+        .Produces<SecurityMasterQualityReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapGet(UiApiRoutes.SecurityMasterQualityReportLatest, async (
+            [FromServices] ISecurityMasterDataQualityService qualityService,
+            CancellationToken ct) =>
+        {
+            var report = await qualityService.GetLatestReportAsync(ct).ConfigureAwait(false);
+            return report is null ? Results.NotFound() : Results.Json(report, jsonOptions);
+        })
+        .WithName("GetSecurityMasterQualityReportLatest")
+        .Produces<SecurityMasterQualityReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+    }
+
+    // ── Exception Aging / SLA ────────────────────────────────────────────────
+
+    private static void MapExceptionAgingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet(UiApiRoutes.SecurityMasterExceptionsAging, async (
+            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
+            CancellationToken ct) =>
+        {
+            var aging = await caseworkService.GetAgingExceptionsAsync(ct).ConfigureAwait(false);
+            return Results.Json(aging, jsonOptions);
+        })
+        .WithName("GetSecurityMasterAgingExceptions")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK);
     }
 }

@@ -2,9 +2,9 @@
 
 **Status:** generated
 **Owner:** core-team
-**Reviewed:** 2026-06-16
+**Reviewed:** 2026-07-12
 
-Generated at: `2026-06-16T04:04:46Z`
+Generated at: `2026-07-12T02:59:24Z`
 
 ## Active Scope
 
@@ -75,26 +75,10 @@ Meridian proves operational records from source evidence to governed output.
 
 ### Decision Records
 
-- [Meridian ADR: ADR-001: Provider Abstraction Pattern](../../adr/001-provider-abstraction.md)
-- [Meridian ADR: ADR-002: Tiered Storage Architecture](../../adr/002-tiered-storage-architecture.md)
-- [Meridian ADR: ADR-003: Microservices Decomposition](../../adr/003-microservices-decomposition.md)
-- [Meridian ADR: ADR-004: Async Streaming Patterns](../../adr/004-async-streaming-patterns.md)
-- [Meridian ADR: ADR-005: Attribute-Based Provider Discovery](../../adr/005-attribute-based-discovery.md)
-- [Meridian ADR: ADR-006: Domain Events Polymorphic Payload Pattern](../../adr/006-domain-events-polymorphic-payload.md)
-- [Meridian ADR: ADR-007: Write-Ahead Log (WAL) + Event Pipeline Durability](../../adr/007-write-ahead-log-durability.md)
-- [Meridian ADR: ADR-008: Multi-Format Composite Storage Sink Pattern](../../adr/008-multi-format-composite-storage.md)
-- [Meridian ADR: ADR-009: F# Type-Safe Domain with C# Interop Bridge](../../adr/009-fsharp-interop.md)
-- [Meridian ADR: ADR-010: HttpClientFactory for HTTP Client Lifecycle Management](../../adr/010-httpclient-factory.md)
-- [Meridian ADR: ADR-011: Centralized Configuration and Credential Management](../../adr/011-centralized-configuration-and-credentials.md)
-- [Meridian ADR: ADR-012: Unified Monitoring and Alerting Pipeline](../../adr/012-monitoring-and-alerting-pipeline.md)
-- [Meridian ADR: ADR-013: Bounded Channel Pipeline Policy with Backpressure](../../adr/013-bounded-channel-policy.md)
-- [Meridian ADR: ADR-014: High-Performance JSON Serialization via Source Generators](../../adr/014-json-source-generators.md)
-- [Meridian ADR: ADR-015: Strategy Execution Contract](../../adr/015-strategy-execution-contract.md)
-- [Meridian ADR: ADR 016: Distinct custody-position and cash reconciliation breaks with shared workflow envelope](../../adr/016-custody-cash-reconciliation-break-typing.md)
-- [Meridian ADR: ADR-016: Platform Architecture Migration Mandate](../../adr/016-platform-architecture-migration.md)
 - [ADR-017: Modular Operational Monolith](../../adr/017-modular-operational-monolith.md)
-- [Meridian ADR: ADR-XXX: [Title]](../../adr/_template.md)
-- [Architectural Decision Records (ADRs) — migration index](../../adr/README.md)
+- [ADR-018: Declarative Statement Mapping Profiles and the Statement Connector Library](../../adr/018-declarative-statement-mapping-profiles.md)
+- [Architectural Decision Records (ADRs)](../../adr/README.md)
+- [ADR-XXX: [Title]](../../adr/_template.md)
 
 ## Projects
 
@@ -136,6 +120,7 @@ Meridian proves operational records from source evidence to governed output.
 - `Meridian.DirectLending.Tests` - `tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj` (net10.0)
 - `Meridian.FundStructure.Tests` - `tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj` (net10.0)
 - `Meridian.QuantScript.Tests` - `tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj` (net10.0)
+- `Meridian.TestSupport` - `tests/Meridian.TestSupport/Meridian.TestSupport.csproj` (net10.0)
 - `Meridian.Tests` - `tests/Meridian.Tests/Meridian.Tests.csproj` (net10.0)
 - `Meridian.Ui.Tests` - `tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj` (net10.0)
 - `Meridian.Wpf.Tests` - `tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj` (net10.0, net10.0-windows10.0.19041.0)

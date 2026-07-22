@@ -138,7 +138,7 @@
                 </Grid>
             </Border>
 
-            <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,14">
+            <UniformGrid Grid.Row="2" Columns="5" Margin="0,0,0,14">
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="Visible Loans" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -161,6 +161,12 @@
                     <StackPanel>
                         <TextBlock Text="Cash Rows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding CashTransactions.Count}" Style="{StaticResource CardHeaderStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Close Blockers" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding CloseBlockers.Count}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -252,6 +258,148 @@
                                                                   GridAutomationId="DirectLendingCashTransactionsGrid"
                                                                   EmptyAutomationId="DirectLendingCashTransactionsEmptyState"
                                                                   AutomationProperties.Name="Direct lending cash transactions table" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Collateral"
+                                 AutomationProperties.AutomationId="DirectLendingCollateralTab">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Collateral Coverage"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,4" />
+                                    <TextBlock Text="Shared operations coverage by loan, principal, retained collateral value, and blocker state."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <workstation:DenseDataGridControl Grid.Row="1"
+                                                                  Table="{Binding CollateralCoverageTable}"
+                                                                  Height="320"
+                                                                  GridAutomationId="DirectLendingCollateralGrid"
+                                                                  EmptyAutomationId="DirectLendingCollateralEmptyState"
+                                                                  AutomationProperties.Name="Direct lending collateral coverage table" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Status"
+                                 AutomationProperties.AutomationId="DirectLendingStatusPostureTab">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Covenant / Status Posture"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,4" />
+                                    <TextBlock Text="Loan status, covenant retention, PIK, restructure, and amortization posture from the shared read model."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <workstation:DenseDataGridControl Grid.Row="1"
+                                                                  Table="{Binding StatusPostureTable}"
+                                                                  Height="320"
+                                                                  GridAutomationId="DirectLendingStatusPostureGrid"
+                                                                  EmptyAutomationId="DirectLendingStatusPostureEmptyState"
+                                                                  AutomationProperties.Name="Direct lending status posture table" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Exceptions"
+                                 AutomationProperties.AutomationId="DirectLendingExceptionsTab">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Exceptions and Close Blockers"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,4" />
+                                    <TextBlock Text="Open reconciliation exceptions and blockers that prevent operations close."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="12" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <workstation:DenseDataGridControl Grid.Row="0"
+                                                                      Table="{Binding ExceptionsTable}"
+                                                                      Height="190"
+                                                                      GridAutomationId="DirectLendingExceptionsGrid"
+                                                                      EmptyAutomationId="DirectLendingExceptionsEmptyState"
+                                                                      AutomationProperties.Name="Direct lending exceptions table" />
+                                    <workstation:DenseDataGridControl Grid.Row="2"
+                                                                      Table="{Binding CloseBlockersTable}"
+                                                                      Height="190"
+                                                                      GridAutomationId="DirectLendingCloseBlockersGrid"
+                                                                      EmptyAutomationId="DirectLendingCloseBlockersEmptyState"
+                                                                      AutomationProperties.Name="Direct lending close blockers table" />
+                                </Grid>
+                            </Grid>
+                         </TabItem>
+
+                        <TabItem Header="Statements"
+                                  AutomationProperties.AutomationId="DirectLendingServicerStatementsTab">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Servicer statement batches"
+                                               FontWeight="SemiBold"
+                                               Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Imported position and remittance evidence from the shared Direct Lending operations read model."
+                                               Style="{StaticResource CardDescriptionStyle}" />
+                                </StackPanel>
+
+                                <workstation:DenseDataGridControl Grid.Row="1"
+                                                                  Table="{Binding ServicerStatementsTable}"
+                                                                  Height="320"
+                                                                  GridAutomationId="DirectLendingServicerStatementsGrid"
+                                                                  EmptyAutomationId="DirectLendingServicerStatementsEmptyState"
+                                                                  AutomationProperties.Name="Direct lending servicer statement batches table" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Evidence"
+                                  AutomationProperties.AutomationId="DirectLendingEvidenceTab">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Evidence and Journals"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,4" />
+                                    <TextBlock Text="Contract, collateral, journal, reconciliation, and projection evidence routes from the shared operations read model."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <workstation:DenseDataGridControl Grid.Row="1"
+                                                                  Table="{Binding EvidenceTable}"
+                                                                  Height="320"
+                                                                  GridAutomationId="DirectLendingEvidenceGrid"
+                                                                  EmptyAutomationId="DirectLendingEvidenceEmptyState"
+                                                                  AutomationProperties.Name="Direct lending operations evidence table" />
                             </Grid>
                         </TabItem>
                     </TabControl>

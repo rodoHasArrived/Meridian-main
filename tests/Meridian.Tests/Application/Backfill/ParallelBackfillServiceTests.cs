@@ -8,6 +8,7 @@ using Meridian.Core.Exceptions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
+using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Interfaces;
 using Xunit;
@@ -293,6 +294,36 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         // Assert
         processingOrder.ToArray().Should().Equal(symbols,
             "input order must be preserved when no priorities are given");
+    }
+
+    [Fact]
+    public async Task RunAsync_DuplicateSymbols_ProcessesFirstOccurrenceOnlyInInputOrder()
+    {
+        // Arrange
+        var processingOrder = new ConcurrentQueue<string>();
+        var provider = new ControllableProvider("test", async (symbol, ct) =>
+        {
+            await Task.Yield();
+            processingOrder.Enqueue(symbol);
+            return new[] { MakeBar(symbol) };
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest(
+            "test",
+            [" SPY ", "spy", "AAPL", "SPY"],
+            MaxConcurrentSymbols: 1);
+
+        // Act
+        var result = await svc.RunAsync(request, _pipeline, CancellationToken.None);
+
+        // Assert
+        processingOrder.ToArray().Should().Equal(["SPY", "AAPL"]);
+        result.Symbols.Should().Equal(["SPY", "AAPL"]);
+        result.BarsWritten.Should().Be(2);
+        result.SymbolValidationSignals.Select(signal => signal.Symbol)
+            .Should()
+            .BeEquivalentTo(["SPY", "AAPL"]);
     }
 
     // -------------------------------------------------------------------------
@@ -708,10 +739,10 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
         try
         {
-            var requestedFrom = new ConcurrentDictionary<string, DateOnly?>(StringComparer.OrdinalIgnoreCase);
+            var requestedFrom = new ConcurrentDictionary<string, ConcurrentQueue<DateOnly?>>(StringComparer.OrdinalIgnoreCase);
             var provider = new ControllableProvider("yahoo", (symbol, from, to, ct) =>
             {
-                requestedFrom[symbol] = from;
+                requestedFrom.GetOrAdd(symbol, _ => new ConcurrentQueue<DateOnly?>()).Enqueue(from);
 
                 if (symbol == "QQQ")
                     throw new InvalidOperationException("simulated yahoo interruption");
@@ -737,8 +768,10 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
 
             var result = await svc.RunAsync(request, _pipeline);
 
-            requestedFrom["SPY"].Should().Be(new DateOnly(2024, 2, 16));
-            requestedFrom["QQQ"].Should().Be(new DateOnly(2024, 1, 1));
+            var spyRequestedFrom = requestedFrom["SPY"].ToArray();
+            spyRequestedFrom.Should().ContainSingle();
+            spyRequestedFrom[0].Should().Be(new DateOnly(2024, 2, 16));
+            requestedFrom["QQQ"].Should().ContainSingle().Which.Should().Be(new DateOnly(2024, 1, 1));
             result.Provider.Should().Be("yahoo");
             result.From.Should().Be(new DateOnly(2024, 1, 1));
             result.To.Should().Be(new DateOnly(2024, 3, 31));
@@ -890,7 +923,9 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" });
+        // MakeBar produces bars dated 2024-01-02; an explicit matching range keeps this a
+        // covered historical request rather than an open-ended one implying "through today".
+        var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
@@ -912,7 +947,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
                 symbol == "TSLA" ? [] : new[] { MakeBar(symbol) }));
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
@@ -942,6 +977,24 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RunAsync_OpenEndedRequestWithFrozenDataset_EmitsStaleWarnSignal()
+    {
+        // An open-ended request implies "through today"; a frozen dataset (e.g. Nasdaq WIKI,
+        // ended March 2018) must be flagged stale instead of passing as fresh coverage.
+        var provider = new ControllableProvider("test", (symbol, ct) =>
+            Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", ["SPY"]);
+
+        var result = await svc.RunAsync(request, _pipeline);
+
+        var signal = result.SymbolValidationSignals.Should().ContainSingle(s => s.Symbol == "SPY").Which;
+        signal.Status.Should().Be("Warn");
+        signal.Reason.Should().Contain("stale");
+    }
+
+    [Fact]
     public async Task RunAsync_FailedSymbol_EmitsFailSignal()
     {
         // Arrange — TSLA always throws
@@ -953,7 +1006,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         });
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
@@ -1099,12 +1152,114 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task RunAsync_LargeDailyRange_ExecutesAdaptiveTradingYearPartitions()
+    {
+        var calls = new ConcurrentQueue<(DateOnly? From, DateOnly? To)>();
+        var provider = new ControllableProvider("test", (symbol, from, to, ct) =>
+        {
+            calls.Enqueue((from, to));
+            var fromDate = from ?? new DateOnly(2020, 1, 1);
+            var toDate = to ?? fromDate;
+            IReadOnlyList<HistoricalBar> bars = fromDate == toDate
+                ? [new(symbol, fromDate, 100m, 110m, 90m, 105m, 1000)]
+                : [
+                    new(symbol, fromDate, 100m, 110m, 90m, 105m, 1000),
+                    new(symbol, toDate, 101m, 111m, 91m, 106m, 1200)
+                ];
+            return Task.FromResult(bars);
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest(
+            "test",
+            ["SPY"],
+            From: new DateOnly(2020, 1, 1),
+            To: new DateOnly(2022, 12, 31),
+            MaxConcurrentSymbols: 1);
+
+        var result = await svc.RunAsync(request, _pipeline);
+
+        var orderedCalls = calls.ToArray();
+        orderedCalls.Should().HaveCountGreaterThan(1);
+        orderedCalls[0].From.Should().Be(request.From);
+        orderedCalls[^1].To.Should().Be(request.To);
+        orderedCalls.Should().OnlyContain(call => call.From.HasValue && call.To.HasValue && call.From.Value <= call.To.Value);
+        for (var i = 1; i < orderedCalls.Length; i++)
+        {
+            orderedCalls[i].From.Should().Be(orderedCalls[i - 1].To!.Value.AddDays(1));
+        }
+
+        result.Success.Should().BeTrue();
+        result.BarsWritten.Should().BeGreaterThan(orderedCalls.Length);
+        result.SymbolValidationSignals.Should().ContainSingle(s => s.Symbol == "SPY" && s.Status == "Pass");
+    }
+
+    [Fact]
+    public async Task RunAsync_MinuteBackfill_ExecutesProviderWindowPartitions()
+    {
+        var calls = new ConcurrentQueue<(DateOnly? From, DateOnly? To)>();
+        var provider = new ControllableAggregateProvider(
+            "test",
+            [DataGranularity.Minute1],
+            (symbol, granularity, from, to, ct) =>
+            {
+                calls.Enqueue((from, to));
+                var fromDate = from ?? new DateOnly(2024, 1, 1);
+                var toDate = to ?? fromDate;
+                IReadOnlyList<AggregateBar> bars = fromDate == toDate
+                    ? [MakeAggregateBar(symbol, fromDate, sequence: 1)]
+                    : [
+                        MakeAggregateBar(symbol, fromDate, sequence: 1),
+                        MakeAggregateBar(symbol, toDate, sequence: 2)
+                    ];
+                return Task.FromResult(bars);
+            });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest(
+            "test",
+            ["SPY"],
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 1, 31),
+            Granularity: DataGranularity.Minute1,
+            MaxConcurrentSymbols: 1);
+
+        var result = await svc.RunAsync(request, _pipeline);
+
+        var orderedCalls = calls.ToArray();
+        orderedCalls.Should().HaveCount(3);
+        orderedCalls[0].From.Should().Be(new DateOnly(2024, 1, 1));
+        orderedCalls[0].To.Should().Be(new DateOnly(2024, 1, 10));
+        orderedCalls[1].From.Should().Be(new DateOnly(2024, 1, 11));
+        orderedCalls[^1].To.Should().Be(new DateOnly(2024, 1, 31));
+        result.Success.Should().BeTrue();
+        result.BarsWritten.Should().Be(6);
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================
 
     private static HistoricalBar MakeBar(string symbol) =>
         new(symbol, new DateOnly(2024, 1, 2), 100m, 110m, 90m, 105m, 1000);
+
+    private static AggregateBar MakeAggregateBar(string symbol, DateOnly sessionDate, long sequence)
+    {
+        var start = new DateTimeOffset(sessionDate.ToDateTime(new TimeOnly(14, 30), DateTimeKind.Utc));
+        return new AggregateBar(
+            Symbol: symbol,
+            StartTime: start,
+            EndTime: start.AddMinutes(1),
+            Open: 100m,
+            High: 110m,
+            Low: 90m,
+            Close: 105m,
+            Volume: 1000,
+            Timeframe: Meridian.Domain.Models.AggregateTimeframe.Minute,
+            Source: "test",
+            SequenceNumber: sequence);
+    }
 
     // =========================================================================
     // Test doubles
@@ -1142,6 +1297,41 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
             string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
             => _fetch(symbol, from, to, ct);
+    }
+
+    private sealed class ControllableAggregateProvider : IHistoricalDataProvider, IHistoricalAggregateBarProvider
+    {
+        private readonly Func<string, DataGranularity, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<AggregateBar>>> _fetch;
+
+        public ControllableAggregateProvider(
+            string name,
+            IReadOnlyList<DataGranularity> supportedGranularities,
+            Func<string, DataGranularity, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<AggregateBar>>> fetch)
+        {
+            Name = DisplayName = name;
+            SupportedGranularities = supportedGranularities;
+            _fetch = fetch;
+        }
+
+        public string Name { get; }
+        public string DisplayName { get; }
+        public string Description => string.Empty;
+        public IReadOnlyList<DataGranularity> SupportedGranularities { get; }
+
+        public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
+            string symbol,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken ct = default)
+            => throw new InvalidOperationException("Aggregate provider test double should not serve daily bars.");
+
+        public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
+            string symbol,
+            DataGranularity granularity,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken ct = default)
+            => _fetch(symbol, granularity, from, to, ct);
     }
 
     /// <summary>No-op storage sink that discards all events without I/O.</summary>

@@ -3,14 +3,19 @@ using System.Text;
 using System.Text.Json;
 using System.Runtime.Versioning;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
+using Serilog;
 
 namespace Meridian.DataIntegration.Credentials;
 
 public sealed class FileProviderCredentialStore : IProviderCredentialStore
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
+
     private const int VaultVersion = 1;
     private const string VaultFileName = "provider-credentials.vault";
+    private const string VaultBackupFileName = "provider-credentials.vault.bak";
     private const string KeyFileName = "provider-credentials.key";
     private const string AuditFileName = "provider-credentials.audit.jsonl";
     private const string EnvironmentFallbackOverride = "MDC_PROVIDER_ALLOW_ENV_FALLBACK";
@@ -27,6 +32,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly string _directoryPath;
+    private readonly string _vaultBackupPath;
     private readonly string _keyPath;
     private readonly string _auditPath;
 
@@ -36,6 +42,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         _directoryPath = Path.Combine(Path.GetFullPath(dataRoot), ".mdc");
         VaultPath = Path.Combine(_directoryPath, VaultFileName);
+        _vaultBackupPath = Path.Combine(_directoryPath, VaultBackupFileName);
         _keyPath = Path.Combine(_directoryPath, KeyFileName);
         _auditPath = Path.Combine(_directoryPath, AuditFileName);
     }
@@ -246,6 +253,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
             if (!allowedFields.TryGetValue(trimmedKey, out var canonicalName))
             {
+                if (TryNormalizeProviderManagedField(descriptor, trimmedKey, out canonicalName))
+                {
+                    normalized[canonicalName] = value;
+                    continue;
+                }
+
                 unknownFields.Add(trimmedKey);
                 continue;
             }
@@ -259,6 +272,30 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         }
 
         return normalized;
+    }
+
+    private static bool TryNormalizeProviderManagedField(
+        ProviderCredentialCatalogEntry descriptor,
+        string fieldName,
+        out string canonicalName)
+    {
+        canonicalName = fieldName;
+        if (!descriptor.ProviderId.Equals("plaid", StringComparison.OrdinalIgnoreCase) ||
+            !fieldName.StartsWith("AccessToken:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var itemId = fieldName["AccessToken:".Length..].Trim();
+        if (itemId.Length == 0 ||
+            itemId.Length > 128 ||
+            itemId.Any(static ch => !(char.IsLetterOrDigit(ch) || ch is '-' or '_' or '.')))
+        {
+            return false;
+        }
+
+        canonicalName = $"AccessToken:{itemId}";
+        return true;
     }
 
     private static ProviderCredentialStoreStatus BuildStatus(
@@ -505,12 +542,53 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private async Task<ProviderCredentialVault> LoadVaultAsync(CancellationToken ct)
     {
-        if (!File.Exists(VaultPath))
+        try
+        {
+            return await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
+        }
+        catch (Exception primaryFailure) when (IsVaultCorruption(primaryFailure))
+        {
+            // A single corrupt write must not lock operators out of every provider
+            // credential. Fall back to the rolling last-known-good backup — loudly, and
+            // leaving the corrupt primary on disk for inspection.
+            Log.Error(
+                primaryFailure,
+                "Provider credential vault at {VaultPath} is unreadable; attempting last-known-good backup at {BackupPath}",
+                VaultPath, _vaultBackupPath);
+
+            if (!File.Exists(_vaultBackupPath))
+            {
+                Log.Error("No provider credential vault backup exists at {BackupPath}; giving up", _vaultBackupPath);
+                throw;
+            }
+
+            try
+            {
+                var vault = await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+                Log.Warning(
+                    "Recovered provider credentials from backup {BackupPath}; changes made after the backup was taken are lost and the corrupt vault is preserved at {VaultPath}",
+                    _vaultBackupPath, VaultPath);
+                return vault;
+            }
+            catch (Exception backupFailure) when (IsVaultCorruption(backupFailure))
+            {
+                Log.Error(backupFailure, "Provider credential vault backup at {BackupPath} is also unreadable", _vaultBackupPath);
+                throw primaryFailure;
+            }
+        }
+    }
+
+    private static bool IsVaultCorruption(Exception ex)
+        => ex is JsonException or FormatException or InvalidOperationException or CryptographicException;
+
+    private async Task<ProviderCredentialVault> LoadVaultFromFileAsync(string path, CancellationToken ct)
+    {
+        if (!File.Exists(path))
         {
             return new ProviderCredentialVault();
         }
 
-        var envelopeJson = await File.ReadAllTextAsync(VaultPath, ct).ConfigureAwait(false);
+        var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
             return new ProviderCredentialVault();
@@ -519,7 +597,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
             ?? throw new InvalidOperationException("Provider credential vault envelope is invalid.");
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
-        var plainBytes = Unprotect(envelope.Protection, protectedBytes, ct);
+        var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
         var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
         return vault ?? new ProviderCredentialVault();
@@ -533,13 +611,29 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         var vaultJson = JsonSerializer.Serialize(vault, JsonOptions);
         var plainBytes = Encoding.UTF8.GetBytes(vaultJson);
-        var (protection, protectedBytes) = Protect(plainBytes, ct);
+        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
         var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
         var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
+
+        // Roll the current (readable) vault to the last-known-good backup before replacing
+        // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
+        // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
+        if (File.Exists(VaultPath))
+        {
+            try
+            {
+                File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Warning(ex, "Could not refresh provider credential vault backup at {BackupPath}", _vaultBackupPath);
+            }
+        }
+
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
     }
 
-    private (string Protection, byte[] ProtectedBytes) Protect(byte[] plainBytes, CancellationToken ct)
+    private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (OperatingSystem.IsWindows())
@@ -547,17 +641,17 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             return ("dpapi-current-user", ProtectWithDpapi(plainBytes));
         }
 
-        return ("local-aes-gcm", ProtectWithLocalKey(plainBytes, ct));
+        return ("local-aes-gcm", await ProtectWithLocalKeyAsync(plainBytes, ct).ConfigureAwait(false));
     }
 
-    private byte[] Unprotect(string protection, byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectAsync(string protection, byte[] protectedBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         return protection switch
         {
             "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),
             "dpapi-current-user" => throw new PlatformNotSupportedException("DPAPI protected credential vaults can only be opened by the Windows user profile that created them."),
-            "local-aes-gcm" => UnprotectWithLocalKey(protectedBytes, ct),
+            "local-aes-gcm" => await UnprotectWithLocalKeyAsync(protectedBytes, ct).ConfigureAwait(false),
             _ => throw new InvalidOperationException($"Unsupported provider credential vault protection '{protection}'.")
         };
     }
@@ -570,9 +664,9 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private static byte[] UnprotectWithDpapi(byte[] protectedBytes)
         => ProtectedData.Unprotect(protectedBytes, Entropy, DataProtectionScope.CurrentUser);
 
-    private byte[] ProtectWithLocalKey(byte[] plainBytes, CancellationToken ct)
+    private async Task<byte[]> ProtectWithLocalKeyAsync(byte[] plainBytes, CancellationToken ct)
     {
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = RandomNumberGenerator.GetBytes(12);
         var tag = new byte[16];
         var cipher = new byte[plainBytes.Length];
@@ -586,14 +680,14 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return output;
     }
 
-    private byte[] UnprotectWithLocalKey(byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectWithLocalKeyAsync(byte[] protectedBytes, CancellationToken ct)
     {
         if (protectedBytes.Length < 28)
         {
             throw new InvalidOperationException("Provider credential vault payload is truncated.");
         }
 
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = protectedBytes.AsSpan(0, 12).ToArray();
         var tag = protectedBytes.AsSpan(12, 16).ToArray();
         var cipher = protectedBytes.AsSpan(28).ToArray();
@@ -603,16 +697,16 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return plainBytes;
     }
 
-    private byte[] GetOrCreateLocalKey(CancellationToken ct)
+    private async Task<byte[]> GetOrCreateLocalKeyAsync(CancellationToken ct)
     {
         Directory.CreateDirectory(_directoryPath);
         if (File.Exists(_keyPath))
         {
-            return File.ReadAllBytes(_keyPath);
+            return await File.ReadAllBytesAsync(_keyPath, ct).ConfigureAwait(false);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        AtomicFileWriter.WriteAsync(_keyPath, key, ct).GetAwaiter().GetResult();
+        await AtomicFileWriter.WriteAsync(_keyPath, key, ct).ConfigureAwait(false);
         TrySetHidden(_keyPath);
         return key;
     }

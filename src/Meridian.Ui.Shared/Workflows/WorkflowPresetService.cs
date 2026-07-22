@@ -12,6 +12,7 @@ public sealed class WorkflowPresetService
     private const int MaxNameLength = 120;
     private const int MaxDescriptionLength = 1024;
     private const int MaxTagLength = 64;
+    private const int MaxViewStateEnvelopeLength = 4096;
 
     private readonly IWorkflowActionCatalog _catalog;
     private readonly IWorkflowPresetStore _store;
@@ -190,6 +191,11 @@ public sealed class WorkflowPresetService
             return $"Preset tags cannot exceed {MaxTagLength} characters.";
         }
 
+        if (!string.IsNullOrWhiteSpace(request.ViewStateEnvelope) && request.ViewStateEnvelope.Trim().Length > MaxViewStateEnvelopeLength)
+        {
+            return $"Preset view state cannot exceed {MaxViewStateEnvelopeLength} characters.";
+        }
+
         var workflow = FindWorkflow(request.WorkflowId);
         if (workflow is null)
         {
@@ -229,7 +235,8 @@ public sealed class WorkflowPresetService
             IsPinned: request.IsPinned,
             CreatedAt: existing?.CreatedAt ?? now,
             UpdatedAt: now,
-            LastUsedAt: existing?.LastUsedAt);
+            LastUsedAt: existing?.LastUsedAt,
+            ViewStateEnvelope: NormalizeOptional(request.ViewStateEnvelope));
     }
 
     private WorkflowDefinitionDto? FindWorkflow(string workflowId)

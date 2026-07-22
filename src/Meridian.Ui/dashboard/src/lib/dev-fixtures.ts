@@ -12,6 +12,7 @@ import type {
   AccountingProductionReadiness,
   AccountingSystemImportDetail,
   AccountingSystemProvider,
+  AccountingSystemProviderMappingRequirement,
   AccountingSystemReconciliationSummary,
   CorporateAction,
   DataWorkspaceResponse,
@@ -19,6 +20,7 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceSubject,
+  EvidenceVaultDocumentEntry,
   EvidenceVaultIdentity,
   EvidenceVaultRequestListEntry,
   ExecutionAuditEntry,
@@ -28,8 +30,6 @@ import type {
   AccountingReportPackageBundle,
   AccountingConfigurationWorkspace,
   AccountingWorkspaceResponse,
-  HistoricalBarsResponse,
-  OrderBookResponse,
   OperatorInbox,
   OperatorWorkflowHomeSummary,
   OperationsApprovalPolicyMatrix,
@@ -62,12 +62,12 @@ import type {
   PromotionRecord,
   QuantParametersResponse,
   QuantTemplatesResponse,
-  QuotesResponse,
-  QuotesSnapshotResponse,
   ReconciliationCalibrationSummary,
   RiskRuleConfig,
   RiskRuleStatus,
   RuleDryRunResult,
+  StatementConnectorDescriptor,
+  StatementMappingProfile,
   StatementRunSummary,
   StrategyBriefingResponse,
   StrategyWorkspaceResponse,
@@ -82,13 +82,10 @@ import type {
   StrategyDesignDraftSummary,
   StrategyDesignFieldCatalogItem,
   StrategyDesignTemplate,
-  SymbolRecord,
-  SymbolStatistics,
   SystemOverviewResponse,
   TradingOperatorReadiness,
   TradingParameters,
   TradingWorkspaceResponse,
-  TradesResponse,
   UserAccessAssignment,
   WorkflowAction,
   WorkflowLibrary,
@@ -100,7 +97,6 @@ import {
   COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   FUND_STRUCTURE_API_ENDPOINTS,
-  MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
@@ -110,13 +106,22 @@ import {
   REPLAY_API_ENDPOINTS,
   RISK_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
+  STATEMENT_CONNECTOR_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
-  SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint,
   riskRuleConfigEndpoint,
   workstationFinancialRecordExplorerEndpoint
 } from "./workstation-endpoints";
+import {
+  apiRoutePattern,
+  cloneFixture,
+  readDecodedPathSegment,
+  readFixtureSearchParams,
+  resolveFixtureFromMaps,
+  type DynamicFixturePattern
+} from "./dev-fixtures/fixture-resolver";
+import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -503,7 +508,7 @@ const fixtureExecutionAudit: ExecutionAuditEntry[] = [
     runId: "run-dev-1",
     symbol: null,
     correlationId: "fixture-readiness",
-    message: "Replay matched the fixture paper session state.",
+    message: "Replay matched the recorded paper session state.",
     metadata: { sessionId: "paper-dev-42" }
   }
 ];
@@ -3289,6 +3294,132 @@ const fixtureStatementRuns: StatementRunSummary[] = [
   }
 ];
 
+// Mirrors the registered connector descriptors in
+// Meridian.FinancialOperations/Reconciliation/Connectors (csv-mapped, ofx, ib-flex,
+// alpaca-activity) so the statement-import screen demos the real connector catalog.
+const fixtureStatementConnectors: StatementConnectorDescriptor[] = [
+  {
+    connectorId: "csv-mapped",
+    displayName: "Custodian/Broker CSV (mapping profile)",
+    fileExtensions: [".csv", ".txt"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: true,
+    defaultProfileId: "canonical-csv-v1"
+  },
+  {
+    connectorId: "ofx",
+    displayName: "OFX / QFX statement",
+    fileExtensions: [".ofx", ".qfx"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: true,
+    defaultProfileId: "ofx-bank-v1"
+  },
+  {
+    connectorId: "ib-flex",
+    displayName: "Interactive Brokers Flex Report (XML)",
+    fileExtensions: [".xml"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: false,
+    defaultProfileId: "ib-flex-v1"
+  },
+  {
+    connectorId: "alpaca-activity",
+    displayName: "Alpaca account activity",
+    fileExtensions: [".json"],
+    supportsFileImport: true,
+    supportsRemoteFetch: true,
+    requiresMappingProfile: false,
+    defaultProfileId: "alpaca-activity-v1"
+  }
+];
+
+const fixtureStatementMappingProfiles: StatementMappingProfile[] = [
+  {
+    schemaVersion: 1,
+    profileId: "canonical-csv-v1",
+    displayName: "Canonical CSV (v1)",
+    format: "csv",
+    csv: { delimiter: ",", quote: "\"", hasHeader: true },
+    culture: null,
+    dateFormats: null,
+    fields: [
+      { canonicalField: "Account", sourceColumn: "Account", aliases: null, required: true },
+      { canonicalField: "SecurityIdentifier", sourceColumn: "Symbol", aliases: ["Ticker"], required: false },
+      { canonicalField: "ActivityType", sourceColumn: "ActivityType", aliases: ["Type"], required: true },
+      { canonicalField: "Quantity", sourceColumn: "Quantity", aliases: null, required: false },
+      { canonicalField: "Price", sourceColumn: "Price", aliases: null, required: false },
+      { canonicalField: "CashAmount", sourceColumn: "Amount", aliases: ["CashAmount"], required: false },
+      { canonicalField: "TradeDate", sourceColumn: "TradeDate", aliases: ["Date"], required: true }
+    ],
+    activityCodes: [
+      { sourceCode: "BUY", canonicalActivityType: "Buy" },
+      { sourceCode: "SELL", canonicalActivityType: "Sell" },
+      { sourceCode: "DIV", canonicalActivityType: "Dividend" }
+    ],
+    lastAcceptedFingerprint: null,
+    isBuiltIn: true,
+    notes: "Demo fixture mirroring the built-in canonical CSV mapping profile."
+  }
+];
+
+function buildFixtureProviderMappingRequirements(providerId: string): AccountingSystemProviderMappingRequirement[] {
+  const normalized = providerId.toLowerCase();
+  const accountEvidenceKind = normalized.includes("xero")
+    ? "XeroAccount"
+    : normalized.includes("netsuite")
+      ? "NetSuiteAccount"
+      : "QuickBooksAccount";
+  const journalEvidenceKind = normalized.includes("xero")
+    ? "XeroManualJournal"
+    : normalized.includes("netsuite")
+      ? "NetSuiteJournalEntry"
+      : "QuickBooksJournalEntry";
+  const trialBalanceEvidenceKind = normalized.includes("xero")
+    ? "XeroTrialBalance"
+    : normalized.includes("netsuite")
+      ? "NetSuiteTrialBalance"
+      : "QuickBooksTrialBalance";
+  const dimensionVocabulary = normalized.includes("xero")
+    ? "Xero tracking categories"
+    : normalized.includes("netsuite")
+      ? "NetSuite segments, departments, classes, and subsidiaries"
+      : "QuickBooks classes, locations, and departments";
+
+  return [
+    {
+      requirementId: `${normalized}:account-mapping`,
+      label: "Account mapping",
+      requiredEvidenceKind: accountEvidenceKind,
+      requiredAction: "Map every reconciled Meridian GL account to a certified external GL account before guarded export review.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:journal-lineage`,
+      label: "Journal lineage",
+      requiredEvidenceKind: journalEvidenceKind,
+      requiredAction: "Retain provider journal evidence and Meridian ledger-entry lineage for the exact fund, book, and export period.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:trial-balance-tie-out`,
+      label: "Trial-balance tie-out",
+      requiredEvidenceKind: trialBalanceEvidenceKind,
+      requiredAction: "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:dimension-mapping`,
+      label: "Dimension mapping",
+      requiredEvidenceKind: `${accountEvidenceKind}:Dimensions`,
+      requiredAction: `Certify canonical Meridian dimensions against ${dimensionVocabulary} before generated export lines can be review-ready.`,
+      requiredForGuardedExport: true
+    }
+  ];
+}
+
 const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
   {
     providerId: "quickbooks-fixture",
@@ -3301,7 +3432,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Ready for fixture import",
     statusDetail: "Read-only external GL import and reconciliation compare provider evidence against Meridian-owned ledger truth.",
-    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("quickbooks-fixture")
   },
   {
     providerId: "quickbooks",
@@ -3315,6 +3447,7 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     statusLabel: "Local config required",
     statusDetail: "Add QuickBooks client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
     evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("quickbooks"),
     connection: {
       providerId: "quickbooks",
       environment: "sandbox",
@@ -3339,7 +3472,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Import adapter not registered",
     statusDetail: "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-    evidenceKinds: ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]
+    evidenceKinds: ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("xero")
   },
   {
     providerId: "netsuite",
@@ -3352,7 +3486,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Import adapter not registered",
     statusDetail: "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-    evidenceKinds: ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"]
+    evidenceKinds: ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("netsuite")
   }
 ];
 
@@ -3586,6 +3721,38 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
       summary: "Fixture dimensional backfill retained and certified."
     }
   ],
+  migrationRolloutPlan: [
+    {
+      kind: "LedgerBookScope",
+      code: "ledger-book-scope",
+      label: "Ledger-book migration scope",
+      certified: true,
+      status: "Ready",
+      scopeLabel: "tenant fixture-tenant | company fixture-company | fund default-fund | book missing",
+      requiredAction: "Ledger-book scoping and historical fund-level compatibility paths are retained.",
+      latestRunId: "migration-run-ledger-book-scope-default-fund",
+      latestRunStatus: "Certified",
+      migratedRecordCount: 24,
+      issueCount: 0,
+      evidenceReferences: ["fixture:migration:ledger-book-run"],
+      blockingIssueCodes: []
+    },
+    {
+      kind: "HistoricalJournalBackfill",
+      code: "historical-journal-backfill",
+      label: "Historical journal backfill",
+      certified: false,
+      status: "Blocked",
+      scopeLabel: "tenant fixture-tenant | company fixture-company | fund default-fund | book missing",
+      requiredAction: "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+      latestRunId: null,
+      latestRunStatus: null,
+      migratedRecordCount: 0,
+      issueCount: 0,
+      evidenceReferences: [],
+      blockingIssueCodes: ["migration.historical-journal-backfill-not-certified"]
+    }
+  ],
   ledgerBookRollout: {
     generatedAtUtc: "2026-02-01T00:15:00Z",
     fundProfileId: "default-fund",
@@ -3617,9 +3784,12 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     journalLifecycleLedgerBookNativeCertified: false,
     closeReportingLedgerBookNativeCertified: false,
     externalGlLedgerBookNativeCertified: false,
+    reconciliationLedgerBookNativeCertified: false,
+    directLendingLedgerBookNativeCertified: false,
+    strategyLedgerReadLedgerBookNativeCertified: false,
     evidenceReferences: [],
     completedControlCount: 0,
-    requiredControlCount: 6,
+    requiredControlCount: 9,
     hasLedgerBookScope: false,
     hasRetainedEvidence: false,
     hasLedgerBookScopedEvidence: false
@@ -3630,9 +3800,12 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     crossPeriodReportDimensionQueriesCertified: false,
     journalQueryDimensionFiltersCertified: true,
     externalExportDimensionMappingCertified: false,
+    ledgerLineDimensionsPersistedCertified: false,
+    trialBalanceDimensionFiltersCertified: false,
+    reportPackageDimensionProvenanceCertified: false,
     evidenceReferences: ["fixture:dimensions:default-fund"],
     completedControlCount: 3,
-    requiredControlCount: 6,
+    requiredControlCount: 9,
     hasLedgerBookScope: false,
     hasRetainedEvidence: true,
     hasLedgerBookScopedEvidence: false
@@ -3647,13 +3820,94 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     accountingAdminSurfaceConfigured: false,
     browserAccountingAdminSurfaceConfigured: false,
     wpfAccountingAdminSurfaceConfigured: false,
+    chartAdministrationStudioConfigured: false,
+    ruleTestPromotionStudioConfigured: false,
+    closeSetupStudioConfigured: false,
+    providerMappingStudioConfigured: false,
+    tenantCompanyReportGroupSetupStudioConfigured: false,
+    auditReviewToolingConfigured: false,
+    bulkImportExportSafeguardsConfigured: false,
+    performanceValidationConfigured: false,
+    disasterRecoveryRunbookConfigured: false,
+    ledgerBookAdministrationStudioConfigured: false,
+    postingRuleAuthoringStudioConfigured: false,
+    approvalQueueStudioConfigured: false,
+    dimensionMappingStudioConfigured: false,
+    implementationSandboxConfigured: false,
     evidenceReferences: ["fixture:tenant-admin:gap"],
     completedControlCount: 5,
-    requiredControlCount: 9,
+    requiredControlCount: 23,
     hasTenantScope: true,
     hasCompanyScope: true,
     hasRetainedEvidence: true
   },
+  productionGaps: [
+    {
+      code: "multi-ledger-native-workflows",
+      label: "Configurable multi-ledger accounting",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Ledger books and scoped workflow controls exist, but fixture certification still shows fund-level and open-period gaps.",
+      requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close/reporting, direct lending, and strategy ledger reads.",
+      areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
+      blockingIssueCodes: ["workflow.ledger-book-scope-missing", "workflow.close-reporting-not-certified"],
+      issues: [
+        {
+          code: "workflow.ledger-book-scope-missing",
+          area: "LedgerBooks",
+          severity: "Warning",
+          message: "Ledger-book workflow certification still needs retained selected-book evidence.",
+          suggestedAction: "Attach selected-book workflow evidence before production rollout.",
+          evidenceReferences: []
+        }
+      ],
+      routes: ["/accounting/configure", "/accounting/journal-entries", "/accounting/close"]
+    },
+    {
+      code: "enterprise-accounting-configuration-studio",
+      label: "Enterprise accounting configuration studio",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Rules Studio and ledger-book administration are visible, but tenant setup and admin-studio coverage remain incomplete.",
+      requiredAction: "Complete retained tenant/company/reporting-group setup, chart administration, rule promotion, approval queues, and implementation sandbox controls.",
+      areas: ["RulesStudio", "TenantAdministration"],
+      blockingIssueCodes: ["tenant-admin.operator-surface-required"],
+      routes: ["/accounting/configure", "/settings"]
+    },
+    {
+      code: "external-gl-guarded-integration",
+      label: "External GL guarded integration",
+      status: "ReviewRequired",
+      highestSeverity: "Info",
+      summary: "QuickBooks import, certified mapping, reconciliation, and guarded export artifacts exist while live posting stays disabled by policy.",
+      requiredAction: "Keep external GL import-first, retain export-package evidence, and expand Xero/NetSuite fixtures before considering a separate live-posting gate.",
+      areas: ["ExternalGl"],
+      blockingIssueCodes: ["external-gl.live-posting-disabled"],
+      routes: ["/accounting/external-gl"]
+    },
+    {
+      code: "dimensional-ledger-reporting",
+      label: "Dimensional ledger and reporting",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Canonical dimensions flow through key accounting DTOs and fixtures, but full ledger-line, trial-balance, report, and export certification is not complete.",
+      requiredAction: "Certify ledger-line dimension persistence, trial-balance filters, report-package provenance, and external export dimension mappings.",
+      areas: ["DimensionalAccounting", "ExternalGl", "CloseReporting"],
+      blockingIssueCodes: ["dimensions.external-gl-missing"],
+      routes: ["/accounting/ledger", "/reporting", "/accounting/external-gl"]
+    },
+    {
+      code: "production-controls-hardening",
+      label: "Production controls and rollout hardening",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Migration artifacts and tenant controls are retained, but broad migration, performance, disaster recovery, and bulk import/export safeguards still need completion.",
+      requiredAction: "Retain certified migration runs, performance validation, disaster-recovery runbooks, bulk import/export safeguards, and close/reporting evidence migration.",
+      areas: ["MigrationRollout", "TenantAdministration", "CloseReporting"],
+      blockingIssueCodes: ["migration.close-reporting-evidence-not-certified"],
+      routes: ["/accounting/configure", "/settings", "/accounting/close"]
+    }
+  ],
   components: [
     {
       area: "LedgerBooks",
@@ -4464,41 +4718,6 @@ const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
   }
 };
 
-interface FixtureMarketProfile {
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  lastPrice: number;
-  venue: string;
-  streamId: string;
-}
-
-const fixtureMarketTimestamp = "2026-05-08T15:00:00.000Z";
-
-const fixtureMarketProfiles: Record<string, FixtureMarketProfile> = {
-  AAPL: { bidPrice: 188.05, bidSize: 200, askPrice: 188.07, askSize: 150, lastPrice: 188.06, venue: "NASDAQ", streamId: "fixture-aapl" },
-  MSFT: { bidPrice: 421.1, bidSize: 300, askPrice: 421.2, askSize: 250, lastPrice: 421.15, venue: "NASDAQ", streamId: "fixture-msft" },
-  NVDA: { bidPrice: 950.2, bidSize: 80, askPrice: 950.45, askSize: 65, lastPrice: 950.35, venue: "NASDAQ", streamId: "fixture-nvda" },
-  QQQ: { bidPrice: 438.24, bidSize: 420, askPrice: 438.28, askSize: 390, lastPrice: 438.26, venue: "NASDAQ", streamId: "fixture-qqq" },
-  SPY: { bidPrice: 512.44, bidSize: 500, askPrice: 512.48, askSize: 520, lastPrice: 512.46, venue: "NYSE Arca", streamId: "fixture-spy" }
-};
-
-const fixtureSymbolRecords: SymbolRecord[] = [
-  { symbol: "AAPL", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1842, hasHistoricalData: true },
-  { symbol: "MSFT", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1328, hasHistoricalData: true },
-  { symbol: "QQQ", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 942, hasHistoricalData: true },
-  { symbol: "SPY", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1104, hasHistoricalData: true }
-];
-
-const fixtureSymbolStatistics: SymbolStatistics = {
-  totalSymbols: fixtureSymbolRecords.length,
-  monitoredSymbols: fixtureSymbolRecords.filter((symbol) => symbol.status === "Active" || symbol.status === "Monitored").length,
-  archivedSymbols: 0,
-  symbolsWithErrors: 0,
-  totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
-};
-
 const fixtureOperationsWorkflowId = "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6";
 const fixtureAccountingRecordId = "accounting-record-2026-05";
 const fixtureAccountingRecordEvidenceRoute = `/reporting/evidence?subjectKind=accounting-record&subjectId=${fixtureOperationsWorkflowId}`;
@@ -5273,6 +5492,70 @@ const fixtureAccountingRecordVaultIdentity: EvidenceVaultIdentity = {
   ]
 };
 
+const fixtureEvidenceVaultDocuments: EvidenceVaultDocumentEntry[] = [
+  {
+    document: {
+      documentId: "doc:ev-accounting-record-demo",
+      fileName: "operating-bank-statement.csv",
+      classification: "BankEvidence",
+      sourceHashSha256: "c".repeat(64),
+      receivedAt: "2026-05-08T15:12:00Z",
+      sourceChannel: "upload",
+      actor: "fund-controller",
+      tenantId: "tenant-alpha",
+      scope: "fund-alpha",
+      extractionStatus: "NeedsReview",
+      objectLinks: [
+        {
+          linkKind: "CloseTask",
+          objectId: "close-task:cash-support",
+          label: "Cash support",
+          route: "/workstation/accounting/close/tasks/cash-support",
+          relationship: "blocks-close-readiness"
+        },
+        {
+          linkKind: "Journal",
+          objectId: fixtureOperationsWorkflowId,
+          relationship: "supports-accounting-record"
+        }
+      ],
+      reviewerState: {
+        status: "NeedsReview",
+        reviewer: "fund-controller",
+        reviewedAt: null,
+        notes: "Statement amount needs operating-account cross-check."
+      },
+      auditTrail: [
+        {
+          recordedAt: "2026-05-08T15:12:00Z",
+          actor: "fund-controller",
+          action: "DocumentIntakeRetained",
+          summary: "Retained BankEvidence document 'operating-bank-statement.csv' through upload intake.",
+          correlationId: "ev-accounting-record-demo"
+        }
+      ],
+      contentType: "text/csv",
+      sourceSystem: "operator-upload",
+      sourceReference: "file://operating-bank-statement.csv",
+      vaultId: "ev-accounting-record-demo",
+      artifactId: "accounting-record-ledger-artifact",
+      manifestRoute: `/workstation/evidence/accounting-record/${fixtureOperationsWorkflowId}/manifest.json`,
+      extractorId: "manual-metadata-v1"
+    },
+    vaultId: fixtureAccountingRecordVaultIdentity.vaultId,
+    subjectKind: fixtureAccountingRecordVaultIdentity.subjectKind,
+    subjectId: fixtureAccountingRecordVaultIdentity.subjectId,
+    manifestRoute: fixtureAccountingRecordVaultIdentity.manifestRoute,
+    retainedAt: fixtureAccountingRecordVaultIdentity.retainedAt,
+    storageKind: fixtureAccountingRecordVaultIdentity.storageKind,
+    openRequestCount: 1,
+    supportRequests: fixtureAccountingRecordVaultIdentity.supportRequests
+  }
+];
+
+fixtureAccountingRecordVaultIdentity.documents = fixtureEvidenceVaultDocuments.map((entry) => entry.document);
+fixtureAccountingRecordVaultIdentity.artifacts[0].document = fixtureEvidenceVaultDocuments[0].document;
+
 const fixtureEvidenceVaultRequestLists: EvidenceVaultRequestListEntry[] = [
   {
     requestListId: "request-list:auditrequestlist:accounting-record:close-demo",
@@ -5880,7 +6163,7 @@ function buildFixtureFinancialRecordExplorer(explorerId: string): FinancialRecor
         source: "Security Master instruments",
         savedViewLabel: "Instrument proof",
         summaryItems: [
-          { label: "Coverage", value: "Ready", detail: "Instrument identity is retained.", tone: "Success" },
+          { label: "Coverage", value: "Verification pending", detail: "Confirm conflicts, reference routes, and passport evidence before relying on coverage.", tone: "Warning" },
           { label: "Conflicts", value: "0", detail: "No open identity conflict for AAPL.", tone: "Success" }
         ],
         filters: [
@@ -6092,6 +6375,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.evidenceSubjects]: [fixtureAccountingRecordEvidenceSubject],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists]: fixtureEvidenceVaultRequestLists,
+  [WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments]: fixtureEvidenceVaultDocuments,
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
   [AUTH_API_ENDPOINTS.accessAssignments]: fixtureAccessAssignments,
   [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,
@@ -6115,6 +6399,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
   [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,
+  [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlanConfiguration]: fixtureLedgerClosePeriodPlan,
   [WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments]: fixtureLedgerClosePeriodPlan,
   [WORKSTATION_API_ENDPOINTS.accountingReportPackage]: fixtureAccountingReportPackage,
   [WORKSTATION_API_ENDPOINTS.accountingReportPackages]: [fixtureAccountingReportPackage],
@@ -6124,11 +6409,32 @@ const fixtures = {
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles]: fixtureAccountingSystemMappingProfiles,
-  [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: fixtureAccountingSystemExportPackage,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: [fixtureAccountingSystemExportPackage],
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts]: {
     fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
     ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
     artifacts: fixtureAccountingProductionReadiness.migrationRunArtifacts ?? []
+  },
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans]: {
+    fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+    ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
+    kind: null,
+    tenantId: "fixture-tenant",
+    companyId: "fixture-company",
+    plans: [
+      {
+        planId: "fixture-historical-worker-plan",
+        kind: "HistoricalJournalBackfill",
+        fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+        ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId ?? "",
+        sourceRecordCount: 275,
+        migratedRecordCount: 275,
+        evidenceReferences: ["fixture://migration-worker-plan/historical-journal"],
+        tenantId: "fixture-tenant",
+        companyId: "fixture-company",
+        summary: "Fixture worker plan reconciles historical journal source and migrated rows."
+      }
+    ]
   },
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile]: {
     tenantId: "fixture-tenant",
@@ -6140,6 +6446,20 @@ const fixtures = {
     accountingAdminSurfaceConfigured: false,
     browserAccountingAdminSurfaceConfigured: false,
     wpfAccountingAdminSurfaceConfigured: false,
+    chartAdministrationStudioConfigured: false,
+    ruleTestPromotionStudioConfigured: false,
+    closeSetupStudioConfigured: false,
+    providerMappingStudioConfigured: false,
+    tenantCompanyReportGroupSetupStudioConfigured: false,
+    auditReviewToolingConfigured: false,
+    bulkImportExportSafeguardsConfigured: false,
+    performanceValidationConfigured: false,
+    disasterRecoveryRunbookConfigured: false,
+    ledgerBookAdministrationStudioConfigured: false,
+    postingRuleAuthoringStudioConfigured: false,
+    approvalQueueStudioConfigured: false,
+    dimensionMappingStudioConfigured: false,
+    implementationSandboxConfigured: false,
     updatedAtUtc: "2026-02-01T00:15:00Z",
     updatedBy: "fixture-controller",
     evidenceReferences: ["fixture:tenant-admin:gap"],
@@ -6152,10 +6472,16 @@ const fixtures = {
     journalLifecycleLedgerBookNativeCertified: false,
     closeReportingLedgerBookNativeCertified: false,
     externalGlLedgerBookNativeCertified: false,
+    reconciliationLedgerBookNativeCertified: false,
+    directLendingLedgerBookNativeCertified: false,
+    strategyLedgerReadLedgerBookNativeCertified: false,
     periodReportDimensionQueriesCertified: true,
     crossPeriodReportDimensionQueriesCertified: false,
     journalQueryDimensionFiltersCertified: true,
     externalExportDimensionMappingCertified: false,
+    ledgerLineDimensionsPersistedCertified: false,
+    trialBalanceDimensionFiltersCertified: false,
+    reportPackageDimensionProvenanceCertified: false,
     updatedAtUtc: "2026-02-01T00:15:00Z",
     updatedBy: "fixture-controller",
     evidenceReferences: ["fixture:production-certification:dimensions-gap"],
@@ -6166,6 +6492,8 @@ const fixtures = {
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.statementRuns]: fixtureStatementRuns,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
+  [STATEMENT_CONNECTOR_API_ENDPOINTS.connectors]: fixtureStatementConnectors,
+  [STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles]: fixtureStatementMappingProfiles,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
   [STRATEGY_DESIGNER_API_ENDPOINTS.templates]: fixtureStrategyDesignerTemplates,
@@ -6177,14 +6505,8 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
-  [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
-  [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics
+  ...marketDataFixtureRoutes
 } satisfies Record<string, unknown>;
-
-type DynamicFixturePattern = {
-  pattern: RegExp;
-  resolve: (cleanPath: string, path: string) => unknown | undefined;
-};
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
@@ -6248,14 +6570,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
         : undefined;
     }
   },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotes, "/[^/]+"), resolve: (cleanPath) => buildFixtureQuote(readSymbolFromPath(cleanPath)) },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.trades, "/[^/]+"), resolve: (cleanPath) => buildFixtureTrades(readSymbolFromPath(cleanPath)) },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.orderbook, "/[^/]+"), resolve: (cleanPath) => buildFixtureOrderbook(readSymbolFromPath(cleanPath)) },
-  {
-    pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.historical, "/[^/]+/bars"),
-    resolve: (cleanPath, path) => buildFixtureHistoricalBars(readSymbolFromPath(cleanPath, 1), path)
-  },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotesSnapshot), resolve: (_cleanPath, path) => buildFixtureQuotesSnapshot(path) },
+  ...marketDataFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {
@@ -6314,228 +6629,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {
-  const cleanPath = path.split("?")[0];
-  const exact = fixtures[cleanPath as keyof typeof fixtures];
-  if (exact !== undefined) {
-    return cloneFixture(exact as T);
-  }
-
-  for (const { pattern, resolve } of dynamicFixturePatterns) {
-    if (pattern.test(cleanPath)) {
-      const fixture = resolve(cleanPath, path);
-      if (fixture !== undefined) {
-        return cloneFixture(fixture as T);
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function readSymbolFromPath(cleanPath: string, segmentFromEnd = 0): string {
-  const rawSymbol = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "AAPL";
-  try {
-    return decodeURIComponent(rawSymbol).trim().toUpperCase() || "AAPL";
-  } catch {
-    return rawSymbol.trim().toUpperCase() || "AAPL";
-  }
-}
-
-function readDecodedPathSegment(cleanPath: string, segmentFromEnd = 0): string {
-  const rawSegment = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "";
-  try {
-    return decodeURIComponent(rawSegment).trim();
-  } catch {
-    return rawSegment.trim();
-  }
-}
-
-function apiRoutePattern(baseRoute: string, suffixPattern = ""): RegExp {
-  return new RegExp(`^${escapeRegExp(baseRoute)}${suffixPattern}$`);
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function getFixtureMarketProfile(symbol: string): FixtureMarketProfile {
-  const normalized = symbol.trim().toUpperCase();
-  const known = fixtureMarketProfiles[normalized];
-  if (known) {
-    return known;
-  }
-
-  const offset = Math.max(0, Math.min(8, normalized.length)) * 0.13;
-  return {
-    ...fixtureMarketProfiles.AAPL!,
-    bidPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.bidPrice + offset),
-    askPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.askPrice + offset),
-    lastPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.lastPrice + offset),
-    streamId: `fixture-${normalized.toLowerCase()}`
-  };
-}
-
-function buildFixtureQuote(symbol: string): QuotesResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  return {
-    symbol: normalized,
-    timestamp: fixtureMarketTimestamp,
-    quote: {
-      symbol: normalized,
-      timestamp: fixtureMarketTimestamp,
-      bidPrice: profile.bidPrice,
-      bidSize: profile.bidSize,
-      askPrice: profile.askPrice,
-      askSize: profile.askSize,
-      midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-      spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
-      sequenceNumber: 42,
-      streamId: profile.streamId,
-      venue: profile.venue,
-      session: null
-    }
-  };
-}
-
-function buildFixtureQuotesSnapshot(path: string): QuotesSnapshotResponse {
-  const params = readFixtureSearchParams(path);
-  const requestedSymbols = (params.get("symbols") ?? "")
-    .split(",")
-    .map((symbol) => symbol.trim().toUpperCase())
-    .filter(Boolean);
-  const symbols = requestedSymbols.length > 0 ? requestedSymbols : fixtureSymbolRecords.map((symbol) => symbol.symbol);
-
-  return {
-    timestamp: fixtureMarketTimestamp,
-    count: symbols.length,
-    quotes: symbols.map((symbol, index) => {
-      const profile = getFixtureMarketProfile(symbol);
-      return {
-        symbol,
-        timestamp: fixtureMarketTimestamp,
-        bidPrice: profile.bidPrice,
-        bidSize: profile.bidSize,
-        askPrice: profile.askPrice,
-        askSize: profile.askSize,
-        midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-        spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
-        lastPrice: profile.lastPrice,
-        lastSize: 100 + index * 25,
-        lastTradeTimestamp: fixtureMarketTimestamp,
-        sequenceNumber: 1000 + index,
-        streamId: profile.streamId,
-        venue: profile.venue,
-        session: null
-      };
-    })
-  };
-}
-
-function buildFixtureTrades(symbol: string): TradesResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  const baseTimestamp = new Date(fixtureMarketTimestamp).getTime();
-  const offsets = [0.03, -0.01, 0.07, -0.04, -0.08, 0.02, -0.12, -0.05];
-  const trades = offsets.map((offset, index) => ({
-    symbol: normalized,
-    timestamp: new Date(baseTimestamp - index * 30_000).toISOString(),
-    price: roundMarketPrice(profile.lastPrice + offset),
-    size: 50 + index * 25,
-    aggressor: index % 3 === 0 ? "Buy" : index % 3 === 1 ? "Sell" : "Neutral",
-    sequenceNumber: 500 - index,
-    streamId: profile.streamId,
-    venue: profile.venue
-  }));
-
-  return {
-    symbol: normalized,
-    trades,
-    count: trades.length,
-    timestamp: fixtureMarketTimestamp
-  };
-}
-
-function buildFixtureOrderbook(symbol: string): OrderBookResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  return {
-    symbol: normalized,
-    timestamp: fixtureMarketTimestamp,
-    bids: [0, 1, 2, 3, 4].map((level) => ({
-      side: "Bid",
-      level: level + 1,
-      price: roundMarketPrice(profile.bidPrice - level * 0.02),
-      size: Math.max(25, profile.bidSize - level * 20),
-      marketMaker: null
-    })),
-    asks: [0, 1, 2, 3, 4].map((level) => ({
-      side: "Ask",
-      level: level + 1,
-      price: roundMarketPrice(profile.askPrice + level * 0.02),
-      size: Math.max(25, profile.askSize - level * 15),
-      marketMaker: null
-    })),
-    midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-    imbalance: roundMarketPrice((profile.bidSize - profile.askSize) / Math.max(1, profile.bidSize + profile.askSize)),
-    marketState: "Open",
-    sequenceNumber: 42,
-    isStale: false,
-    streamId: profile.streamId,
-    venue: profile.venue
-  };
-}
-
-function buildFixtureHistoricalBars(symbol: string, path: string): HistoricalBarsResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  const params = readFixtureSearchParams(path);
-  const intervalMinutes = Number(params.get("intervalMinutes") ?? 5);
-  const start = new Date("2026-05-08T13:30:00.000Z").getTime();
-  const offsets = [-0.72, -0.46, -0.3, -0.16, 0.05, 0.12, 0.01, 0.18, 0.31, 0.24, 0.36, 0.29];
-  const bars = offsets.map((offset, index) => {
-    const open = roundMarketPrice(profile.lastPrice + offset);
-    const close = roundMarketPrice(profile.lastPrice + offsets[Math.min(index + 1, offsets.length - 1)]!);
-    const high = roundMarketPrice(Math.max(open, close) + 0.08);
-    const low = roundMarketPrice(Math.min(open, close) - 0.07);
-    const volume = 15_000 + index * 1_250;
-    return {
-      start: new Date(start + index * intervalMinutes * 60_000).toISOString(),
-      open,
-      high,
-      low,
-      close,
-      volume,
-      vwap: roundMarketPrice((open + high + low + close) / 4),
-      tradeCount: 40 + index * 3
-    };
-  });
-
-  return {
-    success: true,
-    message: null,
-    symbol: normalized,
-    intervalMinutes: Number.isFinite(intervalMinutes) && intervalMinutes > 0 ? intervalMinutes : 5,
-    from: params.get("from"),
-    to: params.get("to"),
-    totalBars: bars.length,
-    filesProcessed: 1,
-    totalFiles: 1,
-    queryTimeMs: 3,
-    bars
-  };
-}
-
-function readFixtureSearchParams(path: string): URLSearchParams {
-  try {
-    return new URL(path, "http://meridian.local").searchParams;
-  } catch {
-    return new URLSearchParams();
-  }
-}
-
-function roundMarketPrice(value: number): number {
-  return Math.round(value * 10000) / 10000;
+  return resolveFixtureFromMaps<T>(path, fixtures, dynamicFixturePatterns);
 }
 
 export function searchDevSecurityMasterEntries(query: string, take = 25, activeOnly = true): SecurityMasterEntry[] {
@@ -6566,12 +6660,4 @@ export function searchDevSecurityMasterEntries(query: string, take = 25, activeO
     })
     .slice(0, take)
     .map((entry) => cloneFixture(entry));
-}
-
-function cloneFixture<T>(fixture: T): T {
-  if (typeof structuredClone === "function") {
-    return structuredClone(fixture);
-  }
-
-  return JSON.parse(JSON.stringify(fixture)) as T;
 }

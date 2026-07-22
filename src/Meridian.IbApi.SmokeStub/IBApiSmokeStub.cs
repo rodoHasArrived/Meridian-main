@@ -53,7 +53,8 @@ public sealed class EClientSocket
         int useRth,
         int formatDate,
         bool keepUpToDate,
-        IList<TagValue>? chartOptions) { }
+        IList<TagValue>? chartOptions)
+    { }
 
     public void cancelHistoricalData(int reqId) { }
 

@@ -513,7 +513,7 @@ WAL files are stored under `_wal/` (within the root data path) and rotated at 10
 - **~5–10% write overhead** versus direct-to-storage writing
 - **Recovery on startup** — `WriteAheadLog.InitializeAsync()` replays any uncommitted records
 
-See [ADR-007](../adr/007-write-ahead-log-durability.md) for the full design rationale.
+See [ADR-007](../../archive/docs/adr/007-write-ahead-log-durability.md) for the full design rationale.
 
 ---
 
@@ -626,7 +626,7 @@ The format uses schema versioning for forward compatibility:
 
 - [Storage Architecture Overview](./storage-design.md)
 - [Provider Backfill Operations](../operators/provider-backfill-operations.md)
-- [WAL Durability (ADR-007)](../adr/007-write-ahead-log-durability.md)
-- [Multi-Format Storage (ADR-008)](../adr/008-multi-format-composite-storage.md)
+- [WAL Durability (ADR-007)](../../archive/docs/adr/007-write-ahead-log-durability.md)
+- [Multi-Format Storage (ADR-008)](../../archive/docs/adr/008-multi-format-composite-storage.md)
 - [AI Assistant Storage Guide](../ai/claude/CLAUDE.storage.md)
 - [API Reference](../reference/api-reference.md)

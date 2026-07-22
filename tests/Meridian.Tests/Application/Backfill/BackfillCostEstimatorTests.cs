@@ -8,7 +8,7 @@ namespace Meridian.Tests.Application.Backfill;
 
 /// <summary>
 /// Unit tests for <see cref="BackfillCostEstimator"/> covering weekday counting,
-/// provider-cost estimation, and warning generation.
+/// adaptive partition planning, provider-cost estimation, and warning generation.
 /// </summary>
 public sealed class BackfillCostEstimatorTests
 {
@@ -120,6 +120,24 @@ public sealed class BackfillCostEstimatorTests
     }
 
     [Fact]
+    public void Estimate_DuplicateSymbols_PreservesFirstSeenOrderAndEstimatesUniqueProviderCalls()
+    {
+        using var provider = new StooqHistoricalDataProvider();
+        var estimator = new BackfillCostEstimator([provider]);
+
+        var result = estimator.Estimate(new BackfillCostRequest(
+            Symbols: [" SPY ", "spy", "AAPL", "SPY"],
+            Provider: "stooq",
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 1, 31)));
+
+        result.Symbols.Should().Equal(["SPY", "AAPL"]);
+        result.ProviderEstimates.Should().ContainSingle();
+        result.ProviderEstimates[0].EstimatedApiCalls.Should().Be(2);
+        result.Warnings.Should().NotContain(w => w.Contains("Large symbol list"));
+    }
+
+    [Fact]
     public void Estimate_SingleProvider_SetsRecommendedProvider()
     {
         using var provider = new StooqHistoricalDataProvider();
@@ -150,7 +168,44 @@ public sealed class BackfillCostEstimatorTests
         result.ProviderEstimates[0].ProviderName.Should().Be("yahoo");
         result.ProviderEstimates[0].EstimatedApiCalls.Should().Be(3);
         result.ProviderEstimates[0].SupportsDateRange.Should().BeFalse();
+        result.ProviderEstimates[0].PartitionStrategy.Should().Be("1 Minute provider-window");
+        result.ProviderEstimates[0].AdaptivePartitions.Should().HaveCount(3);
+        result.ProviderEstimates[0].AdaptivePartitions[0].Should().BeEquivalentTo(
+            new BackfillPartitionEstimate(
+                Sequence: 1,
+                From: new DateOnly(2024, 1, 1),
+                ToExclusive: new DateOnly(2024, 1, 11),
+                TradingDays: 8,
+                EstimatedApiCalls: 1));
         result.RecommendedProvider.Should().Be("yahoo");
+    }
+
+    [Fact]
+    public void Estimate_LargeDailyRange_BuildsAdaptiveTradingYearPartitionPlan()
+    {
+        using var provider = new StooqHistoricalDataProvider();
+        var estimator = new BackfillCostEstimator([provider]);
+        var from = new DateOnly(2020, 1, 1);
+        var to = new DateOnly(2023, 1, 1);
+
+        var result = estimator.Estimate(new BackfillCostRequest(
+            Symbols: ["AAPL", "MSFT"],
+            Provider: "stooq",
+            From: from,
+            To: to));
+
+        var estimate = result.ProviderEstimates.Should().ContainSingle().Subject;
+        estimate.SupportsDateRange.Should().BeFalse();
+        estimate.PartitionStrategy.Should().Be("large-range trading-year");
+        estimate.AdaptivePartitions.Should().HaveCountGreaterThan(1);
+        estimate.AdaptivePartitions[0].From.Should().Be(from);
+        estimate.AdaptivePartitions[^1].ToExclusive.Should().Be(to);
+        estimate.AdaptivePartitions.Select(p => p.Sequence)
+            .Should()
+            .Equal(Enumerable.Range(1, estimate.AdaptivePartitions.Count));
+        estimate.AdaptivePartitions.Should().OnlyContain(p => p.TradingDays <= 252);
+        estimate.EstimatedApiCalls.Should().Be(estimate.AdaptivePartitions.Sum(p => p.EstimatedApiCalls));
+        result.Warnings.Should().Contain(w => w.Contains("adaptive partition plan"));
     }
 
     [Fact]

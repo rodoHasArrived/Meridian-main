@@ -30,6 +30,7 @@ x86/
 !build/scripts/install/*.sh
 !build/scripts/hooks/
 !build/scripts/hooks/*.sh
+/build/schema-control/
 bld/
 
 # Publish output
@@ -195,6 +196,10 @@ nul
 
 *.tmp
 *.temp
+*.bak
+*.backup-*
+*.pid
+*.exitcode
 *_wpftmp.csproj
 *.swp
 *~
@@ -237,7 +242,6 @@ docs/docfx/api/*.yml
 # that should be restored via `npm install`, not committed.
 
 node_modules/
-/package-lock.json
 /src/Meridian.Ui/dashboard/node_modules/
 /src/Meridian.Ui/dashboard/package-lock.json
 /src/Meridian.Ui/dashboard/dist/
@@ -271,6 +275,7 @@ __pycache__/
 /src/Meridian.Ui/dashboard/artifacts/*.log
 /src/Meridian.Ui/dashboard/artifacts/*.tmp
 /src/Meridian.Ui/dashboard/artifacts/ui-cleanup-*.png
+/src/Meridian.Ui/dashboard/.tmp/
 /wwwroot/workstation/assets/.vite-temp/
 /wwwroot/workstation/.vite-temp/
 
@@ -285,3 +290,6 @@ __pycache__/
 /src/Meridian.Adapters.SQLite/**/*.db-*
 /.nuget
 /.nuget
+
+# Provider credential sidecar — contains plaintext credentials; never commit
+provider-credentials.json

@@ -85,6 +85,9 @@ public partial class SecurityMasterPage : Page { }
 // Direct Lending workstation page
 public partial class DirectLendingPage : Page { }
 
+// Accounting close workstation page
+public partial class AccountingClosePage : Page { }
+
 // Data Browser page
 public partial class DataBrowserPage : Page { }
 

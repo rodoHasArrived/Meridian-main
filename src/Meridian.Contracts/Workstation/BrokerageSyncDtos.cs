@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
@@ -316,7 +317,8 @@ public sealed record ProviderLedgerReconciliationRequestDto(
     string? RequestedBy = null,
     string? DefaultBreakOwner = null,
     IReadOnlyList<string>? SignedOffBreakKeys = null,
-    string? SignedOffBy = null);
+    string? SignedOffBy = null,
+    string? OperationId = null);
 
 public sealed record ProviderLedgerReconciliationCheckDto(
     string CheckId,
@@ -526,7 +528,8 @@ public sealed record ProviderLedgerReconciliationDetailDto(
     IReadOnlyList<string> EvidenceLinks,
     IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null,
     ProviderShadowBookComparisonDto? ShadowBookComparison = null,
-    ProviderCorporateActionReadinessDto? CorporateActionReadiness = null);
+    ProviderCorporateActionReadinessDto? CorporateActionReadiness = null,
+    VerifiedOperationOutcome? Outcome = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<FundAccountCloseReadinessStatusDto>))]
 public enum FundAccountCloseReadinessStatusDto

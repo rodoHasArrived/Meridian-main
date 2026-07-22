@@ -530,7 +530,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             entry.InterestAmount,
             entry.CommitmentFeeAmount,
             entry.PenaltyAmount,
-            entry.AnnualRateApplied
+            entry.AnnualRateApplied,
+            entry.PikInterestAmount
         });
 
         await SaveAsync(
@@ -1441,7 +1442,10 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             eventId,
             ct).ConfigureAwait(false);
 
-        await PublishAssetOperationsAsync(contract, metadata, ct).ConfigureAwait(false);
+        // The authoritative state/event/ledger/outbox transaction above is the command commit
+        // boundary. Asset-operations projection is deliberately dispatched by the durable
+        // direct-lending.projection.requested outbox message; performing it here would allow a
+        // post-commit transport failure to report the command as failed even though it committed.
     }
 
     private async Task PublishAssetOperationsAsync(

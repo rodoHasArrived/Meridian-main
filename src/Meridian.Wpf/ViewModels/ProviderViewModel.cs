@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.ProviderDiagnostics;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -21,6 +22,7 @@ public sealed class ProviderViewModel : BindableBase
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.ConfigService _configService;
     private readonly BackfillProviderConfigService _providerConfigService;
+    public ProviderAccountingViewModel ProviderAccounting { get; }
 
     // ── Loading guard ────────────────────────────────────────────────────────
     private bool _isLoading;
@@ -315,11 +317,13 @@ public sealed class ProviderViewModel : BindableBase
     public ProviderViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.ConfigService configService,
-        BackfillProviderConfigService providerConfigService)
+        BackfillProviderConfigService providerConfigService,
+        IProviderDiagnosticsApiClient providerDiagnosticsApiClient)
     {
         _notificationService = notificationService;
         _configService = configService;
         _providerConfigService = providerConfigService;
+        ProviderAccounting = new ProviderAccountingViewModel(providerDiagnosticsApiClient);
 
         ProviderSettingsTable = new WorkstationTableModel<ProviderSettingsViewModel>(
             ProviderSettings,
@@ -371,7 +375,7 @@ public sealed class ProviderViewModel : BindableBase
             "No provider changes",
             "Provider configuration changes will appear after edits are saved.");
 
-        RefreshProvidersCommand = new AsyncRelayCommand(LoadProviderSettingsAsync, CanRunProviderAction);
+        RefreshProvidersCommand = new AsyncRelayCommand(RefreshProviderEvidenceAsync, CanRunProviderAction);
         ValidateConfigCommand = new AsyncRelayCommand(ValidateConfigAsync, CanRunProviderAction);
         TestAllConnectionsCommand = new RelayCommand(TestAllConnections, CanRunProviderAction);
         DryRunCommand = new AsyncRelayCommand(ExecuteDryRunAsync, CanPreviewDryRun);
@@ -383,10 +387,19 @@ public sealed class ProviderViewModel : BindableBase
 
     public async Task StartAsync(CancellationToken ct = default)
     {
-        await LoadProviderSettingsAsync(ct);
+        await Task.WhenAll(
+            LoadProviderSettingsAsync(ct),
+            ProviderAccounting.StartAsync(ct));
     }
 
-    public void Stop() { }
+    public void Stop() => ProviderAccounting.Stop();
+
+    private async Task RefreshProviderEvidenceAsync(CancellationToken ct = default)
+    {
+        await Task.WhenAll(
+            LoadProviderSettingsAsync(ct),
+            ProviderAccounting.RefreshAsync(ct));
+    }
 
     // ── Data loading ─────────────────────────────────────────────────────────
 

@@ -1,11 +1,11 @@
-using System.Collections.Concurrent;
 using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
-using Meridian.Contracts.Domain.Events;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
-using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Synthetic;
+using Meridian.Infrastructure.Resilience;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -51,28 +51,81 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public async Task StreamingClient_PublishesTradesQuotesAndOrderBookSnapshots()
     {
-        var publisher = new RecordingPublisher();
-        var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 20));
+        var publisher = new SignalingMarketEventPublisher();
+        await using var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 20));
         await client.ConnectAsync();
 
         var tradeSub = client.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true, SubscribeDepth: false));
         var depthSub = client.SubscribeMarketDepth(new SymbolConfig("AAPL", SubscribeTrades: false, SubscribeDepth: true, DepthLevels: 5));
-        await Task.Delay(250);
+        await publisher.WaitUntilAsync(
+            events =>
+                events.Any(e => e.Type == MarketEventType.Trade) &&
+                events.Any(e => e.Type == MarketEventType.BboQuote) &&
+                events.Any(e => e.Type == MarketEventType.L2Snapshot),
+            TimeSpan.FromSeconds(2));
         client.UnsubscribeTrades(tradeSub);
         client.UnsubscribeMarketDepth(depthSub);
         await client.DisconnectAsync();
 
-        publisher.Events.Should().Contain(e => e.Type == Meridian.Contracts.Domain.Enums.MarketEventType.Trade);
-        publisher.Events.Should().Contain(e => e.Type == Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote);
-        publisher.Events.Should().Contain(e => e.Type == Meridian.Contracts.Domain.Enums.MarketEventType.L2Snapshot);
-        publisher.Events.Should().Contain(e => e.Symbol == "AAPL");
-        publisher.Events.OfType<MarketEvent>().Where(e => e.Payload is LOBSnapshot).Should().OnlyContain(e => ((LOBSnapshot)e.Payload).Bids.Count == 5);
+        var publishedEvents = publisher.PublishedEvents;
+        publishedEvents.Should().Contain(e => e.Type == MarketEventType.Trade);
+        publishedEvents.Should().Contain(e => e.Type == MarketEventType.BboQuote);
+        publishedEvents.Should().Contain(e => e.Type == MarketEventType.L2Snapshot);
+        publishedEvents.Should().Contain(e => e.Symbol == "AAPL");
+        publishedEvents.Where(e => e.Payload is LOBSnapshot).Should().OnlyContain(e => ((LOBSnapshot)e.Payload).Bids.Count == 5);
+    }
+
+    [Fact]
+    public async Task StreamingClient_ConnectionDiagnostics_TrackSyntheticLifecycleAndPublishEvents()
+    {
+        var publisher = new SignalingMarketEventPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: true));
+        var observed = new List<WebSocketConnectionDiagnostics>();
+        client.ConnectionDiagnosticsChanged += observed.Add;
+
+        var initial = client.GetConnectionDiagnosticsSnapshot();
+        await client.ConnectAsync();
+        var connected = client.GetConnectionDiagnosticsSnapshot();
+        await client.DisconnectAsync();
+        var disconnected = client.GetConnectionDiagnosticsSnapshot();
+
+        initial.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Configured);
+        initial.IsConnected.Should().BeFalse();
+        connected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        connected.IsConnected.Should().BeTrue();
+        connected.LastConnectedAt.Should().NotBeNull();
+        disconnected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        disconnected.IsConnected.Should().BeFalse();
+        disconnected.LastDisconnectedAt.Should().NotBeNull();
+        observed.Select(snapshot => snapshot.LifecycleState).Should().ContainInOrder(
+            ProviderConnectionLifecycleState.Connecting,
+            ProviderConnectionLifecycleState.Connected,
+            ProviderConnectionLifecycleState.Disconnecting,
+            ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task StreamingClient_DisabledConfiguration_NeverClaimsConnected()
+    {
+        var publisher = new SignalingMarketEventPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: false));
+
+        await client.ConnectAsync();
+
+        var snapshot = client.GetConnectionDiagnosticsSnapshot();
+        snapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disabled);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.WebSocketState.Should().Be(System.Net.WebSockets.WebSocketState.None);
     }
 
     [Fact]
     public async Task StreamingClient_SessionClose_DisconnectStopsSyntheticPublishLoops()
     {
-        var publisher = new RecordingPublisher();
+        var publisher = new SignalingMarketEventPublisher();
         await using var client = new SyntheticMarketDataClient(
             publisher,
             new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 50));
@@ -81,23 +134,22 @@ public sealed class SyntheticMarketDataProviderTests
         await client.ConnectAsync(timeout.Token);
         client.SubscribeTrades(new SymbolConfig("MSFT", SubscribeTrades: true, SubscribeDepth: false));
 
-        while (publisher.Events.IsEmpty)
-        {
-            await Task.Delay(20, timeout.Token);
-        }
+        await publisher.WaitUntilAsync(events => events.Count > 0, TimeSpan.FromSeconds(2));
 
         await client.DisconnectAsync(timeout.Token);
-        var countAfterDisconnect = publisher.Events.Count;
+        var countAfterDisconnect = publisher.PublishedEvents.Count;
 
-        await Task.Delay(150, timeout.Token);
+        var receivedAfterDisconnect = await publisher.HasAdditionalEventWithinAsync(
+            countAfterDisconnect,
+            TimeSpan.FromMilliseconds(100));
 
-        publisher.Events.Count.Should().Be(countAfterDisconnect);
+        receivedAfterDisconnect.Should().BeFalse();
     }
 
     [Fact]
     public void SubscribeTrades_NullConfig_ThrowsArgumentNullException()
     {
-        var publisher = new RecordingPublisher();
+        var publisher = new SignalingMarketEventPublisher();
         var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true));
 
         var act = () => client.SubscribeTrades(null!);
@@ -109,7 +161,7 @@ public sealed class SyntheticMarketDataProviderTests
     [Fact]
     public void SubscribeMarketDepth_NullConfig_ThrowsArgumentNullException()
     {
-        var publisher = new RecordingPublisher();
+        var publisher = new SignalingMarketEventPublisher();
         var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true));
 
         var act = () => client.SubscribeMarketDepth(null!);
@@ -134,14 +186,4 @@ public sealed class SyntheticMarketDataProviderTests
         await act.Should().ThrowAsync<TimeoutException>();
     }
 
-    private sealed class RecordingPublisher : IMarketEventPublisher
-    {
-        public ConcurrentBag<MarketEvent> Events { get; } = new();
-
-        public bool TryPublish(in MarketEvent evt)
-        {
-            Events.Add(evt);
-            return true;
-        }
-    }
 }

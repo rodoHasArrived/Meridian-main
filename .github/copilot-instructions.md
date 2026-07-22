@@ -20,6 +20,9 @@ For each task, follow this sequence:
 8. If the task needs AI validators, routing tools, or maintenance scripts, load `docs/ai/tooling/README.md` instead of rediscovering command lanes ad hoc.
 9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load MDIF: `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
 10. Summarize what changed, why, and how it was validated.
+11. Local work may happen on `main` when the user explicitly requests it or the checkout is
+    intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
+    use a `codex/<short-task-name>` branch and a PR targeting `main`.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
@@ -72,12 +75,14 @@ Always do the following before opening a PR:
 7. When editing `src/**`, read the nearest source README and keep `docs/source/data/*.yml`
    synchronized when module ownership, validation, roadmap mapping, diagrams, or TODO scope changes.
 8. If editing shared handoff, manifest, or AI work-mode guidance, run `python build/scripts/docs/check-ai-handoff.py --strict`.
+9. For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check.
 
 ## 4) Build and test commands
 
 Use the fastest command set that validates your change. For non-test-only edits, run restore + build first:
 
 ```bash
+bash scripts/ci.sh
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
 ```
@@ -92,11 +97,15 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release 
 If only one area is affected, run the nearest test project first and expand scope only if needed.
 When local machine limits, dependency restore, or MSBuild locks make validation unreliable, push the
 branch and run the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
-broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
-non-empty `dotnet_filter`:
+broad local scripts. Select a whitelisted `mode`; the .NET lane uses `mode=dotnet-filtered` with a
+repo-relative test project under `tests/` and a non-empty `dotnet_filter`:
+After timed-out generation, build, or test attempts, first run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout.
 
 ```bash
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
 ## 5) Response quality expectations

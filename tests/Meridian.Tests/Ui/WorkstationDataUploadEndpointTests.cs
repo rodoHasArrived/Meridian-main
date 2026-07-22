@@ -6,6 +6,7 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.FundAccounts;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_DataUploadTemplates_ShouldExposeSourceUploadCatalogInDataBootstrap()
     {
-        await using var app = await CreateAppAsync();
+        // The data workspace endpoint requires a backing read service; without one it returns
+        // 503 instead of fabricated fallback data.
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var client = app.GetTestClient();
 
         var catalog = await client.GetFromJsonAsync<DataUploadTemplateCatalogDto>(
@@ -38,6 +41,12 @@ public sealed partial class WorkstationEndpointsTests
         catalog.Templates.Single(template => template.TemplateId == "trade-data")
             .Fields.Where(field => field.Required).Select(field => field.Name)
             .Should().Contain(["trade_id", "trade_date", "account_code", "symbol", "side", "quantity", "price"]);
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .SourceKinds.Should().Contain(["Manual upload", "SFTP file drop"]);
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .SetupChecklist.Should().Contain(item => item.Contains("pinned host-key fingerprint", StringComparison.OrdinalIgnoreCase));
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .MappingGuidance.Should().Contain(item => item.Contains("account_code", StringComparison.OrdinalIgnoreCase));
 
         data.Should().NotBeNull();
         data!.UploadTemplates.Templates.Select(template => template.TemplateId)
@@ -135,7 +144,7 @@ public sealed partial class WorkstationEndpointsTests
             await using var app = await CreateAppAsync(services =>
             {
                 services.AddSingleton<IFundAccountService>(accountService);
-            });
+            }, currentUserPermissions: UserPermission.ManageDirectLending);
             var client = app.GetTestClient();
             using var content = BuildBankStatementImportContent(
                 account.AccountId,
@@ -182,6 +191,31 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRejectSecurityMasterOnlyUser()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(CreateBankImportAccountRequest());
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IFundAccountService>(accountService);
+        }, currentUserPermissions: UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+        using var content = BuildBankStatementImportContent(
+            account.AccountId,
+            "JPMorgan",
+            """
+            transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance
+            2026-06-01,2026-06-03,500.00,USD,Deposit,Unauthorized source row,REF-1,1000.00
+            """);
+
+        var response = await client.PostAsync(UiApiRoutes.WorkstationBankStatementImport, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var stored = await accountService.GetBankStatementLinesAsync(account.AccountId);
+        stored.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRejectInvalidRowsWithoutApplyingEvidence()
     {
         var accountService = new InMemoryFundAccountService();
@@ -189,7 +223,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IFundAccountService>(accountService);
-        });
+        }, currentUserPermissions: UserPermission.ManageDirectLending);
         var client = app.GetTestClient();
         using var content = BuildBankStatementImportContent(
             account.AccountId,

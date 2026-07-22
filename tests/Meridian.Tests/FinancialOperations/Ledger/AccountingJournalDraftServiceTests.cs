@@ -57,6 +57,7 @@ public sealed class AccountingJournalDraftServiceTests
                         EntityId: "entity-master",
                         InstrumentId: instrumentId,
                         CostCenterId: "investment-ops",
+                        BookId: ledgerBookId.ToString("D"),
                         ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                         {
                             ["Department"] = "InvestmentOps"
@@ -70,6 +71,7 @@ public sealed class AccountingJournalDraftServiceTests
                         EntityId: "entity-master",
                         InstrumentId: instrumentId,
                         CostCenterId: "income-review",
+                        BookId: ledgerBookId.ToString("D"),
                         ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                         {
                             ["Department"] = "FundAccounting"
@@ -126,16 +128,22 @@ public sealed class AccountingJournalDraftServiceTests
         debitLine.Dimensions.EntityId.Should().Be("entity-master");
         debitLine.Dimensions.InstrumentId.Should().Be(instrumentId);
         debitLine.Dimensions.CostCenterId.Should().Be("investment-ops");
+        debitLine.Dimensions.BookId.Should().Be(ledgerBookId.ToString("D"));
         debitLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
         creditLine.Dimensions.Should().NotBeNull();
         creditLine.Dimensions!.CostCenterId.Should().Be("income-review");
+        creditLine.Dimensions.BookId.Should().Be(ledgerBookId.ToString("D"));
         creditLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("FundAccounting");
         result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.costCenterId")
             .WhoseValue.Should().Be("investment-ops");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.bookId")
+            .WhoseValue.Should().Be(ledgerBookId.ToString("D"));
         result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.externalGl.Department")
             .WhoseValue.Should().Be("InvestmentOps");
         result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.costCenterId")
             .WhoseValue.Should().Be("income-review");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.bookId")
+            .WhoseValue.Should().Be(ledgerBookId.ToString("D"));
         result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.externalGl.Department")
             .WhoseValue.Should().Be("FundAccounting");
         result.Write.Entry.Metadata.Tags.Should().ContainKey("postingRuleId")
@@ -167,10 +175,164 @@ public sealed class AccountingJournalDraftServiceTests
     }
 
     [Fact]
+    public async Task BuildDraftAsync_MissingLedgerBookScope_BlocksGovernedWrite()
+    {
+        var service = CreateService(new AccountingPolicyService());
+
+        var result = await service.BuildDraftAsync(new AccountingJournalDraftRequest(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Balanced but unscoped journal draft",
+            [
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Cash", LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m),
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m)
+            ],
+            EvidenceLinks: ["provider://custodian/interest-adjustment/2026-05"]));
+
+        result.IsBalanced.Should().BeTrue();
+        result.HasCriticalIssues.Should().BeTrue();
+        result.Write.Should().BeNull();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "JOURNAL_DRAFT_LEDGER_BOOK_REQUIRED" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "ledgerBookId");
+    }
+
+    [Fact]
+    public async Task BuildDraftAsync_LineDimensionLedgerBookMismatch_BlocksGovernedWrite()
+    {
+        var service = CreateService(new AccountingPolicyService());
+        var ledgerBookId = Guid.NewGuid();
+        var otherLedgerBookId = Guid.NewGuid();
+
+        var result = await service.BuildDraftAsync(new AccountingJournalDraftRequest(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Balanced journal draft with conflicting line book dimension",
+            [
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Cash", LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        BookId: otherLedgerBookId.ToString("D"),
+                        CostCenterId: "cash-operations")),
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        BookId: ledgerBookId.ToString("D"),
+                        CostCenterId: "income-review"))
+            ],
+            LedgerBookId: ledgerBookId,
+            EvidenceLinks: ["provider://custodian/interest-adjustment/2026-05"]));
+
+        result.HasCriticalIssues.Should().BeTrue();
+        result.Write.Should().BeNull();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "JOURNAL_DRAFT_LINE_LEDGER_BOOK_MISMATCH" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "lines[0].dimensions.bookId");
+        result.ValidationIssues.Should().Contain(issue => issue.Code == "JOURNAL_DRAFT_UNBALANCED");
+        result.DraftEntry.Should().NotBeNull();
+        result.DraftEntry!.Lines.Should().ContainSingle();
+        result.DraftEntry.Lines.Single().Dimensions!.BookId.Should().Be(ledgerBookId.ToString("D"));
+    }
+
+    [Fact]
+    public async Task BuildDraftAsync_InvalidLineSkipped_PreservesRetainedLineDimensionMetadata()
+    {
+        var service = CreateService(new AccountingPolicyService());
+        var ledgerBookId = Guid.NewGuid();
+
+        var result = await service.BuildDraftAsync(new AccountingJournalDraftRequest(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Balanced journal draft with one rejected input line",
+            [
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Ignored Cash", LedgerAccountType.Asset),
+                    Debit: 0m,
+                    Credit: 0m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        CostCenterId: "wrong-scope",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "WrongDepartment"
+                        })),
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Cash", LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        CostCenterId: "cash-operations",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "Treasury"
+                        })),
+                new AccountingJournalDraftLineRequest(
+                    new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        CostCenterId: "income-review",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "FundAccounting"
+                        }))
+            ],
+            LedgerBookId: ledgerBookId,
+            EvidenceLinks: ["provider://custodian/interest-adjustment/2026-05"]));
+
+        result.HasCriticalIssues.Should().BeTrue();
+        result.Write.Should().BeNull();
+        result.DraftEntry.Should().NotBeNull();
+        result.DraftEntry!.Lines.Should().HaveCount(2);
+        result.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "JOURNAL_DRAFT_ZERO_AMOUNT" &&
+            issue.TargetId == "lines[0]");
+
+        var debitLine = result.DraftEntry.Lines.Single(line => line.Debit == 100m);
+        var creditLine = result.DraftEntry.Lines.Single(line => line.Credit == 100m);
+        debitLine.Dimensions.Should().NotBeNull();
+        debitLine.Dimensions!.CostCenterId.Should().Be("cash-operations");
+        creditLine.Dimensions.Should().NotBeNull();
+        creditLine.Dimensions!.CostCenterId.Should().Be("income-review");
+
+        var tags = result.DraftEntry.Metadata.Tags;
+        tags.Should().NotBeNull();
+        tags!.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.costCenterId")
+            .WhoseValue.Should().Be("cash-operations");
+        tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.externalGl.Department")
+            .WhoseValue.Should().Be("Treasury");
+        tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.costCenterId")
+            .WhoseValue.Should().Be("income-review");
+        tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.externalGl.Department")
+            .WhoseValue.Should().Be("FundAccounting");
+        tags.Values.Should().NotContain("wrong-scope");
+        tags.Values.Should().NotContain("WrongDepartment");
+    }
+
+    [Fact]
     public async Task Scenario_AccountingClose_UnbalancedDraft_BlocksLedgerWrite()
     {
         var service = CreateService(new AccountingPolicyService());
 
+        var ledgerBookId = Guid.NewGuid();
         var result = await service.BuildDraftAsync(new AccountingJournalDraftRequest(
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -186,6 +348,7 @@ public sealed class AccountingJournalDraftServiceTests
                     Debit: 0m,
                     Credit: 90m)
             ],
+            LedgerBookId: ledgerBookId,
             EvidenceLinks: ["provider://custodian/interest-adjustment/2026-05"]));
 
         result.IsBalanced.Should().BeFalse();

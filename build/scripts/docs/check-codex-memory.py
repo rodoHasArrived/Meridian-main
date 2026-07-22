@@ -35,6 +35,19 @@ REQUIRED_FIELDS = {
     "review_after",
     "invalidates_when",
 }
+FRONT_MATTER_REQUIRED_FIELDS = {
+    "id",
+    "tier",
+    "scope",
+    "file",
+    "tags",
+    "confidence",
+    "freshness",
+    "source_refs",
+    "review_after",
+    "invalidates_when",
+}
+FRONT_MATTER_MATCH_FIELDS = FRONT_MATTER_REQUIRED_FIELDS
 LOAD_WHEN_LIST_FIELDS = {"skills", "paths", "intents", "branches", "tags"}
 LOAD_WHEN_TASK_FIELDS = {"ids", "work_modes", "intents", "paths"}
 EXCLUDE_WHEN_FIELDS = {"skills", "paths", "intents", "branches", "tags", "task_ids"}
@@ -63,10 +76,12 @@ GOAL_INVENTORY_REQUIRED_FIELDS = {
 GOAL_PROGRESS_REQUIRED_FIELDS = {"id", "status", "summary", "evidence_refs", "updated_at"}
 ACTIVE_TIERS = {"session", "branch", "task", "repo", "archive"}
 DISABLED_TIERS = {"user", "global"}
+SUPPORTED_TIERS = ACTIVE_TIERS | DISABLED_TIERS
 ALLOWED_CONFIDENCE = {"low", "medium", "high"}
 ALLOWED_FRESHNESS = {"fresh", "review-soon", "stale", "unknown"}
 ALLOWED_GOAL_STATUS = {"active", "blocked", "complete", "abandoned"}
 ALLOWED_PROGRESS_STATUS = {"pending", "in_progress", "completed", "blocked", "deferred"}
+ARCHIVE_REQUIRED_FIELDS = {"retired_because", "replaced_by"}
 TIER_PRECEDENCE = {"task": 1, "branch": 2, "repo": 3, "session": 4, "archive": 5}
 
 
@@ -139,7 +154,11 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, (dict, list)):
+                if value == []:
+                    lines.append(f"{prefix}{key}: []")
+                elif value == {}:
+                    lines.append(f"{prefix}{key}: {{}}")
+                elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
                     lines.append(dump_yaml(value, indent + 2).rstrip())
                 else:
@@ -147,8 +166,14 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         elif isinstance(data, list):
             for item in data:
                 if isinstance(item, (dict, list)):
-                    lines.append(f"{prefix}-")
-                    lines.append(dump_yaml(item, indent + 2).rstrip())
+                    if isinstance(item, dict) and item:
+                        nested_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
+                        first_line = nested_lines[0].lstrip()
+                        lines.append(f"{prefix}- {first_line}")
+                        lines.extend(nested_lines[1:])
+                    else:
+                        lines.append(f"{prefix}-")
+                        lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}- {format_scalar(item)}")
         else:
@@ -235,6 +260,16 @@ def validate_string_list(value: Any, field: str, path: str) -> list[Finding]:
     return []
 
 
+def validate_non_empty_string_list(value: Any, field: str, path: str) -> list[Finding]:
+    findings = validate_string_list(value, field, path)
+    if findings:
+        return findings
+    assert isinstance(value, list)
+    if not value:
+        return [Finding("error", path, f"{field} must contain at least one entry.")]
+    return []
+
+
 def validate_optional_string_list(value: Any, field: str, path: str) -> list[Finding]:
     if value is None:
         return []
@@ -300,10 +335,12 @@ def validate_iso_timestamp(value: Any, field: str, path: str) -> list[Finding]:
 def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
     findings: list[Finding] = []
     source_refs = entry.get("source_refs")
-    findings.extend(validate_string_list(source_refs, "source_refs", path))
+    findings.extend(validate_non_empty_string_list(source_refs, "source_refs", path))
     if findings:
         return findings
     assert isinstance(source_refs, list)
+    if not source_refs:
+        return [Finding("error", path, "source_refs must include at least one source reference.")]
 
     for source_ref in source_refs:
         if "://" in source_ref or source_ref.startswith("#"):
@@ -311,7 +348,121 @@ def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[F
         source_path, path_findings = safe_repo_relative_path(root, source_ref, path)
         findings.extend(path_findings)
         if source_path is not None and not source_path.exists():
-            findings.append(Finding("error", path, f"source_ref does not exist: {source_ref}"))
+            findings.append(Finding("warning", path, f"source_ref does not exist: {source_ref}"))
+    return findings
+
+
+def validate_archive_metadata(entry: dict[str, Any], path: str) -> list[Finding]:
+    if entry.get("tier") != "archive":
+        return []
+    findings: list[Finding] = []
+    missing = sorted(ARCHIVE_REQUIRED_FIELDS - set(entry))
+    for field in missing:
+        findings.append(Finding("error", path, f"Archive memory entry is missing {field}."))
+    retired_because = entry.get("retired_because")
+    if "retired_because" in entry and (not isinstance(retired_because, str) or not retired_because.strip()):
+        findings.append(Finding("error", path, "retired_because must explain why the archive entry was retired."))
+    replaced_by = entry.get("replaced_by")
+    if "replaced_by" in entry:
+        findings.extend(validate_string_list(replaced_by, "replaced_by", path))
+    return findings
+
+
+def is_current_repo_source_ref(root: Path, source_ref: str) -> bool:
+    if "://" in source_ref or source_ref.startswith("#"):
+        return False
+    source_path, findings = safe_repo_relative_path(root, source_ref, INDEX_REL)
+    if findings or source_path is None or not source_path.exists():
+        return False
+    rel_path = normalize_path(rel(root, source_path))
+    scoped_memory_prefixes = (
+        ".codex/memory/tasks/",
+        ".codex/memory/branches/",
+        ".codex/memory/sessions/",
+        ".codex/memory/archive/",
+    )
+    return not rel_path.startswith(scoped_memory_prefixes)
+
+
+def validate_promotion_hygiene(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
+    findings: list[Finding] = []
+    tier = entry.get("tier")
+    if tier != "repo":
+        return findings
+
+    source_refs = string_values(entry.get("source_refs"))
+    current_source_refs = [source_ref for source_ref in source_refs if is_current_repo_source_ref(root, source_ref)]
+    if not current_source_refs:
+        findings.append(
+            Finding(
+                "error",
+                path,
+                "repo-tier memory requires at least one current repo-local source_ref outside task, branch, session, or archive memory.",
+            )
+        )
+
+    task_ids = load_when_task_list(entry, "ids")
+    if task_ids:
+        findings.append(Finding("error", path, "repo-tier memory must not use load_when.task.ids; keep task-only claims in task memory."))
+
+    task_paths = load_when_task_list(entry, "paths")
+    if any(normalize_path(task_path).startswith(".codex/memory/tasks/") for task_path in task_paths):
+        findings.append(Finding("error", path, "repo-tier memory must not route only through task descriptor paths."))
+
+    scoped_only_refs = [
+        source_ref
+        for source_ref in source_refs
+        if normalize_path(source_ref).startswith((".codex/memory/tasks/", ".codex/memory/branches/", ".codex/memory/sessions/"))
+    ]
+    if scoped_only_refs and not current_source_refs:
+        findings.append(Finding("error", path, "repo-tier memory cannot be supported only by task, branch, or session memory refs."))
+    return findings
+
+
+def validate_promotion_candidates(value: Any, path: str) -> list[Finding]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        return [Finding("error", path, "promotion_candidates must be a list when present.")]
+    findings: list[Finding] = []
+    required = {
+        "source_refs",
+        "confidence",
+        "freshness",
+        "review_after",
+        "invalidates_when",
+        "reason",
+        "conflicting_memory_entries_reviewed",
+    }
+    for index, item in enumerate(value):
+        item_path = f"{path}#promotion_candidates[{index}]"
+        if isinstance(item, str):
+            findings.append(Finding("warning", item_path, "String promotion candidates cannot record required promotion evidence."))
+            continue
+        if not isinstance(item, dict):
+            findings.append(Finding("error", item_path, "Promotion candidate must be a mapping or string."))
+            continue
+        for field in sorted(required - set(item)):
+            findings.append(Finding("error", item_path, f"Promotion candidate is missing {field}."))
+        findings.extend(validate_string_list(item.get("source_refs"), "source_refs", item_path) if "source_refs" in item else [])
+        findings.extend(validate_string_list(item.get("invalidates_when"), "invalidates_when", item_path) if "invalidates_when" in item else [])
+        findings.extend(
+            validate_string_list(
+                item.get("conflicting_memory_entries_reviewed"),
+                "conflicting_memory_entries_reviewed",
+                item_path,
+            )
+            if "conflicting_memory_entries_reviewed" in item
+            else []
+        )
+        if item.get("confidence") not in ALLOWED_CONFIDENCE and "confidence" in item:
+            findings.append(Finding("error", item_path, f"Unknown confidence: {item.get('confidence')}"))
+        if item.get("freshness") not in ALLOWED_FRESHNESS and "freshness" in item:
+            findings.append(Finding("error", item_path, f"Unknown freshness: {item.get('freshness')}"))
+        if "review_after" in item:
+            findings.extend(validate_review_after(item.get("review_after"), item_path))
+        if "reason" in item and (not isinstance(item.get("reason"), str) or not item["reason"].strip()):
+            findings.append(Finding("error", item_path, "reason must be a non-empty string."))
     return findings
 
 
@@ -371,6 +522,125 @@ def validate_exclude_when(entry: dict[str, Any], path: str) -> list[Finding]:
     return findings
 
 
+def has_repo_local_source_ref(root: Path, source_refs: Sequence[str]) -> bool:
+    for source_ref in source_refs:
+        if not isinstance(source_ref, str) or not source_ref.strip():
+            continue
+        if "://" in source_ref or source_ref.startswith("#"):
+            continue
+        source_path, path_findings = safe_repo_relative_path(root, source_ref, INDEX_REL)
+        if not path_findings and source_path is not None and source_path.exists():
+            return True
+    return False
+
+
+def tier_folder_for(tier: str) -> str:
+    if tier == "repo":
+        return "repo"
+    if tier == "task":
+        return "tasks"
+    if tier == "branch":
+        return "branches"
+    if tier == "session":
+        return "sessions"
+    if tier == "archive":
+        return "archive"
+    return tier
+
+
+def validate_tier_contract(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
+    findings: list[Finding] = []
+    tier = entry.get("tier")
+    if tier in DISABLED_TIERS:
+        findings.append(Finding("error", path, f"Disabled tier is not enabled for repo-local memory: {tier}"))
+        return findings
+    if tier not in ACTIVE_TIERS:
+        known = ", ".join(sorted(SUPPORTED_TIERS))
+        findings.append(
+            Finding("error", path, f"Unknown memory tier: {tier}; supported schema tiers are {known}.")
+        )
+        return findings
+
+    raw_file = entry.get("file")
+    if isinstance(raw_file, str):
+        expected_prefix = f"{MEMORY_ROOT_REL}/{tier_folder_for(str(tier))}/"
+        if not normalize_path(raw_file).startswith(expected_prefix):
+            findings.append(Finding("error", path, f"{tier}-tier memory file must live under {expected_prefix}"))
+
+    source_refs = entry.get("source_refs")
+    if tier == "repo" and isinstance(source_refs, list) and not has_repo_local_source_ref(root, source_refs):
+        findings.append(
+            Finding("error", path, "repo-tier memory requires at least one stable existing repo-local source_ref.")
+        )
+
+    if tier == "task":
+        scope_id = task_scope_id(entry)
+        task_ids = load_when_task_list(entry, "ids")
+        if not scope_id and not task_ids:
+            findings.append(
+                Finding("error", path, "task-tier memory requires a task scope or load_when.task.ids descriptor binding.")
+            )
+
+    invalidates = [item.lower() for item in string_values(entry.get("invalidates_when"))]
+    if tier == "branch" and not any(
+        keyword in item for item in invalidates for keyword in ("merge", "abandon", "delete", "branch", "scope", "review")
+    ):
+        findings.append(
+            Finding(
+                "error",
+                path,
+                "branch-tier memory requires branch invalidation rules such as merge, abandonment, deletion, "
+                "review expiry, or scope change.",
+            )
+        )
+
+    load_when = entry.get("load_when")
+    if tier == "session":
+        if not any(keyword in item for item in invalidates for keyword in ("session", "compaction", "promot")):
+            findings.append(
+                Finding("error", path, "session-tier memory must invalidate at session end, compaction, or promotion.")
+            )
+        if isinstance(load_when, dict):
+            broad_selectors = []
+            for field in LOAD_WHEN_LIST_FIELDS:
+                if string_values(load_when.get(field)):
+                    broad_selectors.append(f"load_when.{field}")
+            task_selectors = load_when.get("task")
+            if isinstance(task_selectors, dict):
+                for field in LOAD_WHEN_TASK_FIELDS:
+                    if field != "ids" and string_values(task_selectors.get(field)):
+                        broad_selectors.append(f"load_when.task.{field}")
+            if broad_selectors:
+                findings.append(
+                    Finding(
+                        "error",
+                        path,
+                        "session-tier memory must not be indexed as durable guidance; "
+                        "clear broad selectors until promoted: " + ", ".join(sorted(broad_selectors)),
+                    )
+                )
+
+    if tier == "archive" and isinstance(load_when, dict):
+        active_selectors = []
+        for field in LOAD_WHEN_LIST_FIELDS:
+            if string_values(load_when.get(field)):
+                active_selectors.append(f"load_when.{field}")
+        task_selectors = load_when.get("task")
+        if isinstance(task_selectors, dict):
+            for field in LOAD_WHEN_TASK_FIELDS:
+                if string_values(task_selectors.get(field)):
+                    active_selectors.append(f"load_when.task.{field}")
+        if active_selectors:
+            findings.append(
+                Finding(
+                    "error",
+                    path,
+                    "archive-tier memory must not load as active guidance; clear selectors: "
+                    + ", ".join(sorted(active_selectors)),
+                )
+            )
+    return findings
+
 def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set[str]) -> tuple[dict[str, Any] | None, list[Finding]]:
     path = rel(root, index_path)
     findings: list[Finding] = []
@@ -393,18 +663,16 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     else:
         seen_ids.add(entry["id"])
 
-    tier = entry.get("tier")
-    if tier in DISABLED_TIERS:
-        findings.append(Finding("error", finding_path, f"Disabled tier is not enabled for repo-local memory: {tier}"))
-    elif tier not in ACTIVE_TIERS:
-        findings.append(Finding("error", finding_path, f"Unknown memory tier: {tier}"))
+    findings.extend(validate_tier_contract(root, entry, finding_path))
 
     findings.extend(validate_scope(entry, finding_path))
     findings.extend(validate_string_list(entry.get("tags"), "tags", finding_path))
-    findings.extend(validate_string_list(entry.get("invalidates_when"), "invalidates_when", finding_path))
+    findings.extend(validate_non_empty_string_list(entry.get("invalidates_when"), "invalidates_when", finding_path))
+    findings.extend(validate_archive_metadata(entry, finding_path))
     findings.extend(validate_load_when(entry, finding_path))
     findings.extend(validate_exclude_when(entry, finding_path))
     findings.extend(validate_source_refs(root, entry, finding_path))
+    findings.extend(validate_promotion_hygiene(root, entry, finding_path))
     findings.extend(validate_review_after(entry.get("review_after"), finding_path))
 
     if entry.get("confidence") not in ALLOWED_CONFIDENCE:
@@ -414,37 +682,63 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if entry.get("freshness") in {"stale", "unknown"}:
         findings.append(Finding("warning", finding_path, f"Memory freshness is {entry.get('freshness')}."))
 
+    tier = entry.get("tier")
     raw_file = entry.get("file")
     if not isinstance(raw_file, str):
         findings.append(Finding("error", finding_path, "file must be a string."))
         return entry, findings
 
-    memory_file, file_findings = safe_memory_path(root, raw_file, finding_path)
+    if tier == "archive":
+        memory_file, file_findings = safe_repo_relative_path(root, raw_file, finding_path)
+    else:
+        memory_file, file_findings = safe_memory_path(root, raw_file, finding_path)
     findings.extend(file_findings)
     if memory_file is None:
         return entry, findings
+    memory_display_path = rel(root, memory_file)
     if memory_file.name.lower() == "readme.md":
         findings.append(Finding("error", finding_path, "Folder README files are guidance and must not be indexed."))
     if not memory_file.exists():
         findings.append(Finding("error", finding_path, f"Memory file does not exist: {raw_file}"))
         return entry, findings
+    memory_display_path = rel(root, memory_file)
 
+    memory_display_path = rel(root, memory_file)
     front_matter, front_findings = parse_front_matter(memory_file)
     findings.extend(front_findings)
     if front_findings:
         return entry, findings
 
-    for field in REQUIRED_FIELDS:
+    required_front_fields = set(REQUIRED_FIELDS)
+    if tier == "archive":
+        required_front_fields.update(ARCHIVE_REQUIRED_FIELDS)
+    for field in required_front_fields:
         if field not in front_matter:
-            findings.append(Finding("error", rel(root, memory_file), f"Memory front matter is missing {field}."))
-    for field in ("id", "tier", "scope", "file", "confidence", "freshness", "review_after"):
+            findings.append(Finding("error", memory_display_path, f"Memory front matter is missing {field}."))
+
+    if "source_refs" in front_matter:
+        findings.extend(validate_source_refs(root, front_matter, memory_display_path))
+    if "confidence" in front_matter and front_matter.get("confidence") not in ALLOWED_CONFIDENCE:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter confidence: {front_matter.get('confidence')}")
+        )
+    if "freshness" in front_matter and front_matter.get("freshness") not in ALLOWED_FRESHNESS:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter freshness: {front_matter.get('freshness')}")
+        )
+    if "review_after" in front_matter:
+        findings.extend(validate_review_after(front_matter.get("review_after"), memory_display_path))
+
+    for field in sorted(FRONT_MATTER_MATCH_FIELDS):
+        if field not in front_matter:
+            continue
         front_value = normalize_metadata_value(front_matter.get(field))
         entry_value = normalize_metadata_value(entry.get(field))
-        if field in front_matter and front_value != entry_value:
+        if front_value != entry_value:
             findings.append(
                 Finding(
                     "error",
-                    rel(root, memory_file),
+                    memory_display_path,
                     f"Front matter {field} does not match index value {entry_value!r}.",
                 )
             )
@@ -472,7 +766,11 @@ def load_index(root: Path) -> tuple[dict[str, Any] | None, Path, list[Finding]]:
     return data, index_path, []
 
 
-def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[str, Any] | None, list[Finding]]:
+def validate_task_descriptor(
+    descriptor: Any,
+    display_path: str,
+    root: Path = REPO_ROOT,
+) -> tuple[dict[str, Any] | None, list[Finding]]:
     findings: list[Finding] = []
     if not isinstance(descriptor, dict):
         return None, [Finding("error", display_path, "Task descriptor must be a YAML mapping.")]
@@ -491,12 +789,11 @@ def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[s
             findings.append(Finding("error", display_path, f"{field} must be a non-empty string."))
     for field in ("planned_paths", "memory_tags", "success_criteria"):
         findings.extend(validate_string_list(descriptor.get(field), field, display_path))
+    for planned_path in string_values(descriptor.get("planned_paths")):
+        _, path_findings = safe_repo_relative_path(root, planned_path, display_path)
+        findings.extend(path_findings)
 
-    promotion_candidates = descriptor.get("promotion_candidates", [])
-    if not isinstance(promotion_candidates, list):
-        findings.append(Finding("error", display_path, "promotion_candidates must be a list when present."))
-    elif any(not isinstance(item, (dict, str)) for item in promotion_candidates):
-        findings.append(Finding("error", display_path, "promotion_candidates must contain mappings or strings."))
+    findings.extend(validate_promotion_candidates(descriptor.get("promotion_candidates", []), display_path))
     return descriptor, findings
 
 
@@ -521,7 +818,18 @@ def load_task_descriptor(root: Path, raw_path: str) -> tuple[dict[str, Any] | No
     except Exception as exc:
         findings.append(Finding("error", rel(root, descriptor_path), f"Unable to parse task descriptor: {exc}"))
         return None, findings
-    return validate_task_descriptor(descriptor, rel(root, descriptor_path))
+    return validate_task_descriptor(descriptor, rel(root, descriptor_path), root)
+
+
+def validate_task_descriptors(root: Path) -> list[Finding]:
+    tasks_root = root / MEMORY_ROOT_REL / "tasks"
+    if not tasks_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(tasks_root.glob("*.yml")) + sorted(tasks_root.glob("*.yaml")):
+        _, task_findings = load_task_descriptor(root, rel(root, path))
+        findings.extend(task_findings)
+    return findings
 
 
 def validate_goal_progress_item(root: Path, item: Any, display_path: str, index: int) -> list[Finding]:
@@ -592,11 +900,7 @@ def validate_goal_inventory(root: Path, goal: Any, display_path: str) -> tuple[d
         for index, item in enumerate(progress_inventory):
             findings.extend(validate_goal_progress_item(root, item, display_path, index))
 
-    promotion_candidates = goal.get("promotion_candidates", [])
-    if not isinstance(promotion_candidates, list):
-        findings.append(Finding("error", display_path, "promotion_candidates must be a list when present."))
-    elif any(not isinstance(item, (dict, str)) for item in promotion_candidates):
-        findings.append(Finding("error", display_path, "promotion_candidates must contain mappings or strings."))
+    findings.extend(validate_promotion_candidates(goal.get("promotion_candidates", []), display_path))
     return goal, findings
 
 
@@ -624,6 +928,17 @@ def load_goal_inventory(root: Path, raw_path: str) -> tuple[dict[str, Any] | Non
     return validate_goal_inventory(root, goal, rel(root, goal_path))
 
 
+def validate_goal_inventories(root: Path) -> list[Finding]:
+    goals_root = root / MEMORY_ROOT_REL / "goals"
+    if not goals_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(goals_root.glob("*.yml")) + sorted(goals_root.glob("*.yaml")):
+        _, goal_findings = load_goal_inventory(root, rel(root, path))
+        findings.extend(goal_findings)
+    return findings
+
+
 def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> list[Finding]:
     memory_root = root / MEMORY_ROOT_REL
     if not memory_root.exists():
@@ -641,7 +956,7 @@ def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> li
             continue
         if path.parent.resolve() == (memory_root / "goals").resolve() and path.suffix.lower() in {".yml", ".yaml"}:
             continue
-        if normalize_path(rel_path) not in indexed:
+        if path.suffix.lower() == ".md" and normalize_path(rel_path) not in indexed:
             findings.append(Finding("error", rel_path, "Memory file is not listed in .codex/memory/index.yml."))
     return findings
 
@@ -669,6 +984,8 @@ def collect_findings(root: Path) -> tuple[list[Finding], list[dict[str, Any]]]:
             entries.append(entry)
 
     findings.extend(collect_unindexed_files(root, entries))
+    findings.extend(validate_task_descriptors(root))
+    findings.extend(validate_goal_inventories(root))
     return sorted(findings, key=lambda finding: (finding.severity, finding.path, finding.message)), entries
 
 
@@ -899,8 +1216,10 @@ def decide_entry(entry: dict[str, Any], context: RoutingContext, stale_only: boo
     elif stale_only:
         skipped.append("entry is not stale")
 
-    if tier == "archive" and context_has_routing_filters(context):
+    if tier == "archive":
         skipped.append("archive entries are audit-only")
+    if tier == "session" and not context.task_id:
+        skipped.append("session-tier entry requires explicit task/session routing and promotion review")
 
     scope_id = task_scope_id(entry)
     task_ids = load_when_task_list(entry, "ids")
@@ -975,13 +1294,6 @@ def select_entries(
     context = build_routing_context(paths, tags, task_descriptor, skills, intents, branches)
     selected, _ = route_entries(entries, context, stale_only)
     return selected
-    for entry in entries:
-        if stale_only and not entry_is_stale(entry):
-            continue
-        if has_filters and not (matches_paths(entry, paths) or matches_tags(entry, tags)):
-            continue
-        selected.append(entry)
-    return selected
 
 
 def task_descriptor_summary(task_descriptor: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -1035,6 +1347,8 @@ def receipt_entry(decision: RoutingDecision, reason: str) -> dict[str, Any]:
         "scope": decision.scope,
         "file": decision.file,
         "reason": reason,
+        "match_reasons": list(decision.reasons),
+        "skip_reasons": list(decision.skipped_reasons),
         "warnings": list(decision.warnings),
     }
 
@@ -1043,29 +1357,49 @@ def build_memory_receipt(
     decisions: Sequence[RoutingDecision],
     task_descriptor: dict[str, Any] | None,
     goal_inventory: dict[str, Any] | None,
+    context: RoutingContext,
+    task_descriptor_path: str | None = None,
+    goal_inventory_path: str | None = None,
 ) -> dict[str, Any]:
-    referenced: list[dict[str, Any]] = []
-    dereferenced: list[dict[str, Any]] = []
+    selected: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     stale_warnings: list[dict[str, str]] = []
 
     for decision in decisions:
         if decision.selected:
             item = receipt_entry(decision, primary_text(decision.reasons))
-            referenced.append(item)
+            selected.append(item)
         else:
             item = receipt_entry(decision, primary_text(decision.skipped_reasons))
-            dereferenced.append(item)
+            skipped.append(item)
         for warning in decision.warnings:
             stale_warnings.append({"id": decision.id, "warning": warning})
 
+    selectors = {
+        "paths": list(context.paths),
+        "explicit_tags": list(context.explicit_tags),
+        "descriptor_tags": list(context.descriptor_tags),
+        "skills": list(context.skills),
+        "intents": list(context.intents),
+        "branches": list(context.branches),
+        "task_id": context.task_id,
+        "work_mode": context.work_mode,
+    }
     return {
         "task_id": task_descriptor.get("task_id") if task_descriptor else None,
         "goal_id": goal_inventory.get("goal_id") if goal_inventory else None,
-        "referenced_count": len(referenced),
-        "dereferenced_count": len(dereferenced),
+        "task_descriptor_path": task_descriptor_path,
+        "goal_inventory_path": goal_inventory_path,
+        "selectors": selectors,
+        "selected_count": len(selected),
+        "skipped_count": len(skipped),
+        "referenced_count": len(selected),
+        "dereferenced_count": len(skipped),
         "stale_warning_count": len(stale_warnings),
-        "referenced": referenced,
-        "dereferenced": dereferenced,
+        "selected_memory": selected,
+        "skipped_memory": skipped,
+        "referenced": selected,
+        "dereferenced": skipped,
         "stale_warnings": stale_warnings,
     }
 
@@ -1078,11 +1412,16 @@ def build_payload(
     decisions: Sequence[RoutingDecision] | None = None,
     task_descriptor: dict[str, Any] | None = None,
     goal_inventory: dict[str, Any] | None = None,
+    context: RoutingContext | None = None,
+    task_descriptor_path: str | None = None,
+    goal_inventory_path: str | None = None,
 ) -> dict[str, Any]:
     errors = [finding for finding in findings if finding.severity == "error"]
     warnings = [finding for finding in findings if finding.severity == "warning"]
+    audit_mode = not context_has_routing_filters(context or RoutingContext())
     return {
         "status": "pass" if not errors else "fail",
+        "audit_mode": audit_mode,
         "summary": {
             "entry_count": len(entries),
             "selected_count": len(selected),
@@ -1105,7 +1444,14 @@ def build_payload(
         "routing_conflicts": [
             asdict(decision) for decision in decisions or [] if decision.task_scope_conflict
         ],
-        "memory_receipt": build_memory_receipt(decisions or [], task_descriptor, goal_inventory),
+        "memory_receipt": build_memory_receipt(
+            decisions or [],
+            task_descriptor,
+            goal_inventory,
+            context or RoutingContext(),
+            task_descriptor_path,
+            goal_inventory_path,
+        ),
         "task_descriptor": task_descriptor_summary(task_descriptor),
         "goal_inventory": goal_inventory_summary(goal_inventory),
         "findings": [asdict(finding) for finding in findings],
@@ -1119,7 +1465,7 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
     print(
         "Codex memory status: "
         f"{payload['status']}; {summary['entry_count']} entrie(s), "
-        f"{summary['selected_count']} selected, "
+        f"{summary['selected_count']} {('audited' if payload.get('audit_mode') else 'selected')}, "
         f"{summary['error_count']} error(s), {summary['warning_count']} warning(s)."
     )
     goal = payload.get("goal_inventory")
@@ -1130,8 +1476,9 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
             f"{goal['completed_count']}/{goal['progress_count']} progress item(s) completed; "
             f"active task {goal['active_task_descriptor']}"
         )
+    entry_label = "audited" if payload.get("audit_mode") else "selected"
     for entry in payload["selected_entries"]:
-        print(f"selected: {entry['id']} -> {entry['file']}")
+        print(f"{entry_label}: {entry['id']} -> {entry['file']}")
     if explain:
         for decision in payload.get("routing_decisions", []):
             outcome = "selected" if decision["selected"] else "skipped"
@@ -1148,28 +1495,39 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
 def print_receipt(payload: dict[str, Any]) -> None:
     receipt = payload.get("memory_receipt", {})
     print("Memory receipt:")
+    if receipt.get("task_descriptor_path"):
+        print(f"task_descriptor_path: {receipt['task_descriptor_path']}")
+    if receipt.get("goal_inventory_path"):
+        print(f"goal_inventory_path: {receipt['goal_inventory_path']}")
     if receipt.get("goal_id"):
         print(f"goal: {receipt['goal_id']}")
     if receipt.get("task_id"):
         print(f"task: {receipt['task_id']}")
+    selectors = receipt.get("selectors", {})
+    if selectors:
+        branches = selectors.get("branches") or []
+        paths = selectors.get("paths") or []
+        print(f"selectors: branches={branches or ['<none>']}; paths={paths or ['<none>']}")
 
-    referenced = receipt.get("referenced", [])
-    if referenced:
-        for entry in referenced:
-            print(f"referenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
+    selected = receipt.get("selected_memory", receipt.get("referenced", []))
+    if selected:
+        for entry in selected:
+            reasons = "; ".join(entry.get("match_reasons") or [entry.get("reason", "no reason recorded")])
+            print(f"selected: {entry['id']} -> {entry['file']} ({reasons})")
     else:
-        print("referenced: none")
+        print("selected: none")
 
-    dereferenced = receipt.get("dereferenced", [])
+    skipped = receipt.get("skipped_memory", receipt.get("dereferenced", []))
     display_limit = 12
-    if dereferenced:
-        for entry in dereferenced[:display_limit]:
-            print(f"dereferenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
-        hidden_count = len(dereferenced) - display_limit
+    if skipped:
+        for entry in skipped[:display_limit]:
+            reasons = "; ".join(entry.get("skip_reasons") or [entry.get("reason", "no reason recorded")])
+            print(f"skipped: {entry['id']} -> {entry['file']} ({reasons})")
+        hidden_count = len(skipped) - display_limit
         if hidden_count > 0:
-            print(f"dereferenced: {hidden_count} additional entrie(s); use --explain or --json-output for details")
+            print(f"skipped: {hidden_count} additional entrie(s); use --explain or --json-output for details")
     else:
-        print("dereferenced: none")
+        print("skipped: none")
 
     for warning in receipt.get("stale_warnings", []):
         print(f"stale-warning: {warning['id']}: {warning['warning']}")
@@ -1257,8 +1615,7 @@ def validate_stub_request(root: Path, data: dict[str, Any], entry: dict[str, Any
         findings.append(Finding("error", INDEX_REL, f"Memory id already exists: {entry['id']}"))
     if entry["tier"] == "repo" and not entry["source_refs"]:
         findings.append(Finding("error", INDEX_REL, "Repo-tier stubs require at least one --stub-source-ref."))
-    if entry["tier"] not in ACTIVE_TIERS:
-        findings.append(Finding("error", INDEX_REL, f"Unknown active tier: {entry['tier']}"))
+    findings.extend(validate_tier_contract(root, entry, INDEX_REL))
     memory_file, path_findings = safe_memory_path(root, entry["file"], INDEX_REL)
     findings.extend(path_findings)
     if memory_file is not None and memory_file.exists():
@@ -1281,7 +1638,8 @@ def validate_entry_shape_for_stub(root: Path, entry: dict[str, Any], seen_ids: s
         findings.append(Finding("error", path, f"Invalid stub tier: {entry['tier']}"))
     findings.extend(validate_scope(entry, path))
     findings.extend(validate_string_list(entry.get("tags"), "tags", path))
-    findings.extend(validate_string_list(entry.get("invalidates_when"), "invalidates_when", path))
+    findings.extend(validate_non_empty_string_list(entry.get("invalidates_when"), "invalidates_when", path))
+    findings.extend(validate_archive_metadata(entry, path))
     findings.extend(validate_load_when(entry, path))
     findings.extend(validate_exclude_when(entry, path))
     findings.extend(validate_source_refs(root, entry, path))
@@ -1375,14 +1733,24 @@ def promote_session(root: Path, args: argparse.Namespace) -> int:
             print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
         return 1
 
+    promotion_review = {
+        "reason": args.promote_reason,
+        "conflicting_memory_entries_reviewed": list_arg(args.promote_conflicting_entry),
+    }
     if not args.apply:
-        print(json.dumps({"status": "dry-run", "candidate": entry}, indent=2))
+        print(json.dumps({"status": "dry-run", "candidate": entry, "promotion_review": promotion_review}, indent=2))
         return 0
 
     target_path = (root / entry["file"]).resolve()
     text = source_path.read_text(encoding="utf-8")
     body = markdown_body(text)
-    write_text_if_changed(target_path, f"---\n{dump_yaml(entry).rstrip()}\n---\n\n{body.rstrip()}\n")
+    review_body = (
+        "\n\n## Promotion Review\n\n"
+        f"- Reason for broader persistence: {args.promote_reason}\n"
+        "- Conflicting memory entries reviewed:\n"
+        + "".join(f"  - {item}\n" for item in list_arg(args.promote_conflicting_entry))
+    )
+    write_text_if_changed(target_path, f"---\n{dump_yaml(entry).rstrip()}\n---\n\n{body.rstrip()}{review_body}")
     data["entries"].append(entry)
     if args.archive_source:
         archive_entry = archive_entry_for(root, data, source_path, entry)
@@ -1528,6 +1896,8 @@ def archive_entry_for(root: Path, data: dict[str, Any], source_path: Path, promo
             "Archived source no longer has audit value.",
             "Replacement guidance changes materially.",
         ],
+        "retired_because": "Source session memory was promoted and retired to preserve an audit trail.",
+        "replaced_by": [str(promoted_entry.get("id", ""))],
     }
 
 
@@ -1568,7 +1938,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--stub-review-after")
 
     parser.add_argument("--promote-session", metavar="FILE", help="Promote a session memory file.")
-    parser.add_argument("--promote-tier", choices=sorted(ACTIVE_TIERS - {"session", "archive"}), default="task")
+    parser.add_argument("--promote-tier", choices=["branch", "task"], default="task")
     parser.add_argument("--promote-id")
     parser.add_argument("--promote-scope")
     parser.add_argument("--promote-file")
@@ -1586,6 +1956,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--promote-invalidates-when", action="append", default=[])
     parser.add_argument("--promote-confidence", default="medium", choices=sorted(ALLOWED_CONFIDENCE))
     parser.add_argument("--promote-review-after")
+    parser.add_argument("--promote-reason", help="Reason the session observation deserves the broader target tier.")
+    parser.add_argument("--promote-conflicting-entry", action="append", default=[], help="Memory ID reviewed for conflict, or 'none found'.")
     parser.add_argument("--apply", action="store_true", help="Apply --promote-session. Without this, promotion is dry-run.")
     parser.add_argument("--archive-source", action="store_true", help="Archive the source session file after applied promotion.")
 
@@ -1624,6 +1996,12 @@ def validate_write_args(args: argparse.Namespace) -> int:
             return 1
         if not args.promote_invalidates_when:
             print("error: --promote-session requires --promote-invalidates-when.", file=sys.stderr)
+            return 1
+        if not args.promote_reason:
+            print("error: --promote-session requires --promote-reason.", file=sys.stderr)
+            return 1
+        if not args.promote_conflicting_entry:
+            print("error: --promote-session requires --promote-conflicting-entry (use 'none found' when applicable).", file=sys.stderr)
             return 1
     if args.record_goal_progress:
         if not args.goal:
@@ -1686,7 +2064,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         branches=args.branches,
     )
     selected, decisions = route_entries(entries, context, args.stale_only)
-    payload = build_payload(root, findings, entries, selected, decisions, task_descriptor, goal_inventory)
+    payload = build_payload(
+        root,
+        findings,
+        entries,
+        selected,
+        decisions,
+        task_descriptor,
+        goal_inventory,
+        context,
+        task_path,
+        args.goal,
+    )
 
     if args.json_output:
         output_path = args.json_output

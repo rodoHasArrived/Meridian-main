@@ -5,6 +5,8 @@ on:
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -34,12 +36,17 @@ on:
       - "Directory.Build.targets"
       - "Directory.Packages.props"
       - "global.json"
+      - "scripts/dev/validate-wpf-dev.ps1"
+      - "scripts/dev/SharedBuild.ps1"
+      - ".github/workflows/windows-desktop-build.yml"
   push:
     branches:
       - main
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -69,7 +76,16 @@ on:
       - "Directory.Build.targets"
       - "Directory.Packages.props"
       - "global.json"
+      - "scripts/dev/validate-wpf-dev.ps1"
+      - "scripts/dev/SharedBuild.ps1"
+      - ".github/workflows/windows-desktop-build.yml"
   workflow_dispatch:
+    inputs:
+      run_smoke_publish:
+        description: Run desktop smoke publish after WPF validation.
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -97,15 +113,15 @@ jobs:
         uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -113,36 +129,65 @@ jobs:
             ${{ runner.os }}-nuget-wpf-
             ${{ runner.os }}-nuget-
 
-      - name: Restore WPF tests
+      - name: Run isolated WPF validation
         shell: pwsh
-        run: >
-          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
-          /p:EnableWindowsTargeting=true
-          /p:EnableFullWpfBuild=true
+        run: |
+          pwsh ./scripts/dev/validate-wpf-dev.ps1 `
+            -Restore `
+            -Filter "Category!=Integration&FullyQualifiedName!~Integration" `
+            -OutputRoot "artifacts/wpf-validation/windows-desktop-build" `
+            -IncludeSupervisorTests
 
-      - name: Build WPF app
+      - name: Decide desktop smoke publish
+        id: desktop-smoke
         shell: pwsh
-        run: >
-          dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj
-          -c Release
-          --no-restore
-          /p:EnableWindowsTargeting=true
-          /p:EnableFullWpfBuild=true
-          /p:WindowsPackageType=None
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          MANUAL_SMOKE: ${{ inputs.run_smoke_publish }}
+        run: |
+          $runSmoke = $false
+          if ($env:EVENT_NAME -eq 'push') {
+            $runSmoke = $true
+          } elseif ($env:EVENT_NAME -eq 'workflow_dispatch' -and $env:MANUAL_SMOKE -eq 'true') {
+            $runSmoke = $true
+          } elseif ($env:EVENT_NAME -eq 'pull_request') {
+            $hasMergeParents = $false
+            git rev-parse --verify "HEAD^1" *> $null
+            if ($LASTEXITCODE -eq 0) {
+              git rev-parse --verify "HEAD^2" *> $null
+              $hasMergeParents = $LASTEXITCODE -eq 0
+            }
 
-      - name: Run WPF tests
-        shell: pwsh
-        run: >
-          dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
-          -c Release
-          --no-restore
-          --filter "Category!=Integration&FullyQualifiedName!~Integration"
-          --logger "trx;LogFilePrefix=wpf"
-          --results-directory artifacts/test-results/wpf
-          /p:EnableWindowsTargeting=true
-          /p:EnableFullWpfBuild=true
+            if ($hasMergeParents) {
+              $changed = @(git diff --name-only "HEAD^1" "HEAD^2")
+            } else {
+              git fetch origin $env:BASE_REF --depth=100
+              $changed = @(git diff --name-only "origin/$env:BASE_REF...HEAD")
+            }
+            $publishPatterns = @(
+              '^src/Meridian\.Wpf/',
+              '^build/scripts/(publish|install)/',
+              '^Directory\.Build\.(props|targets)$',
+              '^Directory\.Packages\.props$',
+              '^global\.json$',
+              '^\.github/workflows/windows-desktop-build\.yml$'
+            )
+            foreach ($path in $changed) {
+              foreach ($pattern in $publishPatterns) {
+                if ($path -match $pattern) {
+                  $runSmoke = $true
+                  break
+                }
+              }
+              if ($runSmoke) { break }
+            }
+          }
+          "run=$($runSmoke.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "Desktop smoke publish: $runSmoke" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
       - name: Restore WPF publish graph
+        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: >
           dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
@@ -151,6 +196,7 @@ jobs:
           /p:EnableFullWpfBuild=true
 
       - name: Smoke publish WPF app
+        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: >
           dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj
@@ -165,6 +211,7 @@ jobs:
           /p:PublishReadyToRun=false
 
       - name: Confirm desktop executable
+        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: |
           $exe = "artifacts/publish/desktop-smoke/Meridian.Desktop.exe"
@@ -173,12 +220,12 @@ jobs:
           }
           Get-Item $exe | Select-Object FullName, Length
 
-      - name: Upload WPF test results
-        if: failure()
+      - name: Upload WPF validation artifacts
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: windows-desktop-test-results-${{ github.run_number }}
-          path: artifacts/test-results/wpf/
+          name: windows-desktop-validation-${{ github.run_number }}
+          path: artifacts/wpf-validation/windows-desktop-build/
           if-no-files-found: ignore
           retention-days: 14
 

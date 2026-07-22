@@ -91,6 +91,7 @@ public sealed record OrderRequest
     public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;
     public string? ClientOrderId { get; init; }
     public string? StrategyId { get; init; }
+    public Guid? FundAccountId { get; init; }
     public PositionIntent? PositionIntent { get; init; }
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }

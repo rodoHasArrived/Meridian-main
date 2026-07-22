@@ -9,11 +9,15 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution;
 using Meridian.Execution.Models;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -40,6 +44,8 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ExecutionWriteEndpointsTests
 {
+    private const string ApprovedLiveRunId = "run-live-approved";
+
     [Fact]
     public async Task GetBlotterPositions_WhenServicesNotRegistered_Returns503()
     {
@@ -149,6 +155,27 @@ public sealed class ExecutionWriteEndpointsTests
         result.Message.Should().Contain("0");
     }
 
+
+    [Fact]
+    public async Task CancelAllOrders_WhenProductionPhaseDisabled_StillCancels()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterMinimalOms(services);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                ProductionRoutingPhaseEnabled = false
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Completed");
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/positions/*                                    //
     // ------------------------------------------------------------------ //
@@ -162,6 +189,40 @@ public sealed class ExecutionWriteEndpointsTests
         var response = await client.PostAsync("/api/execution/positions/AAPL/close", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+    }
+
+
+    [Fact]
+    public async Task ClosePosition_WhenProductionPhaseDisabled_StillSubmitsPaperClose()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterMinimalOms(
+                services,
+                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
+            // The paper gateway fails closed on priceless market orders when no live feed is
+            // wired; this test asserts the paper close is submitted, not fill-price realism, so
+            // opt into scaffold pricing to exercise the submission path.
+            services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true
+            });
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                ProductionRoutingPhaseEnabled = false,
+                BrokerFlows =
+                {
+                    ["paper"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/positions/AAPL/close", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Accepted");
     }
 
     [Fact]
@@ -183,9 +244,18 @@ public sealed class ExecutionWriteEndpointsTests
     public async Task ClosePositionByKey_WithPaperPosition_SubmitsOrder()
     {
         await using var app = await CreateAppAsync(services =>
+        {
             RegisterMinimalOms(
                 services,
-                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m)));
+                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
+            // The paper gateway fails closed on priceless market orders when no live feed is
+            // wired; this test asserts the close order is submitted, not fill-price realism, so
+            // opt into scaffold pricing to exercise the submission path.
+            services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true
+            });
+        });
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -295,6 +365,67 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_WithFundAccountScope_PassesScopeToBrokerOrder()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            RegisterFundAccountScope(services, fundAccountId, isAllowed: true);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m, FundAccountId: fundAccountId)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.FundAccountId.Should().Be(fundAccountId);
+    }
+
+    [Fact]
+    public async Task ClosePosition_WithFundAccountQuery_PassesScopeToBrokerOrder()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            RegisterFundAccountScope(services, fundAccountId, isAllowed: true);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync($"/api/execution/positions/AAPL/close?fundAccountId={fundAccountId:D}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.FundAccountId.Should().Be(fundAccountId);
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WithUnscopedFundAccount_ReturnsForbiddenAndDoesNotSubmit()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m, FundAccountId: fundAccountId)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ClosePositionByKey_WithBrokerSuppliedAccountMetadata_StripsServerOwnedRoutingKeys()
     {
         var position = CreateRobinhoodOptionPosition("opt-close") with
@@ -305,7 +436,8 @@ public sealed class ExecutionWriteEndpointsTests
                 ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/opt-close/",
                 ["broker_account_id"] = "attacker-controlled-account",
                 ["account_id"] = "attacker-ledger-account",
-                ["manualOverrideId"] = "forged-override"
+                ["manualOverrideId"] = "forged-override",
+                ["runId"] = ApprovedLiveRunId
             }
         };
         var gateway = new RecordingBrokerageGateway(position);
@@ -354,10 +486,9 @@ public sealed class ExecutionWriteEndpointsTests
     [Fact]
     public async Task SubmitOrder_WhenPaperFlowFlagDisabled_Returns403AndDoesNotSubmit()
     {
-        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
         await using var app = await CreateAppAsync(services =>
         {
-            RegisterBrokerageOms(services, gateway);
+            RegisterMinimalOms(services);
             services.AddSingleton(new BrokerageConfiguration
             {
                 Gateway = "paper",
@@ -383,6 +514,32 @@ public sealed class ExecutionWriteEndpointsTests
         var result = await ReadAsync<OrderResult>(response);
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Paper order flow is disabled");
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenBrokerageConfigMissingForBrokerGateway_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOmsWithoutConfiguration(services, gateway);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Brokerage configuration is required");
         gateway.SubmittedRequests.Should().BeEmpty();
     }
 
@@ -403,6 +560,35 @@ public sealed class ExecutionWriteEndpointsTests
                 Side = OrderSide.Buy,
                 Type = Meridian.Execution.Sdk.OrderType.Market,
                 Quantity = 1m
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+
+    [Fact]
+    public async Task SubmitOrder_WithUnauthorizedFundAccountScope_Returns403AndDoesNotSubmit()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            RegisterFundAccountScope(services, fundAccountId, isAllowed: false);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                FundAccountId = fundAccountId
             }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -439,6 +625,35 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_WithClientLiveReadinessEvidenceMetadata_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["runId"] = ApprovedLiveRunId,
+                    ["liveReadinessEvidenceReference"] = "forged-readiness-evidence"
+                }
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("server-side");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task SubmitOrder_WithClientAssetClassRoutingMetadata_Returns403AndDoesNotSubmit()
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
@@ -463,6 +678,29 @@ public sealed class ExecutionWriteEndpointsTests
         var result = await ReadAsync<OrderResult>(response);
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("server-side");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithUnscopedFundAccount_ReturnsForbiddenAndDoesNotSubmit()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                FundAccountId = fundAccountId
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         gateway.SubmittedRequests.Should().BeEmpty();
     }
 
@@ -533,7 +771,7 @@ public sealed class ExecutionWriteEndpointsTests
             RegisterBrokerageOms(services, gateway);
             services.AddSingleton(new BrokerageConfiguration
             {
-                Gateway = "alpaca",
+                Gateway = "robinhood",
                 LiveExecutionEnabled = true,
                 ReadOnlyPhaseEnabled = true,
                 PaperTradingPhaseEnabled = true,
@@ -543,7 +781,7 @@ public sealed class ExecutionWriteEndpointsTests
                 ReplayEvidencePassed = true,
                 BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["alpaca"] = new() { ProductionOrderRoutingEnabled = true }
+                    ["robinhood"] = new() { ProductionOrderRoutingEnabled = true }
                 },
                 ValidationGates = new BrokerValidationGateOptions
                 {
@@ -946,16 +1184,65 @@ public sealed class ExecutionWriteEndpointsTests
         services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new StaticPortfolioState(positions));
     }
 
+
+    private static void RegisterFundAccountScope(IServiceCollection services, Guid fundAccountId, bool isAllowed)
+    {
+        services.AddSingleton<IAccountQueryService>(new StubAccountQueryService(fundAccountId));
+        services.AddSingleton<IScopedAuthorizationService>(new StubScopedAuthorizationService(fundAccountId, isAllowed));
+    }
+
     private static void RegisterBrokerageOms(IServiceCollection services, RecordingBrokerageGateway gateway)
     {
         services.AddSingleton(gateway);
         services.AddSingleton<IExecutionGateway>(sp => sp.GetRequiredService<RecordingBrokerageGateway>());
+        services.AddSingleton(CreateEnabledBrokerageConfiguration(gateway.GatewayId));
+        services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new StaticPortfolioState());
         services.AddSingleton<IOrderManager>(sp =>
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
                 NullLogger<OrderManagementSystem>.Instance,
-                brokerageConfiguration: sp.GetService<BrokerageConfiguration>()));
+                brokerageConfiguration: sp.GetService<BrokerageConfiguration>(),
+                liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>()));
     }
+
+    private static void RegisterBrokerageOmsWithoutConfiguration(
+        IServiceCollection services,
+        RecordingBrokerageGateway gateway)
+    {
+        services.AddSingleton(gateway);
+        services.AddSingleton<IExecutionGateway>(sp => sp.GetRequiredService<RecordingBrokerageGateway>());
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new StaticPortfolioState());
+        services.AddSingleton<IOrderManager>(sp =>
+            new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance,
+                brokerageConfiguration: null));
+    }
+
+    private static BrokerageConfiguration CreateEnabledBrokerageConfiguration(string gatewayId) =>
+        new()
+        {
+            Gateway = gatewayId,
+            LiveExecutionEnabled = true,
+            ReadOnlyVerificationPassed = true,
+            PaperLifecycleTestsPassed = true,
+            ReplayEvidencePassed = true,
+            ProductionRoutingPhaseEnabled = true,
+            ValidationGates = new BrokerValidationGateOptions
+            {
+                RequireValidationArtifactsForOrderPlacement = false
+            },
+            BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+            {
+                [gatewayId] = new()
+                {
+                    ReadOnlyDataEnabled = true,
+                    PaperOrderFlowEnabled = true,
+                    ProductionOrderRoutingEnabled = true
+                }
+            }
+        };
 
     private static void RegisterSessionServices(IServiceCollection services, string rootPath)
     {
@@ -1006,7 +1293,8 @@ public sealed class ExecutionWriteEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
-        string? currentUser = "ops-user")
+        string? currentUser = "ops-user",
+        IReadOnlyCollection<Guid>? allowedAccountScopes = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1014,6 +1302,11 @@ public sealed class ExecutionWriteEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        if (allowedAccountScopes is not null)
+        {
+            builder.Services.AddSingleton<IScopedAuthorizationService>(
+                new TestScopedAuthorizationService(allowedAccountScopes));
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>
@@ -1024,6 +1317,8 @@ public sealed class ExecutionWriteEndpointsTests
             }
 
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "execution-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "execution-test-tenant";
             await next();
         });
 
@@ -1038,6 +1333,38 @@ public sealed class ExecutionWriteEndpointsTests
 
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class TestScopedAuthorizationService : IScopedAuthorizationService
+    {
+        private readonly HashSet<Guid> _allowedAccountScopes;
+
+        public TestScopedAuthorizationService(IReadOnlyCollection<Guid> allowedAccountScopes)
+        {
+            _allowedAccountScopes = allowedAccountScopes.ToHashSet();
+        }
+
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission requiredPermission,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            var allowed = scopeKind == AccessScopeKindDto.Account
+                && scopeId.HasValue
+                && _allowedAccountScopes.Contains(scopeId.Value)
+                && (globalPermissions & requiredPermission) == requiredPermission;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                allowed,
+                actor,
+                requiredPermission,
+                scopeKind,
+                scopeId,
+                allowed ? "Test account scope grants access." : "Test account scope denies access."));
+        }
     }
 
     private static async Task<TradingActionResult> ReadActionResultAsync(HttpResponseMessage response) =>
@@ -1187,9 +1514,24 @@ public sealed class ExecutionWriteEndpointsTests
                 ["underlying_symbol"] = "AAPL",
                 ["right"] = "call",
                 ["expiration"] = (expiration ?? new DateOnly(2026, 5, 15)).ToString("yyyy-MM-dd"),
-                ["strike"] = strike.ToString("G29")
+                ["strike"] = strike.ToString("G29"),
+                ["runId"] = ApprovedLiveRunId
             }
         };
+}
+
+file sealed class ApprovedLiveOrderReadinessGate(string approvedRunId) : ILiveOrderReadinessGate
+{
+    public Task<LiveOrderReadinessDecision> EvaluateAsync(
+        LiveOrderReadinessRequest request,
+        CancellationToken ct = default)
+    {
+        var decision = string.Equals(request.RunId, approvedRunId, StringComparison.Ordinal)
+            ? LiveOrderReadinessDecision.Approved($"audit://live/{request.RunId}")
+            : LiveOrderReadinessDecision.Rejected($"Run {request.RunId} is not approved for live order routing.");
+
+        return Task.FromResult(decision);
+    }
 }
 
 file sealed class StaticPortfolioState(params ExecutionPosition[] positions) : Meridian.Execution.Models.IPortfolioState
@@ -1294,4 +1636,100 @@ sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBro
         Task.FromResult(BrokerHealthStatus.Healthy("ok"));
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}
+
+
+sealed class StubScopedAuthorizationService(Guid allowedAccountId, bool isAllowed) : IScopedAuthorizationService
+{
+    public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+        string actor,
+        UserPermission requiredPermission,
+        AccessScopeKindDto scopeKind,
+        Guid? scopeId,
+        UserPermission globalPermissions,
+        CancellationToken ct = default)
+    {
+        var allowed = isAllowed
+            && scopeKind == AccessScopeKindDto.Account
+            && scopeId == allowedAccountId
+            && globalPermissions.HasFlag(requiredPermission);
+
+        return Task.FromResult(new ScopedAuthorizationDecisionDto(
+            allowed,
+            actor,
+            requiredPermission,
+            scopeKind,
+            scopeId,
+            allowed ? "Matched test account scope." : "No matching test account scope."));
+    }
+}
+
+sealed class StubAccountQueryService(Guid accountId) : IAccountQueryService
+{
+    private readonly AccountSummaryDto _account = new(
+        accountId,
+        AccountTypeDto.Brokerage,
+        EntityId: null,
+        FundId: null,
+        SleeveId: null,
+        VehicleId: null,
+        AccountCode: "TEST-BROKERAGE",
+        DisplayName: "Test Brokerage Account",
+        BaseCurrency: "USD",
+        Institution: "Test Broker",
+        IsActive: true,
+        EffectiveFrom: DateTimeOffset.UtcNow,
+        EffectiveTo: null,
+        PortfolioId: null,
+        LedgerReference: null,
+        StrategyId: null,
+        RunId: null);
+
+    public Task<AccountSummaryDto?> GetAccountAsync(Guid requestedAccountId, CancellationToken ct = default) =>
+        Task.FromResult(requestedAccountId == _account.AccountId ? _account : null);
+
+    public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountSummaryDto>>([_account]);
+
+    public Task<FundAccountsDto> GetFundAccountsAsync(Guid fundId, CancellationToken ct = default) =>
+        Task.FromResult(new FundAccountsDto(fundId, [], [], [_account], []));
+
+    public Task<IReadOnlyList<AccountSettlementInstructionView>> ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountSettlementInstructionView>>([]);
+
+    public Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountBalanceSnapshotDto>>([]);
+
+    public Task<AccountBalanceSnapshotDto?> GetLatestBalanceSnapshotAsync(Guid accountId, CancellationToken ct = default) =>
+        Task.FromResult<AccountBalanceSnapshotDto?>(null);
+
+    public Task<IReadOnlyList<AccountOpenBreakView>> ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountOpenBreakView>>([]);
+
+    public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<CustodianPositionLineDto>>([]);
+
+    public Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<BankStatementLineDto>>([]);
+
+    public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>([]);
+
+    public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountReconciliationResultDto>>([]);
+
+    public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<AccountSyncHistoryEntryDto>>([]);
+
+    public Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =>
+        Task.FromResult<AccountSyncHistoryEntryDto?>(null);
+
+    public Task<AccountReadinessSnapshotDto?> GetReadinessAsync(Guid accountId, CancellationToken ct = default) =>
+        Task.FromResult<AccountReadinessSnapshotDto?>(null);
+
+    public Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<MarginSnapshotDto>>([]);
+
+    public Task<MarginSnapshotDto?> GetLatestMarginSnapshotAsync(Guid accountId, CancellationToken ct = default) =>
+        Task.FromResult<MarginSnapshotDto?>(null);
 }

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FsCheck.Xunit;
+using Meridian.FSharp.Ledger;
 using Meridian.Ledger;
 using Xunit;
 
@@ -49,6 +50,20 @@ public sealed class LedgerIntegrationTests
 
         trialBalance[cash].Should().Be(100m);
         trialBalance[revenue].Should().Be(100m);
+    }
+
+    [Fact]
+    public void LedgerAccountTypeOrdinals_MatchFSharpPostingKernelContract()
+    {
+        ((int)LedgerAccountType.Asset).Should().Be(0);
+        ((int)LedgerAccountType.Liability).Should().Be(1);
+        ((int)LedgerAccountType.Equity).Should().Be(2);
+        ((int)LedgerAccountType.Revenue).Should().Be(3);
+        ((int)LedgerAccountType.Expense).Should().Be(4);
+
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Asset, 10m, 3m).Should().Be(7m);
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Expense, 10m, 3m).Should().Be(7m);
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Revenue, 10m, 3m).Should().Be(-7m);
     }
 
     [Fact]
@@ -910,6 +925,102 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void Ledger_AsOfBalanceSnapshots_HandleOutOfOrderPostings()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+
+        ledger.PostLines(t2, "second sale", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
+        ledger.PostLines(t1, "first sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+
+        ledger.GetBalanceAsOf(cash, t1).Should().Be(100m);
+        ledger.GetBalanceAsOf(cash, t2).Should().Be(150m);
+        ledger.TrialBalanceAsOf(t1)[revenue].Should().Be(100m);
+        ledger.TrialBalanceAsOf(t2)[revenue].Should().Be(150m);
+
+        ledger.Journal.Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        ledger.GetJournalEntries().Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        var running = ledger.GetRunningBalance(cash);
+        running.Select(point => point.Description)
+            .Should().Equal("first sale", "second sale");
+        running.Select(point => point.Balance)
+            .Should().Equal(100m, 150m);
+
+        var snapshot = ledger.SnapshotAsOf(t1);
+        snapshot.JournalEntryCount.Should().Be(1);
+        snapshot.LedgerEntryCount.Should().Be(2);
+    }
+
+    [Fact]
+    public void Ledger_DimensionalAsOfBalanceIndex_PreservesPartialScopeAndOutOfOrderSemantics()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Sales", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+        var fundACore = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core");
+        var fundAAlternatives = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "alternatives");
+        var fundBCore = new LedgerLineDimensionSet(FundId: "fund-b", SleeveId: "core");
+
+        ledger.PostLines(t2, "fund A later sale",
+        [
+            (cash, 50m, 0m, fundACore),
+            (revenue, 0m, 50m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund B sale",
+        [
+            (cash, 70m, 0m, fundBCore),
+            (revenue, 0m, 70m, fundBCore)
+        ]);
+        ledger.PostLines(t1, "fund A core sale",
+        [
+            (cash, 100m, 0m, fundACore),
+            (revenue, 0m, 100m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund A alternatives sale",
+        [
+            (cash, 30m, 0m, fundAAlternatives),
+            (revenue, 0m, 30m, fundAAlternatives)
+        ]);
+
+        var fundAAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: " FUND-A "));
+        var fundACoreAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var fundACoreAtT2 = ledger.TrialBalanceAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var allFundsAtT1 = ledger.TrialBalanceAsOf(t1, lineDimensions: new LedgerLineDimensionSet());
+        var fundASnapshotAtT1 = ledger.SnapshotAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a"));
+        var fundACoreSnapshotAtT2 = ledger.SnapshotAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+
+        fundAAtT1[cash].Should().Be(130m);
+        fundAAtT1[revenue].Should().Be(130m);
+        fundACoreAtT1[cash].Should().Be(100m);
+        fundACoreAtT2[cash].Should().Be(150m);
+        allFundsAtT1[cash].Should().Be(200m,
+            "an empty dimension filter retains the existing no-filter semantics");
+        fundASnapshotAtT1.JournalEntryCount.Should().Be(2);
+        fundASnapshotAtT1.LedgerEntryCount.Should().Be(4);
+        fundASnapshotAtT1.Balances[cash].Should().Be(130m);
+        fundACoreSnapshotAtT2.JournalEntryCount.Should().Be(2);
+        fundACoreSnapshotAtT2.LedgerEntryCount.Should().Be(4);
+        fundACoreSnapshotAtT2.Balances[cash].Should().Be(150m);
+    }
+
+    [Fact]
     public void LedgerEntry_BothZero_ThrowsWithDistinctMessage()
     {
         var journalId = Guid.NewGuid();
@@ -1388,6 +1499,52 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerQuery_PositionDimension_DistinguishesHoldingsOfTheSameInstrument()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var instrumentId = Guid.NewGuid();
+        var firstPositionId = Guid.NewGuid();
+        var secondPositionId = Guid.NewGuid();
+        var firstPosition = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            InstrumentId: instrumentId)
+        {
+            PositionId = firstPositionId
+        };
+        var secondPosition = firstPosition with { PositionId = secondPositionId };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "first position fee",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)firstPosition),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)firstPosition),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "second position fee",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)secondPosition),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)secondPosition),
+            });
+
+        var filter = new LedgerLineDimensionSet(InstrumentId: instrumentId)
+        {
+            PositionId = firstPositionId
+        };
+
+        ledger.GetJournalEntries(new LedgerQuery(LineDimensions: filter))
+            .Select(static entry => entry.Description)
+            .Should()
+            .Equal("first position fee");
+        ledger.TrialBalance(lineDimensions: filter)[cash].Should().Be(100m);
+    }
+
+    [Fact]
     public void LedgerFinancialStatementBuilder_BuildAsOf_ShouldFilterByLineDimensions()
     {
         var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
@@ -1501,11 +1658,23 @@ public sealed class LedgerIntegrationTests
                 new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
             ]));
 
+        // A wash-sale-deferred loss: 10 @ 100 sold at 80 (loss 200) with a matching replacement
+        // purchase in the window, so the whole loss is disallowed and recognized loss is zero.
+        var washSaleProjection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            aaplSecurity,
+            new DateOnly(2026, 5, 20),
+            quantitySold: 10m,
+            salePrice: 80m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("lot-wash", new DateOnly(2026, 1, 5), 10m, 100m)],
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: [new WashSaleReplacementAcquisition("lot-rep", new DateOnly(2026, 5, 22), 10m)]));
+
         var pack = LedgerReportPackBuilder.Build(
             ledger,
             request,
             chart,
-            taxLotReliefProjections: [taxLotProjection]);
+            taxLotReliefProjections: [taxLotProjection, washSaleProjection]);
 
         pack.IsBalanced.Should().BeTrue();
         pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
@@ -1551,7 +1720,11 @@ public sealed class LedgerIntegrationTests
         provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
         var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
-        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100");
+        taxArtifact.Content.Should().Contain("RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
+        // Non-wash-sale row still nets recognized == realized (100), with zero disallowed.
+        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100,0,100");
+        // Wash-sale row: full 200 loss disallowed, recognized loss zero.
+        taxArtifact.Content.Should().Contain("2026-05-20,Assets:Investments:AAPL,AAPL,broker-1,Fifo,lot-wash,2026-01-05,10,100,800,1000,-200,200,0");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");
@@ -1568,15 +1741,29 @@ public sealed class LedgerIntegrationTests
         var periodStart = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
         var periodEnd = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
         var alphaDimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         var betaDimensions = alphaDimensions with
         {
             EntityId = "entity-beta",
+            BookId = "book-tax",
+            AccountId = "account-admin",
+            CustomerId = "customer-beta",
+            VendorId = "vendor-admin",
+            ProjectId = "project-admin",
             ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Administration"
@@ -1629,9 +1816,18 @@ public sealed class LedgerIntegrationTests
             lineDimensions: new LedgerLineDimensionSet(
                 FundId: "fund-alpha",
                 EntityId: "ENTITY-ALPHA",
+                OrganizationId: "TENANT-ALPHA",
+                PortfolioId: "PORTFOLIO-INCOME",
+                BookId: "BOOK-GAAP",
+                AccountId: "ACCOUNT-CASH",
+                CustomerId: "CUSTOMER-ALPHA",
+                VendorId: "VENDOR-BANK",
+                ProjectId: "PROJECT-CLOSE",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["department"] = "investments"
+                    [" department "] = " investments ",
+                    ["department"] = "ignored-duplicate",
+                    [" "] = "ignored"
                 }));
 
         var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
@@ -1648,11 +1844,27 @@ public sealed class LedgerIntegrationTests
             !row.LedgerEntryIds.Intersect(betaLedgerEntryIds).Any());
 
         var manifest = pack.Artifacts.Single(artifact => artifact.Name == "manifest.csv");
-        manifest.Content.Should().Contain("dimension-scope,entityId=ENTITY-ALPHA;externalGl.department=investments;fundId=fund-alpha");
+        manifest.Content.Should().Contain("accountId=ACCOUNT-CASH");
+        manifest.Content.Should().Contain("bookId=BOOK-GAAP");
+        manifest.Content.Should().Contain("customerId=CUSTOMER-ALPHA");
+        manifest.Content.Should().Contain("entityId=ENTITY-ALPHA");
+        manifest.Content.Should().Contain("externalGl.department=investments");
+        manifest.Content.Should().Contain("fundId=fund-alpha");
+        manifest.Content.Should().Contain("organizationId=TENANT-ALPHA");
+        manifest.Content.Should().Contain("portfolioId=PORTFOLIO-INCOME");
+        manifest.Content.Should().Contain("projectId=PROJECT-CLOSE");
+        manifest.Content.Should().Contain("vendorId=VENDOR-BANK");
         var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
         statementsArtifact.Content.Should().Contain("\"dimensionScope\": {");
+        statementsArtifact.Content.Should().Contain("\"accountId\": \"ACCOUNT-CASH\"");
+        statementsArtifact.Content.Should().Contain("\"bookId\": \"BOOK-GAAP\"");
+        statementsArtifact.Content.Should().Contain("\"customerId\": \"CUSTOMER-ALPHA\"");
         statementsArtifact.Content.Should().Contain("\"entityId\": \"ENTITY-ALPHA\"");
         statementsArtifact.Content.Should().Contain("\"externalGl.department\": \"investments\"");
+        statementsArtifact.Content.Should().Contain("\"organizationId\": \"TENANT-ALPHA\"");
+        statementsArtifact.Content.Should().Contain("\"portfolioId\": \"PORTFOLIO-INCOME\"");
+        statementsArtifact.Content.Should().Contain("\"projectId\": \"PROJECT-CLOSE\"");
+        statementsArtifact.Content.Should().Contain("\"vendorId\": \"VENDOR-BANK\"");
         var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
         foreach (var betaLedgerEntryId in betaLedgerEntryIds)
             provenanceArtifact.Content.Should().NotContain(betaLedgerEntryId.ToString("D"));
@@ -1780,11 +1992,20 @@ public sealed class LedgerIntegrationTests
     public void LedgerReportScheduledExport_CreatesReportPackRequest()
     {
         var dimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         var schedule = new LedgerReportSchedule(
             "reg-pack",
@@ -1831,11 +2052,20 @@ public sealed class LedgerIntegrationTests
         var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
         var ledger = new Meridian.Ledger.Ledger();
         var dimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         ledger.PostLines(
             new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
@@ -1871,7 +2101,16 @@ public sealed class LedgerIntegrationTests
         var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
         manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
         manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
-        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl.Department=Investments;FundId=fund-alpha");
+        manifest.Content.Should().Contain("AccountId=account-cash");
+        manifest.Content.Should().Contain("BookId=book-gaap");
+        manifest.Content.Should().Contain("CustomerId=customer-alpha");
+        manifest.Content.Should().Contain("EntityId=entity-alpha");
+        manifest.Content.Should().Contain("ExternalGl_Department=Investments");
+        manifest.Content.Should().Contain("FundId=fund-alpha");
+        manifest.Content.Should().Contain("OrganizationId=tenant-alpha");
+        manifest.Content.Should().Contain("PortfolioId=portfolio-income");
+        manifest.Content.Should().Contain("ProjectId=project-close");
+        manifest.Content.Should().Contain("VendorId=vendor-bank");
         manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
         manifest.Content.Should().Contain("report-pack-signature,");
         manifest.Content.Should().Contain("financial-statements.json,application/json,");
@@ -1879,8 +2118,15 @@ public sealed class LedgerIntegrationTests
         regulatoryXml.Content.Should().Contain("schema=\"ledger-regulatory-summary-v1\"");
         regulatoryXml.Content.Should().Contain("<FundId>fund-alpha</FundId>");
         regulatoryXml.Content.Should().Contain("<DimensionScope>");
+        regulatoryXml.Content.Should().Contain("<AccountId>account-cash</AccountId>");
+        regulatoryXml.Content.Should().Contain("<BookId>book-gaap</BookId>");
+        regulatoryXml.Content.Should().Contain("<CustomerId>customer-alpha</CustomerId>");
         regulatoryXml.Content.Should().Contain("<EntityId>entity-alpha</EntityId>");
         regulatoryXml.Content.Should().Contain("<ExternalGl_Department>Investments</ExternalGl_Department>");
+        regulatoryXml.Content.Should().Contain("<OrganizationId>tenant-alpha</OrganizationId>");
+        regulatoryXml.Content.Should().Contain("<PortfolioId>portfolio-income</PortfolioId>");
+        regulatoryXml.Content.Should().Contain("<ProjectId>project-close</ProjectId>");
+        regulatoryXml.Content.Should().Contain("<VendorId>vendor-bank</VendorId>");
         regulatoryXml.Content.Should().Contain("<TotalAssets>1000</TotalAssets>");
         regulatoryXml.Content.Should().Contain("<AccountingEquationVariance>0</AccountingEquationVariance>");
         regulatoryXml.Content.Should().Contain("<Recipient>regulator@example.com</Recipient>");
@@ -2147,6 +2393,103 @@ public sealed class LedgerIntegrationTests
             line.account.FinancialAccountId == "broker-1" &&
             line.debit == 0m &&
             line.credit == 50m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_DoesNotTreatEquityTickerSymbolsAsCurrencies()
+    {
+        var ibm = LedgerAccounts.Securities("IBM", "broker-1");
+        var gld = LedgerAccounts.Securities("GLD", "broker-1");
+        var spy = LedgerAccounts.Securities("SPY", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [ibm] = 10_000m,
+            [gld] = 5_000m,
+            [spy] = 2_500m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m });
+
+        translation.Exposures.Should().OnlyContain(exposure =>
+            exposure.LocalCurrency == "USD" && exposure.FxRateToBase == 1m);
+        translation.TranslatedTrialBalance[ibm].Should().Be(10_000m);
+        translation.TranslatedTrialBalance[gld].Should().Be(5_000m);
+        translation.TranslatedTrialBalance[spy].Should().Be(2_500m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_KeepsInstrumentAccountsInBaseCurrencyWhenTickerCollidesWithIsoCode()
+    {
+        // "TRY" and "CUP" are valid ISO-4217 codes, but on per-symbol instrument accounts the
+        // symbol is a ticker, so the balances must stay in the base currency untranslated.
+        var tryTicker = LedgerAccounts.Securities("TRY", "broker-1");
+        var cupTicker = LedgerAccounts.ShortSecuritiesPayable("CUP", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [tryTicker] = 1_000m,
+            [cupTicker] = 400m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["TRY"] = 0.03m, ["CUP"] = 0.04m });
+
+        translation.Exposures.Should().OnlyContain(exposure => exposure.LocalCurrency == "USD");
+        translation.TranslatedTrialBalance[tryTicker].Should().Be(1_000m);
+        translation.TranslatedTrialBalance[cupTicker].Should().Be(400m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_ConfiguredAccountCurrencyOverridesInstrumentSymbolContext()
+    {
+        var eurDenominatedHolding = LedgerAccounts.Securities("SAP", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurDenominatedHolding] = 1_000m,
+        };
+        var accountCurrencies = new Dictionary<LedgerAccount, string>
+        {
+            [eurDenominatedHolding] = "EUR",
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m },
+            accountCurrencies);
+
+        translation.Exposures.Single().LocalCurrency.Should().Be("EUR");
+        translation.TranslatedTrialBalance[eurDenominatedHolding].Should().Be(1_100m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_StillInfersIsoCurrenciesFromAccountSymbols()
+    {
+        var eurCash = LedgerAccounts.CashInCurrency("EUR", "broker-1");
+        var jpyCash = LedgerAccounts.CashInCurrency("JPY", "broker-1");
+        var gbpCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity, Symbol: "GBP", FinancialAccountId: "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurCash] = 1_000m,
+            [jpyCash] = 200_000m,
+            [gbpCapital] = 1_000m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m, ["JPY"] = 0.0065m, ["GBP"] = 1.27m });
+
+        translation.Exposures.Single(exposure => exposure.Account == eurCash).LocalCurrency.Should().Be("EUR");
+        translation.Exposures.Single(exposure => exposure.Account == jpyCash).LocalCurrency.Should().Be("JPY");
+        translation.Exposures.Single(exposure => exposure.Account == gbpCapital).LocalCurrency.Should().Be("GBP");
+        translation.TranslatedTrialBalance[eurCash].Should().Be(1_100m);
+        translation.TranslatedTrialBalance[jpyCash].Should().Be(1_300m);
+        translation.TranslatedTrialBalance[gbpCapital].Should().Be(1_270m);
     }
 
     [Fact]

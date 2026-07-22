@@ -1,4 +1,5 @@
 import type { ApiErrorDisplay } from "@/lib/api-errors";
+import {formatPrefixedCurrency as formatCurrency, pluralizeCount} from "@/lib/format";
 import type { ReconciliationCalibrationStatus, ReconciliationCalibrationSummary } from "@/types";
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
@@ -344,12 +345,7 @@ function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, 
 }
 
 function formatCount(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
-}
-
-function formatCurrency(value: number) {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  return pluralizeCount(count, singular);
 }
 
 function formatSecurityDate(value: string | null | undefined): string {

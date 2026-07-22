@@ -19,7 +19,14 @@ namespace Meridian.Infrastructure.Adapters.Core;
 ///   <item><description>Attribute discovery (<c>[DataSource]</c>) — single-class registration</description></item>
 ///   <item><description>Module loading — multi-capability, grouped registration per provider</description></item>
 /// </list>
-/// Typical usage:
+/// Typical usage with runtime config:
+/// <code>
+/// var loader = new ProviderModuleLoader();
+/// loader.ConfigureModules(contextsByModuleId);
+/// var report = await loader.LoadFromAssembliesAsync(services, registry, ct,
+///     typeof(AlpacaProviderModule).Assembly);
+/// </code>
+/// Without config (env-var-based modules still load):
 /// <code>
 /// var loader = new ProviderModuleLoader();
 /// var report = await loader.LoadFromAssembliesAsync(services, registry, ct,
@@ -31,11 +38,38 @@ namespace Meridian.Infrastructure.Adapters.Core;
 public sealed class ProviderModuleLoader
 {
     private readonly ILogger<ProviderModuleLoader> _log;
+    private readonly Dictionary<string, ProviderModuleContext> _moduleContexts
+        = new(StringComparer.OrdinalIgnoreCase);
 
     /// <param name="log">Optional logger; falls back to the null logger when omitted.</param>
     public ProviderModuleLoader(ILogger<ProviderModuleLoader>? log = null)
     {
         _log = log ?? NullLogger<ProviderModuleLoader>.Instance;
+    }
+
+    /// <summary>
+    /// Pre-configures a single module with a resolved <see cref="ProviderModuleContext"/>.
+    /// The context is injected via <see cref="IProviderModule.Configure"/> before
+    /// <see cref="IProviderModule.Register"/> is called.
+    /// </summary>
+    /// <param name="moduleId">Module identifier matching <see cref="IProviderModule.ModuleId"/> (case-insensitive).</param>
+    /// <param name="context">The resolved context to inject.</param>
+    public void ConfigureModule(string moduleId, ProviderModuleContext context)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
+        ArgumentNullException.ThrowIfNull(context);
+        _moduleContexts[moduleId] = context;
+    }
+
+    /// <summary>
+    /// Pre-configures multiple modules at once from a dictionary of contexts keyed by module ID.
+    /// Replaces any previously registered context for the same module ID.
+    /// </summary>
+    public void ConfigureModules(IReadOnlyDictionary<string, ProviderModuleContext> contexts)
+    {
+        ArgumentNullException.ThrowIfNull(contexts);
+        foreach (var (id, ctx) in contexts)
+            _moduleContexts[id] = ctx;
     }
 
     /// <summary>
@@ -102,6 +136,30 @@ public sealed class ProviderModuleLoader
             try
             {
                 moduleId = module.ModuleId;
+
+                // Inject context when one was pre-registered for this module ID.
+                if (_moduleContexts.TryGetValue(moduleId, out var context))
+                {
+                    if (!context.Enabled)
+                    {
+                        _log.LogInformation(
+                            "Provider module {ModuleId} is disabled in configuration and will be skipped",
+                            moduleId);
+                        continue;
+                    }
+
+                    _log.LogDebug("Configuring provider module {ModuleId} with external context", moduleId);
+                    module.Configure(context);
+                }
+                else if (module.RequiresExternalConfig)
+                {
+                    _log.LogWarning(
+                        "Provider module {ModuleId} requires external config but none was provided — skipping",
+                        moduleId);
+                    failed.Add(new FailedModuleInfo(moduleId, module.ModuleDisplayName,
+                        $"Module '{moduleId}' requires external config. Register a ProviderModuleContext via ConfigureModule().", null));
+                    continue;
+                }
 
                 _log.LogDebug("Validating provider module {ModuleId} ({DisplayName})",
                     moduleId, module.ModuleDisplayName);

@@ -16,7 +16,7 @@ last_reviewed: 2026-05-25
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
 
-`Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, roll-forward, source-linked audit rows, and close-state evidence gates.
+`Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 
 ## Layer responsibility
 
@@ -36,11 +36,14 @@ Preview and estimate services must fail closed when the API cannot return source
 Do not return synthetic successful counts, latency values, sample sizes, or alignment metrics from
 UI-service fallbacks; callers should see an unavailable/error state instead of plausible-looking
 operational data.
+Scheduled archive-maintenance state is exposed through stable snapshots so operator edits can run
+concurrently with scheduler ticks. Timer callbacks are cancellation-aware and contain background
+exceptions at the service boundary instead of allowing a maintenance tick to terminate the host.
 
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.
 Accounting reconciliation casework endpoints are shared workstation behavior, not client-specific UI logic. Preserve compatibility wrappers for legacy review/resolve calls while routing assign, lifecycle, taxonomy, comments, sign-off, reopen, audit, and bulk triage through shared contracts. Statement break read models are projected into shared `StatementBreakDto` records so the break queue can seed statement-originated cases without depending on infrastructure records.
-Statement-run creation now delegates broker/custodian CSV intake and persistence to the Financial Operations-owned statement-run workflow, then returns shared `StatementRunDto` projections with linked breaks and durable casework for browser and WPF operators. Statement-run list rows also derive review-required status, completion posture, and open exception counts from retained workflow breaks so reconciliation queues do not hide unresolved statement exceptions. Queue-status rows aggregate retained statement breaks by fund-account scope and carry source-backed account identifiers, blocker reasons, and break evidence links for shared operational dashboards. Statement-originated break rows inherit retained case owner, suggested action, SLA due/warning/breach posture, escalation label/reason, and statement-run evidence route so shared break queues seed assigned operator work instead of unowned placeholders.
+Statement-run API projection ownership lives in `src/Meridian.Ui.Shared` so browser, WPF, and host-served workstation composition resolve the same source-backed adapter. This module keeps a compatibility wrapper for the legacy `Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService` type while the shared implementation delegates broker/custodian CSV intake and persistence to the Financial Operations-owned statement-run workflow, then returns shared `StatementRunDto` projections with linked breaks and durable casework for browser and WPF operators. Statement-run list rows also derive review-required status, completion posture, and open exception counts from retained workflow breaks so reconciliation queues do not hide unresolved statement exceptions. Queue-status rows aggregate retained statement breaks by fund-account scope and carry source-backed account identifiers, blocker reasons, and break evidence links for shared operational dashboards. Statement-originated break rows inherit retained case owner, suggested action, SLA due/warning/breach posture, escalation label/reason, and statement-run evidence route so shared break queues seed assigned operator work instead of unowned placeholders.
 OMS/EMS integration API handlers are registered from `Services/Integrations/` and implement the shared `IOmsIntegrationApiHandler` contract for idempotent ingestion, replay-safe deduplication, adapter diagnostics, Excel pull/push conflict resolution, request-signing validation, key-rotation hooks, and audit logging.
 Settings configuration keeps the retained built-in profile id `research` for compatibility, but
 renders it as `Strategy` so browser and WPF settings surfaces do not reintroduce `Research` as a

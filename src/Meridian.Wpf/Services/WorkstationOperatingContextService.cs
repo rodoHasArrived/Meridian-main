@@ -159,8 +159,13 @@ public sealed partial class WorkstationOperatingContextService
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                // Runtime projection is optional; fall back to the structure graph below.
+                LoggingService.Instance.LogDebug(
+                    "Failed to build runtime operating contexts.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 
@@ -177,8 +182,13 @@ public sealed partial class WorkstationOperatingContextService
                     contexts[context.ContextKey] = context;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                // Structure-graph projection is optional; contexts stay empty on failure.
+                LoggingService.Instance.LogDebug(
+                    "Failed to build graph operating contexts.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 
@@ -733,8 +743,13 @@ public sealed partial class WorkstationOperatingContextService
                         .GetAccountingViewAsync(new AccountingStructureQuery(BusinessId: business.BusinessId), ct)
                         .ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Accounting view is optional per business; skip this one on failure.
+                    LoggingService.Instance.LogDebug(
+                        "Failed to load accounting view for business.",
+                        ("exception", ex.GetType().Name),
+                        ("message", ex.Message));
                 }
 
                 if (accountingView is null)
@@ -882,8 +897,13 @@ public sealed partial class WorkstationOperatingContextService
 
             await File.WriteAllTextAsync(_storagePath, json, ct).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
+            // Persisting operating-context state is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist operating-context state.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -913,8 +933,13 @@ public sealed partial class WorkstationOperatingContextService
         {
             await action().ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
+            // Fire-and-forget background action; record the failure but keep the caller alive.
+            LoggingService.Instance.LogDebug(
+                "Background operating-context action failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

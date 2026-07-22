@@ -41,6 +41,15 @@ public sealed class NullSecurityMasterQueryService
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
 
+    public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
+    public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
     public Task<SecurityDetailDto?> GetByIdentifierAsync(
         SecurityIdentifierKind identifierKind,
         string identifierValue,
@@ -118,6 +127,29 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityAliasDto>();
 }
 
+public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
+{
+    public Task<CorporateActionAppendResult> AppendAsync(
+        Guid securityId,
+        CorporateActionDto action,
+        string? actor,
+        string source,
+        CancellationToken ct = default)
+        => Task.FromException<CorporateActionAppendResult>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+}
+
+public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+{
+    public Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
+        SecurityMasterCorporateActionAppendRequestDto request,
+        CancellationToken ct = default)
+        => Task.FromException<SecurityMasterCorporateActionAppendResultDto>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable corporate action appends."));
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Conflict service — returns empty lists (no conflicts to show when not configured)
 // ──────────────────────────────────────────────────────────────────────────────
@@ -137,6 +169,9 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
         => Task.FromResult<SecurityMasterConflict?>(null);
 
     public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        => Task.CompletedTask;
+
+    public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
         => Task.CompletedTask;
 }
 
@@ -230,6 +265,14 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
+        CancellationToken ct = default)
+        => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
+
+    public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+        Guid securityId,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default)
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
             "Security Master is not configured. " +

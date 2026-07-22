@@ -191,9 +191,13 @@ public partial class MeridianDockingManager : UserControl
             var serializer = new XmlLayoutSerializer(DockManager);
             serializer.Deserialize(reader);
         }
-        catch
+        catch (Exception ex)
         {
             // Silently fall back to default layout on corrupt / stale XML.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Docking layout deserialization failed; using default layout.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

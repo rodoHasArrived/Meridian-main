@@ -119,7 +119,10 @@ public enum DataSourceType : byte
     Historical = 1,
 
     /// <summary>Both real-time and historical data.</summary>
-    Hybrid = 2
+    Hybrid = 2,
+
+    /// <summary>Reference data such as symbol lookup or catalog metadata.</summary>
+    Reference = 3
 }
 
 /// <summary>

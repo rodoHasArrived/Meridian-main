@@ -2,7 +2,17 @@ import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } f
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerBody } from "@/components/ui/drawer";
+import { NumberPassport } from "@/components/meridian/number-passport";
 import { cn } from "@/lib/utils";
+import {
+  buildShareableExplorerHref,
+  buildShareableExplorerStateSummary,
+  readSharedExplorerViewState,
+  resolveSharedFilters,
+  resolveSharedRecordId,
+  resolveSharedViewId
+} from "@/components/meridian/financial-record-explorer.view-state";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerFilterDto,
@@ -51,6 +61,7 @@ export function FinancialRecordExplorerShell({
   actions,
   explorer,
   onSaveView,
+  onSelectRecord,
   children,
   className
 }: {
@@ -65,22 +76,31 @@ export function FinancialRecordExplorerShell({
   actions?: FinancialRecordExplorerAction[];
   explorer?: FinancialRecordExplorerDto | null;
   onSaveView?: (request: FinancialRecordExplorerSavedViewSaveRequestDto) => void | Promise<void>;
+  onSelectRecord?: (recordId: string) => void;
   children: ReactNode;
   className?: string;
 }) {
   const dtoMode = explorer ?? null;
-  const normalizedViews = dtoMode
+  const normalizedViews = useMemo(() => dtoMode
     ? dtoMode.savedViews.map((view) => ({
         id: view.viewId,
         label: view.label,
         detail: view.description,
         active: view.isActive
       }))
-    : savedViews;
+    : savedViews, [dtoMode?.savedViews, savedViews]);
+  const normalizedViewKey = normalizedViews.map((view) => view.id).join("|");
   const activeSavedView = normalizedViews.find((view) => view.active) ?? normalizedViews[0] ?? null;
-  const [selectedViewId, setSelectedViewId] = useState(activeSavedView?.id ?? "");
-  const [searchText, setSearchText] = useState("");
-  const [selectedRecordId, setSelectedRecordId] = useState(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
+  const sharedViewState = useMemo(() => readSharedExplorerViewState(dtoMode, getCurrentExplorerSearch()), [dtoMode?.explorerId]);
+  const initialViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
+  const initialSharedRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []);
+  const initialRecordId = initialSharedRecordId ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+  const [selectedViewId, setSelectedViewId] = useState(initialViewId);
+  const [searchText, setSearchText] = useState(sharedViewState.searchText ?? "");
+  const [selectedRecordId, setSelectedRecordId] = useState(initialRecordId);
+  const [inspectorOpen, setInspectorOpen] = useState(Boolean(initialSharedRecordId));
+  const [sharedFilterState, setSharedFilterState] = useState(sharedViewState.filters);
+  const [viewName, setViewName] = useState("");
   const [saving, setSaving] = useState(false);
   const selectedDtoSavedView = useMemo(
     () => dtoMode?.savedViews.find((view) => view.viewId === selectedViewId) ?? null,
@@ -88,20 +108,45 @@ export function FinancialRecordExplorerShell({
   );
 
   useEffect(() => {
-    setSelectedViewId(activeSavedView?.id ?? "");
-    setSearchText("");
-    setSelectedRecordId(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
-  }, [activeSavedView?.id, dtoMode?.explorerId, dtoMode?.selectedRecord?.recordId, dtoMode?.rows]);
+    const nextViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
+    const nextSearchText = sharedViewState.searchText ?? "";
+    const nextRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+    const nextSharedRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []);
+    setSelectedViewId((current) => current === nextViewId ? current : nextViewId);
+    setSearchText((current) => current === nextSearchText ? current : nextSearchText);
+    setSelectedRecordId((current) => current === nextRecordId ? current : nextRecordId);
+    if (nextSharedRecordId) {
+      setInspectorOpen(true);
+    }
+    setSharedFilterState(sharedViewState.filters);
+  }, [
+    activeSavedView?.id,
+    dtoMode?.explorerId,
+    dtoMode?.selectedRecord?.recordId,
+    dtoMode?.rows,
+    normalizedViewKey,
+    sharedViewState.recordId,
+    sharedViewState.filters,
+    sharedViewState.searchText,
+    sharedViewState.viewId
+  ]);
 
   function handleSelectSavedView(viewId: string) {
     setSelectedViewId(viewId);
+    setSharedFilterState([]);
     const savedView = dtoMode?.savedViews.find((view) => view.viewId === viewId);
     if (savedView) {
       setSearchText(savedView.searchText ?? "");
     }
   }
 
-  const selectedFilters = selectedDtoSavedView?.filters ?? [];
+  const selectedFilters = useMemo(() => {
+    if (sharedFilterState.length > 0 && dtoMode) {
+      return resolveSharedFilters(sharedFilterState, dtoMode);
+    }
+
+    return selectedDtoSavedView?.filters ?? [];
+  }, [dtoMode, selectedDtoSavedView?.filters, sharedFilterState]);
   const selectedColumnIds = selectedDtoSavedView?.columnIds?.filter((columnId) => columnId.trim().length > 0) ?? [];
   const visibleColumns = useMemo(() => {
     if (!dtoMode || selectedColumnIds.length === 0) {
@@ -127,32 +172,77 @@ export function FinancialRecordExplorerShell({
 
   const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
   const selectedRecord = selectedRow?.detail ?? null;
-  const materialChange = Boolean(dtoMode && onSaveView && (searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
+  const selectedRecordShareId = selectedRow?.recordId ?? selectedRecordId;
+
+  useEffect(() => {
+    if (selectedRow?.recordId) {
+      onSelectRecord?.(selectedRow.recordId);
+    }
+  }, [onSelectRecord, selectedRow?.recordId]);
+  const trimmedViewName = viewName.trim();
+  const materialChange = Boolean(dtoMode && onSaveView && (trimmedViewName || searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
+  const canSaveView = Boolean(materialChange && trimmedViewName);
   const headerTitle = dtoMode?.title ?? title;
   const headerDescription = dtoMode?.description ?? description;
+  const shareViewId = sharedFilterState.length > 0 && !sharedViewState.viewId ? "" : selectedViewId;
+  const shareSavedViewLabel = shareViewId ? selectedDtoSavedView?.label ?? activeSavedView?.label ?? null : null;
+  const shareStateSummary = buildShareableExplorerStateSummary({
+    savedViewLabel: shareSavedViewLabel,
+    searchText,
+    selectedFilters,
+    selectedRow
+  });
+  const shareHref = buildShareableExplorerHref({
+    explorer: dtoMode,
+    selectedViewId: shareViewId,
+    searchText,
+    selectedFilters,
+    selectedRecordId: selectedRecordShareId,
+    currentHref: getCurrentExplorerHref()
+  });
+
+  useEffect(() => {
+    if (!dtoMode || typeof window === "undefined" || shareHref === "#") {
+      return;
+    }
+
+    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (currentHref !== shareHref) {
+      window.history.replaceState(window.history.state, "", shareHref);
+    }
+  }, [dtoMode, shareHref]);
 
   async function handleSaveView() {
-    if (!dtoMode || !onSaveView || !materialChange) {
+    if (!dtoMode || !onSaveView || !canSaveView) {
       return;
     }
 
     const selectedView = dtoMode.savedViews.find((view) => view.viewId === selectedViewId);
-    const filters = selectedView?.filters ?? dtoMode.filters;
+    const filters = sharedFilterState.length > 0 ? selectedFilters : selectedView?.filters ?? dtoMode.filters;
+    const savedViewDescription = searchText.trim()
+      ? `Search: ${searchText.trim()}`
+      : sharedFilterState.length > 0
+        ? "Saved from shared explorer link."
+        : `Saved from ${selectedView?.label ?? "current explorer filters"}.`;
     setSaving(true);
     try {
       await onSaveView({
-        label: `Explorer view ${new Date().toISOString().slice(0, 16).replace("T", " ")}`,
-        description: searchText.trim()
-          ? `Search: ${searchText.trim()}`
-          : `Saved from ${selectedView?.label ?? "current explorer filters"}.`,
+        label: trimmedViewName,
+        description: savedViewDescription,
         searchText,
         filters,
         columnIds: selectedView?.columnIds ?? []
       });
       setSearchText("");
+      setViewName("");
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleSelectRecord(recordId: string) {
+    setSelectedRecordId(recordId);
+    setInspectorOpen(true);
   }
 
   return (
@@ -168,11 +258,32 @@ export function FinancialRecordExplorerShell({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
+          {dtoMode ? (
+            <Button asChild size="sm" variant="outline">
+              <a href={shareHref} aria-label={`Share ${headerTitle} evidence state: ${shareStateSummary}`}>
+                <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Share state
+              </a>
+            </Button>
+          ) : null}
+          {dtoMode && onSaveView ? (
+            <input
+              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
+              value={viewName}
+              onChange={(event) => setViewName(event.target.value)}
+              placeholder="View name"
+              aria-label="Saved view name"
+            />
+          ) : null}
           <Button
             size="sm"
             variant="outline"
-            disabled={!materialChange || saving || dtoMode?.isBlocked}
-            disabledReason={dtoMode?.isBlocked ? dtoMode.blockedReason : "Change search text or select a different saved view before saving."}
+            disabled={!canSaveView || saving || dtoMode?.isBlocked}
+            disabledReason={dtoMode?.isBlocked
+              ? dtoMode.blockedReason
+              : !trimmedViewName
+                ? "Enter a saved view name before saving this exact explorer state."
+                : "Change search text or select a different saved view before saving."}
             busy={saving}
             onClick={() => void handleSaveView()}
           >
@@ -193,7 +304,7 @@ export function FinancialRecordExplorerShell({
       </div>
 
       {dtoMode ? (
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-4 space-y-4">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2">
               <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
@@ -206,11 +317,23 @@ export function FinancialRecordExplorerShell({
               />
               {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
             </div>
-            <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={setSelectedRecordId} />
+            <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
             <RecordGraph explorer={dtoMode} />
           </div>
-          <ProofDrawer record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
         </div>
+      ) : null}
+
+      {dtoMode ? (
+        <Drawer
+          open={inspectorOpen && Boolean(selectedRecord)}
+          onClose={() => setInspectorOpen(false)}
+          title={selectedRecord ? `${selectedRecord.title} proof detail` : "Proof detail"}
+          className="max-w-[30rem]"
+        >
+          <DrawerBody>
+            <ProofDrawer explorer={dtoMode} record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
+          </DrawerBody>
+        </Drawer>
       ) : null}
 
       <div className="mt-4">
@@ -218,6 +341,14 @@ export function FinancialRecordExplorerShell({
       </div>
     </section>
   );
+}
+
+function getCurrentExplorerSearch(): string {
+  return typeof window === "undefined" ? "" : window.location.search;
+}
+
+function getCurrentExplorerHref(): string {
+  return typeof window === "undefined" ? "" : window.location.href;
 }
 
 function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[] }) {
@@ -313,7 +444,7 @@ function ProofSummary({
         Proof drill-through
       </div>
       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        Selected records keep links to source records, supporting documents, approvals, reconciliations, report usage, and audit history in the drawer below.
+        Select a record to inspect source links, supporting documents, approvals, reconciliations, report usage, and audit history in the proof drawer.
       </p>
       <div className="mt-3 flex flex-wrap gap-2" aria-label={`${title} proof actions`}>
         {proofActions.length > 0 ? proofActions.map((action) => (
@@ -365,8 +496,19 @@ function ExplorerGrid({
           {rows.map((row) => (
             <tr
               key={row.recordId}
-              className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
-              onClick={() => onSelect(row.recordId)}
+              tabIndex={0}
+              aria-current={selectedRecordId === row.recordId}
+              className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
+              onClick={(event) => {
+                event.currentTarget.focus();
+                onSelect(row.recordId);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelect(row.recordId);
+                }
+              }}
             >
               {columns.map((column) => {
                 const cell = row.cells.find((candidate) => candidate.columnId === column.columnId);
@@ -430,22 +572,24 @@ function normalizeSearchToken(value: string): string {
 }
 
 function ProofDrawer({
+  explorer,
   record,
   blockedReason
 }: {
+  explorer: FinancialRecordExplorerDto;
   record: FinancialRecordExplorerSelectedRecordDto | null;
   blockedReason: string;
 }) {
   if (!record) {
     return (
-      <aside className="rounded-md border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+      <div role="status" className="rounded-md border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
         {blockedReason || "Select a source-backed row to inspect fields, proof actions, Used In, and Impacts."}
-      </aside>
+      </div>
     );
   }
 
   return (
-    <aside className="space-y-3 rounded-md border border-border/70 bg-background/60 p-4" aria-label={`${record.title} proof detail`}>
+    <div role="region" className="space-y-3" aria-label={`${record.title} proof detail`}>
       <div>
         <Badge variant={toneToBadge(record.tone)}>{record.recordType}</Badge>
         <h3 className="mt-3 text-base font-semibold text-foreground">{record.title}</h3>
@@ -453,6 +597,7 @@ function ProofDrawer({
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{record.description}</p>
       </div>
       <ProofActionList actions={record.proofActions} />
+      <NumberPassport explorer={explorer} record={record} />
       <FactList title="Fields" items={record.fields} />
       <RelationshipList title="Used In" items={record.usedIn} />
       <RelationshipList title="Impacts" items={record.impacts} />
@@ -464,7 +609,7 @@ function ProofDrawer({
           </a>
         </Button>
       ) : null}
-    </aside>
+    </div>
   );
 }
 
@@ -502,16 +647,18 @@ function FactList({ title, items }: { title: string; items: FinancialRecordExplo
   }
 
   return (
-    <dl className="grid gap-2">
-      <dt className="text-xs font-semibold uppercase text-muted-foreground">{title}</dt>
+    <section className="grid gap-2" aria-label={title}>
+      <h4 className="text-xs font-semibold uppercase text-muted-foreground">{title}</h4>
       {items.map((item) => (
-        <div key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
+        <dl key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
           <dt className="text-[11px] text-muted-foreground">{item.label}</dt>
-          <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>{item.value}</dd>
-          {item.detail ? <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p> : null}
-        </div>
+          <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>
+            {item.value}
+            {item.detail ? <span className="mt-1 block font-sans text-xs text-muted-foreground">{item.detail}</span> : null}
+          </dd>
+        </dl>
       ))}
-    </dl>
+    </section>
   );
 }
 

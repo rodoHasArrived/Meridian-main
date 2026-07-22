@@ -24,7 +24,7 @@ namespace Meridian.Tests.Architecture;
 public sealed class LayerBoundaryTests
 {
     // Build the architecture model once per test class.
-    private static readonly ArchModel Architecture = new ArchLoader()
+    private static readonly Lazy<ArchModel> Architecture = new(() => new ArchLoader()
         .LoadAssemblies(
             // Leaf / shared contracts
             typeof(Meridian.Contracts.Domain.ProviderId).Assembly,
@@ -34,12 +34,11 @@ public sealed class LayerBoundaryTests
             typeof(Meridian.Domain.Events.MarketEvent).Assembly,
             // Application
             typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationService).Assembly,
-            // UI shared/services
-            typeof(Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService).Assembly,
+            // UI services
             typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,
             // Infrastructure (adapters, providers, resilience)
             typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly)
-        .Build();
+        .Build());
 
     // ------------------------------------------------------------------ //
     //  Contracts — leaf project (no upstream dependencies)                //
@@ -59,7 +58,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespaceMatching(@"^Meridian\.Domain\."))
             .Because("Contracts is a leaf project that must have zero upstream project dependencies (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -71,7 +70,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
             .Because("Contracts is a leaf project that must have zero upstream project dependencies (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -81,13 +80,15 @@ public sealed class LayerBoundaryTests
     [Fact]
     public void Domain_ShouldNot_DependOn_Infrastructure()
     {
-        var rule = Types()
-            .That().ResideInNamespaceMatching(@"^Meridian\.Domain\.")
-            .Should().NotDependOnAny(
-                Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
-            .Because("Domain types must remain independent of Infrastructure to preserve the dependency inversion principle.");
+        var domainAssembly = typeof(Meridian.Domain.Events.MarketEvent).Assembly;
 
-        rule.Check(Architecture);
+        var forbiddenReferences = domainAssembly
+            .GetReferencedAssemblies()
+            .Where(reference => reference.Name is "Meridian.Infrastructure")
+            .Select(reference => reference.Name)
+            .ToArray();
+
+        Assert.Empty(forbiddenReferences);
     }
 
     // ------------------------------------------------------------------ //
@@ -103,7 +104,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespaceMatching(@"^Meridian\.Domain\."))
             .Because("ProviderSdk must only reference Contracts to stay thin and reusable (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -115,7 +116,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
             .Because("ProviderSdk must only reference Contracts to stay thin and reusable (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -131,7 +132,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Polygon"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -143,7 +144,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -155,7 +156,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -165,67 +166,74 @@ public sealed class LayerBoundaryTests
     [Fact]
     public void AlpacaConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("MessageTypes")
-            .Or().HaveNameEndingWith("Actions")
-            .Or().HaveNameEndingWith("DedupLimits")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Alpaca",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "MessageTypes",
+            "Actions",
+            "DedupLimits");
     }
 
     [Fact]
     public void PolygonConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Polygon")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("MessageTypes")
-            .Or().HaveNameEndingWith("EventTypes")
-            .Or().HaveNameEndingWith("Actions")
-            .Or().HaveNameEndingWith("Feeds")
-            .Or().HaveNameEndingWith("ApiKeyLimits")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Polygon",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "MessageTypes",
+            "EventTypes",
+            "Actions",
+            "Feeds",
+            "ApiKeyLimits");
     }
 
     [Fact]
     public void FinnhubConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Finnhub")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("Headers")
-            .Or().HaveNameEndingWith("Resolutions")
-            .Or().HaveNameEndingWith("CandleStatus")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Finnhub",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "Headers",
+            "Resolutions",
+            "CandleStatus");
     }
 
     [Fact]
     public void ReconciliationContext_ShouldNot_DependOn_UiShared_Or_UiServices()
     {
-        var rule = Types()
-            .That().ResideInNamespaceMatching(@"^Meridian\.Application\.Reconciliation\.")
-            .Should().NotDependOnAny(
-                Types().That().ResideInNamespaceMatching(@"^Meridian\.Ui\.(Shared|Services)\."))
-            .Because("Reconciliation context ownership must stay in Application and expose contracts to UI layers rather than depend on UI implementations.")
-            .WithoutRequiringPositiveResults();
+        var reconciliationAssembly = typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationContextAdapter).Assembly;
 
-        rule.Check(Architecture);
+        var forbiddenReferences = reconciliationAssembly
+            .GetReferencedAssemblies()
+            .Where(reference => reference.Name is "Meridian.Ui.Shared" or "Meridian.Ui.Services")
+            .Select(reference => reference.Name)
+            .ToArray();
+
+        Assert.Empty(forbiddenReferences);
+    }
+
+    private static void AssertProviderLocalNamesAreInternal(string providerNamespace, params string[] suffixes)
+    {
+        var providerLocalTypes = typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly
+            .GetTypes()
+            .Where(type =>
+                string.Equals(type.Namespace, providerNamespace, StringComparison.Ordinal) &&
+                suffixes.Any(suffix => type.Name.EndsWith(suffix, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.NotEmpty(providerLocalTypes);
+        foreach (var type in providerLocalTypes)
+        {
+            Assert.False(
+                type.IsVisible,
+                $"{type.FullName} must stay internal because provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
+        }
     }
 
     [Fact]
@@ -238,6 +246,6 @@ public sealed class LayerBoundaryTests
             .Because("UI reconciliation services should consume application-owned workflows instead of orchestrating infrastructure reconciliation storage directly.")
             .WithoutRequiringPositiveResults();
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 }
