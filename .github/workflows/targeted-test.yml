@@ -84,7 +84,7 @@ jobs:
 
       - name: Set up .NET SDK
         if: inputs.mode == 'dotnet-filtered' || inputs.mode == 'wpf-dev-loop' || inputs.mode == 'wpf-route' || inputs.mode == 'desktop-smoke'
-        uses: actions/setup-dotnet@v5.4.0
+        uses: actions/setup-dotnet@v6.0.0
         with:
           global-json-file: global.json
 
