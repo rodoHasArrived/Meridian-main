@@ -228,8 +228,9 @@ internal static class StatementRunMatcher
         string baseCurrency,
         DateOnly asOf)
     {
-        var (currency, amount) = ToBaseCurrency(cash.Balance, cash.Currency, baseCurrency, asOf, fxRateProvider);
-        return cash with { Currency = currency, Balance = amount };
+        var sourceCurrency = NormalizeCurrency(cash.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(cash.Balance, sourceCurrency, baseCurrency, asOf, fxRateProvider);
+        return cash with { Currency = sourceCurrency, Balance = amount };
     }
 
     private static InternalLedgerTransaction NormalizeInternalTransaction(
@@ -259,6 +260,9 @@ internal static class StatementRunMatcher
             ? (baseCurrency, converted)
             : (from, amount);
     }
+
+    private static string NormalizeCurrency(string? currency, string baseCurrency) =>
+        string.IsNullOrWhiteSpace(currency) ? baseCurrency : currency.Trim().ToUpperInvariant();
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
     {
