@@ -38,6 +38,8 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
+        ValidateRowAccounts(rows, import.ExternalAccountId);
+
         // A statement run reconciles a single custodian account, so the account dimension is a
         // run-level constant. Normalize the statement side to the run's external (custodian) account
         // key — the same key the internal populations use — so institutional statements whose per-row
@@ -120,6 +122,21 @@ internal static class StatementRunMatcher
         }
 
         return new StatementRunMatchResult(breaks, matchCount);
+    }
+
+    // Imported rows are retained evidence. Do not erase their recorded account identity by mapping
+    // them to a caller-supplied run account unless the two agree; otherwise a statement for a
+    // different account could be reconciled against this run's internal population.
+    private static void ValidateRowAccounts(
+        IReadOnlyList<CanonicalStatementRow> rows,
+        string externalAccountId)
+    {
+        var expectedAccount = externalAccountId.Trim();
+        if (rows.Any(row => !string.Equals(row.Account.Trim(), expectedAccount, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                "Statement rows must all identify the statement run's external account.");
+        }
     }
 
     private static NormalizedStatementPosition MapPosition(

@@ -94,6 +94,11 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                 $"Flex report contains rows for {distinctAccounts.Length} different accounts; a statement run reconciles a single account. "
                 + "Split the report into one document per account before importing.");
         }
+        else if (distinctAccounts.Length == 1
+            && !string.Equals(distinctAccounts[0], request.ExternalAccountId?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            errors.Add("Flex report account does not match the statement run external account.");
+        }
 
         return new BrokerStatementValidationResult(errors.Count == 0, errors, rowCount);
     }
@@ -151,6 +156,11 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         {
             throw new InvalidDataException(
                 $"Flex report contains rows for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the report into one document per account before importing.");
+        }
+        if (distinctAccounts.Length == 1
+            && !string.Equals(distinctAccounts[0], normalizedRequest.ExternalAccountId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Flex report account does not match the statement run external account.");
         }
 
         var import = new CanonicalStatementImport(
