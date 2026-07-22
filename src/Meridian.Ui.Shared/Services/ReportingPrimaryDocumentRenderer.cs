@@ -1,6 +1,6 @@
 using System.Globalization;
-using Meridian.Contracts.Workstation;
 using Meridian.Documents;
+using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
