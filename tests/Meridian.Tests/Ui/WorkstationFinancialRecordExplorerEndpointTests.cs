@@ -425,8 +425,46 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
         app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
 
+        // The security-instrument explorer rows are produced from published report-pack provenance
+        // that references the instrument; establish that reported usage so the AAPL row exists, then
+        // assert it remains projection-only because no typed accounting-event spine is returned.
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-projection-only-run", withBreaks: false));
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+        var line = new ReportPackLineProvenanceDto(
+            LineKey: "holdings.aapl.market-value",
+            SourceKind: "position",
+            SourceId: "AAPL",
+            EvidenceId: "position-aapl-evidence",
+            RunId: "financial-record-explorer-security-run",
+            LedgerEntryId: "ledger-aapl-position",
+            ReconciliationCaseId: "recon-aapl",
+            ReportValue: "400.00",
+            SourceSessionId: "provider-session-aapl",
+            ReconciliationRunId: "recon-run-aapl",
+            ProviderEventId: "provider-event-aapl",
+            SecurityMasterId: FinancialRecordExplorerAaplSecurityId.ToString("D"),
+            SecurityDefinitionId: "AAPL",
+            ReconciliationOutcome: "matched",
+            ApprovalId: "approval-aapl");
+        var created = workflow.Create(
+            "northwind-income",
+            "acct-investments",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "report.author",
+            [line]);
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:aapl-report-pack",
+            "manifest-aapl-202603",
+            "vault/report-packs/manifest-aapl-202603.json",
+            BuildCompleteReportLineEvidenceLinks(line));
 
         var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
             "/api/workstation/financial-record-explorers/security-instrument",
@@ -1169,10 +1207,11 @@ public sealed partial class WorkstationEndpointsTests
             }
 
             var effectiveDate = new DateOnly(2026, 3, 22);
+            var sourceHash = new string('a', 64);
             var evidence = new RetainedEvidenceIdentityDto(
                 "factor-row-aapl",
                 "https://evidence.example.test/factor-row-aapl",
-                new string('a', 64),
+                sourceHash,
                 "SecurityMaster",
                 "factor-row-aapl",
                 RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
@@ -1182,7 +1221,7 @@ public sealed partial class WorkstationEndpointsTests
                 1,
                 EventTimestamp,
                 "evidence-vault",
-                "AssetAccountingEvent",
+                AssetAccountingEvidenceSubjects.Event,
                 FinancialRecordExplorerEventId.ToString("D"));
             var economicEvent = new EconomicEventReferenceDto(
                 FinancialRecordExplorerEventId,
@@ -1192,7 +1231,7 @@ public sealed partial class WorkstationEndpointsTests
                 EventTimestamp,
                 "SecurityMaster",
                 "factor-row-aapl",
-                SourceContentHash: new string('a', 64),
+                SourceContentHash: sourceHash,
                 EvidenceLinks: ["/evidence/factor-row-aapl"])
             {
                 SecurityId = FinancialRecordExplorerAaplSecurityId,
@@ -1222,81 +1261,89 @@ public sealed partial class WorkstationEndpointsTests
             {
                 PositionId = FinancialRecordExplorerPositionId
             };
+
+            // Drafted lifecycle authority: the retained posting candidate request and its dry-run
+            // result must be present with the Drafted stage, fingerprinted by the canonical payload
+            // hash the validator recomputes.
             var draftedCandidate = new PostingRuleJournalCandidateRequestDto(
                 "northwind-income",
-                AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+                economicEvent.EventType,
                 1_750m,
                 "USD",
                 effectiveDate,
                 "accountant",
                 FinancialRecordExplorerLedgerBookId,
                 FinancialRecordExplorerPeriodId,
-                EventTimestamp.AddMinutes(10),
-                "MBS factor paydown posting candidate",
-                AccountingBasis: AccountingBasisKindDto.Gaap,
+                EventTimestamp,
+                "AAPL factor paydown drafted posting candidate",
+                AccountingBasisKindDto.Gaap,
                 LedgerBookId: FinancialRecordExplorerLedgerBookId,
                 SourceEventId: FinancialRecordExplorerEventId);
-            var draftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(draftedCandidate);
-            var draftedCandidateResult = new PostingRuleJournalCandidateResultDto(
+            var draftedResult = new PostingRuleJournalCandidateResultDto(
                 new RuleDryRunResultDto(
                     "northwind-income",
                     FinancialRecordExplorerLedgerBookId,
-                    AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+                    economicEvent.EventType,
                     effectiveDate,
                     1_750m,
                     "USD",
                     IsPostingBalanced: true,
-                    SelectedRuleId: "posting.mbs-factor-paydown",
+                    SelectedRuleId: "equity-corporate-action",
                     RuleMatches: [],
                     GeneratedLines: [],
                     ValidationIssues: []),
-                "posting.mbs-factor-paydown",
-                "v1",
-                [],
-                null,
-                FinancialRecordExplorerJournalId,
-                1_750m,
-                1_750m,
-                0m,
-                true,
-                false,
-                true,
-                true,
-                [],
-                []);
-            var draftedCandidateResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(draftedCandidateResult);
-            var approvalSubjectId = AssetAccountingEvidenceSubjects.PostingApprovalSubjectId(
+                SelectedRuleId: "equity-corporate-action",
+                SelectedRuleVersion: "1.0.0",
+                GeneratedPostingLines: [],
+                PostingCommand: null,
+                JournalEntryId: FinancialRecordExplorerJournalId,
+                TotalDebits: 1_750m,
+                TotalCredits: 1_750m,
+                Imbalance: 0m,
+                IsBalanced: true,
+                HasBlockingIssues: false,
+                CanSubmitForApproval: true,
+                CanPostWithoutAdditionalApproval: true,
+                EvidenceLinks: [],
+                Issues: []);
+            var draftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(draftedCandidate);
+            var draftedResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(draftedResult);
+
+            // Approved and Posted stages must carry typed posting-approval evidence whose subject id
+            // is the exact canonical binding of the event, owner scope, book, and approval reference.
+            const string approvalReferenceId = "approval-aapl-factor";
+            var postingApprovalSubjectId = AssetAccountingEvidenceSubjects.PostingApprovalSubjectId(
                 FinancialRecordExplorerEventId,
                 1,
                 "northwind-income",
                 FinancialRecordExplorerLedgerBookId,
                 FinancialRecordExplorerPeriodId,
                 AccountingBasisKindDto.Gaap,
-                "approval-aapl-factor",
+                approvalReferenceId,
                 draftedCandidateFingerprint,
-                null,
-                null);
+                tenantId: null,
+                companyId: null);
             var approvalEvidence = new RetainedEvidenceIdentityDto(
-                "approval-aapl-factor",
+                "approval-aapl-factor-evidence",
                 "https://evidence.example.test/approval-aapl-factor",
                 new string('c', 64),
-                "FinancialOperations",
+                "AccountingApproval",
                 "approval-aapl-factor",
                 RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
-                "accounting-controller",
-                EventTimestamp.AddMinutes(20),
+                "controller",
+                EventTimestamp,
                 effectiveDate,
                 1,
-                EventTimestamp.AddMinutes(25),
+                EventTimestamp,
                 "evidence-vault",
                 AssetAccountingEvidenceSubjects.PostingApproval,
-                approvalSubjectId);
+                postingApprovalSubjectId);
             var stages = new[]
             {
                 new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Expected, EventTimestamp, "asset-operations", [evidence], "expected-aapl"),
                 new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Projected, EventTimestamp, "projection-engine", [evidence], lineage.ProjectionRunId.ToString("D")),
                 new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Drafted, EventTimestamp.AddMinutes(10), "accountant", [evidence], "posting-candidate-aapl"),
-                new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Approved, EventTimestamp.AddMinutes(30), "controller", [approvalEvidence], "approval-aapl-factor"),
+                new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Approved, EventTimestamp.AddMinutes(30), "controller", [approvalEvidence], approvalReferenceId),
                 new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.Posted, PostedTimestamp, "ledger-poster", [approvalEvidence], FinancialRecordExplorerEventId.ToString("D"))
             };
             var projected = new ProjectedAccountingEffectDto(
@@ -1350,9 +1397,9 @@ public sealed partial class WorkstationEndpointsTests
                 projected,
                 posted,
                 DraftedCandidate: draftedCandidate,
-                DraftedCandidateResult: draftedCandidateResult,
+                DraftedCandidateResult: draftedResult,
                 DraftedCandidateFingerprint: draftedCandidateFingerprint,
-                DraftedCandidateResultFingerprint: draftedCandidateResultFingerprint);
+                DraftedCandidateResultFingerprint: draftedResultFingerprint);
             AssetAccountingEventSpineValidator.IsValid(spine).Should().BeTrue();
             return Task.FromResult<AssetAccountingEventSpineDto?>(spine);
         }
