@@ -70,7 +70,7 @@ public sealed class StatementRunWorkflowService(
             createdAtUtc);
 
         var linkedBreaks = matchResult.Breaks
-            .Select(static item => item with { Record = item.Record with { EvidenceLink = BuildEvidenceLink(item.Record) } })
+            .Select(static item => item with { Record = item.Record with { EvidenceLink = BuildEvidenceLink(item) } })
             .ToArray();
         var breaks = linkedBreaks.Select(static item => item.Record).ToArray();
         await breakStore.WriteAsync(breaks, cancellationToken).ConfigureAwait(false);
@@ -153,8 +153,14 @@ public sealed class StatementRunWorkflowService(
             request.ImportedBy,
             request.SourceFileHash);
 
-    private static string BuildEvidenceLink(ReconciliationBreakRecord record)
-        => $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(record.ImportId)}#row-{Uri.EscapeDataString(record.SourceReference)}";
+    private static string BuildEvidenceLink(StatementRunBreak item)
+    {
+        var record = item.Record;
+        // An internal-only break (no broker statement row) links to the retained internal record, not a
+        // nonexistent statement row, so an operator investigating it gets true provenance.
+        var anchor = item.StatementRow is null ? "internal" : "row";
+        return $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(record.ImportId)}#{anchor}-{Uri.EscapeDataString(record.SourceReference)}";
+    }
 
     private static IReadOnlyList<ReconciliationCase> BuildStatementCases(
         CanonicalStatementImport import,
@@ -169,18 +175,33 @@ public sealed class StatementRunWorkflowService(
             var now = breakRecord.CreatedAtUtc;
             var engineResult = item.EngineResult;
             var row = item.StatementRow;
+            var isInternalOnly = row is null;
             var sourceRowHash = row?.RawChecksum ?? breakRecord.SourceReference;
-            var evidenceLink = breakRecord.EvidenceLink ?? BuildEvidenceLink(breakRecord);
-            var evidenceReferences = new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
+            var evidenceLink = breakRecord.EvidenceLink ?? BuildEvidenceLink(item);
+            // An internal-only break has no broker statement row; its source reference is the retained
+            // internal evidence id. Record it as internal evidence so an operator gets true provenance
+            // and a link to the internal record instead of a fabricated external statement row.
+            var evidenceReferences = isInternalOnly
+                ? new[] { evidenceLink, $"internal-record:{breakRecord.SourceReference}", $"internal-hash:{sourceRowHash}" }
+                : new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
             var explanation = BuildBreakExplanation(import, row, breakRecord, engineResult, evidenceReferences);
-            var attachment = new ReconciliationCaseAttachment(
-                AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
-                EvidenceKind: "ExternalStatementRow",
-                SourceSystem: import.Broker,
-                SourceReference: breakRecord.SourceReference,
-                ContentHash: sourceRowHash,
-                Route: evidenceLink,
-                AttachedAtUtc: now);
+            var attachment = isInternalOnly
+                ? new ReconciliationCaseAttachment(
+                    AttachmentId: $"internal-record:{breakRecord.ImportId}:{breakRecord.SourceReference}",
+                    EvidenceKind: "InternalReconciliationRecord",
+                    SourceSystem: "meridian-internal-book",
+                    SourceReference: breakRecord.SourceReference,
+                    ContentHash: sourceRowHash,
+                    Route: evidenceLink,
+                    AttachedAtUtc: now)
+                : new ReconciliationCaseAttachment(
+                    AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
+                    EvidenceKind: "ExternalStatementRow",
+                    SourceSystem: import.Broker,
+                    SourceReference: breakRecord.SourceReference,
+                    ContentHash: sourceRowHash,
+                    Route: evidenceLink,
+                    AttachedAtUtc: now);
 
             return new ReconciliationCase(
                 CaseId: $"case:{breakRecord.BreakId}",
@@ -192,7 +213,7 @@ public sealed class StatementRunWorkflowService(
                 CreatedAtUtc: now,
                 History:
                 [
-                    new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from external statement break.")
+                    new ReconciliationCaseHistoryEntry(now, "None", "Open", isInternalOnly ? "Case created from internal-only reconciliation break." : "Case created from external statement break.")
                     {
                         Actor = string.IsNullOrWhiteSpace(actor) ? "system" : actor.Trim(),
                         EvidenceId = evidenceLink
@@ -212,8 +233,8 @@ public sealed class StatementRunWorkflowService(
                 CommentThreads =
                 [
                     new ReconciliationCaseCommentThread(
-                        "statement-intake",
-                        "External statement intake",
+                        isInternalOnly ? "internal-intake" : "statement-intake",
+                        isInternalOnly ? "Internal reconciliation intake" : "External statement intake",
                         [
                             new ReconciliationCaseComment(
                                 Guid.NewGuid().ToString("N"),
@@ -226,10 +247,10 @@ public sealed class StatementRunWorkflowService(
                 [
                     new ReconciliationCaseAuditEvent(
                         Guid.NewGuid().ToString("N"),
-                        "ExternalStatementCaseCreated",
+                        isInternalOnly ? "InternalReconciliationCaseCreated" : "ExternalStatementCaseCreated",
                         now,
                         "system",
-                        $"Case created from statement break {breakRecord.BreakId}.")
+                        $"Case created from {(isInternalOnly ? "internal-only reconciliation" : "statement")} break {breakRecord.BreakId}.")
                 ]
             };
         }).ToArray();

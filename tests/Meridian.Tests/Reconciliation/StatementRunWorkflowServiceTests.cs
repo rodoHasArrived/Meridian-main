@@ -129,6 +129,15 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var breakRecord = result.Breaks.Should().ContainSingle().Subject;
         breakRecord.SourceReference.Should().Be("internal:pos:qqq");
         breakRecord.ToleranceBreached.Should().BeTrue();
+
+        // The case must record internal provenance, not a fabricated broker statement row, so an
+        // operator gets true attribution and a link to the retained internal record.
+        var internalCase = result.Cases.Should().ContainSingle().Subject;
+        var attachment = internalCase.Attachments.Should().ContainSingle().Subject;
+        attachment.EvidenceKind.Should().Be("InternalReconciliationRecord");
+        attachment.SourceSystem.Should().Be("meridian-internal-book");
+        attachment.SourceReference.Should().Be("internal:pos:qqq");
+        internalCase.EvidenceReferences.Should().Contain(reference => reference.Contains("internal-record:internal:pos:qqq", StringComparison.Ordinal));
     }
 
     [Fact]
