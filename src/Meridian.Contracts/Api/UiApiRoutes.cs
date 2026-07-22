@@ -144,6 +144,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";

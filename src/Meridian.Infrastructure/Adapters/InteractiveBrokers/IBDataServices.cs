@@ -108,6 +108,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private readonly string _providerConnectionId;
     private readonly IIBDataServiceTransport _transport;
     private readonly IIBDataCallbackSource? _callbackSource;
+    private readonly IBDataResultMaterializer? _materializer;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
@@ -412,6 +413,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     {
         _updates.Writer.TryWrite(model);
         ReadModelUpdated?.Invoke(model);
+        _materializer?.Materialize(model, _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
     }
 
     private static IReadOnlyList<T> Append<T>(IReadOnlyList<T>? existing, T value)
