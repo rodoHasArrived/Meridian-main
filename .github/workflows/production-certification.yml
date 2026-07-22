@@ -83,7 +83,7 @@ jobs:
             --settings tests/coverlet.runsettings \
             --results-directory artifacts/test-results/production-certification \
             --logger "trx;LogFilePrefix=meridian-integrations" \
-            --filter "Category=Integration&FullyQualifiedName!~YahooFinancePcgPreferredIntegrationTests&FullyQualifiedName!~ConfigurableTickerDataCollectionTests"
+            --filter "Category=Integration&Category!=LiveProvider"
           dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj \
             -c Release \
             --no-restore \
@@ -101,14 +101,19 @@ jobs:
           --require-trx-prefix meridian-integrations
           --require-trx-prefix direct-lending-integrations
 
-      - name: Capture migrated database inventory
+      - name: Capture migrated database schema and ledger evidence
+        if: always()
         env:
           PGPASSWORD: meridian-certification
-        run: >-
-          psql --host localhost --username postgres --dbname meridian
-          --tuples-only --no-align
-          --command "SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT LIKE 'pg_%' ORDER BY schema_name"
-          --output artifacts/test-results/production-certification/database-schema-inventory.txt
+        run: |
+          mkdir -p artifacts/test-results/production-certification
+          pg_dump --host localhost --username postgres --dbname meridian --schema-only --no-owner --no-privileges > artifacts/test-results/production-certification/database-schema.sql
+          psql --host localhost --username postgres --dbname meridian --csv \
+            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name" \
+            --output artifacts/test-results/production-certification/database-table-inventory.csv
+          psql --host localhost --username postgres --dbname meridian --csv \
+            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
+            --output artifacts/test-results/production-certification/migration-ledger-inventory.csv
 
       - name: Upload deterministic integration evidence
         if: always()
