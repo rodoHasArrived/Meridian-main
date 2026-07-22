@@ -1,4 +1,3 @@
-using Meridian.Contracts.Operations;
 using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.ProviderSdk;
@@ -14,8 +13,52 @@ public interface ITradingCalendarProvider : IProviderMetadata
     /// </summary>
     Task<ProviderTradingCalendarResponse> GetTradingCalendarAsync(
         ProviderTradingCalendarRequest request,
-        CancellationToken ct = default);
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This calendar provider implements the legacy GetSessionsAsync contract. " +
+            "Implement GetTradingCalendarAsync to return provenance-complete calendar data.");
+
+    /// <summary>
+    /// Gets sessions through the former calendar contract.
+    /// </summary>
+    /// <remarks>
+    /// Retained so existing provider adapters and callers can transition without a source-breaking
+    /// interface change. New code must use <see cref="GetTradingCalendarAsync"/> because this
+    /// projection cannot represent closures or the required provider provenance.
+    /// </remarks>
+    [Obsolete("Use GetTradingCalendarAsync so calendar output retains provider provenance.")]
+    async Task<IReadOnlyList<TradingSession>> GetSessionsAsync(
+        TradingCalendarRequest request,
+        CancellationToken ct = default)
+    {
+        var response = await GetTradingCalendarAsync(
+            new ProviderTradingCalendarRequest(request.Market, request.From, request.To),
+            ct).ConfigureAwait(false);
+
+        response.EnsureProvenanceComplete();
+        return response.Sessions
+            .Select(session => new TradingSession(
+                session.Date,
+                true,
+                session.OpenTime,
+                session.CloseTime,
+                session.SessionType))
+            .ToArray();
+    }
 }
+
+/// <summary>Provider-neutral request for venue trading sessions retained for source compatibility.</summary>
+[Obsolete("Use ProviderTradingCalendarRequest.")]
+public sealed record TradingCalendarRequest(string Market, DateOnly From, DateOnly To, string? AssetClass = null);
+
+/// <summary>Provider-neutral trading session retained for source compatibility.</summary>
+[Obsolete("Use ProviderTradingSession and ProviderTradingCalendarResponse.")]
+public sealed record TradingSession(
+    DateOnly Date,
+    bool IsOpen,
+    DateTimeOffset? OpensAt = null,
+    DateTimeOffset? ClosesAt = null,
+    string? Name = null);
 
 /// <summary>
 /// Specifies the market and inclusive date range requested from a calendar provider.
@@ -38,6 +81,7 @@ public sealed record ProviderTradingCalendarRequest(
 /// A session supplied by a calendar provider.
 /// </summary>
 public sealed record ProviderTradingSession(
+    DateOnly Date,
     string Exchange,
     string Market,
     string SessionType,
@@ -54,40 +98,27 @@ public sealed record ProviderTradingCalendarClosure(
     bool IsEarlyClose = false);
 
 /// <summary>
-/// Required provenance for provider calendar output. <see cref="DataProvenance"/> carries the
-/// shared real/simulated/seeded/sample classification used throughout Meridian.
-/// </summary>
-public sealed record ProviderCalendarProvenance(
-    string ProviderId,
-    string SourceReference,
-    DateTimeOffset RetrievedAtUtc,
-    DateTimeOffset? SourceAsOfUtc,
-    DataProvenance DataProvenance)
-{
-    /// <summary>Throws when provider output cannot be traced to its source and observation time.</summary>
-    public void EnsureComplete()
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(ProviderId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(SourceReference);
-        if (RetrievedAtUtc == default)
-            throw new ArgumentOutOfRangeException(nameof(RetrievedAtUtc), "Provider output must include its retrieval time.");
-        if (!Enum.IsDefined(DataProvenance))
-            throw new ArgumentOutOfRangeException(nameof(DataProvenance), "Provider output must include a recognized data provenance.");
-    }
-}
-
-/// <summary>
 /// Provider calendar output and its required provenance envelope.
 /// </summary>
 public sealed record ProviderTradingCalendarResponse(
     IReadOnlyList<ProviderTradingSession> Sessions,
     IReadOnlyList<ProviderTradingCalendarClosure> Closures,
-    ProviderCalendarProvenance Provenance)
+    ProviderDataProvenance Provenance)
 {
     /// <summary>Throws when the provider output omits required shared provenance.</summary>
     public void EnsureProvenanceComplete()
     {
         ArgumentNullException.ThrowIfNull(Provenance);
-        Provenance.EnsureComplete();
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderConnectionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.Entitlement);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.Feed);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.MarketDataAvailability);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.RequestOrSubscriptionDescriptor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderNativeId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.CorrelationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.StableDeduplicationKey);
+        if (Provenance.SourceTimestamp == default || Provenance.ReceiptTimestamp == default)
+            throw new ArgumentOutOfRangeException(nameof(Provenance), "Provider output must include source and receipt timestamps.");
     }
 }
