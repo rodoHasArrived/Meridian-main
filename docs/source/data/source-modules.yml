@@ -255,6 +255,7 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
     diagrams:
       - DIA-ASSURANCE-LOOP
+      - DIA-STORAGE-TOPOLOGY
     todos: []
     last_reviewed: 2026-07-15
 
