@@ -42,7 +42,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
         var groupCurrency = "USD";
         DateOnly? asOfDate = null;
-        var account = "unknown-account";
+        string? account = null;
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
 
@@ -91,14 +91,16 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         hasBlankAccountId = true;
                     }
 
-                    account = string.IsNullOrWhiteSpace(accountId) ? "unknown-account" : accountId.Trim();
+                    account = string.IsNullOrWhiteSpace(accountId) ? null : accountId.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
-                    if (TryResolveClosingBalance(fields, out var balanceMinorUnits) && asOfDate is { } balanceDate)
+                    if (account is { } identifiedAccount &&
+                        TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
+                        asOfDate is { } balanceDate)
                     {
                         rowNumber++;
                         records.Add(new StatementCanonicalRecord(
                             StatementRecordKind.CashBalance,
-                            account,
+                            identifiedAccount,
                             Symbol: string.Empty,
                             Quantity: 0m,
                             Price: 0m,
@@ -123,6 +125,15 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         break;
                     }
 
+                    // Do not construct canonical rows under a shared placeholder account. The parse
+                    // result is rejected below, but keeping malformed sections out of records also
+                    // prevents a future validation-path change from accidentally exposing them.
+                    if (account is not { } identifiedTransactionAccount)
+                    {
+                        hasBlankAccountId = true;
+                        break;
+                    }
+
                     if (asOfDate is not { } transactionDate)
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_NO_ASOF_DATE", "Transaction detail appeared before a group as-of date; skipped.", rowNumber + 1));
@@ -140,7 +151,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     var signedAmount = SignByTypeCode(ToMajorUnits(amountMinorUnits, accountCurrency), typeCode);
                     records.Add(new StatementCanonicalRecord(
                         StatementRecordKind.Transaction,
-                        account,
+                        identifiedTransactionAccount,
                         Symbol: string.Empty,
                         Quantity: 0m,
                         Price: 0m,
@@ -199,6 +210,25 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 fingerprint));
         }
 
+        // A structurally complete file with a group but no account section cannot be associated with
+        // the account selected for the run. Do not accept it merely because it has no 16 records: it
+        // is still an unidentifiable statement, and accepting it would report a misleading successful
+        // import with no usable account evidence.
+        if (accountCount == 0)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_MISSING_ACCOUNT_SECTION",
+                "The BAI2 file has no 03 account identifier record; a statement run must contain at least one identified account section. Repair the file before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
+
         // Every 03 account-identifier record must carry its account number. A blank one cannot identify
         // the account being reconciled and would share the "unknown-account" placeholder with any other
         // blank section, so reject the file rather than reconcile an unidentifiable account.
@@ -241,16 +271,17 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 fingerprint));
         }
 
-        // A BAI2 file can also carry several 02 group headers for one account — typically separate
-        // statement dates. A statement run reconciles a single period against one internal cash record, so
-        // combining groups would hand the matcher one closing balance per group under the single
-        // operator-supplied period and let it match one while opening a false break for the others (or mix
-        // activity from distinct periods). Require exactly one group; split the file into one per group.
-        if (groupCount > 1)
+        // A BAI2 statement import must carry exactly one 02 group. Multiple groups usually represent
+        // distinct statement dates, while no group has no authoritative as-of date or currency. Either
+        // case would let rows be normalized into one operator-supplied run without a single statement
+        // boundary, so reject the file rather than reconcile a mixed or unscoped population.
+        if (groupCount != 1)
         {
-            issues.Add(StatementParseIssue.Error(
-                "BAI2_MULTIPLE_GROUPS",
-                $"The BAI2 file contains {groupCount} statement groups (02) for one account, but a statement run reconciles a single statement period. Split the file into one document per group before importing."));
+            var groupIssue = groupCount > 1 ? "BAI2_MULTIPLE_GROUPS" : "BAI2_INVALID_GROUP_COUNT";
+            var groupMessage = groupCount > 1
+                ? $"The BAI2 file contains {groupCount} statement groups (02) for one account, but a statement run reconciles a single statement period. Split the file into one document per group before importing."
+                : "The BAI2 file contains no statement group (02); a statement run requires exactly one group with an as-of date and currency.";
+            issues.Add(StatementParseIssue.Error(groupIssue, groupMessage));
             return Task.FromResult(new StatementParseResult(
                 ConnectorId,
                 ProfileId: null,

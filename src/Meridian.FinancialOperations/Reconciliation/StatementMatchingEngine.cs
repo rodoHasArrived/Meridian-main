@@ -496,7 +496,8 @@ public sealed class StatementMatchingEngine
         && statement.AsOfDate == internalPosition.AsOfDate;
 
     private static bool SameCashIdentity(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
-        SameText(statement.Account, internalCash.Account)
+        statement.IsForStatementPeriodEnd
+        && SameText(statement.Account, internalCash.Account)
         && SameText(statement.Currency, internalCash.Currency)
         && statement.AsOfDate == internalCash.AsOfDate;
 
@@ -617,7 +618,8 @@ public sealed record NormalizedStatementCashBalance(
     string Currency,
     decimal EndingBalance,
     string EvidenceReference,
-    DateOnly AsOfDate) : IStatementMatchItem
+    DateOnly AsOfDate,
+    bool IsForStatementPeriodEnd = true) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }
