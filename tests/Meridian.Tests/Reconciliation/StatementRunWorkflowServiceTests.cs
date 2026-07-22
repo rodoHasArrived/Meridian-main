@@ -72,26 +72,26 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_WhenCashBalanceDateDiffersFromInternal_DoesNotMatchOnAmountAlone()
+    public async Task CreateAsync_WhenCashBalanceDateDiffersFromStatementPeriodEnd_DoesNotMatchEvenIfInternalSourceHasSameStaleDate()
     {
-        // The statement closing balance carries the same amount as the internal book but a different date
-        // (30 Apr vs the internal 31 May balance). A wrong-period closing balance must not exact-match the
-        // period-appropriate internal balance on account, currency, and amount alone; it surfaces as a break.
+        // The statement closing balance and a faulty internal source both carry 30 Apr, despite the run
+        // closing on 31 May. Date equality between the two sources alone is insufficient: a cash balance
+        // must be dated at the run's statement period end before it can be reconciled.
         var path = await WriteStatementAsync(
             "wrong-period-cash.csv",
             "FUND-1,,0,0,2500.25,cash,2026-04-30,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
-            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 31))],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 4, 30))],
             [])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 
-        // Both sides are now unmatched — the wrong-period statement balance on one side and the
-        // period-end internal balance on the other — instead of a fabricated exact match on amount alone.
+        // Both sides are unmatched instead of producing a fabricated exact match solely because the
+        // stale statement and stale internal snapshot agree on account, currency, date, and amount.
         result.Breaks.Should().HaveCount(2);
         result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference == "internal:cash",
-            "the period-end internal balance has no same-date statement counterpart, so it is a one-sided internal break");
+            "the stale internal balance must remain visible as a one-sided internal break");
     }
 
     [Fact]

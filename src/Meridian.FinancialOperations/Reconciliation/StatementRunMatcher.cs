@@ -37,6 +37,9 @@ internal static class StatementRunMatcher
         var statementCash = new List<NormalizedStatementCashBalance>();
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
+        var statementPeriodEnd = import.StatementPeriodEnd == default
+            ? import.StatementDate
+            : import.StatementPeriodEnd;
 
         // A statement run reconciles a single custodian account, so the account dimension is a
         // run-level constant. Normalize the statement side to the run's external (custodian) account
@@ -57,7 +60,7 @@ internal static class StatementRunMatcher
                     statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, canonicalAccount, evidence, statementPeriodEnd, fxRateProvider, normalizedBase));
                     break;
                 default:
                     statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
@@ -65,9 +68,8 @@ internal static class StatementRunMatcher
             }
         }
 
-        var asOf = import.StatementPeriodEnd == default ? import.StatementDate : import.StatementPeriodEnd;
         var internalCash = populations.CashBalances
-            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, asOf))
+            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, statementPeriodEnd))
             .ToArray();
         var internalTransactions = populations.LedgerTransactions
             .Select(transaction => NormalizeInternalTransaction(transaction, fxRateProvider, normalizedBase))
@@ -156,14 +158,23 @@ internal static class StatementRunMatcher
         CanonicalStatementRow row,
         string account,
         string evidence,
+        DateOnly statementPeriodEnd,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
-        // Carry the statement balance's as-of date into the cash identity. The internal cash is the book's
-        // balance as of its own recorded date, and the engine now requires the two dates to agree, so a
-        // closing balance from the wrong period cannot exact-match a period-appropriate internal balance.
-        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence, row.TradeDate);
+        // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
+        // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
+        // prevents a stale cash row from reconciling if a faulty internal source happens to return the
+        // same stale snapshot instead of the requested period-end snapshot.
+        return new NormalizedStatementCashBalance(
+            evidence,
+            account,
+            currency,
+            amount,
+            evidence,
+            row.TradeDate,
+            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd);
     }
 
     private static NormalizedStatementTransaction MapTransaction(
