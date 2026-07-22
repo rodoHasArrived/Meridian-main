@@ -12,9 +12,9 @@ export const PanelSurface = forwardRef<HTMLDivElement, PanelSurfaceProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-[var(--radius-card,0.5rem)] border border-border bg-card text-card-foreground shadow-[var(--shadow-panel)]",
-        raised && "bg-muted/35",
-        elevated && "shadow-[var(--shadow-float)]",
+        "rounded-[2px] border border-border bg-card text-card-foreground",
+        raised && "bg-[#F3F6F9]",
+        elevated && "shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
         flat && "shadow-none",
         className
       )}

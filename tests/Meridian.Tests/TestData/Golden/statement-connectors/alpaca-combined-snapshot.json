@@ -1,0 +1,118 @@
+{
+  "providerId": "alpaca",
+  "accountId": "PA3ALPACA01",
+  "retrievedAt": "2026-06-30T21:00:00+00:00",
+  "activity": {
+    "providerId": "alpaca",
+    "accountId": "PA3ALPACA01",
+    "retrievedAt": "2026-06-30T21:00:00+00:00",
+    "orders": [],
+    "fills": [
+      {
+        "fillId": "fill-1001",
+        "orderId": "order-2001",
+        "symbol": "AAPL",
+        "side": "Buy",
+        "quantity": 100,
+        "price": 187.25,
+        "filledAt": "2026-06-02T14:30:00+00:00",
+        "venue": "IEX",
+        "commission": 1.05,
+        "realizedPnl": null
+      },
+      {
+        "fillId": "fill-1002",
+        "orderId": "order-2002",
+        "symbol": "MSFT",
+        "side": "Sell",
+        "quantity": 50,
+        "price": 412.10,
+        "filledAt": "2026-06-15T15:45:00+00:00",
+        "venue": "IEX",
+        "commission": 1.02,
+        "realizedPnl": 250.75
+      }
+    ],
+    "cashTransactions": [
+      {
+        "transactionId": "cash-3001",
+        "transactionType": "CSD",
+        "amount": 50000.00,
+        "currency": "USD",
+        "postedAt": "2026-06-01T12:00:00+00:00",
+        "symbol": null,
+        "description": "Wire deposit"
+      },
+      {
+        "transactionId": "cash-3002",
+        "transactionType": "FEE",
+        "amount": -25.00,
+        "currency": "USD",
+        "postedAt": "2026-06-28T12:00:00+00:00",
+        "symbol": null,
+        "description": "Regulatory fee"
+      }
+    ],
+    "corporateActions": [
+      {
+        "eventId": "ca-4001",
+        "eventType": "DIV",
+        "symbol": "AAPL",
+        "effectiveDate": "2026-06-10",
+        "exDate": "2026-06-06",
+        "amount": 24.00,
+        "quantity": null,
+        "factor": null,
+        "currency": "USD",
+        "description": "Cash dividend"
+      }
+    ]
+  },
+  "portfolio": {
+    "account": {
+      "providerId": "alpaca",
+      "accountId": "PA3ALPACA01",
+      "displayName": "Alpaca Paper",
+      "status": "ACTIVE",
+      "currency": "USD",
+      "retrievedAt": "2026-06-30T21:00:00+00:00",
+      "metadata": null
+    },
+    "balance": {
+      "cash": 31247.93,
+      "equity": 71349.93,
+      "buyingPower": 62495.86,
+      "currency": "USD",
+      "marginBalance": 0
+    },
+    "positions": [
+      {
+        "symbol": "AAPL",
+        "quantity": 100,
+        "averageEntryPrice": 187.25,
+        "marketPrice": 190.10,
+        "marketValue": 19010.00,
+        "unrealizedPnl": 285.00,
+        "assetClass": "us_equity",
+        "description": null,
+        "positionId": "pos-5001",
+        "currency": "USD",
+        "metadata": null
+      },
+      {
+        "symbol": "TLT",
+        "quantity": 220,
+        "averageEntryPrice": 94.90,
+        "marketPrice": 95.40,
+        "marketValue": 20988.00,
+        "unrealizedPnl": 110.00,
+        "assetClass": "us_equity",
+        "description": null,
+        "positionId": "pos-5002",
+        "currency": "USD",
+        "metadata": null
+      }
+    ],
+    "retrievedAt": "2026-06-30T21:00:00+00:00"
+  }
+}

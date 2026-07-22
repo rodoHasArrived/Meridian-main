@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -134,7 +135,10 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             if (IsRateLimitResponse(json))
             {
                 Log.Warning("Alpha Vantage rate limit hit for {Symbol}. Message in response.", symbol);
-                throw new HttpRequestException($"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.");
+                throw new RateLimitException(
+                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.",
+                    provider: Name,
+                    symbol: symbol);
             }
 
             if (json.Contains("\"Error Message\""))
@@ -199,7 +203,10 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))
             {
-                throw new HttpRequestException($"Alpha Vantage rate limit exceeded for {symbol}");
+                throw new RateLimitException(
+                    $"Alpha Vantage rate limit exceeded for {symbol}",
+                    provider: Name,
+                    symbol: symbol);
             }
 
             if (json.Contains("\"Error Message\""))
@@ -241,7 +248,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
 
         foreach (var kvp in timeSeries)
         {
-            if (!DateOnly.TryParse(kvp.Key, out var sessionDate))
+            if (!ProviderDateParsing.TryParseProviderDate(kvp.Key, out var sessionDate))
                 continue;
 
             // Skip if outside requested range

@@ -1,11 +1,15 @@
-import { Link } from "react-router-dom";
+import { useMemo, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
+import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
 import {
   addSymbol as addSymbolApi,
   bulkAddSymbols,
@@ -15,42 +19,114 @@ import {
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useActivityLog } from "@/lib/activity-log/store";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
   useWatchlistScreenViewModel,
+  WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS,
   type WatchlistDetailFieldTone,
   type WatchlistRowViewModel,
   type WatchlistSelectedDetail,
   type WatchlistSortColumn
 } from "@/screens/watchlist-screen.view-model";
+import {
+  ContextMenu,
+  useWatchlistRowActions,
+  WatchlistRowActionsTrigger
+} from "@/screens/watchlist-screen.row-actions";
 
 export function WatchlistScreen() {
+  const { record: recordActivity } = useActivityLog();
+  // Decorate the mutating endpoints so each add/remove drops into the activity
+  // ledger with a real compensating action for one-tap undo.
+  const recordedApi = useMemo(
+    () => ({
+      addSymbol: async (symbol: string) => {
+        const result = await addSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.add",
+            title: `Added ${symbol} to the watchlist`,
+            detail: "Subscribed to the live data pipeline.",
+            tone: "success",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `removeSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await removeSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not remove ${symbol}.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      },
+      removeSymbol: async (symbol: string) => {
+        const result = await removeSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.remove",
+            title: `Removed ${symbol} from the watchlist`,
+            detail: "Unsubscribed from the live data pipeline.",
+            tone: "warning",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `addSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await addSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not add ${symbol} back.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      }
+    }),
+    [recordActivity]
+  );
+
   const vm = useWatchlistScreenViewModel({
     getSymbols,
     getSymbolsStatistics,
     getLiveQuotesSnapshot,
-    addSymbol: addSymbolApi,
+    addSymbol: recordedApi.addSymbol,
     bulkAddSymbols,
-    removeSymbol: removeSymbolApi
+    removeSymbol: recordedApi.removeSymbol
   });
   const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
+  const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);
+  const navigate = useNavigate();
+  const rowActions = useWatchlistRowActions({
+    onInspect: vm.selectSymbol,
+    onOpenQuote: (row) => navigate(row.quoteHref),
+    onRemove: (symbol) => void vm.removeSymbol(symbol)
+  });
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary" />
+          Symbol watchlist
+        </span>
+      }
+      scope="Data Lane"
+      description="Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes."
+      actions={inCompanionPane ? undefined : <PopOutPaneButton paneId="watchlist" />}
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Data Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            Symbol watchlist
-          </CardTitle>
-          <CardDescription>
-            Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <MetricCard key={stat.id} {...stat} />
+              <MetricSnapshotCard key={stat.id} {...stat} />
             ))}
           </div>
 
@@ -253,7 +329,16 @@ export function WatchlistScreen() {
                 className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
               >
                 <div className="min-w-0">
-                  <div>{vm.quoteStatusLabel}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{vm.quoteStatusLabel}</span>
+                    <FreshnessChip
+                      errorMessage={vm.quoteFreshnessError}
+                      label="Watchlist quotes"
+                      live={vm.quoteStreamHealthy}
+                      staleBudgetMs={WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS}
+                      timestamp={vm.quoteFreshnessTimestamp}
+                    />
+                  </div>
                   {vm.quoteStatusDetails.length > 0 ? (
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                       {vm.quoteStatusDetails.map((detail) => (
@@ -273,7 +358,7 @@ export function WatchlistScreen() {
               </div>
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
                 <DenseDataTable
-                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol)}
+                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol, rowActions.openFor)}
                   rows={vm.rows}
                   getRowId={(row) => row.symbol}
                   getRowAriaLabel={(row) => row.ariaLabel}
@@ -281,12 +366,20 @@ export function WatchlistScreen() {
                   getRowAriaExpanded={(row) => row.symbol === vm.selectedRowId}
                   getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
                   onRowSelect={(row) => vm.selectSymbol(row.symbol)}
+                  onRowContextMenu={(row, event) => rowActions.openFor(event, row)}
                   selectedRowId={vm.selectedRowId}
                   emptyText={vm.listDescription}
                   ariaLabel={vm.tableLabel}
                   caption={vm.tableCaption}
                   sort={vm.sort}
                   onToggleSort={(columnId) => vm.toggleSort(columnId as WatchlistSortColumn)}
+                />
+                <ContextMenu
+                  open={rowActions.menu.open}
+                  position={rowActions.menu.position}
+                  items={rowActions.menu.items}
+                  onClose={rowActions.menu.close}
+                  label={rowActions.menu.label}
                 />
                 <WatchlistDetailPanel
                   title={vm.detailPanelTitle}
@@ -301,7 +394,7 @@ export function WatchlistScreen() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -329,7 +422,11 @@ function buildColumns(
   selectSymbol: (symbol: string) => void,
   selectedSymbol: string | null,
   detailPanelId: string,
-  removeSymbol: (symbol: string) => Promise<void>
+  removeSymbol: (symbol: string) => Promise<void>,
+  openRowMenu: (
+    event: ReactMouseEvent<HTMLElement> | ReactKeyboardEvent<HTMLElement>,
+    row: WatchlistRowViewModel
+  ) => void
 ): DenseDataTableColumn<WatchlistRowViewModel>[] {
   return [
     {
@@ -463,6 +560,10 @@ function buildColumns(
               {row.removeStatusLabel}
             </span>
           ) : null}
+          <WatchlistRowActionsTrigger
+            label={`More actions for ${row.symbol}`}
+            onOpen={(event) => openRowMenu(event, row)}
+          />
         </div>
       )
     }

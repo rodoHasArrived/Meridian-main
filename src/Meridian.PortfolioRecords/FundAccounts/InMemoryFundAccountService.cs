@@ -454,6 +454,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         AccountBalanceSnapshotDto? snapshot;
         List<CustodianPositionLineDto> positions;
+        List<CustodianStatementBatchDto> custodianBatches;
+        List<BankStatementLineDto> bankLines;
 
         lock (_gate)
         {
@@ -470,59 +472,36 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             positions = stored.CustodianPositions
                 .Where(p => p.AsOfDate == request.AsOfDate)
                 .ToList();
+
+            custodianBatches = stored.CustodianBatches
+                .Where(b => b.AsOfDate == request.AsOfDate)
+                .ToList();
+
+            bankLines = stored.BankLines
+                .Where(l => l.TransactionDate == request.AsOfDate)
+                .ToList();
         }
 
         var runId = Guid.NewGuid();
         var results = new List<AccountReconciliationResultDto>();
         var now = DateTimeOffset.UtcNow;
 
-        if (snapshot is not null)
+        var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
+        if (cashCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: "CashBalance",
-                IsMatch: true,
-                Category: "Cash",
-                Status: "Matched",
-                ExpectedAmount: snapshot.CashBalance,
-                ActualAmount: snapshot.CashBalance,
-                Variance: 0m,
-                Reason: "Cash balance matches internal ledger"));
+            results.Add(cashCheck);
         }
 
         AddContinuityCheckResults(runId, request.AsOfDate, results, request.AccountId);
 
-        if (positions.Count > 0)
+        var positionCheck = AccountReconciliationChecks.BuildPositionCountCheck(runId, positions, custodianBatches);
+        if (positionCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: $"PositionCount ({positions.Count} lines)",
-                IsMatch: true,
-                Category: "Positions",
-                Status: "Matched",
-                ExpectedAmount: positions.Count,
-                ActualAmount: positions.Count,
-                Variance: 0m,
-                Reason: "Custodian position lines ingested successfully"));
+            results.Add(positionCheck);
         }
 
-        var breaks = results.Count(r => !r.IsMatch);
-        var run = new AccountReconciliationRunDto(
-            runId,
-            request.AccountId,
-            request.AsOfDate,
-            Status: breaks == 0 ? "Matched" : "Breaks",
-            TotalChecks: results.Count,
-            TotalMatched: results.Count - breaks,
-            TotalBreaks: breaks,
-            BreakAmountTotal: results
-                .Where(r => !r.IsMatch && r.Variance.HasValue)
-                .Sum(r => Math.Abs(r.Variance!.Value)),
-            RequestedAt: now,
-            CompletedAt: now,
-            request.RequestedBy);
+        var run = AccountReconciliationChecks.BuildRunSummary(
+            runId, request.AccountId, request.AsOfDate, request.RequestedBy, now, results);
 
         (long Version, string Json)? snapshotToPersist = null;
         lock (_gate)
@@ -669,7 +648,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => !r.IsMatch
+                .Where(r => AccountReconciliationChecks.IsBreak(r)
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -699,7 +678,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => !r.IsMatch && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -1117,7 +1096,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 "Map the account to a ledger reference before posting account activity."));
         }
 
-        var openBreakCount = stored.ReconciliationResults.Count(static result => !result.IsMatch);
+        var openBreakCount = stored.ReconciliationResults.Count(AccountReconciliationChecks.IsBreak);
         if (openBreakCount > 0)
         {
             issues.Add(new AccountReadinessIssueDto(
@@ -1484,7 +1463,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var results = _accounts.Values
                 .Where(a => accountId is null || a.Summary.AccountId == accountId)
                 .SelectMany(a => a.ReconciliationResults
-                    .Where(static r => !r.IsMatch)
+                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
                     .Select(r => new AccountOpenBreakView(a.Summary.AccountId, r.ReconciliationRunId, r.ResultId, r.CheckLabel, r.Category, r.Variance, r.Reason)))
                 .OrderByDescending(static r => r.Variance ?? 0m)
                 .ThenBy(static r => r.CheckLabel, StringComparer.OrdinalIgnoreCase)

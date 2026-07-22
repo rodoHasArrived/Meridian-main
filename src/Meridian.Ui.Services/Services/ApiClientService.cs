@@ -33,7 +33,7 @@ public sealed class ApiClientService : IDisposable
 
     private ApiClientService()
     {
-        _baseUrl = "http://localhost:8080";
+        _baseUrl = ApiEndpointDefaults.LocalApiBaseUrl;
         _timeoutSeconds = 30;
         _backfillTimeoutMinutes = 60;
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
@@ -69,7 +69,7 @@ public sealed class ApiClientService : IDisposable
         if (settings == null)
             return;
 
-        var newUrl = settings.ServiceUrl ?? "http://localhost:8080";
+        var newUrl = settings.ServiceUrl ?? ApiEndpointDefaults.LocalApiBaseUrl;
         var newTimeout = settings.ServiceTimeoutSeconds > 0 ? settings.ServiceTimeoutSeconds : 30;
         var newBackfillTimeout = settings.BackfillTimeoutMinutes > 0 ? settings.BackfillTimeoutMinutes : 60;
 
@@ -153,121 +153,42 @@ public sealed class ApiClientService : IDisposable
     }
 
     /// <summary>
-    /// Performs a GET request to the specified endpoint.
+    /// Performs a GET request to the specified endpoint. Returns null ONLY for 404 (not found)
+    /// and — for legacy compatibility — on other failures, which are now logged. New callers
+    /// must use <see cref="GetWithResponseAsync{T}"/> so failures stay distinguishable from
+    /// absent data; the CI caller ratchet (check-apiclient-callers.py) blocks new call sites.
     /// </summary>
-    public async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+    public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        try
-        {
-            var response = await _httpClient.GetAsync(url, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct);
-            return JsonSerializer.Deserialize<T>(json, JsonOptions);
-        }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
-            return null;
-        }
+        return SendAsync<T>("GET", url, () => _httpClient.GetAsync(url, ct), ct);
     }
 
     /// <summary>
     /// Performs a GET request and returns the raw response.
     /// </summary>
-    public async Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+    public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        try
-        {
-            var response = await _httpClient.GetAsync(url, ct);
-            var json = await response.Content.ReadAsStringAsync(ct);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return new ApiResponse<T>
-                {
-                    Success = false,
-                    StatusCode = (int)response.StatusCode,
-                    ErrorMessage = json
-                };
-            }
-
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
-            return new ApiResponse<T>
-            {
-                Success = true,
-                StatusCode = (int)response.StatusCode,
-                Data = data
-            };
-        }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (HttpRequestException ex)
-        {
-            return new ApiResponse<T>
-            {
-                Success = false,
-                StatusCode = 0,
-                ErrorMessage = $"Connection failed: {ex.Message}",
-                IsConnectionError = true
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ApiResponse<T>
-            {
-                Success = false,
-                StatusCode = 0,
-                ErrorMessage = ex.Message
-            };
-        }
+        return SendWithResponseAsync<T>(() => _httpClient.GetAsync(url, ct), ct);
     }
 
     /// <summary>
-    /// Performs a POST request with JSON body.
+    /// Performs a POST request with JSON body. Returns null ONLY for 404 (not found) and — for
+    /// legacy compatibility — on other failures, which are now logged. New callers must use
+    /// <see cref="PostWithResponseAsync{T}"/> so failures stay distinguishable from absent data;
+    /// the CI caller ratchet (check-apiclient-callers.py) blocks new call sites.
     /// </summary>
-    public async Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+    public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        try
-        {
-            var content = body != null
-                ? new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json")
-                : null;
-
-            var response = await _httpClient.PostAsync(url, content, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct);
-            return JsonSerializer.Deserialize<T>(json, JsonOptions);
-        }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
-            return null;
-        }
+        return SendAsync<T>("POST", url, () => _httpClient.SendAsync(CreateMutationRequest(HttpMethod.Post, url, CreateJsonContent(body)), ct), ct);
     }
 
     /// <summary>
     /// Performs a POST request and returns the full response.
     /// </summary>
-    public async Task<ApiResponse<T>> PostWithResponseAsync<T>(
+    public Task<ApiResponse<T>> PostWithResponseAsync<T>(
         string endpoint,
         object? body = null,
         CancellationToken ct = default,
@@ -275,71 +196,161 @@ public sealed class ApiClientService : IDisposable
     {
         var url = BuildUrl(endpoint);
         var client = customClient ?? _httpClient;
-
-        try
-        {
-            var content = body != null
-                ? new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json")
-                : null;
-
-            var response = await client.PostAsync(url, content, ct);
-            var json = await response.Content.ReadAsStringAsync(ct);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return new ApiResponse<T>
-                {
-                    Success = false,
-                    StatusCode = (int)response.StatusCode,
-                    ErrorMessage = json
-                };
-            }
-
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
-            return new ApiResponse<T>
-            {
-                Success = true,
-                StatusCode = (int)response.StatusCode,
-                Data = data
-            };
-        }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (HttpRequestException ex)
-        {
-            return new ApiResponse<T>
-            {
-                Success = false,
-                StatusCode = 0,
-                ErrorMessage = $"Connection failed: {ex.Message}",
-                IsConnectionError = true
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ApiResponse<T>
-            {
-                Success = false,
-                StatusCode = 0,
-                ErrorMessage = ex.Message
-            };
-        }
+        return SendWithResponseAsync<T>(() => client.SendAsync(CreateMutationRequest(HttpMethod.Post, url, CreateJsonContent(body)), ct), ct);
     }
 
     /// <summary>
     /// Sends a DELETE request and returns the API response.
     /// </summary>
-    public async Task<ApiResponse<T>> DeleteWithResponseAsync<T>(
+    public Task<ApiResponse<T>> DeleteWithResponseAsync<T>(
         string endpoint,
         CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
+        return SendWithResponseAsync<T>(() => _httpClient.SendAsync(CreateMutationRequest(HttpMethod.Delete, url, content: null), ct), ct);
+    }
 
+    /// <summary>
+    /// Builds a mutating request that echoes the server-issued CSRF cookie as the
+    /// X-CSRF-Token header. The server's CookieCsrfMiddleware requires the header on
+    /// session-authenticated POST/PUT/PATCH/DELETE calls under /api; before a login
+    /// session exists there is no CSRF cookie and the header is simply omitted.
+    /// </summary>
+    private HttpRequestMessage CreateMutationRequest(HttpMethod method, string url, HttpContent? content)
+    {
+        var request = new HttpRequestMessage(method, url) { Content = content };
+        var csrfToken = ApiClientSession.GetCsrfToken(_baseUrl);
+        if (!string.IsNullOrWhiteSpace(csrfToken))
+        {
+            request.Headers.TryAddWithoutValidation(ApiClientSession.CsrfHeaderName, csrfToken);
+        }
+
+        return request;
+    }
+
+    /// <summary>
+    /// Establishes the server login session shared by every "api-client" consumer (audit
+    /// finding P8). On success the server's Set-Cookie responses (mdc-session + mdc-csrf)
+    /// land in <see cref="ApiClientSession.Cookies"/>, so subsequent API calls are
+    /// authenticated — letting endpoints stamp the session actor over client-supplied
+    /// values — and mutations carry the CSRF header. Mirrors
+    /// LifecycleControlClient.AuthenticateAsync, which manages its own separate session.
+    /// </summary>
+    public async Task<bool> AuthenticateAsync(string username, string password, CancellationToken ct = default)
+    {
+        var url = BuildUrl(UiApiRoutes.AuthApiLogin);
         try
         {
-            var response = await _httpClient.DeleteAsync(url, ct);
+            using var response = await _httpClient.PostAsync(
+                url,
+                CreateJsonContent(new { username, password, returnUrl = "/workstation/" }),
+                ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                LoggingService.Instance.LogWarning(
+                    $"Workstation API login failed with {(int)response.StatusCode} {response.StatusCode}.");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError("Workstation API login threw.", ex);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Ends the server login session (best effort) and expires the locally held session
+    /// cookies so no further request can ride the old session.
+    /// </summary>
+    public async Task SignOutAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var url = BuildUrl(UiApiRoutes.AuthApiLogout);
+            using var response = await _httpClient.SendAsync(
+                CreateMutationRequest(HttpMethod.Post, url, content: null), ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogWarning(
+                $"Workstation API logout failed ({ex.Message}); expiring local session cookies anyway.");
+        }
+        finally
+        {
+            ApiClientSession.Clear(_baseUrl);
+        }
+    }
+
+    /// <summary>
+    /// Serializes a request body to a JSON <see cref="StringContent"/>, or null when there is no body.
+    /// </summary>
+    private static StringContent? CreateJsonContent(object? body) =>
+        body != null
+            ? new StringContent(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json")
+            : null;
+
+    /// <summary>
+    /// Sends a request and deserializes a successful JSON response, returning null on any
+    /// non-success status or failure (except cancellation, which is rethrown). Null is the
+    /// documented result for 404 only; every other failure is logged before returning null so
+    /// backend outages are no longer indistinguishable from empty data (audit finding P7).
+    /// Legacy seam: new code uses <see cref="SendWithResponseAsync{T}"/>.
+    /// </summary>
+    private static async Task<T?> SendAsync<T>(string method, string url, Func<Task<HttpResponseMessage>> send, CancellationToken ct)
+        where T : class
+    {
+        try
+        {
+            var response = await send();
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    LoggingService.Instance.LogWarning(
+                        $"API {method} {url} failed with {(int)response.StatusCode} {response.StatusCode}; returning null. " +
+                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.");
+                }
+
+                return null;
+            }
+
+            var json = await response.Content.ReadAsStringAsync(ct);
+            return JsonSerializer.Deserialize<T>(json, JsonOptions);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError($"API {method} {url} threw; returning null.", ex);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Sends a request and wraps the outcome in an <see cref="ApiResponse{T}"/>, translating
+    /// connection failures and unexpected exceptions into structured responses (cancellation is
+    /// rethrown). Centralizes the try/catch/wrap pattern shared by the *WithResponseAsync methods.
+    /// The request is built inside the try block so serialization errors are handled uniformly.
+    /// </summary>
+    private static async Task<ApiResponse<T>> SendWithResponseAsync<T>(
+        Func<Task<HttpResponseMessage>> send,
+        CancellationToken ct) where T : class
+    {
+        try
+        {
+            var response = await send();
             var json = await response.Content.ReadAsStringAsync(ct);
 
             if (!response.IsSuccessStatusCode)
@@ -360,7 +371,7 @@ public sealed class ApiClientService : IDisposable
                 Data = data
             };
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

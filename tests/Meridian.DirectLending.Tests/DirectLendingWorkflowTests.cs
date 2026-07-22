@@ -55,6 +55,41 @@ public sealed class DirectLendingWorkflowTests
     }
 
     [Fact]
+    public async Task RequestProjectionAsync_WithActActBasis_ShouldUseActualYearLengthOfPeriodStart()
+    {
+        var service = new InMemoryDirectLendingService();
+
+        var leapRequest = BuildCreateRequest();
+        var leapLoan = await service.CreateLoanAsync(leapRequest with
+        {
+            Terms = leapRequest.Terms with { DayCountBasis = DayCountBasis.ActualActualISDA }
+        });
+        await service.ActivateLoanAsync(leapLoan.LoanId, new ActivateLoanRequest(new DateOnly(2028, 1, 1)));
+        await service.BookDrawdownAsync(leapLoan.LoanId, new BookDrawdownRequest(100_000m, new DateOnly(2028, 1, 1), new DateOnly(2028, 1, 1), "wire-leap"));
+
+        var nonLeapRequest = BuildCreateRequest();
+        var nonLeapLoan = await service.CreateLoanAsync(nonLeapRequest with
+        {
+            Terms = nonLeapRequest.Terms with { DayCountBasis = DayCountBasis.ActualActualISDA }
+        });
+        await service.ActivateLoanAsync(nonLeapLoan.LoanId, new ActivateLoanRequest(new DateOnly(2027, 1, 1)));
+        await service.BookDrawdownAsync(nonLeapLoan.LoanId, new BookDrawdownRequest(100_000m, new DateOnly(2027, 1, 1), new DateOnly(2027, 1, 1), "wire-nonleap"));
+
+        var leapRun = await service.RequestProjectionAsync(leapLoan.LoanId, new DateOnly(2028, 3, 1));
+        var leapFlows = await service.GetProjectedCashFlowsAsync(leapRun.ProjectionRunId);
+        var nonLeapRun = await service.RequestProjectionAsync(nonLeapLoan.LoanId, new DateOnly(2027, 3, 1));
+        var nonLeapFlows = await service.GetProjectedCashFlowsAsync(nonLeapRun.ProjectionRunId);
+
+        // Fixed 8% on 100,000 over a 31-day January period. 2028 is a leap year, so the
+        // daily accrual divides by 366: 100,000 * 0.08 / 366 * 31 = 677.60. In non-leap
+        // 2027 the same period divides by 365: 100,000 * 0.08 / 365 * 31 = 679.45.
+        var leapJanuary = leapFlows.Single(x => x.FlowType == "Interest" && x.AccrualStartDate == new DateOnly(2028, 1, 1));
+        leapJanuary.Amount.Should().Be(677.60m);
+        var nonLeapJanuary = nonLeapFlows.Single(x => x.FlowType == "Interest" && x.AccrualStartDate == new DateOnly(2027, 1, 1));
+        nonLeapJanuary.Amount.Should().Be(679.45m);
+    }
+
+    [Fact]
     public async Task ServicerBatchAndRebuildAll_ShouldPersistBatchAndCheckpoint()
     {
         var service = new InMemoryDirectLendingService();

@@ -12,9 +12,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 ## Start Gate
 
 - Run `git status --short` before editing and preserve unrelated user-owned changes.
-- Follow the root `AGENTS.md` protected-branch policy: never write directly to `main`, use a
-  `codex/<short-task-name>` branch and PR, run `bash scripts/ci.sh` before representing completed
-  work, and treat GitHub Actions `Meridian CI / quality-gate` as the merge authority.
+- Follow the root `AGENTS.md` protected-branch policy: local work may happen on `main` when the
+  user explicitly requests it or the checkout is intentionally operating there. Do not bypass
+  GitHub protections; for PR-ready publishing, use a `codex/<short-task-name>` branch and PR, run
+  `bash scripts/ci.sh` before representing completed work, and treat GitHub Actions
+  `Meridian CI / quality-gate` as the merge authority.
 - Read `.codex/skills/_shared/project-context.md` before changing Codex guidance that references
   product scope, active surfaces, commands, roadmap direction, or canonical terminology.
 - Read `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`,
@@ -42,6 +44,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
 - For source-facing guidance changes, verify the referenced source path, README, command, or script
   exists before documenting it as current.
+- After timed-out generation, build, or test attempts, run
+  `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+  shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+  `VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+  validation.
 - Prefer targeted edits over broad rewrites. Do not reformat generated, archived, or unrelated
   Codex assets.
 - For multi-lane AI work, route coordination and handoff format through

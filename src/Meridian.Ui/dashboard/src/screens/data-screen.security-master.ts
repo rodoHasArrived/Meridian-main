@@ -1,3 +1,6 @@
+import { formatNumber } from "@/lib/format";
+import type { CorporateActionDescriptor } from "@/types";
+
 export type SecurityMasterTab = "overview" | "company" | "corporate-actions" | "print";
 export type SecurityMasterStatusFilter = "active" | "all";
 
@@ -68,16 +71,77 @@ export interface SecurityMasterTimelineEvent {
   current?: boolean;
 }
 
-export interface SecurityMasterCorporateActionRow {
+/**
+ * Canonical-taxonomy chip replacing the bare event-type string: the catalog display name with
+ * a small CAEV badge (hidden when `caevCode` is null — internal extensions and unknown event
+ * types have no ISO 15022 alignment). Cancelled chips render struck-through with the danger token.
+ */
+export interface SecurityMasterCorporateActionChip {
+  label: string;
+  caevCode: string | null;
+  cancelled: boolean;
+  ariaLabel: string;
+}
+
+export type SecurityMasterLifecycleStopId = "announced" | "confirmed" | "ex" | "paid";
+
+/** One of the four fixed lifecycle stops (Announced → Confirmed → Ex → Paid); reached stops render filled. */
+export interface SecurityMasterLifecycleStop {
+  id: SecurityMasterLifecycleStopId;
+  label: string;
+  date: string | null;
+  reached: boolean;
+  current: boolean;
+}
+
+/** One supersede-chain event under the lifecycle timeline; `amended` entries carry the "Amended" marker. */
+export interface SecurityMasterCorporateActionTimelineEntry {
+  corpActId: string;
+  label: string;
+  detail: string;
+  amended: boolean;
+}
+
+/** Expandable lifecycle detail for one corporate-action row. */
+export interface SecurityMasterCorporateActionLifecycle {
+  state: string;
+  cancelled: boolean;
+  amended: boolean;
+  stops: SecurityMasterLifecycleStop[];
+  entries: SecurityMasterCorporateActionTimelineEntry[];
+}
+
+/**
+ * Source facts for one corporate-action row: the presentation fields the table shows plus the
+ * canonical descriptor projected by the workbench read model (CorporateActionDescriptorDto).
+ * A live adapter produces these by joining `corporateActionDescriptors` to the raw actions on
+ * the trust snapshot; the records below seed the same shape with fixture data.
+ */
+export interface SecurityMasterCorporateActionSeed {
   id: string;
-  type: string;
   icon: "dividend" | "split" | "buyback" | "merger" | "spinoff";
   description: string;
   announcedOn: string;
   effectiveOn: string;
   amount: string;
-  status: "Confirmed" | "Pending" | "Complete";
+  status: "Confirmed" | "Pending" | "Complete" | "Cancelled";
   note: string;
+  descriptor: CorporateActionDescriptor;
+}
+
+export interface SecurityMasterCorporateActionRow {
+  id: string;
+  chip: SecurityMasterCorporateActionChip;
+  icon: "dividend" | "split" | "buyback" | "merger" | "spinoff";
+  description: string;
+  announcedOn: string;
+  effectiveOn: string;
+  amount: string;
+  status: "Confirmed" | "Pending" | "Complete" | "Cancelled";
+  note: string;
+  expanded: boolean;
+  toggleLabel: string;
+  lifecycle: SecurityMasterCorporateActionLifecycle;
 }
 
 export interface SecurityMasterFilingRow {
@@ -139,7 +203,7 @@ interface SecurityMasterRecord {
   upcomingActionCountdownLabel: string;
   corporateActionStats: SecurityMasterDetailField[];
   corporateTimeline: SecurityMasterTimelineEvent[];
-  corporateActions: SecurityMasterCorporateActionRow[];
+  corporateActions: SecurityMasterCorporateActionSeed[];
   filings: SecurityMasterFilingRow[];
   printPacketId: string;
   printGeneratedAt: string;
@@ -361,39 +425,92 @@ const equityTimeline: SecurityMasterTimelineEvent[] = [
   { id: "evt-5", label: "Packet", date: "Jun 29" }
 ];
 
-const equityCorporateActions: SecurityMasterCorporateActionRow[] = [
+const equityCorporateActions: SecurityMasterCorporateActionSeed[] = [
   {
     id: "action-1",
-    type: "Dividend",
     icon: "dividend",
     description: "Quarterly cash dividend",
     announcedOn: "2026-05-01",
     effectiveOn: "2026-06-28",
     amount: "$3.00",
     status: "Confirmed",
-    note: "Matches issuer relations and SEC 8-K references."
+    note: "Matches issuer relations and SEC 8-K references. Amount amended from $2.75 at board confirmation.",
+    descriptor: {
+      corpActId: "ca-gs-div-2026q2-amend",
+      canonicalName: "Dividend",
+      caevCode: "DVCA",
+      displayName: "Cash dividend",
+      lifecycleState: "Ex",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-gs-div-2026q2", lifecycleState: "Announced", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: false },
+        { corpActId: "ca-gs-div-2026q2-amend", lifecycleState: "Confirmed", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: true }
+      ]
+    }
   },
   {
     id: "action-2",
-    type: "Buyback",
     icon: "buyback",
     description: "Board-authorized repurchase programme",
     announcedOn: "2026-04-12",
     effectiveOn: "2026-07-01",
     amount: "$5.0B",
     status: "Pending",
-    note: "Awaiting final packet annotation from treasury."
+    note: "Awaiting final packet annotation from treasury.",
+    descriptor: {
+      corpActId: "ca-gs-tender-2026",
+      canonicalName: "TenderOffer",
+      caevCode: "TEND",
+      displayName: "Tender offer",
+      lifecycleState: "Announced",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-gs-tender-2026", lifecycleState: "Announced", exDate: "2026-07-01", payDate: null, isAmendment: false }
+      ]
+    }
   },
   {
     id: "action-3",
-    type: "Split",
     icon: "split",
     description: "Historical 2-for-1 reference event",
     announcedOn: "2000-05-18",
     effectiveOn: "2000-06-02",
     amount: "2:1",
     status: "Complete",
-    note: "Retained for longitudinal identifier reconciliation."
+    note: "Retained for longitudinal identifier reconciliation.",
+    descriptor: {
+      corpActId: "ca-gs-split-2000",
+      canonicalName: "StockSplit",
+      caevCode: "SPLF",
+      displayName: "Stock split",
+      lifecycleState: "Paid",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-gs-split-2000", lifecycleState: "Confirmed", exDate: "2000-06-02", payDate: "2000-06-02", isAmendment: false }
+      ]
+    }
+  },
+  {
+    id: "action-4",
+    icon: "dividend",
+    description: "Special dividend withdrawn by issuer",
+    announcedOn: "2026-03-02",
+    effectiveOn: "2026-04-10",
+    amount: "$1.25",
+    status: "Cancelled",
+    note: "Issuer withdrew the distribution before record date; retained for audit evidence.",
+    descriptor: {
+      corpActId: "ca-gs-spec-div-2026-cancel",
+      canonicalName: "SpecialDividend",
+      caevCode: "DVCA",
+      displayName: "Special dividend",
+      lifecycleState: "Cancelled",
+      isCancelled: true,
+      timeline: [
+        { corpActId: "ca-gs-spec-div-2026", lifecycleState: "Announced", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: false },
+        { corpActId: "ca-gs-spec-div-2026-cancel", lifecycleState: "Cancelled", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: true }
+      ]
+    }
   }
 ];
 
@@ -488,8 +605,8 @@ function makeEquityRecord(overrides: Partial<SecurityMasterRecord> & Pick<Securi
     corporateActionStats: [
       { id: "ca-stat-1", label: "Open events", value: "2" },
       { id: "ca-stat-2", label: "Confirmed", value: "1", tone: "success" },
-      { id: "ca-stat-3", label: "Needs review", value: "1", tone: "warning" },
-      { id: "ca-stat-4", label: "Filings linked", value: "3" }
+      { id: "ca-stat-3", label: "Amended", value: "1", tone: "warning" },
+      { id: "ca-stat-4", label: "Cancelled", value: "1", tone: "warning" }
     ],
     corporateTimeline: equityTimeline,
     corporateActions: equityCorporateActions,
@@ -587,25 +704,47 @@ const SECURITY_MASTER_RECORDS: SecurityMasterRecord[] = [
     corporateActions: [
       {
         id: "bond-action-1",
-        type: "Dividend",
         icon: "dividend",
         description: "Semi-annual coupon",
         announcedOn: "2026-04-12",
         effectiveOn: "2026-06-20",
         amount: "€18.13",
         status: "Confirmed",
-        note: "Matches paying agent notice and treasury schedule."
+        note: "Matches paying agent notice and treasury schedule.",
+        // Coupon events sit outside the canonical catalog, so the read model fails open to the
+        // raw event type with no CAEV alignment — this seed exercises the badge-less chip path.
+        descriptor: {
+          corpActId: "ca-gos-coupon-2026h1",
+          canonicalName: "InterestPayment",
+          caevCode: null,
+          displayName: "InterestPayment",
+          lifecycleState: "Confirmed",
+          isCancelled: false,
+          timeline: [
+            { corpActId: "ca-gos-coupon-2026h1", lifecycleState: "Confirmed", exDate: "2026-06-09", payDate: "2026-06-20", isAmendment: false }
+          ]
+        }
       },
       {
         id: "bond-action-2",
-        type: "Merger",
         icon: "merger",
         description: "Debt programme documentation update",
         announcedOn: "2026-03-28",
         effectiveOn: "2026-04-15",
         amount: "Docs",
         status: "Complete",
-        note: "Historical programme amendment retained for evidence."
+        note: "Historical programme amendment retained for evidence.",
+        descriptor: {
+          corpActId: "ca-gos-namechange-2026",
+          canonicalName: "NameChange",
+          caevCode: "CHAN",
+          displayName: "Name change",
+          lifecycleState: "Ex",
+          isCancelled: false,
+          timeline: [
+            { corpActId: "ca-gos-namechange-2026", lifecycleState: "Confirmed", exDate: "2026-04-15", payDate: null, isAmendment: false }
+          ]
+        }
       }
     ],
     filings: [
@@ -660,21 +799,106 @@ const SECURITY_MASTER_RECORDS: SecurityMasterRecord[] = [
   }
 ];
 
-const scoreFormatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-});
+function formatScore(value: number): string {
+  return formatNumber(value, { minimumFractionDigits: 2 });
+}
+
+const CORPORATE_ACTION_LIFECYCLE_STOPS: ReadonlyArray<{ id: SecurityMasterLifecycleStopId; label: string; rank: number }> = [
+  { id: "announced", label: "Announced", rank: 0 },
+  { id: "confirmed", label: "Confirmed", rank: 1 },
+  { id: "ex", label: "Ex", rank: 2 },
+  { id: "paid", label: "Paid", rank: 3 }
+];
+
+function lifecycleProgressRank(state: string): number {
+  switch (state) {
+    case "Announced":
+      return 0;
+    case "Confirmed":
+      return 1;
+    case "Ex":
+      return 2;
+    case "Paid":
+      return 3;
+    default:
+      // Cancelled and unknown states contribute no forward progress on the four-stop track.
+      return -1;
+  }
+}
+
+export function buildCorporateActionChipState(descriptor: CorporateActionDescriptor): SecurityMasterCorporateActionChip {
+  return {
+    label: descriptor.displayName,
+    caevCode: descriptor.caevCode,
+    cancelled: descriptor.isCancelled,
+    ariaLabel: [
+      descriptor.displayName,
+      descriptor.caevCode ? `CAEV ${descriptor.caevCode}` : null,
+      descriptor.isCancelled ? "Cancelled" : null
+    ].filter((part): part is string => part !== null).join(", ")
+  };
+}
+
+export function buildCorporateActionLifecycleState(descriptor: CorporateActionDescriptor): SecurityMasterCorporateActionLifecycle {
+  const tip = descriptor.timeline.length > 0 ? descriptor.timeline[descriptor.timeline.length - 1] : null;
+  // A cancelled action keeps the progress it reached before cancellation, so derive its filled
+  // stops from the stored write-side chain states instead of the resolved (Cancelled) state.
+  const reachedRank = descriptor.isCancelled
+    ? descriptor.timeline.reduce((rank, entry) => Math.max(rank, lifecycleProgressRank(entry.lifecycleState)), -1)
+    : lifecycleProgressRank(descriptor.lifecycleState);
+
+  return {
+    state: descriptor.lifecycleState,
+    cancelled: descriptor.isCancelled,
+    amended: descriptor.timeline.some((entry) => entry.isAmendment),
+    stops: CORPORATE_ACTION_LIFECYCLE_STOPS.map((stop) => ({
+      id: stop.id,
+      label: stop.label,
+      date: stop.id === "ex" ? tip?.exDate ?? null : stop.id === "paid" ? tip?.payDate ?? null : null,
+      reached: stop.rank <= reachedRank,
+      current: !descriptor.isCancelled && stop.rank === reachedRank
+    })),
+    entries: descriptor.timeline.map((entry) => ({
+      corpActId: entry.corpActId,
+      label: entry.isAmendment ? "Amended" : "Original terms",
+      detail: entry.payDate ? `Ex ${entry.exDate} · Pay ${entry.payDate}` : `Ex ${entry.exDate}`,
+      amended: entry.isAmendment
+    }))
+  };
+}
+
+export function buildCorporateActionRowState(
+  seed: SecurityMasterCorporateActionSeed,
+  expanded: boolean
+): SecurityMasterCorporateActionRow {
+  return {
+    id: seed.id,
+    chip: buildCorporateActionChipState(seed.descriptor),
+    icon: seed.icon,
+    description: seed.description,
+    announcedOn: seed.announcedOn,
+    effectiveOn: seed.effectiveOn,
+    amount: seed.amount,
+    status: seed.status,
+    note: seed.note,
+    expanded,
+    toggleLabel: `${expanded ? "Collapse" : "Expand"} lifecycle timeline for ${seed.description}`,
+    lifecycle: buildCorporateActionLifecycleState(seed.descriptor)
+  };
+}
 
 export function buildSecurityMasterWorkspaceState({
   query,
   selectedSecurityId,
   activeTab,
-  statusFilter
+  statusFilter,
+  expandedCorporateActionIds = []
 }: {
   query: string;
   selectedSecurityId: string | null;
   activeTab: SecurityMasterTab;
   statusFilter: SecurityMasterStatusFilter;
+  expandedCorporateActionIds?: readonly string[];
 }): SecurityMasterWorkspaceState {
   const normalizedQuery = query.trim().toLowerCase();
   const visibleRecords = SECURITY_MASTER_RECORDS.filter((record) => {
@@ -717,7 +941,7 @@ export function buildSecurityMasterWorkspaceState({
       : null,
     results: visibleRecords.map((record) => buildSearchRowState(record, selectedRecord?.securityId ?? null)),
     tabs: buildTabState(activeTab, selectedRecord),
-    selectedSecurity: selectedRecord ? buildSelectedSecurityState(selectedRecord) : null
+    selectedSecurity: selectedRecord ? buildSelectedSecurityState(selectedRecord, expandedCorporateActionIds) : null
   };
 }
 
@@ -735,7 +959,7 @@ function buildSearchRowState(record: SecurityMasterRecord, selectedSecurityId: s
     isin: record.isin,
     status: record.status,
     statusVariant: record.status === "Active" ? "success" : record.status === "Pending" ? "warning" : "outline",
-    scoreText: scoreFormatter.format(record.score),
+    scoreText: formatScore(record.score),
     scoreWidth: `${Math.max(18, Math.min(100, Math.round((record.score / 110) * 100)))}%`,
     selected,
     ariaLabel: [
@@ -744,7 +968,7 @@ function buildSearchRowState(record: SecurityMasterRecord, selectedSecurityId: s
       record.assetType,
       `${record.market} ${record.country}`,
       `ISIN ${record.isin}`,
-      `score ${scoreFormatter.format(record.score)}`
+      `score ${formatScore(record.score)}`
     ].join(". ")
   };
 }
@@ -762,7 +986,10 @@ function buildTabState(activeTab: SecurityMasterTab, record: SecurityMasterRecor
   ];
 }
 
-function buildSelectedSecurityState(record: SecurityMasterRecord): SecurityMasterSelectedState {
+function buildSelectedSecurityState(
+  record: SecurityMasterRecord,
+  expandedCorporateActionIds: readonly string[]
+): SecurityMasterSelectedState {
   return {
     securityId: record.securityId,
     title: record.displayName,
@@ -773,7 +1000,7 @@ function buildSelectedSecurityState(record: SecurityMasterRecord): SecurityMaste
     status: record.status,
     statusVariant: record.status === "Active" ? "success" : record.status === "Pending" ? "warning" : "outline",
     assetType: record.assetType,
-    scoreText: scoreFormatter.format(record.score),
+    scoreText: formatScore(record.score),
     summaryFields: record.summaryFields,
     identifierSections: record.identifierSections,
     auditTrail: record.auditTrail,
@@ -791,7 +1018,8 @@ function buildSelectedSecurityState(record: SecurityMasterRecord): SecurityMaste
     upcomingActionCountdownLabel: record.upcomingActionCountdownLabel,
     corporateActionStats: record.corporateActionStats,
     corporateTimeline: record.corporateTimeline,
-    corporateActions: record.corporateActions,
+    corporateActions: record.corporateActions.map((seed) =>
+      buildCorporateActionRowState(seed, expandedCorporateActionIds.includes(seed.id))),
     filings: record.filings,
     printPacketId: record.printPacketId,
     printGeneratedAt: record.printGeneratedAt,

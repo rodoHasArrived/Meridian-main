@@ -63,6 +63,14 @@ public static class UiApiRoutes
     public const string IngestionJobById = "/api/ingestion/jobs/{jobId}";
     public const string IngestionJobTransition = "/api/ingestion/jobs/{jobId}/transition";
 
+    // Governed Data workspace operations and assurance endpoints
+    public const string WorkstationIngestionOperations = "/api/workstation/data/ingestion-operations";
+    public const string WorkstationIngestionOperationById = "/api/workstation/data/ingestion-operations/{jobId}";
+    public const string WorkstationIngestionOperationAction = "/api/workstation/data/ingestion-operations/{jobId}/actions/{action}";
+    public const string WorkstationStorageAssurance = "/api/workstation/data/storage-assurance";
+    public const string WorkstationStorageMaintenancePreview = "/api/workstation/data/storage-assurance/actions/preview";
+    public const string WorkstationStorageMaintenanceExecute = "/api/workstation/data/storage-assurance/actions/execute";
+
     // Backfill provider metadata and status endpoints
     public const string BackfillProviderMetadata = "/api/backfill/providers/metadata";
     public const string BackfillProviderStatuses = "/api/backfill/providers/statuses";
@@ -71,6 +79,7 @@ public static class UiApiRoutes
     public const string BackfillProviderConfigAudit = "/api/backfill/providers/audit";
 
     // Provider endpoints
+    public const string ProviderDataProjection = "/api/providers/data-projection";
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
@@ -87,6 +96,7 @@ public static class UiApiRoutes
     public const string ProviderRateLimits = "/api/providers/rate-limits";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
+    public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";
     public const string ProviderSwitch = "/api/providers/switch";
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";
@@ -135,6 +145,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";
@@ -159,6 +170,7 @@ public static class UiApiRoutes
     public const string SymbolsSearch = "/api/symbols/search";
     public const string SymbolsBatch = "/api/symbols/batch";
     public const string SymbolMappings = "/api/symbols/mappings";
+    public const string CanonicalSymbolRegistry = "/api/symbols/registry";
 
     // Catalog search and discovery endpoints
     public const string CatalogSearch = "/api/catalog/search";
@@ -348,9 +360,21 @@ public static class UiApiRoutes
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
+    public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
+    public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
+    public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
+
+    // Passport Workbench governed-write surface (see docs/plans/security-master-passport-workbench.md).
+    public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
+    public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
+    public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
+    public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
+    public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
@@ -589,9 +613,11 @@ public static class UiApiRoutes
     public const string PromotionApprove = "/api/promotion/approve";
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
+    public const string PromotionWalkForwardEvidence = "/api/promotion/runs/{runId}/walk-forward-evidence";
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";
+    public const string WorkstationStream = "/api/workstation/stream";
     public const string WorkstationResearch = "/api/workstation/research";
     public const string WorkstationStrategy = "/api/workstation/strategy";
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
@@ -599,8 +625,12 @@ public static class UiApiRoutes
     public const string WorkstationTrading = "/api/workstation/trading";
     public const string WorkstationDataOperations = "/api/workstation/data-operations";
     public const string WorkstationData = "/api/workstation/data";
+    public const string WorkstationDataQuery = "/api/workstation/data/query";
+    public const string WorkstationDataReplacementCost = "/api/workstation/data/replacement-cost";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
+    public const string WorkstationDataUploadWorkbook = "/api/workstation/data/uploads/templates/workbook";
+    public const string WorkstationDataUploadWorkbookPreview = "/api/workstation/data/uploads/workbook/preview";
     public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";
     public const string WorkstationProviderIntegrationTemplates = "/api/workstation/provider-integrations/templates";
     public const string WorkstationProviderIntegrationTemplateById = "/api/workstation/provider-integrations/templates/{manifestId}";
@@ -639,6 +669,13 @@ public static class UiApiRoutes
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
+    public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
+    public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";
+    public const string WorkstationWorkflowPresetUsed = "/api/workstation/workflows/presets/{presetId}/used";
+    public const string WorkstationCollateralIngest = "/api/workstation/collateral/ingest";
+    public const string WorkstationCollateralExposure = "/api/workstation/collateral/exposure";
     public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
     public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
     public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
@@ -652,6 +689,11 @@ public static class UiApiRoutes
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
     public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
+    public const string WorkstationEvidenceVaultSearch = "/api/workstation/evidence/vault/search";
+    public const string WorkstationEvidenceVaultIntake = "/api/workstation/evidence/vault/intake";
+    public const string WorkstationEvidenceVaultRequestLists = "/api/workstation/evidence/vault/request-lists";
+    public const string WorkstationEvidenceVaultDocuments = "/api/workstation/evidence/vault/documents";
+    public const string WorkstationEvidenceVaultDocumentReview = "/api/workstation/evidence/vault/{vaultId}/documents/{documentId}/review";
     public const string OperationsContinuity = "/api/workstation/operations/continuity";
     public const string OperationsContinuityById = "/api/workstation/operations/continuity/{workflowId:guid}";
     public const string OperationsContinuityCloseReadiness = "/api/workstation/operations/continuity/{workflowId:guid}/close-readiness";
@@ -668,6 +710,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
     public const string OperationsContinuitySecurityMasterResolve = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/resolve";
     public const string OperationsContinuitySecurityMasterOverrideApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/overrides/{overrideId}/approve";
+    public const string OperationsContinuitySecurityMasterFieldEditApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/field-edits/{revisionId}/approve";
     public const string OperationsContinuityLedgerDraft = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/draft";
     public const string OperationsContinuityLedgerValidate = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/validate";
     public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
@@ -688,6 +731,9 @@ public static class UiApiRoutes
     public const string RunsFills = "/api/workstation/runs/{runId}/fills";
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
     public const string RunHistory = "/api/workstation/runs/history";
+    public const string RunsTimeline = "/api/workstation/runs/timeline";
+    public const string RunsLineageTimeline = "/api/workstation/runs/lineage-timeline";
+    public const string RunsSweeps = "/api/workstation/runs/sweeps";
     public const string ReconciliationRuns = "/api/workstation/reconciliation/runs";
     public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
     public const string ReconciliationStatementRuns = "/api/workstation/reconciliation/statement-runs";
@@ -697,6 +743,19 @@ public static class UiApiRoutes
     public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
     public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
+    public const string ReconciliationStatementConnectors = "/api/workstation/reconciliation/statement-connectors";
+    public const string ReconciliationStatementMappingProfiles = "/api/workstation/reconciliation/statement-mapping-profiles";
+    public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
+    public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
+    public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
+    public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
+    public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
+    public const string ReconciliationStatementToReportArtifact = "/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}";
+    public const string ReconciliationStatementFetchPreview = "/api/workstation/reconciliation/statement-imports/fetch-preview";
+    public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
+    public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
+    public const string ReconciliationStatementFetchScheduleRun = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
@@ -732,6 +791,9 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
+    public const string LedgerAccountingConfigurationAssetAccountingCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting";
+    public const string LedgerAssetAccountingEventProjections = "/api/ledger/accounting-configuration/asset-accounting/events/project";
+    public const string LedgerAssetAccountingEventLifecycle = "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle";
     public const string LedgerAccountingConfigurationPostingRuleCandidatePosts = "/api/ledger/accounting-configuration/posting-rules/candidates/post";
     public const string LedgerAccountingConfigurationPostingRuleProjectionSets = "/api/ledger/accounting-configuration/posting-rules/projection-sets";
     public const string LedgerAccountingConfigurationPostingRuleTests = "/api/ledger/accounting-configuration/posting-rules/tests";
@@ -745,6 +807,7 @@ public static class UiApiRoutes
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";
     public const string LedgerCloseManagementEvidenceReview = "/api/ledger/close-management/evidence-review";
     public const string LedgerCloseManagementPeriodLock = "/api/ledger/close-management/period-lock";
+    public const string LedgerCloseManagementPeriodReopen = "/api/ledger/close-management/period-reopen";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
@@ -757,6 +820,15 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
     public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
+    public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
+    public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
+    public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
+    public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
+    public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
@@ -771,6 +843,25 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterEconomicDefinition = "/api/workstation/security-master/securities/{securityId:guid}/economic-definition";
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
+
+    // Workstation strategy designer endpoints
+    public const string WorkstationStrategyDesignerTemplates = "/api/workstation/strategy/designer/templates";
+    public const string WorkstationStrategyDesignerFieldCatalog = "/api/workstation/strategy/designer/field-catalog";
+    public const string WorkstationStrategyDesignerDrafts = "/api/workstation/strategy/designer/drafts";
+    public const string WorkstationStrategyDesignerDraftById = "/api/workstation/strategy/designer/drafts/{documentId}";
+    public const string WorkstationStrategyDesignerValidate = "/api/workstation/strategy/designer/validate";
+    public const string WorkstationStrategyDesignerPreview = "/api/workstation/strategy/designer/preview";
+    public const string WorkstationStrategyDesignerRunBacktest = "/api/workstation/strategy/designer/run-backtest";
+
+    // Workstation strategy engine endpoints
+    public const string WorkstationStrategyEngineDefinitions = "/api/workstation/strategy/engine/definitions";
+    public const string WorkstationStrategyEngineValidateRun = "/api/workstation/strategy/engine/validate-run";
+
+    // Workstation family-office endpoints
+    public const string WorkstationFamilyOfficeOverview = "/api/workstation/family-office/overview";
+    public const string WorkstationFamilyOfficeBalanceSheet = "/api/workstation/family-office/balance-sheet";
+    public const string WorkstationFamilyOfficeEntities = "/api/workstation/family-office/entities";
+    public const string WorkstationFamilyOfficeOwnershipGraph = "/api/workstation/family-office/ownership-graph";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
     public const string ReconciliationCaseTaxonomy = "/api/workstation/reconciliation/break-queue/taxonomy";
@@ -781,6 +872,8 @@ public static class UiApiRoutes
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
     public const string ReconciliationBreakAssign = "/api/workstation/reconciliation/break-queue/{breakId}/assign";
     public const string ReconciliationBreakTransition = "/api/workstation/reconciliation/break-queue/{breakId}/transition";
+    public const string ReconciliationBreakWaive = "/api/workstation/reconciliation/break-queue/{breakId}/waive";
+    public const string ReconciliationBreakSupersede = "/api/workstation/reconciliation/break-queue/{breakId}/supersede";
     public const string ReconciliationBreakComments = "/api/workstation/reconciliation/break-queue/{breakId}/comments";
     public const string ReconciliationBreakComment = "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}";
     public const string ReconciliationBreakRootCause = "/api/workstation/reconciliation/break-queue/{breakId}/root-cause";
@@ -809,8 +902,34 @@ public static class UiApiRoutes
     public const string ReportingPackDeliveryPortalPackage = "/portal/reporting/packages/{packageId}";
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
+    public const string ReportingRunReadiness = "/api/fund-structure/reporting/runs/readiness";
+    public const string ReportingGovernedRun = "/api/fund-structure/reporting/runs/{runId}";
+    public const string ReportingGovernedSeries = "/api/fund-structure/reporting/runs/series/{seriesId}";
+    public const string ReportingGovernedRunCreate = "/api/fund-structure/reporting/runs/{runId}/govern";
+    public const string ReportingGovernedRunValidate = "/api/fund-structure/reporting/runs/{runId}/validate";
+    public const string ReportingGovernedRunSubmit = "/api/fund-structure/reporting/runs/{runId}/submit";
+    public const string ReportingGovernedRunApprove = "/api/fund-structure/reporting/runs/{runId}/approve";
+    public const string ReportingGovernedRunRelease = "/api/fund-structure/reporting/runs/{runId}/release";
+    public const string ReportingGovernedRunRestatementRequests = "/api/fund-structure/reporting/runs/{runId}/restatement-requests";
+    public const string ReportingGovernedRestatement = "/api/fund-structure/reporting/runs/restatement-requests/{requestId}";
+    public const string ReportingGovernedRestatementApprove = "/api/fund-structure/reporting/runs/restatement-requests/{requestId}/approve";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
+    public const string ReportingRunStream = "/api/fund-structure/reporting/runs/{runId}/stream";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
+    public const string ReportingDistributionQueueDelivery = "/api/fund-structure/reporting/distribution/deliveries";
+    public const string ReportingDistributionDelivery = "/api/fund-structure/reporting/distribution/deliveries/{jobId}";
+    public const string ReportingDistributionPackageDeliveries = "/api/fund-structure/reporting/distribution/packages/{runId}/deliveries";
+    public const string ReportingDistributionTransports = "/api/fund-structure/reporting/distribution/transports";
+    public const string ReportingDistributionProviderReceipt = "/hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts";
+    public const string ReportingDistributionIssueAccessGrant = "/api/fund-structure/reporting/distribution/access-grants";
+    public const string ReportingDistributionAccessGrant = "/api/fund-structure/reporting/distribution/access-grants/{grantId}";
+    public const string ReportingDistributionPackageAccessGrants = "/api/fund-structure/reporting/distribution/packages/{runId}/access-grants";
+    public const string ReportingDistributionRevokeAccessGrant = "/api/fund-structure/reporting/distribution/access-grants/{grantId}/revoke";
+    public const string ReportingDistributionArtifactDownload = "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}";
+    public const string ReportingDistributionPortalPackage = "/portal/reporting/secure/packages/{runId}";
+    public const string ReportingDistributionExchangeAccessGrant = "/portal/reporting/access-grants/{grantId}/exchange";
+    public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
+    public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
     public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
@@ -833,6 +952,10 @@ public static class UiApiRoutes
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
+    // Portfolio-wide cash ladder and liquidity scenarios
+    public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
+    public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
@@ -919,6 +1042,18 @@ public static class UiApiRoutes
     // Provider credential verification endpoints
     public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
     public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
+
+    // Provider module setup endpoints (Settings workspace)
+    public const string ProviderModules = "/api/providers/modules";
+    public const string ProviderModulesCatalogue = "/api/providers/modules/catalogue";
+    public const string ProviderModuleById = "/api/providers/modules/{moduleId}";
+    public const string ProviderModuleEnabled = "/api/providers/modules/{moduleId}/enabled";
+    public const string ProviderModuleTest = "/api/providers/modules/{moduleId}/test";
+    public const string ProviderRestart = "/api/providers/restart";
+
+    // Strategy run catalog endpoints (/api/strategies surface)
+    public const string StrategyRunsByStrategy = "/api/strategies/{strategyId}/runs";
+    public const string StrategyRunsCompare = "/api/strategies/runs/compare";
 
     // Covered-call strategy endpoints (slice 1: backtest UI)
     public const string CoveredCallRuns = "/api/strategies/covered-call/runs";

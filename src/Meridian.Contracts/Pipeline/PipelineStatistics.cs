@@ -23,5 +23,10 @@ public readonly record struct PipelineStatistics(
     bool IsValidationEnabled = false,
     bool IsDeduplicationEnabled = false,
     BoundedChannelFullMode QueueFullMode = BoundedChannelFullMode.Wait,
-    bool HighWaterMarkWarned = false
+    bool HighWaterMarkWarned = false,
+    int ConsumerCount = 1,
+    int ActiveConsumers = 0,
+    int FaultedConsumers = 0,
+    long ConsumerIterationFailures = 0,
+    DateTimeOffset? LastConsumerFaultAtUtc = null
 );

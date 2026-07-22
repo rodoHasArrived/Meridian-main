@@ -25,6 +25,8 @@ class DesignSystemGovernanceTests(unittest.TestCase):
             return governance.run_checks(root, baseline={})
 
     def test_clean_package_passes(self):
+        # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this
+        # ever fails, that's real signal — triage each violation before touching the baseline.
         violations = governance.run_checks(ROOT)
         self.assertEqual([], violations)
 
@@ -42,40 +44,107 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         self.assertTrue(any(v.code == "local-upload-reference" for v in violations))
 
     def test_raw_hex_is_reported_outside_baseline(self):
-        violations = self.run_on_files({"preview/new.html": "<style>.x{color:#FFFFFF}</style>"})
+        violations = self.run_on_files({"templates/new/index.html": "<style>.x{color:#FFFFFF}</style>"})
         self.assertTrue(any(v.code == "raw-hex" for v in violations))
 
+    def test_raw_hex_inside_var_fallback_is_exempt(self):
+        # The sanctioned "token with a hex fallback" pattern (TOKEN_REFERENCE.md) must not trip
+        # the same rule that catches a genuinely hardcoded color.
+        violations = self.run_on_files(
+            {"components/core/Widget.jsx": ".w{border-color:var(--border,#D7DCE2);}"}
+        )
+        self.assertFalse(any(v.code == "raw-hex" for v in violations))
+
+    def test_large_radius_is_reported(self):
+        violations = self.run_on_files({"components/core/Widget.jsx": ".w{border-radius:12px;}"})
+        self.assertTrue(any(v.code == "large-radius" for v in violations))
+
     def test_legacy_workspace_name_is_reported(self):
-        violations = self.run_on_files({"preview/new.html": "<main><h1>Governance</h1></main>"})
+        violations = self.run_on_files({"templates/new/index.html": "<main><h1>Governance</h1></main>"})
         self.assertTrue(any(v.code == "legacy-workspace" for v in violations))
 
-    def test_numeric_table_cell_requires_alignment_class(self):
-        violations = self.run_on_files({"preview/new.html": "<table><tr><td>123.45</td></tr></table>"})
-        self.assertTrue(any(v.code == "numeric-table-cell" for v in violations))
-
-    def test_preview_file_requires_document_contract(self):
+    def test_template_entry_requires_document_contract(self):
         violations = self.run_on_files(
             {
-                "preview/new.html": (
-                    '<!DOCTYPE html><html><head><title>Preview</title></head><body><section>Content</section></body></html>'
+                "templates/new/index.html": (
+                    "<!DOCTYPE html><html><head><title>New</title></head><body><section>Content</section></body></html>"
                 )
             }
         )
-        self.assertTrue(any(v.code == "preview-viewport" for v in violations))
-        self.assertTrue(any(v.code == "preview-main-landmark" for v in violations))
-        self.assertTrue(any(v.code == "preview-heading" for v in violations))
-        self.assertTrue(any(v.code == "preview-common-stylesheet" for v in violations))
+        self.assertTrue(any(v.code == "template-viewport" for v in violations))
+        self.assertTrue(any(v.code == "template-main-landmark" for v in violations))
+        self.assertTrue(any(v.code == "template-heading" for v in violations))
 
-    def test_preview_file_accepts_document_contract(self):
+    def test_template_entry_accepts_document_contract(self):
         violations = self.run_on_files(
             {
-                "preview/new.html": (
+                "templates/new/index.html": (
                     '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
-                    '<link rel="stylesheet" href="preview-common.css"></head><body><main><h1>Preview</h1>Content</main></body></html>'
+                    "</head><body><main><h1>New</h1>Content</main></body></html>"
                 )
             }
         )
-        self.assertFalse(any(v.code.startswith("preview-") for v in violations))
+        self.assertFalse(any(v.code.startswith("template-") for v in violations))
+
+    def test_template_entry_follows_x_import_to_sibling_screen(self):
+        violations = self.run_on_files(
+            {
+                "templates/new/New.dc.html": (
+                    '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
+                    '<script src="./support.js"></script></head><body><x-dc>'
+                    '<helmet><script src="./ds-base.js"></script></helmet>'
+                    '<x-import component-from-global-scope="NewScreen" from="./screen.jsx" hint-size="100%,800px">'
+                    "</x-import></x-dc></body></html>"
+                ),
+                "templates/new/screen.jsx": (
+                    "function NewScreen() { return (<main><h1>New</h1></main>); }\n"
+                    "window.NewScreen = NewScreen;"
+                ),
+            }
+        )
+        self.assertFalse(any(v.code.startswith("template-") for v in violations))
+
+    def test_template_entry_x_import_missing_landmark_in_sibling_is_reported(self):
+        violations = self.run_on_files(
+            {
+                "templates/new/New.dc.html": (
+                    '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
+                    "</head><body><x-dc>"
+                    '<x-import component-from-global-scope="NewScreen" from="./screen.jsx" hint-size="100%,800px">'
+                    "</x-import></x-dc></body></html>"
+                ),
+                "templates/new/screen.jsx": (
+                    "function NewScreen() { return (<div>No landmark or heading</div>); }\n"
+                    "window.NewScreen = NewScreen;"
+                ),
+            }
+        )
+        self.assertTrue(any(v.code == "template-main-landmark" for v in violations))
+        self.assertTrue(any(v.code == "template-heading" for v in violations))
+
+    def test_non_template_html_is_not_held_to_document_contract(self):
+        # A component .card.html doc doesn't need to look like a workstation screen.
+        violations = self.run_on_files({"components/core/widget.card.html": "<p>demo</p>"})
+        self.assertFalse(any(v.code.startswith("template-") for v in violations))
+
+    def test_missing_prompt_md_is_reported(self):
+        violations = self.run_on_files(
+            {
+                "components/core/Widget.jsx": "export function Widget() {}",
+                "components/core/Widget.d.ts": "export declare function Widget(): JSX.Element;",
+            }
+        )
+        self.assertTrue(any(v.code == "prompt-coverage" for v in violations))
+
+    def test_component_with_prompt_md_passes_coverage(self):
+        violations = self.run_on_files(
+            {
+                "components/core/Widget.jsx": "export function Widget() {}",
+                "components/core/Widget.d.ts": "export declare function Widget(): JSX.Element;",
+                "components/core/Widget.prompt.md": "Widget \u2014 does a thing.",
+            }
+        )
+        self.assertFalse(any(v.code == "prompt-coverage" for v in violations))
 
 
 if __name__ == "__main__":

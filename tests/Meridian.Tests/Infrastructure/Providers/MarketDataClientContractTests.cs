@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -73,6 +75,48 @@ public abstract class MarketDataClientContractTests<TClient>
         var meta = (Meridian.Infrastructure.Adapters.Core.IProviderMetadata)client;
         var act = () => _ = meta.ProviderCapabilities;
         act.Should().NotThrow("ProviderCapabilities must never throw");
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Connection diagnostics contract                                    //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task ConnectionDiagnostics_StreamingContractAlwaysExposesSafeSnapshot()
+    {
+        await using var client = CreateClient();
+        IMarketDataClient streamingClient = client;
+        IProviderConnectionDiagnosticsSource diagnosticsSource = streamingClient;
+
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.ProviderName.Should().NotBeNullOrWhiteSpace(
+            "every streaming provider must identify its connection diagnostics");
+        snapshot.IsConnected.Should().BeFalse(
+            "a newly constructed provider has not completed a connection transaction");
+        snapshot.LastError.Should().BeNull(
+            "the safe initial snapshot must not fabricate or expose transport failure details");
+
+        Action<WebSocketConnectionDiagnostics> observer = _ => { };
+        var subscribe = () => diagnosticsSource.ConnectionDiagnosticsChanged += observer;
+        var unsubscribe = () => diagnosticsSource.ConnectionDiagnosticsChanged -= observer;
+        subscribe.Should().NotThrow("the contract fallback must accept diagnostics observers");
+        unsubscribe.Should().NotThrow("the contract fallback must accept observer cleanup");
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnostics_DisabledStreamingClientNeverClaimsLiveConnection()
+    {
+        await using var client = CreateClient();
+        if (client.IsEnabled)
+            return;
+
+        var diagnosticsSource = (IProviderConnectionDiagnosticsSource)client;
+        var snapshot = diagnosticsSource.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.LifecycleState.Should().NotBe(ProviderConnectionLifecycleState.Connected);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.IsReconnecting.Should().BeFalse();
     }
 
     // ------------------------------------------------------------------ //

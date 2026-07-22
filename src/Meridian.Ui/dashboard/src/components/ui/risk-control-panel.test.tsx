@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -78,6 +79,19 @@ describe("RiskControlPanel", () => {
     expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
   });
 
+  it("settles on loaded risk controls under React StrictMode", async () => {
+    render(
+      <StrictMode>
+        <RiskControlPanel />
+      </StrictMode>
+    );
+
+    expect(await screen.findByText("PositionLimit")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
+    expect(screen.queryByText("Loading risk rules...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading rule violations...")).not.toBeInTheDocument();
+  });
+
   it("renders structured API error details when a risk update fails", async () => {
     const user = userEvent.setup();
     vi.mocked(api.updateRiskRuleConfig).mockRejectedValueOnce(
@@ -105,7 +119,7 @@ describe("RiskControlPanel", () => {
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("The proposed threshold conflicts with the active governance policy.")).toBeInTheDocument();
-    expect(within(alert).getByText("Endpoint returned 409 for /api/risk/rules/DrawdownCircuitBreaker/config.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Risk configuration rejected")).toBeInTheDocument();
     expect(within(alert).getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
   });

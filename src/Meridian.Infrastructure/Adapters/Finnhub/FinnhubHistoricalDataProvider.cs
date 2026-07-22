@@ -140,7 +140,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "candles");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "candles", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -242,7 +242,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "candles");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "candles", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

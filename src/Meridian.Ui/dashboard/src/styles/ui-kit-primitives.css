@@ -1,0 +1,441 @@
+.meridian-toolbar-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(31, 52, 76, 0.95);
+  border-radius: var(--radius-lg);
+  background: rgba(11, 21, 32, 0.96);
+  box-shadow: var(--shadow-panel);
+}
+
+.meridian-toolbar-strip-items {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.meridian-toolbar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.625rem;
+  padding: 0 0.625rem;
+  border: 1px solid rgba(31, 52, 76, 0.95);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 16, 26, 0.92);
+  color: var(--fg-muted);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.meridian-toolbar-chip b {
+  color: #f6fbff;
+  font-weight: 500;
+}
+
+.meridian-toolbar-chip.active {
+  border-color: rgba(42, 178, 212, 0.35);
+  background: rgba(42, 178, 212, 0.10);
+  color: var(--cyan-primary);
+}
+
+.meridian-toolbar-right {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dense-data-table-wrap {
+  max-height: 35rem;
+  overflow: auto;
+  border: 1px solid rgba(31, 52, 76, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(8, 16, 26, 0.55);
+}
+
+.dense-data-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.dense-data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(22, 35, 52, 0.62);
+}
+
+.dense-data-table th {
+  padding: 0.625rem 0.75rem;
+  color: var(--fg-muted);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dense-data-table td {
+  padding: 0.75rem;
+  border-top: 1px solid rgba(31, 52, 76, 0.66);
+  color: var(--ws-text);
+  vertical-align: top;
+  font-size: 0.75rem;
+}
+
+.dense-data-table tbody tr {
+  background: rgba(8, 16, 26, 0.24);
+  transition: background 100ms ease;
+}
+
+.dense-data-table tbody tr.selectable {
+  cursor: pointer;
+}
+
+.dense-data-table tbody tr:hover {
+  background: rgba(42, 178, 212, 0.06);
+}
+
+.dense-data-table tbody tr.selected {
+  background: rgba(42, 178, 212, 0.10);
+}
+
+.dense-data-table tbody tr.selectable:focus-visible {
+  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline-offset: -2px;
+  background: rgba(42, 178, 212, 0.08);
+}
+
+.dense-data-table-empty {
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.dense-data-table-sortable {
+  cursor: pointer;
+}
+
+.dense-data-table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.dense-data-table th.text-right .dense-data-table-sort-button {
+  justify-content: flex-end;
+}
+
+.dense-data-table-sort-button:hover,
+.dense-data-table-sort-button:focus-visible {
+  color: var(--fg);
+}
+
+.dense-data-table-sort-button:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline-offset: 2px;
+}
+
+.dense-data-table-sort-indicator {
+  opacity: 0.45;
+  color: var(--cyan-primary);
+  font-size: 0.6875rem;
+  line-height: 1;
+}
+
+.dense-data-table-sorted .dense-data-table-sort-indicator {
+  opacity: 1;
+  color: var(--accent, #2F6F8F);
+}
+
+.dense-data-table-sorted .dense-data-table-sort-button {
+  color: var(--fg);
+}
+
+.dense-data-table-row-cap {
+  display: flex;
+  justify-content: center;
+  padding: 0.625rem;
+  border-top: 1px solid rgba(31, 52, 76, 0.66);
+  background: rgba(8, 16, 26, 0.72);
+}
+
+.dense-data-table-row-cap button {
+  min-height: 1.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid rgba(42, 178, 212, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(42, 178, 212, 0.10);
+  color: var(--cyan-primary);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dense-data-table-row-cap button:focus-visible {
+  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline-offset: 2px;
+}
+
+.entity-summary {
+  border: 1px solid rgba(31, 52, 76, 0.95);
+  border-radius: var(--radius-xl);
+  background: rgba(13, 23, 34, 0.9);
+  padding: 1rem;
+  box-shadow: var(--shadow-panel);
+}
+
+.entity-summary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.entity-summary-title {
+  margin-top: 0.625rem;
+  color: #f6fbff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.entity-summary-subtitle {
+  margin-top: 0.375rem;
+  color: var(--fg-muted);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.entity-summary-description {
+  max-width: 52rem;
+  margin-top: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.entity-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.entity-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.entity-summary-field {
+  min-width: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(31, 52, 76, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(8, 16, 26, 0.62);
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.entity-summary-field:hover {
+  border-color: var(--border-hi);
+  background: var(--surface-raise-bg);
+  box-shadow: var(--shadow-panel);
+}
+
+.entity-summary-field dt {
+  color: var(--fg-muted);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+
+.entity-summary-field dd {
+  margin-top: 0.5rem;
+  word-break: break-word;
+  color: #f6fbff;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.meridian-toolbar-strip,
+.entity-summary {
+  border: 1px solid var(--ws-border);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+  box-shadow: var(--ws-shadow);
+}
+
+.meridian-toolbar-chip {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text-muted);
+  box-shadow: none;
+}
+
+.meridian-toolbar-chip b {
+  color: var(--ws-text);
+}
+
+.meridian-toolbar-chip.active {
+  border-color: rgba(47, 111, 143, 0.34);
+  background: rgba(47, 111, 143, 0.10);
+  color: var(--cyan-primary);
+}
+
+.entity-summary-title {
+  color: var(--ws-text);
+}
+
+.entity-summary-subtitle,
+.entity-summary-description {
+  color: var(--ws-text-muted);
+}
+
+.entity-summary-field {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text);
+}
+
+.entity-summary-field:hover {
+  border-color: var(--ws-border-strong);
+  background: var(--ws-surface-raised);
+  box-shadow: var(--ws-shadow);
+}
+
+.entity-summary-field dt {
+  color: var(--ws-text-muted);
+}
+
+.entity-summary-field dd {
+  color: var(--ws-text);
+}
+
+.dense-data-table-wrap {
+  border-color: var(--ws-border);
+  border-radius: 2px;
+  background: var(--ws-surface);
+  box-shadow: none;
+}
+
+.dense-data-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dense-data-table thead {
+  background: #f0f3f6;
+}
+
+.dense-data-table th {
+  border-bottom: 1px solid var(--ws-border-strong);
+  color: var(--ws-text-muted);
+  padding: 0.4375rem 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.dense-data-table td {
+  border-top: 1px solid var(--ws-row-border);
+  padding: 0.4375rem 0.625rem;
+}
+
+.dense-data-table tbody tr {
+  background: var(--ws-surface);
+}
+
+.dense-data-table tbody tr:nth-child(even) {
+  background: #fbfcfd;
+}
+
+.dense-data-table tbody tr:hover {
+  background: var(--ws-row-hover);
+}
+
+.dense-data-table tbody tr.selected {
+  background: var(--ws-row-selected);
+  box-shadow: inset 3px 0 0 var(--cyan-primary);
+}
+
+.dense-data-table-empty {
+  color: var(--ws-text-muted);
+  padding: 2rem 0.75rem;
+}
+
+/* ── Virtualized dense tables ────────────────────────────────────────────────
+   When DenseDataTable windows rows it mounts only a slice plus top/bottom spacer
+   rows. Keep row heights exact, neutralize the spacers, and disable zebra
+   striping (nth-child parity is meaningless once the mounted slice shifts).
+──────────────────────────────────────────────────────────────────────────*/
+.dense-data-table-wrap-virtual {
+  overflow-y: auto;
+}
+
+.dense-data-table-spacer,
+.dense-data-table-spacer:hover {
+  background: transparent;
+}
+
+.dense-data-table-spacer td {
+  padding: 0;
+  border: 0;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr:nth-child(even) {
+  background: var(--ws-surface);
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selectable td,
+.dense-data-table-wrap-virtual .dense-data-table tbody tr td {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selected {
+  background: var(--ws-row-selected);
+}
+
+/* ── Concrete radius normalization ──────────────────────────────────────────
+   Concrete unifies control/card/panel corners to a single tight 2px radius;
+   structure is carried by hairline borders, not rounding. Override the legacy
+   scalable-radius values so these hand-authored primitives read as Concrete
+   regardless of the base --radius-* token resolution.
+──────────────────────────────────────────────────────────────────────────*/
+.meridian-toolbar-strip,
+.entity-summary,
+.entity-summary-field {
+  border-radius: 2px;
+}
+
+.meridian-toolbar-chip {
+  border-radius: 2px;
+}

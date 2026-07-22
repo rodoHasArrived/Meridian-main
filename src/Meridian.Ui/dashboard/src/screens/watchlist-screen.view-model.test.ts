@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { createElement, StrictMode, type PropsWithChildren } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError, createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
@@ -363,7 +364,7 @@ describe("watchlist-screen view model", () => {
       quoteError: {
         summary: "collector offline",
         details: [
-          "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.",
+          "Meridian service returned 503. Open diagnostics for technical details.",
           "Service unavailable"
         ]
       },
@@ -372,7 +373,7 @@ describe("watchlist-screen view model", () => {
       tone: "danger",
       label: "Live prices unavailable: collector offline",
       details: [
-        "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.",
+        "Meridian service returned 503. Open diagnostics for technical details.",
         "Service unavailable"
       ]
     });
@@ -422,6 +423,17 @@ describe("watchlist-screen view model", () => {
     });
 
     expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+  });
+
+  it("reaches a terminal list state under React StrictMode", async () => {
+    const api = createWatchlistApi();
+    const wrapper = ({ children }: PropsWithChildren) => createElement(StrictMode, null, children);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api), { wrapper });
+
+    await waitFor(() => expect(result.current.listState).toBe("ready"));
+    expect(result.current.refreshing).toBe(false);
+    expect(result.current.rows).toHaveLength(symbols.length);
   });
 
   it("ignores stale quote snapshots after the subscribed symbol set changes", async () => {
@@ -554,7 +566,7 @@ describe("watchlist-screen view model", () => {
     await waitFor(() => expect(result.current.quoteStatusTone).toBe("danger"));
     expect(result.current.quoteStatusLabel).toBe("Live prices unavailable: collector offline");
     expect(result.current.quoteStatusDetails).toEqual([
-      "Endpoint returned 503 for /api/data/quotes-snapshot?symbols=AAPL.",
+      "Meridian service returned 503. Open diagnostics for technical details.",
       "Service unavailable"
     ]);
   });
@@ -581,7 +593,7 @@ describe("watchlist-screen view model", () => {
     expect(result.current.loadError).toEqual({
       summary: "The symbol catalog is temporarily offline.",
       details: [
-        "Endpoint returned 503 for /api/symbols.",
+        "Meridian service returned 503. Open diagnostics for technical details.",
         "Symbol service unavailable",
         "provider: Reconnect the primary symbol source before retrying."
       ]
@@ -620,7 +632,7 @@ describe("watchlist-screen view model", () => {
       tone: "danger",
       message: "The provider rejected the requested symbol.",
       details: [
-        "Endpoint returned 422 for /api/symbols.",
+        "Meridian service returned 422. Open diagnostics for technical details.",
         "Symbol add rejected",
         "symbol: Verify the symbol format or enable the provider before retrying."
       ],

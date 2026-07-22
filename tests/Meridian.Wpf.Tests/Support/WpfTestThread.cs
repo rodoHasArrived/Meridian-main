@@ -6,6 +6,7 @@ namespace Meridian.Wpf.Tests.Support;
 
 internal static class WpfTestThread
 {
+    private static readonly TimeSpan DispatchTimeout = TimeSpan.FromMinutes(2);
     private static readonly object Sync = new();
     private static Thread? _thread;
     private static Dispatcher? _dispatcher;
@@ -16,7 +17,7 @@ internal static class WpfTestThread
         EnsureStarted();
         ExceptionDispatchInfo? captured = null;
 
-        _dispatcher!.Invoke(() =>
+        InvokeWithTimeout(() =>
         {
             try
             {
@@ -35,7 +36,13 @@ internal static class WpfTestThread
     public static void Run(Func<Task> action)
     {
         EnsureStarted();
-        _dispatcher!.InvokeAsync(action).Task.Unwrap().GetAwaiter().GetResult();
+        var task = _dispatcher!.InvokeAsync(action).Task.Unwrap();
+        if (!task.Wait(DispatchTimeout))
+        {
+            throw new TimeoutException($"WPF test action did not complete within {DispatchTimeout.TotalSeconds:N0} seconds.");
+        }
+
+        task.GetAwaiter().GetResult();
         DrainDispatcher();
     }
 
@@ -68,13 +75,27 @@ internal static class WpfTestThread
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.IsBackground = true;
             _thread.Start();
-            Ready.Wait();
+            if (!Ready.Wait(DispatchTimeout))
+            {
+                throw new TimeoutException($"WPF test dispatcher did not start within {DispatchTimeout.TotalSeconds:N0} seconds.");
+            }
         }
     }
 
     private static void DrainDispatcher()
     {
-        _dispatcher!.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
-        _dispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+        InvokeWithTimeout(() => { }, DispatcherPriority.ApplicationIdle);
+        InvokeWithTimeout(() => { }, DispatcherPriority.ContextIdle);
+    }
+
+    private static void InvokeWithTimeout(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+    {
+        var operation = _dispatcher!.InvokeAsync(action, priority);
+        if (!operation.Task.Wait(DispatchTimeout))
+        {
+            throw new TimeoutException($"WPF dispatcher operation did not complete within {DispatchTimeout.TotalSeconds:N0} seconds.");
+        }
+
+        operation.Task.GetAwaiter().GetResult();
     }
 }

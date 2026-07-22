@@ -20,12 +20,17 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Interactive Brokers brokerage gateway for live or paper order execution via the TWS/Gateway API.
 /// Uses the native IB socket path when the official vendor SDK is available.
 /// </summary>
-[DataSource("ib-brokerage", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("ibkr", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 5, Description = "Interactive Brokers TWS/Gateway order execution")]
 [ImplementsAdr("ADR-001", "IB brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBBrokerageGateway : IBrokerageGateway
+public sealed class IBBrokerageGateway :
+    IBrokerageGateway,
+    IExecutionGatewayModeProvider,
+    IBrokerageAccountCatalog,
+    IBrokeragePortfolioSync,
+    IBrokerageActivitySync
 {
     private static readonly TimeSpan CallbackTimeout = TimeSpan.FromSeconds(10);
 
@@ -36,6 +41,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
+    private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
+    private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
     private readonly ConcurrentDictionary<int, AccountSummaryCollector> _accountSummaryRequests = new();
     private readonly SemaphoreSlim _openOrdersGate = new(1, 1);
@@ -73,13 +80,37 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     }
 
     /// <inheritdoc />
-    public string GatewayId => "ib";
+    public string GatewayId => "ibkr";
 
     /// <inheritdoc />
     public bool IsConnected => _connected && _client.IsConnected;
 
     /// <inheritdoc />
     public string BrokerDisplayName => "Interactive Brokers";
+
+    /// <summary>
+    /// Exposes the actual runtime posture to the OMS. A guidance build is explicitly simulation,
+    /// which prevents a configuration-only promotion from treating it as a live broker.
+    /// </summary>
+    public Meridian.Execution.Sdk.ExecutionMode ExecutionMode
+    {
+        get
+        {
+#if IBAPI_VENDOR
+            return _options.UsePaperTrading
+                ? Meridian.Execution.Sdk.ExecutionMode.Paper
+                : Meridian.Execution.Sdk.ExecutionMode.Live;
+#else
+            return Meridian.Execution.Sdk.ExecutionMode.Simulation;
+#endif
+        }
+    }
+
+    /// <inheritdoc />
+    public string ProviderId => "ibkr";
+
+    /// <inheritdoc />
+    public string ProviderDisplayName => BrokerDisplayName;
 
     /// <inheritdoc />
     public BrokerageCapabilities BrokerageCapabilities { get; } = new()
@@ -302,6 +333,115 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             _openOrdersSnapshotBuffer = null;
             _openOrdersGate.Release();
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
+    {
+        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        return
+        [
+            new BrokerageExternalAccountDto(
+                ProviderId,
+                account.AccountId,
+                string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
+                account.Status,
+                account.Currency,
+                account.RetrievedAt,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gatewayId"] = GatewayId,
+                    ["executionMode"] = ExecutionMode.ToString()
+                })
+        ];
+    }
+
+    /// <inheritdoc />
+    public async Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+        string externalAccountId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+
+        var accountTask = GetAccountInfoAsync(ct);
+        var positionsTask = GetPositionsAsync(ct);
+        await Task.WhenAll(accountTask, positionsTask).ConfigureAwait(false);
+
+        var account = await accountTask.ConfigureAwait(false);
+        var positions = await positionsTask.ConfigureAwait(false);
+        var accountId = string.IsNullOrWhiteSpace(externalAccountId) ? account.AccountId : externalAccountId;
+        return new BrokeragePortfolioSnapshotDto(
+            new BrokerageExternalAccountDto(
+                ProviderId,
+                accountId,
+                string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
+                account.Status,
+                account.Currency,
+                account.RetrievedAt,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gatewayId"] = GatewayId,
+                    ["executionMode"] = ExecutionMode.ToString()
+                }),
+            new BrokerageBalanceSnapshotDto(account.Cash, account.Equity, account.BuyingPower, account.Currency),
+            positions.Select(position => new BrokeragePositionSnapshotDto(
+                position.Symbol,
+                position.Quantity,
+                position.AverageEntryPrice,
+                position.MarketPrice,
+                position.MarketValue,
+                position.UnrealizedPnl,
+                position.AssetClass,
+                position.Description,
+                position.PositionId,
+                account.Currency,
+                position.Metadata)).ToArray(),
+            DateTimeOffset.UtcNow);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// TWS publishes executions during the connected session. This intentionally returns only
+    /// those source-identified callbacks; Flex imports remain the controlled backstop for cash,
+    /// dividends, interest, fees, FX conversions, and prior-session activity.
+    /// </remarks>
+    public async Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+        string externalAccountId,
+        DateTimeOffset? since = null,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+
+        var orders = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
+        var fills = _executions.Values
+            .Where(execution => string.Equals(execution.Account, externalAccountId, StringComparison.OrdinalIgnoreCase))
+            .Where(execution => !since.HasValue || execution.ExecutedAt >= since.Value)
+            .OrderBy(execution => execution.ExecutedAt)
+            .Select(execution => new BrokerageFillSnapshotDto(
+                execution.ExecutionId,
+                execution.OrderId.ToString(),
+                execution.Symbol,
+                IBCanonicalPayloadMapper.ParseSide(execution.Side, execution.Metadata),
+                execution.Shares,
+                (decimal)execution.Price,
+                execution.ExecutedAt,
+                execution.Exchange))
+            .ToArray();
+
+        return new BrokerageActivitySnapshotDto(
+            ProviderId,
+            externalAccountId,
+            DateTimeOffset.UtcNow,
+            orders
+                .Where(order =>
+                    int.TryParse(order.OrderId, out var orderId) &&
+                    _openOrderAccounts.TryGetValue(orderId, out var accountId) &&
+                    string.Equals(accountId, externalAccountId, StringComparison.OrdinalIgnoreCase))
+                .Select(order => new BrokerageOrderSnapshotDto(
+                order.OrderId, order.ClientOrderId, order.Symbol, order.Side, order.Type, order.Status,
+                order.Quantity, order.FilledQuantity, order.LimitPrice, order.StopPrice, order.CreatedAt)).ToArray(),
+            fills,
+            Array.Empty<BrokerageCashTransactionDto>());
     }
 
     /// <inheritdoc />
@@ -529,6 +669,11 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
         var gatewayOrderId = update.OrderId;
+        if (string.IsNullOrWhiteSpace(update.Account))
+            _openOrderAccounts.TryRemove(gatewayOrderId, out _);
+        else
+            _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
         var brokerOrder = new BrokerOrder
         {
@@ -658,6 +803,9 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
 
     private void OnExecutionDetailsReceived(object? sender, IBExecutionUpdate update)
     {
+        if (!string.IsNullOrWhiteSpace(update.ExecutionId))
+            _executions[update.ExecutionId] = update;
+
         var gatewayOrderId = update.OrderId;
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
         var orderQuantity = context?.Quantity ?? update.CumulativeQuantity;

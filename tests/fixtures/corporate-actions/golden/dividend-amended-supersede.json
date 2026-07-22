@@ -1,0 +1,64 @@
+{
+  "scenarioId": "dividend-amended-supersede",
+  "description": "Announced $0.85 dividend amended to $0.88 via a superseding Confirmed event (SupersedesCorpActId chain of two). Every economic consumer must act on the chain tip: the adjustment factor uses 0.88 and the bridge posts exactly one declaration under the superseding event's id.",
+  "ticker": "AMDX",
+  "securityId": "f0000000-ffff-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "f0000000-ffff-4000-8000-0000000000c1",
+      "securityId": "f0000000-ffff-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-02-10",
+      "payDate": "2026-02-24",
+      "dividendPerShare": 0.85,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-02-09",
+      "lifecycleState": "Announced",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    },
+    {
+      "corpActId": "f0000000-ffff-4000-8000-0000000000c2",
+      "securityId": "f0000000-ffff-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-02-10",
+      "payDate": "2026-02-24",
+      "dividendPerShare": 0.88,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-02-09",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": "f0000000-ffff-4000-8000-0000000000c1",
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2026-02-06", "open": 39.80, "high": 40.20, "low": 39.60, "close": 40.00, "volume": 3000000 },
+    { "sessionDate": "2026-02-09", "open": 39.90, "high": 40.30, "low": 39.70, "close": 40.00, "volume": 2800000 },
+    { "sessionDate": "2026-02-10", "open": 39.20, "high": 39.50, "low": 38.90, "close": 39.15, "volume": 4200000 },
+    { "sessionDate": "2026-02-11", "open": 39.20, "high": 39.60, "low": 39.00, "close": 39.30, "volume": 2600000 }
+  ],
+  "postingContext": { "positionQuantity": 1000, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [
+    "supersede-fold",
+    "series-continuity",
+    "factor-monotonicity",
+    "journal-balanced",
+    "receivable-settled",
+    "idempotent-posting"
+  ],
+  "knownDefectIds": []
+}

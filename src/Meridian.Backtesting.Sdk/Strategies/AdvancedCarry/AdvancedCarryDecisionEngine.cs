@@ -6,6 +6,18 @@ namespace Meridian.Backtesting.Sdk.Strategies.AdvancedCarry;
 public sealed partial class AdvancedCarryDecisionEngine
 {
     private const double TradingDaysPerYear = 252.0;
+
+    // One-sided standard-normal quantiles (Phi^-1) for the supported VaR confidence levels.
+    private const double ZScore99Percent = 2.326347874;
+    private const double ZScore97Point5Percent = 1.959963985;
+    private const double ZScore95Percent = 1.644853627;
+
+    /// <summary>
+    /// Minimum historical portfolio-return observations before the empirical tail-risk
+    /// estimate is trusted; below this, quantiles are too noisy and the parametric
+    /// Gaussian estimate is used instead.
+    /// </summary>
+    private const int MinHistoricalReturnObservations = 10;
     private readonly ICarryForecastOverlay? _forecastOverlay;
 
     public AdvancedCarryDecisionEngine(ICarryForecastOverlay? forecastOverlay = null)
@@ -274,16 +286,16 @@ public sealed partial class AdvancedCarryDecisionEngine
         var dailyVolatility = annualVolatility / Math.Sqrt(TradingDaysPerYear);
         var zScore = configuration.EffectiveRisk.ConfidenceLevel switch
         {
-            >= 0.99 => 2.326347874,
-            >= 0.975 => 1.959963985,
-            _ => 1.644853627
+            >= 0.99 => ZScore99Percent,
+            >= 0.975 => ZScore97Point5Percent,
+            _ => ZScore95Percent
         };
 
         var parametricVarFraction = Math.Max(0.0, zScore * dailyVolatility);
         var parametricCvarFraction = Math.Max(0.0, dailyVolatility * StandardNormalPdf(zScore) / (1.0 - configuration.EffectiveRisk.ConfidenceLevel));
 
         var historicalReturns = BuildHistoricalPortfolioReturns(assets, weights);
-        var historicalTailRisk = historicalReturns.Count >= 10
+        var historicalTailRisk = historicalReturns.Count >= MinHistoricalReturnObservations
             ? BuildHistoricalTailRisk(historicalReturns, configuration.EffectiveRisk.ConfidenceLevel, portfolioValue)
             : new CarryTailRiskEstimate("Parametric fallback", configuration.EffectiveRisk.ConfidenceLevel, parametricVarFraction, decimal.Round(portfolioValue * (decimal)parametricVarFraction, 2));
 

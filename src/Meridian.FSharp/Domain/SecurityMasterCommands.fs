@@ -148,6 +148,56 @@ module SecurityMaster =
                    []
                    @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
                    @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
+        | SecurityKind.StructuredCredit terms ->
+            []
+            @ requireNotBlank "structured_credit_tranche_required" "Tranche" terms.Tranche
+            @ requireNotBlank "structured_credit_collateral_required" "CollateralType" terms.CollateralType
+            @ require (terms.OriginalFace > 0m)
+                (error "structured_credit_original_face_invalid" "StructuredCredit OriginalFace must be greater than zero.")
+            @ require (terms.CurrentFactor |> Option.forall (fun factor -> factor >= 0m))
+                (error "structured_credit_current_factor_invalid" "StructuredCredit CurrentFactor must be zero or greater when present.")
+            @ requireNotBlank "structured_credit_coupon_index_required" "CouponOrIndex" terms.CouponOrIndex
+        | SecurityKind.PrivateFundInterest terms ->
+            []
+            @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor
+            @ requireNotBlank "private_fund_strategy_required" "Strategy" terms.Strategy
+            @ require (terms.Vintage > 0) (error "private_fund_vintage_invalid" "PrivateFundInterest Vintage must be greater than zero.")
+            @ require (terms.Commitment > 0m) (error "private_fund_commitment_invalid" "PrivateFundInterest Commitment must be greater than zero.")
+            @ require (terms.FundedAmount |> Option.forall (fun amount -> amount >= 0m))
+                (error "private_fund_funded_invalid" "PrivateFundInterest FundedAmount must be zero or greater when present.")
+            @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
+                (error "private_fund_unfunded_invalid" "PrivateFundInterest UnfundedAmount must be zero or greater when present.")
+        | SecurityKind.PrivateCompanyEquity terms ->
+            []
+            @ requireNotBlank "private_company_issuer_required" "Issuer" terms.Issuer
+            @ requireNotBlank "private_company_share_class_required" "ShareClass" terms.ShareClass
+            @ requireNotBlank "private_company_round_required" "Round" terms.Round
+            @ require (terms.OwnershipPercent |> Option.forall (fun percent -> percent >= 0m))
+                (error "private_company_ownership_invalid" "PrivateCompanyEquity OwnershipPercent must be zero or greater when present.")
+            @ require (terms.CostBasis > 0m) (error "private_company_cost_basis_invalid" "PrivateCompanyEquity CostBasis must be greater than zero.")
+            @ require (terms.LatestValuation |> Option.forall (fun amount -> amount >= 0m))
+                (error "private_company_valuation_invalid" "PrivateCompanyEquity LatestValuation must be zero or greater when present.")
+        | SecurityKind.RealEstateHolding terms ->
+            []
+            @ requireNotBlank "real_estate_property_type_required" "PropertyType" terms.PropertyType
+            @ requireNotBlank "real_estate_market_required" "AddressOrMarket" terms.AddressOrMarket
+            @ require (terms.OwnershipPercent > 0m) (error "real_estate_ownership_invalid" "RealEstateHolding OwnershipPercent must be greater than zero.")
+            @ require (terms.AppraisalValue > 0m) (error "real_estate_appraisal_invalid" "RealEstateHolding AppraisalValue must be greater than zero.")
+        | SecurityKind.CommitmentGuarantee terms ->
+            []
+            @ requireNotBlank "commitment_guarantee_counterparty_required" "Counterparty" terms.Counterparty
+            @ require (terms.CommittedAmount > 0m) (error "commitment_guarantee_amount_invalid" "CommitmentGuarantee CommittedAmount must be greater than zero.")
+            @ require (terms.UnfundedAmount |> Option.forall (fun amount -> amount >= 0m))
+                (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
+            @ require (terms.ExpiryDate |> Option.forall (fun expiry -> terms.EffectiveDate <= expiry))
+                (error "commitment_guarantee_date_range_invalid" "CommitmentGuarantee EffectiveDate must be on or before ExpiryDate when present.")
+            @ require (terms.FeeRate |> Option.forall (fun rate -> rate >= 0m))
+                (error "commitment_guarantee_fee_invalid" "CommitmentGuarantee FeeRate must be zero or greater when present.")
+            @ (terms.Covenants
+               |> List.collect (fun covenant ->
+                   []
+                   @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
+                   @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
         | SecurityKind.Commodity terms ->
             []
             @ requireNotBlank "commodity_type_required" "CommodityType" terms.CommodityType

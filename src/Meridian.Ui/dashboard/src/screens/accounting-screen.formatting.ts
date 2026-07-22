@@ -1,5 +1,12 @@
+import {
+  formatCurrency as formatCurrencyAmount,
+  formatPrefixedCurrency,
+  formatSignedCurrency as formatSignedCurrencyAmount,
+  pluralizeCount
+} from "@/lib/format";
+
 export function formatCount(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+  return pluralizeCount(count, singular);
 }
 
 export function formatBytes(value: number): string {
@@ -22,8 +29,7 @@ export function formatBytes(value: number): string {
 }
 
 export function formatCurrency(value: number) {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  return formatPrefixedCurrency(value);
 }
 
 export function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
@@ -32,13 +38,12 @@ export function formatCurrencyWithCode(value: number, currency: string, signed =
   return code ? `${amount} ${code}` : amount;
 }
 
-export function formatSignedCurrency(value: number): string {
-  if (value === 0) {
-    return "$0";
-  }
+export function formatCurrencyForCode(value: number, currency: string): string {
+  return formatCurrencyAmount(value, { currency, minimumFractionDigits: 0 });
+}
 
-  const sign = value > 0 ? "+" : "-";
-  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
+export function formatSignedCurrency(value: number): string {
+  return formatSignedCurrencyAmount(value, { minimumFractionDigits: 2, zeroLabel: "$0" });
 }
 
 export function formatDateTimeLabel(value: string | null | undefined): string {
@@ -52,6 +57,11 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
   }
 
   return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+export function formatDateOnly(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString().slice(0, 10);
 }
 
 function padUtc(value: number): string {

@@ -247,6 +247,30 @@ public sealed record StrategySweepResultGroup(
     IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings);
 
 /// <summary>
+/// One disclosed simulation assumption or detected data-quality issue for a backtest run.
+/// Severity is <c>info</c>, <c>caution</c>, or <c>warning</c>.
+/// </summary>
+public sealed record BiasDisclosureItemDto(
+    string Code,
+    string Severity,
+    string Title,
+    string Detail);
+
+/// <summary>
+/// Honest summary of the simulation assumptions behind a backtest result — fill timing,
+/// limit/stop realism, universe provenance, corporate-action handling, and forced delisting
+/// liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
+/// </summary>
+public sealed record BiasDisclosureDto(
+    string FillTiming,
+    string FillConservatism,
+    string DelistingPolicy,
+    string UniverseSource,
+    bool CorporateActionsAdjusted,
+    string MaxSeverity,
+    IReadOnlyList<BiasDisclosureItemDto> Items);
+
+/// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
 /// </summary>
 public sealed record StrategyRunDetail(
@@ -258,7 +282,8 @@ public sealed record StrategyRunDetail(
     StrategyRunPromotionSummary? Promotion = null,
     StrategyRunGovernanceSummary? Governance = null,
     // PR-02: governance hooks for approval/audit/compliance seams
-    IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null);
+    IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null,
+    BiasDisclosureDto? BiasDisclosure = null);
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.

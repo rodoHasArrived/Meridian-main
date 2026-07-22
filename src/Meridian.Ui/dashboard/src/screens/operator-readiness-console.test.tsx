@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import * as api from "@/lib/api";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { renderWithRouter } from "@/test/render";
@@ -138,8 +138,104 @@ const scopedTrading: TradingWorkspaceResponse = {
 };
 
 describe("OperatorReadinessConsole", () => {
+  beforeEach(() => {
+    vi.spyOn(api, "getTradingReadiness").mockResolvedValue(scopedTrading.readiness!);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("loads the dedicated trading readiness contract when the workspace payload has no embedded readiness", async () => {
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
+      ...scopedTrading.readiness!,
+      overallStatus: "ReviewRequired",
+      readyForPaperOperation: false,
+      activeSession: {
+        sessionId: "paper-fetch-1",
+        strategyId: "strategy-1",
+        strategyName: "Fetched paper strategy",
+        isActive: true,
+        initialCash: 100_000,
+        createdAt: "2026-04-29T11:30:00Z",
+        closedAt: null,
+        symbolCount: 4,
+        orderCount: 3,
+        positionCount: 2,
+        portfolioValue: 101_240
+      }
+    });
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce(inbox);
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        strategy={null}
+        trading={null}
+        data={null}
+        accounting={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    expect((await screen.findAllByText("paper-fetch-1")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Fetched paper strategy").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Technical source health"));
+    expect(screen.getByRole("listitem", {
+      name: "Trading readiness: Review required. Endpoint /api/workstation/trading/readiness"
+    })).toBeInTheDocument();
+    await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+  });
+
+  it("settles on an explicit unavailable state when dedicated readiness loading fails", async () => {
+    vi.mocked(api.getTradingReadiness).mockRejectedValueOnce(new Error("Readiness service 503"));
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce(inbox);
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        strategy={null}
+        trading={null}
+        data={null}
+        accounting={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    expect((await screen.findAllByText("Readiness unavailable")).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Loading readiness")).not.toBeInTheDocument();
+    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+  });
+
+  it("keeps legacy trust-gate payloads renderable when newer evidence fields are absent", async () => {
+    const legacyTrustGate = {
+      ...scopedTrading.readiness!.trustGate!,
+      blockers: undefined,
+      validatedEvidenceDocumentCount: undefined,
+      detail: undefined
+    } as unknown as NonNullable<TradingWorkspaceResponse["readiness"]>["trustGate"];
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
+      ...scopedTrading.readiness!,
+      trustGate: legacyTrustGate
+    });
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce(inbox);
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        strategy={null}
+        trading={null}
+        data={null}
+        accounting={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    expect(await screen.findByRole("heading", { name: "DK1 provider trust", level: 3 })).toBeInTheDocument();
+    expect(screen.getAllByText("Provider trust evidence is available for operator review.").length).toBeGreaterThan(0);
   });
 
   it("renders operator inbox work-item routes as accessible next actions", async () => {
@@ -164,14 +260,15 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("group", { name: /Primary next action: Promotion checklist incomplete/i })).toBeInTheDocument();
     expect(screen.getAllByText("Promotion checklist incomplete").length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Trading readiness summary" })).toHaveClass("mds-rpanel");
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Full-console readiness checkpoints" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Brokerage sync healthy: Unavailable/i })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toHaveClass("mds-rpanel");
+    expect(screen.getByRole("group", { name: /Brokerage sync healthy:/i })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Promotion blockers readiness evidence table" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Promotion blockers readiness evidence table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected promotion blockers evidence detail" })).toBeInTheDocument();
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
       undefined,
@@ -194,7 +291,7 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    await screen.findByRole("table", { name: "Prioritized operator work items table" });
+    await screen.findByRole("treegrid", { name: "Prioritized operator work items table" });
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
       "fund-1",
       expect.objectContaining({ signal: expect.any(Object) })

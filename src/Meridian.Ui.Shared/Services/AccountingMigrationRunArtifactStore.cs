@@ -2,7 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
-using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -78,25 +78,35 @@ public sealed class InMemoryAccountingMigrationRunArtifactStore : IAccountingMig
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
-public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrationRunArtifactStore
+public sealed class FileAccountingMigrationRunArtifactStore :
+    JsonFileSnapshotStore<FileAccountingMigrationRunArtifactStore.AccountingMigrationRunArtifactSnapshot>,
+    IAccountingMigrationRunArtifactStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingMigrationRunArtifactStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileAccountingMigrationRunArtifactStore(
         string snapshotPath,
         ILogger<FileAccountingMigrationRunArtifactStore> logger)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Accounting migration run artifact snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Accounting migration run artifact snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override AccountingMigrationRunArtifactSnapshot CreateEmptySnapshot() => new([]);
+
+    protected override AccountingMigrationRunArtifactSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger.LogWarning(exception, "Failed to read accounting migration run artifact snapshot {SnapshotPath}", SnapshotPath);
+        return new AccountingMigrationRunArtifactSnapshot([]);
     }
 
     public async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> ListAsync(
@@ -109,12 +119,13 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Artifacts
-            .Where(item => MatchesScope(item, normalizedFundProfileId, ledgerBookId, normalizedTenantId, normalizedCompanyId))
-            .OrderByDescending(static item => item.StartedAtUtc)
-            .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Artifacts
+                .Where(item => MatchesScope(item, normalizedFundProfileId, ledgerBookId, normalizedTenantId, normalizedCompanyId))
+                .OrderByDescending(static item => item.StartedAtUtc)
+                .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingMigrationRunArtifactDto> UpsertAsync(
@@ -122,30 +133,18 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         CancellationToken ct = default)
     {
         var artifact = NormalizeArtifact(request);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var artifacts = snapshot.Artifacts
-                .Where(item => !string.Equals(BuildKey(item), BuildKey(artifact), StringComparison.OrdinalIgnoreCase))
-                .Append(artifact)
-                .OrderByDescending(static item => item.StartedAtUtc)
-                .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var json = JsonSerializer.Serialize(new AccountingMigrationRunArtifactSnapshot(artifacts), JsonOptions);
-            var directory = Path.GetDirectoryName(_snapshotPath);
-            if (!string.IsNullOrWhiteSpace(directory))
+        return await UpdateSnapshotAsync(
+            snapshot =>
             {
-                Directory.CreateDirectory(directory);
-            }
-
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-            return artifact;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                var artifacts = snapshot.Artifacts
+                    .Where(item => !string.Equals(BuildKey(item), BuildKey(artifact), StringComparison.OrdinalIgnoreCase))
+                    .Append(artifact)
+                    .OrderByDescending(static item => item.StartedAtUtc)
+                    .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                return (new AccountingMigrationRunArtifactSnapshot(artifacts), artifact);
+            },
+            ct).ConfigureAwait(false);
     }
 
     internal static AccountingMigrationRunArtifactDto NormalizeArtifact(AccountingMigrationRunArtifactUpsertRequestDto request)
@@ -183,41 +182,6 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         };
         EnsureCertifiedArtifactScope(artifact);
         return artifact;
-    }
-
-    private async Task<AccountingMigrationRunArtifactSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingMigrationRunArtifactSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new AccountingMigrationRunArtifactSnapshot([]);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            return await JsonSerializer
-                .DeserializeAsync<AccountingMigrationRunArtifactSnapshot>(stream, JsonOptions, ct)
-                .ConfigureAwait(false) ?? new AccountingMigrationRunArtifactSnapshot([]);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to read accounting migration run artifact snapshot {SnapshotPath}", _snapshotPath);
-            return new AccountingMigrationRunArtifactSnapshot([]);
-        }
     }
 
     private static string BuildKey(AccountingMigrationRunArtifactDto artifact)
@@ -488,5 +452,5 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         => index >= reference.Length ||
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
-    private sealed record AccountingMigrationRunArtifactSnapshot(IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts);
+    public sealed record AccountingMigrationRunArtifactSnapshot(IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts);
 }

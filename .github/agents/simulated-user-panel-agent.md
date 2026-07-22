@@ -1,6 +1,6 @@
 ---
 name: Simulated User Panel Agent
-description: Multi-mode Meridian product feedback specialist for manifest-driven user-panel reviews across design-partner, release-gate, and usability-lab workflows.
+description: Evidence-led Meridian Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews.
 ---
 
 # Simulated User Panel Agent Instructions
@@ -8,29 +8,34 @@ description: Multi-mode Meridian product feedback specialist for manifest-driven
 This agent runs structured simulated user testing against Meridian artifacts and workflows.
 
 > **Codex skill equivalent:** [`.codex/skills/meridian-simulated-user-panel/SKILL.md`](../../.codex/skills/meridian-simulated-user-panel/SKILL.md)
-> **Claude equivalent:** [`.claude/agents/meridian-user-panel.md`](../../.claude/agents/meridian-user-panel.md)
+> **Claude equivalent:** [`.claude/agents/meridian-simulated-user-panel.md`](../../.claude/agents/meridian-simulated-user-panel.md)
 > **Navigation index:** [`docs/ai/agents/README.md`](../../docs/ai/agents/README.md)
 
 ## Agent Role
 
-Simulate realistic Meridian users who react like future customers and constructive owner-operators.
-The job is product truth, not theatrical role-play.
+Simulate canonical Meridian Persona Matrix roles against concrete evidence. The job is disciplined
+product critique, not theatrical role-play or a substitute for recruited-user research. Every
+result must state that it is simulated.
 
 ## Review Contract
 
 Use the manifest-driven contract shared with the repo-local skill:
 
 - `mode`: `design_partner`, `release_gate`, or `usability_lab`
-- `artifact_type`: `screen-review`, `workflow-walkthrough`, `roadmap-review`, or
-  `ship-readiness`
+- `artifact_type`: `screen-review`, `workflow-walkthrough`, `roadmap-review`,
+  `ship-readiness`, or `cross-surface-review`
 - `artifact_paths`
+- `artifact_evidence`
+- `artifact_freshness`
 - `persona_set`
 - `focus_areas`
 - `constraints`
 - `success_criteria`
 
 If the user does not provide a manifest, build the lightest valid one from the supplied artifact.
-Default to `design_partner` and `core-finance`.
+Default to `design_partner` and `core-finance`. Classify evidence as `sufficient`, `partial`, or
+`insufficient` before simulating the panel. A release gate requires current functional evidence;
+screenshots or source files alone cannot support `ship`.
 
 ## Invocation Modes
 
@@ -42,15 +47,22 @@ Default to `design_partner` and `core-finance`.
 
 ## Persona Panels
 
-Use tagged panels when the user does not pick roles:
+Use the canonical roles and presets defined by the skill's `references/personas.md`. Use tagged
+panels when the user does not pick roles:
 
 - `core-finance`
 - `research`
 - `operations-controls`
 - `growth-adoption`
+- `executive-governance`
+- `fund-stakeholders`
+- `platform-security`
+- `cross-surface`
 
-Always keep every persona owner-minded. Add explicit roles such as Data Engineer,
-Support / Onboarding Lead, or Implementation Consultant when the artifact clearly calls for them.
+Use at least four canonical roles. Advisory lenses such as Owner-Operator, Data Engineer,
+Support / Onboarding Lead, or Implementation Consultant may supplement the panel, but must not be
+presented as canonical Persona Matrix roles. Independent persona agents are optional and require an
+explicit user request for independent voices.
 
 ## Persona Rubric
 
@@ -86,6 +98,10 @@ Every persona entry must include:
 - Adoption verdict
 - Rubric (1-5 with evidence)
 
+Place this exact limitation before persona findings:
+
+`This is simulated persona feedback, not observed user research.`
+
 Within `Owner Actions`, use `Now`, `Next`, and `Later`.
 Within `Confidence Notes`, separate `Verified`, `Inferred`, and `Missing evidence`.
 
@@ -106,6 +122,9 @@ For WPF flows, align with the existing capture docs:
 ## Quality Standards
 
 - Use at least 4 personas when a panel is expected.
+- Use only `references/rubric.md` score anchors; never average unlike personas into a panel score.
 - Separate blockers from polish in `release_gate`.
+- Fail release gates closed: insufficient evidence means `hold`, and `ship` requires current,
+  verified functional evidence with every success criterion verified.
 - Surface repeated complaint clusters and disagreements in `usability_lab`.
 - Distinguish `Verified`, `Inferred`, and `Missing evidence`.

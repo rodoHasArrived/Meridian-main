@@ -33,6 +33,24 @@ public enum EtlTransferMode : byte
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
+public enum EtlSourcePostProcessingAction : byte
+{
+    LeaveInPlace = 0,
+    Delete = 1,
+    MoveToArchive = 2,
+    MoveToError = 3,
+    WriteDoneMarker = 4
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum EtlPreviewDisposition : byte
+{
+    Ready = 0,
+    Warning = 1,
+    Error = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum EtlPackageFormat : byte
 {
     Zip = 0,
@@ -127,6 +145,15 @@ public sealed class EtlSourceDefinition
 
     [JsonPropertyName("deleteAfterSuccess")]
     public bool DeleteAfterSuccess { get; init; }
+
+    [JsonPropertyName("postProcessingAction")]
+    public EtlSourcePostProcessingAction PostProcessingAction { get; init; } = EtlSourcePostProcessingAction.LeaveInPlace;
+
+    [JsonPropertyName("archiveLocation")]
+    public string? ArchiveLocation { get; init; }
+
+    [JsonPropertyName("errorLocation")]
+    public string? ErrorLocation { get; init; }
 
     [JsonPropertyName("hostKeySha256Fingerprint")]
     public string? HostKeySha256Fingerprint { get; init; }
@@ -317,6 +344,7 @@ public interface IEtlSourceReader
     EtlSourceKind Kind { get; }
     Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default);
     Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default);
+    Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default);
 }
 
 /// <summary>Parses a staged partner file into record envelopes.</summary>
@@ -329,6 +357,66 @@ public interface IPartnerFileParser
         EtlCheckpointToken? checkpoint,
         string? schemaId = null,
         CancellationToken ct = default);
+}
+
+public sealed class EtlFilePreviewIssue
+{
+    [JsonPropertyName("severity")]
+    public required string Severity { get; init; }
+
+    [JsonPropertyName("field")]
+    public required string Field { get; init; }
+
+    [JsonPropertyName("message")]
+    public required string Message { get; init; }
+
+    [JsonPropertyName("rowNumber")]
+    public int? RowNumber { get; init; }
+}
+
+public sealed class EtlFilePreview
+{
+    [JsonPropertyName("sourceFile")]
+    public required EtlRemoteFile SourceFile { get; init; }
+
+    [JsonPropertyName("schemaId")]
+    public required string SchemaId { get; init; }
+
+    [JsonPropertyName("disposition")]
+    public EtlPreviewDisposition Disposition { get; init; }
+
+    [JsonPropertyName("recordCount")]
+    public int RecordCount { get; init; }
+
+    [JsonPropertyName("sampleRows")]
+    public IReadOnlyList<IReadOnlyDictionary<string, string?>> SampleRows { get; init; } = [];
+
+    [JsonPropertyName("issues")]
+    public IReadOnlyList<EtlFilePreviewIssue> Issues { get; init; } = [];
+
+    [JsonPropertyName("fileHashSha256")]
+    public string? FileHashSha256 { get; init; }
+
+    [JsonPropertyName("idempotencyKey")]
+    public string? IdempotencyKey { get; init; }
+}
+
+public sealed class EtlPreviewResult
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; init; }
+
+    [JsonPropertyName("sourceKind")]
+    public EtlSourceKind SourceKind { get; init; }
+
+    [JsonPropertyName("schemaId")]
+    public required string SchemaId { get; init; }
+
+    [JsonPropertyName("files")]
+    public IReadOnlyList<EtlFilePreview> Files { get; init; } = [];
+
+    [JsonPropertyName("errors")]
+    public IReadOnlyList<string> Errors { get; init; } = [];
 }
 
 /// <summary>Resolves CSV column schemas by partner schema ID.</summary>

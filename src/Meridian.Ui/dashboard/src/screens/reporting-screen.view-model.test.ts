@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildRestatementReviewPanel,
+  deriveRestatementSeriesJobId,
+  hasRetainedReportingAsOfDate,
+  latestReleasedRunsPerSeries,
+  presentReportingAsOfDate,
+  presentReportingIdentifier,
+  presentReportingRunStatusLabel,
+  presentReportingStatusLabel,
+  resolveReportingRunSeverityStatus,
   resolveReportPackProfileKeyCommand,
-  useReportingScreenViewModel
+  useReportingScreenViewModel,
+  type ReportingRunStatusRow
 } from "@/screens/reporting-screen.view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
 
@@ -95,7 +106,7 @@ const reporting: GovernanceReportingSummary = {
   ],
   recentRuns: [
     {
-      runId: "investor-monthly-statement-20260501",
+      runId: "investor-monthly-statement-20260501-v2",
       templateId: "investor-monthly-statement",
       family: "InvestorStatement",
       status: "InReview",
@@ -111,7 +122,7 @@ const reporting: GovernanceReportingSummary = {
           gridId: "sector-pivot",
           title: "Sector Pivot",
           kind: "Pivot",
-          artifact: "report-writer://investor-monthly-statement-20260501/grids/sector-pivot",
+          artifact: "report-writer://investor-monthly-statement-20260501-v2/grids/sector-pivot",
           dimensionCount: 2,
           metricCount: 2,
           formulaCount: 1
@@ -120,9 +131,21 @@ const reporting: GovernanceReportingSummary = {
       reportWriterDatasetSourceId: "portfolio-reporting-cuts",
       reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
       reportWriterDatasetRowCount: 2,
+      runSeriesId: "investor-monthly-statement-20260501",
+      runAttemptOrdinal: 2,
+      priorRunId: "investor-monthly-statement-20260501",
+      retryReason: "corrected portfolio marks",
+      latestGeneratedRunId: "investor-monthly-statement-20260501-v2",
+      latestApprovedRunId: "investor-monthly-statement-20260501",
+      isLatestGenerated: true,
+      isLatestApproved: false,
+      comparisonSummary: "1 changed, 1 added, 0 removed lines compared with investor-monthly-statement-20260501.",
+      changedLineCount: 1,
+      addedLineCount: 1,
+      removedLineCount: 0,
       drilldownLinks: [
         {
-          id: "investor-monthly-statement-20260501:evidence",
+          id: "investor-monthly-statement-20260501-v2:evidence",
           kind: "evidence",
           label: "Evidence bundle",
           href: "/api/fund-structure/report-packs/report-1/evidence-bundle",
@@ -131,10 +154,10 @@ const reporting: GovernanceReportingSummary = {
           source: "ReportPackWorkflow"
         },
         {
-          id: "investor-monthly-statement-20260501:audit",
+          id: "investor-monthly-statement-20260501-v2:audit",
           kind: "audit",
           label: "Approval audit trail",
-          href: "reporting-run://investor-monthly-statement-20260501/audit",
+          href: "reporting-run://investor-monthly-statement-20260501-v2/audit",
           method: "GET",
           isBrowserNavigable: false,
           source: "ReportingOrchestration"
@@ -142,10 +165,10 @@ const reporting: GovernanceReportingSummary = {
       ],
       nextActions: [
         {
-          id: "investor-monthly-statement-20260501:approve",
+          id: "investor-monthly-statement-20260501-v2:approve",
           kind: "approval",
           label: "Approve reporting run",
-          href: "reporting-run://investor-monthly-statement-20260501/approval/approve",
+          href: "reporting-run://investor-monthly-statement-20260501-v2/approval/approve",
           method: "POST",
           isEnabled: true,
           disabledReason: null,
@@ -233,6 +256,10 @@ const restatedReporting: GovernanceReportingSummary = {
         evidenceHash: "sha256:restated123",
         signedOffBy: "reporting-ops",
         signedOffAt: "2026-05-28T15:20:00Z",
+        signedOffRole: "Controller",
+        signOffReason: "Approved NAV correction package.",
+        signOffContext: "Authenticated actor 'reporting-ops' with role 'Controller' approved publication via HumanOperator.",
+        actionOrigin: "HumanOperator",
         evidenceLinks: [
           {
             evidenceId: "evidence-nav-total",
@@ -277,7 +304,34 @@ function buildExportResult(profileId: string, jobId = `export-${profileId}`): Ex
   };
 }
 
+describe("Reporting presentation labels", () => {
+  it("humanizes governed statuses, identifiers, and retained as-of dates", () => {
+    expect(presentReportingStatusLabel("INREVIEW")).toBe("In review");
+    expect(presentReportingStatusLabel("AwaitingApproval")).toBe("Awaiting approval");
+    expect(presentReportingIdentifier("board-close-pack")).toBe("Board close pack");
+    expect(presentReportingIdentifier("BOARDPACK")).toBe("Board pack");
+    expect(presentReportingIdentifier("INVESTORSTATEMENT")).toBe("Investor statement");
+    expect(presentReportingAsOfDate("2026-07-31")).toBe("Jul 31, 2026");
+    expect(presentReportingAsOfDate("As-of date unavailable")).toBe("No as-of date retained");
+    expect(hasRetainedReportingAsOfDate("As-of date unavailable")).toBe(false);
+    expect(presentReportingRunStatusLabel("Published", "As-of date unavailable")).toBe("Period confirmation required");
+    expect(resolveReportingRunSeverityStatus("Published", "As-of date unavailable")).toBe("ReviewRequired");
+    expect(presentReportingRunStatusLabel("Published", "2026-07-31")).toBe("Published");
+  });
+});
+
 describe("useReportingScreenViewModel", () => {
+  it("keeps Reporting task-mode routing outside the broad reporting view model", () => {
+    const viewModelSource = readFileSync(resolve(process.cwd(), "src/screens/reporting-screen.view-model.ts"), "utf8");
+    const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/reporting-screen.task-mode-view-model.ts"), "utf8");
+
+    expect(taskModeSource).toContain("const reportingTaskModeDefinitions");
+    expect(taskModeSource).toContain("export function buildReportingTaskMode");
+    expect(taskModeSource).toContain("export function isReportPackRoute");
+    expect(viewModelSource).not.toContain("const reportingTaskModeDefinitions");
+    expect(viewModelSource).not.toContain("function normalizeReportingPathname");
+  });
+
   it("returns profile rows from reporting data", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.hasRows).toBe(true);
@@ -350,8 +404,17 @@ describe("useReportingScreenViewModel", () => {
       writerGridSummary: "No report-writer grids"
     });
     expect(result.current.runStatusRows[0]).toMatchObject({
-      id: "investor-monthly-statement-20260501",
+      id: "investor-monthly-statement-20260501-v2",
       status: "InReview",
+      templateLabel: "Investor Monthly Statement",
+      runSeriesLabel: "investor-monthly-statement-20260501",
+      runAttemptLabel: "Version 2",
+      latestGeneratedLabel: "Latest generated",
+      latestApprovedLabel: "Latest approved: investor-monthly-statement-20260501",
+      priorRunLabel: "investor-monthly-statement-20260501",
+      retryReasonLabel: "corrected portfolio marks",
+      comparisonSummary: "1 changed, 1 added, 0 removed lines compared with investor-monthly-statement-20260501.",
+      changedLineLabel: "1 changed · 1 added · 0 removed",
       lineageSummary: "2/2 sections linked",
       generatedGridLabel: "1 generated grid with 1 formula",
       generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
@@ -359,11 +422,11 @@ describe("useReportingScreenViewModel", () => {
       generatedGridArtifacts: [
         expect.objectContaining({
           label: "Sector Pivot (Pivot)",
-          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot",
-          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=csv",
-          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=pdf",
-          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xls",
-          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xlsx"
+          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot",
+          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=csv",
+          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=pdf",
+          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=xls",
+          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=xlsx"
         })
       ],
       datasetSourceLabel: "Portfolio reporting cuts (2 rows)",
@@ -374,14 +437,14 @@ describe("useReportingScreenViewModel", () => {
         expect.objectContaining({
           kind: "evidence",
           label: "Evidence bundle",
-          interactionLabel: "Open",
-          ariaLabel: "GET /api/fund-structure/report-packs/report-1/evidence-bundle for Evidence bundle"
+          interactionLabel: "Open service",
+          ariaLabel: "Open Evidence bundle service reference"
         }),
         expect.objectContaining({
           kind: "audit",
           label: "Approval audit trail",
-          interactionLabel: "Reference",
-          ariaLabel: "Reference-only GET reporting-run://investor-monthly-statement-20260501/audit for Approval audit trail"
+          interactionLabel: "Service reference",
+          ariaLabel: "Approval audit trail service reference retained for diagnostics"
         })
       ],
       nextActions: [
@@ -389,18 +452,79 @@ describe("useReportingScreenViewModel", () => {
           kind: "approval",
           label: "Approve reporting run",
           method: "POST",
-          interactionLabel: "Reference",
-          ariaLabel: "POST reporting-run://investor-monthly-statement-20260501/approval/approve for Approve reporting run"
+          interactionLabel: "Service reference",
+          ariaLabel: "Approve reporting run service reference retained for diagnostics"
         })
       ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
   });
 
+  it("builds first-visit reporting starter-kit cards from bootstrap data", () => {
+    const starterReporting: GovernanceReportingSummary = {
+      ...reporting,
+      starterKits: [
+        {
+          kitId: "emerging-manager",
+          archetype: "Emerging Manager",
+          displayName: "Emerging Manager",
+          description: "Investor-ready monthly statements and shadow NAV packs.",
+          templateIds: ["investor-monthly-statement", "capital-account-statement"],
+          defaultLayoutId: "reporting-hub.emerging-manager.v1",
+          defaultPeriod: "CurrentMonth",
+          seedSchedules: [
+            {
+              scheduleId: "starter-emerging-manager-investor-monthly",
+              templateId: "investor-monthly-statement",
+              cronExpression: "0 9 5 * *",
+              cadence: "Monthly",
+              description: "Draft monthly investor statement schedule.",
+              state: "Draft",
+              deliveryTargets: [
+                {
+                  distributionId: "investor-relations",
+                  formats: ["Pdf", "Xlsx"],
+                  deliveryMode: "SecurePortal",
+                  note: "Starter target"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      starterKitState: {
+        isProvisioned: false,
+        selectedKitId: null,
+        archetype: null,
+        enabledTemplateIds: [],
+        defaultLayoutId: null,
+        defaultPeriod: null,
+        seedScheduleIds: []
+      }
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(starterReporting));
+
+    expect(result.current.starterKitPanel.showChooser).toBe(true);
+    expect(result.current.starterKitPanel.title).toBe("Set up your reporting desk");
+    expect(result.current.starterKitPanel.cards).toHaveLength(1);
+    expect(result.current.starterKitPanel.cards[0]).toMatchObject({
+      id: "emerging-manager",
+      title: "Emerging Manager",
+      templateSummary: "2 templates",
+      defaultPeriodLabel: "Current month",
+      seedScheduleSummary: "1 draft schedule",
+      actionAriaLabel: "Use Emerging Manager starter kit"
+    });
+    expect(result.current.starterKitPanel.cards[0].templateNames).toContain("Investor Monthly Statement");
+    expect(result.current.starterKitPanel.cards[0].seedSchedules[0].deliveryTargetSummary).toContain("investor-relations via SecurePortal");
+  });
+
   it("surfaces aggregate report access audit posture", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 
     expect(result.current.accessAudit).toMatchObject({
+      isAvailable: true,
       evaluationScope: "CallerScoped",
       postureLabel: "Scoped",
       postureVariant: "warning",
@@ -415,6 +539,18 @@ describe("useReportingScreenViewModel", () => {
       expect.objectContaining({ id: "deliveries", visibleLabel: "2 visible", hiddenLabel: "1 hidden", hasHidden: true }),
       expect.objectContaining({ id: "structured-exports", visibleLabel: "5 visible", hiddenLabel: "1 hidden", hasHidden: true })
     ]);
+  });
+
+  it("marks report access counts unavailable instead of synthesizing zero totals", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel({ ...reporting, accessAudit: undefined }));
+
+    expect(result.current.accessAudit).toMatchObject({
+      isAvailable: false,
+      evaluationScope: "Unavailable",
+      hiddenTotalLabel: "Counts unavailable",
+      countRows: [],
+      postureLabel: "Unknown"
+    });
   });
 
   it("surfaces report-template access posture and disables inaccessible runs", () => {
@@ -474,12 +610,63 @@ describe("useReportingScreenViewModel", () => {
           runCount: 0,
           description: "Monthly investor statement close packet.",
           datasetSourceId: "portfolio-reporting-cuts",
+          accessPolicySnapshotHash: "sha256:schedule-policy-1",
           deliveryTargets: [
             {
               distributionId: "board-reporting-committee",
               formats: ["Pdf", "Xlsx", "Csv"],
               deliveryMode: "SecurePortal",
               note: "Board package."
+            }
+          ],
+          releaseDeliveryHandoffs: [
+            {
+              handoffId: "handoff-pending",
+              tenantId: "tenant-alpha",
+              companyId: "company-alpha",
+              scheduleId: "sched-investor",
+              runId: "run-pending",
+              templateId: "investor-monthly-statement",
+              distributionId: "board-reporting-committee",
+              targetDistributionId: "board-reporting-committee",
+              transportId: "secure-portal",
+              recipientPrincipalId: null,
+              destination: "recipient-destination",
+              subject: "Private subject",
+              body: "Private body",
+              requestedFormats: ["Pdf", "Xlsx"],
+              artifactIds: ["artifact-pdf"],
+              grantLifetimeSeconds: 3600,
+              grantMaxUses: 1,
+              maxAttempts: 3,
+              createdAtUtc: "2026-06-01T08:05:00Z",
+              state: "PendingRelease",
+              enqueuedDeliveryJobId: null,
+              enqueuedAtUtc: null
+            },
+            {
+              handoffId: "handoff-enqueued",
+              tenantId: "tenant-alpha",
+              companyId: "company-alpha",
+              scheduleId: "sched-investor",
+              runId: "run-enqueued",
+              templateId: "investor-monthly-statement",
+              distributionId: "board-reporting-committee",
+              targetDistributionId: "board-reporting-committee-secondary",
+              transportId: "email-link",
+              recipientPrincipalId: "principal-board",
+              destination: "recipient-destination",
+              subject: "Private subject",
+              body: "Private body",
+              requestedFormats: ["Pdf"],
+              artifactIds: ["artifact-pdf"],
+              grantLifetimeSeconds: 3600,
+              grantMaxUses: 1,
+              maxAttempts: 3,
+              createdAtUtc: "2026-05-01T08:05:00Z",
+              state: "Enqueued",
+              enqueuedDeliveryJobId: "delivery-job-1",
+              enqueuedAtUtc: "2026-05-01T08:10:00Z"
             }
           ]
         }
@@ -492,8 +679,28 @@ describe("useReportingScreenViewModel", () => {
       id: "sched-investor",
       deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
       datasetSourceLabel: "Portfolio reporting cuts (2)",
+      accessPolicySnapshotLabel: "sha256:schedule-policy-1",
+      releaseGateLabel: "1 handoff awaiting governance release; 1 enqueued",
+      releaseGateVariant: "warning",
+      nextAsOfLabel: "Jun 1, 2026",
       lastRunLabel: "Not run"
     });
+    expect(result.current.scheduleRows[0].releaseHandoffs).toEqual([
+      expect.objectContaining({
+        id: "handoff-pending",
+        runId: "run-pending",
+        formatsLabel: "Pdf, Xlsx",
+        state: "PendingRelease",
+        enqueuedLabel: "Awaiting governance release"
+      }),
+      expect.objectContaining({
+        id: "handoff-enqueued",
+        distributionLabel: "board-reporting-committee to board-reporting-committee-secondary",
+        transportId: "email-link",
+        state: "Enqueued",
+        enqueuedLabel: expect.stringContaining("delivery-job-1")
+      })
+    ]);
   });
 
   it("surfaces lifecycle actions for custom report-template versions", () => {
@@ -551,7 +758,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-review")).toMatchObject({
       id: "custom-exposure-review:3",
       versionNumber: 3,
-      statusLabel: "InReview",
+      statusLabel: "In review",
       lifecycleActions: [
         expect.objectContaining({ kind: "approve", label: "Approve", targetStatus: "Approved" }),
         expect.objectContaining({ kind: "reject", label: "Reject", targetStatus: "Rejected" })
@@ -630,6 +837,11 @@ describe("useReportingScreenViewModel", () => {
   it("builds a route-specific report-pack approval task panel", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
 
+    expect(result.current.taskMode).toMatchObject({
+      id: "report-pack-approval",
+      label: "Report packs",
+      routeLabel: "Report packs"
+    });
     expect(result.current.workflowTaskPanel).toMatchObject({
       regionLabel: "Report-pack approval task",
       title: "Report-pack approval",
@@ -642,7 +854,7 @@ describe("useReportingScreenViewModel", () => {
       hasActions: true
     });
     expect(result.current.workflowTaskPanel?.actions.map((action) => action.label)).toEqual([
-      "Preview payload",
+      "Preview export",
       "Run export"
     ]);
     expect(result.current.workflowTaskPanel?.actions.map((action) => action.describedById)).toEqual([
@@ -652,7 +864,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
       id: "run",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
     });
@@ -690,18 +902,18 @@ describe("useReportingScreenViewModel", () => {
       "/api/export/analysis"
     ]);
     expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.interactionLabel)).toEqual([
-      "Open",
-      "Reference",
-      "Open",
-      "Reference"
+      "Open service",
+      "Service reference",
+      "Open service",
+      "Service reference"
     ]);
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "evidence-bundle")).toMatchObject({
       isBrowserNavigable: false,
-      ariaLabel: "Reference-only GET /api/fund-structure/report-packs/{reportId}/evidence-bundle for Evidence bundle route"
+      ariaLabel: "Evidence bundle route service reference retained for diagnostics"
     });
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-run")).toMatchObject({
       isBrowserNavigable: false,
-      ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
+      ariaLabel: "Excel export analysis service reference retained for diagnostics"
     });
   });
 
@@ -735,8 +947,8 @@ describe("useReportingScreenViewModel", () => {
       label: "Evidence bundle export",
       href: `/api/fund-structure/report-packs/${reportId}/evidence-bundle`,
       isBrowserNavigable: true,
-      interactionLabel: "Open",
-      ariaLabel: `GET /api/fund-structure/report-packs/${reportId}/evidence-bundle for Evidence bundle export`
+      interactionLabel: "Open service",
+      ariaLabel: "Open Evidence bundle export service reference"
     });
   });
 
@@ -748,7 +960,7 @@ describe("useReportingScreenViewModel", () => {
       title: "Restatement review",
       statusLabel: "Restated",
       statusVariant: "warning",
-      summaryText: "pricing-correction approved by fund-controller.",
+      summaryText: "Pricing correction approved by Fund controller.",
       evidenceSummary: "1 evidence link",
       hasChangedLines: true
     });
@@ -775,12 +987,15 @@ describe("useReportingScreenViewModel", () => {
       title: "Publication review",
       statusLabel: "Restated",
       statusVariant: "success",
-      summaryText: "manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.",
+      summaryText: "Publication signed off by Reporting ops on May 28, 3:20 PM UTC.",
       evidenceSummary: "1 evidence link / 1 provenance line",
       hasLineProvenance: true
     });
     expect(result.current.workflowTaskPanel?.publicationReview.fields).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: "Signed off by", value: "reporting-ops" }),
+      expect.objectContaining({ label: "Signed off by", value: "Reporting ops" }),
+      expect.objectContaining({ label: "Signed-off role", value: "Controller" }),
+      expect.objectContaining({ label: "Sign-off reason", value: "Approved NAV correction package." }),
+      expect.objectContaining({ label: "Sign-off context", value: "Authenticated actor 'Reporting ops' with role 'Controller' approved publication via Human operator." }),
       expect.objectContaining({ label: "Evidence hash", value: "sha256:restated123" }),
       expect.objectContaining({ label: "Manifest path", value: "vault/report-packs/manifest-restated-1.json" }),
       expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" }),
@@ -935,19 +1150,24 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
       href: "/api/export/preview?profile=csv",
       isBrowserNavigable: true,
-      interactionLabel: "Open",
-      ariaLabel: "GET /api/export/preview?profile=csv for CSV export preview"
+      interactionLabel: "Open service",
+      ariaLabel: "Open CSV export preview service reference"
     });
     expect(result.current.workflowTaskPanel?.actions[0]).toMatchObject({
       id: "preview",
       href: "/api/export/preview?profile=csv",
-      ariaLabel: "Preview CSV export payload"
+      ariaLabel: "Preview CSV export"
     });
   });
 
   it("derives report queue summary chips in the view model", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 
+    expect(result.current.taskMode).toMatchObject({
+      id: "daily-reporting-cockpit",
+      label: "Daily Reporting Cockpit",
+      routeLabel: "Daily Reporting Cockpit"
+    });
     expect(result.current.recommendedCountLabel).toBe("1");
     expect(result.current.packTargetCountLabel).toBe("2");
     expect(result.current.workbenchChips).toEqual([
@@ -962,6 +1182,30 @@ describe("useReportingScreenViewModel", () => {
       { label: "Recipients", value: "2" },
       { label: "List", value: "Export profiles" }
     ]);
+    const exportRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/exports"));
+    expect(exportRoute.result.current.taskMode).toMatchObject({
+      id: "exports",
+      label: "Exports",
+      routeLabel: "Exports"
+    });
+    const reportBuilderRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-builder"));
+    expect(reportBuilderRoute.result.current.taskMode).toMatchObject({
+      id: "report-builder",
+      label: "Report Builder",
+      routeLabel: "Report Builder"
+    });
+    const runStatusRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/run-status"));
+    expect(runStatusRoute.result.current.taskMode).toMatchObject({
+      id: "run-status",
+      label: "Run Status",
+      routeLabel: "Run Status"
+    });
+    const governanceRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/governance"));
+    expect(governanceRoute.result.current.taskMode).toMatchObject({
+      id: "governance",
+      label: "Governance",
+      routeLabel: "Governance"
+    });
     expect(result.current.packTargetChips).toEqual([
       { label: "Recipients", value: "2" },
       { label: "Inspector", value: "No profile selected" }
@@ -1010,12 +1254,12 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.readinessSummary).toContain("Data dictionary is present");
     expect(result.current.selectedProfile?.actions[0]).toMatchObject({
       id: "preview",
-      label: "Preview payload",
+      label: "Preview export",
       href: "/api/export/preview?profile=excel",
-      ariaLabel: "Preview Excel export payload",
+      ariaLabel: "Preview Excel export",
       describedById: "reporting-action-excel-preview-profile-detail-status",
-      statusText: "Opens the current export payload preview in a new browser tab.",
-      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusText: "Opens the current export preview in a new browser tab.",
+      descriptionText: "Opens the current export preview in a new browser tab.",
       statusBadgeLabel: "GET",
       statusBadgeAriaLabel: "Excel export preview uses GET",
       statusBadgeVariant: "outline",
@@ -1029,10 +1273,10 @@ describe("useReportingScreenViewModel", () => {
       label: "Run export",
       variant: "default",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence",
-      descriptionText: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
+      descriptionText: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available."
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
     expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);
@@ -1380,7 +1624,7 @@ describe("useReportingScreenViewModel", () => {
         expect.objectContaining({ label: "Failure", value: "One or more validation errors occurred." })
       ]),
       warnings: [
-        "Endpoint returned 400 for /api/export/analysis.",
+        "Meridian service returned 400. Open diagnostics for technical details.",
         "Validation failed",
         "profileId: Profile is required.",
         "approvalReason: Approval reason must cite packet evidence."
@@ -1411,7 +1655,7 @@ describe("useReportingScreenViewModel", () => {
       title: "Loading Reporting",
       detail: "Waiting for governed report-pack and export evidence.",
       badgeLabel: "Loading",
-      routeLabel: "Reporting"
+      routeLabel: "Daily Reporting Cockpit"
     });
   });
 
@@ -1424,5 +1668,39 @@ describe("useReportingScreenViewModel", () => {
   it("count label reflects profile count", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.countLabel).toBe("2 profiles");
+  });
+});
+
+describe("deriveRestatementSeriesJobId", () => {
+  it("strips the as-of suffix from the run series id to recover the job id", () => {
+    expect(
+      deriveRestatementSeriesJobId("adhoc-investor-20260504153000123-20260504", "run-id", "2026-05-04")
+    ).toBe("adhoc-investor-20260504153000123");
+  });
+
+  it("falls back to the run id when no series id is present", () => {
+    expect(deriveRestatementSeriesJobId(null, "job-alpha-20260504", "2026-05-04")).toBe("job-alpha");
+  });
+
+  it("returns the series unchanged when the as-of suffix does not match", () => {
+    expect(deriveRestatementSeriesJobId("series-without-date", "run-id", "2026-05-04")).toBe("series-without-date");
+    expect(deriveRestatementSeriesJobId("series-x", "run-id", null)).toBe("series-x");
+  });
+});
+
+describe("latestReleasedRunsPerSeries", () => {
+  const row = (overrides: Partial<ReportingRunStatusRow>): ReportingRunStatusRow =>
+    ({ id: "run", status: "Released", asOfDateLabel: "2026-06-30", runSeriesLabel: "series-a", runAttemptOrdinal: 1, ...overrides }) as ReportingRunStatusRow;
+
+  it("keeps only the highest-ordinal released run per series and drops non-released runs", () => {
+    const result = latestReleasedRunsPerSeries([
+      row({ id: "a-v1", runSeriesLabel: "series-a", runAttemptOrdinal: 1 }),
+      row({ id: "a-v2", runSeriesLabel: "series-a", runAttemptOrdinal: 2 }),
+      row({ id: "b-v1", runSeriesLabel: "series-b", runAttemptOrdinal: 1 }),
+      row({ id: "c-draft", runSeriesLabel: "series-c", runAttemptOrdinal: 1, status: "Draft" }),
+      row({ id: "d-missing-period", runSeriesLabel: "series-d", runAttemptOrdinal: 1, asOfDateLabel: "As-of date unavailable" })
+    ]);
+
+    expect(result.map((entry) => entry.id).sort()).toEqual(["a-v2", "b-v1"]);
   });
 });

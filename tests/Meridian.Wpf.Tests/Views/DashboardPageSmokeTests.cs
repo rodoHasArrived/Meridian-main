@@ -26,16 +26,12 @@ public sealed class DashboardPageSmokeTests
 
             var viewModel = page!.DataContext.Should().BeOfType<DashboardViewModel>().Subject;
             viewModel.PageTitle.Should().Be("Strategy Operations");
-            viewModel.OperationsMetrics.Should().HaveCount(8);
-            viewModel.OperationsMetrics.Select(metric => metric.Label).Should().Contain(
-                ["Holdings in Scope", "Quality Exceptions", "Stale Valuations"]);
+            viewModel.OperationsMetrics.Should().BeEmpty("normal mode must wait for authoritative shared read models");
             viewModel.Actions.Select(action => action.Label).Should().Contain(
                 ["Refresh", "Activity Log", "Quality Worklist"]);
-            viewModel.HoldingsSnapshotItems.Should().HaveCount(8);
-            viewModel.HoldingsSnapshotCountText.Should().Be("8 holdings");
-            viewModel.HoldingsSnapshotItems.Select(item => item.DataStatus).Should().Contain(
-                ["Current", "Needs review", "Stale price", "Data gap"]);
-            viewModel.PortfolioDataServiceStatuses.Should().Contain(s => s.ServiceName == "Ledger export" && s.State == "ready");
+            viewModel.HoldingsSnapshotItems.Should().BeEmpty("normal mode must not seed synthetic holdings");
+            viewModel.HoldingsSnapshotCountText.Should().Be("0 holdings");
+            viewModel.PortfolioDataServiceStatuses.Should().BeEmpty();
             viewModel.GetContextualCommands().Select(command => command.Category).Should().OnlyContain(category => category == "Strategy Operations");
         });
     }

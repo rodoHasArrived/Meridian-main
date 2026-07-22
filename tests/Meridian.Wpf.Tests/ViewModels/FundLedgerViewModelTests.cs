@@ -1493,7 +1493,20 @@ public sealed class FundLedgerViewModelTests
 
                 await viewModel.LoadAsync(new FundOperationsNavigationContext(
                     Tab: FundOperationsTab.ReportPack,
-                    FundProfileId: "alpha-fund"));
+                    FundProfileId: "alpha-fund",
+                    TenantId: "tenant-alpha"));
+                closeCockpitService.RequestCount.Should().Be(0, "an incomplete scope must not issue a wildcard close-cockpit request");
+                viewModel.PrivateCapitalCloseLanes.Should().BeEmpty();
+
+                await viewModel.LoadAsync(new FundOperationsNavigationContext(
+                    Tab: FundOperationsTab.ReportPack,
+                    FundProfileId: "alpha-fund",
+                    AccountId: Guid.Parse("bbbbbbbb-1111-2222-3333-cccccccccccc"),
+                    TenantId: "tenant-alpha",
+                    CompanyId: "company-alpha",
+                    LedgerBookId: Guid.Parse("cccccccc-1111-2222-3333-dddddddddddd"),
+                    PeriodId: "2026-06",
+                    EntityId: "entity-alpha"));
                 await WaitForConditionAsync(() =>
                     viewModel.ReportPackAssetSections.Any() &&
                     viewModel.ReportPackStatusText.Contains("preview is ready", StringComparison.OrdinalIgnoreCase));
@@ -1667,6 +1680,13 @@ public sealed class FundLedgerViewModelTests
                     row.ActionLabel.Contains("Complete private-capital approval", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "OperationsClose");
                 closeCockpitService.RequestedFundProfileId.Should().Be("alpha-fund");
+                closeCockpitService.RequestedTenantId.Should().Be("tenant-alpha");
+                closeCockpitService.RequestedCompanyId.Should().Be("company-alpha");
+                closeCockpitService.RequestedLedgerBookId.Should().Be(Guid.Parse("cccccccc-1111-2222-3333-dddddddddddd"));
+                closeCockpitService.RequestedFundAccountId.Should().Be(Guid.Parse("bbbbbbbb-1111-2222-3333-cccccccccccc"));
+                closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
+                closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
+                closeCockpitService.RequestCount.Should().Be(1);
                 viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("2 evidence package(s)");
@@ -1711,6 +1731,15 @@ public sealed class FundLedgerViewModelTests
                 viewModel.PrivateCapitalCloseReadinessState.RecoveryActions.Should().Contain(action =>
                     action.Label == "Approve partner capital tie-out" &&
                     action.Target == "OperationsClose");
+
+                await viewModel.LoadAsync();
+                closeCockpitService.RequestCount.Should().Be(2, "context-free refresh must retain the last exact same-fund close scope");
+                closeCockpitService.RequestedTenantId.Should().Be("tenant-alpha");
+                closeCockpitService.RequestedCompanyId.Should().Be("company-alpha");
+                closeCockpitService.RequestedLedgerBookId.Should().Be(Guid.Parse("cccccccc-1111-2222-3333-dddddddddddd"));
+                closeCockpitService.RequestedPeriodId.Should().Be("2026-06");
+                closeCockpitService.RequestedEntityId.Should().Be("entity-alpha");
+                viewModel.PrivateCapitalCloseLanes.Should().NotBeEmpty("the exact close cockpit must not disappear on refresh");
             }
             finally
             {
@@ -2006,7 +2035,8 @@ public sealed class FundLedgerViewModelTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
@@ -2298,16 +2328,50 @@ public sealed class FundLedgerViewModelTests
 
         public string? RequestedFundProfileId { get; private set; }
 
+        public Guid? RequestedLedgerBookId { get; private set; }
+
+        public Guid? RequestedFundAccountId { get; private set; }
+
+        public string? RequestedPeriodId { get; private set; }
+
+        public string? RequestedEntityId { get; private set; }
+
+        public string? RequestedTenantId { get; private set; }
+
+        public string? RequestedCompanyId { get; private set; }
+
+        public int RequestCount { get; private set; }
+
         public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
             Guid? fundAccountId = null,
             string? periodId = null,
             string? entityId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(fundProfileId) ||
+                !ledgerBookId.HasValue ||
+                ledgerBookId.Value == Guid.Empty ||
+                string.IsNullOrWhiteSpace(periodId) ||
+                string.IsNullOrWhiteSpace(entityId) ||
+                string.IsNullOrWhiteSpace(tenantId) ||
+                string.IsNullOrWhiteSpace(companyId))
+            {
+                throw new InvalidOperationException("The WPF close cockpit attempted a wildcard request.");
+            }
+
+            RequestCount++;
             RequestedFundProfileId = fundProfileId;
+            RequestedLedgerBookId = ledgerBookId;
+            RequestedFundAccountId = fundAccountId;
+            RequestedPeriodId = periodId;
+            RequestedEntityId = entityId;
+            RequestedTenantId = tenantId;
+            RequestedCompanyId = companyId;
             return Task.FromResult(_cockpit);
         }
     }
@@ -2568,6 +2632,9 @@ public sealed class FundLedgerViewModelTests
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(null);
 
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)

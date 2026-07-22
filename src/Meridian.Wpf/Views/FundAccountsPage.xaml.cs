@@ -16,5 +16,21 @@ public partial class FundAccountsPage : Page
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
-        => await _viewModel.LoadFundAccountsAsync();
+    {
+        try
+        {
+            await _viewModel.LoadFundAccountsAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Fund Accounts page failed to load.", ex);
+        }
+    }
 }

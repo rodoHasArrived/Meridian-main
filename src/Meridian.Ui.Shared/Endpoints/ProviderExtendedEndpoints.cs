@@ -4,6 +4,8 @@ using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -108,38 +110,34 @@ public static class ProviderExtendedEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Rate limits
-        group.MapGet(UiApiRoutes.ProviderRateLimits, ([FromServices] ProviderRegistry? registry) =>
+        group.MapGet(UiApiRoutes.ProviderRateLimits, (
+            [FromServices] ProviderRegistry? registry,
+            [FromServices] IEnumerable<IDataSource> dataSources) =>
         {
-            var providers = registry?.GetBackfillProviders()
-                .Select(p => new
-                {
-                    name = p.Name,
-                    displayName = p.DisplayName,
-                    priority = p.Priority,
-                    capabilities = p.Capabilities
-                })
-                .ToArray() ?? Array.Empty<object>();
-
-            return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
+            return Results.Json(
+                CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow),
+                jsonOptions);
         })
         .WithName("GetProviderRateLimits")
-        .WithDescription("Returns rate limit configuration and current state for all backfill providers.")
-        .Produces(200);
+        .WithDescription("Returns typed rate limit configuration and current runtime state for provider surfaces that expose diagnostics.")
+        .Produces<ProviderRateLimitsResponse>(200);
 
         // Rate limit history
         group.MapGet(UiApiRoutes.ProviderRateLimitHistory, (string providerName, int? hours) =>
         {
-            return Results.Json(new
-            {
-                provider = providerName,
-                periodHours = hours ?? 24,
-                history = Array.Empty<object>(),
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(
+                new ProviderRateLimitHistoryResponse(
+                    providerName,
+                    hours ?? 24,
+                    Array.Empty<ProviderRateLimitEventDto>(),
+                    DateTimeOffset.UtcNow,
+                    IsAvailable: false,
+                    Message: "Runtime rate-limit history is not retained. Use /api/providers/rate-limits for the current snapshot."),
+                jsonOptions);
         })
         .WithName("GetProviderRateLimitHistory")
-        .WithDescription("Returns rate limit event history for a specific provider over the given time window.")
-        .Produces(200);
+        .WithDescription("Legacy route retained for compatibility; rate-limit event history is not retained.")
+        .Produces<ProviderRateLimitHistoryResponse>(200);
 
         // Provider capabilities
         group.MapGet(UiApiRoutes.ProviderCapabilities, ([FromServices] ProviderRegistry? registry) =>
@@ -192,18 +190,35 @@ public static class ProviderExtendedEndpoints
         {
             var provider = registry?.GetAllProviders()
                 .FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+            var diagnostics = provider is null
+                ? null
+                : ProviderConnectionDiagnosticsProjection.Find(
+                    ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
+                    provider.Name,
+                    provider.DisplayName);
+            var connectionState = provider is null
+                ? "not-found"
+                : !provider.IsEnabled
+                    ? "disabled"
+                    : diagnostics is null
+                        ? "unavailable"
+                        : ResolveConnectionState(provider.IsEnabled, diagnostics.LifecycleState, diagnostics.IsConnected);
 
             return Results.Json(new
             {
                 provider = providerName,
                 found = provider?.Name is not null,
                 isEnabled = provider?.IsEnabled ?? false,
-                reachable = provider?.IsEnabled ?? false,
+                reachable = provider is null
+                    ? (bool?)null
+                    : ResolveIsConnected(provider.IsEnabled, diagnostics?.IsConnected),
+                connectionState,
+                diagnosticsAvailable = diagnostics is not null,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("TestProvider")
-        .WithDescription("Tests connectivity to a specific provider and returns reachability status.")
+        .WithDescription("Returns live provider connection diagnostics when available; reachability is null when no runtime probe exists.")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -236,7 +251,11 @@ public static class ProviderExtendedEndpoints
                         diagnosticsByProviderId,
                         p.Name,
                         p.DisplayName);
-                    var isConnected = diagnostics?.IsConnected ?? p.IsEnabled;
+                    var isConnected = ResolveIsConnected(p.IsEnabled, diagnostics?.IsConnected);
+                    var connectionState = ResolveConnectionState(
+                        p.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected);
 
                     return (object)new
                     {
@@ -247,14 +266,18 @@ public static class ProviderExtendedEndpoints
                         type = p.ProviderType.ToString(),
                         isEnabled = p.IsEnabled,
                         isConnected,
-                        healthy = p.IsEnabled && isConnected,
-                        connectionStabilityScore = isConnected ? 100 : 0,
+                        connectionState,
+                        diagnosticsAvailable = diagnostics is not null,
+                        healthy = !p.IsEnabled
+                            ? false
+                            : diagnostics is null ? (bool?)null : diagnostics.IsConnected,
+                        connectionStabilityScore = diagnostics is null ? (int?)null : diagnostics.IsConnected ? 100 : 0,
                         averageLatencyMs = 0,
                         latencyP99Ms = 0,
                         latencyConsistencyScore = 100,
                         dataCompletenessPercent = 100,
                         reconnectsLastHour = diagnostics?.ReconnectAttempts ?? 0,
-                        uptimePercent = isConnected ? 100 : 0,
+                        uptimePercent = diagnostics is null ? (int?)null : diagnostics.IsConnected ? 100 : 0,
                         messagesPerSecond = 0,
                         errorsLastHour = diagnostics?.LastFailureKind is null ? 0 : 1,
                         lifecycleState = diagnostics?.LifecycleState,
@@ -288,12 +311,18 @@ public static class ProviderExtendedEndpoints
                     p.Name,
                     p.DisplayName);
                 // Determine per-provider traffic-light colour
-                var isConnected = diagnostics?.IsConnected ?? p.IsEnabled;
-                var trafficLight = p.IsEnabled && isConnected ? "green" : "red";
-                if (diagnostics?.IsReconnecting == true)
-                {
-                    trafficLight = "yellow";
-                }
+                var isConnected = ResolveIsConnected(p.IsEnabled, diagnostics?.IsConnected);
+                var connectionState = ResolveConnectionState(
+                    p.IsEnabled,
+                    diagnostics?.LifecycleState,
+                    diagnostics?.IsConnected);
+                var trafficLight = !p.IsEnabled
+                    ? "red"
+                    : diagnostics is null
+                        ? "unknown"
+                        : diagnostics.IsReconnecting
+                            ? "yellow"
+                            : diagnostics.IsConnected ? "green" : "red";
 
                 // Cross-reference latency metrics when available
                 string? latencyMs = null;
@@ -306,7 +335,7 @@ public static class ProviderExtendedEndpoints
                         latencyMs = m.AverageLatencyMs.ToString("F1");
 
                         // Elevate to yellow when a healthy provider is showing elevated latency
-                        if (p.IsEnabled && m.AverageLatencyMs > 500)
+                        if (p.IsEnabled && diagnostics?.IsConnected == true && m.AverageLatencyMs > 500)
                             trafficLight = "yellow";
                     }
                 }
@@ -318,6 +347,8 @@ public static class ProviderExtendedEndpoints
                     type = p.ProviderType.ToString(),
                     isEnabled = p.IsEnabled,
                     isConnected,
+                    connectionState,
+                    diagnosticsAvailable = diagnostics is not null,
                     trafficLight,
                     latencyMs,
                     lifecycleState = diagnostics?.LifecycleState,
@@ -336,10 +367,13 @@ public static class ProviderExtendedEndpoints
             var enabledCount = allProviders.Count(p => p.IsEnabled);
             var yellowCount = providerSummaries.Count(p => p.trafficLight == "yellow");
             var redCount = providerSummaries.Count(p => p.trafficLight == "red");
+            var unknownCount = providerSummaries.Count(p => p.trafficLight == "unknown");
 
             var overallTrafficLight = enabledCount == 0 || redCount > 0
                 ? "red"
-                : yellowCount > 0 ? "yellow" : "green";
+                : yellowCount > 0
+                    ? "yellow"
+                    : unknownCount > 0 ? "unknown" : "green";
 
             var summary = overallTrafficLight switch
             {
@@ -365,6 +399,164 @@ public static class ProviderExtendedEndpoints
             "yellow (some degraded/failover active), red (primary providers down).")
         .Produces(200);
     }
+
+    internal static ProviderRateLimitsResponse CreateRateLimitsResponse(
+        ProviderRegistry? registry,
+        IEnumerable<IDataSource> dataSources,
+        DateTimeOffset observedAt)
+    {
+        ArgumentNullException.ThrowIfNull(dataSources);
+        var providers = new List<ProviderRateLimitSnapshotDto>();
+        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var provider in registry?.GetBackfillProviders() ?? Array.Empty<IHistoricalDataProvider>())
+        {
+            var snapshot = (provider as IProviderRateLimitDiagnosticsSource)?.GetRateLimitDiagnosticsSnapshot();
+            var surface = snapshot?.Surface ?? ProviderRateLimitSurfaces.Historical;
+            if (!keys.Add($"{provider.Name}:{surface}"))
+                continue;
+
+            providers.Add(new ProviderRateLimitSnapshotDto(
+                Provider: provider.Name,
+                Name: provider.Name,
+                DisplayName: provider.DisplayName,
+                Priority: provider.Priority,
+                Capabilities: MapCapabilities(provider.Capabilities),
+                Surface: surface,
+                StateAvailable: snapshot?.StateAvailable == true,
+                ObservedAt: snapshot?.ObservedAt ?? observedAt,
+                RequestsInWindow: snapshot?.StateAvailable == true ? snapshot.RequestsInWindow : null,
+                MaxRequestsPerWindow: snapshot?.MaxRequestsPerWindow ?? provider.MaxRequestsPerWindow,
+                RemainingRequests: snapshot?.StateAvailable == true ? snapshot.RemainingRequests : null,
+                WindowSeconds: (snapshot?.Window ?? provider.RateLimitWindow).TotalSeconds,
+                UsageRatio: snapshot?.StateAvailable == true ? snapshot.UsageRatio : null,
+                IsRateLimited: snapshot?.StateAvailable == true && snapshot.IsRateLimited,
+                ResetAt: snapshot?.StateAvailable == true ? snapshot.ResetAt : null,
+                Reason: snapshot?.Reason ?? "runtime-diagnostics-unavailable"));
+        }
+
+        foreach (var provider in registry?.GetStreamingProviders().OfType<IProviderRateLimitDiagnosticsSource>()
+                     ?? Array.Empty<IProviderRateLimitDiagnosticsSource>())
+        {
+            var snapshot = provider.GetRateLimitDiagnosticsSnapshot();
+            if (!keys.Add($"{snapshot.ProviderId}:{snapshot.Surface}"))
+                continue;
+
+            var metadata = (IProviderMetadata)provider;
+            providers.Add(new ProviderRateLimitSnapshotDto(
+                Provider: snapshot.ProviderId,
+                Name: metadata.ProviderId,
+                DisplayName: metadata.ProviderDisplayName,
+                Priority: metadata.ProviderPriority,
+                Capabilities: MapCapabilities(metadata.ProviderCapabilities),
+                Surface: snapshot.Surface,
+                StateAvailable: snapshot.StateAvailable,
+                ObservedAt: snapshot.ObservedAt,
+                RequestsInWindow: snapshot.StateAvailable ? snapshot.RequestsInWindow : null,
+                MaxRequestsPerWindow: snapshot.MaxRequestsPerWindow,
+                RemainingRequests: snapshot.StateAvailable ? snapshot.RemainingRequests : null,
+                WindowSeconds: snapshot.Window.TotalSeconds,
+                UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
+                IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
+                ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
+                Reason: snapshot.Reason));
+        }
+
+        foreach (var source in dataSources.OfType<IProviderRateLimitDiagnosticsSource>())
+        {
+            var snapshot = source.GetRateLimitDiagnosticsSnapshot();
+            if (!keys.Add($"{snapshot.ProviderId}:{snapshot.Surface}"))
+                continue;
+
+            var dataSource = (IDataSource)source;
+            providers.Add(new ProviderRateLimitSnapshotDto(
+                Provider: snapshot.ProviderId,
+                Name: snapshot.ProviderId,
+                DisplayName: dataSource.DisplayName,
+                Priority: dataSource.Priority,
+                Capabilities: MapCapabilities(dataSource),
+                Surface: snapshot.Surface,
+                StateAvailable: snapshot.StateAvailable,
+                ObservedAt: snapshot.ObservedAt,
+                RequestsInWindow: snapshot.StateAvailable ? snapshot.RequestsInWindow : null,
+                MaxRequestsPerWindow: snapshot.MaxRequestsPerWindow,
+                RemainingRequests: snapshot.StateAvailable ? snapshot.RemainingRequests : null,
+                WindowSeconds: snapshot.Window.TotalSeconds,
+                UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
+                IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
+                ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
+                Reason: snapshot.Reason));
+        }
+
+        return new ProviderRateLimitsResponse(
+            providers
+                .OrderBy(provider => provider.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(provider => provider.Surface, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            observedAt);
+    }
+
+    internal static string ResolveConnectionState(
+        bool isEnabled,
+        string? lifecycleState,
+        bool? isConnected)
+    {
+        if (!isEnabled)
+            return "disabled";
+        if (string.IsNullOrWhiteSpace(lifecycleState))
+            return "unknown";
+
+        return lifecycleState.Trim().ToLowerInvariant() switch
+        {
+            "connected" when isConnected == true => "connected",
+            "reconnecting" => "reconnecting",
+            "degraded" => "degraded",
+            "connecting" => "connecting",
+            "disconnecting" => "disconnecting",
+            "disconnected" => "disconnected",
+            "failed" => "failed",
+            "notconfigured" => "not-configured",
+            "configured" => "configured",
+            _ => isConnected == true ? "connected" : "disconnected"
+        };
+    }
+
+    internal static bool? ResolveIsConnected(bool isEnabled, bool? runtimeIsConnected)
+        => isEnabled ? runtimeIsConnected : false;
+
+    private static ProviderRateLimitCapabilitiesDto MapCapabilities(HistoricalDataCapabilities capabilities) => new(
+        capabilities.AdjustedPrices,
+        capabilities.Intraday,
+        capabilities.Dividends,
+        capabilities.Splits,
+        capabilities.Quotes,
+        capabilities.Trades,
+        capabilities.Auctions,
+        capabilities.SupportedMarkets.ToArray());
+
+    private static ProviderRateLimitCapabilitiesDto MapCapabilities(IDataSource source)
+    {
+        var capabilities = source.Capabilities;
+        return new ProviderRateLimitCapabilitiesDto(
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalAdjustedPrices),
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalIntradayBars),
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalDividends),
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalSplits),
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalTicks),
+            capabilities.HasFlag(DataSourceCapabilities.HistoricalTicks),
+            Auctions: false,
+            source.SupportedMarkets.ToArray());
+    }
+
+    private static ProviderRateLimitCapabilitiesDto MapCapabilities(ProviderCapabilities capabilities) => new(
+        capabilities.SupportsAdjustedPrices,
+        capabilities.SupportsIntraday,
+        capabilities.SupportsDividends,
+        capabilities.SupportsSplits,
+        capabilities.SupportsRealtimeQuotes || capabilities.SupportsHistoricalQuotes,
+        capabilities.SupportsRealtimeTrades || capabilities.SupportsHistoricalTrades,
+        capabilities.SupportsHistoricalAuctions,
+        capabilities.SupportedMarkets.ToArray());
 
     private sealed record FailoverTriggerRequest(string? TargetProvider);
     private sealed record ProviderSwitchRequest(string? ProviderName, bool SaveAsDefault);

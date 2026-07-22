@@ -228,6 +228,26 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void ResolveDefaultPanes_ReportingIncludesReportLineProvenance()
+    {
+        var panes = ShellNavigationCatalog.ResolveDefaultPanes(new WorkspaceShellState(
+            WorkspaceId: "reporting",
+            LayoutId: "reporting-workspace",
+            DisplayName: "Reporting Workspace",
+            LayoutScopeKey: null,
+            WindowMode: BoundedWindowMode.DockFloat,
+            LayoutPresetId: null,
+            HasPrimaryContext: true));
+
+        panes.Select(pane => pane.PageTag).Should().ContainInOrder(
+            "FundReportPack",
+            "ReportRunStatus",
+            "ReportLineProvenanceExplorer",
+            "Dashboard",
+            "AnalysisExport");
+    }
+
+    [Fact]
     public void ProviderHealth_ShouldBelongToDataWhileDiagnosticsStaysSettingsOwned()
     {
         var providerHealth = ShellNavigationCatalog.GetPage("ProviderHealth");
@@ -405,6 +425,10 @@ public sealed class ShellNavigationCatalogTests
         ShellNavigationCatalog.GetPage("PortfolioShell")!.Title.Should().Be("Portfolio Workspace");
         ShellNavigationCatalog.GetPage("AccountingShell")!.Title.Should().Be("Accounting Workspace");
         ShellNavigationCatalog.GetPage("ReportingShell")!.Title.Should().Be("Reporting Workspace");
+        ShellNavigationCatalog.GetRelatedPages("ReportingShell")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("ReportLineProvenanceExplorer");
         ShellNavigationCatalog.GetPage("StrategyShell")!.Title.Should().Be("Strategy Workspace");
         ShellNavigationCatalog.GetPage("DataShell")!.Title.Should().Be("Data Workspace");
         ShellNavigationCatalog.GetPage("SettingsShell")!.Title.Should().Be("Settings Workspace");

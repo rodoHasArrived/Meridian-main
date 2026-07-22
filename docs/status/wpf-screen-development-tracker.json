@@ -7,18 +7,17 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "3b8ba49cf56e",
+  "sourceFingerprint": "4d9ed86b3933",
   "baselineDate": "2026-06-17",
   "summary": {
-    "screenCount": 92,
+    "screenCount": 93,
     "workspaceCount": 7,
-    "screenshotCount": 15,
-    "testReferenceCount": 92,
-    "openTaskCount": 77,
+    "screenshotCount": 92,
+    "testReferenceCount": 93,
+    "openTaskCount": 1,
     "statusCounts": {
-      "needs-screenshot": 70,
-      "evidence-current": 15,
-      "needs-screenshot-index": 7
+      "evidence-current": 92,
+      "needs-screenshot": 1
     },
     "workspaces": [
       {
@@ -27,9 +26,9 @@
         "primaryCount": 5,
         "secondaryCount": 1,
         "overflowCount": 0,
-        "screenshotCount": 1,
+        "screenshotCount": 6,
         "testReferenceCount": 6,
-        "openTaskCount": 5
+        "openTaskCount": 0
       },
       {
         "name": "Portfolio",
@@ -37,9 +36,9 @@
         "primaryCount": 4,
         "secondaryCount": 4,
         "overflowCount": 1,
-        "screenshotCount": 0,
+        "screenshotCount": 9,
         "testReferenceCount": 9,
-        "openTaskCount": 9
+        "openTaskCount": 0
       },
       {
         "name": "Accounting",
@@ -47,9 +46,9 @@
         "primaryCount": 6,
         "secondaryCount": 8,
         "overflowCount": 0,
-        "screenshotCount": 0,
+        "screenshotCount": 14,
         "testReferenceCount": 14,
-        "openTaskCount": 14
+        "openTaskCount": 0
       },
       {
         "name": "Reporting",
@@ -57,9 +56,9 @@
         "primaryCount": 5,
         "secondaryCount": 3,
         "overflowCount": 0,
-        "screenshotCount": 1,
+        "screenshotCount": 8,
         "testReferenceCount": 8,
-        "openTaskCount": 7
+        "openTaskCount": 0
       },
       {
         "name": "Strategy",
@@ -67,9 +66,9 @@
         "primaryCount": 6,
         "secondaryCount": 3,
         "overflowCount": 3,
-        "screenshotCount": 4,
+        "screenshotCount": 13,
         "testReferenceCount": 13,
-        "openTaskCount": 9
+        "openTaskCount": 0
       },
       {
         "name": "Data",
@@ -77,19 +76,19 @@
         "primaryCount": 6,
         "secondaryCount": 9,
         "overflowCount": 10,
-        "screenshotCount": 7,
+        "screenshotCount": 25,
         "testReferenceCount": 25,
-        "openTaskCount": 18
+        "openTaskCount": 0
       },
       {
         "name": "Settings",
-        "screenCount": 17,
-        "primaryCount": 5,
+        "screenCount": 18,
+        "primaryCount": 6,
         "secondaryCount": 6,
         "overflowCount": 6,
-        "screenshotCount": 2,
-        "testReferenceCount": 17,
-        "openTaskCount": 15
+        "screenshotCount": 17,
+        "testReferenceCount": 18,
+        "openTaskCount": 1
       }
     ]
   },
@@ -103,11 +102,11 @@
       "order": 0,
       "pageType": "TradingWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-trading-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -132,22 +131,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as TradingShell (TradingWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for TradingShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-shell.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +19 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Trading",
@@ -160,7 +159,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-live-data.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -178,7 +177,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-live-data.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-live-data.png (2026-06-26)."
         },
         {
           "done": true,
@@ -196,11 +195,11 @@
       "order": 20,
       "pageType": "OrderBookPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-order-book.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -209,27 +208,28 @@
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/PaneHostViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/OrderBookHeatmapViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OrderBookViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PageActivationLifetimeContractTests.cs",
         "tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as OrderBook (OrderBookPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for OrderBook or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-order-book.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Trading",
@@ -240,11 +240,11 @@
       "order": 30,
       "pageType": "PositionBlotterPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-position-blotter.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -260,22 +260,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PositionBlotter (PositionBlotterPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for PositionBlotter or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-position-blotter.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +10 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Trading",
@@ -286,11 +286,11 @@
       "order": 40,
       "pageType": "RunRiskPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-risk.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs",
@@ -306,22 +306,22 @@
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunRisk (RunRiskPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunRisk or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-risk.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Trading",
@@ -332,11 +332,11 @@
       "order": 50,
       "pageType": "TradingHoursPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-trading-hours.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -346,22 +346,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TradingHoursViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as TradingHours (TradingHoursPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for TradingHours or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-trading-hours.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -372,11 +372,11 @@
       "order": 70,
       "pageType": "DirectLendingPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-direct-lending.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
@@ -384,22 +384,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DirectLending (DirectLendingPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DirectLending or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-direct-lending.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -410,11 +410,11 @@
       "order": 0,
       "pageType": "PortfolioWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -429,22 +429,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PortfolioShell (PortfolioWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for PortfolioShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-shell.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +9 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -455,11 +455,11 @@
       "order": 10,
       "pageType": "AccountPortfolioPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-account-portfolio.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -475,22 +475,22 @@
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AccountPortfolio (AccountPortfolioPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AccountPortfolio or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-account-portfolio.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -501,33 +501,33 @@
       "order": 20,
       "pageType": "AggregatePortfolioPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-aggregate-portfolio.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AggregatePortfolio (AggregatePortfolioPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AggregatePortfolio or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-aggregate-portfolio.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -538,11 +538,11 @@
       "order": 30,
       "pageType": "RunPortfolioPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-portfolio.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
@@ -557,22 +557,22 @@
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunPortfolio (RunPortfolioPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunPortfolio or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-portfolio.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -582,12 +582,12 @@
       "visibilityTier": "Secondary",
       "order": 35,
       "pageType": "FinancialRecordExplorerPage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-explorer.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -596,22 +596,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PortfolioExplorer (FinancialRecordExplorerPage)."
         },
         {
-          "done": false,
-          "text": "Add PortfolioExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-explorer.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -622,11 +622,11 @@
       "order": 40,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-portfolio.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -636,22 +636,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundPortfolio (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundPortfolio or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-portfolio.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -662,11 +662,11 @@
       "order": 50,
       "pageType": "FundAccountsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounts.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
@@ -681,22 +681,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundAccounts (FundAccountsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundAccounts or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounts.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Portfolio",
@@ -707,34 +707,35 @@
       "order": 60,
       "pageType": "PortfolioImportPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-portfolio-import.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PortfolioImportViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PortfolioImport (PortfolioImportPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for PortfolioImport or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-portfolio-import.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -745,11 +746,11 @@
       "order": 0,
       "pageType": "AccountingWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-accounting-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
@@ -771,22 +772,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AccountingShell (AccountingWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AccountingShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-accounting-shell.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -797,32 +798,32 @@
       "order": 5,
       "pageType": "FundStructureSetupPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-structure-setup.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundStructureSetup (FundStructureSetupPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundStructureSetup or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-structure-setup.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -833,11 +834,11 @@
       "order": 10,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-ledger.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -860,22 +861,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundLedger (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundLedger or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-ledger.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +17 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -886,11 +887,11 @@
       "order": 20,
       "pageType": "RunLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-ledger.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
@@ -901,22 +902,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunLedger (RunLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunLedger or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-ledger.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +5 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -927,11 +928,11 @@
       "order": 30,
       "pageType": "RunCashFlowPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-cash-flow.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -939,22 +940,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/CashFlowViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunCashFlow (RunCashFlowPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunCashFlow or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-cash-flow.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -965,11 +966,11 @@
       "order": 70,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-reconciliation.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -984,28 +985,29 @@
         "tests/Meridian.Wpf.Tests/ViewModels/ShellPresentationViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundReconciliation (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundReconciliation or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-reconciliation.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +15 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1016,11 +1018,11 @@
       "order": 40,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-banking.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1029,22 +1031,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundBanking (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundBanking or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-banking.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1055,11 +1057,11 @@
       "order": 50,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-cash-financing.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1069,22 +1071,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundCashFinancing (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundCashFinancing or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-cash-financing.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1094,12 +1096,12 @@
       "visibilityTier": "Secondary",
       "order": 55,
       "pageType": "AccountingConfigurePage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounting-configure.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
@@ -1108,22 +1110,22 @@
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundAccountingConfigure (AccountingConfigurePage)."
         },
         {
-          "done": false,
-          "text": "Add FundAccountingConfigure to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-configure.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1133,33 +1135,33 @@
       "visibilityTier": "Secondary",
       "order": 57,
       "pageType": "AccountingClosePage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-accounting-close.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundAccountingClose (AccountingClosePage)."
         },
         {
-          "done": false,
-          "text": "Add FundAccountingClose to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-accounting-close.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1170,11 +1172,11 @@
       "order": 60,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-trial-balance.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1189,22 +1191,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundTrialBalance (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundTrialBalance or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-trial-balance.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1214,12 +1216,12 @@
       "visibilityTier": "Secondary",
       "order": 65,
       "pageType": "FinancialRecordExplorerPage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-ledger-explorer.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1228,22 +1230,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as LedgerExplorer (FinancialRecordExplorerPage)."
         },
         {
-          "done": false,
-          "text": "Add LedgerExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-ledger-explorer.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1254,11 +1256,11 @@
       "order": 80,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-audit-trail.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1272,28 +1274,27 @@
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/Wave2OperatorInboxAcceptanceTests.cs",
-        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundAuditTrail (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundAuditTrail or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Accounting",
@@ -1303,12 +1304,12 @@
       "visibilityTier": "Secondary",
       "order": 90,
       "pageType": "FinancialRecordExplorerPage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-security-instrument-explorer.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
@@ -1317,22 +1318,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SecurityInstrumentExplorer (FinancialRecordExplorerPage)."
         },
         {
-          "done": false,
-          "text": "Add SecurityInstrumentExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-instrument-explorer.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1343,13 +1344,14 @@
       "order": 0,
       "pageType": "ReportingWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-reporting-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
@@ -1360,22 +1362,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ReportingShell (ReportingWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ReportingShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-reporting-shell.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +8 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1386,41 +1388,43 @@
       "order": 10,
       "pageType": "FundLedgerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-fund-report-pack.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Workstation/WorkstationPresentationModelsTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as FundReportPack (FundLedgerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for FundReportPack or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-report-pack.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +11 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1431,33 +1435,34 @@
       "order": 15,
       "pageType": "DashboardPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-report-run-status.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DashboardPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ReportRunStatus (DashboardPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ReportRunStatus or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1470,7 +1475,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-dashboard.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -1481,6 +1486,7 @@
         "tests/Meridian.Wpf.Tests/Services/TooltipServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DashboardPageSmokeTests.cs",
@@ -1494,11 +1500,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-dashboard.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-dashboard.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, +9 more."
         }
       ],
       "openTaskCount": 0
@@ -1512,35 +1518,36 @@
       "order": 30,
       "pageType": "AnalysisExportPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-analysis-export.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AnalysisExport (AnalysisExportPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AnalysisExport or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, +4 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1550,35 +1557,36 @@
       "visibilityTier": "Secondary",
       "order": 18,
       "pageType": "FinancialRecordExplorerPage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-report-line-provenance-explorer.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ReportLineProvenanceExplorer (FinancialRecordExplorerPage)."
         },
         {
-          "done": false,
-          "text": "Add ReportLineProvenanceExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-line-provenance-explorer.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1589,31 +1597,31 @@
       "order": 40,
       "pageType": "AnalysisExportWizardPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-analysis-export-wizard.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AnalysisExportWizard (AnalysisExportWizardPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AnalysisExportWizard or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export-wizard.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Reporting",
@@ -1624,32 +1632,32 @@
       "order": 50,
       "pageType": "ExportPresetsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-export-presets.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ExportPresets (ExportPresetsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ExportPresets or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-export-presets.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -1660,33 +1668,33 @@
       "order": 90,
       "pageType": "LeanIntegrationPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-lean-integration.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as LeanIntegration (LeanIntegrationPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for LeanIntegration or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-lean-integration.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -1697,11 +1705,11 @@
       "order": 100,
       "pageType": "EventReplayPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-event-replay.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
@@ -1709,22 +1717,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as EventReplay (EventReplayPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for EventReplay or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-event-replay.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -1735,11 +1743,11 @@
       "order": 110,
       "pageType": "WatchlistPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-watchlist.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -1757,22 +1765,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDialogChromeControlTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Watchlist (WatchlistPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Watchlist or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-watchlist.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs, +12 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -1783,9 +1791,9 @@
       "order": 0,
       "pageType": "StrategyWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": "docs/screenshots/desktop/wpf-strategy-workspace.png",
+      "screenshotPath": "docs/screenshots/desktop/wpf-strategy-shell.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -1817,7 +1825,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-workspace.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-shell.png (2026-06-26)."
         },
         {
           "done": true,
@@ -1837,7 +1845,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-backtest.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -1875,7 +1883,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backtest.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backtest.png (2026-06-26)."
         },
         {
           "done": true,
@@ -1895,7 +1903,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-strategy-runs.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -1906,6 +1914,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
@@ -1919,11 +1928,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +9 more."
         }
       ],
       "openTaskCount": 0
@@ -1937,11 +1946,11 @@
       "order": 30,
       "pageType": "RunDetailPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-detail.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
@@ -1964,22 +1973,22 @@
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunDetail (RunDetailPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunDetail or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-detail.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +17 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -1990,11 +1999,11 @@
       "order": 40,
       "pageType": "ChartingPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-charts.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
@@ -2003,22 +2012,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/ChartingPageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/QuantScriptViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Charts (ChartingPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Charts or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-charts.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -2029,11 +2038,11 @@
       "order": 50,
       "pageType": "RunMatPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-run-mat.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
@@ -2069,6 +2078,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/OrderBookViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PortfolioImportViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/ProviderAccountingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
@@ -2094,6 +2104,7 @@
         "tests/Meridian.Wpf.Tests/Views/FullNavigationSweepTests.cs",
         "tests/Meridian.Wpf.Tests/Views/FundProfileSelectionPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/HelpPageSmokeTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/LifecycleControlPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs",
@@ -2117,22 +2128,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPrimitiveControlsTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RunMat (RunMatPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RunMat or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-mat.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +78 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +80 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -2143,32 +2154,32 @@
       "order": 60,
       "pageType": "BatchBacktestPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-batch-backtest.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as BatchBacktest (BatchBacktestPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for BatchBacktest or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-batch-backtest.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -2179,31 +2190,31 @@
       "order": 70,
       "pageType": "AdvancedAnalyticsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-advanced-analytics.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AdvancedAnalytics (AdvancedAnalyticsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AdvancedAnalytics or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-advanced-analytics.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Strategy",
@@ -2216,7 +2227,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-quant-script.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -2239,7 +2250,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-quant-script.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-quant-script.png (2026-06-26)."
         },
         {
           "done": true,
@@ -2256,33 +2267,33 @@
       "visibilityTier": "Unspecified",
       "order": 25,
       "pageType": "HomeWorkspacePage",
-      "screenshotIndexRow": false,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": null,
-      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "screenshotIndexRow": true,
+      "screenshotPath": "docs/screenshots/desktop/wpf-home-workspace.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs"
       ],
-      "status": "needs-screenshot-index",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as HomeWorkspace (HomeWorkspacePage)."
         },
         {
-          "done": false,
-          "text": "Add HomeWorkspace to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-home-workspace.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2295,7 +2306,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-browser.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -2311,7 +2322,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-browser.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-browser.png (2026-06-26)."
         },
         {
           "done": true,
@@ -2329,30 +2340,30 @@
       "order": 150,
       "pageType": "DataCalendarPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-data-calendar.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DataCalendar (DataCalendarPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DataCalendar or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-calendar.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2363,31 +2374,31 @@
       "order": 160,
       "pageType": "DataSamplingPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-data-sampling.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DataSampling (DataSamplingPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DataSampling or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sampling.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2398,31 +2409,31 @@
       "order": 170,
       "pageType": "TimeSeriesAlignmentPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-time-series-alignment.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as TimeSeriesAlignment (TimeSeriesAlignmentPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for TimeSeriesAlignment or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-time-series-alignment.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2433,30 +2444,30 @@
       "order": 180,
       "pageType": "IndexSubscriptionPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-index-subscription.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as IndexSubscription (IndexSubscriptionPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for IndexSubscription or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-index-subscription.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2467,19 +2478,23 @@
       "order": 190,
       "pageType": "OptionsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-options.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingGovernanceWorkbenchViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/BackgroundTaskSchedulerServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/DesktopConfigurationRecoveryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/PendingOperationsQueuePersistenceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptTemplateCatalogServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/SingleInstanceServiceTests.cs",
@@ -2506,22 +2521,22 @@
         "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowScriptTests.cs",
         "tests/Meridian.Wpf.Tests/Views/QuantScriptPageTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Options (OptionsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Options or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +29 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +33 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2532,33 +2547,33 @@
       "order": 200,
       "pageType": "AddProviderWizardPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-add-provider-wizard.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AddProviderWizard (AddProviderWizardPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AddProviderWizard or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-add-provider-wizard.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2569,31 +2584,31 @@
       "order": 210,
       "pageType": "ArchiveHealthPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-archive-health.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ArchiveHealth (ArchiveHealthPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ArchiveHealth or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-archive-health.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2604,31 +2619,31 @@
       "order": 220,
       "pageType": "StorageOptimizationPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-storage-optimization.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as StorageOptimization (StorageOptimizationPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for StorageOptimization or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage-optimization.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2639,33 +2654,33 @@
       "order": 230,
       "pageType": "RetentionAssurancePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-retention-assurance.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as RetentionAssurance (RetentionAssurancePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for RetentionAssurance or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-retention-assurance.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2676,11 +2691,11 @@
       "order": 0,
       "pageType": "DataWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-data-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
@@ -2699,22 +2714,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DataShell (DataWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DataShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-shell.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2725,18 +2740,20 @@
       "order": 10,
       "pageType": "ProviderPage",
       "screenshotIndexRow": true,
-      "screenshotPath": "docs/screenshots/desktop/wpf-providers.png",
+      "screenshotPath": "docs/screenshots/desktop/wpf-provider.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingGovernanceWorkbenchViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
@@ -2745,10 +2762,13 @@
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConnectionServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/CredentialServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DesktopAuthenticationSessionTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/DesktopConfigurationRecoveryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StatusServiceTests.cs",
@@ -2763,6 +2783,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs",
@@ -2770,10 +2792,13 @@
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PageActivationLifetimeContractTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/ProviderAccountingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
@@ -2811,11 +2836,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-providers.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +68 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +78 more."
         }
       ],
       "openTaskCount": 0
@@ -2831,7 +2856,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-backfill.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -2840,6 +2865,7 @@
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs",
@@ -2878,11 +2904,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +31 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +32 more."
         }
       ],
       "openTaskCount": 0
@@ -2896,14 +2922,15 @@
       "order": 30,
       "pageType": "SymbolsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-symbols.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs",
@@ -2946,22 +2973,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellWorkflowTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Symbols (SymbolsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Symbols or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbols.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, +40 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/BackfillPresentationServiceTests.cs, +41 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -2974,10 +3001,11 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-storage.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
@@ -2987,6 +3015,7 @@
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NotificationServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StorageServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StrategyBriefingWorkspaceServiceTests.cs",
@@ -3014,7 +3043,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DataWorkspaceShellSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/QuantScriptPageTests.cs",
-        "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs"
+        "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
+        "tests/Meridian.Wpf.Tests/Workstation/EvidenceVaultPresentationModelsTests.cs"
       ],
       "status": "evidence-current",
       "tasks": [
@@ -3024,11 +3054,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +34 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +37 more."
         }
       ],
       "openTaskCount": 0
@@ -3042,11 +3072,11 @@
       "order": 50,
       "pageType": "DataExportPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-data-export.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -3055,22 +3085,22 @@
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DataExport (DataExportPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DataExport or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-export.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3081,11 +3111,11 @@
       "order": 60,
       "pageType": "DataSourcesPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-data-sources.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
@@ -3093,22 +3123,22 @@
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as DataSources (DataSourcesPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for DataSources or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-sources.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3121,7 +3151,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-provider-health.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -3147,7 +3177,7 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider-health.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider-health.png (2026-06-26)."
         },
         {
           "done": true,
@@ -3167,7 +3197,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-data-quality.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -3176,6 +3206,7 @@
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationWorkflowSummaryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DataQualityPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -3188,11 +3219,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-quality.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-quality.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +6 more."
         }
       ],
       "openTaskCount": 0
@@ -3208,13 +3239,16 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-security-master.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/GlobalUsings.SecurityMasterConcerns.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
@@ -3228,6 +3262,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterEditViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelAssetProfileTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunPortfolioViewModelTests.cs",
@@ -3245,11 +3280,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +21 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +25 more."
         }
       ],
       "openTaskCount": 0
@@ -3263,33 +3298,33 @@
       "order": 90,
       "pageType": "SymbolMappingPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-symbol-mapping.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SymbolMapping (SymbolMappingPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for SymbolMapping or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-mapping.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3300,31 +3335,31 @@
       "order": 100,
       "pageType": "SymbolStoragePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-symbol-storage.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SymbolStorage (SymbolStoragePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for SymbolStorage or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-symbol-storage.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3335,33 +3370,35 @@
       "order": 110,
       "pageType": "ScheduleManagerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-schedules.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingGovernanceWorkbenchViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Schedules (ScheduleManagerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Schedules or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-schedules.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingGovernanceWorkbenchViewModelTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3372,11 +3409,11 @@
       "order": 120,
       "pageType": "CollectionSessionPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-collection-sessions.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
@@ -3385,22 +3422,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/CollectionSessionViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as CollectionSessions (CollectionSessionPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for CollectionSessions or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-collection-sessions.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Data",
@@ -3411,32 +3448,32 @@
       "order": 130,
       "pageType": "PackageManagerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-package-manager.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as PackageManager (PackageManagerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for PackageManager or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-package-manager.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3447,11 +3484,11 @@
       "order": 100,
       "pageType": "ActivityLogPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-activity-log.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
@@ -3459,22 +3496,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPrimitiveControlsTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ActivityLog (ActivityLogPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ActivityLog or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-activity-log.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3485,30 +3522,30 @@
       "order": 110,
       "pageType": "KeyboardShortcutsPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-keyboard-shortcuts.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as KeyboardShortcuts (KeyboardShortcutsPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for KeyboardShortcuts or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-keyboard-shortcuts.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3519,30 +3556,30 @@
       "order": 120,
       "pageType": "HelpPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-help.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Views/HelpPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Help (HelpPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Help or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-help.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Views/HelpPageSmokeTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3553,11 +3590,11 @@
       "order": 130,
       "pageType": "SetupWizardPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-setup-wizard.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
@@ -3565,22 +3602,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SetupWizard (SetupWizardPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for SetupWizard or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-setup-wizard.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3591,11 +3628,11 @@
       "order": 140,
       "pageType": "WorkspacePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-workspaces.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
@@ -3612,22 +3649,22 @@
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPrimitiveControlsTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Workspaces (WorkspacePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Workspaces or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workspaces.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, +11 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3638,11 +3675,11 @@
       "order": 150,
       "pageType": "WelcomePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-welcome.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
@@ -3650,22 +3687,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as Welcome (WelcomePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for Welcome or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-welcome.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs, +2 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3676,11 +3713,11 @@
       "order": 0,
       "pageType": "SettingsWorkspaceShellPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-settings-shell.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
@@ -3693,22 +3730,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceShellPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SettingsShell (SettingsWorkspaceShellPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for SettingsShell or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings-shell.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +7 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3721,7 +3758,7 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-settings.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
@@ -3747,6 +3784,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/StorageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/Wave2OperatorInboxAcceptanceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceAttentionRibbonViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspacePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
         "tests/Meridian.Wpf.Tests/Views/ProviderPageSimplificationTests.cs",
@@ -3764,11 +3802,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +27 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +28 more."
         }
       ],
       "openTaskCount": 0
@@ -3782,33 +3820,33 @@
       "order": 20,
       "pageType": "CredentialManagementPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-credential-management.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as CredentialManagement (CredentialManagementPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for CredentialManagement or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-credential-management.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3819,11 +3857,11 @@
       "order": 30,
       "pageType": "SystemHealthPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-system-health.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
@@ -3833,19 +3871,56 @@
         "tests/Meridian.Wpf.Tests/Views/SystemHealthPageSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as SystemHealth (SystemHealthPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for SystemHealth or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-system-health.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more."
+        }
+      ],
+      "openTaskCount": 0
+    },
+    {
+      "workspace": "Settings",
+      "pageTag": "LifecycleControl",
+      "title": "Lifecycle control",
+      "section": "Operations",
+      "visibilityTier": "Primary",
+      "order": 35,
+      "pageType": "LifecycleControlPage",
+      "screenshotIndexRow": true,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": "TBI",
+      "screenshotGap": "New lifecycle-control surface has no retained PNG yet.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/StartupWindowViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/LifecycleControlPageSmokeTests.cs"
+      ],
+      "status": "needs-screenshot",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as LifecycleControl (LifecycleControlPage)."
+        },
+        {
+          "done": false,
+          "text": "Capture a fixture-mode desktop screenshot for LifecycleControl or record an explicit non-capture decision."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StartupWindowViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -3861,10 +3936,11 @@
       "screenshotIndexRow": true,
       "screenshotPath": "docs/screenshots/desktop/wpf-diagnostics.png",
       "screenshotExists": true,
-      "refreshedDate": "2026-06-16",
+      "refreshedDate": "2026-06-26",
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -3873,6 +3949,7 @@
         "tests/Meridian.Wpf.Tests/Support/FakeQuantScriptCompiler.cs",
         "tests/Meridian.Wpf.Tests/Support/FakeScriptRunner.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/ProviderAccountingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/QuantScriptViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
@@ -3889,11 +3966,11 @@
         },
         {
           "done": true,
-          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-06-16)."
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-06-26)."
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +12 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more."
         }
       ],
       "openTaskCount": 0
@@ -3907,11 +3984,11 @@
       "order": 50,
       "pageType": "ServiceManagerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-service-manager.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs",
@@ -3920,22 +3997,22 @@
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkstationPageSmokeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as ServiceManager (ServiceManagerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for ServiceManager or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-service-manager.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3946,11 +4023,11 @@
       "order": 60,
       "pageType": "AdminMaintenancePage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-admin-maintenance.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
@@ -3959,22 +4036,22 @@
         "tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as AdminMaintenance (AdminMaintenancePage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for AdminMaintenance or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-admin-maintenance.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +3 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -3985,33 +4062,33 @@
       "order": 70,
       "pageType": "EnvironmentDesignerPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-environment-designer.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationOperatingContextServiceTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as EnvironmentDesigner (EnvironmentDesignerPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for EnvironmentDesigner or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-environment-designer.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -4022,32 +4099,32 @@
       "order": 80,
       "pageType": "MessagingHubPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-messaging-hub.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as MessagingHub (MessagingHubPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for MessagingHub or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-messaging-hub.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -4058,11 +4135,11 @@
       "order": 90,
       "pageType": "NotificationCenterPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-notification-center.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
@@ -4074,22 +4151,22 @@
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as NotificationCenter (NotificationCenterPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for NotificationCenter or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-notification-center.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +6 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     },
     {
       "workspace": "Settings",
@@ -4100,33 +4177,33 @@
       "order": 145,
       "pageType": "WorkflowLibraryPage",
       "screenshotIndexRow": true,
-      "screenshotPath": null,
-      "screenshotExists": false,
-      "refreshedDate": null,
-      "fixtureMode": "TBI",
-      "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
+      "screenshotPath": "docs/screenshots/desktop/wpf-workflow-library.png",
+      "screenshotExists": true,
+      "refreshedDate": "2026-06-26",
+      "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
+      "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs"
       ],
-      "status": "needs-screenshot",
+      "status": "evidence-current",
       "tasks": [
         {
           "done": true,
           "text": "Registered in the WPF shell registry as WorkflowLibrary (WorkflowLibraryPage)."
         },
         {
-          "done": false,
-          "text": "Capture a fixture-mode desktop screenshot for WorkflowLibrary or record an explicit non-capture decision."
+          "done": true,
+          "text": "Screenshot evidence is committed at docs/screenshots/desktop/wpf-workflow-library.png (2026-06-26)."
         },
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more."
         }
       ],
-      "openTaskCount": 1
+      "openTaskCount": 0
     }
   ]
 }

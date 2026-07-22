@@ -1,125 +1,102 @@
 # Persona Panels
 
-Use this file to choose or tailor the simulated Meridian user panel. Every persona should sound
-like a constructive future customer who also cares about Meridian's long-term success.
+Choose primary panel members from the canonical Persona Matrix in
+`docs/product/meridian-design-document.md`. Advisory lenses can enrich a panel, but they are not
+presented as Meridian customer research.
 
-## Tagged Panels
+## Contents
 
-| Panel | Default roles | Best for |
-|---|---|---|
-| `core-finance` | Quantitative Analyst, Fund Manager, Fund Accountant, Fund Operations Lead, Individual Trader, Owner-Operator | Broad Meridian reviews and default mixed panels |
-| `research` | Quantitative Analyst, Academic Researcher, Hobbyist Builder, Data Engineer, Owner-Operator | Research, backtesting, exports, scripting, and data prep |
-| `operations-controls` | Fund Accountant, Fund Operations Lead, Risk / Compliance Lead, Data Operations Manager, Trading Operations Lead, Owner-Operator | Governance, ledger, approvals, reliability, and audit surfaces |
-| `growth-adoption` | Hobbyist Builder, Individual Trader, Support / Onboarding Lead, Implementation Consultant, Academic Researcher, Owner-Operator | Onboarding, packaging, adoption, enablement, and owner-level product bets |
+- [Panel presets](#panel-presets)
+- [Selection rules](#selection-rules)
+- [Canonical personas](#canonical-personas)
+- [Advisory lenses](#advisory-lenses)
+- [Legacy-name handling](#legacy-name-handling)
 
-Default panel: `core-finance`
+## Panel Presets
 
-## Quick Pairing Guide
+| Panel | Default canonical roles | Best for |
+| --- | --- | --- |
+| `core-finance` | Financial Operations Professional, Investment Accountant, Fund Accountant, Operations Manager, Portfolio Manager, CFO | Broad Meridian product reviews |
+| `research` | Investment Analyst, Quantitative Researcher, Portfolio Manager, CIO | Research, strategy, backtesting, and analytical workflows |
+| `operations-controls` | Financial Operations Professional, Reconciliation Analyst, Operations Manager, Controller, Compliance Officer, Auditor | Reconciliation, accounting, approvals, and auditability |
+| `growth-adoption` | Reporting Analyst, Fund Investor / LP, RIA Client, Family Beneficiary, Trustee, Portfolio Manager | Stakeholder delivery, comprehension, and adoption |
+| `trading-risk` | Portfolio Manager, Trader, Risk Manager, Compliance Officer, CIO | Orders, positions, limits, and escalation |
+| `data-operations` | Data Operations Analyst, Integration Administrator, Operations Manager, System Administrator, Security Administrator | Providers, imports, lineage, storage, and recovery |
+| `reporting-stakeholders` | Reporting Analyst, Fund Accountant, Controller, CFO, Fund Investor / LP, RIA Client | Reports, packages, evidence, and distribution |
+| `admin-security` | System Administrator, Security Administrator, Integration Administrator, Compliance Officer, Operations Manager | Configuration, access, integrations, and platform health |
 
-| Surface | Best default personas |
-|---|---|
-| Welcome flow or new screen | Hobbyist Builder, Individual Trader, Support / Onboarding Lead, Owner-Operator |
-| Research, signal discovery, backtesting | Quantitative Analyst, Academic Researcher, Hobbyist Builder, Data Engineer |
-| Market data quality, lineage, storage | Quantitative Analyst, Data Engineer, Data Operations Manager, Academic Researcher |
-| Trading workflow and execution | Fund Manager, Individual Trader, Trading Operations Lead, Risk / Compliance Lead |
-| Governance, accounting, reconciliation | Fund Accountant, Fund Operations Lead, Risk / Compliance Lead, Owner-Operator |
-| Product strategy and roadmap | Owner-Operator, Fund Manager, Hobbyist Builder, Implementation Consultant |
+Default: `core-finance`.
 
-## Persona Cards
+## Selection Rules
 
-### Quantitative Analyst
+- Use at least four distinct personas for a panel.
+- Prefer the smallest panel that covers the core operator, approver, downstream consumer, and
+  failure/recovery owner for the artifact.
+- Honor user-specified roles exactly. Treat an unknown explicit role as `custom`; do not silently
+  replace it with a canonical role.
+- Use advisory lenses only when they add a pressure point missing from the canonical panel. Label
+  them `advisory` in the output.
+- For cross-surface reviews, select roles whose jobs actually span both browser and WPF workflows.
+- For release gates, include at least one operational role and one governance, administration, or
+  downstream consumer role.
 
-- Primary jobs: validate data quality, test hypotheses, compare strategies, and move from raw data
-  to insight quickly.
-- Loves: reproducible workflows, lineage, flexible exports, and low-friction research loops.
-- Distrusts: opaque data quality, hidden assumptions, slow iteration, and spreadsheet fallbacks.
+## Canonical Personas
 
-### Fund Manager
+| Persona | Category | Core goal | Primary pressure point |
+| --- | --- | --- | --- |
+| Financial Operations Professional | Primary Operator | Keep financial data accurate, reconciled, and auditable | Can the operator see what changed, why it matters, and what to do next? |
+| Investment Accountant | Primary Operator | Produce accurate accounting and reporting support | Are classifications, adjustments, evidence, and exports defensible? |
+| Reconciliation Analyst | Primary Operator | Resolve breaks quickly and clearly | Can breaks be matched, assigned, explained, resolved, and escalated? |
+| Fund Accountant | Primary Operator | Support NAV, fund reporting, and investor activity | Are positions, capital activity, valuations, and expenses traceable? |
+| Operations Manager | Primary Operator / Manager | Monitor operational health and team workload | Are queues, aging, ownership, SLA risk, and recovery visible? |
+| Data Operations Analyst | Primary Operator | Keep pipelines and provider feeds healthy | Are imports, reruns, provider states, and quality issues diagnosable? |
+| Treasury Operations Specialist | Primary Operator | Manage liquidity and cash movement | Are initiation, approval, evidence, and reconciliation separated safely? |
+| Reporting Analyst | Primary Operator | Produce accurate reports and packages | Are approved inputs, templates, runs, evidence, and distribution clear? |
+| Portfolio Manager | Investment User | Monitor and manage portfolio outcomes | Are exposures, performance, risk, and next decisions concise? |
+| Investment Analyst | Investment User | Research investments and opportunities | Can evidence be compared, challenged, and turned into a defensible memo? |
+| Quantitative Researcher | Investment User | Develop and validate strategies | Are data, assumptions, backtests, simulations, and promotion reproducible? |
+| Trader | Investment User | Execute or monitor trading activity | Are order state, liquidity, constraints, and recovery unambiguous? |
+| Risk Manager | Governance / Investment User | Monitor investment and operational risk | Are limits, concentrations, stress results, and escalations explainable? |
+| CFO | Executive | Oversee financial accuracy and liquidity | Are cash, exceptions, approvals, and reporting decision-ready? |
+| CIO | Executive | Oversee portfolio strategy and risk | Are performance, allocation, risk, and recommendations coherent? |
+| Controller | Governance | Ensure accounting governance and audit readiness | Can journals, reconciliations, sign-offs, and evidence withstand review? |
+| Compliance Officer | Governance | Ensure policies and controls are followed | Are approvals, access, policy mapping, and audit trails explicit? |
+| Fund Investor / LP | Stakeholder | Monitor performance and capital activity | Are statements, returns, documents, and capital-account changes understandable? |
+| RIA Client | Stakeholder | Understand personal portfolio and advisor reports | Are performance, holdings, allocation, and communication approachable? |
+| Family Beneficiary | Stakeholder | Understand family assets and distributions | Are summaries, distributions, reports, and documents comprehensible? |
+| Trustee | Stakeholder | Exercise fiduciary oversight | Are reports, approvals, distributions, and legal evidence reviewable? |
+| Auditor | External / Governance | Verify accuracy and evidence | Can source data, reconciliations, approvals, and audit trails be inspected? |
+| System Administrator | Administration | Maintain platform health and access | Are users, logs, integrations, settings, and operational state manageable? |
+| Security Administrator | Administration | Protect the platform and manage permissions | Are roles, scopes, policies, grants, revocations, and reviews defensible? |
+| Integration Administrator | Administration | Maintain provider and system connections | Are credentials, mappings, tests, failures, and monitoring safe and clear? |
 
-- Primary jobs: allocate capital, monitor exposure, review positions, and understand what matters
-  now.
-- Loves: concise decision support, portfolio clarity, trustworthy summaries, and clean escalation
-  paths.
-- Distrusts: clutter, weak prioritization, ambiguous risk state, and dashboards with no action
-  path.
+## Advisory Lenses
 
-### Fund Accountant
+Use these only as explicitly labeled non-canonical perspectives:
 
-- Primary jobs: maintain books, reconcile records, explain balances, and produce audit-ready
-  outputs.
-- Loves: traceability, explicit approvals, durable export paths, and stable lifecycle states.
-- Distrusts: hidden calculations, workflow shortcuts, and unclear reviewer ownership.
+| Lens | Pressure point |
+| --- | --- |
+| Owner-Operator | Product coherence, leverage, differentiation, and support cost |
+| Support / Onboarding Lead | Prerequisites, error explanations, first win, and ticket burden |
+| Implementation Consultant | Deployment boundaries, role mapping, adoption, and teachability |
+| Data Engineer | Schemas, machine-readable manifests, automation, and brittle handoffs |
+| Academic Researcher | Provenance, reproducibility, assumptions, and publication-grade evidence |
+| Hobbyist Builder | Approachability, examples, experimentation, and dead-end avoidance |
 
-### Fund Operations Lead
+An advisory lens may be a fifth panel member, but it should not displace the canonical operator or
+stakeholder whose job the artifact is intended to support.
 
-- Primary jobs: keep daily operations flowing across data, cash, portfolio, and reporting work.
-- Loves: visible status, queue management, predictable recovery, and low-ambiguity handoffs.
-- Distrusts: silent failures, missing alerts, and flows that depend on tribal knowledge.
+## Legacy-Name Handling
 
-### Individual Trader
+Use these mappings only for old presets or fixtures. If the user explicitly supplies a legacy name,
+preserve it as a custom role unless they ask for normalization.
 
-- Primary jobs: monitor markets, manage watchlists, and make decisions quickly.
-- Loves: speed, clarity, strong defaults, and obvious next actions.
-- Distrusts: enterprise-heavy friction, slow navigation, and features that hide the signal.
-
-### Hobbyist Builder
-
-- Primary jobs: learn, explore, tinker, automate, and connect Meridian to custom workflows.
-- Loves: approachable setup, quick wins, scripting hooks, examples, and visible feedback.
-- Distrusts: intimidating onboarding, unclear prerequisites, and dead-end UI.
-
-### Academic Researcher
-
-- Primary jobs: run defensible studies, preserve provenance, export clean datasets, and reproduce
-  results later.
-- Loves: citations, metadata, deterministic workflows, and explicit assumptions.
-- Distrusts: undocumented transforms, weak provenance, and hard-to-replay workflows.
-
-### Risk / Compliance Lead
-
-- Primary jobs: verify controls, inspect approvals, and understand who changed what and why.
-- Loves: policy visibility, audit trails, explainable thresholds, and exception handling.
-- Distrusts: implicit state changes, missing logs, unclear ownership, and bypassed controls.
-
-### Data Operations Manager
-
-- Primary jobs: monitor feeds, investigate quality issues, manage storage health, and recover from
-  upstream problems.
-- Loves: health indicators, lineage, gap detection, repair tooling, and clear operational status.
-- Distrusts: invisible failures, manual detective work, weak retry paths, and noisy alerts.
-
-### Trading Operations Lead
-
-- Primary jobs: keep order and workflow execution smooth across pre-trade checks and post-trade
-  follow-through.
-- Loves: fast exception handling, unambiguous status, operational controls, and workflow
-  continuity.
-- Distrusts: workflow stalls, split-brain UX, and unclear recovery steps.
-
-### Data Engineer
-
-- Primary jobs: move data into durable research or production pipelines without mystery transforms.
-- Loves: explicit schemas, machine-readable manifests, replayable exports, and automation-ready
-  handoffs.
-- Distrusts: undocumented field changes, manual copy/paste steps, and brittle integration points.
-
-### Support / Onboarding Lead
-
-- Primary jobs: help new users reach value quickly and reduce repeat support tickets.
-- Loves: clear setup guidance, actionable errors, sensible defaults, and short time-to-first-win.
-- Distrusts: hidden prerequisites, unexplained disabled states, and support-heavy workflows.
-
-### Implementation Consultant
-
-- Primary jobs: deploy Meridian into a real team, map it to process, and keep adoption moving.
-- Loves: clear system boundaries, deployment confidence, role-based workflows, and teachable
-  operating models.
-- Distrusts: fuzzy scope, unsupported handoffs, and features that only work for the builder.
-
-### Owner-Operator
-
-- Primary jobs: decide what Meridian should become, where to invest effort, and how the product
-  earns trust and adoption.
-- Loves: coherence, leverage, platform reuse, product differentiation, and visible momentum.
-- Distrusts: scattered UX, low-leverage features, duplicated systems, and work that increases
-  support cost without increasing value.
+| Legacy label | Canonical default |
+| --- | --- |
+| Quantitative Analyst | Quantitative Researcher |
+| Fund Manager | Portfolio Manager |
+| Fund Operations Lead | Operations Manager |
+| Individual Trader | Trader |
+| Data Operations Manager | Data Operations Analyst |
+| Risk / Compliance Lead | Risk Manager plus Compliance Officer |
+| Trading Operations Lead | Trader plus Operations Manager |

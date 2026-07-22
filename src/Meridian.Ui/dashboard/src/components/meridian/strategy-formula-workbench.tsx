@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { GateRail, SeverityBadge } from "@/components/operations";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
 
 export type StrategyFormulaWorkbenchMode = "visual" | "formula" | "code";
@@ -183,6 +185,18 @@ export function StrategyFormulaWorkbench({
             <CardDescription>Local compile preview for the selected authoring mode.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {initialCells.length > 0 ? (
+              <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+                <div className="eyebrow-label mb-3">Authoring gates</div>
+                <GateRail
+                  gates={initialCells.map((cell) => ({
+                    key: cell.cellId,
+                    label: cell.label,
+                    status: cell.status
+                  }))}
+                />
+              </div>
+            ) : null}
             <div className="space-y-2" role="list" aria-label="Strategy cells">
               {initialCells.map((cell) => (
                 <button
@@ -199,15 +213,18 @@ export function StrategyFormulaWorkbench({
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="font-medium text-foreground">{cell.label}</span>
-                    <Badge variant={cell.status === "Ready" ? "success" : cell.status === "Review" ? "warning" : "danger"} dot>
-                      {cell.status}
-                    </Badge>
+                    <SeverityBadge status={cell.status} label={cell.status} />
                   </span>
                   <span className="mt-1 block font-mono text-xs text-muted-foreground">{cell.cellId} · {cell.mode}</span>
                 </button>
               ))}
             </div>
-            <div className="row-detail-panel">
+            <DenseRowDetailPanel
+              id="strategy-formula-compiled-preview-panel"
+              ariaLabel="Compiled strategy formula preview"
+              className="row-detail-panel"
+              selectedSourceLabel="Compiled preview"
+            >
               <div className="head">Compiled preview</div>
               <div className="body">
                 <pre
@@ -217,7 +234,7 @@ export function StrategyFormulaWorkbench({
                   {compiledLines.join("\n")}
                 </pre>
               </div>
-            </div>
+            </DenseRowDetailPanel>
             <Button type="button" variant="secondary" className="w-full" aria-label="Run local strategy formula preview">
               <PlayCircle className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">Preview run</span>

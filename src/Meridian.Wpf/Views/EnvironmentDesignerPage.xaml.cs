@@ -82,13 +82,28 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (_isLoaded)
+        try
         {
-            return;
-        }
+            if (_isLoaded)
+            {
+                return;
+            }
 
-        _isLoaded = true;
-        await RefreshAsync().ConfigureAwait(true);
+            _isLoaded = true;
+            await RefreshAsync().ConfigureAwait(true);
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Allow a later navigation to retry the load instead of latching empty.
+            _isLoaded = false;
+        }
+        catch (System.Exception ex)
+        {
+            // Reset the re-entry guard so a transient load failure can recover on
+            // the next navigation rather than leaving the page permanently empty.
+            _isLoaded = false;
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Environment Designer page failed to load.", ex);
+        }
     }
 
     private async void OnRefreshClick(object sender, RoutedEventArgs e)

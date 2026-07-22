@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Strategy Runs" description="Run history ledger — backtest/paper/live runs with status, metrics, run-trace detail and pipeline" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="strategy-runs">
+</helmet>
+<x-import component-from-global-scope="StrategyRunsScreen" from="./screen.jsx" hint-size="100%,860px"></x-import>
+</x-dc>
+</body>
+</html>

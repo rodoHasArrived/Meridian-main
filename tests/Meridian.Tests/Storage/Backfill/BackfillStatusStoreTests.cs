@@ -5,50 +5,29 @@ using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 using Meridian.Contracts.Backfill;
 using Meridian.Storage.Backfill;
+using Meridian.Tests.Infrastructure;
 
 namespace Meridian.Tests.Storage.Backfill;
 
-public sealed class BackfillStatusStoreTests : IDisposable
+public sealed class BackfillStatusStoreTests : TempDirectoryTestBase
 {
-    private readonly string _testRoot;
-
-    public BackfillStatusStoreTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"mdc_backfill_store_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-    }
-
-    public void Dispose()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_testRoot))
-                    Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { Thread.Sleep(10); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { Thread.Sleep(10); }
-        }
-    }
 
     [Fact]
     public async Task WriteAsync_CreatesStatusFile()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var result = CreateTestResult();
 
         await store.WriteAsync(result);
 
-        var statusPath = Path.Combine(_testRoot, "_status", "backfill.json");
+        var statusPath = Path.Combine(TestDataRoot, "_status", "backfill.json");
         File.Exists(statusPath).Should().BeTrue();
     }
 
     [Fact]
     public async Task WriteAsync_ThenTryRead_RoundTrips()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var result = CreateTestResult();
 
         await store.WriteAsync(result);
@@ -64,7 +43,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteAsync_RoundTripsSkippedSymbolsAndValidationSignals()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var from = new DateOnly(2024, 1, 1);
         var to = new DateOnly(2024, 1, 31);
         var result = new BackfillResult(
@@ -104,7 +83,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public void TryRead_WhenNoFile_ReturnsNull()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         var result = store.TryRead();
 
@@ -114,12 +93,12 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task TryRead_WithCorruptFile_ReturnsNull()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         // Write a result first to create the directory structure.
         await store.WriteAsync(CreateTestResult());
 
-        var statusPath = Path.Combine(_testRoot, "_status", "backfill.json");
+        var statusPath = Path.Combine(TestDataRoot, "_status", "backfill.json");
         await File.WriteAllTextAsync(statusPath, "not valid json {{{");
 
         var result = store.TryRead();
@@ -130,7 +109,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteAsync_CreatesDirectoryStructure()
     {
-        var deepPath = Path.Combine(_testRoot, "deep", "nested");
+        var deepPath = Path.Combine(TestDataRoot, "deep", "nested");
         var store = new BackfillStatusStore(deepPath);
 
         await store.WriteAsync(CreateTestResult());
@@ -141,7 +120,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteAsync_OverwritesPreviousResult()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         var first = new BackfillResult(true, "stooq", new[] { "SPY" }, null, null, 100,
             DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow);
@@ -168,10 +147,10 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteAsync_ProducesValidJson()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         await store.WriteAsync(CreateTestResult());
 
-        var statusPath = Path.Combine(_testRoot, "_status", "backfill.json");
+        var statusPath = Path.Combine(TestDataRoot, "_status", "backfill.json");
         var json = await File.ReadAllTextAsync(statusPath);
 
         var act = () => JsonDocument.Parse(json);
@@ -184,7 +163,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteAsync_PreservesDateRange()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var from = new DateOnly(2024, 1, 1);
         var to = new DateOnly(2024, 12, 31);
         var result = new BackfillResult(true, "stooq", new[] { "SPY" }, from, to, 252,
@@ -215,7 +194,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public void TryReadSymbolCheckpoints_WhenNoFile_ReturnsNull()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         var result = store.TryReadSymbolCheckpoints();
 
@@ -225,7 +204,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_ThenTryRead_RoundTrips()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var date = new DateOnly(2024, 6, 30);
 
         await store.WriteSymbolCheckpointAsync("SPY", date);
@@ -239,7 +218,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_MultipleSymbols_AllPersisted()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
         await store.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 3, 31));
@@ -259,7 +238,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_ScopesEntriesByGranularity()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
         await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 15), barsWritten: 390);
@@ -282,7 +261,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_UpdatesOnlyIfNewer()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var later = new DateOnly(2024, 12, 31);
         var earlier = new DateOnly(2024, 3, 31);
 
@@ -297,7 +276,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_OlderDate_DoesNotOverwriteBarCountSidecar()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var later = new DateOnly(2024, 12, 31);
         var earlier = new DateOnly(2024, 6, 30);
 
@@ -317,7 +296,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_SameDate_DoesNotOverwriteBarCountSidecar()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var coveredThrough = new DateOnly(2024, 6, 30);
 
         await store.WriteSymbolCheckpointAsync("SPY", coveredThrough, barsWritten: 25);
@@ -336,7 +315,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_UpdatesWhenNewer()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var first = new DateOnly(2024, 6, 30);
         var extended = new DateOnly(2024, 12, 31);
 
@@ -351,7 +330,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_IsCaseInsensitive()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
         var date = new DateOnly(2024, 6, 30);
 
         await store.WriteSymbolCheckpointAsync("spy", date);
@@ -364,7 +343,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task ClearSymbolCheckpointsAsync_RemovesAllCheckpoints()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
         await store.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 3, 31));
@@ -379,7 +358,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task ClearSymbolCheckpointsAsync_WithGranularity_PreservesOtherLanes()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
         await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 1), barsWritten: 390);
@@ -401,7 +380,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task ClearSymbolCheckpointsAsync_WhenNoFile_DoesNotThrow()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         var act = async () => await store.ClearSymbolCheckpointsAsync();
         await act.Should().NotThrowAsync();
@@ -410,7 +389,7 @@ public sealed class BackfillStatusStoreTests : IDisposable
     [Fact]
     public async Task WriteSymbolCheckpointAsync_IndependentOfAggregateResult()
     {
-        var store = new BackfillStatusStore(_testRoot);
+        var store = new BackfillStatusStore(TestDataRoot);
 
         await store.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 6, 30));
         await store.WriteAsync(CreateTestResult());

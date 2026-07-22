@@ -13,12 +13,15 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Features;
@@ -32,10 +35,12 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IConfiguration>(static _ => new ConfigurationBuilder().Build());
+
         // DataSourceRegistry - discovers providers decorated with [DataSource] (ADR-005).
         services.AddSingleton<DataSourceRegistry>(sp =>
         {
-            var registry = new DataSourceRegistry();
+            var registry = new DataSourceRegistry(sp.GetService<ILogger<DataSourceRegistry>>());
             registry.DiscoverFromAssemblies(typeof(NoOpMarketDataClient).Assembly);
             return registry;
         });
@@ -57,7 +62,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
             var registry = new ProviderRegistry(alertDispatcher: null, LoggingSetup.ForContext<ProviderRegistry>());
 
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = LoadPreparedConfig(sp, configStore);
+            var config = LoadProviderBootstrapConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var log = LoggingSetup.ForContext("ProviderRegistration");
 
@@ -72,7 +77,12 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
                 RegisterStreamingFactories(registry, config, credentialResolver, sp, log);
             }
 
-            RegisterBackfillProviders(registry, config, credentialResolver, log);
+            RegisterBackfillProviders(
+                registry,
+                config,
+                credentialResolver,
+                sp.GetService<ISymbolResolver>(),
+                log);
             RegisterSymbolSearchProviders(registry, config, credentialResolver, log);
             ProviderCatalog.InitializeFromRegistry(
                 () => BuildMergedProviderCatalog(registry, sp.GetServices<IOptionsChainProvider>()),
@@ -89,22 +99,53 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         // OptionsChainService can walk the provider chain before using synthetic fallback data.
         RegisterOptionsChainProviders(services);
         RegisterOptionsChainProviders(services, options);
+        RegisterCorporateActionProviders(services);
         // Keep ProviderFactory for backward compatibility
         services.AddSingleton<ProviderFactory>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = LoadPreparedConfig(sp, configStore);
+            var config = LoadProviderBootstrapConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var logger = LoggingSetup.ForContext<ProviderFactory>();
-            return new ProviderFactory(config, credentialResolver, logger);
+            return new ProviderFactory(
+                config,
+                credentialResolver,
+                logger,
+                sp.GetService<ISymbolResolver>());
         });
 
         return services;
     }
 
-    private static AppConfig LoadPreparedConfig(IServiceProvider sp, ConfigStore configStore)
+    private static AppConfig LoadProviderBootstrapConfig(IServiceProvider sp, ConfigStore configStore)
     {
         var configService = sp.GetRequiredService<ConfigurationService>();
-        return configService.LoadAndPrepareConfig(configStore.ConfigPath);
+        // Provider selection is itself backed by ProviderRegistry. Applying self-healing
+        // while that registry is being constructed recursively resolves the registry and
+        // leaves hosted composition stuck in its service factory. Bootstrap from the
+        // overlaid, credential-resolved configuration; callers can still apply self-healing
+        // after the provider graph is available.
+        return configService.LoadAndPrepareConfig(configStore.ConfigPath, applySelfHealing: false);
+    }
+
+    private static void RegisterCorporateActionProviders(IServiceCollection services)
+    {
+        // Corporate action providers take IConfiguration for credential lookup. Hosted
+        // compositions (web/WPF) already carry the host configuration; bare compositions
+        // (CLI wiring, composition tests) get an environment-variable-backed fallback,
+        // matching the providers' own env-var credential fallbacks.
+        services.TryAddSingleton<IConfiguration>(static _ =>
+            new ConfigurationBuilder().AddEnvironmentVariables().Build());
+
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+        {
+            if (descriptor.CorporateActions is null)
+                continue;
+
+            services.TryAddSingleton(descriptor.CorporateActions);
+            services.AddSingleton(
+                typeof(ICorporateActionProvider),
+                sp => sp.GetRequiredService(descriptor.CorporateActions));
+        }
     }
 }

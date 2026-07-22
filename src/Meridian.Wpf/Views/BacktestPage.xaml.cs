@@ -24,9 +24,23 @@ public partial class BacktestPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _viewModel.EquityCurvePoints.CollectionChanged -= _equityCurvePointsChangedHandler;
-        _viewModel.EquityCurvePoints.CollectionChanged += _equityCurvePointsChangedHandler;
-        await _viewModel.ActivateAsync();
+        try
+        {
+            _viewModel.EquityCurvePoints.CollectionChanged -= _equityCurvePointsChangedHandler;
+            _viewModel.EquityCurvePoints.CollectionChanged += _equityCurvePointsChangedHandler;
+            await _viewModel.ActivateAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Backtest page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

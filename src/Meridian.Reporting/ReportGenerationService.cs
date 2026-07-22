@@ -33,13 +33,39 @@ public sealed class ReportGenerationService
             "Generating {ReportKind} report for {FundId} asOf {AsOf}",
             request.ReportKind, request.FundId, request.AsOf);
 
-        var trialBalance = request.FundLedger.ConsolidatedTrialBalance();
-        var dimensionsByAccount = BuildDimensionsByAccount(request.FundLedger);
-
-        var enrichedRows = await EnrichWithSecurityMasterAsync(trialBalance, dimensionsByAccount, ct)
+        // Freeze the exact journal boundary first. Every balance, dimension, and receipt count is
+        // derived from this one materialized set so a report cannot mix pre- and post-as-of state.
+        var frozenJournal = request.FundLedger
+            .ConsolidatedJournalEntries()
+            .Where(entry => entry.Timestamp <= request.AsOf)
+            .ToArray();
+        var trialBalance = BuildTrialBalance(frozenJournal);
+        var dimensionsByAccount = BuildDimensionsByAccount(frozenJournal);
+        var referencesBySymbol = await CaptureSecurityReferencesAsync(
+                trialBalance.Keys,
+                request.AsOf,
+                ct)
             .ConfigureAwait(false);
-
-        var assetClassSections = BuildAssetClassSections(enrichedRows);
+        var snapshotInputs = trialBalance
+            .Select(pair => new ReportingSnapshotRowInput(
+                pair.Key.Name,
+                pair.Key.AccountType.ToString(),
+                pair.Key.Symbol,
+                pair.Value,
+                dimensionsByAccount.GetValueOrDefault(pair.Key),
+                pair.Key.Symbol is null
+                    ? null
+                    : referencesBySymbol.GetValueOrDefault(pair.Key.Symbol)))
+            .ToArray();
+        var snapshot = CertifiedReportingSnapshotBuilder.Build(
+            request.FundId,
+            request.AsOf,
+            request.ReportKind,
+            request.SnapshotSource,
+            snapshotInputs,
+            frozenJournal.Length,
+            frozenJournal.Sum(static entry => entry.Lines.Count));
+        var assetClassSections = BuildAssetClassSections(snapshot.Rows);
 
         return new ReportPack(
             ReportId: Guid.NewGuid(),
@@ -47,79 +73,61 @@ public sealed class ReportGenerationService
             ReportKind: request.ReportKind,
             AsOf: request.AsOf,
             GeneratedAt: DateTimeOffset.UtcNow,
-            TrialBalance: enrichedRows,
+            TrialBalance: snapshot.Rows,
             AssetClassSections: assetClassSections,
-            TotalNetAssets: enrichedRows.Sum(r => r.NetBalance));
+            TotalNetAssets: snapshot.Rows.Sum(static row => row.NetBalance),
+            SnapshotReceipt: snapshot.Receipt);
     }
 
-    private async Task<IReadOnlyList<EnrichedLedgerRow>> EnrichWithSecurityMasterAsync(
-        IReadOnlyDictionary<LedgerAccount, decimal> trialBalance,
-        IReadOnlyDictionary<LedgerAccount, LedgerDimensionSetDto> dimensionsByAccount,
+    private async Task<IReadOnlyDictionary<string, SecurityMasterReportingReference?>> CaptureSecurityReferencesAsync(
+        IEnumerable<LedgerAccount> accounts,
+        DateTimeOffset asOf,
         CancellationToken ct)
     {
-        var rows = new List<EnrichedLedgerRow>(trialBalance.Count);
-
-        foreach (var (account, balance) in trialBalance)
+        var references = new Dictionary<string, SecurityMasterReportingReference?>(
+            StringComparer.OrdinalIgnoreCase);
+        var symbols = accounts
+            .Select(static account => account.Symbol)
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
+        foreach (var symbol in symbols)
         {
             ct.ThrowIfCancellationRequested();
-
-            SecurityDetailDto? detail = null;
-            SecurityEconomicDefinitionRecord? economicDefinition = null;
-            if (!string.IsNullOrWhiteSpace(account.Symbol))
-            {
-                try
-                {
-                    detail = await _securityMaster
-                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, account.Symbol, null, ct)
-                        .ConfigureAwait(false);
-
-                    if (detail is not null)
-                    {
-                        economicDefinition = await _securityMaster
-                            .GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
-                            .ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.LogDebug(ex, "Could not enrich ledger account {Symbol} from Security Master", account.Symbol);
-                }
-            }
-
-            var primaryIdentifier = economicDefinition?.Identifiers
-                .FirstOrDefault(static identifier => identifier.IsPrimary);
-            var lookupQuality = ResolveLookupQuality(detail, economicDefinition, primaryIdentifier);
-
-            rows.Add(new EnrichedLedgerRow(
-                AccountName: account.Name,
-                AccountType: account.AccountType.ToString(),
-                Symbol: account.Symbol,
-                Currency: detail?.Currency,
-                AssetClass: detail?.AssetClass,
-                PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value,
-                SubType: economicDefinition?.SubType,
-                AssetFamily: economicDefinition?.AssetFamily,
-                IssuerType: economicDefinition?.IssuerType,
-                RiskCountry: economicDefinition?.RiskCountry,
-                LookupQuality: lookupQuality,
-                DisplayName: detail?.DisplayName,
-                NetBalance: balance,
-                Dimensions: dimensionsByAccount.GetValueOrDefault(account)));
+            references[symbol] = await SecurityMasterReportingLookup
+                .TryGetReportingReferenceByTickerAsync(_securityMaster, _log, symbol, asOf, ct)
+                .ConfigureAwait(false);
         }
 
-        return rows
-            .OrderBy(r => r.AccountType)
-            .ThenBy(r => r.AccountName, StringComparer.Ordinal)
-            .ToList();
+        return references;
+    }
+
+    private static IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalance(
+        IReadOnlyList<JournalEntry> journalEntries)
+    {
+        var totals = new Dictionary<LedgerAccount, (decimal Debits, decimal Credits)>();
+        foreach (var line in journalEntries.SelectMany(static entry => entry.Lines))
+        {
+            totals.TryGetValue(line.Account, out var current);
+            totals[line.Account] = (current.Debits + line.Debit, current.Credits + line.Credit);
+        }
+
+        return totals.ToDictionary(
+            static pair => pair.Key,
+            static pair => Meridian.Ledger.Ledger.CalculateNetBalance(
+                pair.Key,
+                pair.Value.Debits,
+                pair.Value.Credits));
     }
 
     private static IReadOnlyDictionary<LedgerAccount, LedgerDimensionSetDto> BuildDimensionsByAccount(
-        FundLedgerBook fundLedger)
+        IReadOnlyList<JournalEntry> journalEntries)
     {
         var accumulators = new Dictionary<LedgerAccount, AccountDimensionAccumulator>();
 
-        foreach (var journalEntry in fundLedger.ConsolidatedJournalEntries())
+        foreach (var journalEntry in journalEntries)
         {
             foreach (var line in journalEntry.Lines)
             {
@@ -170,7 +178,10 @@ public sealed class ReportGenerationService
             AccountId: SingleString(dimensions, static item => item.AccountId),
             CustomerId: SingleString(dimensions, static item => item.CustomerId),
             VendorId: SingleString(dimensions, static item => item.VendorId),
-            ProjectId: SingleString(dimensions, static item => item.ProjectId));
+            ProjectId: SingleString(dimensions, static item => item.ProjectId))
+        {
+            PositionId = SingleGuid(dimensions, static item => item.PositionId)
+        };
 
         return HasAnyDimension(merged) ? merged : null;
     }
@@ -230,6 +241,7 @@ public sealed class ReportGenerationService
         dimensions.InvestorId is not null ||
         dimensions.CapitalAccountId is not null ||
         dimensions.InstrumentId is not null ||
+        dimensions.PositionId is not null ||
         dimensions.TaxLotId is not null ||
         dimensions.CostCenterId is not null ||
         dimensions.CounterpartyId is not null ||
@@ -256,29 +268,6 @@ public sealed class ReportGenerationService
             .OrderBy(s => s.AssetClass, StringComparer.Ordinal)
             .ToList();
 
-    private static string ResolveLookupQuality(
-        SecurityDetailDto? detail,
-        SecurityEconomicDefinitionRecord? economicDefinition,
-        SecurityIdentifierDto? primaryIdentifier)
-    {
-        if (detail is null)
-            return "missing";
-
-        if (economicDefinition is null)
-            return "partial";
-
-        var hasPrimaryIdentifier = primaryIdentifier is not null
-                                   && !string.IsNullOrWhiteSpace(primaryIdentifier.Value);
-        var hasGovernanceDimensions =
-            !string.IsNullOrWhiteSpace(economicDefinition.SubType)
-            && !string.IsNullOrWhiteSpace(economicDefinition.AssetFamily)
-            && !string.IsNullOrWhiteSpace(economicDefinition.IssuerType)
-            && !string.IsNullOrWhiteSpace(economicDefinition.RiskCountry);
-
-        return hasPrimaryIdentifier && hasGovernanceDimensions
-            ? "resolved"
-            : "partial";
-    }
 }
 
 /// <summary>Type of governance report to generate.</summary>
@@ -303,7 +292,8 @@ public sealed record ReportRequest(
     string FundId,
     DateTimeOffset AsOf,
     FundLedgerBook FundLedger,
-    ReportKind ReportKind = ReportKind.TrialBalance);
+    ReportKind ReportKind = ReportKind.TrialBalance,
+    ReportingSnapshotSourceContext? SnapshotSource = null);
 
 /// <summary>A single ledger row enriched with Security Master classification data.</summary>
 public sealed record EnrichedLedgerRow(
@@ -348,4 +338,5 @@ public sealed record ReportPack(
     DateTimeOffset GeneratedAt,
     IReadOnlyList<EnrichedLedgerRow> TrialBalance,
     IReadOnlyList<AssetClassSection> AssetClassSections,
-    decimal TotalNetAssets);
+    decimal TotalNetAssets,
+    ReportingSnapshotReceipt? SnapshotReceipt = null);

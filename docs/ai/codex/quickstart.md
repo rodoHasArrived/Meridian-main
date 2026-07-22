@@ -12,7 +12,9 @@ still lives in `../assistant-workflow-contract.md`.
 
 1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
    implementation, start from the latest `origin/main` on a `codex/<short-task-name>` branch,
-   never write directly to `main`, and open or update a PR targeting `main`.
+   unless the user explicitly asks for local `main` work or the checkout is intentionally operating
+   there. Do not bypass GitHub branch protections; open or update a PR targeting `main` for
+   PR-ready publishing.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
@@ -52,8 +54,13 @@ still lives in `../assistant-workflow-contract.md`.
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
-   the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-   project under `tests/` plus filter.
+   the branch and dispatch GitHub Actions `Targeted Test` with a whitelisted `mode`; use
+   `mode=dotnet-filtered` with the same repo-relative .NET test project under `tests/` plus filter
+   for .NET slices.
+   After any timed-out generation, build, or test attempt, run
+   `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+   shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+   `VBCSCompiler` PIDs after confirming their command lines point at this checkout.
 13. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
@@ -115,12 +122,15 @@ AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --s
 `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
-with a `tests/` `dotnet_project` and `dotnet_filter` when local resources are the blocker.
+with `mode=dotnet-filtered`, a `tests/` `dotnet_project`, and `dotnet_filter` for .NET slices, or a
+curated non-.NET mode such as `browser-workstation`, `docs-source`, `wpf-dev-loop`, or `wpf-route`.
 
 Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
 `dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
 runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
 and uses `MeridianBuildIsolationKey` output roots by default.
+For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
+only repo-owned abandoned build/test/compiler PIDs before retrying or dispatching hosted proof.
 
 ## Dirty Worktree Protocol
 

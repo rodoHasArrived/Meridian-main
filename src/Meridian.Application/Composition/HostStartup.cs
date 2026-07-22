@@ -56,6 +56,8 @@ public sealed class HostStartup : IAsyncDisposable
 
     private static HostStartup Create(CompositionOptions options)
     {
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         var log = LoggingSetup.ForContext<HostStartup>();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddSerilog());
@@ -314,14 +316,11 @@ public static class HostStartupFactory
     /// <param name="configPath">Path to configuration file.</param>
     /// <returns>Configured HostStartup instance.</returns>
     public static HostStartup Create(DeploymentContext deployment, string configPath)
-    {
-        var profile = ResolveProfile(deployment);
-        return profile switch
+        => deployment.Mode switch
         {
-            _ when profile == CompositionOptions.Default => HostStartup.CreateDefault(configPath),
+            DeploymentMode.Desktop => HostStartup.CreateDefault(configPath),
             _ => HostStartup.CreateForStreaming(configPath)
         };
-    }
 
     /// <summary>
     /// Creates a HostStartup for backfill operations.

@@ -2,14 +2,70 @@ using FluentAssertions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Adapters.Tradier;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Meridian.Tests.Execution;
 
+/// <summary>
+/// Scenario coverage for Tradier-style option fills and broker failover, guarding against broker status drift producing incorrect reconciliation posture.
+/// </summary>
 public sealed class TradierExecutionReconciliationTests
 {
+    [Fact]
+    public async Task Scenario_TradierOptionPartialFillLifecycle_MappedStatusesPreserveDivergenceUntilFinalFill()
+    {
+        const string symbol = "AAPL  260620C00210000";
+        var portfolio = new PaperTradingPortfolio([
+            new AccountDefinition("tradier-main", "Tradier Main", AccountKind.Brokerage, 50_000m)
+        ]);
+
+        var registry = new PortfolioRegistry();
+        registry.Register("run-tradier", portfolio);
+
+        var sync = new StubPositionSync(_ =>
+            Task.FromResult<IReadOnlyList<BrokeragePositionDto>>([new(symbol, 2m, 4.20m)]));
+        var sut = CreateService([("Tradier", (IBrokeragePositionSync)sync)], registry);
+
+        var partialTransition = TradierCanonicalMappers.MapOrderTransition(
+            new TradierOrderStatusPayload("open", OrderQuantity: 2m, FilledQuantity: 1m));
+
+        partialTransition.Status.Should().Be(Meridian.Execution.Sdk.OrderStatus.PartiallyFilled);
+        partialTransition.ReportType.Should().Be(ExecutionReportType.PartialFill);
+        portfolio.ApplyFill("tradier-main", BuildTradierReport(
+            "tradier-opt-1",
+            symbol,
+            partialTransition,
+            filledQuantity: 1m,
+            fillPrice: 4.25m,
+            timestamp: DateTimeOffset.Parse("2026-05-19T14:31:00Z")));
+
+        var firstPass = await sut.ReconcileAsync();
+        firstPass.Should().ContainSingle();
+        firstPass[0].ProviderName.Should().Be("Tradier");
+        firstPass[0].DivergentSymbols.Should().ContainSingle(symbol);
+
+        var filledTransition = TradierCanonicalMappers.MapOrderTransition(
+            new TradierOrderStatusPayload("filled", OrderQuantity: 2m, FilledQuantity: 2m));
+
+        filledTransition.Status.Should().Be(Meridian.Execution.Sdk.OrderStatus.Filled);
+        filledTransition.ReportType.Should().Be(ExecutionReportType.Fill);
+        portfolio.ApplyFill("tradier-main", BuildTradierReport(
+            "tradier-opt-1",
+            symbol,
+            filledTransition,
+            filledQuantity: 1m,
+            fillPrice: 4.15m,
+            timestamp: DateTimeOffset.Parse("2026-05-19T14:33:00Z")));
+
+        var secondPass = await sut.ReconcileAsync();
+        secondPass.Should().ContainSingle();
+        secondPass[0].MatchedSymbols.Should().ContainSingle(symbol);
+        secondPass[0].IsClean.Should().BeTrue();
+    }
+
     [Fact]
     public async Task ReconcileAsync_TradierAccountPositionSync_TracksPartialFillDivergenceAndReconciliation()
     {
@@ -143,6 +199,24 @@ public sealed class TradierExecutionReconciliationTests
         OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
         Timestamp = DateTimeOffset.UtcNow
     };
+
+    private static ExecutionReport BuildTradierReport(
+        string orderId,
+        string symbol,
+        TradierOrderTransition transition,
+        decimal filledQuantity,
+        decimal fillPrice,
+        DateTimeOffset timestamp) => new()
+        {
+            OrderId = orderId,
+            Symbol = symbol,
+            Side = OrderSide.Buy,
+            ReportType = transition.ReportType,
+            FilledQuantity = filledQuantity,
+            FillPrice = fillPrice,
+            OrderStatus = transition.Status,
+            Timestamp = timestamp
+        };
 
     private sealed class StubPositionSync(Func<string, Task<IReadOnlyList<BrokeragePositionDto>>> getPositions) : IBrokeragePositionSync
     {

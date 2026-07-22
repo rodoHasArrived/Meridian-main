@@ -16,5 +16,13 @@ public enum LedgerTaxLotReliefMethod
 
     /// <summary>Specific identification; selected lot IDs determine relief order.</summary>
     SpecificId,
+
+    /// <summary>
+    /// Average cost; every open lot is pooled into a single average unit cost and each sold share
+    /// is relieved at that pooled cost. Lots are still depleted in acquisition order so lot-closing
+    /// and holding-period tracking stay deterministic, but the cost basis is the pooled average
+    /// rather than any individual lot's recorded unit cost.
+    /// </summary>
+    AverageCost,
 }
 

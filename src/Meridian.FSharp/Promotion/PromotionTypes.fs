@@ -6,6 +6,10 @@ type PromotionRuleId =
     | SharpeThreshold
     | DrawdownThreshold
     | TotalReturnThreshold
+    | WalkForwardEvidencePresent
+    | OutOfSampleSharpeThreshold
+    | OutOfSampleDrawdownThreshold
+    | WalkForwardDegradationThreshold
     | TrustEvidenceFresh
     | TrustEvidenceComplete
     | BrokerageLiveEnabled
@@ -21,6 +25,7 @@ type RuleOwner =
 type PromotionEvidenceKind =
     | RunLifecycleEvidence
     | BacktestMetricsEvidence
+    | WalkForwardReportEvidence
     | ProviderTrustSnapshotEvidence
     | BrokerageConfigurationEvidence
     | CircuitBreakerEvidence

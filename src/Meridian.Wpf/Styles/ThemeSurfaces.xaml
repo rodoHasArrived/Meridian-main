@@ -12,7 +12,7 @@
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="1" ShadowDepth="0" Direction="270" Opacity="0.08" />
+                <DropShadowEffect Color="{StaticResource ShadowColor}" BlurRadius="1" ShadowDepth="0" Direction="270" Opacity="0.08" />
             </Setter.Value>
         </Setter>
     </Style>
@@ -24,7 +24,7 @@
         <Setter Property="Padding" Value="16" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000"
+                <DropShadowEffect Color="{StaticResource ShadowColor}"
                                   BlurRadius="1"
                                   ShadowDepth="0"
                                   Direction="270"
@@ -158,7 +158,7 @@
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="2" ShadowDepth="0" Direction="270" Opacity="0.10" />
+                <DropShadowEffect Color="{StaticResource ShadowColor}" BlurRadius="2" ShadowDepth="0" Direction="270" Opacity="0.10" />
             </Setter.Value>
         </Setter>
     </Style>

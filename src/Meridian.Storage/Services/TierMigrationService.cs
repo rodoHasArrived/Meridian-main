@@ -1,5 +1,7 @@
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Threading;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Services;
@@ -9,6 +11,15 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class TierMigrationService : ITierMigrationService
 {
+    private static readonly string[] DataExtensions =
+    [
+        ".jsonl",
+        ".jsonl.gz",
+        ".jsonl.zst",
+        ".jsonl.lz4",
+        ".parquet"
+    ];
+
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
 
@@ -31,6 +42,19 @@ public sealed class TierMigrationService : ITierMigrationService
         long bytesSaved = 0;
         var errors = new List<string>();
 
+        if (options.ParallelFiles <= 0)
+        {
+            return new MigrationResult(
+                Success: false,
+                FilesProcessed: 0,
+                FilesFailed: 0,
+                BytesProcessed: 0,
+                BytesSaved: 0,
+                Duration: DateTime.UtcNow - startTime,
+                Errors: new[] { "ParallelFiles must be at least 1 for tier migration." }
+            );
+        }
+
         var tierConfig = GetTierConfig(targetTier);
         if (tierConfig == null)
         {
@@ -45,7 +69,26 @@ public sealed class TierMigrationService : ITierMigrationService
             );
         }
 
-        var files = GetFilesToMigrate(sourcePath);
+        // This surface is reachable from operator HTTP endpoints, so pin the source inside the
+        // storage root before any filesystem access: an unconstrained source path would let a
+        // request read — and with DeleteSource, delete — arbitrary files the process can touch.
+        var storageRoot = Path.GetFullPath(_options.RootPath);
+        var resolvedSourcePath = Path.GetFullPath(sourcePath);
+        if (!resolvedSourcePath.StartsWith(storageRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !string.Equals(resolvedSourcePath, storageRoot, StringComparison.Ordinal))
+        {
+            return new MigrationResult(
+                Success: false,
+                FilesProcessed: 0,
+                FilesFailed: 0,
+                BytesProcessed: 0,
+                BytesSaved: 0,
+                Duration: DateTime.UtcNow - startTime,
+                Errors: new[] { $"Refusing migration: source path '{sourcePath}' resolves outside the storage root '{storageRoot}'." }
+            );
+        }
+
+        var files = GetFilesToMigrate(resolvedSourcePath);
         var semaphore = new SemaphoreSlim(options.ParallelFiles);
 
         var tasks = files.Select(async file =>
@@ -124,6 +167,7 @@ public sealed class TierMigrationService : ITierMigrationService
                 continue;
 
             var eligibleFiles = Directory.EnumerateFiles(sourceTier.Path, "*", SearchOption.AllDirectories)
+                .Where(IsDataFile)
                 .Select(f => new FileInfo(f))
                 .Where(f => f.LastWriteTimeUtc < cutoffDate)
                 .ToList();
@@ -228,14 +272,15 @@ public sealed class TierMigrationService : ITierMigrationService
         if (Directory.Exists(sourcePath))
         {
             return Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
-                .Where(f => f.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
-                           f.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase) ||
-                           f.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+                .Where(IsDataFile)
                 .ToList();
         }
 
         return new List<string>();
     }
+
+    private static bool IsDataFile(string path)
+        => DataExtensions.Any(extension => path.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
 
     private async Task<FileMigrationResult> MigrateFileAsync(
         string sourcePath,
@@ -243,31 +288,55 @@ public sealed class TierMigrationService : ITierMigrationService
         MigrationOptions options,
         CancellationToken ct)
     {
+        // Defense-in-depth re-validation at the per-file chokepoint: every downstream
+        // filesystem touch (read, hash, delete) uses this normalized, root-contained path.
+        // MigrateAsync already refused out-of-root sources, so files can only be inside the
+        // storage root here; this local guard makes that invariant self-evident.
+        sourcePath = Path.GetFullPath(sourcePath);
+        if (!sourcePath.StartsWith(Path.GetFullPath(_options.RootPath) + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Refusing to migrate '{sourcePath}': the file escapes the storage root.");
+        }
+
         var sourceInfo = new FileInfo(sourcePath);
         var originalSize = sourceInfo.Length;
 
-        // Determine target path
+        // Determine target path. The migrated file must land inside the target tier's root:
+        // a source outside the storage root produces ".." segments in the relative path, and
+        // writing (or later deleting) through such a path would escape the tier directory.
         var relativePath = Path.GetRelativePath(_options.RootPath, sourcePath);
-        var targetPath = Path.Combine(targetTier.Path, relativePath);
-
-        // Change extension if format changes
-        if (targetTier.Format == "parquet" && !sourcePath.EndsWith(".parquet"))
+        var tierRoot = Path.GetFullPath(targetTier.Path);
+        var targetPath = Path.GetFullPath(Path.Combine(tierRoot, relativePath));
+        if (!targetPath.StartsWith(tierRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !string.Equals(targetPath, tierRoot, StringComparison.Ordinal))
         {
-            targetPath = Path.ChangeExtension(targetPath, ".parquet");
-            // Parquet conversion would happen here
+            throw new InvalidOperationException(
+                $"Refusing to migrate '{sourcePath}': the resolved target '{targetPath}' escapes tier root '{tierRoot}'.");
         }
-        else if (targetTier.Compression.HasValue && targetTier.Compression != CompressionCodec.None)
-        {
-            var ext = targetTier.Compression switch
-            {
-                CompressionCodec.Gzip => ".gz",
-                CompressionCodec.Zstd => ".zst",
-                CompressionCodec.LZ4 => ".lz4",
-                _ => ""
-            };
 
-            if (!targetPath.EndsWith(ext))
-                targetPath = targetPath.TrimEnd(".jsonl".ToCharArray()) + ".jsonl" + ext;
+        // Reject conversions this service does not actually implement. Renaming the target
+        // extension without converting the payload would ship mislabeled bytes and — with
+        // DeleteSource — destroy the only correct copy.
+        if (string.Equals(targetTier.Format, "parquet", StringComparison.OrdinalIgnoreCase)
+            && !sourcePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new NotSupportedException(
+                $"Tier '{targetTier.Path}' requests parquet format, but converting '{Path.GetExtension(sourcePath)}' " +
+                "sources to parquet is not implemented. Configure the tier with Format 'jsonl' or migrate parquet sources only.");
+        }
+
+        if (targetTier.Compression.HasValue && targetTier.Compression != CompressionCodec.None)
+        {
+            if (targetTier.Compression != CompressionCodec.Gzip)
+            {
+                throw new NotSupportedException(
+                    $"Tier '{targetTier.Path}' requests {targetTier.Compression} compression, but only Gzip is implemented " +
+                    "for tier migration. Configure the tier with Gzip or no compression.");
+            }
+
+            if (!targetPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+                targetPath = ApplyCompressionExtension(targetPath, ".gz");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
@@ -287,7 +356,26 @@ public sealed class TierMigrationService : ITierMigrationService
         // Delete source if requested
         if (options.DeleteSource)
         {
+            // The migrated file's data blocks were already fsynced by CopyFileAsync. Persist the
+            // target directory metadata (the newly created file entry) so it survives a crash.
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(targetPath), ct);
+
+            // Validate the migrated file actually landed on disk before removing the source of
+            // truth. A missing or empty target (for a non-empty source) means the copy did not
+            // complete, so deleting the source would lose data irrecoverably.
+            targetInfo.Refresh();
+            if (!targetInfo.Exists || (originalSize > 0 && targetInfo.Length == 0))
+            {
+                throw new IOException(
+                    $"Refusing to delete source '{sourcePath}': migrated file '{targetPath}' is missing or empty.");
+            }
+
             File.Delete(sourcePath);
+
+            // Make the deletion durable so the source cannot reappear after a crash. This runs
+            // post-commit (the source is already gone), so it must not observe caller cancellation
+            // and report an already-completed migration as failed.
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(sourcePath), CancellationToken.None);
         }
 
         return new FileMigrationResult(
@@ -298,34 +386,82 @@ public sealed class TierMigrationService : ITierMigrationService
         );
     }
 
+    // Returns the file's directory, falling back to the current directory for relative paths
+    // that have no directory component (e.g. "session.jsonl"), which would otherwise yield an
+    // empty string and fault the directory fsync.
+    private static string DirectoryOfOrCurrent(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        return string.IsNullOrEmpty(directory) ? "." : directory;
+    }
+
     private async Task CopyFileAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
-        await using var sourceStream = File.OpenRead(source);
-        await using var targetStream = File.Create(target);
+        // Route through the atomic writer (temp file + fsync + rename + directory sync) so a
+        // crash mid-copy can never leave a partial file at the final target path.
+        await AtomicFileWriter.WriteStreamAsync(target, async targetStream =>
+        {
+            await using var sourceStream = File.OpenRead(source);
 
-        if (tierConfig.Compression == CompressionCodec.Gzip)
-        {
-            await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal);
-            await sourceStream.CopyToAsync(gzip, ct);
-        }
-        else
-        {
-            await sourceStream.CopyToAsync(targetStream, ct);
-        }
+            if (tierConfig.Compression == CompressionCodec.Gzip)
+            {
+                // leaveOpen so the GZipStream trailer is flushed on dispose without closing
+                // the temp stream the atomic writer still needs to fsync.
+                await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true);
+                await sourceStream.CopyToAsync(gzip, ct);
+            }
+            else
+            {
+                await sourceStream.CopyToAsync(targetStream, ct);
+            }
+        }, ct);
     }
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
-        // Compute source checksum
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-        await using var sourceStream = File.OpenRead(source);
-        var sourceHash = await sha256.ComputeHashAsync(sourceStream, ct);
-        sourceStream.Position = 0;
+        var sourceHash = await ComputeSourceHashAsync(source, ct).ConfigureAwait(false);
 
         // Copy file
-        await CopyFileAsync(source, target, tierConfig, ct);
+        await CopyFileAsync(source, target, tierConfig, ct).ConfigureAwait(false);
 
-        // Verification of compressed files would need decompression.
+        var targetHash = await ComputeMigratedPayloadHashAsync(target, tierConfig, ct).ConfigureAwait(false);
+        if (!sourceHash.AsSpan().SequenceEqual(targetHash))
+        {
+            File.Delete(target);
+            throw new IOException($"Checksum verification failed while migrating '{source}' to '{target}'.");
+        }
+    }
+
+    private static async Task<byte[]> ComputeSourceHashAsync(string source, CancellationToken ct)
+    {
+        using var sha256 = SHA256.Create();
+        await using var sourceStream = File.OpenRead(source);
+        return await sha256.ComputeHashAsync(sourceStream, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<byte[]> ComputeMigratedPayloadHashAsync(
+        string target,
+        TierConfig tierConfig,
+        CancellationToken ct)
+    {
+        using var sha256 = SHA256.Create();
+        await using var targetStream = File.OpenRead(target);
+
+        if (tierConfig.Compression == CompressionCodec.Gzip)
+        {
+            await using var gzip = new GZipStream(targetStream, CompressionMode.Decompress);
+            return await sha256.ComputeHashAsync(gzip, ct).ConfigureAwait(false);
+        }
+
+        return await sha256.ComputeHashAsync(targetStream, ct).ConfigureAwait(false);
+    }
+
+    private static string ApplyCompressionExtension(string targetPath, string extension)
+    {
+        if (targetPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            return targetPath;
+
+        return targetPath + extension;
     }
 
     private long EstimateSavings(FileInfo file, TierConfig source, TierConfig target)

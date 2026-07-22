@@ -42,7 +42,7 @@ env:
 
 jobs:
   run-validation:
-    name: Wave 1 Provider Validation + DK1 Evidence Bundle
+    name: Wave 1 Provider Validation + DK1 Review Packet
     runs-on: windows-latest
     timeout-minutes: 90
 
@@ -54,19 +54,19 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.3.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Run provider validation evidence bundle
+      - name: Prepare provider validation review packet
         shell: pwsh
         env:
           DATE_STAMP: ${{ inputs.date_stamp }}
@@ -74,18 +74,20 @@ jobs:
           CANDIDATE_KERNEL_VERSION: ${{ inputs.candidate_kernel_version }}
           BASELINE_KERNEL_VERSION: ${{ inputs.baseline_kernel_version }}
         run: |
-          $bundleArgs = @()
+          $bundleArgs = @{
+            PrepareOperatorSignoff = $true
+          }
           if ($env:DATE_STAMP -ne '') {
-            $bundleArgs += '-DateStamp', $env:DATE_STAMP
+            $bundleArgs.DateStamp = $env:DATE_STAMP
           }
           if ($env:SKIP_WAVE1 -eq 'true') {
-            $bundleArgs += '-SkipWave1'
+            $bundleArgs.SkipWave1 = $true
           }
           if ($env:CANDIDATE_KERNEL_VERSION -ne '') {
-            $bundleArgs += '-CandidateKernelVersion', $env:CANDIDATE_KERNEL_VERSION
+            $bundleArgs.CandidateKernelVersion = $env:CANDIDATE_KERNEL_VERSION
           }
           if ($env:BASELINE_KERNEL_VERSION -ne '' -and $env:BASELINE_KERNEL_VERSION -ne 'default') {
-            $bundleArgs += '-BaselineKernelVersion', $env:BASELINE_KERNEL_VERSION
+            $bundleArgs.BaselineKernelVersion = $env:BASELINE_KERNEL_VERSION
           }
           & scripts/dev/run-provider-validation-evidence-bundle.ps1 @bundleArgs
 

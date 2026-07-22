@@ -9,6 +9,9 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Infrastructure;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -117,6 +120,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.RemoveAll<ProviderRegistry>();
+        builder.Services.AddSingleton(_ => CreateTestProviderRegistry());
         builder.Services.RemoveAll<IDirectLendingService>();
         builder.Services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
         builder.Services.RemoveAll<IFundStructureService>();
@@ -126,9 +131,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 persistencePath: null));
 
         _app = builder.Build();
-        _app.UseApiKeyAuthentication();
+        // Mirror the production UiServer pipeline order: session auth first so the API-key
+        // gate can exempt session-authenticated browser requests. The X-Test-Auth marker
+        // middleware emulates LoginSessionMiddleware's session validation (setting the
+        // CurrentUser items), so it must also run before the API-key gate.
         _app.UseLoginSessionAuthentication();
-        _app.UseCookieCsrfProtection();
         _app.Use(next => async context =>
         {
             if (context.Request.Headers.TryGetValue("X-Test-Auth", out var mode) &&
@@ -151,6 +158,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
 
             await next(context);
         });
+        _app.UseApiKeyAuthentication();
+        _app.UseCookieCsrfProtection();
 
         // Test-only affordance: lets endpoint tests exercise permission-gated routes on the shared
         // host without a full login round-trip by declaring the caller's permissions through the
@@ -231,6 +240,14 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             () => Array.Empty<DepthIntegrityEvent>();
 
         return new StatusEndpointHandlers(metricsProvider, pipelineProvider, integrityProvider);
+    }
+
+    private static ProviderRegistry CreateTestProviderRegistry()
+    {
+        var registry = new ProviderRegistry();
+        registry.Register(new NoOpMarketDataClient(), priorityOverride: 100);
+        registry.Register(new SyntheticHistoricalDataProvider(), priorityOverride: 10);
+        return registry;
     }
 
     private static string GetMinimalConfig()

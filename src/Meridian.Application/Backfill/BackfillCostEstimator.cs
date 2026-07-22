@@ -29,8 +29,7 @@ public sealed class BackfillCostEstimator
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray()
-                      ?? Array.Empty<string>();
+        var symbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
         var granularity = request.Granularity;
 
         if (symbols.Length == 0)
@@ -38,7 +37,7 @@ public sealed class BackfillCostEstimator
 
         var from = request.From ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-1));
         var to = request.To ?? DateOnly.FromDateTime(DateTime.UtcNow);
-        var tradingDays = EstimateTradingDays(from, to);
+        var tradingDays = BackfillPartitionPlanner.EstimateTradingDays(from, to);
 
         var providerEstimates = new List<ProviderCostEstimate>();
 
@@ -117,8 +116,9 @@ public sealed class BackfillCostEstimator
         DateOnly from,
         DateOnly to)
     {
-        var callsPerSymbol = EstimateRequestsPerSymbol(provider, granularity, tradingDays);
-        var totalCalls = symbols.Length * callsPerSymbol;
+        var adaptivePartitions = BackfillPartitionPlanner.Build(provider, granularity, from, to, symbols.Length);
+        var callsPerSymbol = Math.Max(adaptivePartitions.Count, 1);
+        var totalCalls = adaptivePartitions.Sum(static partition => partition.EstimatedApiCalls);
 
         var rateLimitDelay = provider.RateLimitDelay;
         var maxRequestsPerWindow = provider.MaxRequestsPerWindow;
@@ -156,7 +156,11 @@ public sealed class BackfillCostEstimator
             RateLimitWindow: rateLimitWindow,
             RateLimitDelay: rateLimitDelay,
             WouldExceedFreeQuota: wouldExceedFree,
-            SupportsDateRange: callsPerSymbol <= 1);
+            SupportsDateRange: callsPerSymbol <= 1,
+            AdaptivePartitions: adaptivePartitions,
+            PartitionStrategy: callsPerSymbol <= 1
+                ? "single-window"
+                : BackfillPartitionPlanner.GetPartitionReason(provider, granularity, tradingDays));
     }
 
     private static List<string> GenerateWarnings(
@@ -170,14 +174,16 @@ public sealed class BackfillCostEstimator
         if (tradingDays > 365)
             warnings.Add($"Large date range ({tradingDays} trading days). Consider breaking into smaller chunks.");
 
-        if (granularity.IsIntraday() && tradingDays > 60)
-        {
-            warnings.Add(
-                $"{granularity.ToDisplayName()} intraday requests will be chunked into multiple Yahoo-compatible windows.");
-        }
-
         if (symbols.Length > 50)
             warnings.Add($"Large symbol list ({symbols.Length} symbols). This will require many API calls.");
+
+        foreach (var est in estimates.Where(e => e.AdaptivePartitions.Count > 1))
+        {
+            var maxTradingDays = est.AdaptivePartitions.Max(p => p.TradingDays);
+            warnings.Add(
+                $"{est.DisplayName}: adaptive partition plan uses {est.AdaptivePartitions.Count} windows " +
+                $"(up to {maxTradingDays} trading days per window).");
+        }
 
         foreach (var est in estimates.Where(e => e.WouldExceedFreeQuota))
         {
@@ -223,55 +229,6 @@ public sealed class BackfillCostEstimator
                aggregateProvider.SupportedGranularities.Contains(granularity);
     }
 
-    private static int EstimateRequestsPerSymbol(IHistoricalDataProvider provider, DataGranularity granularity, int tradingDays)
-    {
-        if (!granularity.IsIntraday())
-            return 1;
-
-        if (provider is not IHistoricalAggregateBarProvider aggregateProvider ||
-            !aggregateProvider.SupportedGranularities.Contains(granularity))
-        {
-            throw new InvalidOperationException(
-                $"Provider '{provider.DisplayName}' does not support {granularity.ToDisplayName()} intraday backfill.");
-        }
-
-        var windowDays = granularity switch
-        {
-            DataGranularity.Minute1 => 8,
-            DataGranularity.Minute5 or DataGranularity.Minute15 or DataGranularity.Minute30 => 60,
-            DataGranularity.Hour1 or DataGranularity.Hour4 => 730,
-            _ => 1
-        };
-
-        var normalizedTradingDays = Math.Max(tradingDays, 1);
-        return (int)Math.Ceiling(normalizedTradingDays / (double)windowDays);
-    }
-
-    private static int EstimateTradingDays(DateOnly from, DateOnly to)
-    {
-        if (to <= from)
-            return 0;
-
-        // Count actual weekdays (Mon–Fri) in [from, to).
-        // Does not subtract US holidays — that would require a TradingCalendar dependency —
-        // but weekday counting is a significant improvement over a 5/7 approximation,
-        // which is inaccurate for short ranges (e.g., a Mon–Sat [from, to) range with 5 trading days
-        // would be approximated as 3 when using integer 5/7 scaling).
-        var totalDays = to.DayNumber - from.DayNumber;
-        var fullWeeks = totalDays / 7;
-        var remainingDays = totalDays % 7;
-        var startDow = (int)from.DayOfWeek; // 0=Sun, 1=Mon, …, 6=Sat
-
-        var partialWeekdays = 0;
-        for (var i = 0; i < remainingDays; i++)
-        {
-            var dow = (startDow + i) % 7;
-            if (dow is not 0 and not 6) // exclude Sunday and Saturday
-                partialWeekdays++;
-        }
-
-        return fullWeeks * 5 + partialWeekdays;
-    }
 }
 
 /// <summary>
@@ -321,4 +278,6 @@ public sealed record ProviderCostEstimate(
     TimeSpan RateLimitWindow,
     TimeSpan RateLimitDelay,
     bool WouldExceedFreeQuota,
-    bool SupportsDateRange);
+    bool SupportsDateRange,
+    IReadOnlyList<BackfillPartitionEstimate> AdaptivePartitions,
+    string PartitionStrategy);

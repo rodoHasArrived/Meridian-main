@@ -17,17 +17,36 @@ public partial class SymbolMappingPage : Page
     private readonly SymbolMappingViewModel _viewModel;
 
     public SymbolMappingPage()
+        : this(new SymbolMappingViewModel())
+    {
+    }
+
+    public SymbolMappingPage(SymbolMappingViewModel viewModel)
     {
         InitializeComponent();
 
         _loggingService = WpfServices.LoggingService.Instance;
-        _viewModel = new SymbolMappingViewModel();
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Symbol Mapping page failed to load.", ex);
+        }
     }
 
     private async void ImportCsv_Click(object sender, RoutedEventArgs e)

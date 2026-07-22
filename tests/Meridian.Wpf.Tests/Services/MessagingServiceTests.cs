@@ -42,7 +42,8 @@ public sealed class MessagingServiceTests
     {
         var svc = Svc;
         bool eventRaised = false;
-        void Handler(object? sender, string msg) { eventRaised = true; }
+        void Handler(object? sender, string msg)
+        { eventRaised = true; }
         svc.MessageReceived += Handler;
 
         svc.Send("");
@@ -85,7 +86,8 @@ public sealed class MessagingServiceTests
         var svc = Svc;
         var messageName = "AlsoEvent-" + Guid.NewGuid();
         string? receivedMsg = null;
-        void Handler(object? sender, string msg) { receivedMsg = msg; }
+        void Handler(object? sender, string msg)
+        { receivedMsg = msg; }
         svc.MessageReceived += Handler;
 
         svc.SendNamed(messageName);

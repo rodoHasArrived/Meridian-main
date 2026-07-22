@@ -1,6 +1,12 @@
 # Security Documentation
 
-Security-related documentation for the Meridian.
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
+This lane contains Meridian threat-model, vulnerability, remediation, and compliance guidance.
+Operator procedures live in `docs/operators/`; stable configuration lookup belongs in
+`docs/reference/`.
 
 ## Documents
 
@@ -16,7 +22,13 @@ Security-related documentation for the Meridian.
 
 ## Security Practices
 
-- API credentials are stored as environment variables, never in config files
-- See [Environment Variables](../reference/environment-variables.md) for credential configuration
-- See [Operator Runbook](../operations/operator-runbook.md) for operational security guidance
-- The [security.yml](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/security.yml) workflow runs CodeQL analysis and dependency auditing
+- Never commit credentials, tokens, keys, or production secrets.
+- Provider credentials saved by workstation flows use the shared encrypted credential store under
+  the resolved data root. Environment variables are legacy read-only fallback where supported.
+- See [Provider Credentials and Access](../operators/provider-credentials.md) for operator procedure
+  and [Environment Variables](../reference/environment-variables.md) for lookup details.
+- See [Operator Documentation](../operators/README.md) and the
+  [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) for operational security and
+  fail-closed startup guidance.
+- The [CodeQL workflow](../../.github/workflows/codeql.yml) owns repository static-analysis checks;
+  required GitHub Actions remain the merge authority.

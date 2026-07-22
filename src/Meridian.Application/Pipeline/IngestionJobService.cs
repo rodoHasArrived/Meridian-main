@@ -4,6 +4,7 @@ using Meridian.Contracts.Coordination;
 using Meridian.Core.Logging;
 using Meridian.Contracts.Pipeline;
 using Meridian.DataIntegration.Etl;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Pipeline;
@@ -393,7 +394,9 @@ public sealed class IngestionJobService : IEtlIngestionJobCoordinator, IDisposab
         {
             var filePath = GetJobFilePath(job.JobId);
             var json = JsonSerializer.Serialize(job, _jsonOptions);
-            await File.WriteAllTextAsync(filePath, json, ct).ConfigureAwait(false);
+            // Atomic write (temp + fsync + rename) so a crash mid-write cannot leave a
+            // truncated job_*.json that LoadJobsAsync would silently drop, losing job state.
+            await AtomicFileWriter.WriteAsync(filePath, json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

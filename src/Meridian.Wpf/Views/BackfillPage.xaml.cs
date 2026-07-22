@@ -32,16 +32,30 @@ public partial class BackfillPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        // Set default dates first; RestorePageFilterState will override with saved values
-        ToDatePicker.SelectedDate = DateTime.Today;
-        FromDatePicker.SelectedDate = DateTime.Today.AddDays(-30);
+        try
+        {
+            // Set default dates first; RestorePageFilterState will override with saved values
+            ToDatePicker.SelectedDate = DateTime.Today;
+            FromDatePicker.SelectedDate = DateTime.Today.AddDays(-30);
 
-        RestorePageFilterState();
-        UpdateProviderPrioritySummary();
-        UpdateGranularityHint();
-        RefreshStartSetupState();
+            RestorePageFilterState();
+            UpdateProviderPrioritySummary();
+            UpdateGranularityHint();
+            RefreshStartSetupState();
 
-        await _viewModel.ActivateAsync();
+            await _viewModel.ActivateAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Backfill page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

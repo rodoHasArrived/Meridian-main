@@ -1,3 +1,5 @@
+using Meridian.Contracts.Ledger;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -85,7 +87,7 @@ public sealed record JournalEntry
     /// Tolerance used when comparing total debits to total credits.
     /// Prevents false negatives caused by separate rounding paths.
     /// </summary>
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
 
     /// <summary>
     /// Returns <c>true</c> when the total debits approximately equal the total credits

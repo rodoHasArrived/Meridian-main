@@ -8,10 +8,11 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
-.NET 10 operational-finance and trading platform with an active browser-based operator workstation,
-active WPF operator work, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
-`Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
-ledger, and MCP foundations.
+.NET 10 operational-finance and trading platform with two active co-equal operator UI lanes — a
+browser-based operator workstation and the reactivated WPF desktop workstation (current focus:
+web-UI parity over shared contracts) — and visible navigation limited to
+`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` on top of
+strong provider, storage, execution, ledger, and MCP foundations.
 
 When an agent lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) instead of rediscovering command lanes from scratch.
@@ -85,7 +86,7 @@ in user-level Codex config.
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
-| `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-simulated-user-panel.toml` | Run evidence-led canonical Persona Matrix panels with fail-closed release gates |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
 | `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
@@ -124,7 +125,9 @@ The `meridian-user-testing-*` Codex profiles simulate one role at a time from th
 [`../../product/meridian-design-document.md`](../../product/meridian-design-document.md). Use them
 for focused single-persona user testing, and use `meridian-simulated-user-panel` for multi-persona
 panels. Each profile carries the persona's matrix facts plus domain experience, familiar programs,
-preferences, and testing pressure points.
+preferences, and testing pressure points. These are simulations, not recruited-user research;
+results must label that limitation and distinguish verified evidence, inference, and missing proof.
+Independent persona agents are optional and require an explicit request for independent voices.
 
 | Profile | Persona category |
 | ------ | --------- |
@@ -196,7 +199,7 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 | [`meridian-provider-builder.md`](../../../.claude/agents/meridian-provider-builder.md) | Build or extend ProviderSdk-compliant data providers |
 | [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
-| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Evidence-led Persona Matrix specialist for design-partner, usability-lab, and fail-closed release-gate reviews |
 | [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
 
 ---

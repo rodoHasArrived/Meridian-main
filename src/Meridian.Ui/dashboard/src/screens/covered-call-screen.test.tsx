@@ -276,7 +276,7 @@ describe("CoveredCallScreen", () => {
 
     const detailPanel = screen.getByLabelText("Covered-call candidate detail unavailable");
     expect(within(detailPanel).getByText("Preview service unavailable")).toBeInTheDocument();
-    expect(within(detailPanel).getByText("Endpoint returned 503 for /api/covered-call/preview.")).toBeInTheDocument();
+    expect(within(detailPanel).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(detailPanel).getByText("underlyingSymbol: Underlying symbol is not routable for option-chain preview.")).toBeInTheDocument();
   });
 
@@ -287,6 +287,12 @@ describe("CoveredCallScreen", () => {
     });
 
     renderCoveredCallScreen();
+
+    expect(screen.queryByLabelText("Scoring mode")).not.toBeInTheDocument();
+    const advancedToggle = screen.getByRole("button", { name: "Show advanced controls" });
+    expect(advancedToggle).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(advancedToggle);
+    expect(screen.getByRole("button", { name: "Hide advanced controls" })).toHaveAttribute("aria-expanded", "true");
 
     const scoringMode = screen.getByLabelText("Scoring mode");
     const depthBonusWeight = screen.getByLabelText("Depth bonus weight");
@@ -358,7 +364,7 @@ describe("CoveredCallScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Previous covered-call runs failed to load: Covered-call run history is temporarily offline.");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/covered-call/runs?limit=50.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("History store unavailable")).toBeInTheDocument();
   });
 
@@ -508,7 +514,7 @@ describe("CoveredCallScreen", () => {
     });
     fireEvent.click(historyRow);
 
-    const tradeTable = await screen.findByRole("table", { name: "SPY covered-call trade timeline" });
+    const tradeTable = await screen.findByRole("treegrid", { name: "SPY covered-call trade timeline" });
     const firstTrade = await screen.findByRole("row", {
       name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, PnL $320, status Closed gain."
     });
@@ -585,7 +591,7 @@ describe("CoveredCallScreen", () => {
     const alert = await screen.findByText("Backtest issue");
     const banner = alert.closest("div")?.parentElement;
     expect(screen.getByText("Run completed but the cached result has expired.")).toBeInTheDocument();
-    expect(screen.getByText("Endpoint returned 410 for /api/covered-call/runs/run-history-1/result.")).toBeInTheDocument();
+    expect(screen.getByText("Meridian service returned 410. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(screen.getByText("Cached result expired")).toBeInTheDocument();
     expect(banner).toBeInTheDocument();
   });

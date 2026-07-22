@@ -19,8 +19,14 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "FxSpot",
             "Bond",
             "DirectLoan",
+            "StructuredCredit",
+            "PrivateFundInterest",
+            "PrivateCompanyEquity",
+            "RealEstateHolding",
+            "CommitmentGuarantee",
             "CustomAsset",
-            "OtherSecurity");
+            "OtherSecurity",
+            "__VACUITY_PROBE__");
         result.AssetClasses.Should().OnlyContain(static row =>
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "SecurityMaster")
             && row.EvidenceRequirements.Any(static requirement => requirement.Category == "ProviderEvidence")
@@ -28,6 +34,137 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             && row.EvidenceRequirements.Any(static requirement => requirement.Category == "Reconciliation")
             && row.LedgerClassification.ContainsKey("postingGate")
             && row.ReconciliationSignals.ContainsKey("breaks"));
+    }
+
+    [Theory]
+    [InlineData("StructuredCredit", "Trustee report", "StructuredCreditTrusteeEvidence")]
+    [InlineData("PrivateFundInterest", "Administrator statement", "FundAdministratorStatement")]
+    [InlineData("PrivateCompanyEquity", "Cap table", "CapTableEvidence")]
+    [InlineData("RealEstateHolding", "Property manager statement", "PropertyManagerEvidence")]
+    [InlineData("CommitmentGuarantee", "Commitment agreement", "CommitmentAgreementEvidence")]
+    public async Task GetReadinessAsync_AlternativeAssetRowsWithoutEvidence_ShouldStayReviewGated(
+        string assetClass,
+        string expectedEvidenceLabel,
+        string expectedTargetType)
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+
+        var result = await service.GetReadinessAsync(new SecurityMasterOperationalReadinessRequest(AssetClass: assetClass));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("ReviewRequired");
+        row.EvidenceRequirements.Should().Contain(requirement =>
+            requirement.Category == "ProviderEvidence" &&
+            requirement.Status == "ReviewRequired" &&
+            requirement.Label.Contains(expectedEvidenceLabel, StringComparison.OrdinalIgnoreCase));
+        row.Blockers.Should().Contain(blocker =>
+            blocker.Code == $"{assetClass}:provider-evidence-review" &&
+            blocker.Severity == "Review");
+        row.DrillThroughTargets.Should().Contain(target => target.TargetType == expectedTargetType);
+    }
+
+    [Theory]
+    [InlineData(
+        "StructuredCredit",
+        "Trustee report Servicer report Factor schedule Collateral tape Dealer pricing Valuation source Cash remittance Structured credit security / factor amortization / interest income / realized and unrealized P&L quantity market value cash remittance factor schedule collateral tape trustee report",
+        "FactorScheduleEvidence")]
+    [InlineData(
+        "PrivateFundInterest",
+        "Administrator statement GP statement Capital call Distribution notice NAV statement Capital account schedule Private fund interest / capital call receivable-payable / distribution income / NAV adjustment commitment funded unfunded NAV capital call distribution capital account",
+        "CapitalAccountScheduleEvidence")]
+    [InlineData(
+        "PrivateCompanyEquity",
+        "Cap table Transfer-agent evidence Financing documents Share-class documents Valuation memo 409A Transaction evidence Exit evidence Dividend evidence Private company equity / cost basis / valuation adjustment / dividend and realized gain/loss ownership market value cost basis cap table valuation transaction restriction",
+        "PrivateCompanyValuationEvidence")]
+    [InlineData(
+        "RealEstateHolding",
+        "Property manager statement Rent roll Lease schedule Appraisal Debt-service statement Ownership evidence SPV evidence Real estate holding / rental income / appraisal adjustment / debt-service and ownership accounting ownership market value cash rent roll lease appraisal debt service SPV",
+        "RentRollLeaseEvidence")]
+    [InlineData(
+        "CommitmentGuarantee",
+        "Commitment agreement Guarantee agreement Draw notice Usage notice Fee schedule Accrual schedule Collateral evidence Covenant evidence Release evidence Expiry evidence Commitment or guarantee exposure / fee accrual / contingent obligation / release accounting commitment guarantee exposure fee accrual draw usage collateral covenant release",
+        "ReleaseExpiryEvidence")]
+    public async Task GetReadinessAsync_AlternativeAssetRowsWithRetainedEvidence_ShouldBecomeReady(
+        string assetClass,
+        string retainedEvidence,
+        string expectedTargetType)
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "alt-provider",
+            ExternalAccountId: "PA-ALT",
+            ReconciliationStatus: "Matched",
+            ReconciliationDetailPath: "evidence/provider-ledger/alt-latest.json",
+            EvidenceItems:
+            [
+                Evidence($"{assetClass}:retained", "ShadowBook", retainedEvidence, "Ready", assetClass: assetClass)
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: assetClass, EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("Ready");
+        row.Blockers.Should().BeEmpty();
+        row.EvidenceRequirements.Should().OnlyContain(requirement => requirement.Status == "Ready");
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == expectedTargetType &&
+            target.Status == "Ready");
+    }
+
+    [Fact]
+    public async Task GetReadinessAsync_AlternativeAssetRowWithStaleEvidence_ShouldStayReviewRequired()
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "fund-admin",
+            ExternalAccountId: "PA-FUND",
+            ReconciliationStatus: "Matched",
+            ReconciliationDetailPath: "evidence/provider-ledger/fund-latest.json",
+            EvidenceItems:
+            [
+                Evidence("fund-nav-stale", "ProviderEvidence", "Administrator statement NAV statement Capital account schedule", "Stale", assetClass: "PrivateFundInterest", reason: "NAV statement is older than the controller freshness policy.")
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: "PrivateFundInterest", EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("ReviewRequired");
+        row.EvidenceRequirements.Should().Contain(requirement =>
+            requirement.Category == "ProviderEvidence" &&
+            requirement.Status == "ReviewRequired");
+        row.Blockers.Should().Contain(blocker =>
+            blocker.Source == "ProviderEvidence" &&
+            blocker.Severity == "Review" &&
+            blocker.Message.Contains("NAV statement", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task GetReadinessAsync_AlternativeAssetRowWithBlockedEvidence_ShouldFailClosed()
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "trustee",
+            ExternalAccountId: "PA-STRUCTURED",
+            ReconciliationStatus: "Breaks",
+            ReconciliationDetailPath: "evidence/provider-ledger/structured-latest.json",
+            EvidenceItems:
+            [
+                Evidence("structured-collateral-break", "ProviderEvidence", "Collateral tape Factor schedule Trustee report", "Blocked", assetClass: "StructuredCredit", reason: "Collateral tape was rejected by reconciliation controls.")
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: "StructuredCredit", EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("Blocked");
+        row.Blockers.Should().Contain(blocker =>
+            blocker.Severity == "Blocker" &&
+            blocker.Message.Contains("Collateral tape", StringComparison.OrdinalIgnoreCase));
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == "StructuredCollateralTape" &&
+            target.Status == "Blocked");
     }
 
     [Fact]
@@ -177,7 +314,8 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "LoanScheduleEvidence",
             "CommitmentCovenantEvidence",
             "PaydownObligationLedger",
-            "DirectLendingRuleKernel");
+            "DirectLendingRuleKernel",
+            "__VACUITY_PROBE__");
         row.DrillThroughTargets.Should().Contain(target =>
             target.TargetType == "PaydownObligationLedger" &&
             target.Source == "LoanAccountingProjector");
@@ -223,7 +361,8 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "AssetProfileLineage",
             "ServicerTrusteeEvidence",
             "StructuredValuationEvidence",
-            "ObligationCloseEvidence");
+            "ObligationCloseEvidence",
+            "__VACUITY_PROBE__");
         row.DrillThroughTargets.Should().Contain(target =>
             target.TargetType == "ObligationCloseEvidence" &&
             target.Status == "ReviewRequired" &&

@@ -7,6 +7,7 @@ import { FieldSupportText } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cellOutputToneClass,
@@ -21,6 +22,18 @@ import type {
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
 import type { CellKind, CellOutput } from "@/types";
+
+/** Map a `Badge` variant onto a Concrete operator-severity status string so notebook cell
+ * execution states resolve to the right severity color through the shared `SeverityBadge`
+ * (`normalizeSeverity` does not recognize raw `idle|running|done|error|stale` states). */
+function notebookSeverityStatus(variant: string): string {
+  switch (variant) {
+    case "success": return "ready";
+    case "danger": return "blocked";
+    case "warning": return "action";
+    default: return "info";
+  }
+}
 
 const dataResultColumns: DenseDataTableColumn<QuantNotebookDataResultRowViewModel>[] = [
   {
@@ -173,9 +186,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           Data context
         </span>
         {panel.result && (
-          <Badge variant="success" className="ml-auto text-xs">
-            {panel.result.summaryText}
-          </Badge>
+          <SeverityBadge status="ready" label={panel.result.summaryText} className="ml-auto" />
         )}
       </div>
       <p id={panel.descriptionId} className="sr-only">
@@ -363,7 +374,6 @@ function NotebookCellItem({
   onSourceChange,
   onKindChange
 }: NotebookCellItemProps) {
-  const isRunning = cell.state === "running";
   const isMarkdown = cell.kind === "markdown";
 
   return (
@@ -478,9 +488,7 @@ function CellHeader({
           }
         </button>
         {!isMarkdown && (
-          <Badge variant={cellStateBadgeVariant(cell.state)} className="text-xs">
-            {cellStateLabel(cell.state)}
-          </Badge>
+          <SeverityBadge status={notebookSeverityStatus(cellStateBadgeVariant(cell.state))} label={cellStateLabel(cell.state)} />
         )}
         {!isMarkdown && cell.statusText && cell.statusText !== cellStateLabel(cell.state) && (
           <span className="text-xs text-muted-foreground">{cell.statusText}</span>
@@ -661,7 +669,7 @@ function renderInlineMarkdown(text: string): ReactNode {
   }
 
   if (last < text.length) {
-    parts.push(<span key={`t-${(keyIndex++).toString()}`}>{text.slice(last)}</span>);
+    parts.push(<span key={`t-${keyIndex.toString()}`}>{text.slice(last)}</span>);
   }
 
   return <>{parts}</>;

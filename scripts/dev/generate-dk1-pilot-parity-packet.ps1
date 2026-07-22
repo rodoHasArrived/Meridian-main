@@ -162,7 +162,33 @@ $requiredDocs = @(
             "Yahoo historical and fallback confidence",
             "Checkpoint reliability",
             "Parquet L2 flush behavior",
-            "pilotReplaySampleSet"
+            "pilotReplaySampleSet",
+            "searchDependencyReview"
+        )
+    }
+)
+
+$requiredSearchDependencies = @(
+    [ordered]@{
+        provider = "OpenFIGI"
+        dependency = "Identifier mapping API"
+        risk = "Quota, uptime, and mapping ambiguity can degrade symbol-search confidence outside broker/runtime lanes."
+        governanceAction = "Represent in DK1 packet searchDependencyReview and require operator packet binding before DK1 sign-off."
+        evidenceAnchors = @(
+            "OpenFigiClientTests",
+            "OpenFigiClientAmbiguityTests",
+            "docs/reference/provider-validation-matrix.md"
+        )
+    },
+    [ordered]@{
+        provider = "EDGAR"
+        dependency = "SEC company ticker and reference-data endpoints"
+        risk = "Public endpoint availability and policy/backoff requirements can degrade reference-data lookup quality outside broker/runtime lanes."
+        governanceAction = "Represent in DK1 packet searchDependencyReview and keep EDGAR out of runtime corporate-action readiness unless adapter evidence exists."
+        evidenceAnchors = @(
+            "EdgarSymbolSearchProviderTests",
+            "EdgarReferenceDataProviderTests",
+            "docs/reference/provider-validation-matrix.md"
         )
     }
 )
@@ -294,6 +320,20 @@ function Get-PacketReview {
     $baselineThresholdContract = Get-ObjectPropertyValue -Object $packet -Name "baselineThresholdContract"
     $trustRationaleContractStatus = [string](Get-ObjectPropertyValue -Object $trustRationaleContract -Name "status")
     $baselineThresholdContractStatus = [string](Get-ObjectPropertyValue -Object $baselineThresholdContract -Name "status")
+    $searchDependencyReview = Get-ObjectPropertyValue -Object $packet -Name "searchDependencyReview"
+    $requiredSearchDependencyCountValue = Get-ObjectPropertyValue -Object $searchDependencyReview -Name "requiredCount"
+    $requiredSearchDependencyCount = if ($null -ne $requiredSearchDependencyCountValue) { [int]$requiredSearchDependencyCountValue } else { 0 }
+    $searchDependenciesValue = Get-ObjectPropertyValue -Object $searchDependencyReview -Name "dependencies"
+    $searchDependencies = if ($null -eq $searchDependenciesValue) { @() } else { @($searchDependenciesValue) }
+    $representedSearchDependencyCount = @(
+        $searchDependencies | Where-Object {
+            [string]::Equals(
+                [string](Get-ObjectPropertyValue -Object $_ -Name "status"),
+                "represented",
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+    ).Count
+    $searchDependencyReviewStatus = [string](Get-ObjectPropertyValue -Object $searchDependencyReview -Name "status")
     $status = [string](Get-ObjectPropertyValue -Object $packet -Name "status")
     $blockers = @(Get-ObjectPropertyValue -Object $packet -Name "blockers")
 
@@ -302,12 +342,17 @@ function Get-PacketReview {
     $contractsValidated =
         [string]::Equals($trustRationaleContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase) -and
         [string]::Equals($baselineThresholdContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase)
+    $searchDependenciesRepresented =
+        $requiredSearchDependencyCount -gt 0 -and
+        $representedSearchDependencyCount -eq $requiredSearchDependencyCount -and
+        [string]::Equals($searchDependencyReviewStatus, "represented", [System.StringComparison]::OrdinalIgnoreCase)
     $validForOperatorReview =
         [string]::Equals($status, "ready-for-operator-review", [System.StringComparison]::OrdinalIgnoreCase) -and
         $blockers.Count -eq 0 -and
         $samplesReady -and
         $documentsValidated -and
-        $contractsValidated
+        $contractsValidated -and
+        $searchDependenciesRepresented
 
     return [ordered]@{
         path = ConvertTo-RelativePath -Path $Path
@@ -321,6 +366,9 @@ function Get-PacketReview {
         validatedEvidenceDocumentCount = $validatedEvidenceDocumentCount
         trustRationaleContractStatus = $trustRationaleContractStatus
         baselineThresholdContractStatus = $baselineThresholdContractStatus
+        requiredSearchDependencyCount = $requiredSearchDependencyCount
+        representedSearchDependencyCount = $representedSearchDependencyCount
+        searchDependencyReviewStatus = $searchDependencyReviewStatus
         validForOperatorReview = $validForOperatorReview
     }
 }
@@ -471,6 +519,9 @@ function Get-OperatorSignoffPacket {
             @{ Name = "validatedEvidenceDocumentCount"; Requirement = "packetValidatedEvidenceDocumentCount" },
             @{ Name = "trustRationaleContractStatus"; Requirement = "packetTrustRationaleContractStatus" },
             @{ Name = "baselineThresholdContractStatus"; Requirement = "packetBaselineThresholdContractStatus" },
+            @{ Name = "requiredSearchDependencyCount"; Requirement = "packetRequiredSearchDependencyCount" },
+            @{ Name = "representedSearchDependencyCount"; Requirement = "packetRepresentedSearchDependencyCount" },
+            @{ Name = "searchDependencyReviewStatus"; Requirement = "packetSearchDependencyReviewStatus" },
             @{ Name = "validForOperatorReview"; Requirement = "packetReadyForOperatorReview" }
         )
 
@@ -669,6 +720,39 @@ $failedSteps = @($script:SummarySteps | Where-Object { $_.status -ne "passed" } 
 $missingDocs = @($docReviews | Where-Object { -not $_.exists } | ForEach-Object { [string]$_.path })
 $incompleteDocs = @($docReviews | Where-Object { $_.status -eq "incomplete" })
 $incompleteSamples = @($sampleReviews | Where-Object { $_.status -eq "incomplete" })
+$searchDependencyReviews = foreach ($dependency in $requiredSearchDependencies) {
+    $missingRequirements = New-Object System.Collections.Generic.List[string]
+    foreach ($field in @("provider", "dependency", "risk", "governanceAction")) {
+        if ([string]::IsNullOrWhiteSpace([string](Get-ObjectPropertyValue -Object $dependency -Name $field))) {
+            $missingRequirements.Add($field)
+        }
+    }
+
+    $evidenceAnchors = @(
+        @(Get-ObjectPropertyValue -Object $dependency -Name "evidenceAnchors") |
+            Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }
+    )
+    if ($evidenceAnchors.Count -eq 0) {
+        $missingRequirements.Add("evidenceAnchors")
+    }
+
+    [ordered]@{
+        provider = [string](Get-ObjectPropertyValue -Object $dependency -Name "provider")
+        dependency = [string](Get-ObjectPropertyValue -Object $dependency -Name "dependency")
+        risk = [string](Get-ObjectPropertyValue -Object $dependency -Name "risk")
+        governanceAction = [string](Get-ObjectPropertyValue -Object $dependency -Name "governanceAction")
+        evidenceAnchors = @($evidenceAnchors)
+        status = if ($missingRequirements.Count -eq 0) { "represented" } else { "incomplete" }
+        missingRequirements = $missingRequirements.ToArray()
+    }
+}
+$representedSearchDependencyCount = @(
+    $searchDependencyReviews | Where-Object {
+        [string]::Equals([string]$_.status, "represented", [System.StringComparison]::OrdinalIgnoreCase)
+    }
+).Count
+$searchDependencyReviewStatus = if ($representedSearchDependencyCount -eq @($requiredSearchDependencies).Count) { "represented" } else { "incomplete" }
+$incompleteSearchDependencies = @($searchDependencyReviews | Where-Object { $_.status -ne "represented" })
 
 $trustDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-trust-rationale-mapping.md" } | Select-Object -First 1)
 $thresholdDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-baseline-trust-thresholds.md" } | Select-Object -First 1)
@@ -703,6 +787,10 @@ foreach ($docPath in $missingDocs) {
 foreach ($doc in $incompleteDocs) {
     $missingList = @($doc.missingRequirements) -join ", "
     $blockers.Add("Required DK1 evidence document is incomplete: $($doc.path) missing $missingList.")
+}
+foreach ($dependency in $incompleteSearchDependencies) {
+    $missingList = @($dependency.missingRequirements) -join ", "
+    $blockers.Add("Required search dependency representation '$($dependency.provider)' is incomplete: missing $missingList.")
 }
 
 $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else { "blocked" }
@@ -775,6 +863,12 @@ $packet = [ordered]@{
         duplicateSampleIds = $duplicateSamples
         samples = @($sampleReviews)
     }
+    searchDependencyReview = [ordered]@{
+        requiredCount = @($requiredSearchDependencies).Count
+        representedCount = $representedSearchDependencyCount
+        status = $searchDependencyReviewStatus
+        dependencies = @($searchDependencyReviews)
+    }
     trustRationaleContract = [ordered]@{
         documentPath = "docs/status/evidence/dk1-trust-rationale-mapping.md"
         requiredPayloadFields = @("signalSource", "reasonCode", "recommendedAction")
@@ -843,6 +937,25 @@ foreach ($sample in $packet.sampleReview.samples) {
     $missingRequirements = @($sample.missingRequirements)
     $missingText = if ($missingRequirements.Count -eq 0) { "none" } else { $missingRequirements -join "<br>" }
     $md += "| $($sample.id) | $($sample.provider) | $($sample.requiredStep) | $($sample.stepStatus) | $($sample.status) | $missingText | $anchors |"
+}
+
+$md += @(
+    "",
+    "## Search Dependency Review",
+    "",
+    "- Status: $($packet.searchDependencyReview.status)",
+    "- Represented dependencies: $($packet.searchDependencyReview.representedCount) of $($packet.searchDependencyReview.requiredCount)",
+    "",
+    "| Provider | Dependency | Status | Risk | Governance action | Missing requirements | Evidence anchors |",
+    "|---|---|---|---|---|---|---|"
+)
+
+foreach ($dependency in $packet.searchDependencyReview.dependencies) {
+    $anchorValues = @($dependency.evidenceAnchors)
+    $anchors = if ($anchorValues.Count -eq 0) { "Missing" } else { $anchorValues -join "<br>" }
+    $missingRequirements = @($dependency.missingRequirements)
+    $missingText = if ($missingRequirements.Count -eq 0) { "none" } else { $missingRequirements -join "<br>" }
+    $md += "| $($dependency.provider) | $($dependency.dependency) | $($dependency.status) | $($dependency.risk) | $($dependency.governanceAction) | $missingText | $anchors |"
 }
 
 $md += @(

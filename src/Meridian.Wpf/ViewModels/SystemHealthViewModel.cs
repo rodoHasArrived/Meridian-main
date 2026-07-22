@@ -406,9 +406,13 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                 UptimeText = FormatUptime(DateTime.UtcNow - _startTime);
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Silently swallow per-metric failures to keep other panels updating
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "System metric refresh failed; other panels continue updating.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -461,9 +465,13 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                 UpdateSystemTriage();
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Silently swallow per-section failures
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "System health section refresh failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -504,9 +512,13 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                 UpdateSystemTriage();
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Silently swallow per-section failures
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "System health section refresh failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -554,9 +566,13 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                 UpdateSystemTriage();
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Silently swallow per-section failures
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "System health section refresh failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-07
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.DataIntegration
@@ -63,9 +63,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   configuration, calibration datasets/snapshots/governance, and F# validation-stage counters used
   by ingestion, routing, diagnostics, and Application/UI adapters.
 - `Monitoring/DataQuality/` - provider data-quality analyzers, freshness SLA monitor, quality
-  report generator, gap/sequence/anomaly/completeness/latency trackers, and liquidity-aware
-  quality thresholds used by ingestion, backfill remediation, health, and shared endpoint
-  adapters.
+  report generator, gap/sequence/anomaly/completeness/latency trackers, cross-provider
+  trade/quote discrepancy comparison, and liquidity-aware quality thresholds used by ingestion,
+  backfill remediation, health, and shared endpoint adapters.
 - `Testing/DepthBufferSelfTests.cs` and `Testing/SampleDataGenerator.cs` - built-in
   depth-buffer integrity self-tests and deterministic sample market-event generation used by
   Application diagnostics adapters.
@@ -101,6 +101,15 @@ module. The job-definition store and SFTP publisher port contracts live in
 `Meridian.Storage.Etl`. Application supplies adapters over its concrete ingestion-job lifecycle
 and event-pipeline publisher so this module can own ETL orchestration without depending on the
 layer-oriented Application project.
+`EtlRunResult` composes the shared verified terminal outcome. A required export that returns
+`Success=false` transitions the ingestion job to `Failed`, retains source data and audit evidence,
+and returns repair/retry guidance. Only an explicitly configured fail-open round-trip delivery may
+return `CompletedWithWarnings`; it still retains the source and names the incomplete optional
+delivery. Catalog failure and exceptions cannot fall through to a completed state.
+Definition/job lookup, admission, start-audit, checkpoint, and source-list failures are also
+terminalized into validated receipts. A secondary failure while retaining failed state or audit
+evidence is surfaced in the returned issues and recovery guidance instead of suppressing the
+primary receipt.
 
 Canonicalization contracts, the default event canonicalizer, the canonicalizing publisher
 decorator, provider condition-code mapping, venue normalization, Security Master id lookup seam,
@@ -120,10 +129,19 @@ compatibility checks, and validation-stage counters live in this module. Connect
 monitoring and connection-status notification over the Contracts-owned monitoring webhook sink,
 provider latency histograms, provider metrics snapshot contracts, provider degradation
 scoring/config, and provider calibration datasets/snapshots also live here so routing,
-diagnostics, browser, and desktop surfaces consume a single provider-trust model. Application
-pipeline, backfill remediation, Prometheus, health, daily-summary, and UI Shared endpoint adapters consume
-`Meridian.DataIntegration.Monitoring` and `Meridian.DataIntegration.Monitoring.DataQuality`
-instead of keeping provider trust primitives in the application layer.
+diagnostics, browser, and desktop surfaces consume a single provider-trust model.
+Provider health, latency, and degradation scoring normalize provider names for lookup and scoring
+so case or whitespace variants cannot split trust signals for the same upstream provider.
+Provider degradation score discovery includes providers observed only through latency histograms, so
+health rankings do not omit secondary providers before a connection or error tracker is registered.
+For request-only providers that have no streaming connection health signal, degradation scoring
+rebalances across the available latency and error-rate evidence so severe historical-provider
+failures are still routable instead of being capped below the global degradation threshold.
+`CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
+for provider-trust consumers. Application pipeline, backfill remediation, Prometheus, health,
+daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
+`Meridian.DataIntegration.Monitoring.DataQuality` instead of keeping provider trust primitives in
+the application layer.
 
 ## Diagrams
 

@@ -433,7 +433,7 @@
 
                 <!-- Per-Symbol Progress -->
                 <Border x:Name="SymbolProgressCard" Style="{StaticResource CardStyle}" Margin="0,0,0,24"
-                        Visibility="{Binding IsBackfillActive, Converter={StaticResource BoolToVisibilityConverter}}">
+                        Visibility="{Binding HasProviderProgress, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                             <TextBlock Text="{StaticResource IconChart}"
@@ -453,11 +453,14 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="OverallProgressText" Text="{Binding OverallProgressText}"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <TextBlock x:Name="OverallTimeText" Grid.Column="1" Text="Elapsed: 0:00"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock x:Name="OverallTimeText" Grid.Column="1"
+                                       Text="{Binding ProviderProgressObservedText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="11" />
                         </Grid>
 
-                        <ProgressBar x:Name="OverallProgressBar" Minimum="0" Maximum="100" Value="0" Height="8"
+                        <ProgressBar x:Name="OverallProgressBar" Minimum="0" Maximum="100"
+                                     Value="{Binding OverallProgressPercent, Mode=OneWay}" Height="8"
                                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                      Foreground="{StaticResource SuccessColorBrush}"
                                      Margin="0,0,0,16" />
@@ -762,6 +765,59 @@
         <!-- Right Panel - Scheduled Jobs -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="12,24,24,24">
             <StackPanel>
+                <!-- Automatic remediation execution queue -->
+                <Border x:Name="BackfillRemediationQueueCard"
+                        Style="{StaticResource CardStyle}"
+                        Margin="0,0,0,16"
+                        AutomationProperties.AutomationId="BackfillRemediationQueueCard">
+                    <StackPanel>
+                        <TextBlock Text="Automatic Remediation Queue"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="0,0,0,4" />
+                        <TextBlock Text="{Binding RemediationDefaultProviderText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11"
+                                   Margin="0,0,0,12" />
+
+                        <DataGrid x:Name="BackfillRemediationQueueGrid"
+                                  ItemsSource="{Binding RemediationQueue}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserSortColumns="True"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="None"
+                                  RowHeight="32"
+                                  ColumnHeaderHeight="34"
+                                  MaxHeight="280"
+                                  Background="{StaticResource PremiumPanelBrush}"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                  BorderThickness="0"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  Visibility="{Binding HasRemediationQueue, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  AutomationProperties.AutomationId="BackfillRemediationQueueGrid"
+                                  AutomationProperties.Name="Automatic remediation execution queue">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Symbols" Binding="{Binding SymbolsText}" Width="110" SortMemberPath="SymbolsText" />
+                                <DataGridTextColumn Header="Provider" Binding="{Binding Provider}" Width="80" SortMemberPath="Provider" />
+                                <DataGridTextColumn Header="SLA Tier" Binding="{Binding SlaTierText}" Width="118" SortMemberPath="SlaTierSort" />
+                                <DataGridTextColumn Header="Deadline" Binding="{Binding DeadlineText}" Width="145" SortMemberPath="DueAtUtc" />
+                                <DataGridTextColumn Header="SLA State" Binding="{Binding SlaStatusText}" Width="90" SortMemberPath="SlaStatusSort" />
+                                <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="100" SortMemberPath="Outcome" />
+                                <DataGridTextColumn Header="Attempt" Binding="{Binding AttemptText}" Width="95" SortMemberPath="AttemptText" />
+                                <DataGridTextColumn Header="Range" Binding="{Binding RangeText}" Width="170" SortMemberPath="RangeText" />
+                                <DataGridCheckBoxColumn Header="Legacy" Binding="{Binding IsCompatibilityDerived}" Width="65" SortMemberPath="IsCompatibilityDerived" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <TextBlock Text="No automatic remediation executions recorded"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   Visibility="{Binding HasRemediationQueue, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Scheduled Backfill Jobs -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <StackPanel>
@@ -852,7 +908,7 @@
                                   MaxHeight="200">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1EFFCA28" CornerRadius="4" Padding="12,8" Margin="0,2">
+                                    <Border Background="{StaticResource WarningTintSubtleBrush}" CornerRadius="4" Padding="12,8" Margin="0,2">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />

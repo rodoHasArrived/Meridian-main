@@ -28,6 +28,44 @@ public sealed class UiApiClientTests
     }
 
     [Fact]
+    public async Task GetBackfillExecutionsAsync_ParsesTypedHistoryEnvelope()
+    {
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(
+            HttpStatusCode.OK,
+            """
+            {
+              "executions": [
+                {
+                  "executionId": "execution-17",
+                  "autoRemediationSla": {
+                    "provider": "polygon",
+                    "triggerSource": "data-quality-remediation",
+                    "isCompatibilityDerived": false
+                  }
+                }
+              ],
+              "total": 1,
+              "autoRemediation": {
+                "total": 1,
+                "withReason": 1,
+                "lastOutcome": "Completed",
+                "defaultProvider": "stooq"
+              },
+              "timestamp": "2026-07-15T12:00:00Z"
+            }
+            """));
+        var sut = new UiApiClient(httpClient, "http://localhost:8080");
+
+        var history = await sut.GetBackfillExecutionsAsync();
+
+        history.Should().NotBeNull();
+        history!.Total.Should().Be(1);
+        history.Executions.Should().ContainSingle(execution =>
+            execution.Id == "execution-17" && execution.AutoRemediationSla!.Provider == "polygon");
+        history.AutoRemediation.LastOutcome.Should().Be("Completed");
+    }
+
+    [Fact]
     public async Task GetOperationsContinuityWorkflowAsync_UsesWorkflowIdRoute()
     {
         using var handler = new RecordingStubHttpMessageHandler(

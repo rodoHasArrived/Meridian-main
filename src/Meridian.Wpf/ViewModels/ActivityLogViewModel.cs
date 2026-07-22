@@ -36,6 +36,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private readonly IRemoteWorkstationClient _remoteClient;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly Dispatcher _dispatcher;
 
     private readonly ObservableCollection<LogEntryModel> _allLogs = new();
     private readonly DispatcherTimer _refreshTimer;
@@ -198,6 +199,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _dispatcher = Dispatcher.CurrentDispatcher;
         _remoteClient = remoteClient ?? WpfServices.WpfRemoteWorkstationClient.Instance;
         _remoteClient.Configure(statusService.BaseUrl);
 
@@ -311,6 +313,16 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private void OnLogEntryAdded(object? sender, LogEntryEventArgs e)
     {
+        if (!_dispatcher.CheckAccess())
+        {
+            if (!_dispatcher.HasShutdownStarted && !_dispatcher.HasShutdownFinished)
+            {
+                _ = _dispatcher.InvokeAsync(() => OnLogEntryAdded(sender, e), DispatcherPriority.DataBind);
+            }
+
+            return;
+        }
+
         var category = "System";
         foreach (var (key, value) in e.Properties)
         {

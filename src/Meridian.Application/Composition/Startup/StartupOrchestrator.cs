@@ -2,6 +2,7 @@ using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.Contracts.Lifecycle;
 using Meridian.Core.Diagnostics;
 using Serilog;
 using DeploymentMode = Meridian.Platform.Runtime.DeploymentMode;
@@ -42,6 +43,8 @@ public sealed class StartupOrchestrator
     {
         var correlationId = Guid.NewGuid().ToString("N");
         var startupStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var runtimeLifecycle = ctx.Lifecycle as IRuntimeLifecycleControlPlane;
+        runtimeLifecycle?.TransitionTo(RuntimeLifecycleState.Bootstrapping, "bootstrapping");
 
         _log.Information(
             "Startup sequence started for {OperationName} with {CorrelationId}; component={ComponentName}; mode={Mode}; command={Command}; configPath={ConfigPath}",
@@ -65,6 +68,7 @@ public sealed class StartupOrchestrator
             }
 
             // Phase 2 — Validation
+            runtimeLifecycle?.TransitionTo(RuntimeLifecycleState.Validating, "validation");
             var validationStopwatch = StartPhase(correlationId, "validation");
             var validationResult = await RunValidationAsync(ctx);
             CompletePhase(correlationId, "validation", validationStopwatch, validationResult.Success ? "passed" : "failed");
@@ -83,12 +87,14 @@ public sealed class StartupOrchestrator
             CompletePhase(correlationId, "runtime-selection", selectionStopwatch, plan.Mode.ToString());
 
             var runtimeStopwatch = StartPhase(correlationId, "mode-execution");
+            runtimeLifecycle?.TransitionTo(RuntimeLifecycleState.StartingHost, "starting-host");
             var exitCode = await ExecutePlanAsync(plan);
             CompletePhase(correlationId, "mode-execution", runtimeStopwatch, $"exit-code:{exitCode}");
             return CompleteStartup(correlationId, startupStopwatch, exitCode, plan.Mode.ToString());
         }
         catch (Exception ex)
         {
+            runtimeLifecycle?.TransitionTo(RuntimeLifecycleState.Failed, "startup-failed");
             startupStopwatch.Stop();
             _log.Error(
                 ex,

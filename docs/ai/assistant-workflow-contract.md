@@ -354,8 +354,8 @@ Every assistant and automation should use the same high-level flow:
    so validation uses a local lock, active-process checks, and isolated build outputs. When local
    machine limits, dependency restore, or MSBuild contention still make local validation unreliable,
    push the branch and use the manual GitHub-hosted `Targeted Test` workflow as the remote proof
-   lane before retrying broad local scripts. Its .NET lane requires a repo-relative test project
-   under `tests/` plus a non-empty filter.
+   lane before retrying broad local scripts. Select a whitelisted `mode`; its `dotnet-filtered`
+   mode requires a repo-relative test project under `tests/` plus a non-empty filter.
 12. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
@@ -426,8 +426,8 @@ When editing `src/**`, assistants must:
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
 - Do not pursue mobile app development unless a future roadmap change explicitly creates and
-  documents a mobile product lane; keep operator UI work on the active browser workstation and WPF
-  desktop surfaces.
+  documents a mobile product lane; operator UI work runs across two active co-equal lanes, the
+  browser workstation and the reactivated WPF desktop workstation, both over shared contracts.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to
@@ -637,4 +637,3 @@ Path-specific mirrors that must stay byte-identical to the canonical policy:
 - `docs/ai/claude/contract-policy.mirror.json`
 
 CI runs `build/scripts/docs/check-ai-contract-drift.py` and fails if any mirror drifts from the canonical policy file.
-

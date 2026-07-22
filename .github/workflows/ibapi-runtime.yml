@@ -1,0 +1,81 @@
+name: IB API Official Runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Build configuration.
+        required: false
+        type: choice
+        default: Release
+        options:
+          - Release
+          - Debug
+  schedule:
+    - cron: "30 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ibapi-official-runtime-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  official-runtime:
+    name: Official IB API runtime build and paper socket smoke
+    # This protected environment supplies a self-hosted Windows runner with the official,
+    # unmodified TWS API SDK and a paper-only TWS/Gateway endpoint. No credentials are exposed to the job.
+    environment: interactive-brokers-paper
+    runs-on: [self-hosted, Windows]
+    timeout-minutes: 30
+    env:
+      IB_API_PROJECT_PATH: ${{ vars.IB_API_PROJECT_PATH }}
+      IB_API_DLL_PATH: ${{ vars.IB_API_DLL_PATH }}
+      IB_SMOKE_HOST: ${{ vars.IB_SMOKE_HOST }}
+      IB_SMOKE_PORT: ${{ vars.IB_SMOKE_PORT }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Validate protected environment configuration
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:IB_SMOKE_HOST) -or [string]::IsNullOrWhiteSpace($env:IB_SMOKE_PORT)) {
+            throw 'interactive-brokers-paper must define IB_SMOKE_HOST and IB_SMOKE_PORT.'
+          }
+          if ([string]::IsNullOrWhiteSpace($env:IB_API_PROJECT_PATH) -eq [string]::IsNullOrWhiteSpace($env:IB_API_DLL_PATH)) {
+            throw 'interactive-brokers-paper must define exactly one of IB_API_PROJECT_PATH or IB_API_DLL_PATH.'
+          }
+
+      - name: Build official runtime and smoke paper socket
+        shell: pwsh
+        run: |
+          $parameters = @{
+            Configuration = '${{ inputs.configuration || 'Release' }}'
+            SmokeHost = $env:IB_SMOKE_HOST
+            SmokePort = [int]$env:IB_SMOKE_PORT
+          }
+          if (-not [string]::IsNullOrWhiteSpace($env:IB_API_PROJECT_PATH)) {
+            $parameters.IBApiProjectPath = $env:IB_API_PROJECT_PATH
+          }
+          else {
+            $parameters.IBApiDllPath = $env:IB_API_DLL_PATH
+          }
+          & scripts/dev/build-ibapi-vendor.ps1 @parameters

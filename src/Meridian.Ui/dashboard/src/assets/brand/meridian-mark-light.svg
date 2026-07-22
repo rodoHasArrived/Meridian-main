@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Meridian brand mark (light)</title>
+  <desc id="desc">Meridian mark in light colors for use on dark backgrounds and dark mode interfaces.</desc>
+
+  <circle cx="128" cy="128" r="84" fill="none" stroke="#F5F7FA" stroke-width="9" stroke-linecap="round"></circle>
+
+  <line x1="44" y1="128" x2="212" y2="128" stroke="#F5F7FA" stroke-width="9" stroke-linecap="round"></line>
+
+  <line x1="128" y1="44" x2="128" y2="212" stroke="#F5F7FA" stroke-width="9" stroke-linecap="round"></line>
+
+  <line x1="94" y1="92" x2="162" y2="92" stroke="#06F3FF" stroke-width="11" stroke-linecap="round"></line>
+
+  <circle cx="128" cy="128" r="6" fill="#06F3FF"></circle>
+</svg>

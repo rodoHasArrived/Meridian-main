@@ -784,10 +784,11 @@ async function resolveScreenshotFileState(screenshotRows, repoRoot) {
   }
 }
 
-async function readWpfTestSources(repoRoot) {
+export async function readWpfTestSources(repoRoot) {
   const testsRoot = path.join(repoRoot, 'tests', 'Meridian.Wpf.Tests');
   try {
-    const testPaths = await listFilesRecursive(testsRoot, (filePath) => filePath.endsWith('.cs'));
+    const testPaths = await listFilesRecursive(testsRoot, (filePath) =>
+      filePath.endsWith('.cs') && !isBuildOutputPath(filePath));
     const entries = await Promise.all(
       testPaths.sort((left, right) => left.localeCompare(right)).map(async (filePath) => ({
         path: path.relative(repoRoot, filePath).replaceAll(path.sep, '/'),
@@ -798,6 +799,10 @@ async function readWpfTestSources(repoRoot) {
   } catch {
     return [];
   }
+}
+
+function isBuildOutputPath(filePath) {
+  return filePath.split(/[\\/]+/).some((part) => part === 'bin' || part === 'obj');
 }
 
 function inferViewModelName(pageType) {

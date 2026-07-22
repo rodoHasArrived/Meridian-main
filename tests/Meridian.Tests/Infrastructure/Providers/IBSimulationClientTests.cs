@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Tests.TestHelpers;
 using Xunit;
@@ -347,16 +348,18 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
     public async Task TickGeneration_WhenConnectedWithAutoTicks_PublishesTradeEvents()
     {
         // Arrange — enable auto-ticks and subscribe to a well-known symbol
-        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        var publisher = new SignalingMarketEventPublisher();
+        await using var tickingClient = CreateFastTickingClient(publisher);
         await tickingClient.ConnectAsync();
         tickingClient.SubscribeTrades(new SymbolConfig("AAPL"));
 
-        // Act — allow one tick interval plus margin
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await publisher.WaitUntilAsync(
+            events => events.Any(e => e.Type == MarketEventType.Trade),
+            TimeSpan.FromSeconds(2));
         await tickingClient.DisconnectAsync();
 
         // Assert — at least one trade event must have been published
-        _publisher.PublishedEvents.Should().NotBeEmpty(
+        publisher.PublishedEvents.Should().NotBeEmpty(
             because: "IBSimulationClient fires ticks every second for subscribed symbols");
     }
 
@@ -364,20 +367,23 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
     public async Task TickGeneration_AfterDisconnect_StopsPublishing()
     {
         // Arrange
-        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        var publisher = new SignalingMarketEventPublisher();
+        await using var tickingClient = CreateFastTickingClient(publisher);
         await tickingClient.ConnectAsync();
         tickingClient.SubscribeTrades(new SymbolConfig("SPY"));
 
-        // Let one tick interval fire
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await publisher.WaitUntilAsync(
+            events => events.Any(e => e.Type == MarketEventType.Trade),
+            TimeSpan.FromSeconds(2));
         await tickingClient.DisconnectAsync();
-        var countAfterDisconnect = _publisher.PublishedEvents.Count;
+        var countAfterDisconnect = publisher.PublishedEvents.Count;
 
-        // Act — wait another interval; no new ticks should arrive
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        var receivedAfterDisconnect = await publisher.HasAdditionalEventWithinAsync(
+            countAfterDisconnect,
+            TimeSpan.FromMilliseconds(100));
 
         // Assert
-        _publisher.PublishedEvents.Should().HaveCount(countAfterDisconnect,
+        receivedAfterDisconnect.Should().BeFalse(
             because: "the timer is stopped on DisconnectAsync");
     }
 
@@ -385,16 +391,18 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
     public async Task TickGeneration_UnknownSymbol_UsesDefaultBasePrice()
     {
         // Arrange — subscribe to a symbol not in the well-known price table
-        await using var tickingClient = new IBSimulationClient(_publisher, enableAutoTicks: true);
+        var publisher = new SignalingMarketEventPublisher();
+        await using var tickingClient = CreateFastTickingClient(publisher);
         await tickingClient.ConnectAsync();
         tickingClient.SubscribeTrades(new SymbolConfig("XYZUNKNOWN"));
 
-        // Act
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await publisher.WaitUntilAsync(
+            events => events.Any(e => e.Type == MarketEventType.Trade),
+            TimeSpan.FromSeconds(2));
         await tickingClient.DisconnectAsync();
 
         // Assert — price should still be positive (default base = 100)
-        var tradePayloads = _publisher.PublishedEvents
+        var tradePayloads = publisher.PublishedEvents
             .Select(e => e.Payload as Meridian.Contracts.Domain.Models.Trade)
             .Where(t => t is not null)
             .ToList();
@@ -505,4 +513,11 @@ public sealed class IBSimulationClientTests : IAsyncLifetime
     {
         _client.ProviderCapabilities.SupportedMarkets.Should().NotBeNullOrEmpty();
     }
+
+    private static IBSimulationClient CreateFastTickingClient(IMarketEventPublisher publisher)
+        => new(
+            publisher,
+            enableAutoTicks: true,
+            autoTickDueTime: TimeSpan.FromMilliseconds(10),
+            autoTickPeriod: TimeSpan.FromMilliseconds(10));
 }

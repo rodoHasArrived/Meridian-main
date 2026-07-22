@@ -95,11 +95,13 @@ import {
   setReplaySpeed,
   startReplay,
   stopReplay,
+  supersedeReconciliationBreak,
   submitChiefOfStaffDecision,
   submitOrder,
   updateExecutionDefaultPositionLimit,
   updateExecutionSymbolPositionLimit,
-  updateWorkflowPreset
+  updateWorkflowPreset,
+  waiveReconciliationBreak
 } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
@@ -110,6 +112,41 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "{}" });
     vi.stubGlobal("fetch", fetchMock);
     resetDevelopmentFixtureUsage();
+  });
+
+  it("wires governed reconciliation waive and supersede actions with disposition evidence", async () => {
+    const waiver = {
+      breakId: "break / 1",
+      action: "Waive" as const,
+      actor: "operator-1",
+      commandId: "cmd-waive-1",
+      correlationId: "corr-1",
+      source: "accounting-workstation",
+      expectedVersion: 4,
+      reason: "Reviewed immaterial difference",
+      evidenceLinks: ["evidence://waiver/1"],
+      actionOrigin: "HumanOperator" as const,
+      approvalActor: "controller-1",
+      approvalReference: "approval://waiver/1"
+    };
+    const supersede = {
+      ...waiver,
+      action: "Supersede" as const,
+      commandId: "cmd-supersede-1",
+      supersedingBreakId: "break-2"
+    };
+
+    await waiveReconciliationBreak(waiver);
+    await supersedeReconciliationBreak(supersede);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(waiver) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(supersede) })
+    );
   });
 
   it("wires promotion endpoints", async () => {
@@ -169,7 +206,7 @@ describe("trading endpoint wiring", () => {
       symbol: "AAPL"
     });
     await clearExecutionManualOverride("ovr-1");
-    await closePosition("paper:AAPL");
+    await closePosition("paper:AAPL", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     expect(fetchMock).toHaveBeenCalledWith("/api/execution/controls", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(
@@ -198,6 +235,21 @@ describe("trading endpoint wiring", () => {
       "/api/execution/controls/manual-overrides/ovr-1/clear",
       expect.objectContaining({ method: "POST" })
     );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/positions/actions/close",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          positionKey: "paper:AAPL",
+          fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+        })
+      })
+    );
+  });
+
+  it("omits non-GUID fund account labels from position action mutations", async () => {
+    await closePosition("paper:AAPL", "brokerage-account-label");
+
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/execution/positions/actions/close",
       expect.objectContaining({
@@ -252,6 +304,15 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reporting", expect.anything());
     expect(hasDevelopmentFixtureUsage()).toBe(true);
+  });
+
+  it("passes account scope through the trading workspace endpoint", async () => {
+    await getTradingWorkspace({ fundAccountId: "fund account/1" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/trading?fundAccountId=fund+account%2F1",
+      expect.anything()
+    );
   });
 
   it("tracks proxy-served development fixtures from the response header", async () => {
@@ -426,6 +487,30 @@ describe("trading endpoint wiring", () => {
         quantity: 1
       })
     ).rejects.toThrow("Request failed for /api/execution/orders/submit (404) - not found");
+  });
+
+  it("posts order mutations with selected fund account scope", async () => {
+    await submitOrder({
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Market",
+      quantity: 1,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/orders/submit",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          symbol: "AAPL",
+          side: "Buy",
+          type: "Market",
+          quantity: 1,
+          fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+        })
+      })
+    );
   });
 
   it("preserves backend problem details for every HTTP verb", async () => {

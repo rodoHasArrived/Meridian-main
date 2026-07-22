@@ -2,14 +2,18 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Tests.Application.Composition;
 
@@ -108,6 +112,48 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         client.Should().BeOfType<AlpacaMarketDataClient>();
     }
 
+    [Fact]
+    public async Task Register_IBBootstrapWithAlternativeCredentials_DoesNotResolveRuntimeSelector()
+    {
+        Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "AKXXXXXXXXXXXXXXXX");
+        Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "secretxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+        var configPath = WriteConfig(new AppConfig(
+            DataSource: DataSourceKind.IB,
+            Symbols: [new SymbolConfig("SPY")]));
+        var services = CreateServices(configPath);
+        var selectorResolutionCount = 0;
+        services.RemoveAll<ConfigurationService>();
+        services.AddSingleton(_ => new ConfigurationService(
+            ibGatewayAvailabilityProbe: static () => false,
+            providerSelectorAccessor: () =>
+            {
+                selectorResolutionCount++;
+                throw new InvalidOperationException(
+                    "Provider bootstrap must not resolve the runtime routing graph.");
+            }));
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<ProviderRegistry>().Should().NotBeNull();
+        selectorResolutionCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ConfigurationService_ExplicitRuntimeSelection_StillUsesRegisteredSelector()
+    {
+        Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "AKXXXXXXXXXXXXXXXX");
+        Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "secretxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        var selector = new RecordingProviderSelector("alpaca");
+        await using var service = new ConfigurationService(providerSelector: selector);
+
+        var selected = service.GetBestRealTimeProvider();
+
+        selected.Should().NotBeNull();
+        selected!.Name.Should().BeEquivalentTo("alpaca");
+        selector.CallCount.Should().Be(1);
+    }
+
     private static ServiceCollection CreateServices(string configPath)
     {
         var services = new ServiceCollection();
@@ -144,6 +190,33 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         {
             if (File.Exists(path))
                 File.Delete(path);
+        }
+    }
+
+    private sealed class RecordingProviderSelector(string providerFamilyId) : IBestOfBreedProviderSelector
+    {
+        public int CallCount { get; private set; }
+
+        public Task<ProviderRouteResult> SelectAsync(
+            ProviderRouteContext context,
+            CancellationToken ct = default)
+        {
+            CallCount++;
+            var decision = new ProviderRouteDecision(
+                ConnectionId: providerFamilyId,
+                ProviderFamilyId: providerFamilyId,
+                Capability: context.Capability,
+                SafetyMode: ProviderSafetyMode.HealthAwareFailover,
+                ScopeRank: 0,
+                Priority: 0,
+                IsHealthy: true,
+                ReasonCodes: [],
+                FallbackConnectionIds: []);
+            return Task.FromResult(new ProviderRouteResult(
+                context,
+                decision,
+                [decision],
+                []));
         }
     }
 }

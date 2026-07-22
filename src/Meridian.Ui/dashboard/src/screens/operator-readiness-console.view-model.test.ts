@@ -1,6 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
+import {
+  buildOperatorReadinessConsoleState,
+  useOperatorReadinessConsoleViewModel,
+  type OperatorReadinessConsoleServices
+} from "@/screens/operator-readiness-console.view-model";
 import type { ApiRequestOptions } from "@/lib/api";
 import type {
   DataWorkspaceResponse,
@@ -276,6 +280,8 @@ const readyReadiness: TradingOperatorReadiness = {
   ...readiness,
   overallStatus: "Ready",
   readyForPaperOperation: true,
+  readyForLiveOperation: true,
+  liveOperationBlockers: [],
   promotion: {
     ...readiness.promotion,
     state: "Ready",
@@ -410,11 +416,17 @@ describe("operator readiness console view model", () => {
       "Replay verified",
       "Risk state explainable",
       "Promotion review trace complete",
+      "Live operation gate",
       "Brokerage sync healthy",
       "Reconciliation clear",
       "Report pack approval ready",
       "Operator work items settled"
     ]);
+    expect(state.checkpointGates.find((gate) => gate.id === "live-operation-ready")).toEqual(expect.objectContaining({
+      value: "Review required",
+      level: "review",
+      action: expect.objectContaining({ route: "/trading/readiness" })
+    }));
     expect(state.checkpointGates.find((gate) => gate.id === "reconciliation-clear")).toEqual(expect.objectContaining({
       value: "1 open",
       level: "blocked",
@@ -459,6 +471,163 @@ describe("operator readiness console view model", () => {
       listLabel: "Reporting report packs rows",
       tableLabel: "Reporting report packs readiness evidence table",
       detailPanelId: "operator-readiness-reporting-report-packs-evidence-detail"
+    }));
+  });
+
+  it("reports the dedicated trading-readiness source when the workspace trading payload is absent", () => {
+    const state = buildOperatorReadinessConsoleState({
+      strategy: null,
+      trading: null,
+      data: null,
+      accounting: null,
+      reporting: null,
+      tradingReadiness: readiness,
+      operatorInbox: null,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.apiSources.find((source) => source.id === "trading-readiness")).toMatchObject({
+      status: "Review required",
+      level: "review"
+    });
+  });
+
+  it("surfaces broker execution reconciliation as a live-readiness checkpoint and work item", () => {
+    const brokerWorkItem: OperatorWorkItem = {
+      workItemId: "broker-execution-reconciliation-alpaca",
+      kind: "BrokerExecutionReconciliation",
+      label: "Broker execution reconciliation",
+      detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+      tone: "Critical",
+      createdAt: "2026-04-29T12:02:00Z",
+      runId: null,
+      fundAccountId: null,
+      auditReference: null,
+      workspace: "Trading",
+      targetRoute: "/api/workstation/trading/readiness",
+      targetPageTag: "TradingShell"
+    };
+    const readinessWithBrokerBreak: TradingOperatorReadiness = {
+      ...readiness,
+      overallStatus: "Blocked",
+      executionReconciliation: {
+        status: "Blocked",
+        gatewayId: "alpaca",
+        brokerDisplayName: "Alpaca Markets",
+        brokerHealthy: true,
+        brokerConnected: true,
+        matchedOpenOrderCount: 0,
+        breakCount: 1,
+        reconciledAt: "2026-04-29T12:02:00Z",
+        detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+        breaks: [
+          {
+            kind: "MissingInBrokerage",
+            description: "OMS tracks an open order that the broker did not report.",
+            localOrderId: "order-1",
+            brokerOrderId: null,
+            clientOrderId: "order-1",
+            symbol: "AAPL",
+            localValue: "Accepted Buy 10 AAPL",
+            brokerValue: null
+          }
+        ]
+      },
+      acceptanceGates: [
+        ...readiness.acceptanceGates,
+        {
+          gateId: "broker-execution-reconciliation",
+          label: "Broker execution reconciliation",
+          status: "Blocked",
+          detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+          sessionId: null,
+          runId: null,
+          auditReference: "alpaca",
+          requiredNextAction: "Review broker/OMS open-order breaks before live operation."
+        }
+      ],
+      workItems: [brokerWorkItem],
+      warnings: []
+    };
+    const state = buildOperatorReadinessConsoleState({
+      strategy,
+      trading: {
+        ...trading,
+        readiness: readinessWithBrokerBreak
+      },
+      data,
+      accounting: {
+        ...accounting,
+        breakQueue: [],
+        reconciliationQueue: []
+      },
+      operatorInbox: {
+        ...cleanInbox,
+        criticalCount: 1,
+        reviewCount: 1,
+        items: [brokerWorkItem],
+        summary: "Broker execution reconciliation needs attention."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.overallLevel).toBe("blocked");
+    expect(state.checkpointGates.find((gate) => gate.id === "broker-execution-reconciliation")).toEqual(expect.objectContaining({
+      label: "Broker execution reconciliation",
+      value: "Blocked",
+      detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+      meta: "alpaca",
+      level: "blocked",
+      action: expect.objectContaining({
+        label: "Review broker orders",
+        route: "/trading/readiness"
+      })
+    }));
+    expect(state.workItems.find((item) => item.id === "broker-execution-reconciliation-alpaca")).toEqual(expect.objectContaining({
+      label: "Broker execution reconciliation",
+      value: "Critical",
+      action: expect.objectContaining({
+        label: "Review broker orders",
+        route: "/trading"
+      })
+    }));
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Broker execution reconciliation",
+      label: "Review broker orders",
+      route: "/trading"
+    }));
+  });
+
+  it("surfaces live operation blockers as a distinct console checkpoint", () => {
+    const state = buildOperatorReadinessConsoleState({
+      strategy,
+      trading: {
+        ...trading,
+        readiness: {
+          ...readiness,
+          readyForLiveOperation: false,
+          liveOperationBlockers: ["promotion:approved-live-trace", "brokerageSync:account-scope-required"]
+        }
+      },
+      data,
+      accounting,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.checkpointGates.find((gate) => gate.id === "live-operation-ready")).toEqual(expect.objectContaining({
+      label: "Live operation gate",
+      value: "2 blockers",
+      detail: "Live operation remains blocked by promotion:approved-live-trace, brokerageSync:account-scope-required.",
+      meta: "promotion:approved-live-trace",
+      level: "blocked",
+      action: expect.objectContaining({
+        label: "Open live readiness",
+        route: "/trading/readiness"
+      })
     }));
   });
 
@@ -1277,6 +1446,34 @@ describe("operator readiness console view model", () => {
 
     resolveFundTwoInbox?.(cleanInbox);
     await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("uses valid operating fund account scope before readiness brokerage fallback for inbox refresh", async () => {
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const tradingWithoutScopedReadiness: TradingWorkspaceResponse = {
+      ...readyTrading,
+      readiness: {
+        ...readyReadiness,
+        brokerageSync: null
+      }
+    };
+    const getOperatorInbox = vi.fn<OperatorReadinessConsoleServices["getOperatorInbox"]>()
+      .mockResolvedValue(cleanInbox);
+    const services = { getOperatorInbox };
+
+    renderHook(() => useOperatorReadinessConsoleViewModel({
+      strategy,
+      trading: tradingWithoutScopedReadiness,
+      data,
+      accounting: cleanGovernance,
+      reporting: accounting,
+      fundAccountId
+    }, services));
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenCalledWith(
+      fundAccountId,
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
   });
 
   it("aborts superseded operator inbox loads when the fund account changes", async () => {

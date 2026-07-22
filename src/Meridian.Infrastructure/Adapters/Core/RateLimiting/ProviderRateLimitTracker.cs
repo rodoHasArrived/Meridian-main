@@ -9,13 +9,17 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </summary>
 public sealed class ProviderRateLimitTracker : IDisposable
 {
-    private readonly ConcurrentDictionary<string, ProviderRateLimitState> _providerStates = new();
+    private readonly ConcurrentDictionary<string, ProviderRateLimitState> _providerStates
+        = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _lifecycleSync = new();
     private readonly ILogger _log;
+    private readonly TimeProvider _timeProvider;
     private bool _disposed;
 
-    public ProviderRateLimitTracker(ILogger? log = null)
+    public ProviderRateLimitTracker(ILogger? log = null, TimeProvider? timeProvider = null)
     {
         _log = log ?? LoggingSetup.ForContext<ProviderRateLimitTracker>();
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>
@@ -23,12 +27,22 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public void RegisterProvider(string providerName, int maxRequestsPerWindow, TimeSpan window, TimeSpan minDelay)
     {
-        _providerStates[providerName] = new ProviderRateLimitState(
-            providerName,
-            maxRequestsPerWindow,
-            window,
-            minDelay
-        );
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        ProviderRateLimitState? previous = null;
+        lock (_lifecycleSync)
+        {
+            ThrowIfDisposed();
+            var replacement = new ProviderRateLimitState(
+                providerName,
+                maxRequestsPerWindow,
+                window,
+                minDelay,
+                _timeProvider);
+            _providerStates.TryGetValue(providerName, out previous);
+            _providerStates[providerName] = replacement;
+        }
+
+        previous?.Dispose();
         _log.Debug("Registered rate limit tracking for {Provider}: {MaxReq} requests per {Window}",
             providerName, maxRequestsPerWindow, window);
     }
@@ -38,6 +52,7 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public void RegisterProvider(IHistoricalDataProvider provider)
     {
+        ArgumentNullException.ThrowIfNull(provider);
         RegisterProvider(
             provider.Name,
             provider.MaxRequestsPerWindow,
@@ -51,9 +66,11 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public void RecordRequest(string providerName)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        lock (_lifecycleSync)
         {
-            state.RecordRequest();
+            ThrowIfDisposed();
+            if (_providerStates.TryGetValue(providerName, out var state))
+                state.RecordRequest();
         }
     }
 
@@ -62,12 +79,20 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter = null)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        RateLimitStatus? status = null;
+        lock (_lifecycleSync)
         {
-            state.RecordRateLimitHit(retryAfter);
-            _log.Warning("Provider {Provider} hit rate limit. Retry after: {RetryAfter}",
-                providerName, state.RateLimitResetsAt - DateTimeOffset.UtcNow);
+            ThrowIfDisposed();
+            if (_providerStates.TryGetValue(providerName, out var state))
+            {
+                state.RecordRateLimitHit(retryAfter);
+                status = state.GetStatus();
+            }
         }
+
+        if (status is not null)
+            _log.Warning("Provider {Provider} hit rate limit. Retry after: {RetryAfter}",
+                providerName, status.TimeUntilReset);
     }
 
     /// <summary>
@@ -75,11 +100,11 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public bool IsRateLimited(string providerName)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        lock (_lifecycleSync)
         {
-            return state.IsRateLimited;
+            ThrowIfDisposed();
+            return _providerStates.TryGetValue(providerName, out var state) && state.GetStatus().IsRateLimited;
         }
-        return false;
     }
 
     /// <summary>
@@ -87,11 +112,14 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public bool IsApproachingLimit(string providerName, double threshold = 0.8)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        ArgumentOutOfRangeException.ThrowIfLessThan(threshold, 0, nameof(threshold));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, 1, nameof(threshold));
+        lock (_lifecycleSync)
         {
-            return state.GetUsageRatio() >= threshold;
+            ThrowIfDisposed();
+            return _providerStates.TryGetValue(providerName, out var state)
+                && state.GetStatus().UsageRatio >= threshold;
         }
-        return false;
     }
 
     /// <summary>
@@ -99,11 +127,13 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public TimeSpan? GetTimeUntilReset(string providerName)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        lock (_lifecycleSync)
         {
-            return state.GetTimeUntilReset();
+            ThrowIfDisposed();
+            return _providerStates.TryGetValue(providerName, out var state)
+                ? state.GetStatus().TimeUntilReset
+                : null;
         }
-        return null;
     }
 
     /// <summary>
@@ -111,29 +141,33 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public string? GetBestAvailableProvider(IEnumerable<string> providerNames)
     {
-        string? bestProvider = null;
-        double lowestUsage = double.MaxValue;
+        ArgumentNullException.ThrowIfNull(providerNames);
+        var names = providerNames.ToArray();
 
-        foreach (var name in providerNames)
+        lock (_lifecycleSync)
         {
-            if (!_providerStates.TryGetValue(name, out var state))
+            ThrowIfDisposed();
+            string? bestProvider = null;
+            double lowestUsage = double.MaxValue;
+
+            foreach (var name in names)
             {
-                // Unknown provider - assume it's available
-                return name;
+                if (!_providerStates.TryGetValue(name, out var state))
+                    return name;
+
+                var status = state.GetStatus();
+                if (status.IsRateLimited)
+                    continue;
+
+                if (status.UsageRatio < lowestUsage)
+                {
+                    lowestUsage = status.UsageRatio;
+                    bestProvider = name;
+                }
             }
 
-            if (state.IsRateLimited)
-                continue;
-
-            var usage = state.GetUsageRatio();
-            if (usage < lowestUsage)
-            {
-                lowestUsage = usage;
-                bestProvider = name;
-            }
+            return bestProvider;
         }
-
-        return bestProvider;
     }
 
     /// <summary>
@@ -141,12 +175,14 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public IReadOnlyDictionary<string, RateLimitStatus> GetAllStatus()
     {
-        var result = new Dictionary<string, RateLimitStatus>();
-        foreach (var kvp in _providerStates)
+        lock (_lifecycleSync)
         {
-            result[kvp.Key] = kvp.Value.GetStatus();
+            ThrowIfDisposed();
+            return _providerStates.ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value.GetStatus(),
+                StringComparer.OrdinalIgnoreCase);
         }
-        return result;
     }
 
     /// <summary>
@@ -154,11 +190,11 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public RateLimitStatus? GetStatus(string providerName)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        lock (_lifecycleSync)
         {
-            return state.GetStatus();
+            ThrowIfDisposed();
+            return _providerStates.TryGetValue(providerName, out var state) ? state.GetStatus() : null;
         }
-        return null;
     }
 
     /// <summary>
@@ -166,25 +202,29 @@ public sealed class ProviderRateLimitTracker : IDisposable
     /// </summary>
     public void ClearRateLimitState(string providerName)
     {
-        if (_providerStates.TryGetValue(providerName, out var state))
+        lock (_lifecycleSync)
         {
-            state.ClearRateLimitHit();
+            ThrowIfDisposed();
+            if (_providerStates.TryGetValue(providerName, out var state))
+                state.ClearRateLimitHit();
         }
     }
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-
-        // Dispose all tracked provider states (which now own RateLimiter instances)
-        foreach (var state in _providerStates.Values)
+        lock (_lifecycleSync)
         {
-            state.Dispose();
+            if (_disposed)
+                return;
+            _disposed = true;
+
+            foreach (var state in _providerStates.Values)
+                state.Dispose();
+            _providerStates.Clear();
         }
-        _providerStates.Clear();
     }
+
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
 }
 
 /// <summary>
@@ -197,109 +237,116 @@ internal sealed class ProviderRateLimitState : IDisposable
     private readonly int _maxRequestsPerWindow;
     private readonly TimeSpan _window;
     private readonly RateLimiter _rateLimiter;
-    private readonly object _lock = new();
+    private readonly object _sync = new();
+    private readonly TimeProvider _timeProvider;
 
     private DateTimeOffset _rateLimitHitAt = DateTimeOffset.MinValue;
     private TimeSpan _rateLimitDuration = TimeSpan.Zero;
     private bool _isExplicitlyRateLimited;
     private bool _disposed;
 
-    public ProviderRateLimitState(string providerName, int maxRequestsPerWindow, TimeSpan window, TimeSpan minDelay)
+    public ProviderRateLimitState(
+        string providerName,
+        int maxRequestsPerWindow,
+        TimeSpan window,
+        TimeSpan minDelay,
+        TimeProvider timeProvider)
     {
         _providerName = providerName;
         _maxRequestsPerWindow = maxRequestsPerWindow;
         _window = window;
+        _timeProvider = timeProvider;
         // Delegate sliding window tracking to the shared RateLimiter
-        _rateLimiter = new RateLimiter(maxRequestsPerWindow, window, minDelay);
-    }
-
-    public DateTimeOffset RateLimitResetsAt => _rateLimitHitAt + _rateLimitDuration;
-
-    public bool IsRateLimited
-    {
-        get
-        {
-            // Check explicit rate limit from 429 response
-            if (_isExplicitlyRateLimited)
-            {
-                if (DateTimeOffset.UtcNow >= RateLimitResetsAt)
-                {
-                    _isExplicitlyRateLimited = false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-            // Check if we've hit our request limit using the shared RateLimiter
-            var (requestsInWindow, maxRequests, _) = _rateLimiter.GetStatus();
-            return requestsInWindow >= maxRequests;
-        }
+        _rateLimiter = new RateLimiter(maxRequestsPerWindow, window, minDelay, timeProvider: timeProvider);
     }
 
     public void RecordRequest()
     {
-        _rateLimiter.RecordRequest();
+        lock (_sync)
+        {
+            ThrowIfDisposed();
+            _rateLimiter.RecordRequest();
+        }
     }
 
     public void RecordRateLimitHit(TimeSpan? retryAfter = null)
     {
-        lock (_lock)
+        lock (_sync)
         {
-            _rateLimitHitAt = DateTimeOffset.UtcNow;
-            _rateLimitDuration = retryAfter ?? _window;
+            ThrowIfDisposed();
+            _rateLimitHitAt = _timeProvider.GetUtcNow();
+            _rateLimitDuration = retryAfter is { } value && value > TimeSpan.Zero ? value : _window;
             _isExplicitlyRateLimited = true;
         }
     }
 
     public void ClearRateLimitHit()
     {
-        lock (_lock)
+        lock (_sync)
         {
+            ThrowIfDisposed();
             _isExplicitlyRateLimited = false;
+            _rateLimitDuration = TimeSpan.Zero;
+            _rateLimitHitAt = DateTimeOffset.MinValue;
         }
-    }
-
-    public double GetUsageRatio()
-    {
-        var (requestsInWindow, maxRequests, _) = _rateLimiter.GetStatus();
-        return (double)requestsInWindow / maxRequests;
-    }
-
-    public TimeSpan? GetTimeUntilReset()
-    {
-        if (_isExplicitlyRateLimited)
-        {
-            var remaining = RateLimitResetsAt - DateTimeOffset.UtcNow;
-            return remaining > TimeSpan.Zero ? remaining : null;
-        }
-
-        var (_, _, windowRemaining) = _rateLimiter.GetStatus();
-        return windowRemaining > TimeSpan.Zero ? windowRemaining : null;
     }
 
     public RateLimitStatus GetStatus()
     {
-        var (requestsInWindow, _, windowRemaining) = _rateLimiter.GetStatus();
-        return new RateLimitStatus(
-            _providerName,
-            requestsInWindow,
-            _maxRequestsPerWindow,
-            _window,
-            IsRateLimited,
-            GetTimeUntilReset(),
-            GetUsageRatio()
-        );
+        lock (_sync)
+        {
+            ThrowIfDisposed();
+            var observedAt = _timeProvider.GetUtcNow();
+            var (requestsInWindow, maxRequests, windowRemaining) = _rateLimiter.GetStatus();
+            var explicitResetAt = _rateLimitHitAt + _rateLimitDuration;
+            if (_isExplicitlyRateLimited && observedAt >= explicitResetAt)
+            {
+                _isExplicitlyRateLimited = false;
+                _rateLimitDuration = TimeSpan.Zero;
+                _rateLimitHitAt = DateTimeOffset.MinValue;
+            }
+
+            var windowLimited = requestsInWindow >= maxRequests;
+            var isRateLimited = _isExplicitlyRateLimited || windowLimited;
+            DateTimeOffset? resetAt = _isExplicitlyRateLimited
+                ? explicitResetAt
+                : requestsInWindow > 0 && windowRemaining > TimeSpan.Zero
+                    ? observedAt + windowRemaining
+                    : null;
+            TimeSpan? timeUntilReset = resetAt is { } value && value > observedAt
+                ? value - observedAt
+                : null;
+            var usageRatio = maxRequests > 0 ? (double)requestsInWindow / maxRequests : 0;
+            var reason = _isExplicitlyRateLimited
+                ? "provider-response"
+                : windowLimited ? "configured-window" : null;
+
+            return new RateLimitStatus(
+                _providerName,
+                requestsInWindow,
+                _maxRequestsPerWindow,
+                _window,
+                isRateLimited,
+                timeUntilReset,
+                usageRatio,
+                observedAt,
+                resetAt,
+                reason);
+        }
     }
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-        _rateLimiter.Dispose();
+        lock (_sync)
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+            _rateLimiter.Dispose();
+        }
     }
+
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
 }
 
 /// <summary>
@@ -312,7 +359,10 @@ public sealed record RateLimitStatus(
     TimeSpan Window,
     bool IsRateLimited,
     TimeSpan? TimeUntilReset,
-    double UsageRatio
+    double UsageRatio,
+    DateTimeOffset ObservedAt = default,
+    DateTimeOffset? ResetAt = null,
+    string? Reason = null
 )
 {
     public int RemainingRequests => Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);

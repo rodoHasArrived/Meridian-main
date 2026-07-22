@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Generate browser workspace metadata from the shared C# workspace catalog."""
+"""Generate browser workspace metadata from the shared C# workspace catalog.
+
+Run with --check to verify the committed mirror matches the contracts source
+without rewriting it (CI drift gate); exits 1 when regeneration is needed.
+"""
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 
@@ -70,10 +76,34 @@ def render(constants: dict[str, str]) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="verify the generated file is current instead of rewriting it",
+    )
+    args = parser.parse_args()
+
     source = SOURCE_FILE.read_text(encoding="utf-8")
-    OUTPUT_FILE.write_text(render(extract_constants(source)), encoding="utf-8")
+    rendered = render(extract_constants(source))
+
+    if args.check:
+        current = OUTPUT_FILE.read_text(encoding="utf-8") if OUTPUT_FILE.exists() else ""
+        if current != rendered:
+            print(
+                f"DRIFT: {OUTPUT_FILE.relative_to(REPO_ROOT)} is stale relative to "
+                f"{SOURCE_FILE.relative_to(REPO_ROOT)}.\n"
+                "Run: python3 build/scripts/generate-workspace-catalog-ts.py",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"OK: {OUTPUT_FILE.relative_to(REPO_ROOT)} is current.")
+        return 0
+
+    OUTPUT_FILE.write_text(rendered, encoding="utf-8")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

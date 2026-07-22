@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   buildUiImplementationDot,
@@ -10,6 +13,7 @@ import {
   parseMainPageXaml,
   parseNavigationService,
   parsePagesFile,
+  readWpfTestSources,
   parseShellPageDescriptors,
   parseTransientPages,
 } from './ui-diagram-generator.mjs';
@@ -139,5 +143,22 @@ Page<Meridian.Wpf.Views.AccountingWorkspaceShellPage>("AccountingShell", "Accoun
       order: 20,
       visibilityTier: 'Primary',
     },
+  ]);
+});
+
+test('WPF tracker test source reader ignores generated build outputs', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'meridian-wpf-tracker-'));
+  const testRoot = path.join(repoRoot, 'tests', 'Meridian.Wpf.Tests');
+  await fs.mkdir(path.join(testRoot, 'Views'), { recursive: true });
+  await fs.mkdir(path.join(testRoot, 'obj', 'Release', 'net10.0'), { recursive: true });
+  await fs.mkdir(path.join(testRoot, 'bin', 'Release', 'net10.0'), { recursive: true });
+  await fs.writeFile(path.join(testRoot, 'Views', 'MainPageTests.cs'), 'public sealed class MainPageTests {}\n');
+  await fs.writeFile(path.join(testRoot, 'obj', 'Release', 'net10.0', 'Generated.cs'), 'public sealed class GeneratedObj {}\n');
+  await fs.writeFile(path.join(testRoot, 'bin', 'Release', 'net10.0', 'Generated.cs'), 'public sealed class GeneratedBin {}\n');
+
+  const sources = await readWpfTestSources(repoRoot);
+
+  assert.deepEqual(sources.map((source) => source.path), [
+    'tests/Meridian.Wpf.Tests/Views/MainPageTests.cs',
   ]);
 });

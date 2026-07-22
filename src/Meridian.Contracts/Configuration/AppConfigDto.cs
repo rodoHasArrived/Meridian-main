@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Catalog;
 
 namespace Meridian.Contracts.Configuration;
 
@@ -49,6 +51,15 @@ public sealed class AppConfigDto
 
     [JsonPropertyName("derivatives")]
     public DerivativesConfigDto? Derivatives { get; set; }
+
+    /// <summary>
+    /// Preserves top-level configuration sections this DTO does not model (host-level
+    /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and
+    /// <c>Connectivity</c>) across load/save round-trips, so desktop settings saves
+    /// do not silently drop operator-tuned host configuration.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalSections { get; set; }
 }
 
 /// <summary>
@@ -186,11 +197,39 @@ public sealed class BackfillConfigDto
     [JsonPropertyName("enableSymbolResolution")]
     public bool EnableSymbolResolution { get; set; } = true;
 
+    [JsonPropertyName("symbolResolutionMode")]
+    public SymbolResolutionMode SymbolResolutionMode { get; set; } = SymbolResolutionMode.Compare;
+
+    [JsonPropertyName("autoRemediation")]
+    public AutoGapRemediationConfigDto? AutoRemediation { get; set; }
+
     /// <summary>
     /// Optional per-provider backfill settings used by desktop configuration workflows.
     /// </summary>
     [JsonPropertyName("providers")]
     public BackfillProvidersConfigDto? Providers { get; set; }
+}
+
+/// <summary>Operator-facing automatic gap-remediation configuration.</summary>
+public sealed class AutoGapRemediationConfigDto
+{
+    [JsonPropertyName("minimumGapDurationSeconds")]
+    public int MinimumGapDurationSeconds { get; set; } = 120;
+
+    [JsonPropertyName("minimumGapSize")]
+    public int MinimumGapSize { get; set; } = 1;
+
+    [JsonPropertyName("symbolCooldownSeconds")]
+    public int SymbolCooldownSeconds { get; set; } = 300;
+
+    [JsonPropertyName("providerCooldownSeconds")]
+    public int ProviderCooldownSeconds { get; set; } = 60;
+
+    [JsonPropertyName("maxConcurrentRemediations")]
+    public int MaxConcurrentRemediations { get; set; } = 2;
+
+    [JsonPropertyName("defaultProvider")]
+    public string DefaultProvider { get; set; } = "stooq";
 }
 
 /// <summary>
@@ -400,6 +439,25 @@ public sealed class DataSourcesConfigDto
 
     [JsonPropertyName("failoverTimeoutSeconds")]
     public int FailoverTimeoutSeconds { get; set; } = 30;
+
+    [JsonPropertyName("symbolMappings")]
+    public SymbolMappingsConfigDto? SymbolMappings { get; set; }
+}
+
+/// <summary>
+/// Shared symbol-resolution rollout configuration. Legacy mappings are migration inputs and
+/// remain readable while the registry operates in compare mode.
+/// </summary>
+public sealed class SymbolMappingsConfigDto
+{
+    [JsonPropertyName("persistencePath")]
+    public string? PersistencePath { get; set; }
+
+    [JsonPropertyName("resolutionMode")]
+    public SymbolResolutionMode ResolutionMode { get; set; } = SymbolResolutionMode.Compare;
+
+    [JsonPropertyName("reportMismatches")]
+    public bool ReportMismatches { get; set; } = true;
 }
 
 /// <summary>
@@ -504,7 +562,7 @@ public sealed class IBClientPortalOptionsDto
     public bool Enabled { get; set; }
 
     [JsonPropertyName("baseUrl")]
-    public string BaseUrl { get; set; } = "https://localhost:5000";
+    public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;
 
     [JsonPropertyName("allowSelfSignedCertificates")]
     public bool AllowSelfSignedCertificates { get; set; } = true;

@@ -1,3 +1,4 @@
+using System;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -419,9 +420,13 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Keep defaults
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading available symbols failed; keeping defaults.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

@@ -16,15 +16,24 @@ namespace Meridian.Ui.Services;
 public sealed class BackfillProviderConfigService : IBackfillProviderConfigAuditReader
 {
     private static readonly Lazy<BackfillProviderConfigService> _instance = new(() => new BackfillProviderConfigService());
-    private readonly ApiClientService _apiClient;
+    private readonly Func<CancellationToken, Task<BackfillProviderStatusDto[]?>> _fetchProviderStatusesAsync;
     private readonly List<ProviderConfigAuditEntryDto> _auditLog = new();
     private readonly object _auditLock = new();
 
     public static BackfillProviderConfigService Instance => _instance.Value;
 
     private BackfillProviderConfigService()
+        : this(async ct => (await ApiClientService.Instance.GetWithResponseAsync<BackfillProviderStatusDto[]>(
+            "/api/backfill/providers/statuses",
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill provider statuses"))
     {
-        _apiClient = ApiClientService.Instance;
+    }
+
+    internal BackfillProviderConfigService(
+        Func<CancellationToken, Task<BackfillProviderStatusDto[]?>> fetchProviderStatusesAsync)
+    {
+        _fetchProviderStatusesAsync = fetchProviderStatusesAsync
+            ?? throw new ArgumentNullException(nameof(fetchProviderStatusesAsync));
     }
 
     /// <summary>
@@ -421,8 +430,7 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
 
         try
         {
-            var statuses = await _apiClient.GetAsync<BackfillProviderStatusDto[]>(
-                "/api/backfill/providers/statuses", ct);
+            var statuses = await _fetchProviderStatusesAsync(ct);
 
             if (statuses != null)
             {

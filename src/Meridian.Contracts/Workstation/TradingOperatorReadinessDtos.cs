@@ -13,7 +13,8 @@ public enum OperatorWorkItemKindDto
     ReportPackApproval = 5,
     ProviderTrustGate = 6,
     ExecutionControl = 7,
-    LedgerPeriodClose = 8
+    LedgerPeriodClose = 8,
+    BrokerExecutionReconciliation = 9
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperatorWorkItemToneDto>))]
@@ -114,6 +115,39 @@ public sealed record TradingAcceptanceGateDto(
     string? Reason = null,
     DateTimeOffset? LastEvidenceAt = null,
     string? RequiredNextAction = null);
+
+public sealed record TradingExecutionReconciliationBreakDto(
+    string Kind,
+    string Description,
+    string? LocalOrderId,
+    string? BrokerOrderId,
+    string? ClientOrderId,
+    string? Symbol,
+    string? LocalValue,
+    string? BrokerValue);
+
+public sealed record TradingExecutionReconciliationReadinessDto(
+    TradingAcceptanceGateStatusDto Status,
+    string GatewayId,
+    string BrokerDisplayName,
+    bool BrokerHealthy,
+    bool BrokerConnected,
+    int MatchedOpenOrderCount,
+    int BreakCount,
+    DateTimeOffset ReconciledAt,
+    string Detail,
+    IReadOnlyList<TradingExecutionReconciliationBreakDto> Breaks);
+
+public sealed record TradingLiveOperationRequirementDto(
+    string RequirementId,
+    string Label,
+    TradingAcceptanceGateStatusDto Status,
+    string Detail,
+    string ChecklistItem,
+    string? EvidenceReference,
+    bool ChecklistSatisfied,
+    bool EvidenceSatisfied,
+    string? BlockerCode = null);
 
 public sealed record EvidenceCompletenessSummaryDto(
     TradingAcceptanceGateStatusDto Status,
@@ -326,6 +360,12 @@ public sealed record TradingOperatorReadinessDto(
 
     public bool ReadyForPaperOperation { get; init; }
 
+    public bool ReadyForLiveOperation { get; init; }
+
+    public IReadOnlyList<string> LiveOperationBlockers { get; init; } = [];
+
+    public IReadOnlyList<TradingLiveOperationRequirementDto> LiveOperationRequirements { get; init; } = [];
+
     public IReadOnlyList<TradingAcceptanceGateDto> AcceptanceGates { get; init; } = [];
 
     public TradingReportPackReadinessDto? ReportPack { get; init; }
@@ -339,6 +379,8 @@ public sealed record TradingOperatorReadinessDto(
     public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }
 
     public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }
+
+    public TradingExecutionReconciliationReadinessDto? ExecutionReconciliation { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(

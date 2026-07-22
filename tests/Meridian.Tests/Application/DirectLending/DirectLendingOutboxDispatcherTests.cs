@@ -175,11 +175,20 @@ public sealed class DirectLendingOutboxDispatcherTests
         queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
         queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([existingJournal]);
         queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var message = BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate);
+        operationsStore
+            .GetPendingOutboxMessagesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([message]);
+        operationsStore
+            .MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(_ => cts.Cancel());
 
-        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+        await InvokeExecuteAsync(dispatcher, cts.Token);
 
         await operationsStore.DidNotReceiveWithAnyArgs().SaveJournalEntryAsync(default!, default);
-        await operationsStore.Received(1).MarkOutboxProcessedAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await operationsStore.Received(1).MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>());
         await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxFailedAsync(default, default!, default);
     }
 
@@ -268,6 +277,53 @@ public sealed class DirectLendingOutboxDispatcherTests
         savedEntry.Should().NotBeNull();
         savedEntry!.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == 25.5m);
         savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == 25.5m);
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_EmitsPikCapitalizationLinesForPikAccrualPayload()
+    {
+        // PIK accruals carry interestAmount = 0 and the capitalized amount in
+        // pikInterestAmount; without dedicated handling the dispatcher produces no
+        // journal lines and silently marks the message processed.
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        var commandService = Substitute.For<IDirectLendingCommandService>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        var loanId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        JournalEntryDto? savedEntry = null;
+        var dispatcher = new DirectLendingOutboxDispatcher(
+            operationsStore,
+            commandService,
+            queryService,
+            new DirectLendingOptions(),
+            NullLogger<DirectLendingOutboxDispatcher>.Instance);
+        var sourceEvent = new LoanEventLineageDto(
+            sourceEventId,
+            AggregateVersion: 6,
+            EventType: "loan.daily-accrual-posted",
+            EventSchemaVersion: 1,
+            EffectiveDate: new DateOnly(2026, 5, 17),
+            RecordedAt: DateTimeOffset.Parse("2026-05-17T12:00:00Z"),
+            PayloadJson: """{"interestAmount":0,"commitmentFeeAmount":0,"pikInterestAmount":55.56}""",
+            CausationId: null,
+            CorrelationId: null,
+            CommandId: null,
+            SourceSystem: "test",
+            ReplayFlag: false);
+
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
+        queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+        operationsStore
+            .SaveJournalEntryAsync(Arg.Do<JournalEntryDto>(entry => savedEntry = entry), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<JournalEntryDto>());
+
+        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+
+        savedEntry.Should().NotBeNull();
+        savedEntry!.Lines.Should().HaveCount(2, "PIK capitalization is the only activity in this accrual");
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "LoanPrincipal" && line.DebitAmount == 55.56m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "InterestIncome" && line.CreditAmount == 55.56m);
     }
 
     [Fact]
@@ -381,6 +437,14 @@ public sealed class DirectLendingOutboxDispatcherTests
         var processAsync = typeof(DirectLendingOutboxDispatcher).GetMethod("ProcessAsync", BindingFlags.Instance | BindingFlags.NonPublic);
         processAsync.Should().NotBeNull();
         var task = (Task)processAsync!.Invoke(dispatcher, [message, CancellationToken.None])!;
+        await task;
+    }
+
+    private static async Task InvokeExecuteAsync(DirectLendingOutboxDispatcher dispatcher, CancellationToken cancellationToken)
+    {
+        var executeAsync = typeof(DirectLendingOutboxDispatcher).GetMethod("ExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        executeAsync.Should().NotBeNull();
+        var task = (Task)executeAsync!.Invoke(dispatcher, [cancellationToken])!;
         await task;
     }
 

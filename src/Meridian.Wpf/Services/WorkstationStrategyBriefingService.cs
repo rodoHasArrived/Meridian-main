@@ -20,8 +20,8 @@ public sealed class WorkstationStrategyBriefingApiClient : IWorkstationStrategyB
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    public Task<StrategyBriefingDto?> GetBriefingAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<StrategyBriefingDto>(UiApiRoutes.WorkstationStrategyBriefing, ct);
+    public async Task<StrategyBriefingDto?> GetBriefingAsync(CancellationToken ct = default)
+        => (await _apiClient.GetWithResponseAsync<StrategyBriefingDto>(UiApiRoutes.WorkstationStrategyBriefing, ct).ConfigureAwait(false)).DataOrLoggedNull("Get strategy briefing");
 }
 
 public interface IStrategyBriefingWorkspaceService

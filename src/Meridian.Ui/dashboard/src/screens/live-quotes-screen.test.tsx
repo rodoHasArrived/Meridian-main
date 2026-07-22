@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "@/lib/api-errors";
@@ -433,7 +434,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "",
         phase: "error",
         message: "Insufficient buying power",
-        details: ["Endpoint returned 409 for /api/orders."],
+        details: ["Meridian service returned 409. Open diagnostics for technical details."],
         orderId: null,
         acknowledged: false
       },
@@ -620,7 +621,7 @@ describe("useQuickTradeTicket", () => {
     expect(result.current.ticket.phase).toBe("error");
     expect(result.current.ticket.message).toBe("Quantity exceeds configured order limit.");
     expect(result.current.ticket.details).toEqual([
-      "Endpoint returned 422 for /api/orders.",
+      "Meridian service returned 422. Open diagnostics for technical details.",
       "Order validation failed",
       "quantity: Reduce the share count before resubmitting."
     ]);
@@ -1143,6 +1144,15 @@ describe("LiveQuotesScreen quick trade", () => {
     vi.restoreAllMocks();
   });
 
+  it("shows freshness chips for the market panels and quote matrix after data loads", async () => {
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitForAsyncEffects();
+
+    expect(screen.getByLabelText(/Market panels updated/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Quote matrix updated/)).toBeInTheDocument();
+  });
+
   it("seeds a buy ticket at the ask price when ask is clicked and submits", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder").mockResolvedValue({
       success: true,
@@ -1241,7 +1251,7 @@ describe("LiveQuotesScreen quick trade", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Order router is offline.");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/orders.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Execution service unavailable")).toBeInTheDocument();
     expect(within(alert).getByText("routing: Reconnect the execution provider before retrying this order.")).toBeInTheDocument();
   });
@@ -1300,7 +1310,20 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
     expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
+    expect(screen.getByText("Start a quote list")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add starter symbols" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Import symbols from watchlist" })).toHaveAttribute("href", "/data/watchlist");
+    expect(screen.getByRole("button", { name: "Search symbol" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Selected symbol detail" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Open replay workflow" })).not.toBeInTheDocument();
     expect(api.getLiveQuote).not.toHaveBeenCalled();
+  });
+
+  it("has no basic accessibility violations in the no-symbol state", async () => {
+    const { container } = renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it("renders loading states while initial market data is pending", async () => {

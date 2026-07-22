@@ -5,7 +5,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 > **Document status:** Living architecture reference — reflects the implemented storage layer.
 >
-> **Last updated:** 2026-05-29
+> **Last updated:** 2026-06-30
 >
 > **Audience:** Platform engineers, storage/infrastructure owners, and data operations.
 
@@ -100,12 +100,40 @@ The storage layer currently delivers:
 | Storage search & discovery | ✅ Implemented | `StorageSearchService`, `StorageCatalogService` |
 | Rich metadata & lineage | ✅ Implemented | `MetadataTagService`, `DataLineageService` |
 | Maintenance scheduling | ✅ Implemented | `ScheduledArchiveMaintenanceService` |
-| Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons |
+| Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons, `CrossSourceBackfillReconciliationService` |
 | Natural language query parser | ✅ Implemented | `StorageSearchService` |
 | Capacity forecasting | ✅ Implemented | `StorageEndpoints` |
-| Adaptive partitioning | ⏳ Planned | — |
+| Adaptive partitioning | 🔄 Partial | `BackfillPartitionPlanner`, `BackfillCostEstimator`, `HistoricalBackfillService`, `AdaptivePartitionPlacementPlanner` |
 
 `SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
+
+### Backfill Acceptance Boundary
+
+Historical backfill output is accepted into storage by evidence, not by request completion order.
+Current multi-symbol ordering and gap-remediation operator semantics live in
+[Provider Backfill Operations](../operators/provider-backfill-operations.md), with the architecture
+summary in [Provider Management Architecture](provider-management.md).
+
+For storage and archival promotion, a backfill or remediation run is acceptable only when the run
+retains:
+
+- execution history for the provider, symbols, date range, and granularity,
+- per-symbol validation signals from `HistoricalBackfillService`,
+- matching-granularity checkpoint evidence when resume semantics are used, and
+- a follow-up gap or quality check showing the affected interval is acceptable for the downstream
+  workflow.
+
+This is an evidence boundary, not a guarantee that a full cross-provider SLA engine is implemented.
+Auto-remediation execution history now retains SLA tier, due-time, owner-assignment,
+downstream-workflow, and reason-code metadata for system-triggered gap repair attempts.
+Cross-source reconciliation now includes bounded daily backfill comparison through
+`CrossSourceBackfillReconciliationService`, but remains partial until it is wired into provider
+governance timer ownership, escalation, and archival promotion gates. Adaptive backfill partition
+planning is now covered by preview-time cost estimation and bounded runtime execution.
+Storage-engine adaptive placement now has deterministic recommendation support through
+`AdaptivePartitionPlacementPlanner`, and backfill orchestration applies those recommendations to
+request-scoped storage options. Automatic archival tier promotion and governance timers remain
+separate implementation lanes.
 
 ### Storage Profiles (Presets)
 Storage profiles are optional presets that map to existing storage options without removing advanced configuration.
@@ -281,23 +309,34 @@ enum PartitionDimension
 }
 ```
 
-### 2. Adaptive Partitioning by Volume (Roadmap)
+### 2. Adaptive Partitioning by Volume (Implemented Recommendation)
 
-**Auto-adjust partition granularity based on data volume:**
+`AdaptivePartitionPlacementPlanner` provides the storage-engine recommendation boundary for adaptive
+placement and maps recommendations back to concrete path-driving `StorageOptions`. Backfill
+orchestration applies this boundary for request-scoped writes; other storage callers remain
+caller-configured until they explicitly opt in.
 
 ```csharp
-record AdaptivePartitionConfig(
-    long EventsPerHourThreshold = 100_000,  // Switch to hourly
-    long EventsPerDayThreshold = 50_000,    // Stay at daily
-    long EventsPerMonthThreshold = 10_000   // Switch to monthly
+record AdaptivePartitionPlacementRequest(
+    long TotalEvents,
+    TimeSpan Coverage,
+    int SymbolCount,
+    int SourceCount,
+    int EventTypeCount = 1,
+    bool LatencySensitive = false,
+    bool ArchivalPromotion = false
 );
 ```
 
 **Implementation logic:**
 ```
-IF events_per_hour > 100,000 THEN use Hourly partitions
-ELSE IF events_per_day > 50,000 THEN use Daily partitions
-ELSE IF events_per_month < 10,000 THEN use Monthly partitions
+IF latency_sensitive OR events_per_hour >= 100,000
+  THEN recommend LowLatency profile, Symbol + EventType (+ Source) and Hourly partitions
+ELSE IF archival_promotion OR long-window events_per_day <= 10,000
+  THEN recommend Archival profile, Date + Source/Symbol and Monthly partitions
+ELSE IF source_count > 1
+  THEN recommend Research profile, Date + Source + Symbol and Daily partitions
+ELSE recommend Research profile, Date + Symbol and Daily partitions
 ```
 
 ### 3. Trading Calendar Awareness (Roadmap)
@@ -908,6 +947,11 @@ record MigrationOptions(
     Action<MigrationProgress>? OnProgress
 );
 ```
+
+When `VerifyChecksum` is enabled, migration verifies the logical payload after copy, including
+decompressing gzip warm-tier targets before comparison. Source evidence is deleted only after that
+verification succeeds. `ParallelFiles` must be at least `1`; invalid non-positive values fail
+closed before file discovery, copy, or source deletion.
 
 ### 4. Unified Query Layer
 
@@ -3068,9 +3112,12 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 
 - [x] Implement self-healing repair capabilities
 - [x] Add orphan detection and cleanup
-- [ ] Build cross-source reconciliation
+- [x] Build bounded daily backfill cross-source reconciliation
 - [x] Create capacity forecasting
-- [ ] Add adaptive partitioning
+- [x] Add adaptive backfill partition planning
+- [x] Add storage-engine adaptive partition placement recommendations
+- [x] Wire adaptive placement recommendations into backfill storage-engine decisions
+- [ ] Wire adaptive placement recommendations into automatic archival tier-promotion decisions
 - [ ] Implement emergency override system
 
 **Exit criteria:**
@@ -3227,7 +3274,7 @@ The modular design allows incremental adoption—start with basic naming convent
 
 ---
 
-**Version:** 2.1.1
-**Last Updated:** 2026-05-29
+**Version:** 2.1.2
+**Last Updated:** 2026-06-30
 **Focus:** Data Collection, Archival & External Analysis Export
-**See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../adr/002-tiered-storage-architecture.md)
+**See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../../archive/docs/adr/002-tiered-storage-architecture.md)

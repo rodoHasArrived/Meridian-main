@@ -29,11 +29,12 @@ public sealed class WorkstationEndpointContractCompatibilityTests
             typeof(OperatorWorkItemDto),
             typeof(TradingReplayReadinessDto),
             typeof(TradingReportPackReadinessDto),
+            typeof(TradingLiveOperationRequirementDto),
             typeof(PaperSessionReplayVerificationDto)
         ]);
 
         var hash = ComputeSha256(descriptor);
-        hash.Should().Be("82C1EB677F409BF8714012FD3372559A4EE8421CE2E865F6BBAAD831FDB82B97");
+        hash.Should().Be("73C3BD6E2530E37B71DA84C833428453D1F6E7230B0CD19E10D8E574FA3C9573");
     }
 
     [Fact]
@@ -57,7 +58,8 @@ public sealed class WorkstationEndpointContractCompatibilityTests
             ["ReportPackApproval"] = 5,
             ["ProviderTrustGate"] = 6,
             ["ExecutionControl"] = 7,
-            ["LedgerPeriodClose"] = 8
+            ["LedgerPeriodClose"] = 8,
+            ["BrokerExecutionReconciliation"] = 9
         });
 
         AssertEnumHasStableMembers<OperatorWorkItemToneDto>(new Dictionary<string, int>
@@ -76,8 +78,9 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         readinessShape.Should().Contain(new[]
         {
             "asOf", "activeSession", "sessions", "replay", "controls", "promotion", "trustGate", "brokerageSync",
-            "workItems", "warnings", "overallStatus", "readyForPaperOperation", "acceptanceGates", "reportPack",
-            "evidenceCompleteness", "snapshotMaterializedAt", "snapshotVersion", "providerPromotionChecklist"
+            "workItems", "warnings", "overallStatus", "readyForPaperOperation", "readyForLiveOperation",
+            "liveOperationBlockers", "liveOperationRequirements", "acceptanceGates", "reportPack", "evidenceCompleteness", "snapshotMaterializedAt", "snapshotVersion", "providerPromotionChecklist",
+            "executionReconciliation"
         });
 
         var inboxShape = ExtractTopLevelProperties(CreateInboxFixture());
@@ -233,16 +236,19 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         var sb = new StringBuilder();
         foreach (var type in types.OrderBy(static t => t.FullName, StringComparer.Ordinal))
         {
-            sb.AppendLine(type.FullName);
+            AppendSnapshotLine(sb, type.FullName!);
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                          .OrderBy(static p => p.Name, StringComparer.Ordinal))
             {
-                sb.Append(property.Name).Append(':').AppendLine(property.PropertyType.FullName ?? property.PropertyType.Name);
+                AppendSnapshotLine(sb, $"{property.Name}:{property.PropertyType.FullName ?? property.PropertyType.Name}");
             }
         }
 
         return sb.ToString();
     }
+
+    private static void AppendSnapshotLine(StringBuilder sb, string value)
+        => sb.Append(value).Append('\n');
 
     private static string ComputeSha256(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 

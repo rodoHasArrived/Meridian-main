@@ -221,6 +221,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// Uses provider-specific trade IDs when available, otherwise hashes
     /// the semantic identity fields per event type.
     /// </summary>
+    /// <remarks>
+    /// SCOPE: content-based identity is implemented only for Trade, BBO quote, and LOB
+    /// snapshot payloads — the high-volume types where provider replays and overlapping
+    /// backfills occur. Every other payload type falls back to sequence-number identity,
+    /// which dedups exact replays within one source stream but NOT re-deliveries that
+    /// arrive under a different sequence. When adding a new high-volume payload type,
+    /// give it a content key here rather than relying on the fallback.
+    /// </remarks>
     private string ComputeEventKey(MarketEvent evt)
     {
         // Key structure: {Source}:{EffectiveSymbol}:{Type}:{identity}
@@ -250,7 +258,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 resolvedPrefix + $"seq:{snap.SequenceNumber}",
 
             _ =>
-                // Fallback: use sequence number
+                // Fallback: sequence-number identity (see the scope remarks above) — only
+                // dedups replays that preserve the original sequence numbering.
                 resolvedPrefix + $"seq:{evt.Sequence}"
         };
     }

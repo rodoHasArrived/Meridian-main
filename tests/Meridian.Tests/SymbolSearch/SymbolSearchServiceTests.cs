@@ -10,7 +10,7 @@ namespace Meridian.Tests.SymbolSearch;
 
 /// <summary>
 /// Unit tests for the SymbolSearchService class.
-/// Tests symbol search, details lookup, and FIGI integration.
+/// Tests symbol search, details lookup, FIGI integration, and provider payload drift handling.
 /// </summary>
 public class SymbolSearchServiceTests : IDisposable
 {
@@ -147,6 +147,132 @@ public class SymbolSearchServiceTests : IDisposable
         result.Results.Should().HaveCount(1, "symbol casing/spacing variants should collapse to one deterministic result");
         result.Results[0].Symbol.Should().Be("MSFT");
         result.Results[0].Source.Should().Be("openfigi", "highest-score canonical row should win deterministic merge");
+    }
+
+    [Fact]
+    public async Task SearchAsync_NormalizesWinningLowercaseResultSymbol()
+    {
+        var provider = new Mock<ISymbolSearchProvider>();
+        provider.Setup(p => p.Name).Returns("finnhub");
+        provider.Setup(p => p.Priority).Returns(1);
+        provider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        provider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", "finnhub", 100)
+            ]);
+
+        _service = new SymbolSearchService(
+            [provider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().ContainSingle();
+        result.Results[0].Symbol.Should().Be("MSFT");
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderSymbolSearchPayloadDrift_DropsMalformedRowsAndPreservesValidMatches()
+    {
+        var driftingProvider = new Mock<ISymbolSearchProvider>();
+        driftingProvider.Setup(p => p.Name).Returns("openfigi");
+        driftingProvider.Setup(p => p.Priority).Returns(1);
+        driftingProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        driftingProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(null!, "Malformed mapping without ticker", "NASDAQ", "Stock", "US", "USD", "openfigi", 99),
+                new SymbolSearchResult("   ", "Blank symbol from upstream drift", "NASDAQ", "Stock", "US", "USD", "openfigi", 98)
+            ]);
+
+        var stableProvider = new Mock<ISymbolSearchProvider>();
+        stableProvider.Setup(p => p.Name).Returns("finnhub");
+        stableProvider.Setup(p => p.Priority).Returns(2);
+        stableProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        stableProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", "finnhub", 90)
+            ]);
+
+        _service = new SymbolSearchService(
+            [driftingProvider.Object, stableProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().ContainSingle();
+        result.Results[0].Symbol.Should().Be("MSFT");
+        result.Results[0].Source.Should().Be("finnhub");
+        result.Sources.Should().BeEquivalentTo(["finnhub"], "malformed provider rows should not be counted as contributing sources");
+    }
+
+    [Fact]
+    public async Task SearchAsync_ExactSymbolMatchOutranksHigherScoredFuzzySecondaryResult()
+    {
+        var secondaryProvider = new Mock<ISymbolSearchProvider>();
+        secondaryProvider.Setup(p => p.Name).Returns("tiingo");
+        secondaryProvider.Setup(p => p.Priority).Returns(7);
+        secondaryProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        secondaryProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSFU", "Microsoft Ultra Fund", "NYSE", "ETF", "US", "USD", null, 100),
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", null, 70)
+            ]);
+
+        _service = new SymbolSearchService(
+            [secondaryProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().HaveCount(2);
+        result.Results[0].Symbol.Should().Be("MSFT", "exact ticker matches should be preferred over fuzzy secondary-provider rows");
+        result.Results[0].Source.Should().Be("tiingo", "the service should attribute sparse rows to the provider that returned them");
+    }
+
+    [Fact]
+    public async Task SearchAsync_UsesProviderConsensusAsTieBreakerForSecondaryAmbiguity()
+    {
+        var firstProvider = new Mock<ISymbolSearchProvider>();
+        firstProvider.Setup(p => p.Name).Returns("alpha");
+        firstProvider.Setup(p => p.Priority).Returns(1);
+        firstProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        firstProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSH", "Micro Strategic Holdings", "NASDAQ", "Stock", "US", "USD", null, 75)
+            ]);
+
+        var secondProvider = new Mock<ISymbolSearchProvider>();
+        secondProvider.Setup(p => p.Name).Returns("tiingo");
+        secondProvider.Setup(p => p.Priority).Returns(2);
+        secondProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        secondProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSFT", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", null, 75)
+            ]);
+
+        var thirdProvider = new Mock<ISymbolSearchProvider>();
+        thirdProvider.Setup(p => p.Name).Returns("twelvedata");
+        thirdProvider.Setup(p => p.Priority).Returns(3);
+        thirdProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        thirdProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corp", "NASDAQ", "Equity", "US", "USD", null, 75)
+            ]);
+
+        _service = new SymbolSearchService(
+            [firstProvider.Object, secondProvider.Object, thirdProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "micro", Limit: 10));
+
+        result.Results.Should().HaveCount(2);
+        result.Results[0].Symbol.Should().Be("MSFT", "equal-score ambiguity should prefer the symbol corroborated by more providers");
+        result.Results[0].Source.Should().Be("tiingo", "provider priority should choose the representative source inside a corroborated symbol group");
+        result.Sources.Should().BeEquivalentTo(["alpha", "tiingo", "twelvedata"]);
     }
 
     [Fact]
@@ -391,6 +517,35 @@ public class SymbolSearchServiceTests : IDisposable
     #endregion
 
     #region Limit Tests
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public async Task Scenario_FreeTierLimitGuard_NonPositiveLimitDoesNotQueryProviders(int limit)
+    {
+        // Arrange
+        var mockProvider = new Mock<ISymbolSearchProvider>();
+        mockProvider.Setup(p => p.Name).Returns("finnhub");
+        mockProvider.Setup(p => p.Priority).Returns(1);
+
+        _service = new SymbolSearchService(
+            new[] { mockProvider.Object },
+            null,
+            new MetadataEnrichmentService());
+
+        var request = new SymbolSearchRequest(Query: "AAPL", Limit: limit);
+
+        // Act
+        var result = await _service.SearchAsync(request);
+
+        // Assert
+        result.Results.Should().BeEmpty();
+        result.TotalCount.Should().Be(0);
+        result.Sources.Should().BeEmpty();
+        result.Query.Should().Be("AAPL");
+        mockProvider.Verify(p => p.IsAvailableAsync(It.IsAny<CancellationToken>()), Times.Never);
+        mockProvider.Verify(p => p.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
     [Fact]
     public async Task SearchAsync_RespectsLimit()

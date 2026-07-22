@@ -155,7 +155,7 @@ public sealed class ConnectionServiceTests : IDisposable
         var result = await service.ConnectAsync("remote-provider");
 
         result.Should().BeTrue("the injected remote client reported the service as healthy");
-        remoteClient.HealthEndpointCallCount.Should().Be(1);
+        remoteClient.HealthEndpointCallCount.Should().Be(2);
         service.State.Should().Be(ConnectionState.Connected);
     }
 

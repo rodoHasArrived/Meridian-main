@@ -23,6 +23,8 @@ import {
   backfillCheckpointEndpoint,
   backfillCheckpointPendingEndpoint,
   backfillCheckpointResumeEndpoint,
+  workstationIngestionOperationActionEndpoint,
+  workstationIngestionOperationEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -32,8 +34,6 @@ import {
   coveredCallRunStatusEndpoint,
   coveredCallRunsEndpoint,
   exportPreviewEndpoint,
-  reportPackDeliveryPackageEndpoint,
-  reportPackDeliveryPortalPackageEndpoint,
   reportPackEvidenceBundleEndpoint,
   reportingRunAuditTrailEndpoint,
   reportingRunReportWriterGridEndpoint,
@@ -70,9 +70,11 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
@@ -170,6 +172,7 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
@@ -177,6 +180,16 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds governed Data operations and assurance routes", () => {
+    expect(WORKSTATION_API_ENDPOINTS.ingestionOperations).toBe("/api/workstation/data/ingestion-operations");
+    expect(workstationIngestionOperationEndpoint("job / 1")).toBe("/api/workstation/data/ingestion-operations/job%20%2F%201");
+    expect(workstationIngestionOperationActionEndpoint("job / 1", "retry now")).toBe(
+      "/api/workstation/data/ingestion-operations/job%20%2F%201/actions/retry%20now"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.storageAssurance).toBe("/api/workstation/data/storage-assurance");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenancePreview).toBe("/api/workstation/data/storage-assurance/actions/preview");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenanceExecute).toBe("/api/workstation/data/storage-assurance/actions/execute");
+  });
   it("keeps canonical workspace bootstrap endpoints in one shared catalog", () => {
     expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
       session: "/api/workstation/session",
@@ -274,7 +287,11 @@ describe("workstation API endpoint catalog", () => {
     );
   });
 
-  it("builds account-scoped operator inbox endpoints without changing the base contract", () => {
+  it("builds account-scoped trading and operator inbox endpoints without changing the base contracts", () => {
+    expect(workstationTradingEndpoint()).toBe("/api/workstation/trading");
+    expect(workstationTradingEndpoint("fund account/1")).toBe(
+      "/api/workstation/trading?fundAccountId=fund+account%2F1"
+    );
     expect(workstationOperatorInboxEndpoint()).toBe("/api/workstation/operator/inbox");
     expect(workstationOperatorInboxEndpoint("fund account/1")).toBe(
       "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
@@ -405,12 +422,9 @@ describe("workstation API endpoint catalog", () => {
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
     expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage).toBe(
-      "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package"
-    );
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
     expect(WORKSTATION_API_ENDPOINTS.reportingStructuredExport).toBe("/api/workstation/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness).toBe("/api/fund-structure/reporting/runs/readiness");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunAuditTrail).toBe("/api/fund-structure/reporting/runs/{runId}/audit");
     expect(reportingRunAuditTrailEndpoint("run / 1")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/audit"
@@ -426,12 +440,6 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
-    );
-    expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
-      "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
-    );
-    expect(reportPackDeliveryPortalPackageEndpoint("pkg / 1", "tok / 1")).toBe(
-      "/portal/reporting/packages/pkg%20%2F%201?token=tok+%2F+1"
     );
   });
 
@@ -724,6 +732,12 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
     );
+    expect(reconciliationBreakWaiveEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive"
+    );
+    expect(reconciliationBreakSupersedeEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede"
+    );
     expect(reconciliationBreakAssignEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/assign"
     );
@@ -772,6 +786,9 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_API_ENDPOINTS.catalog).toBe("/api/providers/catalog");
+    expect(PROVIDER_API_ENDPOINTS.rateLimits).toBe("/api/providers/rate-limits");
+    expect(PROVIDER_API_ENDPOINTS.health).toBe("/api/providers/health");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans).toBe("/api/accounting-system/migration-worker-plans");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile).toBe("/api/accounting-system/tenant-administration-profile");

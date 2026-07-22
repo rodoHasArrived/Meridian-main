@@ -58,12 +58,13 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)?.Attempts ?? [];
+                return JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)?.Attempts
+                    ?? throw new JsonException("Report-pack delivery snapshot deserialized to null.");
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load report-pack delivery snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Report-pack delivery snapshot at {SnapshotPath} is unreadable; delivery is blocked until the state is recovered.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -86,7 +87,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
     private sealed record ReportPackDeliverySnapshot(IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
 }
 
-public sealed class ReportPackDeliveryService
+public sealed partial class ReportPackDeliveryService
 {
     private static readonly TimeSpan PackageAccessWindow = TimeSpan.FromDays(14);
     private readonly ReportPackWorkflowService _workflowService;
@@ -199,15 +200,6 @@ public sealed class ReportPackDeliveryService
             request.DeliveryMode);
     }
 
-    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
-    }
-
     public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(
         string templateId,
         ReportingScheduleDeliveryTargetDto target,
@@ -251,6 +243,12 @@ public sealed class ReportPackDeliveryService
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(target);
         ArgumentException.ThrowIfNullOrWhiteSpace(target.DistributionId);
+
+        if (manifest.Status != ReportingRunStatus.Released)
+        {
+            throw new InvalidOperationException(
+                $"Reporting run '{manifest.RunId}' is {manifest.Status} and cannot be delivered. Only Released runs may enter distribution.");
+        }
 
         var actor = ResolveActor(null, fallbackActor);
         var policy = ReportPackRunReadService.ResolveDistributionPolicy(target.DistributionId);
@@ -456,6 +454,9 @@ public sealed class ReportPackDeliveryService
             PublicationManifestId: record.Publication?.ManifestId,
             PublicationRetainedManifestPath: record.Publication?.RetainedManifestPath,
             PublicationSignedOffBy: record.Publication?.SignedOffBy,
+            PublicationSignedOffRole: record.Publication?.SignedOffRole,
+            PublicationSignOffReason: record.Publication?.SignOffReason,
+            PublicationSignOffContext: record.Publication?.SignOffContext,
             PublicationSignedOffAtUtc: record.Publication?.SignedOffAt,
             PublicationEvidenceLinks: record.Publication?.EvidenceLinks,
             LineProvenance: record.LineProvenance,
@@ -535,14 +536,14 @@ public sealed class ReportPackDeliveryService
             manifest.RunId,
             manifest.TemplateId,
             manifest.ScheduleId,
-            manifest.Artifacts.ToArray(),
+            manifest.Artifacts.IsDefault ? [] : manifest.Artifacts.ToArray(),
             DeliveryEvidencePacket: deliveryEvidencePacket,
             ReportingRunAsOfDate: manifest.AsOfDate.ToString("yyyy-MM-dd"),
             ReportingRunStatus: manifest.Status.ToString(),
             ReportingRunTrigger: manifest.Trigger.ToString(),
             ReportingRunAttemptCount: manifest.AttemptCount,
-            ReportingRunSectionCount: manifest.Sections.Length,
-            ReportingRunLineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
+            ReportingRunSectionCount: manifest.Sections.IsDefault ? 0 : manifest.Sections.Length,
+            ReportingRunLineageLinkedSections: CountLineageLinkedSections(manifest.Sections),
             BrandingTheme: manifest.BrandingTheme,
             DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
@@ -757,7 +758,7 @@ public sealed class ReportPackDeliveryService
         IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
         IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks)
     {
-        var sourceArtifacts = DistinctValues(manifest.Artifacts);
+        var sourceArtifacts = DistinctValues(manifest.Artifacts.IsDefault ? [] : manifest.Artifacts);
         var packageContents = DistinctValues(
             artifacts.Select(static artifact => artifact.ArtifactName)
                 .Concat(sourceArtifacts.Select(static artifact => $"source-artifact:{artifact}")));
@@ -980,6 +981,9 @@ public sealed class ReportPackDeliveryService
             record.Publication?.ManifestId,
             record.Publication?.RetainedManifestPath,
             record.Publication?.SignedOffBy,
+            record.Publication?.SignedOffRole,
+            record.Publication?.SignOffReason,
+            record.Publication?.SignOffContext,
             record.Publication?.SignedOffAt,
             record.Publication?.EvidenceLinks ?? [],
             record.LineProvenance ?? [],
@@ -1244,6 +1248,9 @@ public sealed class ReportPackDeliveryService
                 package.PublicationManifestId,
                 package.PublicationRetainedManifestPath,
                 package.PublicationSignedOffBy,
+                package.PublicationSignedOffRole,
+                package.PublicationSignOffReason,
+                package.PublicationSignOffContext,
                 package.PublicationSignedOffAtUtc,
                 package.PublicationEvidenceLinks ?? [],
                 package.LineProvenance ?? [],
@@ -1288,6 +1295,9 @@ public sealed class ReportPackDeliveryService
         string? publicationManifestId,
         string? publicationRetainedManifestPath,
         string? publicationSignedOffBy,
+        string? publicationSignedOffRole,
+        string? publicationSignOffReason,
+        string? publicationSignOffContext,
         DateTimeOffset? publicationSignedOffAtUtc,
         IReadOnlyList<ReportPackEvidenceLinkDto> publicationEvidenceLinks,
         IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
@@ -1311,6 +1321,9 @@ public sealed class ReportPackDeliveryService
             publicationManifestId,
             publicationRetainedManifestPath,
             publicationSignedOffBy,
+            publicationSignedOffRole,
+            publicationSignOffReason,
+            publicationSignOffContext,
             publicationSignedOffAtUtc,
             publicationEvidenceLinks,
             lineProvenance,
@@ -1528,6 +1541,9 @@ public sealed class ReportPackDeliveryService
         string? publicationManifestId,
         string? publicationRetainedManifestPath,
         string? publicationSignedOffBy,
+        string? publicationSignedOffRole,
+        string? publicationSignOffReason,
+        string? publicationSignOffContext,
         DateTimeOffset? publicationSignedOffAtUtc,
         IReadOnlyList<ReportPackEvidenceLinkDto> publicationEvidenceLinks,
         IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
@@ -1552,6 +1568,9 @@ public sealed class ReportPackDeliveryService
             new("publicationManifestId", publicationManifestId ?? ""),
             new("publicationRetainedManifestPath", publicationRetainedManifestPath ?? ""),
             new("publicationSignedOffBy", publicationSignedOffBy ?? ""),
+            new("publicationSignedOffRole", publicationSignedOffRole ?? ""),
+            new("publicationSignOffReason", publicationSignOffReason ?? ""),
+            new("publicationSignOffContext", publicationSignOffContext ?? ""),
             new("publicationSignedOffAtUtc", publicationSignedOffAtUtc?.ToString("O") ?? ""),
             new("publicationEvidenceLinkCount", publicationEvidenceLinks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
             new("lineProvenanceCount", lineProvenance.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
@@ -1660,9 +1679,9 @@ public sealed class ReportPackDeliveryService
         new("status", manifest.Status.ToString()),
         new("trigger", manifest.Trigger.ToString()),
         new("attemptCount", manifest.AttemptCount.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("sectionCount", manifest.Sections.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("lineageLinkedSections", manifest.Sections.Count(static section => section.Lineage is not null).ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("sourceArtifacts", string.Join(";", manifest.Artifacts)),
+        new("sectionCount", (manifest.Sections.IsDefault ? 0 : manifest.Sections.Length).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("lineageLinkedSections", CountLineageLinkedSections(manifest.Sections).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("sourceArtifacts", string.Join(";", manifest.Artifacts.IsDefault ? [] : manifest.Artifacts)),
         new("distributionId", distributionId),
         new("artifactName", artifactName),
         new("format", format.ToString()),
@@ -2215,6 +2234,13 @@ public sealed class ReportPackDeliveryService
             })
             .ToArray();
     }
+
+    // Mirrors ReportingStatusProjectionService: Lineage is a non-nullable reference, so only
+    // populated snapshot/checkpoint ids prove a section's retained lineage binding.
+    private static int CountLineageLinkedSections(
+        System.Collections.Immutable.ImmutableArray<ReportingSectionManifest> sections) =>
+        sections.IsDefaultOrEmpty ? 0 : sections.Count(static section =>
+            !string.IsNullOrWhiteSpace(section.DatasetSnapshotId) && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId));
 
     private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
         string gridId,

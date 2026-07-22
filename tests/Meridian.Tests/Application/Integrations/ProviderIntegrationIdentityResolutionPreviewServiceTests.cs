@@ -189,6 +189,9 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => throw new NotImplementedException();
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(
             SecurityIdentifierKind identifierKind,
             string identifierValue,

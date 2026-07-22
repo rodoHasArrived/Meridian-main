@@ -18,4 +18,15 @@ public interface ISecurityMasterEventStore
     /// Returns all corporate action events for a security in ascending ex-date order.
     /// </summary>
     Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Reports — and when <paramref name="apply"/> is true, rewrites in one transaction —
+    /// stored corporate-action EventType values that are non-canonical aliases of the
+    /// catalog vocabulary (e.g. legacy "Split" rows becoming "StockSplit"). Values that do
+    /// not normalize are reported and left untouched. Stores without rewrite support (the
+    /// default) report an empty result.
+    /// </summary>
+    Task<CorporateActionEventTypeNormalizationResult> NormalizeCorporateActionEventTypesAsync(
+        bool apply, CancellationToken ct = default)
+        => Task.FromResult(CorporateActionEventTypeNormalizationResult.Empty);
 }

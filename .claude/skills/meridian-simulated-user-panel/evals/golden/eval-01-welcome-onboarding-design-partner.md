@@ -1,16 +1,24 @@
+**Skill Selection**
+- Skill: `meridian-simulated-user-panel`
+- Mode: `design_partner`
+- Reason: fixture-backed onboarding critique
+- Required Opening: inspect the supplied artifact summary
+
 ## Executive Summary
 - Mode: `design_partner`
+- Evidence status: `partial`
+- Disclaimer: This is simulated persona feedback, not observed user research.
 - Verdict: `steer`
 - The welcome surface is directionally strong because it presents a short path into provider setup, symbols, and live workflow, but the current onboarding still hides too much around config path, disabled launch gating, and time-to-value.
 
 ## Panel
-- Hobbyist Builder — tests whether the first session feels inviting instead of intimidating.
-- Support / Onboarding Lead — tests whether the current copy will generate avoidable support tickets.
-- Individual Trader — tests whether the screen feels action-oriented or bureaucratic.
-- Owner-Operator — tests whether the onboarding flow creates momentum or support drag.
+- Integration Administrator — tests whether the first session feels inviting instead of intimidating.
+- Data Operations Analyst — tests whether the current copy will generate avoidable support tickets.
+- Trader — tests whether the screen feels action-oriented or bureaucratic.
+- Financial Operations Professional — tests whether the onboarding flow creates momentum or support drag.
 
 ## Persona Findings
-### Hobbyist Builder
+### Integration Administrator
 - Liked: The welcome screen creates an understandable first path with Connect a Provider, Add Symbols, and Launch Live Session.
 - Didn't like: The runtime config note says it lives outside the install directory without telling the user where the config path actually is.
 - Missing or risky: The disabled Launch Live Session state feels mysterious because credentials gating is not explained clearly.
@@ -24,7 +32,7 @@
 - Extensibility: 4/5 - The welcome flow can absorb better guidance without structural change.
 - Learning Curve: 3/5 - It is approachable, but not yet self-explanatory.
 
-### Support / Onboarding Lead
+### Data Operations Analyst
 - Liked: The three-card structure gives support teams a simple language for the first-session path.
 - Didn't like: Users will ask why Launch Live Session is disabled if credentials gating stays implicit.
 - Missing or risky: There is no visible estimate of setup time or what counts as “done enough” to move forward.
@@ -38,7 +46,7 @@
 - Extensibility: 4/5 - Better guidance can be added in place.
 - Learning Curve: 3/5 - New users still need hand-holding.
 
-### Individual Trader
+### Trader
 - Liked: The screen points at obvious actions instead of opening with enterprise jargon.
 - Didn't like: A disabled Launch Live Session button without a crisp reason feels like a dead end.
 - Missing or risky: The onboarding does not tell the user how long it will take to get to a live session.
@@ -52,7 +60,7 @@
 - Extensibility: 4/5 - Simple copy and state fixes would help a lot.
 - Learning Curve: 4/5 - The surface is readable even if it still needs guidance.
 
-### Owner-Operator
+### Financial Operations Professional
 - Liked: The welcome screen already gestures toward Meridian as a workstation, not a loose collection of pages.
 - Didn't like: Hidden config path details and unclear disabled gating create immediate support burden.
 - Missing or risky: The onboarding does not yet tell users how long first setup takes or what unlocks the live path.
@@ -69,7 +77,7 @@
 ## Cross-Persona Tensions
 - Shared complaint: the config path needs to be named explicitly, not hinted at vaguely.
 - Shared complaint: the disabled Launch Live Session state needs a clear credentials explanation.
-- Tension: the Individual Trader wants the shortest possible path, while the Support / Onboarding Lead wants a little more visible guidance before release.
+- Tension: the Trader wants the shortest possible path, while the Data Operations Analyst wants a little more visible guidance before release.
 
 ## Owner Actions
 - Now: Show the actual config path, explain the credentials gating inline, and add a visible setup-time estimate.

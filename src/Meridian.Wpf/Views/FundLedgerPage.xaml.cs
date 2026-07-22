@@ -20,7 +20,28 @@ public partial class FundLedgerPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        // OnPageLoaded is an 'async void' handler, so any exception that escapes
+        // LoadAsync is posted to the dispatcher. Non-recoverable exception types are
+        // not marked Handled by the global dispatcher hook and tear the whole process
+        // down, which previously crashed the desktop shell (and the screenshot catalog)
+        // when fund data was empty/minimal. Contain load failures here so navigation to
+        // the fund operations page degrades to an empty/partial state instead of exiting.
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError(
+                "Fund operations page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

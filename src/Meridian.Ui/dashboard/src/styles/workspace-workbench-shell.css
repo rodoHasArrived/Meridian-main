@@ -1,0 +1,81 @@
+.workspace-workbench-shell {
+  display: grid;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+.workspace-workbench-shell-status-band,
+.workspace-workbench-shell-context-rail,
+.workspace-workbench-shell-main,
+.workspace-workbench-shell-inspector,
+.workspace-workbench-shell-evidence-drawer {
+  min-width: 0;
+}
+
+.workspace-workbench-shell-status-band,
+.workspace-workbench-shell-context-rail,
+.workspace-workbench-shell-evidence-drawer {
+  border: 1px solid var(--ws-border);
+  border-radius: 6px;
+  background: var(--ws-surface);
+  box-shadow: var(--ws-shadow);
+}
+
+.workspace-workbench-shell-status-band {
+  padding: 0.625rem;
+}
+
+.workspace-workbench-shell-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.workspace-workbench-shell-layout--with-context.workspace-workbench-shell-layout--with-inspector {
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(19rem, 24rem);
+}
+
+.workspace-workbench-shell-layout--with-context:not(.workspace-workbench-shell-layout--with-inspector) {
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+}
+
+.workspace-workbench-shell-layout--with-inspector:not(.workspace-workbench-shell-layout--with-context) {
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);
+}
+
+.workspace-workbench-shell-context-rail,
+.workspace-workbench-shell-inspector {
+  position: sticky;
+  top: 0.75rem;
+  max-height: calc(100dvh - 9rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.workspace-workbench-shell-context-rail,
+.workspace-workbench-shell-evidence-drawer {
+  padding: 0.625rem;
+}
+
+.workspace-workbench-shell-main {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (max-width: 1100px) {
+  .workspace-workbench-shell-layout,
+  .workspace-workbench-shell-layout--with-context.workspace-workbench-shell-layout--with-inspector,
+  .workspace-workbench-shell-layout--with-context:not(.workspace-workbench-shell-layout--with-inspector),
+  .workspace-workbench-shell-layout--with-inspector:not(.workspace-workbench-shell-layout--with-context) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace-workbench-shell-context-rail,
+  .workspace-workbench-shell-inspector {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}

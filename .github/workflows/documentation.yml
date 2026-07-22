@@ -21,6 +21,7 @@ on:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/documentation.yml"
   push:
     branches:
@@ -34,6 +35,7 @@ on:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/documentation.yml"
 
 permissions:
@@ -56,7 +58,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -98,7 +100,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -108,7 +110,7 @@ jobs:
           node-version: "24"
 
       - name: Install diagram dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
 
       - name: Run docs automation profile
         run: |
@@ -125,16 +127,11 @@ jobs:
       - name: Render WPF UI diagrams
         run: npm run generate-diagrams
 
-      - name: Install PlantUML
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz plantuml
-
       - name: Render UML diagrams
         continue-on-error: true
         run: |
-          plantuml -tpng docs/diagrams/uml/*.puml
-          plantuml -tsvg docs/diagrams/uml/*.puml
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tpng /data/*.puml
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docs/diagrams/uml:/data" plantuml/plantuml -tsvg /data/*.puml
 
       - name: Refresh workflow overview
         run: python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md

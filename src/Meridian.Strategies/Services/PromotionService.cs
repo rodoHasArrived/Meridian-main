@@ -23,6 +23,7 @@ public sealed class PromotionService
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly IPromotedRunLauncher? _runLauncher;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -31,7 +32,8 @@ public sealed class PromotionService
         ILogger<PromotionService> logger,
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        IPromotedRunLauncher? runLauncher = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -40,6 +42,7 @@ public sealed class PromotionService
         _operatorControls = operatorControls;
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
+        _runLauncher = runLauncher;
     }
 
     /// <summary>
@@ -107,6 +110,7 @@ public sealed class PromotionService
             }
         }
 
+        var walkForwardEvidence = run.WalkForwardEvidence;
         var policyInput = new Meridian.FSharp.Promotion.PromotionPolicy.PromotionPolicyInput(
             run.EndedAt.HasValue,
             run.Metrics is not null,
@@ -123,7 +127,15 @@ public sealed class PromotionService
             controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
             hasConflictingOverride,
             targetMode != RunType.Live || hasLivePromotionOverride,
-            ExecutionManualOverrideKinds.AllowLivePromotion);
+            ExecutionManualOverrideKinds.AllowLivePromotion,
+            requireWalkForwardEvidence: effectiveCriteria.RequireWalkForwardEvidenceForLive && targetMode == RunType.Live,
+            hasWalkForwardEvidence: walkForwardEvidence is not null,
+            outOfSampleSharpeRatio: walkForwardEvidence?.OutOfSampleSharpeRatio ?? 0.0,
+            walkForwardDegradationRatio: walkForwardEvidence?.DegradationRatio ?? 0.0,
+            minOutOfSampleSharpe: effectiveCriteria.MinOutOfSampleSharpe,
+            minWalkForwardDegradationRatio: effectiveCriteria.MinWalkForwardDegradationRatio,
+            outOfSampleMaxDrawdownPercent: walkForwardEvidence?.OutOfSampleMaxDrawdownPercent ?? 0m,
+            maxOutOfSampleDrawdownPercent: effectiveCriteria.MaxOutOfSampleDrawdownPercent);
         var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
         var hasBrokerageGap = brokerageValidation?.HasBlockingGap == true;
         var eligible = policyDecision.Eligible && !hasBrokerageGap;
@@ -279,21 +291,94 @@ public sealed class PromotionService
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
         if (missingChecklistItems.Length > 0)
         {
+            var reason = $"Promotion approval checklist is incomplete: {string.Join(", ", missingChecklistItems)}.";
+            if (targetRunType == RunType.Live)
+            {
+                await RecordPromotionAuditAsync(
+                    action: "PromotionBlocked",
+                    outcome: "Blocked",
+                    actor: request.ApprovedBy,
+                    runId: run.RunId,
+                    promotionId: null,
+                    message: reason,
+                    reason: "PromotionChecklistIncomplete",
+                    scope: BuildPromotionAuditScope(run, targetRunType),
+                    metadata: BuildPromotionControlMetadata(
+                        run,
+                        targetRunType,
+                        request.ManualOverrideId,
+                        approvalChecklist,
+                        evidenceReferences,
+                        auditReference,
+                        reason),
+                    ct).ConfigureAwait(false);
+            }
+
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
                 NewRunId: null,
-                Reason: $"Promotion approval checklist is incomplete: {string.Join(", ", missingChecklistItems)}.");
+                Reason: reason);
         }
 
         var missingEvidenceRequirements = GetMissingLiveEvidenceRequirements(targetRunType, evidenceReferences);
         if (missingEvidenceRequirements.Length > 0)
         {
+            var reason = $"Paper -> Live promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: reason,
+                reason: "PromotionEvidenceIncomplete",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    reason),
+                ct).ConfigureAwait(false);
+
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
                 NewRunId: null,
-                Reason: $"Paper -> Live promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.");
+                Reason: reason);
+        }
+
+        var invalidEvidenceReferences = GetInvalidLiveEvidenceReferences(targetRunType, evidenceReferences, request.ManualOverrideId);
+        if (invalidEvidenceReferences.Length > 0)
+        {
+            var reason = $"Paper -> Live promotion evidence references are invalid: {string.Join(", ", invalidEvidenceReferences)}.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: reason,
+                reason: "PromotionEvidenceInvalid",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    reason),
+                ct).ConfigureAwait(false);
+
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: reason);
         }
 
         var newRunId = Guid.NewGuid().ToString("N");
@@ -394,6 +479,8 @@ public sealed class PromotionService
                 ct).ConfigureAwait(false);
         }
 
+        await ActivatePromotedRunAsync(newRun, ct).ConfigureAwait(false);
+
         return new PromotionDecisionResult(
             Success: true,
             PromotionId: promotionRecord.PromotionId,
@@ -401,6 +488,39 @@ public sealed class PromotionService
             Reason: $"Strategy promoted from {run.RunType} to {targetRunType}.",
             AuditReference: auditReference,
             ApprovedBy: request.ApprovedBy);
+    }
+
+    /// <summary>
+    /// Hands the newly recorded target run to the live trading engine. Activation failures are
+    /// deliberately non-fatal: the promotion decision is already durable, the run entry stays
+    /// retained, and the engine's startup resume sweep (or a manual restart) can activate it later.
+    /// </summary>
+    private async Task ActivatePromotedRunAsync(StrategyRunEntry newRun, CancellationToken ct)
+    {
+        if (_runLauncher is null)
+        {
+            _logger.LogWarning(
+                "Promoted run {RunId} ({RunType}) was recorded but no run launcher is configured; the run will not execute until an engine activates it.",
+                newRun.RunId, newRun.RunType);
+            return;
+        }
+
+        try
+        {
+            var launch = await _runLauncher.TryLaunchAsync(newRun, ct).ConfigureAwait(false);
+            if (!launch.Launched)
+            {
+                _logger.LogWarning(
+                    "Promoted run {RunId} ({RunType}) was recorded but not activated: {Reason}",
+                    newRun.RunId, newRun.RunType, launch.Reason);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex,
+                "Promoted run {RunId} ({RunType}) was recorded but its activation failed.",
+                newRun.RunId, newRun.RunType);
+        }
     }
 
     private async Task RecordPromotionAuditAsync(
@@ -514,11 +634,76 @@ public sealed class PromotionService
             .ToArray();
     }
 
+    private static string[] GetInvalidLiveEvidenceReferences(
+        RunType targetRunType,
+        string[] evidenceReferences,
+        string? manualOverrideId)
+    {
+        if (targetRunType != RunType.Live)
+        {
+            return [];
+        }
+
+        var invalid = new List<string>();
+        foreach (var requiredItem in PromotionApprovalChecklist.CreateRequiredFor(targetRunType))
+        {
+            var reference = evidenceReferences.FirstOrDefault(item =>
+                string.Equals(GetEvidenceRequirementKey(item), requiredItem, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                continue;
+            }
+
+            var value = GetEvidenceReferenceValue(reference);
+            if (value.Length == 0)
+            {
+                invalid.Add($"{requiredItem} must include retained evidence after ':'");
+                continue;
+            }
+
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrWhiteSpace(manualOverrideId))
+            {
+                invalid.Add($"{requiredItem} requires an active manual override id");
+                continue;
+            }
+
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase) &&
+                !ContainsEvidenceReferenceToken(value, manualOverrideId!))
+            {
+                invalid.Add($"{requiredItem} must reference active manual override {manualOverrideId}");
+            }
+        }
+
+        return invalid.ToArray();
+    }
+
     private static string GetEvidenceRequirementKey(string evidenceReference)
     {
         var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
         var key = separatorIndex >= 0 ? evidenceReference[..separatorIndex] : evidenceReference;
         return key.Trim().Replace(' ', '_').Replace('-', '_').ToUpperInvariant();
+    }
+
+    private static string GetEvidenceReferenceValue(string evidenceReference)
+    {
+        var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
+        return separatorIndex < 0 || separatorIndex == evidenceReference.Length - 1
+            ? string.Empty
+            : evidenceReference[(separatorIndex + 1)..].Trim();
+    }
+
+    private static bool ContainsEvidenceReferenceToken(string evidenceReferenceValue, string token)
+    {
+        if (string.Equals(evidenceReferenceValue, token, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var segments = evidenceReferenceValue.Split(
+            ['/', '\\', '#', '?', '&', '=', ',', ';', ' ', '\t', '\r', '\n'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return segments.Any(segment => string.Equals(segment, token, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -630,6 +815,42 @@ public sealed class PromotionService
             .ToArray();
     }
 
+    /// <summary>
+    /// Records walk-forward/out-of-sample robustness evidence on a completed run so the
+    /// promotion policy can gate eligibility on it. Returns the updated run, or <c>null</c>
+    /// when the run does not exist.
+    /// </summary>
+    public async Task<StrategyRunEntry?> RecordWalkForwardEvidenceAsync(
+        string runId,
+        StrategyRunWalkForwardEvidence evidence,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(evidence);
+        if (evidence.Validate() is { } validationError)
+            throw new ArgumentException(validationError, nameof(evidence));
+
+        var run = await FindRunAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
+        {
+            return null;
+        }
+
+        var updated = run with { WalkForwardEvidence = evidence };
+        await _repository.RecordRunAsync(updated, ct).ConfigureAwait(false);
+
+        // The run id arrives from the API route; strip line endings so a crafted value
+        // cannot forge additional log entries.
+        _logger.LogInformation(
+            "Recorded walk-forward evidence for run {RunId}: oosSharpe={OosSharpe:F3}, degradation={Degradation:F3}, windows={Windows}",
+            runId.ReplaceLineEndings(string.Empty),
+            evidence.OutOfSampleSharpeRatio,
+            evidence.DegradationRatio,
+            evidence.WindowCount);
+
+        return updated;
+    }
+
     private async Task<StrategyRunEntry?> FindRunAsync(string runId, CancellationToken ct)
     {
         await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
@@ -693,6 +914,16 @@ public sealed class PromotionService
             if (missingEvidence.Length > 0)
             {
                 validationError = $"Approved live promotion records must include evidence references for: {string.Join(", ", missingEvidence)}.";
+                return false;
+            }
+
+            var invalidEvidence = GetInvalidLiveEvidenceReferences(
+                record.TargetRunType,
+                NormalizeEvidenceReferences(record.EvidenceReferences),
+                record.ManualOverrideId);
+            if (invalidEvidence.Length > 0)
+            {
+                validationError = $"Approved live promotion records must include valid retained evidence references: {string.Join(", ", invalidEvidence)}.";
                 return false;
             }
         }
@@ -759,6 +990,14 @@ public sealed record PromotionRejectionRequest(
     string? ReviewNotes = null,
     string? RejectedBy = null,
     string? ManualOverrideId = null);
+
+/// <summary>Request to record walk-forward/out-of-sample evidence on a run.</summary>
+public sealed record RecordWalkForwardEvidenceRequest(
+    double OutOfSampleSharpeRatio,
+    decimal OutOfSampleMaxDrawdownPercent,
+    double DegradationRatio,
+    int WindowCount,
+    string? SourceReference = null);
 
 /// <summary>Result of a promotion approval or rejection.</summary>
 public sealed record PromotionDecisionResult(

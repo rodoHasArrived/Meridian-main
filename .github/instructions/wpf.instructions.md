@@ -3,7 +3,11 @@ applyTo: "src/Meridian.Wpf/**"
 ---
 # WPF / MVVM Instructions
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-07-05
+
+WPF is an active, co-equal operator UI lane; its current focus is web-UI parity over shared
+contracts (`W8-WPF-PARITY-001`). Use these rules for any change that touches `src/Meridian.Wpf/**`,
+including new parity surfaces as well as compatibility, validation, or governance follow-up.
 
 When editing WPF views (`*.xaml`) or code-behind files (`*.xaml.cs`) in this repository:
 

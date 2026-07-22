@@ -156,6 +156,8 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
             self.assertTrue(payload["packetReview"]["validForOperatorReview"])
             self.assertEqual(4, payload["packetReview"]["readySampleCount"])
             self.assertEqual(4, payload["packetReview"]["validatedEvidenceDocumentCount"])
+            self.assertEqual(2, payload["packetReview"]["representedSearchDependencyCount"])
+            self.assertEqual("represented", payload["packetReview"]["searchDependencyReviewStatus"])
 
             payload["approvals"] = _build_signed_signoff()["approvals"]
             output_path.write_text(json.dumps(payload), encoding="utf-8")
@@ -249,6 +251,69 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
             self.assertIn("packetPath", review["packetBindingMissingRequirements"])
             self.assertIn("packetGeneratedAtUtc", review["packetBindingMissingRequirements"])
 
+    def test_validate_rejects_signoff_bound_to_stale_search_dependency_review(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            output_path = temp_path / "dk1-operator-signoff.json"
+            packet_path = temp_path / "dk1-pilot-parity-packet.json"
+            packet_path.write_text(json.dumps(_build_ready_packet()), encoding="utf-8")
+
+            subprocess.run(
+                [
+                    pwsh,
+                    "-NoProfile",
+                    "-File",
+                    str(SCRIPT_PATH),
+                    "-OutputPath",
+                    str(output_path),
+                    "-PacketPath",
+                    str(packet_path),
+                    "-Json",
+                ],
+                cwd=REPO_ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            payload = json.loads(output_path.read_text(encoding="utf-8-sig"))
+            payload["approvals"] = _build_signed_signoff()["approvals"]
+            payload["packetReview"]["representedSearchDependencyCount"] = 1
+            output_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    pwsh,
+                    "-NoProfile",
+                    "-File",
+                    str(SCRIPT_PATH),
+                    "-OutputPath",
+                    str(output_path),
+                    "-PacketPath",
+                    str(packet_path),
+                    "-Validate",
+                    "-Json",
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(0, result.returncode)
+            review = json.loads(result.stdout)
+            self.assertEqual("signed", review["status"])
+            self.assertFalse(review["validForDk1Exit"])
+            self.assertEqual("invalid", review["packetBindingStatus"])
+            self.assertIn(
+                "packetRepresentedSearchDependencyCount",
+                review["packetBindingMissingRequirements"],
+            )
+
 
 def _build_signed_signoff() -> dict[str, object]:
     return {
@@ -291,6 +356,7 @@ def _build_ready_packet() -> dict[str, object]:
         ("DK1 baseline trust thresholds", "calibration", "docs/status/evidence/dk1-baseline-trust-thresholds.md"),
         ("Provider validation matrix", "parity", "docs/reference/provider-validation-matrix.md"),
     ]
+    search_dependencies = _build_search_dependencies()
     return {
         "generatedAtUtc": "2026-04-26T17:00:00Z",
         "sourceSummary": "artifacts/provider-validation/_automation/unit/wave1-validation-summary.json",
@@ -306,6 +372,12 @@ def _build_ready_packet() -> dict[str, object]:
                 }
                 for sample_id in samples
             ],
+        },
+        "searchDependencyReview": {
+            "requiredCount": len(search_dependencies),
+            "representedCount": len(search_dependencies),
+            "status": "represented",
+            "dependencies": search_dependencies,
         },
         "trustRationaleContract": {
             "status": "validated",
@@ -327,6 +399,29 @@ def _build_ready_packet() -> dict[str, object]:
         ],
         "blockers": [],
     }
+
+
+def _build_search_dependencies() -> list[dict[str, object]]:
+    return [
+        {
+            "provider": "OpenFIGI",
+            "dependency": "Identifier mapping API",
+            "risk": "Quota, uptime, and mapping ambiguity can degrade symbol-search confidence.",
+            "governanceAction": "Represent in DK1 packet searchDependencyReview.",
+            "evidenceAnchors": ["OpenFigiClientTests", "OpenFigiClientAmbiguityTests"],
+            "status": "represented",
+            "missingRequirements": [],
+        },
+        {
+            "provider": "EDGAR",
+            "dependency": "SEC company ticker and reference-data endpoints",
+            "risk": "Public endpoint availability can degrade reference-data lookup quality.",
+            "governanceAction": "Represent in DK1 packet searchDependencyReview.",
+            "evidenceAnchors": ["EdgarSymbolSearchProviderTests", "EdgarReferenceDataProviderTests"],
+            "status": "represented",
+            "missingRequirements": [],
+        },
+    ]
 
 
 if __name__ == "__main__":

@@ -4,14 +4,18 @@ using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Execution;
 
+/// <summary>
+/// Scenario coverage for hosted brokerage gateway registration, guarding against mapper-only broker assets being promoted as runtime gateways.
+/// </summary>
 public sealed class HostedBrokerageGatewayRegistrationTests
 {
     [Fact]
-    public async Task AddHostedBrokerageGateways_RegistersAlpacaAndIbRuntimeGatewaySurfaces()
+    public async Task AddHostedBrokerageGateways_RegistersProductionRuntimeGatewaySurfaces()
     {
         var services = CreateServices();
 
@@ -21,23 +25,25 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         var alpaca = provider.GetRequiredKeyedService<IBrokerageGateway>("alpaca");
         var ib = provider.GetRequiredKeyedService<IBrokerageGateway>("ib");
         var ibkr = provider.GetRequiredKeyedService<IBrokerageGateway>("ibkr");
+        var robinhood = provider.GetRequiredKeyedService<IBrokerageGateway>("robinhood");
 
         alpaca.Should().BeOfType<AlpacaBrokerageGateway>();
         ib.Should().BeOfType<IBBrokerageGateway>();
         ibkr.Should().BeSameAs(ib);
+        robinhood.Should().BeOfType<RobinhoodBrokerageGateway>();
 
         provider.GetServices<IBrokerageAccountCatalog>()
             .Select(catalog => catalog.ProviderId)
             .Should()
-            .Contain(["alpaca", "ibkr"]);
+            .Contain(["alpaca", "ibkr", "robinhood"]);
         provider.GetServices<IBrokeragePortfolioSync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain(["alpaca", "ibkr"]);
+            .Contain(["alpaca", "ibkr", "robinhood"]);
         provider.GetServices<IBrokerageActivitySync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain("alpaca");
+            .Contain(["alpaca", "ibkr", "robinhood"]);
 
         var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
         surfaces.Should().Contain(surface =>
@@ -59,7 +65,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
             surface.SupportsPortfolioSync &&
-            !surface.SupportsActivitySync &&
+            surface.SupportsActivitySync &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
             surface.GatewayId == "ibkr" &&
@@ -69,6 +75,18 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
             surface.SupportsPortfolioSync &&
+            surface.ValidationIssues.Count == 0);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "robinhood" &&
+            surface.IsRegistered &&
+            surface.DeclaredGatewayId == "robinhood" &&
+            surface.GatewayType == typeof(RobinhoodBrokerageGateway).FullName &&
+            surface.GatewayIdMatchesRuntimeKey &&
+            surface.SupportsAccountCatalog &&
+            surface.SupportsPortfolioSync &&
+            surface.SupportsActivitySync &&
+            !surface.SupportsOrderModification &&
+            surface.SupportsPartialFills &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
             surface.GatewayId == "stocksharp" &&
@@ -137,6 +155,34 @@ public sealed class HostedBrokerageGatewayRegistrationTests
                 surface.GatewayId == "stocksharp" &&
                 !surface.IsRegistered &&
                 surface.ValidationIssues.Contains("stocksharp-runtime-type-missing"));
+    }
+
+    [Fact]
+    public async Task Scenario_BrokerageExperimentGate_TradierAndTradeStationRemainUnregisteredUntilConcreteGatewaysExist()
+    {
+        var services = CreateServices();
+
+        services.AddHostedBrokerageGateways();
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetKeyedService<IBrokerageGateway>("tradier").Should().BeNull();
+        provider.GetKeyedService<IBrokerageGateway>("tradestation").Should().BeNull();
+        provider.GetServices<IBrokerageAccountCatalog>()
+            .Select(catalog => catalog.ProviderId)
+            .Should()
+            .NotContain(["tradier", "tradestation"]);
+        provider.GetServices<IBrokeragePortfolioSync>()
+            .Select(sync => sync.ProviderId)
+            .Should()
+            .NotContain(["tradier", "tradestation"]);
+
+        HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider)
+            .Select(surface => surface.GatewayId)
+            .Should()
+            .Contain("robinhood")
+            .And
+            .NotContain(["tradier", "tradestation"]);
     }
 
     [Fact]

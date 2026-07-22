@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hi-Fi / A11y Pass — QA Harness</title>
+<link rel="stylesheet" href="../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
+  .qa-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px;
+    padding: 12px 20px; background: var(--topbar-bg); color: var(--topbar-text); }
+  .qa-bar h1 { font-size: 14px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+  .qa-bar .hint { font-size: 11px; color: var(--topbar-text-muted); }
+  .qa-toggle { margin-left: auto; font-family: var(--font-body); font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border: 1px solid var(--topbar-field-border); background: var(--topbar-field-bg);
+    color: var(--topbar-text); cursor: pointer; border-radius: 2px; }
+  .qa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; padding: 20px; align-items: start; }
+  .qa-cell { background: var(--bg-light); border: 1px solid var(--border); padding: 16px; min-width: 0; }
+  .qa-cell h2 { font-size: 11px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em;
+    color: var(--text-muted); margin: 0 0 4px; }
+  .qa-cell .k { font-size: 10px; color: var(--accent); font-family: var(--font-data); margin: 0 0 12px; display: block; }
+  .wide { grid-column: 1 / -1; }
+</style>
+</head>
+<body class="meridian">
+<div class="qa-bar">
+  <h1>Meridian — Hi-Fi / A11y Pass</h1>
+  <span class="hint">Tab into any table header → Enter/Space sorts · arrow-navigate trees · right-click the row for the context menu · Esc closes overlays</span>
+  <button class="qa-toggle" id="themeToggle" type="button">Toggle dark</button>
+</div>
+<div id="root"></div>
+
+<script type="text/babel">
+const MDS = window.MeridianDesignSystem_4f61be;
+const { AccountTree, TreeView, DenseDataTable, FilteredDataTable, LedgerTable,
+  ReconciliationPanel, ContextMenu, Modal, ModalHeader, ModalBody, ModalFooter, Button } = MDS;
+const { useState } = React;
+
+// ── realistic institutional data ────────────────────────────────────────────
+const coa = [
+  { code: "1000", name: "Assets", children: [
+    { code: "1100", name: "Cash & equivalents", children: [
+      { code: "1101", name: "Operating account · JPM", balance: 4820150.22 },
+      { code: "1102", name: "Custody · IBKR", balance: 18450000.00 },
+    ]},
+    { code: "1200", name: "Receivables", balance: 1240500.00 },
+  ]},
+  { code: "2000", name: "Liabilities", children: [
+    { code: "2100", name: "Payables", balance: -312500.00 },
+    { code: "2200", name: "Margin loan · Fed funds", balance: -2500000.00 },
+  ]},
+];
+
+const tree = [
+  { id: "strat", label: "Strategies", children: [
+    { id: "mom", label: "Momentum", meta: "12", children: [
+      { id: "mom-us", label: "US Large Cap", meta: "4" },
+      { id: "mom-eu", label: "Europe ex-UK", meta: "3" },
+    ]},
+    { id: "mr", label: "Mean Reversion", meta: "8" },
+  ]},
+  { id: "risk", label: "Risk models", children: [
+    { id: "var", label: "Historical VaR", meta: "2" },
+    { id: "stress", label: "Stress scenarios", meta: "6" },
+  ]},
+];
+
+const ddtCols = [
+  { key: "sym", label: "Symbol" },
+  { key: "side", label: "Side" },
+  { key: "qty", label: "Qty", align: "right" },
+  { key: "px", label: "Avg px", align: "right" },
+  { key: "pnl", label: "Unrealized", align: "right" },
+];
+const ddtRows = [
+  { sym: "AAPL", side: "LONG", qty: "12,000", px: "184.20", pnl: "+41,880" },
+  { sym: "MSFT", side: "LONG", qty: "8,500", px: "412.05", pnl: "+128,400" },
+  { sym: "TSLA", side: "SHORT", qty: "4,200", px: "241.10", pnl: "-18,320" },
+  { sym: "NVDA", side: "LONG", qty: "6,000", px: "118.45", pnl: "+96,150" },
+];
+
+const recSides = {
+  left: { title: "Statement · JPM", items: [
+    { id: "s1", date: "2026-06-02", ref: "ACH-042", amount: 18500.00, matched: true },
+    { id: "s2", date: "2026-06-04", ref: "WIRE-18", amount: 250000.00, matched: true },
+    { id: "s3", date: "2026-06-06", ref: "CHK-1846", amount: 156.73, matched: false },
+  ]},
+  right: { title: "Ledger", items: [
+    { id: "l1", date: "2026-06-02", ref: "ACH-042", amount: 18500.00, matched: true },
+    { id: "l2", date: "2026-06-04", ref: "WIRE-18", amount: 250000.00, matched: true },
+  ]},
+};
+
+const fdtCols = [
+  { key: "date", label: "Date", sortable: true },
+  { key: "ref", label: "Reference", sortable: true },
+  { key: "memo", label: "Memo", sortable: true },
+  { key: "amount", label: "Amount", align: "right", sortable: true },
+];
+const fdtRows = [
+  { id: "1", date: "2026-06-15", ref: "ACH-042", memo: "Payroll deposit", amount: "18,500.00" },
+  { id: "2", date: "2026-06-14", ref: "CHK-1847", memo: "Office supplies", amount: "(234.50)" },
+  { id: "3", date: "2026-06-13", ref: "DEP-003", memo: "Client receivable", amount: "3,875.25" },
+  { id: "4", date: "2026-06-12", ref: "WIRE-17", memo: "Equipment lease", amount: "(2,500.00)" },
+];
+
+// ── stateful wrappers so keyboard sort is actually exercised ─────────────────
+function SortableDDT() {
+  const [sort, setSort] = useState({ key: "pnl", dir: "desc" });
+  const onSort = (key) => setSort((s) => ({ key, dir: s.key === key && s.dir === "asc" ? "desc" : "asc" }));
+  const rows = [...ddtRows].sort((a, b) => {
+    const dir = sort.dir === "asc" ? 1 : -1;
+    const av = a[sort.key], bv = b[sort.key];
+    const an = parseFloat(String(av).replace(/[^0-9.-]/g, "")), bn = parseFloat(String(bv).replace(/[^0-9.-]/g, ""));
+    if (!isNaN(an) && !isNaN(bn)) return (an - bn) * dir;
+    return String(av).localeCompare(String(bv)) * dir;
+  });
+  return <DenseDataTable columns={ddtCols} rows={rows} sortKey={sort.key} sortDir={sort.dir}
+    onSort={onSort} onRowClick={() => {}} selectedIndex={0} />;
+}
+
+function ReconWrap() {
+  return <ReconciliationPanel left={recSides.left} right={recSides.right} currency="$" tolerance={1} />;
+}
+
+function CtxDemo() {
+  // Standalone pattern (consumer-facing): manage anchor state locally, pass x/y/onClose.
+  const [menu, setMenu] = useState(null);
+  const onContextMenu = (e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); };
+  return (
+    <div>
+      <div onContextMenu={onContextMenu}
+        style={{ padding: "18px 12px", border: "1px dashed var(--border-strong)", textAlign: "center",
+          fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-secondary)", cursor: "context-menu" }}>
+        Right-click here · then use ↑ ↓ · Esc
+      </div>
+      {menu && (
+        <ContextMenu x={menu.x} y={menu.y} onClose={() => setMenu(null)}
+          items={[
+            { label: "Inspect fill", icon: "⌕", onClick: () => {} },
+            { label: "Copy order id", icon: "⎘", onClick: () => {} },
+            { type: "divider" },
+            { label: "Cancel order", icon: "⌫", dangerous: true, onClick: () => {} },
+          ]} />
+      )}
+    </div>
+  );
+}
+
+function ModalDemo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <Button variant="primary" onClick={() => setOpen(true)}>Open dialog (check scrim)</Button>
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <ModalHeader title="Cancel working order?" onClose={() => setOpen(false)} />
+        <ModalBody>This cancels the remaining 4,200 shares of TSLA at market close. The scrim behind should read as a consistent near-black in both themes.</ModalBody>
+        <ModalFooter>
+          <button className="mdl-btn" onClick={() => setOpen(false)}>Keep</button>
+          <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)}>Cancel order</button>
+        </ModalFooter>
+      </Modal>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="qa-grid">
+      <div className="qa-cell">
+        <h2>AccountTree</h2><span className="k">role=tree · aria-expanded/level · arrow-key nav</span>
+        <AccountTree nodes={coa} currency="$" defaultExpandedDepth={1} selectedCode="1101" onSelect={() => {}} />
+      </div>
+      <div className="qa-cell">
+        <h2>TreeView</h2><span className="k">roving tabindex · ← → expand/collapse</span>
+        <TreeView items={tree} defaultExpanded={["strat", "mom"]} selectedId="mom-us" onSelect={() => {}} />
+      </div>
+      <div className="qa-cell wide">
+        <h2>DenseDataTable — keyboard-sortable headers</h2><span className="k">Tab to a header, Enter/Space to sort · aria-sort announced</span>
+        <SortableDDT />
+      </div>
+      <div className="qa-cell">
+        <h2>ContextMenu</h2><span className="k">role=menu · focus-on-open · arrow roving · Esc</span>
+        <CtxDemo />
+      </div>
+      <div className="qa-cell">
+        <h2>Modal — scrim token</h2><span className="k">--scrim, consistent across overlays</span>
+        <ModalDemo />
+      </div>
+      <div className="qa-cell wide">
+        <h2>FilteredDataTable — keyboard-sortable headers</h2><span className="k">Tab + Enter/Space · focus ring on header</span>
+        <FilteredDataTable data={fdtRows} columns={fdtCols} title="General Ledger" localStorageKey="qa-fdt" />
+      </div>
+      <div className="qa-cell wide">
+        <h2>LedgerTable + ReconciliationPanel — sort headers</h2><span className="k">both keyboard-operable now</span>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
+          <LedgerTable currency="$" openingBalance={120000} onRowClick={() => {}} rows={[
+            { date: "2026-06-02", ref: "JV-1031", account: "Trading fees", debit: 1840.00 },
+            { date: "2026-06-04", ref: "DEP-220", account: "Wire deposit", credit: 250000.00 },
+            { date: "2026-06-06", ref: "JV-1037", account: "Market-data lease", debit: 9600.00 },
+          ]} />
+          <ReconWrap />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const el = document.documentElement;
+  el.dataset.theme = el.dataset.theme === "dark" ? "light" : "dark";
+});
+</script>
+</body>
+</html>

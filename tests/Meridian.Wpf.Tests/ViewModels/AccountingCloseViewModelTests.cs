@@ -81,7 +81,8 @@ public sealed class AccountingCloseViewModelTests
         viewModel.SignOffCloseTaskCommand.CanExecute(null).Should().BeTrue();
         viewModel.ReviewLateAdjustmentCommand.CanExecute(null).Should().BeFalse();
         viewModel.ReviewCloseEvidenceCommand.CanExecute(null).Should().BeFalse();
-        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+        viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeFalse();
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
         viewModel.CloseTaskRows.Should().ContainSingle(row => row.Name == "task-nav");
         viewModel.CloseSignOffMatrixRows.Should().ContainSingle(row => row.Name == "task-nav:controller");
         viewModel.CloseLateAdjustmentRows.Should().ContainSingle(row => row.Name == "late-adjustment-1");
@@ -96,6 +97,27 @@ public sealed class AccountingCloseViewModelTests
             row.Name == "Period lock" &&
             row.Status == "Ready for review" &&
             row.Detail == "Retain close-package evidence and lock the period.");
+        viewModel.ClosingEntriesGate.Should().NotBeNull();
+        viewModel.ClosingEntriesGate!.State.Should().Be(ClosePostingGateStateDto.DraftQueued);
+        viewModel.ClosingEntriesGateStatusText.Should().Be("Draft queued");
+        viewModel.ClosingEntriesNetIncomeRollText.Should().Be("+1,500.00 USD");
+        viewModel.ClosingEntriesBalanceCountText.Should().Be("2 temporary-account balances");
+        viewModel.ClosingEntriesLockPostureText.Should().Be("Posting required before lock");
+        viewModel.ClosePeriodLockStatusText.Should().Be("Close plan 2026-05 cannot lock until closing entries advance from Draft queued to Posted.");
+        viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("Draft aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee (Draft)");
+        viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("closing batches 11111111-2222-3333-4444-555555555555");
+        viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("reversal drafts 66666666-7777-8888-9999-aaaaaaaaaaaa");
+        viewModel.ClosingEntryBalanceRows.Should().HaveCount(2);
+        viewModel.ClosingEntryBalanceRows.Should().Contain(row =>
+            row.AccountName == "Advisory fee revenue (ADV-FEE)" &&
+            row.AccountType == "Revenue" &&
+            row.Balance == "+2,500.00 USD" &&
+            row.Scope == "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | External class: private-fund" &&
+            row.FinancialAccountId == "financial-account-revenue");
+        viewModel.ClosingEntryBalanceRows.Should().Contain(row =>
+            row.AccountName == "Fund administration expense" &&
+            row.Balance == "-1,000.00 USD" &&
+            row.Scope == "Fund: fund-alpha | Entity: entity-alpha | Cost center: fund-operations");
         viewModel.CloseWorkflowSteps.Should().HaveCount(6);
         viewModel.CloseWorkflowSteps.Should().Contain(step =>
             step.StepId == "close-setup" &&
@@ -127,7 +149,7 @@ public sealed class AccountingCloseViewModelTests
             step.StepId == "period-lock" &&
             step.Status == "Open" &&
             step.Evidence == $"Ledger book {ledgerBookId:D}" &&
-            step.DisabledReason == null &&
+            step.DisabledReason == "Close plan 2026-05 cannot lock until closing entries advance from Draft queued to Posted." &&
             ReferenceEquals(step.Command, viewModel.LockClosePeriodCommand));
     }
 
@@ -136,7 +158,8 @@ public sealed class AccountingCloseViewModelTests
     {
         var closePlan = BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")) with
         {
-            OperatingCoverage = []
+            OperatingCoverage = [],
+            ClosingEntriesGate = null
         };
         var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>());
 
@@ -146,6 +169,59 @@ public sealed class AccountingCloseViewModelTests
             row.Name == "Operating coverage" &&
             row.Status == "Missing" &&
             row.Detail.Contains("did not return", StringComparison.OrdinalIgnoreCase));
+        viewModel.ClosingEntriesGate.Should().BeNull();
+        viewModel.ClosingEntriesGateStatusText.Should().Be("Not supplied");
+        viewModel.ClosingEntriesNetIncomeRollText.Should().Be("Net-income roll unavailable");
+        viewModel.ClosingEntryBalanceRows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ApplyCloseProjection_ProjectsEvidencePackageStatusAndApprovalHistory()
+    {
+        var posting = new AccountingPostingService();
+        var query = new AccountingProjectionQueryService(posting, new TrialBalanceProjectionService());
+        var viewModel = new AccountingCloseViewModel(query);
+        posting.Post(
+            "ledger-a",
+            [
+                new JournalEntry(
+                    Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                    "ledger-a",
+                    new DateOnly(2026, 03, 31),
+                    "evt-post",
+                    "close accrual",
+                    ImmutableArray.Create(
+                        new JournalLine("Cash", 100m, "USD", true, "evt-post", "approval-post"),
+                        new JournalLine("Revenue", 100m, "USD", false, "evt-post", "approval-post")))
+            ]);
+        var evidence = new CloseEvidence(
+            TrialBalanceSignedOff: true,
+            ReconciliationSignedOff: true,
+            ApprovalsCompleted: true,
+            Checks:
+            [
+                new CloseEvidenceCheck(
+                    "controller-packet",
+                    "Controller close packet",
+                    Required: true,
+                    Passed: true,
+                    SourceEventId: "evt-close",
+                    ApprovalId: "approval-close",
+                    Detail: "Controller package approved.")
+            ]);
+        var projection = query.GetCloseProjection("ledger-a", new DateOnly(2026, 03, 31), evidence);
+
+        viewModel.ApplyCloseProjection(projection);
+
+        viewModel.EvidencePackageStatusText.Should().Contain(projection.EvidencePackage.PackageId);
+        viewModel.EvidencePackageStatusText.Should().Contain("2 source events");
+        viewModel.EvidencePackageStatusText.Should().Contain("2 approvals");
+        viewModel.ApprovalHistory.Should().Contain(row =>
+            row.ApprovalId == "approval-close" &&
+            row.Label == "Controller close packet");
+        viewModel.ApprovalHistory.Should().Contain(row =>
+            row.ApprovalId == "approval-post" &&
+            row.JournalEntryId == Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"));
     }
 
     [Fact]
@@ -884,11 +960,131 @@ public sealed class AccountingCloseViewModelTests
     }
 
     [Fact]
+    public async Task LoadThenLock_UsesWorkflowVersionReturnedWithPlan()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true) with
+        {
+            WorkflowVersion = 12
+        };
+        var service = new CapturingCloseManagementService(closePlan);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service)
+        {
+            CloseWorkflowIdText = workflowId.ToString("D")
+        };
+
+        await viewModel.LoadClosePlanCommand.ExecuteAsync(null);
+        await viewModel.LockClosePeriodCommand.ExecuteAsync(null);
+
+        service.LockRequest.Should().NotBeNull();
+        service.LockRequest!.ExpectedWorkflowVersion.Should().Be(12);
+        service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(ClosePostingGateStateDto.Required, false, true, false)]
+    [InlineData(ClosePostingGateStateDto.DraftQueued, false, false, false)]
+    [InlineData(ClosePostingGateStateDto.Submitted, false, false, false)]
+    [InlineData(ClosePostingGateStateDto.Approved, false, false, false)]
+    [InlineData(ClosePostingGateStateDto.Posted, true, false, true)]
+    [InlineData(ClosePostingGateStateDto.NotRequired, true, false, true)]
+    public void ClosingEntryGate_DrivesQueueAndHardLockEligibility(
+        ClosePostingGateStateDto state,
+        bool isReadyForLock,
+        bool queueEnabled,
+        bool hardLockEnabled)
+    {
+        var workflowId = Guid.NewGuid();
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            state,
+            isReadyForLock);
+        var viewModel = new AccountingCloseViewModel(
+            Substitute.For<IAccountingProjectionQueryService>(),
+            new CapturingCloseManagementService(closePlan));
+
+        viewModel.ApplyClosePlan(workflowId, 7, closePlan);
+
+        viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().Be(queueEnabled);
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().Be(hardLockEnabled);
+    }
+
+    [Fact]
+    public void ApplyClosePlan_WhenClosingGateChanges_NotifiesQueueAndHardLockCommands()
+    {
+        var workflowId = Guid.NewGuid();
+        var requiredPlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            ClosePostingGateStateDto.Required,
+            isReadyForLock: false);
+        var postedPlan = WithClosingEntriesGate(
+            requiredPlan,
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true);
+        var viewModel = new AccountingCloseViewModel(
+            Substitute.For<IAccountingProjectionQueryService>(),
+            new CapturingCloseManagementService(requiredPlan));
+        viewModel.ApplyClosePlan(workflowId, 7, requiredPlan);
+        var queueNotifications = 0;
+        var lockNotifications = 0;
+        viewModel.QueueClosingEntriesCommand.CanExecuteChanged += (_, _) => queueNotifications++;
+        viewModel.LockClosePeriodCommand.CanExecuteChanged += (_, _) => lockNotifications++;
+
+        viewModel.ApplyClosePlan(workflowId, 8, postedPlan);
+
+        queueNotifications.Should().BeGreaterThan(0);
+        lockNotifications.Should().BeGreaterThan(0);
+        viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeFalse();
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task QueueClosingEntriesCommand_SendsPreparationOnlyRequestAndKeepsHardLockDisabled()
+    {
+        var workflowId = Guid.Parse("99999999-aaaa-bbbb-cccc-dddddddddddd");
+        var requiredPlan = WithClosingEntriesGate(
+            BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555")),
+            ClosePostingGateStateDto.Required,
+            isReadyForLock: false) with
+        {
+            WorkflowVersion = 9
+        };
+        var queuedPlan = WithClosingEntriesGate(
+            requiredPlan,
+            ClosePostingGateStateDto.DraftQueued,
+            isReadyForLock: false);
+        var service = new CapturingCloseManagementService(requiredPlan)
+        {
+            LockResult = new ClosePeriodLockResultDto(false, queuedPlan, null)
+        };
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+        viewModel.ApplyClosePlan(workflowId, requiredPlan);
+
+        viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeTrue();
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+
+        await viewModel.QueueClosingEntriesCommand.ExecuteAsync(null);
+
+        service.LockRequest.Should().NotBeNull();
+        service.LockRequest!.ExpectedWorkflowVersion.Should().Be(9);
+        service.LockRequest.PrepareClosingEntriesOnly.Should().BeTrue();
+        service.LockRequest.CorrelationId.Should().Be($"wpf-close-period-prepare-closing-entries-{workflowId:D}");
+        viewModel.QueueClosingEntriesCommand.CanExecute(null).Should().BeFalse();
+        viewModel.LockClosePeriodCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task LockClosePeriodCommand_BuildsGovernedRequestAndRendersSharedBlockers()
     {
         var workflowId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
-        var closePlan = BuildClosePlan(ledgerBookId);
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(ledgerBookId),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true);
         var service = new CapturingCloseManagementService(closePlan)
         {
             LockResult = new ClosePeriodLockResultDto(
@@ -918,6 +1114,7 @@ public sealed class AccountingCloseViewModelTests
         service.LockRequest.ExpectedWorkflowVersion.Should().Be(7);
         service.LockRequest.Actor.Should().Be("wpf-accounting-controller");
         service.LockRequest.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
+        service.LockRequest.PrepareClosingEntriesOnly.Should().BeFalse();
         service.LockRequest.ReportPackId.Should().Be("report-pack-fund-alpha-2026-05");
         service.LockRequest.CorrelationId.Should().Be($"wpf-close-period-lock-{workflowId:D}");
         service.LockRequest.ClosePackageId.Should().Be("close-package-fund-alpha-2026-05");
@@ -943,8 +1140,14 @@ public sealed class AccountingCloseViewModelTests
     {
         var workflowId = Guid.Parse("cccccccc-dddd-eeee-ffff-aaaaaaaaaaaa");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
-        var closePlan = BuildClosePlan(ledgerBookId, signedOff: true);
-        var lockedPlan = closePlan with { IsPeriodLocked = true };
+        var closePlan = WithClosingEntriesGate(
+            BuildClosePlan(ledgerBookId, signedOff: true),
+            ClosePostingGateStateDto.Posted,
+            isReadyForLock: true) with
+        {
+            WorkflowVersion = 7
+        };
+        var lockedPlan = closePlan with { IsPeriodLocked = true, WorkflowVersion = 8 };
         var service = new CapturingCloseManagementService(closePlan)
         {
             LockResult = new ClosePeriodLockResultDto(
@@ -1103,8 +1306,61 @@ public sealed class AccountingCloseViewModelTests
                     EvidenceCount: 0,
                     BlockingIssueCount: 0,
                     "Retain close-package evidence and lock the period.")
-            ]);
+            ],
+            ClosingEntriesGate: new ClosePostingGateDto(
+                $"closing-entries:{ledgerBookId:D}:2026-05",
+                "Post closing entries",
+                ClosePostingGateStateDto.DraftQueued,
+                IsReadyForLock: false,
+                NetIncomeRoll: 1_500m,
+                TemporaryAccountBalanceCount: 2,
+                Detail: "A closing-entry draft is queued for controller approval and posting.",
+                DraftJournalEntryId: Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                DraftStatus: ManualJournalEntryStatusDto.Draft,
+                IdempotencyKey: $"closing-entries:{ledgerBookId:D}:2026-05:v1",
+                Balances:
+                [
+                    new ClosePostingBalanceDto(
+                        "Advisory fee revenue",
+                        "Revenue",
+                        2_500m,
+                        "ADV-FEE",
+                        "financial-account-revenue",
+                        new LedgerDimensionSetDto(
+                            FundId: "fund-alpha",
+                            EntityId: "entity-alpha",
+                            SleeveId: "sleeve-credit",
+                            ExternalGlDimensions: new Dictionary<string, string>
+                            {
+                                ["class"] = "private-fund"
+                            })),
+                    new ClosePostingBalanceDto(
+                        "Fund administration expense",
+                        "Expense",
+                        -1_000m,
+                        FinancialAccountId: "financial-account-expense",
+                        Dimensions: new LedgerDimensionSetDto(
+                            FundId: "fund-alpha",
+                            EntityId: "entity-alpha",
+                            CostCenterId: "fund-operations"))
+                ],
+                EvidenceLinks: ["evidence/closing-entry-preview"],
+                ClosingBatchJournalEntryIds: [Guid.Parse("11111111-2222-3333-4444-555555555555")],
+                ReversalDraftJournalEntryIds: [Guid.Parse("66666666-7777-8888-9999-aaaaaaaaaaaa")]));
     }
+
+    private static ClosePeriodPlanDto WithClosingEntriesGate(
+        ClosePeriodPlanDto closePlan,
+        ClosePostingGateStateDto state,
+        bool isReadyForLock)
+        => closePlan with
+        {
+            ClosingEntriesGate = closePlan.ClosingEntriesGate! with
+            {
+                State = state,
+                IsReadyForLock = isReadyForLock
+            }
+        };
 
     private static ClosePeriodPlanDto BuildClosePlanWithReportTask(Guid ledgerBookId)
     {

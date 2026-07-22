@@ -61,7 +61,17 @@ public sealed class StatementReconciliationOrchestrator(
         CancellationToken ct)
     {
         var checkpoint = await checkpointStore.GetAsync(accountId, ct).ConfigureAwait(false);
-        var lastCompleted = resume ? checkpoint?.LastCompletedStage ?? StatementReconciliationStage.NotStarted : StatementReconciliationStage.NotStarted;
+
+        // A persisted checkpoint is keyed by account, so only resume from it when it describes the
+        // same statement source. Otherwise a resume for a different file would inherit the prior
+        // run's completed stage and skip validation/import/reconcile for the new statement.
+        var resumeCheckpoint = resume
+            && checkpoint is not null
+            && string.Equals(checkpoint.SourceKind, sourceKind, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(checkpoint.SourcePath, sourcePath, StringComparison.Ordinal)
+                ? checkpoint
+                : null;
+        var lastCompleted = resumeCheckpoint?.LastCompletedStage ?? StatementReconciliationStage.NotStarted;
 
         var state = new StatementReconciliationCheckpoint(
             accountId,
@@ -71,10 +81,10 @@ public sealed class StatementReconciliationOrchestrator(
             StatementReconciliationStage.Validate,
             "Running",
             null,
-            checkpoint?.ImportId,
-            checkpoint?.ImportedRowCount ?? 0,
-            checkpoint?.MatchCount ?? 0,
-            checkpoint?.UnresolvedCount ?? 0,
+            resumeCheckpoint?.ImportId,
+            resumeCheckpoint?.ImportedRowCount ?? 0,
+            resumeCheckpoint?.MatchCount ?? 0,
+            resumeCheckpoint?.UnresolvedCount ?? 0,
             DateTimeOffset.UtcNow);
 
         try

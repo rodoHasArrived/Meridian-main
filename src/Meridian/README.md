@@ -6,10 +6,17 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-02
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian
+
+Consumer releases start this host through the persistent per-user lifecycle supervisor; the
+installed launcher is a thin shim. The supervisor owns dynamic loopback-port selection, the
+dedicated database and host process identities, data-root separation, readiness polling, shutdown
+deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
+sequence. Direct host commands remain developer/operator surfaces, not end-user installation
+instructions.
 
 ## Purpose
 
@@ -34,21 +41,23 @@ local workstation API process behavior, or production API binding policy.
 
 `ApiHost` configuration separates local workstation hosting from remote API deployment. The default
 `LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
-`ProductionApi` is the remote service posture for browser and WPF workstations; production
-auth-required startup rejects non-HTTPS bindings unless
+Required-auth production startup permits HTTP only when every `LocalWorkstation` binding is
+loopback. `ProductionApi` is the remote service posture for browser and WPF workstations; it rejects
+non-HTTPS bindings unless
 `AllowInsecureTransportForReverseProxy` is explicitly enabled for a trusted TLS-terminating proxy.
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.
 
-Hosted brokerage composition registers concrete Alpaca and Interactive Brokers gateways by keyed
-runtime ID (`alpaca`, `ib`, `ibkr`) and registers StockSharp only when the connector runtime type is
-present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted registration surface for
-Alpaca, Interactive Brokers, the `ibkr` alias, and optional StockSharp: concrete gateway type,
-declared gateway id, runtime-key match status, account/portfolio/activity sync support,
-order-modification and partial-fill capability, supported asset classes, validation issues, and
-missing-runtime notes. This is offline DI/runtime surface validation; it does not connect to live
-broker APIs or prove credentialed trading readiness. Do not add placeholder StockSharp services
-when the connector package is absent. Host order routing remains paper-first by default: brokerage
+Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
+by keyed runtime ID (`alpaca`, `ib`, `ibkr`, `robinhood`) and registers StockSharp only when the
+connector runtime type is present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted
+registration surface for Alpaca, Interactive Brokers, the `ibkr` alias, Robinhood, and optional
+StockSharp: concrete gateway type, declared gateway id, runtime-key match status,
+account/portfolio/activity sync support, order-modification and partial-fill capability, supported
+asset classes, validation issues, and missing-runtime notes. This is offline DI/runtime surface
+validation; it does not connect to live broker APIs or prove credentialed trading readiness. Do not
+add placeholder StockSharp services when the connector package is absent. Host order routing remains
+paper-first by default: brokerage
 execution resolves to paper gateways unless live execution is explicitly enabled, and Paper -> Live
 promotion claims must be tied to execution-governance audit or manual-override evidence before they
 are presented as readiness evidence.

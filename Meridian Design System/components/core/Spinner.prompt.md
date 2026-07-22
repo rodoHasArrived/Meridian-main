@@ -1,0 +1,1 @@
+Minimal async loading spinner — a thin ring with a semantic top stroke. Motion is its function, so it rotates (and slows under `prefers-reduced-motion`). Pass `label` to render an inline "spinner + text" row.

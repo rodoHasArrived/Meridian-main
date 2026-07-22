@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -20,8 +22,9 @@ public static class LedgerReportPackBuilder
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
 
-        var statements = LedgerFinancialStatementBuilder.BuildAsOf(
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(
             ledger,
+            request.PeriodStart,
             request.AsOf,
             chart,
             financialAccountId,
@@ -32,6 +35,8 @@ public static class LedgerReportPackBuilder
             CreateCsvArtifact("trial-balance.csv", statements.TrialBalanceRows),
             CreateCsvArtifact("income-statement.csv", statements.IncomeStatementRows),
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
+            CreateCashFlowArtifact("cash-flow-statement.csv", statements.CashFlow),
+            CreatePartnersCapitalArtifact("partners-capital-statement.csv", statements.PartnersCapital),
             CreateFinancialStatementsJsonArtifact(request, statements),
             CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
@@ -62,7 +67,7 @@ public static class LedgerReportPackBuilder
         IReadOnlyList<LedgerTaxLotReliefProjection> projections)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss");
+        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
 
         foreach (var projection in projections
             .OrderBy(static projection => projection.Input.SaleDate)
@@ -70,12 +75,49 @@ public static class LedgerReportPackBuilder
             .ThenBy(static projection => projection.Input.Account.Symbol ?? string.Empty, StringComparer.Ordinal)
             .ThenBy(static projection => projection.Input.FinancialAccountId ?? string.Empty, StringComparer.Ordinal))
         {
-            foreach (var selection in projection.Selections
+            var orderedSelections = projection.Selections
                 .OrderBy(static selection => selection.Lot.AcquiredDate)
-                .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal))
+                .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal)
+                .ToList();
+
+            // A wash sale defers part of the loss; the ledger recognized only the allowed portion.
+            // Spread the disallowed amount across the relieved lots by quantity so each row's
+            // recognized gain/loss nets to what was actually booked (residual on the final row),
+            // instead of the export overstating the current-period realized loss.
+            var disallowedTotal = projection.WashSale?.DisallowedLoss ?? 0m;
+            var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
+            var allocatedDisallowed = 0m;
+
+            for (var index = 0; index < orderedSelections.Count; index++)
             {
+                var selection = orderedSelections[index];
                 var proceeds = RoundCurrency(selection.QuantityRelieved * projection.Input.SalePrice);
                 var realizedGainOrLoss = proceeds - selection.CostBasis;
+
+                decimal disallowed;
+                if (disallowedTotal == 0m)
+                {
+                    disallowed = 0m;
+                }
+                else if (index == orderedSelections.Count - 1)
+                {
+                    disallowed = disallowedTotal - allocatedDisallowed;
+                }
+                else
+                {
+                    // Cap each row at the remaining unallocated amount so accumulated rounding on
+                    // earlier rows can never push the final row's residual negative (matches the
+                    // projector's DistributeBasisIncreases).
+                    var remaining = disallowedTotal - allocatedDisallowed;
+                    disallowed = totalQuantity == 0m
+                        ? 0m
+                        : Math.Min(remaining, RoundCurrency(disallowedTotal * (selection.QuantityRelieved / totalQuantity)));
+                    allocatedDisallowed += disallowed;
+                }
+
+                // Disallowed loss is a positive amount that reduces the recognized loss (a realized
+                // loss is negative, so adding the deferred portion moves it toward zero).
+                var recognizedGainOrLoss = realizedGainOrLoss + disallowed;
 
                 builder.Append(projection.Input.SaleDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
@@ -99,7 +141,11 @@ public static class LedgerReportPackBuilder
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.CostBasis));
                 builder.Append(',');
-                builder.AppendLine(FormatDecimal(realizedGainOrLoss));
+                builder.Append(FormatDecimal(realizedGainOrLoss));
+                builder.Append(',');
+                builder.Append(FormatDecimal(disallowed));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(recognizedGainOrLoss));
             }
         }
 
@@ -110,6 +156,103 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static LedgerReportPackArtifact CreateCashFlowArtifact(string name, LedgerCashFlowStatement? cashFlow)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Category,Description,CounterpartyType,Amount");
+        if (cashFlow is not null)
+        {
+            foreach (var line in cashFlow.Lines
+                .OrderBy(static line => line.Category)
+                .ThenBy(static line => line.Description, StringComparer.Ordinal))
+            {
+                builder.Append(line.Category);
+                builder.Append(',');
+                builder.Append(EscapeCsv(line.Description));
+                builder.Append(',');
+                builder.Append(line.CounterpartyType);
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(line.Amount));
+            }
+
+            AppendCashFlowTotal(builder, "Operating cash flow", cashFlow.OperatingCashFlow);
+            AppendCashFlowTotal(builder, "Investing cash flow", cashFlow.InvestingCashFlow);
+            AppendCashFlowTotal(builder, "Financing cash flow", cashFlow.FinancingCashFlow);
+            AppendCashFlowTotal(builder, "Net change in cash", cashFlow.NetCashFlow);
+            AppendCashFlowTotal(builder, "Beginning cash", cashFlow.BeginningCash);
+            AppendCashFlowTotal(builder, "Ending cash", cashFlow.EndingCash);
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static void AppendCashFlowTotal(StringBuilder builder, string label, decimal amount)
+    {
+        builder.Append("Total,");
+        builder.Append(EscapeCsv(label));
+        builder.Append(',');
+        builder.Append(',');
+        builder.AppendLine(FormatDecimal(amount));
+    }
+
+    private static LedgerReportPackArtifact CreatePartnersCapitalArtifact(string name, LedgerPartnersCapitalStatement? partnersCapital)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("AccountName,InvestorId,BeginningCapital,Contributions,Distributions,IncomeGainAllocations,ExpenseAllocations,FeeAllocations,AllocatedResult,OtherMovements,EndingCapital");
+        if (partnersCapital is not null)
+        {
+            foreach (var account in partnersCapital.Accounts
+                .OrderBy(static account => account.AccountName, StringComparer.Ordinal)
+                .ThenBy(static account => account.InvestorId ?? string.Empty, StringComparer.Ordinal))
+            {
+                builder.Append(EscapeCsv(account.AccountName));
+                builder.Append(',');
+                builder.Append(EscapeCsv(account.InvestorId ?? string.Empty));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.BeginningCapital));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Contributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Distributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.IncomeGainAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.ExpenseAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.FeeAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.AllocatedResult));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.OtherMovements));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(account.EndingCapital));
+            }
+
+            builder.Append("Total,,");
+            builder.Append(FormatDecimal(partnersCapital.BeginningCapital));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Contributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Distributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.IncomeGainAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.ExpenseAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.FeeAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.AllocatedResult));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.OtherMovements));
+            builder.Append(',');
+            builder.AppendLine(FormatDecimal(partnersCapital.EndingCapital));
+        }
+
+        var content = builder.ToString();
         return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
     }
 
@@ -377,55 +520,11 @@ public static class LedgerReportPackBuilder
     }
 
     private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet dimensions)
-    {
-        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions)!;
-        if (HasValue(dimensions.FundId))
-            yield return ("fundId", dimensions.FundId!.Trim());
-        if (HasValue(dimensions.EntityId))
-            yield return ("entityId", dimensions.EntityId!.Trim());
-        if (HasValue(dimensions.SleeveId))
-            yield return ("sleeveId", dimensions.SleeveId!.Trim());
-        if (HasValue(dimensions.StrategyId))
-            yield return ("strategyId", dimensions.StrategyId!.Trim());
-        if (HasValue(dimensions.InvestorId))
-            yield return ("investorId", dimensions.InvestorId!.Trim());
-        if (HasValue(dimensions.CapitalAccountId))
-            yield return ("capitalAccountId", dimensions.CapitalAccountId!.Trim());
-        if (dimensions.InstrumentId is not null)
-            yield return ("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
-        if (HasValue(dimensions.TaxLotId))
-            yield return ("taxLotId", dimensions.TaxLotId!.Trim());
-        if (HasValue(dimensions.CostCenterId))
-            yield return ("costCenterId", dimensions.CostCenterId!.Trim());
-        if (HasValue(dimensions.CounterpartyId))
-            yield return ("counterpartyId", dimensions.CounterpartyId!.Trim());
-        if (HasValue(dimensions.OrganizationId))
-            yield return ("organizationId", dimensions.OrganizationId!.Trim());
-        if (HasValue(dimensions.PortfolioId))
-            yield return ("portfolioId", dimensions.PortfolioId!.Trim());
-        if (HasValue(dimensions.BookId))
-            yield return ("bookId", dimensions.BookId!.Trim());
-        if (HasValue(dimensions.AccountId))
-            yield return ("accountId", dimensions.AccountId!.Trim());
-        if (HasValue(dimensions.CustomerId))
-            yield return ("customerId", dimensions.CustomerId!.Trim());
-        if (HasValue(dimensions.VendorId))
-            yield return ("vendorId", dimensions.VendorId!.Trim());
-        if (HasValue(dimensions.ProjectId))
-            yield return ("projectId", dimensions.ProjectId!.Trim());
-
-        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            if (HasValue(key) && HasValue(value))
-                yield return ($"externalGl.{key.Trim()}", value.Trim());
-        }
-    }
+        => LedgerLineDimensionSetFields.Enumerate(dimensions)
+            .Select(static field => (field.Name, field.Value));
 
     private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
         => LedgerLineDimensionSetNormalizer.Matches(actual, expected);
-
-    private static bool HasValue(string? value)
-        => !string.IsNullOrWhiteSpace(value);
 
     private static string ComputeSha256(string value)
     {
@@ -435,9 +534,6 @@ public static class LedgerReportPackBuilder
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 
     private static string JsonString(string value)
         => JsonSerializer.Serialize(value);

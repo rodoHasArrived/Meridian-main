@@ -88,4 +88,17 @@ public enum UserPermission : long
     // ── Fund structure / governance ────────────────────────────────────────────
     /// <summary>Create or modify fund-structure ownership and governance records.</summary>
     ManageFundStructure = 1L << 22,
+
+    // ── Reporting ─────────────────────────────────────────────────────────────
+    /// <summary>View governed reporting runs, schedules, delivery posture, and evidence.</summary>
+    ViewReporting = 1L << 23,
+
+    /// <summary>Create and manage reporting templates, schedules, runs, and work packages.</summary>
+    ManageReporting = 1L << 24,
+
+    /// <summary>Approve, reject, publish, restate, and archive governed report packs.</summary>
+    ApproveReporting = 1L << 25,
+
+    /// <summary>Deliver report packs and record delivery failures or retry evidence.</summary>
+    DeliverReporting = 1L << 26,
 }

@@ -194,17 +194,21 @@ internal static class SecurityMasterMapping
         };
 
     private static SecurityIdentifierDto ToIdentifierDto(SecurityIdentifierSnapshot identifier)
-        => new(
-            Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
+    {
+        // Read-tolerant: a kind stamped by a newer node degrades to Unknown so the snapshot stays
+        // readable; the strict write-side mapping (ToIdentifier) still rejects Unknown, so an
+        // unrecognized kind is never silently re-persisted.
+        var kind = SecurityMasterEnumReads.ParseOrFallback(identifier.Kind, SecurityIdentifierKind.Unknown);
+        return new(
+            kind,
             identifier.Value,
             identifier.IsPrimary,
             identifier.ValidFrom,
             identifier.ValidTo.HasValue ? identifier.ValidTo.Value : null,
             string.IsNullOrWhiteSpace(identifier.Provider) ? null : identifier.Provider,
-            SecurityIdentifierNormalizer.NormalizeValue(
-                Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
-                identifier.Value),
+            SecurityIdentifierNormalizer.NormalizeValue(kind, identifier.Value),
             SecurityIdentifierNormalizer.NormalizeProvider(identifier.Provider));
+    }
 
     private static CommonTerms ToCommonTerms(JsonElement json)
         => new(
@@ -223,6 +227,7 @@ internal static class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json);
+        var terms = ResolveAssetTermsJson(json);
 
         return assetClass switch
         {
@@ -319,6 +324,49 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "resetFrequency")),
                 ToFSharpList(GetOptionalArrayItems(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
                 ToOption(GetOptionalString(json, "pricingSource")))),
+            "StructuredCredit" => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
+                GetRequiredString(terms, "tranche"),
+                ToOption(GetOptionalString(terms, "poolId")),
+                GetRequiredString(terms, "collateralType"),
+                GetRequiredDecimal(terms, "originalFace"),
+                ToOption(GetOptionalDecimal(terms, "currentFactor")),
+                GetRequiredString(terms, "couponOrIndex"),
+                ToOption(GetOptionalString(terms, "factorSchedule")))),
+            "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
+                GetRequiredString(terms, "gpSponsor"),
+                GetRequiredString(terms, "strategy"),
+                GetRequiredInt(terms, "vintage"),
+                GetRequiredDecimal(terms, "commitment"),
+                ToOption(GetOptionalDecimal(terms, "fundedAmount")),
+                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
+                GetRequiredDateOnly(terms, "navDate"),
+                ToOption(GetOptionalString(terms, "lockup")))),
+            "PrivateCompanyEquity" => SecurityKind.NewPrivateCompanyEquity(new PrivateCompanyEquityTerms(
+                GetRequiredString(terms, "issuer"),
+                GetRequiredString(terms, "shareClass"),
+                GetRequiredString(terms, "round"),
+                ToOption(GetOptionalDecimal(terms, "ownershipPercent")),
+                GetRequiredDecimal(terms, "costBasis"),
+                ToOption(GetOptionalDecimal(terms, "latestValuation")),
+                ToOption(GetOptionalString(terms, "transferRestrictions")))),
+            "RealEstateHolding" => SecurityKind.NewRealEstateHolding(new RealEstateHoldingTerms(
+                GetRequiredString(terms, "propertyType"),
+                GetRequiredString(terms, "addressOrMarket"),
+                GetRequiredDecimal(terms, "ownershipPercent"),
+                GetRequiredDecimal(terms, "appraisalValue"),
+                GetRequiredDateOnly(terms, "valuationDate"),
+                ToOption(GetOptionalString(terms, "debtStack")),
+                ToOption(GetOptionalString(terms, "sponsor")))),
+            "CommitmentGuarantee" => SecurityKind.NewCommitmentGuarantee(new CommitmentGuaranteeTerms(
+                GetRequiredString(terms, "counterparty"),
+                ToOption(GetOptionalString(terms, "beneficiary")),
+                GetRequiredDecimal(terms, "committedAmount"),
+                ToOption(GetOptionalDecimal(terms, "unfundedAmount")),
+                GetRequiredDateOnly(terms, "effectiveDate"),
+                ToOption(GetOptionalDateOnly(terms, "expiryDate")),
+                ToOption(GetOptionalDecimal(terms, "feeRate")),
+                ToOption(GetOptionalString(terms, "collateral")),
+                ToFSharpList(GetOptionalArrayItems(terms, "covenants").Select(ToCovenant)))),
             "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
                 GetRequiredString(json, "commodityType"),
                 ToOption(GetOptionalString(json, "denomination")),
@@ -337,7 +385,23 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "strike")),
                 ToOption(GetOptionalDateOnly(json, "expiry")),
                 ToOption(GetOptionalDecimal(json, "multiplier")))),
-            _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
+            "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
+                ToOption(GetOptionalString(json, "fundType")),
+                ToOption(GetOptionalString(json, "fundFamily")),
+                ToOption(GetOptionalString(json, "navCurrency")),
+                ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
+                ToOption(GetOptionalBoolean(json, "isStableNav")),
+                ToOption(GetOptionalString(json, "pricingSource")))),
+            // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
+            // instead of failing every read of the row. A newer node can register a class this node
+            // has no deserializer for; throwing here made that a total read outage per security
+            // (see the InvestmentFund regression in SecurityMasterMappingInteropTests).
+            _ => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+                assetClass,
+                ToOption(GetOptionalString(json, "subType")),
+                ToOption(GetOptionalDateOnly(json, "maturity")),
+                ToOption(GetOptionalString(json, "issuerName")),
+                ToOption(GetOptionalString(json, "settlementType"))))
         };
     }
 
@@ -446,6 +510,20 @@ internal static class SecurityMasterMapping
     private static FSharpOption<int> ToOption(int? value)
         => value.HasValue ? FSharpOption<int>.Some(value.Value) : FSharpOption<int>.None;
 
+    private static FSharpOption<bool> ToOption(bool? value)
+        => value.HasValue ? FSharpOption<bool>.Some(value.Value) : FSharpOption<bool>.None;
+
+    private static FSharpOption<DistributionPolicy> ToDistributionPolicyOption(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? FSharpOption<DistributionPolicy>.None
+            : FSharpOption<DistributionPolicy>.Some(value.Trim() switch
+            {
+                "Accumulating" => DistributionPolicy.Accumulating,
+                "Distributing" => DistributionPolicy.Distributing,
+                "Sweep" => DistributionPolicy.Sweep,
+                var other => DistributionPolicy.NewOtherDistribution(other)
+            });
+
     private static FSharpOption<DateOnly> ToOption(DateOnly? value)
         => value.HasValue ? FSharpOption<DateOnly>.Some(value.Value) : FSharpOption<DateOnly>.None;
 
@@ -471,31 +549,31 @@ internal static class SecurityMasterMapping
 
     private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json)
     {
-        var schemaVersion = GetOptionalInt(json, "schemaVersion") ?? 1;
-        if (schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        var schemaVersion = GetOptionalInt(json, "schemaVersion")
+            ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+        var isProfileBacked = IsProfileBackedAssetPayload(assetClass, json);
+        if (SecurityMasterSchemaVersions.IsAcceptedAssetSpecificTermsVersion(schemaVersion, isProfileBacked))
         {
             return;
         }
 
-        if (schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms
-            && IsProfileBackedCustomAssetPayload(assetClass, json))
-        {
-            return;
-        }
-
-        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
-        {
-            throw new InvalidOperationException(
-                $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
-        }
+        throw new InvalidOperationException(
+            $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
     }
 
-    private static bool IsProfileBackedCustomAssetPayload(string assetClass, JsonElement json)
-        => (string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+    private static bool IsProfileBackedAssetPayload(string assetClass, JsonElement json)
+        => SupportsProfileBackedTerms(assetClass)
            && json.TryGetProperty("customProfileId", out var customProfileId)
            && customProfileId.ValueKind == JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
+
+    private static bool SupportsProfileBackedTerms(string assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
+
+    private static JsonElement ResolveAssetTermsJson(JsonElement json)
+        => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
+            ? profileFields
+            : json;
 
     private static JsonElement GetRequiredArray(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array
@@ -543,6 +621,10 @@ internal static class SecurityMasterMapping
            value.TryGetInt32(out var intValue)
             ? intValue
             : null;
+
+    private static int GetRequiredInt(JsonElement json, string propertyName)
+        => GetOptionalInt(json, propertyName)
+           ?? throw new InvalidOperationException($"Missing required integer '{propertyName}'.");
 
     private static bool? GetOptionalBoolean(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && (value.ValueKind is JsonValueKind.True or JsonValueKind.False)

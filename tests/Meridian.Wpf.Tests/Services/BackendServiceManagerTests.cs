@@ -8,27 +8,11 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class BackendServiceManagerTests
 {
     [Fact]
-    public void BuildProcessArguments_StartsDesktopModeOnConfiguredPort()
+    public void BuildProcessArguments_DelegatesStartupToLifecycleSupervisor()
     {
-        var args = BackendServiceManager.BuildProcessArguments(
-            @"C:\config\appsettings.json",
-            "http://localhost:9105");
+        var args = BackendServiceManager.BuildProcessArguments();
 
-        args.Should().Equal(
-            "--mode",
-            "desktop",
-            "--config",
-            @"C:\config\appsettings.json",
-            "--http-port",
-            "9105");
-    }
-
-    [Fact]
-    public void ResolveHttpPort_FallsBackToDefaultPortForInvalidServiceUrl()
-    {
-        var port = BackendServiceManager.ResolveHttpPort("not-a-valid-url");
-
-        port.Should().Be(8080);
+        args.Should().Equal("start");
     }
 
     [Fact]
@@ -59,6 +43,43 @@ public sealed class BackendServiceManagerTests
     }
 
     [Fact]
+    public async Task GetStatusAsync_WhenRemoteHealthProbeTimesOut_ReportsUnhealthy()
+    {
+        var remoteClient = new FakeRemoteWorkstationClient
+        {
+            HealthEndpointExceptionFactory = _ => new TaskCanceledException("Health probe timed out.")
+        };
+        var manager = new BackendServiceManager(remoteClient, CreateAppDataDirectory());
+
+        var status = await manager.GetStatusAsync();
+
+        status.IsHealthy.Should().BeFalse();
+        status.IsRunning.Should().BeFalse();
+        status.StatusMessage.Should().Be("Backend is not installed for lifecycle management yet.");
+        remoteClient.HealthEndpointCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetStatusAsync_WhenCallerCancelsRemoteHealthProbe_PropagatesCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+        var remoteClient = new FakeRemoteWorkstationClient
+        {
+            HealthEndpointExceptionFactory = ct =>
+            {
+                cts.Cancel();
+                return new OperationCanceledException(ct);
+            }
+        };
+        var manager = new BackendServiceManager(remoteClient, CreateAppDataDirectory());
+
+        Func<Task> act = () => manager.GetStatusAsync(cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        remoteClient.HealthEndpointCallCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task GetStatusAsync_ForwardsCancellationTokenToRemoteHealthProbe()
     {
         var remoteClient = new FakeRemoteWorkstationClient { HealthEndpointResult = true };
@@ -77,6 +98,7 @@ public sealed class BackendServiceManagerTests
     {
         public string BaseUrl { get; private set; } = "http://localhost:8080";
         public bool HealthEndpointResult { get; init; }
+        public Func<CancellationToken, Exception>? HealthEndpointExceptionFactory { get; init; }
         public int HealthEndpointCallCount { get; private set; }
         public CancellationToken LastHealthToken { get; private set; }
 
@@ -87,6 +109,11 @@ public sealed class BackendServiceManagerTests
         {
             LastHealthToken = ct;
             HealthEndpointCallCount++;
+            if (HealthEndpointExceptionFactory is { } exceptionFactory)
+            {
+                return Task.FromException<bool>(exceptionFactory(ct));
+            }
+
             return Task.FromResult(HealthEndpointResult);
         }
 

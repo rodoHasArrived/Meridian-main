@@ -468,6 +468,45 @@ public sealed class ReportWriterGridEngineTests
         rendered.Chart.Series.Single(series => series.Key == "missingColumn").Values.Should().Equal(0m);
     }
 
+    [Fact]
+    public void RenderGrids_DetectsCircularFormulaReferences()
+    {
+        var rows = new[]
+        {
+            Row(("strategy", "Core"), ("marketValue", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "circular",
+                "Circular",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["strategy"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("alpha", "{beta} + 1"),
+                    new ReportWriterFormulaDefinitionDto("beta", "{alpha} + 1"),
+                    new ReportWriterFormulaDefinitionDto("selfRef", "{selfRef} + 1"),
+                    new ReportWriterFormulaDefinitionDto("acyclic", "{marketValue} * 2")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().Contain(w => w.Contains("alpha") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().Contain(w => w.Contains("beta") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().Contain(w => w.Contains("selfRef") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Warnings.Should().NotContain(w => w.Contains("acyclic") && w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+
+        var row = rendered.Rows.Single();
+        row.Values["alpha"].Should().BeEmpty();
+        row.Values["beta"].Should().BeEmpty();
+        row.Values["selfRef"].Should().BeEmpty();
+        // Non-circular formulas alongside a cycle still evaluate.
+        row.Values["acyclic"].Should().Be("200");
+    }
+
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
         values.ToDictionary(static value => value.Key, static value => value.Value, StringComparer.OrdinalIgnoreCase);
 }

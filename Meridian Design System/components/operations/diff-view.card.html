@@ -1,0 +1,41 @@
+<!-- @dsCard group="Operations" viewport="700x520" name="Diff View" subtitle="Before → after field changes for review & audit rails" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Diff View</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { DiffView, Eyebrow, SeverityBadge, Timestamp } = window.MeridianDesignSystem_4f61be;
+function App() {
+  return (
+    <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <Eyebrow>Alert rule change · pending approval</Eyebrow>
+        <SeverityBadge status="ReviewRequired" />
+        <span style={{ flex: 1 }}></span>
+        <Timestamp value={Date.UTC(2026, 6, 1, 18, 22, 41)} style={{ fontSize: 11, color: "var(--text-muted)" }} />
+      </div>
+      <DiffView changes={[
+        { field: "Threshold", before: "-5.0%", after: "-8.0%" },
+        { field: "Window", before: "5m", after: "15m" },
+        { field: "Channels", before: "email", after: "email · pager" },
+        { field: "Severity", before: "Warning", after: "Critical" },
+        { field: "Owner", before: "r.alvarez", after: "r.alvarez" },
+      ]} />
+      <Eyebrow>Empty state</Eyebrow>
+      <DiffView changes={[]} emptyLabel="No changes in this revision" />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

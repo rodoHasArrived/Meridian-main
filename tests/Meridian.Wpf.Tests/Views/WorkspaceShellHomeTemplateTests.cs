@@ -71,6 +71,22 @@ public sealed class WorkspaceShellHomeTemplateTests
     }
 
     [Fact]
+    public void ReportingCockpitHome_ShouldUseCompactDecisionChrome()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Features\Reporting\Shell\ReportingWorkspaceShellPage.xaml"));
+
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"ReportingCompactChrome\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"ReportingCompactSummaryStrip\"");
+        xaml.Should().Contain("Daily Reporting Cockpit");
+        xaml.Should().Contain("WriterSummaryText");
+        xaml.Should().Contain("ApprovalSummaryText");
+        xaml.Should().Contain("DeliverySummaryText");
+        xaml.Should().NotContain("Current Handoff");
+        xaml.Should().NotContain("Report writer grids, branded report packs, scheduled distribution, dashboards, exports, approval gates, and lineage status stay visible together.");
+    }
+
+    [Fact]
     public void SettingsCockpitHome_ShouldUseSharedDecisionQueues()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(

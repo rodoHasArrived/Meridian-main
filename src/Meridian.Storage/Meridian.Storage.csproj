@@ -13,6 +13,7 @@
   <ItemGroup>
     <!-- Storage -->
     <PackageReference Include="Apache.Arrow" />
+    <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Parquet.Net" />
 
@@ -37,6 +38,7 @@
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
+    <ProjectReference Include="..\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
   </ItemGroup>
 
@@ -63,6 +65,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="MoneyMarket\Migrations\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Reporting\Migrations\*.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -22,14 +22,19 @@ public static class DirectLendingEndpoints
         var group = app.MapGroup("/api/loans")
             .WithTags("Direct Lending")
             .AddEndpointFilter(requireViewDirectLending);
+        var mutationGroup = app.MapGroup("/api/loans")
+            .WithTags("Direct Lending")
+            .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
+            .AddEndpointFilter(requireViewDirectLending);
 
         // SEC-001: every loan route exposes or mutates direct-lending contracts, so the group requires
         // at least a direct-lending view permission. Mutation routes additionally require
         // ManageDirectLending below. Routes mapped directly on the app (outside this group) attach the
         // same gates explicitly.
         group.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
+        mutationGroup.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
-        group.MapPost("/", async (JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -56,6 +61,7 @@ public static class DirectLendingEndpoints
         .Produces<LoanContractDetailDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}", async (Guid loanId, HttpContext context) =>
@@ -102,7 +108,7 @@ public static class DirectLendingEndpoints
         .WithName("GetLoanHistory")
         .Produces<IReadOnlyList<LoanEventLineageDto>>(StatusCodes.Status200OK);
 
-        group.MapPost("/{loanId:guid}/rebuild-state", async (Guid loanId, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/rebuild-state", async (Guid loanId, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -117,6 +123,7 @@ public static class DirectLendingEndpoints
         .Produces<LoanAggregateSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/terms-versions", async (Guid loanId, HttpContext context) =>
@@ -147,7 +154,7 @@ public static class DirectLendingEndpoints
         .WithName("GetLoanTermsVersionProjections")
         .Produces<IReadOnlyList<LoanTermsVersionDto>>(StatusCodes.Status200OK);
 
-        group.MapPut("/{loanId:guid}/terms", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPut("/{loanId:guid}/terms", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -175,9 +182,10 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/activate", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/activate", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -197,6 +205,7 @@ public static class DirectLendingEndpoints
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/servicing-state", async (Guid loanId, HttpContext context) =>
@@ -271,7 +280,7 @@ public static class DirectLendingEndpoints
         .WithName("GetLoanAccrualEntryProjections")
         .Produces<IReadOnlyList<DailyAccrualEntryDto>>(StatusCodes.Status200OK);
 
-        group.MapPost("/{loanId:guid}/drawdowns", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/drawdowns", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -299,9 +308,10 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/rate-resets", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/rate-resets", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -329,9 +339,10 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/payments/principal", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/payments/principal", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -359,9 +370,10 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/accruals/daily", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/accruals/daily", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -389,9 +401,10 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/payments", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/payments", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -415,6 +428,7 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/cash-transactions", async (Guid loanId, HttpContext context) =>
@@ -433,7 +447,7 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetPaymentAllocationsAsync(loanId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
         });
 
-        group.MapPost("/{loanId:guid}/fees", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/fees", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -457,6 +471,7 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/fee-balances", async (Guid loanId, HttpContext context) =>
@@ -480,7 +495,7 @@ public static class DirectLendingEndpoints
         .WithName("GetDirectLendingOperations")
         .Produces<DirectLendingOperationsReadModelDto>(StatusCodes.Status200OK);
 
-        group.MapPost("/servicer-statements/preview", async (JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/servicer-statements/preview", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveServicerStatementService(context);
             if (service is null)
@@ -501,9 +516,10 @@ public static class DirectLendingEndpoints
         .Produces<ServicerStatementPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/servicer-statements/import", async (JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/servicer-statements/import", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveServicerStatementService(context);
             if (service is null)
@@ -524,6 +540,7 @@ public static class DirectLendingEndpoints
         .Produces<ServicerStatementImportResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/servicer-statements/{batchId:guid}", async (Guid batchId, HttpContext context) =>
@@ -546,7 +563,7 @@ public static class DirectLendingEndpoints
         .WithName("GetServicerStatementRows")
         .Produces<IReadOnlyList<ServicerStatementRowDto>>(StatusCodes.Status200OK);
 
-        group.MapPost("/servicer-statements/{batchId:guid}/apply", async (Guid batchId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/servicer-statements/{batchId:guid}/apply", async (Guid batchId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveServicerStatementService(context);
             if (service is null)
@@ -567,6 +584,7 @@ public static class DirectLendingEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status400BadRequest)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/collateral", async (Guid loanId, HttpContext context) =>
@@ -579,7 +597,7 @@ public static class DirectLendingEndpoints
         .WithName("GetLoanCollateral")
         .Produces<IReadOnlyList<CollateralDto>>(StatusCodes.Status200OK);
 
-        group.MapPost("/{loanId:guid}/collateral", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/collateral", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -606,9 +624,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/collateral/remove", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/collateral/remove", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -635,9 +654,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPut("/{loanId:guid}/collateral/value", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPut("/{loanId:guid}/collateral/value", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -664,9 +684,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/status-transitions", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/status-transitions", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -693,9 +714,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/pik", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/pik", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -722,9 +744,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/restructures", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/restructures", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -751,9 +774,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/amortization/discount-premium", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/amortization/discount-premium", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -780,9 +804,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/writeoffs", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/writeoffs", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -806,9 +831,10 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -835,9 +861,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/prepayment-penalty", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/prepayment-penalty", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -863,9 +890,10 @@ public static class DirectLendingEndpoints
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -886,6 +914,7 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/projections", async (Guid loanId, HttpContext context) =>
@@ -932,9 +961,11 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageDirectLending);
 
-        group.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, HttpContext context) =>
+        mutationGroup.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, HttpContext context) =>
         {
             var service = ResolveService(context);
             if (service is null)
@@ -953,6 +984,7 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
         .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/reconciliation-runs", async (Guid loanId, HttpContext context) =>
@@ -1000,6 +1032,8 @@ public static class DirectLendingEndpoints
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageDirectLending);
 
         app.MapPost("/api/servicer-reports", async (JsonElement body, HttpContext context) =>
@@ -1026,6 +1060,8 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}", async (Guid batchId, HttpContext context) =>
@@ -1093,6 +1129,8 @@ public static class DirectLendingEndpoints
             }
         })
         .AddEndpointFilter(requireManageDirectLending)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.DirectLendingMutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageDirectLending);
     }
 

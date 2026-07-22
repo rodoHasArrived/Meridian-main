@@ -24,10 +24,13 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         {
             if (SetProperty(ref _parameter, value))
             {
-                _ = LoadFromParameterAsync(value);
+                CurrentLoadTask = LoadFromParameterAsync(value);
+                _ = CurrentLoadTask;
             }
         }
     }
+
+    internal Task CurrentLoadTask { get; private set; } = Task.CompletedTask;
 
     public ObservableCollection<LedgerTrialBalanceLine> TrialBalance { get; } = [];
     public ObservableCollection<LedgerJournalLine> Journal { get; } = [];

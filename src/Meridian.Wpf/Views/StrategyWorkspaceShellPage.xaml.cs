@@ -29,11 +29,25 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        AttachViewModelEvents();
-        ApplyToneBindings();
-        await ViewModel.StartAsync().ConfigureAwait(true);
-        ApplyToneBindings();
-        await RestoreShellDockLayoutAsync(StrategyDockManager).ConfigureAwait(true);
+        try
+        {
+            AttachViewModelEvents();
+            ApplyToneBindings();
+            await ViewModel.StartAsync().ConfigureAwait(true);
+            ApplyToneBindings();
+            await RestoreShellDockLayoutAsync(StrategyDockManager).ConfigureAwait(true);
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Strategy Workspace Shell page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

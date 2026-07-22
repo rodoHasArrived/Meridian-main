@@ -26,19 +26,20 @@ public sealed class PaperExecutionGatewayLotSizeTests
         var sm = new StubSecurityMaster(securityId: Guid.NewGuid(), lotSize: 100m);
         var gateway = new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance, sm);
 
-        var report = await gateway.SubmitOrderAsync(MarketBuy("XYZ", 200));
+        var report = await gateway.SubmitOrderAsync(MarketBuy("XYZ", 200, simulatedPrice: 50m));
 
         report.OrderStatus.Should().Be(OrderStatus.Filled);
         report.FilledQuantity.Should().Be(200m);
     }
 
-    private static OrderRequest MarketBuy(string symbol, decimal qty) => new()
+    private static OrderRequest MarketBuy(string symbol, decimal qty, decimal? simulatedPrice = null) => new()
     {
         Symbol = symbol,
         Side = OrderSide.Buy,
         Type = OrderType.Market,
         Quantity = qty,
-        TimeInForce = TimeInForce.Day
+        TimeInForce = TimeInForce.Day,
+        LimitPrice = simulatedPrice
     };
 
     private sealed class StubSecurityMaster : ISecurityMasterQueryService
@@ -54,6 +55,9 @@ public sealed class PaperExecutionGatewayLotSizeTests
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult(_securityId == securityId ? CreateDetail(securityId, "XYZ") : null);
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
 
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {

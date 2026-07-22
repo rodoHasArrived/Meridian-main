@@ -7,16 +7,6 @@ namespace Meridian.FinancialOperations.Reconciliation;
 public sealed class StatementReconciliationService
 {
     private readonly StatementBreakClassifier _breakClassifier = new();
-    private static readonly string[] CanonicalStatementColumns =
-    [
-        "account",
-        "symbol",
-        "quantity",
-        "price",
-        "cashAmount",
-        "activityType",
-        "tradeDate"
-    ];
     private readonly StatementMappingProfileRegistry _mappingProfiles;
 
     public StatementReconciliationService(StatementMappingProfileRegistry? mappingProfiles = null)
@@ -32,7 +22,16 @@ public sealed class StatementReconciliationService
         ct.ThrowIfCancellationRequested();
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         var profileId = mappingProfileId;
-        if (RequiresCanonicalStatementSchema(normalizedSourceKind))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            // Flex reports are XML; the canonical CSV header check does not apply. Validate the
+            // document shape instead so the workflow rejects non-Flex files before import.
+            ValidateFlexDocument(sourcePath);
+            profileId = string.IsNullOrWhiteSpace(profileId)
+                ? StatementMappingProfileRegistry.IbFlexV1ProfileId
+                : profileId;
+        }
+        else if (UsesCanonicalSchema(normalizedSourceKind, profileId))
         {
             var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, profileId);
             profileId = profile.ProfileId;
@@ -42,13 +41,21 @@ public sealed class StatementReconciliationService
         return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks{profileSuffix}.");
     }
 
-    public async Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct)
+    public Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct) =>
+        ImportAsync(sourceKind, sourcePath, mappingProfileId: null, ct: ct);
+
+    public async Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct)
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         ct.ThrowIfCancellationRequested();
-        if (RequiresCanonicalStatementSchema(normalizedSourceKind))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
         {
-            return await ReadNormalizedStatementImportAsync(normalizedSourceKind, sourcePath, ct).ConfigureAwait(false);
+            return await ReadFlexStatementImportAsync(normalizedSourceKind, sourcePath, ct).ConfigureAwait(false);
+        }
+
+        if (UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
+        {
+            return await ReadNormalizedStatementImportAsync(normalizedSourceKind, sourcePath, mappingProfileId, ct).ConfigureAwait(false);
         }
 
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
@@ -103,11 +110,17 @@ public sealed class StatementReconciliationService
             throw new ArgumentException("Statement source path is required.", nameof(sourcePath));
 
         var normalizedSourceKind = sourceKind.Trim().ToLowerInvariant();
-        if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal)
+        if (IsIbFlexSourceKind(normalizedSourceKind))
+        {
+            normalizedSourceKind = IbFlexSourceKind;
+        }
+        else if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "broker", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal))
-            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', 'custodian', or 'sample-broker'.");
+        {
+            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', 'custodian', 'sample-broker', or 'ib-flex'.");
+        }
 
         if (!File.Exists(sourcePath))
             throw new FileNotFoundException($"Statement source file '{sourcePath}' was not found.", sourcePath);
@@ -115,14 +128,248 @@ public sealed class StatementReconciliationService
         return normalizedSourceKind;
     }
 
+    private const string IbFlexSourceKind = "ib-flex";
+
+    private static bool IsIbFlexSourceKind(string normalizedSourceKind) =>
+        normalizedSourceKind is "ib-flex" or "ibflex" or "ibkr" or "interactive-brokers" or "interactivebrokers";
+
+    // Mirrors RoutingBrokerStatementService: an explicit Flex source kind always uses Flex
+    // processing, and a canonical broker/custodian kind with an .xml file routes to Flex too,
+    // so the workflow's validation stage agrees with where the import router will send the file.
+    private static bool UsesFlexProcessing(string normalizedSourceKind, string sourcePath) =>
+        IsIbFlexSourceKind(normalizedSourceKind)
+        || (RequiresCanonicalStatementSchema(normalizedSourceKind)
+            && string.Equals(Path.GetExtension(sourcePath), ".xml", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Validates that <paramref name="sourcePath"/> is a well-formed IB Flex Query document
+    /// (root element <c>FlexQueryResponse</c>) without loading the full report.
+    /// </summary>
+    private static void ValidateFlexDocument(string sourcePath)
+    {
+        try
+        {
+            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), CreateFlexReaderSettings());
+            reader.MoveToContent();
+            if (!string.Equals(reader.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    $"Statement source '{sourcePath}' is not an IB Flex Query report (root element '{reader.LocalName}').");
+            }
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            throw new InvalidDataException($"Statement source '{sourcePath}' is not well-formed XML: {ex.Message}", ex);
+        }
+    }
+
+    private static System.Xml.Linq.XDocument LoadFlexDocument(string content)
+    {
+        using var textReader = new StringReader(content);
+        using var reader = System.Xml.XmlReader.Create(textReader, CreateFlexReaderSettings());
+        return System.Xml.Linq.XDocument.Load(reader);
+    }
+
+    private static System.Xml.XmlReaderSettings CreateFlexReaderSettings() => new()
+    {
+        DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+        XmlResolver = null,
+        CloseInput = true,
+        MaxCharactersFromEntities = 0
+    };
+
+    /// <summary>
+    /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
+    /// and CashTransaction element) so case intake matches Flex statements with the same
+    /// engine as canonical CSV rows. Fee-like cash transactions keep fee row semantics via
+    /// <see cref="Infrastructure.Reconciliation.IbFlexBrokerStatementService.MapCashTransactionActivity"/>.
+    /// </summary>
+    private static IReadOnlyList<NormalizedStatementRow> ReadFlexStatementRows(
+        string importId,
+        string normalizedSourceKind,
+        string sourcePath,
+        string content)
+    {
+        var document = LoadFlexDocument(content);
+        var rows = new List<NormalizedStatementRow>();
+        var rowNumber = 0;
+
+        foreach (var statement in document.Descendants("FlexStatement"))
+        {
+            var statementToDate = Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                .ParseFlexDate((string?)statement.Attribute("toDate"));
+
+            foreach (var element in statement.Descendants()
+                         .Where(static e => e.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+            {
+                rowNumber++;
+                var (activityType, quantity, amount, date) = element.Name.LocalName switch
+                {
+                    "Trade" => (
+                        "trade",
+                        FlexDecimal(element, "quantity"),
+                        FlexFirstDecimal(element, "netCash", "proceeds") is var cash && cash != 0m
+                            ? cash
+                            : FlexDecimal(element, "quantity") * FlexDecimal(element, "tradePrice"),
+                        FlexFirstDate(element, ["tradeDate"], statementToDate)),
+                    "OpenPosition" => (
+                        "position",
+                        FlexDecimal(element, "position"),
+                        FlexFirstDecimal(element, "positionValue") is var value && value != 0m
+                            ? value
+                            : FlexDecimal(element, "position") * FlexFirstDecimal(element, "markPrice", "costBasisPrice"),
+                        FlexFirstDate(element, ["reportDate"], statementToDate)),
+                    _ => (
+                        Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                            .MapCashTransactionActivity((string?)element.Attribute("type")),
+                        0m,
+                        FlexDecimal(element, "amount"),
+                        FlexFirstDate(element, ["dateTime", "reportDate", "settleDate"], statementToDate))
+                };
+
+                var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["importId"] = importId,
+                    ["sourceKind"] = normalizedSourceKind,
+                    ["sourcePath"] = sourcePath,
+                    ["elementName"] = element.Name.LocalName,
+                    ["activityType"] = activityType,
+                    ["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture)
+                };
+                foreach (var attribute in element.Attributes())
+                {
+                    snapshot[attribute.Name.LocalName] = attribute.Value;
+                }
+
+                var elementText = element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting);
+                rows.Add(new NormalizedStatementRow(
+                    $"{importId}:{rowNumber}",
+                    ToStatementRowKind(activityType),
+                    (string?)element.Attribute("symbol") ?? string.Empty,
+                    quantity,
+                    amount,
+                    new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    (string?)element.Attribute("currency") ?? "USD",
+                    DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{elementText}"),
+                    snapshot));
+            }
+        }
+
+        return rows;
+    }
+
+    private static decimal FlexDecimal(System.Xml.Linq.XElement element, string attribute)
+    {
+        var raw = (string?)element.Attribute(attribute);
+        return string.IsNullOrWhiteSpace(raw)
+            ? 0m
+            : decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+    }
+
+    private static decimal FlexFirstDecimal(System.Xml.Linq.XElement element, params string[] attributes)
+    {
+        foreach (var attribute in attributes)
+        {
+            var raw = (string?)element.Attribute(attribute);
+            if (!string.IsNullOrWhiteSpace(raw))
+                return decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+        }
+
+        return 0m;
+    }
+
+    private static DateOnly FlexFirstDate(System.Xml.Linq.XElement element, string[] attributes, DateOnly? fallback)
+    {
+        foreach (var attribute in attributes)
+        {
+            if (Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                    .ParseFlexDate((string?)element.Attribute(attribute)) is { } parsed)
+                return parsed;
+        }
+
+        return fallback ?? throw new InvalidDataException(
+            "Flex row has no parseable date attribute and the statement has no toDate fallback.");
+    }
+
+    /// <summary>
+    /// Reads an IB Flex report into source-row references (one per Trade, OpenPosition, and
+    /// CashTransaction element, with the element's attributes as the raw snapshot) so the
+    /// checkpointed ingestion stage reports real row counts. Canonical row construction for
+    /// the workflow path is owned by the Flex-aware broker statement importer.
+    /// </summary>
+    private static async Task<NormalizedStatementImportResult> ReadFlexStatementImportAsync(
+        string normalizedSourceKind,
+        string sourcePath,
+        CancellationToken ct)
+    {
+        var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
+        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
+
+        // Import can be invoked without validation (for example, when resuming from a checkpoint),
+        // so parse with the same DTD-prohibiting settings as ValidateFlexDocument.
+        var document = LoadFlexDocument(content);
+        var sourceRows = new List<StatementSourceRowReference>();
+        var rowNumber = 0;
+        foreach (var element in document.Descendants()
+                     .Where(static e => e.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+        {
+            ct.ThrowIfCancellationRequested();
+            rowNumber++;
+            var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["sourceKind"] = normalizedSourceKind,
+                ["sourcePath"] = sourcePath,
+                ["elementName"] = element.Name.LocalName
+            };
+            foreach (var attribute in element.Attributes())
+            {
+                snapshot[attribute.Name.LocalName] = attribute.Value;
+            }
+
+            sourceRows.Add(CreateSourceRowReference(
+                importId,
+                rowNumber,
+                element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting),
+                snapshot));
+        }
+
+        return new NormalizedStatementImportResult(importId, normalizedSourceKind, sourcePath, sourceRows.Count, [], [], [], [], sourceRows);
+    }
+
     private static bool RequiresCanonicalStatementSchema(string normalizedSourceKind) =>
         string.Equals(normalizedSourceKind, "broker", StringComparison.Ordinal)
         || string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
         || string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal);
 
+    // A source is parsed through the canonical, mapping-profile-driven path when its kind always
+    // requires the canonical schema, OR when the caller explicitly selects a mapping profile.
+    // The latter makes operator-supplied ('local') statements reconcilable via a chosen profile,
+    // while a 'local' source with no profile keeps its lenient raw-passthrough behavior.
+    private static bool UsesCanonicalSchema(string normalizedSourceKind, string? mappingProfileId) =>
+        RequiresCanonicalStatementSchema(normalizedSourceKind)
+        || !string.IsNullOrWhiteSpace(mappingProfileId);
+
     private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        if (!RequiresCanonicalStatementSchema(normalizedSourceKind))
+        // Flex XML never parses through the canonical CSV path, regardless of any mapping
+        // profile the caller selected; its rows are read from the XML sections and matched
+        // with the same engine so CLI/orchestrator intake reports real match/unresolved counts.
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            var flexContent = File.ReadAllText(sourcePath);
+            var flexImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{flexContent}");
+            var flexRows = ReadFlexStatementRows(flexImportId, normalizedSourceKind, sourcePath, flexContent);
+            var (flexMatches, flexCases) = MatchRows(flexRows);
+            return new ExternalStatementCaseIntakeResult(
+                flexImportId,
+                normalizedSourceKind,
+                sourcePath,
+                flexRows.Count,
+                flexMatches.Count,
+                flexCases);
+        }
+
+        if (!UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             var content = File.ReadAllText(sourcePath);
             var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
@@ -131,8 +378,14 @@ public sealed class StatementReconciliationService
 
         var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
         var (matches, cases) = MatchRows(rows);
+        // Compute the import id from the resolved profile and file content, identical to the import
+        // path (and to ReadCanonicalStatementRows for non-empty files), so import and reconcile/intake
+        // refer to the same run even for a valid but empty (header-only) statement.
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
+        var canonicalContent = File.ReadAllText(sourcePath);
+        var canonicalImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{canonicalContent}");
         return new ExternalStatementCaseIntakeResult(
-            rows.Count == 0 ? DeterministicFingerprint.Compute($"{normalizedSourceKind}|{mappingProfileId}|{sourcePath}") : rows[0].RawSnapshot["importId"],
+            canonicalImportId,
             normalizedSourceKind,
             sourcePath,
             rows.Count,
@@ -140,15 +393,17 @@ public sealed class StatementReconciliationService
             cases);
     }
 
-    private static async Task<NormalizedStatementImportResult> ReadNormalizedStatementImportAsync(
+    private async Task<NormalizedStatementImportResult> ReadNormalizedStatementImportAsync(
         string normalizedSourceKind,
         string sourcePath,
+        string? mappingProfileId,
         CancellationToken ct)
     {
-        ValidateCanonicalStatementHeader(sourcePath);
+        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
+        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
 
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
-        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
+        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var positions = new List<StatementPosition>();
         var cashBalances = new List<StatementCashBalance>();
         var transactions = new List<StatementTransaction>();
@@ -172,7 +427,7 @@ public sealed class StatementReconciliationService
                 securities.Add(p.Security);
             }
 
-            switch (ToStatementRowKind(p.TransactionType))
+            switch (p.RowKind)
             {
                 case StatementRowKind.Position:
                     positions.Add(new StatementPosition(
@@ -233,30 +488,55 @@ public sealed class StatementReconciliationService
         ParsedStatementLine ParseCanonicalStatementLine(string line, int currentRowNumber)
         {
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < CanonicalStatementColumns.Length)
+            var requiredColumnCount = RequiredColumnCount(profile, header);
+            if (parts.Length < requiredColumnCount)
             {
-                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {CanonicalStatementColumns.Length}.");
+                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {requiredColumnCount} required columns for mapping profile '{profile.ProfileId}'.");
             }
 
-            var account = parts[0];
-            var symbol = parts[1];
-            var quantity = decimal.Parse(parts[2], CultureInfo.InvariantCulture);
-            var price = decimal.Parse(parts[3], CultureInfo.InvariantCulture);
-            var cashAmount = decimal.Parse(parts[4], CultureInfo.InvariantCulture);
-            var activityType = parts[5];
-            var tradeDate = DateOnly.Parse(parts[6], CultureInfo.InvariantCulture);
-            var sourceRow = CreateSourceRowReference(importId, currentRowNumber, line, CreateRawSnapshot(importId, normalizedSourceKind, sourcePath, currentRowNumber, line, parts));
-            var snapshot = sourceRow.RawSnapshot;
-            var securityId = GetOptional(parts, 9);
-            var unresolvedIdentifier = GetOptional(parts, 10) ?? (string.IsNullOrWhiteSpace(symbol) ? null : symbol);
-            var currency = GetOptional(parts, 11) ?? "USD";
-            var marketValue = GetOptionalDecimal(parts, 12) ?? price * quantity;
-            var settlementDate = GetOptionalDate(parts, 13);
-            var amount = GetOptionalDecimal(parts, 14) ?? (cashAmount == 0m ? marketValue : cashAmount);
-            var feesCommission = GetOptionalDecimal(parts, 15) ?? 0m;
-            var externalReference = GetOptional(parts, 16);
-            var externalAccountId = GetOptional(parts, 8) ?? account;
-            var accountId = GetOptional(parts, 7) ?? account;
+            var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
+            var account = mapped.GetRequired(StatementCanonicalField.Account, currentRowNumber);
+            // Classify the row kind from the mapped (canonical) activity, but keep the original source
+            // activity code for the transaction so direction-bearing codes (e.g. BUY/SELL, which a
+            // profile may both map to "trade") are not lost for downstream matching/classification.
+            var sourceActivityType = mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber);
+            var activityType = profile.MapActivityType(sourceActivityType);
+            var rowKind = ToStatementRowKind(activityType);
+            // Security-bearing positions and transactions must carry an identifier so downstream
+            // matching and resolution retain a security reference. Only account-level cash, fee,
+            // and dividend rows may omit it, matching the prior positional importer.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
+                ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber)
+                : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
+            var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
+            var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, currentRowNumber);
+            var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, currentRowNumber);
+            var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, currentRowNumber);
+            var settlementDate = mapped.GetOptionalDate(StatementCanonicalField.SettlementDate);
+            var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
+            var marketValue = mapped.GetOptionalDecimal(StatementCanonicalField.MarketValue) ?? price * quantity;
+            var amount = mapped.GetOptionalDecimal(StatementCanonicalField.Amount) ?? (cashAmount == 0m ? marketValue : cashAmount);
+            var feesCommission = mapped.GetOptionalDecimal(StatementCanonicalField.FeesCommission) ?? 0m;
+            var externalReference = mapped.GetOptional(StatementCanonicalField.ExternalReference)
+                ?? mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
+            var securityId = mapped.GetOptional(StatementCanonicalField.SecurityId);
+            var unresolvedIdentifier = mapped.GetOptional(StatementCanonicalField.UnresolvedIdentifier)
+                ?? (string.IsNullOrWhiteSpace(symbol) ? null : symbol);
+            var accountId = mapped.GetOptional(StatementCanonicalField.AccountId) ?? account;
+            var externalAccountId = mapped.GetOptional(StatementCanonicalField.ExternalAccountId) ?? account;
+
+            var snapshot = mapped.ToCanonicalSnapshot();
+            snapshot["importId"] = importId;
+            snapshot["sourceKind"] = normalizedSourceKind;
+            snapshot["sourcePath"] = sourcePath;
+            snapshot["mappingProfileId"] = profile.ProfileId;
+            snapshot["account"] = account;
+            snapshot["symbol"] = symbol;
+            snapshot["activityType"] = activityType;
+            snapshot["tradeDate"] = tradeDate.ToString("O");
+            snapshot["rowNumber"] = currentRowNumber.ToString(CultureInfo.InvariantCulture);
+            snapshot["rawLine"] = line;
+            var sourceRow = CreateSourceRowReference(importId, currentRowNumber, line, snapshot);
             var security = new StatementSecurityReference(importId, currentRowNumber, sourceRow.SourceRowHash, snapshot, securityId, unresolvedIdentifier, currency);
 
             return new ParsedStatementLine(
@@ -273,7 +553,8 @@ public sealed class StatementReconciliationService
                 settlementDate,
                 amount,
                 feesCommission,
-                activityType,
+                rowKind,
+                sourceActivityType,
                 externalReference);
         }
     }
@@ -297,18 +578,22 @@ public sealed class StatementReconciliationService
             }
 
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < header.Length)
+            var requiredColumnCount = RequiredColumnCount(profile, header);
+            if (parts.Length < requiredColumnCount)
             {
-                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
+                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {requiredColumnCount} required columns for mapping profile '{profile.ProfileId}'.");
             }
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            var symbol = rowKind == StatementRowKind.CashBalance
-                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
-                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            // Security-bearing positions and transactions must carry an identifier (see import
+            // path); only account-level cash, fee, and dividend rows may omit it. Kept consistent
+            // across both paths.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
+                ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber)
+                : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
@@ -317,6 +602,13 @@ public sealed class StatementReconciliationService
             var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
             var feesCommission = mapped.GetOptional(StatementCanonicalField.FeesCommission);
             var externalTransactionId = mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
+            // Economic amount, derived consistently with the import path: prefer an explicit mapped
+            // amount, then a non-zero cash amount, then market value (or price * quantity), so a row
+            // carrying its value in the optional amount column is not classified as zero on intake.
+            var amount = mapped.GetOptionalDecimal(StatementCanonicalField.Amount)
+                ?? (cashAmount == 0m
+                    ? mapped.GetOptionalDecimal(StatementCanonicalField.MarketValue) ?? price * quantity
+                    : cashAmount);
             var rowFingerprint = DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}");
             var rawSnapshot = mapped.ToCanonicalSnapshot();
             rawSnapshot["importId"] = importId;
@@ -343,7 +635,7 @@ public sealed class StatementReconciliationService
                 rowKind,
                 symbol,
                 quantity,
-                cashAmount == 0m ? price * quantity : cashAmount,
+                amount,
                 new DateTimeOffset(tradeDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                 currency,
                 rowFingerprint,
@@ -353,22 +645,6 @@ public sealed class StatementReconciliationService
         return rows;
     }
 
-
-    private static void ValidateCanonicalStatementHeader(string sourcePath)
-    {
-        var header = File.ReadLines(sourcePath).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(header))
-        {
-            throw new InvalidDataException("Statement source file is empty.");
-        }
-
-        var actual = header.Split(',', StringSplitOptions.TrimEntries);
-        EnsureUniqueStatementHeaderColumns(actual, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
-        if (!CanonicalCsvHeaderPrefixMatches(actual))
-        {
-            throw new InvalidDataException("Statement source must use the canonical external statement header: account,symbol,quantity,price,cashAmount,activityType,tradeDate.");
-        }
-    }
 
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
@@ -444,74 +720,35 @@ public sealed class StatementReconciliationService
         return map;
     }
 
+    // The number of leading columns a data row must contain to cover every required mapped field.
+    // Optional trailing columns may be omitted by an individual row (BuildColumnMap pads them empty);
+    // such rows default their optional values rather than being rejected for being shorter than the
+    // full header.
+    private static int RequiredColumnCount(StatementMappingProfile profile, string[] header)
+    {
+        var requiredColumns = profile.FieldMappings
+            .Where(mapping => mapping.Required)
+            .Select(mapping => mapping.SourceColumn)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var lastRequiredIndex = -1;
+        for (var i = 0; i < header.Length; i++)
+        {
+            if (requiredColumns.Contains(header[i]))
+            {
+                lastRequiredIndex = i;
+            }
+        }
+
+        return lastRequiredIndex + 1;
+    }
+
     private static StatementSourceRowReference CreateSourceRowReference(
         string importId,
         int rowNumber,
         string line,
         IReadOnlyDictionary<string, string> rawSnapshot)
         => new(importId, rowNumber, DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}"), rawSnapshot);
-
-    private static IReadOnlyDictionary<string, string> CreateRawSnapshot(
-        string importId,
-        string normalizedSourceKind,
-        string sourcePath,
-        int rowNumber,
-        string line,
-        string[] parts)
-    {
-        var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["importId"] = importId,
-            ["sourceKind"] = normalizedSourceKind,
-            ["sourcePath"] = sourcePath,
-            ["account"] = parts[0],
-            ["symbol"] = parts[1],
-            ["quantity"] = parts[2],
-            ["price"] = parts[3],
-            ["cashAmount"] = parts[4],
-            ["activityType"] = parts[5],
-            ["tradeDate"] = parts[6],
-            ["rowNumber"] = rowNumber.ToString(),
-            ["rawLine"] = line
-        };
-
-        AddOptional(snapshot, "accountId", parts, 7);
-        AddOptional(snapshot, "externalAccountId", parts, 8);
-        AddOptional(snapshot, "securityId", parts, 9);
-        AddOptional(snapshot, "unresolvedIdentifier", parts, 10);
-        AddOptional(snapshot, "currency", parts, 11);
-        AddOptional(snapshot, "marketValue", parts, 12);
-        AddOptional(snapshot, "settlementDate", parts, 13);
-        AddOptional(snapshot, "amount", parts, 14);
-        AddOptional(snapshot, "feesCommission", parts, 15);
-        AddOptional(snapshot, "externalReference", parts, 16);
-        return snapshot;
-    }
-
-    private static void AddOptional(Dictionary<string, string> snapshot, string key, string[] parts, int index)
-    {
-        var value = GetOptional(parts, index);
-        if (value is not null)
-        {
-            snapshot[key] = value;
-        }
-    }
-
-    private static string? GetOptional(string[] parts, int index)
-    {
-        if (parts.Length <= index || string.IsNullOrWhiteSpace(parts[index]))
-        {
-            return null;
-        }
-
-        return parts[index];
-    }
-
-    private static decimal? GetOptionalDecimal(string[] parts, int index) =>
-        GetOptional(parts, index) is { } value ? decimal.Parse(value, CultureInfo.InvariantCulture) : null;
-
-    private static DateOnly? GetOptionalDate(string[] parts, int index) =>
-        GetOptional(parts, index) is { } value ? DateOnly.Parse(value, CultureInfo.InvariantCulture) : null;
 
     private static StatementRowKind ToStatementRowKind(string activityType)
     {
@@ -540,22 +777,27 @@ public sealed class StatementReconciliationService
         return StatementRowKind.Transaction;
     }
 
+    /// <summary>
+    /// Matches normalized statement rows into match links and reconciliation cases. Position rows
+    /// are matched by the shared <see cref="StatementMatchingEngine"/> against the supplied
+    /// internal portfolio positions (none by default for file-only intake); rows the engine cannot
+    /// match at exact or tolerance tier fall through to break classification and casework, the
+    /// same as every other row kind.
+    /// </summary>
     public (IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<ReconciliationCase> Cases) MatchRows(
-        IReadOnlyList<NormalizedStatementRow> rows)
+        IReadOnlyList<NormalizedStatementRow> rows,
+        IReadOnlyList<InternalPortfolioPosition>? internalPositions = null)
     {
         var matches = new List<ReconciliationMatchLink>();
         var cases = new List<ReconciliationCase>();
+        var positionMatchLinks = MatchPositionRows(rows, internalPositions ?? []);
 
         foreach (var row in rows)
         {
-            if (row.Kind == StatementRowKind.Position && Math.Abs(row.Quantity) > 0)
+            if (row.Kind == StatementRowKind.Position &&
+                positionMatchLinks.TryGetValue(row.RowId, out var positionMatch))
             {
-                matches.Add(new ReconciliationMatchLink(row.RowId, "position:auto", null, null, null, null, null, "high", "Symbol and quantity aligned within tolerance rule position-default-v1.")
-                {
-                    ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
-                    ToleranceProfileVersion = StatementToleranceProfile.DefaultProfileVersion,
-                    ToleranceRuleId = "position-default-v1"
-                });
+                matches.Add(positionMatch);
                 continue;
             }
 
@@ -615,6 +857,88 @@ public sealed class StatementReconciliationService
         return (matches, cases);
     }
 
+    /// <summary>
+    /// Runs statement position rows through <see cref="StatementMatchingEngine"/> and returns a
+    /// match link per row that matched at exact or tolerance tier, keyed by row id. Candidate and
+    /// unmatched engine results intentionally produce no link so those rows become break cases.
+    /// </summary>
+    private static Dictionary<string, ReconciliationMatchLink> MatchPositionRows(
+        IReadOnlyList<NormalizedStatementRow> rows,
+        IReadOnlyList<InternalPortfolioPosition> internalPositions)
+    {
+        var statementPositions = rows
+            .Where(static row => row.Kind == StatementRowKind.Position)
+            .Select(static row => new NormalizedStatementPosition(
+                row.RowId,
+                row.RawSnapshot.GetValueOrDefault("account", "unknown-account"),
+                row.Symbol,
+                DateOnly.FromDateTime(row.EffectiveAtUtc.UtcDateTime),
+                row.Quantity,
+                // Row amounts are always derived from required statement columns (explicit
+                // amount, cash amount, or price x quantity), so zero is a real market value —
+                // not absence. The previous `== 0m ? null` demoted genuinely zero-MV positions
+                // to quantity-only matching and skipped the market-value comparison.
+                row.Amount,
+                row.RowId))
+            .ToArray();
+
+        var links = new Dictionary<string, ReconciliationMatchLink>(StringComparer.OrdinalIgnoreCase);
+        if (statementPositions.Length == 0)
+        {
+            return links;
+        }
+
+        // Fail closed if the default profile ever ships without a position rule: no rule means no
+        // engine matches, so every position row surfaces as a break case for operator review.
+        var positionRule = StatementToleranceProfile.Default.PositionRules.FirstOrDefault();
+        if (positionRule is null)
+        {
+            return links;
+        }
+
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            statementPositions,
+            StatementCashBalances: [],
+            StatementTransactions: [],
+            InternalPositions: internalPositions,
+            InternalCashBalances: [],
+            InternalLedgerTransactions: [],
+            new StatementMatchingToleranceProfile(
+                PositionQuantity: positionRule.QuantityTolerance,
+                PositionMarketValue: positionRule.MarketValueTolerance,
+                CashBalance: 0m,
+                TransactionQuantity: 0m,
+                TransactionNetAmount: 0m)));
+
+        foreach (var match in result.Results)
+        {
+            if (match.Kind != StatementMatchKind.Position ||
+                match.MatchTier is not (StatementMatchTier.Exact or StatementMatchTier.Tolerance) ||
+                match.BrokerEvidenceReference is null)
+            {
+                continue;
+            }
+
+            links[match.BrokerEvidenceReference] = new ReconciliationMatchLink(
+                match.BrokerEvidenceReference,
+                match.InternalEvidenceReference,
+                null,
+                null,
+                null,
+                null,
+                null,
+                match.MatchTier == StatementMatchTier.Exact ? "high" : "medium",
+                match.Explanation)
+            {
+                ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
+                ToleranceProfileVersion = StatementToleranceProfile.DefaultProfileVersion,
+                ToleranceRuleId = match.RuleIds.FirstOrDefault()
+            };
+        }
+
+        return links;
+    }
+
     private static ReconciliationCaseAttachment BuildStatementAttachment(
         NormalizedStatementRow row,
         string? evidenceRoute)
@@ -643,6 +967,11 @@ public sealed class StatementReconciliationService
 
         var (probableCause, ledgerImpact, suggestedNextAction, signoffRole) = row.Kind switch
         {
+            StatementRowKind.Position => (
+                "External position could not be matched to a retained internal portfolio position within tolerance.",
+                $"Position and market-value balances may be misstated by {FormatAmount(row.Amount, row.Currency)} for {DisplaySymbol(row)}.",
+                "Compare the statement position with the retained internal position snapshot and attach the position-reconciliation evidence before resolving.",
+                "Fund operations"),
             StatementRowKind.CashBalance => (
                 "External cash balance could not be matched to a retained internal cash snapshot within tolerance.",
                 $"Cash ledger may need a balance adjustment or missing bank/custodian sync review for account {account}.",
@@ -710,6 +1039,7 @@ public sealed class StatementReconciliationService
         DateOnly? SettlementDate,
         decimal Amount,
         decimal FeesCommission,
+        StatementRowKind RowKind,
         string TransactionType,
         string? ExternalReference);
 }

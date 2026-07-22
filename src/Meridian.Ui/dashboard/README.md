@@ -6,10 +6,15 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-19
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Ui/dashboard
+
+First launch is browser-primary. `/setup` renders the first-run concierge while the
+shared first-run API remains the source of truth for starter kits, sample safety labels,
+recommendations, and completed activation outcomes. Sample mode stays offline-capable
+and visibly labelled `SAMPLE · PAPER` throughout the shell.
 
 ## Purpose
 
@@ -30,9 +35,23 @@ instead of introducing one-off screen styling.
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
+- `src/app-shell.command-palette.ts` - app-shell command-palette trigger and keyboard shortcut view models.
+- `src/app-shell.development-fixture-notice.ts` - app-shell no-host demo-data notice and evidence path view models.
+- `src/app-shell.route-focus.ts` - app-shell route announcement, document title, and hash-target focus view models.
+- `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
+- `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
+- `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
+- `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
+- `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
+- `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
+- `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
+
+Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
+screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
+tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/`.
 
 
 ## Dense row detail accessibility contract
@@ -55,12 +74,18 @@ Current dense-row detail consumers covered by regression tests include Portfolio
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
 Security Master lots.
 
+The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
+source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
+owner-assignment, outcome, and compatibility-derived provenance visible, with operator sorting on
+SLA tier and deadline. Live provider-attempt progress remains a separate bounded projection so a
+dropped transient notification cannot erase the retained execution/SLA record.
+
 ## Important workflows
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
-This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security
+This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
 review.
@@ -78,6 +103,60 @@ optimistic-concurrency and audit evidence remain server-owned.
 Settings also exposes the Admin Ops task console over shared maintenance, storage, retention,
 cleanup, schedule, and data-package endpoints. React renders returned posture, command results, and
 typed package/schedule evidence without inventing local maintenance policy or retention decisions.
+
+Evidence Workbench consumes the shared Evidence Vault request-list and document queue endpoints. The
+same intake queue is reachable from the Accounting and Data workspace subnavigation, while the
+legacy Reporting evidence route remains a compatible evidence-packet entrypoint. The
+browser renders retained documents with classification, source hash, typed channel/source, actor,
+tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
+count, support-only authority posture, and manifest links, while keeping intake and readiness policy
+in shared contracts/endpoints.
+Statement import accepts either a bounded file upload or a remote fetch through a fetch-capable
+provider connection. The scheduled-fetch tab previews remote activity with the same canonical
+column-confidence and per-kind breakdown as file import, then lets operators create, edit, pause,
+delete, refresh, or run persisted schedules with an explicit broker/custodian classification without
+collecting credentials in the browser. Run-now
+results render the shared Evidence Vault and reconciliation routes. File-import commit results also
+render Evidence Vault identity, the Evidence Workbench route, reconciliation route, and structured
+reconciliation case links directly from the commit response, including status, priority, reason,
+and suggested next action. The browser blocks file commit while preview errors remain, so operators
+can move from imported custodian/broker source to retained proof and exact casework without
+browser-local routing rules or avoidable server rejections.
+The request-list queue renders typed close, audit, tax, report-package, and operational-event family
+badges beside each frozen support list so operators can distinguish close binder blockers from audit
+or report-support package gaps without parsing manifest JSON.
+Selecting a retained document opens a read-only review panel with reviewer notes, source metadata,
+immutable source-record receipt, extracted fields for human confirmation, human-confirmed field
+counts, authority boundary, object links, audit events, support-request context, and manifest access
+without introducing browser-owned approval or accounting mutation.
+Operators can also retain an uploaded document, local-file path, or imported-file reference from
+the selected evidence subject, classify it, record actor and tenant/scope metadata, set extraction
+and reviewer state, and attach one linked operational object before the shared vault intake
+endpoint copies the payload and computes the source hash. The intake form exposes the v1
+document-classification vocabulary, `Pending` extraction posture, and linked fund, account, period,
+close, reconciliation, journal, report, instrument, and portfolio object targets; it leaves `Accepted`
+review out of first-pass intake because accepted evidence must pass through the shared review
+endpoint with human-confirmed fields.
+When an operator accepts a retained document from the browser, the shared review endpoint receives
+human-confirmed extracted fields plus the immutable source-hash field so accepted evidence is not
+represented by a status-only transition; the retained document authority still cannot approve,
+post, certify, or release.
+The TypeScript contract also mirrors `EvidenceDocumentIntakeChannelDto` and
+`EvidenceDocumentIntakeSourceDto` so uploaded, email, SFTP, API, portal-download, local-file, and
+imported-file reference intake use the same shared channel/source vocabulary. Browser intake keeps
+email, SFTP, API, and portal-download as upload-backed adapter seams in v1: operators retain the
+document bytes and typed source URI now, while later connector implementations can fetch from those
+channels without changing the retained source-record shape.
+The TypeScript vault identity mirror includes the public `manifestSnapshot` so browser close,
+report, audit, and tax package views can inspect frozen package documents, support requests, object
+links, typed request-list family, typed frozen package family, and content hash without parsing
+retained manifest JSON.
+Manifest export results surface that typed frozen package family directly, so operators can tell
+whether the retained package is a close binder, audit packet, report support package, tax support
+package, or operational-event support package before opening the manifest file.
+The browser DTO mirror also preserves `documentSnapshots` on Operations Continuity close-package
+requests and publications so close binder documents can be frozen by Financial Operations instead
+of recomputed in React.
 The browser route catalog, endpoint helpers, DTO mirrors, and API client also expose the shared
 v0.19 provider-integration runtime for template catalog/detail, OpenAPI import, setup-save,
 activation-readiness, dry-runs, activation, monitor, sync-run history, sync planning, due-sync
@@ -118,11 +197,41 @@ resolve locally. Execution-control and promotion-review items carrying the share
 session replay panel hash target so replay verification remains directly actionable. This is the
 browser PaperSession route handoff covered by `DIA-BROWSER-WORKSTATION` and
 `DIA-PAPER-SESSION-REPLAY`; keep route changes aligned with those diagram records.
+Broker execution reconciliation readiness from the shared Trading payload is rendered as a
+broker-order checkpoint in the readiness console and a Trading summary row when present; critical
+broker/OMS parity work items route back to the Trading readiness surface instead of being treated as
+anonymous inbox rows. The browser also renders shared live-operation readiness as its own Trading
+summary row and Operator Readiness Console checkpoint, using `LiveOperationBlockers` instead of
+promoting paper-ready posture into live readiness. When the shared payload carries
+`LiveOperationRequirements`, Trading summary rows also show each W7 requirement from the
+service-owned matrix so browser copy names the exact trusted-data, reconciliation, governance,
+rollback, retention, or broker-parity evidence gap. Eligible live promotion evaluations also
+project the full W7 checklist instead of the paper baseline alone, including broker execution
+reconciliation evidence before the approval request can carry a live-ready checklist. The browser
+promotion form keeps retained evidence references as an explicit operator-entered field and
+validates live approvals against the checklist tokens instead of fabricating evidence from the
+checklist alone. Live evidence references must include retained evidence after each `TOKEN:` prefix,
+and the live-override reference must name the active override id before the form can submit.
+The Trading order ticket also carries the active normalized `fundAccountId` into order-submit
+mutations so the execution-layer live-readiness gate evaluates broker sync and broker/OMS
+reconciliation against the same account scope shown in the browser readiness payload.
+Close-position confirmations use the same normalized `fundAccountId` for keyed position action
+mutations, while non-GUID broker labels are omitted so account scope is not inferred from display
+text.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
 source origin/fingerprint, and decision note so browser recovery posture matches the WPF desktop
 Fund Ledger detail panel without reimplementing casework rules.
+Accounting reconciliation casework actions now consume the server-owned verified outcome on every
+assign, resolve, waive,
+supersede, comment, and lifecycle transition. The queue exposes item-level value, quantity, and
+cost-basis measures, exact fund/book/period/as-of scope, continuity blockers, immutable evidence and
+approval lineage, and conflict-safe replay receipts. Browser success UI is driven only by
+`Succeeded` or `CompletedWithWarnings`; `Blocked` and `Failed` retain recovery guidance and do not
+optimistically mutate local state. Material waiver or supersession remains unavailable when the
+server cannot resolve independent approval evidence.
+
 Accounting reconciliation narratives use canonical Accounting review language while retained
 Governance view-model names remain compatibility seams.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
@@ -410,8 +519,12 @@ the existing Security Master lane instead of restoring the old static Data workb
 renders the server-provided report-line chain for instrument, position or transaction,
 reconciliation, journal, report line, evidence, and audit links; React must not rebuild that
 lineage locally.
-Saved views post back through the shared saved-view endpoint only after a material filter/search
-change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
+Saved views post back through the shared saved-view endpoint only when an operator supplies a
+stable view name for the current filter/search state; browser code does not generate timestamp-only
+saved-view labels. Shared explorer links also round-trip explicit `frexFilter` values alongside the
+selected saved view, search text, and proof record, so a discussion URL can restore the exact
+evidence state even when the filter is not encoded in a durable saved view. Blocked or empty DTOs
+keep proof actions disabled with the server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -483,6 +596,10 @@ The bootstrap hook also fetches the shared workflow-summary endpoint and passes 
 `fundAccountId` from route or stored shell scope when that account scope is present, allowing the
 Accounting Closeout strip to project source-backed Operations Continuity exceptions, approval
 history, close readiness, and evidence package posture instead of overloading profile identifiers.
+For Trading, the hook and screen refresh paths pass the active account scope to the shared trading
+workspace, trading-readiness, and operator-inbox endpoints only when it is a GUID, preserving
+account-scoped brokerage sync and broker-execution reconciliation evidence without sending display
+account labels into GUID-bound API parameters.
 The app shell consumes the shared Financial Operations `Reviewed automation` evidence badge as an
 operator-focus item only when the badge requires review. React may route the operator back to the
 source-backed workflow step, but it must not approve, post, publish, release payments, erase
@@ -565,14 +682,20 @@ The Reporting workspace also renders the shared `AccessAudit` summary from `Work
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
 reasons without probing or naming hidden report objects.
+On the daily Reporting landing, React renders `starterKits` and `starterKitState` from the shared
+Reporting payload as the "Set up your reporting desk" chooser. Selecting a kit posts to the shared
+starter-kit provisioning endpoint, then shows the server-returned enabled template ids, layout id,
+default period, and draft schedule ids; the browser does not locally decide which templates or
+schedules belong to an archetype.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package
 panels render retained line provenance with the server-provided Financial Record Explorer hrefs
 rather than constructing ledger, portfolio, or Security & Instrument routes in React. The delivery
-history also renders backend-owned access, channel, and download summaries for email-link,
-secure-portal, evidence-vault, and internal-route packages instead of deriving recipient-facing
-copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
+history also renders backend-owned access, channel, and download summaries for retained legacy
+email-link, secure-portal, evidence-vault, and internal-route package labels instead of deriving
+recipient-facing copy or transport capability from a label or URL shape. When the shared package
+includes an access-expiry timestamp, React displays it
 beside the token-gated delivery link so operators can see when email-link or portal access closes.
 Schedule delivery-plan cards render the latest retained delivery access expiry, access/channel summary, and entitlement
 scope from the shared plan payload beside artifact integrity, retained download summary, notification proof, report-writer
@@ -593,11 +716,13 @@ Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/n
 P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
 `crossFundConsolidations` without browser-local roll-up math.
 Report-pack delivery cards render branding evidence from the shared package payload, while the
-download routes keep the actual styled artifact generation in shared services. HTML/PDF package
-downloads apply the selected theme colors, firm, logo, footer, and disclaimer server-side, and XLSX
-packages retain a Branding worksheet, so the browser exposes branded packets without recreating
-presentation rules in React. Email-link and secure-portal access links open token-gated shared HTML
-package views; callers that need the raw manifest use the same route with `format=json`.
+canonical artifact-vault downloads keep styled artifact generation in shared services. PDF output
+applies the selected theme colors, firm, logo, footer, and disclaimer server-side, and XLSX packages
+retain a Branding worksheet, so the browser exposes retained branding evidence without recreating
+presentation rules in React. Email-link and secure-portal recipients use server-issued, scoped
+access-grant exchange links with a single opaque fragment token. The browser rejects cross-origin,
+query-credential, and legacy raw-package routes and does not turn retained manifest paths into
+recipient downloads.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, gross/net exposure, cash, pending
 settlement, P&L, shadow NAV, liquidity and telemetry copy, source/cut freshness stamps, and links to
@@ -644,17 +769,11 @@ and disabled download controls without anchor `href` values until the backend ma
 ready.
 It does this instead of deriving export inventory from report-profile labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
-custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
-fund context, React can first preview the governed BoardPacket through the shared report-pack
-preview endpoint, then generate a governed BoardPacket report pack with PDF/XLSX/CSV artifacts by
-posting the selected `brandingThemeId` to the shared report-pack endpoint; without fund context the
-commands stay disabled instead of using a browser-local default. The preview request carries the
-selected branding theme id, and the preview status displays the service-owned report totals,
-trial-balance line count, asset-class sections, and normalized branding identity without calculating
-those values in React. Operators can also preview and generate a one-off custom branded pack by
-entering a theme id, firm name, colors, logo URI, footer, and disclaimer; the browser posts the
-shared `BrandingThemeOverride` contract for preview and generation and lets the backend normalize,
-validate, and retain the branded PDF/XLSX/CSV artifacts.
+custom posture, color swatches, logo URI, footer text, and disclaimer copy. Operators can stage a
+custom branding override for schedule or run configuration, but the browser does not call the
+retired pack preview or generation endpoints. Preview, certified artifact production, lifecycle
+creation, and release now proceed through the canonical governed-run parameter and run-detail
+workflows, where readiness and retained evidence remain server-owned.
 It also renders shared `scheduleDeliveryPlans` rows for scheduled report packs, including recipient,
 channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, access-expiry
 timestamps, retained download summaries, latest artifact counts, checksum integrity summaries,
@@ -662,36 +781,41 @@ schedule/package branding theme, and version stamps from the backend payload. Ea
 delivery-plan row can also run its owning schedule through the shared schedule-run endpoint and
 reports the returned run id, delivery count, recipient-specific delivery count, and target
 delivery mode in the common schedule status lane.
-Those rows render typed drilldown links and next-action references from the shared payload, opening
-browser-safe evidence routes while executing shared POST actions for approval submission/review,
-publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
-evidence requirements instead of being submitted as a one-click browser action.
+Those rows render typed drilldown links and retained next-action references from the shared payload.
+Browser-safe evidence routes remain inspectable, while legacy pack actions are presented only as
+historical context and route operators to the canonical governed-run detail. React does not post
+caller-supplied signers, hashes, manifest ids, retention paths, approvals, publication, archive,
+restatement, or delivery commands to retired pack lifecycle endpoints.
 The run cards also surface exact audit metadata from the shared run projection, including run id,
 template id, as-of date, trigger, status, attempt count, section count, linked-lineage count, and
 retained artifact names, so version-control review does not depend on parsing a prose lineage
 summary.
+The report-run parameter workspace mirrors the full optional `LedgerDimensionSet` through a JSON
+editor. React validates supported scalar fields, UUID-shaped book/instrument/position identifiers,
+fund and ledger-book consistency, and the `externalGlDimensions` string map before calling the
+authoritative readiness endpoint. The run command then posts the server-returned normalized
+parameters, including non-empty dimensions, so readiness and generation operate on the same exact
+projection. A code-only ledger selection may omit the dimension `bookId` for server resolution.
+Governed run responses consumed by React require canonical `normalizedParameters` and
+version-bound `actionAvailability` entries with `expectedVersion`. Any retained legacy parameter
+or action aliases are adapted only at the reporting-governance API boundary; screen components do
+not infer permissions or versions from those aliases. The same run detail requires the immutable
+access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` principals. React
+renders those values as policy evidence only; flattened principal ids are rejected at the API
+boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, due-run, run-now, pause, and resume controls through the shared
-schedule endpoints. Schedule drafts default from the current schedule, approved template, and
+payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
+schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
-recipient delivery state and retry history instead of static status chips. Delivered attempts also
-show the shared package mode, requested artifact formats, secure link, retained manifest path, and
-publication-approved branding theme, plus token-gated package artifact download links when the backend includes
-`ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
-the token-gated email-link or secure-portal package page, while artifact `DownloadRoute` values
-render as direct retained PDF/XLSX/CSV links with retained path, byte size, evidence id, SHA-256
-checksum, and version stamp integrity details. When the package or schedule plan carries
-`accessLinks`, the browser renders labelled access chips for secure portal/email package access,
-operator routes, retained manifests, and token-gated artifact downloads instead of exposing only
-raw secure-link strings. Workbook delivery packages can include an `artifact-xls` compatibility
-access link; React renders that server-provided `format=xls` route as an XLS package download while
-the backend keeps the canonical XLSX artifact and content type. When the package includes
-server-owned delivery notifications, React renders the notification subject, status, recipient,
-created/expires timestamps, body, and token-gated package href so operators can review the email-link
-or secure-portal outbox evidence without deriving it from raw secure links. Delivery-history rows can also record a failed email-link or portal
-delivery through the shared delivery-failure endpoint, preserving the original attempt as evidence
-for the failed retry path instead of keeping failure state only in operator notes. When a schedule targets a custom report-writer
+recipient delivery state and retry history instead of static status chips. The delivery panel is
+read-only: durable dispatch state and provider failure receipts are produced by the server-owned
+distribution worker, not a client-recorded failure mutation. Delivered attempts retain package
+mode, requested formats, manifest and publication evidence, canonical opaque-fragment access-grant
+links, notification proof, artifact integrity, and governed run ids. Runs with retained ids link to
+the governed run detail for release and distribution controls. Query-token package builders and
+the retired legacy package/delivery API helpers are not exposed by the browser. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
@@ -707,17 +831,31 @@ backend validation checks so operators can distinguish descriptor-only packages 
 pivot, Top-N, contribution, and formula output delivered by the backend.
 Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
-delivery mode, and PDF/XLSX/CSV formats, then staging multiple delivery targets before save so a
-single governed schedule can distribute secure-portal, email-link, evidence-vault, or internal-route
-packs to separate recipients. The browser posts the shared `ReportingScheduleUpsertRequestDto`
-instead of maintaining local schedule rules, including optional governed dataset rows when the
-backend has supplied them for report-writer grids and the current custom branding override so
-recurring generated-run packages retain the selected firm styling. Schedule cards also show configured delivery targets
+delivery mode, PDF/XLSX/CSV formats, and an explicit recipient principal id plus User/Group/Company
+kind, then staging multiple delivery targets before save so a single governed schedule can retain
+separate typed recipient targets. The browser blocks staging or saving a delivery target until both
+recipient fields are present; the server validates the target against immutable access and the
+recipient directory, then binds the ordered declarations under `deliveryTargetsSnapshotHash`.
+Email Link uses the configured
+`http-relay`; retained Evidence Vault and Internal Route mode labels use the local `secure-portal`
+path and do not imply separate transport adapters. The browser renders the caller-specific server
+transport catalog as the availability authority. It posts the shared
+`ReportingScheduleUpsertRequestDto` instead of maintaining local schedule rules, including a
+server-owned `datasetSourceId` and the current custom branding override. It never posts governed
+dataset rows; the server resolves certified report-writer input. Recurring generated-run packages
+therefore retain the selected firm styling without accepting client data as accounting evidence.
+Schedule cards also show configured delivery targets
 and the run-now status reports returned delivery counts or warnings from
 `ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
 client/internal distributions. The backend applies the same governed template access policy to
 schedule saves and manual schedule runs as it does to ad-hoc report runs, so browser controls cannot
 schedule or execute user-locked custom templates outside the authorized owner, group, or company.
+Schedule records also mirror `releaseDeliveryHandoffs` and `accessPolicySnapshotHash`. The browser
+uses those server-owned fields to show whether post-generation delivery is blocked, awaiting
+governance release, or enqueued, plus a compact token-free handoff history of durable identifiers,
+formats, states, and timestamps. Package creation and bearer-grant issuance remain server-owned and
+occur only after release; React does not enqueue a handoff or render retained destination, subject,
+or body fields from this schedule history.
 The Reporting payload also omits schedule rows, schedule-delivery-plan rows, and delivery attempts
 whose template or report-pack workflow is not visible to the current user, so browser state cannot
 reveal locked recipients, cadence, package links, or delivery status for another user or group.
@@ -833,7 +971,12 @@ inputs.
 The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
-provider catalog and onboarding lane, alongside watchlist, quotes, alerts, and backfill queues.
+provider catalog and onboarding lane. `/data/operations` is the Ingestion Operations Center for
+durable job state, checkpoints, retries, failures, transitions, and Evidence Vault receipts;
+`/data/backfills` is a compatibility redirect. `/data/assurance` combines storage health, quality,
+canonicalization parity, capacity, and guarded maintenance. Maintenance stays shared-service owned:
+React can request a short-lived preview and submit rationale plus exact typed confirmation, but it
+cannot choose arbitrary paths or bypass candidate fingerprint revalidation.
 The same screen renders the shared data-upload intake panel from the `WorkstationDataPayload`
 template catalog. React builds CSV downloads and submits selected files to the shared preview
 endpoint only; validation, retained source evidence, and any downstream reconciliation or approval
@@ -895,7 +1038,7 @@ anchors open holdings, selected run evidence, brokerage posture, and coverage pr
 Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
 schedules, lots, and trading controls to the Accounting-owned Security Master view model.
 
-The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned.
+The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned. The same passport now renders the endpoint-owned operations workbench panels for identity, provider evidence, terms, readiness, and handoff so browser code does not calculate valuation, ledger, reconciliation, close, or report readiness locally.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source
@@ -988,6 +1131,124 @@ metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, 
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and
 `Data Operations` remain route aliases and internal compatibility concepts only. App-shell overview
 event labels also normalize retained source names before entering the visible evidence timeline.
+The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
+of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
+now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
+Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
+queue, trust posture, linked context, and evidence events before the queued work, so the first screen
+explains why the operator should act, who owns the issue, what output is affected, which action is
+next, and which retained evidence supports it.
+Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
+retained workspace alias path.
+The app shell exposes the active route as a named workbench landmark and marks that landmark busy
+during bootstrap or refresh, so skip-link and screen-reader users land on the current operator
+workspace with explicit loading posture.
+Shared workstation primitives render visual search context as read-only textboxes and shared tab
+strips move focus and the active tab stop with Arrow, Home, and End keys, so route-owned filters and
+inspector tabs do not need screen-local keyboard handling.
+The app shell keeps cross-workspace ranking and disclosure chrome centralized, while workspace
+linked-context builders, workspace operator-focus candidate construction, workspace
+evidence-timeline projection, workflow-continuity trail definitions, trail selection, active-route
+matching, primary workflow routing, operating-scope route/query helpers, and workspace
+workflow-continuity status builders live outside the shell so quote, exposure, close, break,
+automation, reconciliation, provider, run, and report-pack recipient state can evolve with their
+owning routes instead of accumulating in `app-shell.view-model.ts`.
+The shell workflow-continuity view model now lives in
+`app-shell.workflow-continuity-view-model.ts`; `app-shell.view-model.ts` imports it as a coordinator
+boundary instead of importing each route-specific continuity, linked-context, operator-focus, and
+evidence-timeline helper directly.
+Workflow-continuity view-model contracts live in `app-shell.workflow-continuity-types.ts`, so the
+route coordinator no longer owns the cross-workspace workflow, decision brief, focus, linked
+context, and evidence timeline type definitions that are implemented by the workflow-continuity
+builder.
+The shell command-palette trigger, route-focus announcement model, no-host demo-data notice, status
+panel, and trust strip live in `app-shell.command-palette.ts`, `app-shell.route-focus.ts`,
+`app-shell.development-fixture-notice.ts`, `app-shell.status-panel.ts`, and
+`app-shell.trust-strip.ts`, keeping keyboard shortcut semantics, active-route focus copy, demo
+evidence-path steps, bootstrap recovery copy, failed-workspace items, build/mode posture, source
+posture, and provider posture out of the route coordinator while preserving the same app-shell
+view-state contract for React.
+The rendered workflow-continuity dock lives in
+`components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
+`src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
+recovery, and the global workstation stylesheet while the dock owns its accessible links,
+operating-scope chips, and primary-operator-flow disclosure.
+Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
+`components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
+expand/collapse controls, status badges, and responsive drawer variants stay with the navigation
+component instead of the global workstation stylesheet.
+App-shell frame, skip-link, masthead, command-search trigger, trust-strip, session card, startup
+status, status-strip, and workbench scroll styles live in `src/styles/app-shell.css`, imported by
+`app.tsx`, so the global workstation stylesheet no longer owns root shell chrome.
+The final light-first workspace surface cascade now lives in `src/styles/workspace-surface.css`,
+imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
+global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
+order-pinned and reviewable.
+The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
+component references, patterns, templates, and governance scripts. The browser workstation consumes
+the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
+`src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
+and runtime CSS alignment under test.
+Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
+`WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
+adapt the manifest-backed design-system references without importing root JSX or runtime-injected
+package CSS into the dashboard build.
+Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
+Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
+Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
+Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
+keeping close/accounting tasks distinct from governed report-output tasks.
+The Accounting task-mode route resolver, mode catalog, and launcher links live in
+`accounting-screen.task-mode-view-model.ts` so task-mode IA can evolve without adding more route
+state to `accounting-screen.view-model.ts`.
+Accounting-specific split-pane, reference-panel, and journal-entry workstation styles live in
+`src/styles/accounting-screen.css`, imported by `accounting-screen.tsx`, keeping route styling out of
+the shared workstation stylesheet.
+Command palette shell, chip, status, and group styles live in `src/styles/command-palette.css`,
+imported after shared tokens in `main.tsx`, so the global workstation stylesheet no longer owns the
+palette overlay rules.
+Workspace filter bar, tab strip, inspector host, and document canvas primitive styles live in
+`src/styles/workspace-primitives.css`, imported by `workspace-primitives.tsx`, so the global
+workstation stylesheet does not own primitive-specific accessibility surface styling.
+`WorkspaceTabStrip` emits stable tab ids from each panel id or an explicit `tabId`, and
+`WorkspaceTabPanel` centralizes `role="tabpanel"`, `aria-labelledby`, focus, and hidden-state
+semantics for route tabs that expose richer keyboard behavior.
+Shared toolbar strip, dense data table, and entity-summary primitive styles live in
+`src/styles/ui-kit-primitives.css`, imported by `ui-kit-primitives.tsx`, keeping dense table
+keyboard/accessibility behavior and visual ownership in the same component module.
+Dense row-detail panel styles live in `src/styles/dense-row-detail-accessibility.css`, imported by
+`dense-row-detail-accessibility.tsx`, so row/detail focus handoff, labelled regions, selected-source
+badges, and panel chrome stay owned by the accessibility primitive instead of the global stylesheet.
+Reporting exposes route-owned task modes as Daily Reporting Cockpit, Report Builder, Run Status,
+Delivery Evidence, Exports, and Governance. `/reporting` is the Daily Reporting Cockpit landing
+route and stops at the daily decision queue plus focused task-mode links instead of rendering the
+full builder surface. `/reporting/report-builder` owns governed output design and schedules,
+`/reporting/run-status` owns queue posture, `/reporting/report-packs` keeps the report-pack
+approval workflow panel while presenting as Delivery Evidence, `/reporting/exports` owns governed
+export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
+Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
+evidence posture so browser Reporting matches the WPF cockpit decision model.
+The Reporting task-mode resolver, report-pack route detector, and launcher links live in
+`reporting-screen.task-mode-view-model.ts`, keeping the daily-cockpit IA out of the broader
+reporting view model.
+Financial Record Explorer drawers now render the shared Number Passport component for the selected
+record, carrying source, freshness, reconciliation, approvals, report usage, blockers, evidence
+packet, and audit-trail facts through the Accounting, Portfolio, Security Instrument, and Reporting
+provenance surfaces. DTO-backed explorers also restore `frexExplorer`, `frexView`, `frexSearch`,
+`frexFilter`, and `frexRecord` query state, emit a `Share state` link whose accessible name names
+the selected saved view, search text, explicit filters, and proof record when present, and require
+operators to supply stable saved-view names instead of timestamp-only labels, keeping browser FREX
+review URLs portable without duplicating saved-view storage in React.
+FREX route-query parsing, filter restoration, share-link serialization, and accessible share-state
+summaries live in `financial-record-explorer.view-state.ts` so the React shell stays focused on DTO
+rendering and Number Passport proof presentation.
+
+The browser type mirrors include additive instrument-role, book-position, economic-state,
+economic-event, projection-lineage, authoritative book-context assertion, and existing rule-pack
+reference shapes. Candidate, posting-command, and Asset Operations payload fields remain optional
+for older JSON. The browser submits posting intent and assertions only; server services resolve
+authority, and the same shared contracts remain available to WPF without browser-owned accounting
+logic or a new route.
 
 ## Diagrams
 
@@ -1005,6 +1266,9 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-EVIDENCE-001` | Evidence Vault productization |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1019,10 +1283,19 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 ## Validation
 
 ```bash
+npm --prefix src/Meridian.Ui/dashboard run lint
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
+
+Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
+recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
+PascalCase/camelCase directories (`components/accounting`, `components/charts`,
+`features/accounting`). No stylistic or formatting rules are enforced. `react-hooks/exhaustive-deps`
+stays a warning; treat new warnings in touched files as part of the change. Screen-level
+accessibility is exercised by the `src/screens/*.a11y.test.tsx` suites plus axe assertions embedded
+in the larger screen tests; keep new screens covered by at least one axe render.
 
 ## Change rules
 
@@ -1035,6 +1308,8 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/product/meridian-design-document.md`
 - `docs/architecture/desktop-layers.md`
 - `docs/source/generated/source-module-index.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
 
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
 

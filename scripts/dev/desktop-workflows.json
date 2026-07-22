@@ -163,6 +163,12 @@
           "notes": "Capture the Accounting configure screen from the registered WPF shell catalog."
         },
         {
+          "title": "Accounting close",
+          "pageTag": "FundAccountingClose",
+          "captureName": "wpf-fund-accounting-close",
+          "notes": "Capture the Accounting close screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Fund trial balance",
           "pageTag": "FundTrialBalance",
           "captureName": "wpf-fund-trial-balance",
@@ -485,6 +491,12 @@
           "pageTag": "SystemHealth",
           "captureName": "wpf-system-health",
           "notes": "Capture the System health screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Lifecycle control",
+          "pageTag": "LifecycleControl",
+          "captureName": "wpf-lifecycle-control",
+          "notes": "Capture the Lifecycle control screen from the registered WPF shell catalog."
         },
         {
           "title": "Diagnostics",

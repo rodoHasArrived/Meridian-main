@@ -88,7 +88,8 @@ public sealed record WorkstationStrategyRunCard(
     decimal? TotalReturn,
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
-    WorkstationRunDrillInLinks DrillIn);
+    WorkstationRunDrillInLinks DrillIn,
+    BiasDisclosureDto? BiasDisclosure = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,
@@ -523,7 +524,8 @@ public sealed record WorkstationReportingTemplatePayload(
     string? ApprovalReference = null,
     VersionedReportTemplateIdDto? BasedOnTemplateId = null,
     IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null,
-    IReadOnlyList<string>? ValidationIssues = null);
+    IReadOnlyList<string>? ValidationIssues = null,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.
@@ -578,7 +580,41 @@ public sealed record WorkstationReportingRunPayload(
     IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null,
     string? ReportWriterDatasetSourceId = null,
     string? ReportWriterDatasetSourceLabel = null,
-    int? ReportWriterDatasetRowCount = null);
+    int? ReportWriterDatasetRowCount = null,
+    string? RunSeriesId = null,
+    int? RunAttemptOrdinal = null,
+    string? PriorRunId = null,
+    string? RetryReason = null,
+    string? LatestGeneratedRunId = null,
+    string? LatestApprovedRunId = null,
+    bool? IsLatestGenerated = null,
+    bool? IsLatestApproved = null,
+    string? ComparisonSummary = null,
+    int? ChangedLineCount = null,
+    int? AddedLineCount = null,
+    int? RemovedLineCount = null,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null);
+
+/// <summary>
+/// Daily reporting-work item surfaced in the workstation cockpit for operator triage.
+/// </summary>
+public sealed record WorkstationReportingDailyWorkItemDto(
+    string WorkItemId,
+    string Kind,
+    string Title,
+    string StatusLabel,
+    string Detail,
+    string Tone,
+    string Owner,
+    DateTimeOffset? DueAtUtc,
+    string PrimaryActionLabel,
+    string? PrimaryActionHref,
+    IReadOnlyList<string>? EvidenceGaps = null,
+    IReadOnlyList<string>? Context = null,
+    string? SecondaryActionLabel = null,
+    string? SecondaryActionHref = null);
 
 /// <summary>
 /// Recipient-level distribution posture for governed report-pack output.
@@ -639,7 +675,10 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
     IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
-    WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
+    WorkstationReportAccessAuditSummaryDto? AccessAudit = null,
+    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null,
+    IReadOnlyList<ReportingStarterKitDto>? StarterKits = null,
+    ReportingStarterKitStateDto? StarterKitState = null);
 
 /// <summary>
 /// Accounting run-card governance details linked to strategy evidence.

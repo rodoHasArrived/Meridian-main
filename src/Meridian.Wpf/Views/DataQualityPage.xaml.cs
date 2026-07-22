@@ -35,10 +35,24 @@ public partial class DataQualityPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.StartAsync();
-        CommandBar.CommandGroup = BuildCommandGroup();
-        RenderTrendChart(_viewModel.TrendPoints);
-        ApplyDrilldownHeatmap();
+        try
+        {
+            await _viewModel.StartAsync();
+            CommandBar.CommandGroup = BuildCommandGroup();
+            RenderTrendChart(_viewModel.TrendPoints);
+            ApplyDrilldownHeatmap();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Data Quality page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) => _viewModel.Stop();
@@ -266,6 +280,7 @@ public partial class DataQualityPage : Page
                 DataQualityVisualTones.Success => new SolidColorBrush(Color.FromArgb(200, 63, 185, 80)),
                 DataQualityVisualTones.Info => new SolidColorBrush(Color.FromArgb(200, 78, 201, 176)),
                 DataQualityVisualTones.Warning => new SolidColorBrush(Color.FromArgb(200, 227, 179, 65)),
+                DataQualityVisualTones.Muted => new SolidColorBrush(Color.FromArgb(120, 139, 148, 158)),
                 _ => new SolidColorBrush(Color.FromArgb(200, 244, 67, 54))
             };
             heatmapCells[i].ToolTip = cell.Tooltip;

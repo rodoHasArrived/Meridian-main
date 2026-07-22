@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Core.Config;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Features;
@@ -64,7 +65,7 @@ public sealed partial class SettingsViewModel : BindableBase
     private string _writeBufferSize = "64";
     private bool _isMetricsEnabled = true;
     private bool _isDebugLoggingEnabled;
-    private string _apiBaseUrl = "http://localhost:8080";
+    private string _apiBaseUrl = ApiEndpointDefaults.LocalApiBaseUrl;
     private string _statusRefreshInterval = "2";
 
     public SettingsViewModel(
@@ -718,7 +719,7 @@ public sealed partial class SettingsViewModel : BindableBase
         try
         {
             var settings = config.Settings ?? new AppSettingsDto();
-            ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? "http://localhost:8080";
+            ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? ApiEndpointDefaults.LocalApiBaseUrl;
             StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
             IsNotificationsEnabled = settings.NotificationsEnabled;
             SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
@@ -819,7 +820,7 @@ public sealed partial class SettingsViewModel : BindableBase
         WriteBufferSize = "64";
         IsMetricsEnabled = true;
         IsDebugLoggingEnabled = false;
-        ApiBaseUrl = "http://localhost:8080";
+        ApiBaseUrl = ApiEndpointDefaults.LocalApiBaseUrl;
         StatusRefreshInterval = (defaultConfig.Settings?.StatusRefreshIntervalSeconds ?? 2).ToString();
     }
 

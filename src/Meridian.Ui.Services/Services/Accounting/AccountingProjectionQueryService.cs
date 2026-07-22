@@ -22,15 +22,18 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
     private readonly AccountingPostingService _postingService;
     private readonly TrialBalanceProjectionService _projectionService;
     private readonly MonthEndCloseStateMachine _closeStateMachine;
+    private readonly CloseEvidencePackageService _evidencePackageService;
 
     public AccountingProjectionQueryService(
         AccountingPostingService postingService,
         TrialBalanceProjectionService projectionService,
-        MonthEndCloseStateMachine? closeStateMachine = null)
+        MonthEndCloseStateMachine? closeStateMachine = null,
+        CloseEvidencePackageService? evidencePackageService = null)
     {
         _postingService = postingService;
         _projectionService = projectionService;
         _closeStateMachine = closeStateMachine ?? new MonthEndCloseStateMachine();
+        _evidencePackageService = evidencePackageService ?? new CloseEvidencePackageService();
     }
 
     public ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId, LedgerDimensionSetDto? dimensions = null)
@@ -60,7 +63,17 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
         var balanced = _projectionService.IsBalanced(trialBalance);
         var closePeriod = new ClosePeriod(ledgerId, period, ClosePeriodState.Validating, evidence, []);
         var state = _closeStateMachine.Transition(closePeriod, evidence, balanced);
-        return new AccountingCloseProjection(ledgerId, period, state, balanced, trialBalance, rollForward, audit);
+        var evidencePackage = _evidencePackageService.Build(state, balanced, audit);
+        return new AccountingCloseProjection(
+            ledgerId,
+            period,
+            state,
+            balanced,
+            trialBalance,
+            rollForward,
+            audit,
+            evidencePackage,
+            evidencePackage.ApprovalHistory);
     }
 }
 
@@ -71,4 +84,6 @@ public sealed record AccountingCloseProjection(
     bool TrialBalanceBalanced,
     ImmutableArray<TrialBalanceLine> TrialBalance,
     ImmutableArray<RollForwardLine> RollForward,
-    ImmutableArray<SourceLinkedAuditLine> AuditTrail);
+    ImmutableArray<SourceLinkedAuditLine> AuditTrail,
+    CloseEvidencePackage EvidencePackage,
+    ImmutableArray<CloseApprovalHistoryEntry> ApprovalHistory);

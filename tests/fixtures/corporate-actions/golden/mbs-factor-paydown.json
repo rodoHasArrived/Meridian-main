@@ -1,0 +1,32 @@
+{
+  "scenarioId": "mbs-factor-paydown",
+  "description": "Amortizing-pool principal paydown carried as a pool-factor delta (DistributionRatio 0.007125, mirroring the portfolio source-payload exemplar's 0.98125 -> 0.974125 factor update). The shared Instruments projector scales the dimensionless delta by the 100,000 held face, producing 712.50 of cash, security carrying-value relief, and total-basis reduction.",
+  "ticker": "FNPOOL1",
+  "securityId": "a3000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a3000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a3000000-aaaa-4000-8000-000000000001",
+      "eventType": "PrincipalPaydown",
+      "exDate": "2026-05-15",
+      "payDate": "2026-05-25",
+      "dividendPerShare": null,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": 0.007125,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-05-14",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [],
+  "postingContext": { "positionQuantity": 100000, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [ "journal-balanced" ],
+  "knownDefectIds": []
+}

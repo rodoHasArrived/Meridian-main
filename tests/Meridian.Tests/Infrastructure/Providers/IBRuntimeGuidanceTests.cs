@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Tests.TestHelpers;
@@ -16,9 +17,45 @@ public sealed class IBRuntimeGuidanceTests
         act.Should().Throw<NotSupportedException>()
             .WithMessage("*interactive-brokers-setup.md*")
             .WithMessage("*build-ibapi-smoke.ps1*")
+            .WithMessage("*build-ibapi-vendor.ps1*")
             .WithMessage("*EnableIbApiVendor=true*")
             .WithMessage("*EnableIbApiSmoke=true*")
             .WithMessage("*DefineConstants=IBAPI*");
+    }
+
+    [Theory]
+    [InlineData(InstrumentType.Equity, "STK")]
+    [InlineData(InstrumentType.IndexOption, "OPT")]
+    [InlineData(InstrumentType.Bond, "BOND")]
+    [InlineData(InstrumentType.Swap, "SWAP")]
+    [InlineData(InstrumentType.DirectLoan, "LOAN")]
+    [InlineData(InstrumentType.Repo, "REPO")]
+    [InlineData(InstrumentType.Deposit, "DEPOSIT")]
+    public void ContractFactory_ResolveSecType_UsesInstrumentTypeDescriptorCatalog(
+        InstrumentType instrumentType,
+        string expectedSecurityType)
+    {
+        var cfg = new SymbolConfig(
+            Symbol: "TEST",
+            SecurityType: "STK",
+            InstrumentType: instrumentType);
+
+        var securityType = ContractFactory.ResolveSecType(cfg);
+
+        securityType.Should().Be(expectedSecurityType);
+    }
+
+    [Fact]
+    public void ContractFactory_ResolveSecType_PreservesExplicitProviderSecurityType()
+    {
+        var cfg = new SymbolConfig(
+            Symbol: "912828YY0",
+            SecurityType: "GOVT",
+            InstrumentType: InstrumentType.Bond);
+
+        var securityType = ContractFactory.ResolveSecType(cfg);
+
+        securityType.Should().Be("GOVT");
     }
 
     [Fact]
@@ -34,6 +71,7 @@ public sealed class IBRuntimeGuidanceTests
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*interactive-brokers-setup.md*")
             .WithMessage("*build-ibapi-smoke.ps1*")
+            .WithMessage("*build-ibapi-vendor.ps1*")
             .WithMessage("*EnableIbApiVendor=true*")
             .WithMessage("*EnableIbApiSmoke=true*")
             .WithMessage("*DefineConstants=IBAPI*");
@@ -68,6 +106,7 @@ public sealed class IBRuntimeGuidanceTests
         provider.Description.Should().Contain("DefineConstants=IBAPI");
         provider.Description.Should().Contain("EnableIbApiSmoke=true");
         provider.Description.Should().Contain("EnableIbApiVendor=true");
+        provider.Description.Should().Contain("build-ibapi-vendor.ps1");
         provider.ProviderNotes.Should().Contain(note => note.Contains("official IBApi surface"));
         provider.ProviderWarnings.Should().Contain(warning => warning.Contains("empty results"));
     }

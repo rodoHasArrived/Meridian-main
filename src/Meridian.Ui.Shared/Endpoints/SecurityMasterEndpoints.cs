@@ -41,10 +41,13 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterById, async (
             Guid securityId,
+            DateTimeOffset? asOf,
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
-            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            var detail = asOf.HasValue
+                ? await queryService.GetByIdAsOfAsync(securityId, asOf.Value, ct).ConfigureAwait(false)
+                : await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -59,7 +62,7 @@ public static class SecurityMasterEndpoints
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterValidation, async (
             Guid securityId,
-            [FromServices] AppSecurityMaster.ISecurityValidationService validationService,
+            [FromServices] AppSecurityMaster.Validation.ISecurityValidationService validationService,
             CancellationToken ct) =>
         {
             var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
@@ -644,6 +647,112 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        /// <summary>
+        /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
+            AppSecurityMaster.CorporateActions.CorporateActionIngestRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionIngestOrchestrator orchestrator,
+            CancellationToken ct) =>
+        {
+            var actor = ResolveActor(context);
+            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActions.CorporateActionIngestRequest()) with
+            {
+                Actor = actor,
+                CorrelationId = context.TraceIdentifier
+            };
+
+            var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
+            context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("IngestSecurityMasterCorporateActions")
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Returns staged corporate-action proposals from the most recent ingest sweep for
+        /// the workbench inbox badge and review list.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
+            Results.Json(inboxState.GetInbox(), jsonOptions))
+        .WithName("GetSecurityMasterCorporateActionInbox")
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
+        /// corporate action through the governed command service under the operator's identity.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
+            AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState,
+            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
+            CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.BadRequest("An apply request is required.");
+
+            var actor = ResolveActor(context);
+            if (!inboxState.TryTakeStaged(request.SecurityId, request.ActionType, request.ExDate, out var proposal))
+                return Results.NotFound("No staged proposal matches the requested security, action type, and ex-date.");
+
+            try
+            {
+                var result = await commandService.AppendAsync(
+                    new SecurityMasterCorporateActionAppendRequestDto(
+                        SecurityId: proposal.SecurityId,
+                        CorporateAction: AppSecurityMaster.CorporateActions.CorporateActionProposalMapper.ToCorporateAction(proposal),
+                        SourceSystem: proposal.WinningSource,
+                        Actor: actor,
+                        SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
+                        Reason: proposal.DissentingSources.Count == 0
+                            ? "Operator applied staged corporate-action proposal from the inbox."
+                            : $"Operator applied staged proposal over dissent from {string.Join(", ", proposal.DissentingSources)}.",
+                        CorrelationId: context.TraceIdentifier),
+                    ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        })
+        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
+        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Pre-builds a machine-proposed security-master draft for an unmastered symbol so the
+        /// operator can review and submit it instead of typing the record from scratch.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCoverageDraft, async (
+            string symbol,
+            [FromServices] AppSecurityMaster.SecurityMasterDraftProposalService draftService,
+            CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return Results.BadRequest("A symbol is required.");
+
+            var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
+            return Results.Json(draft, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCoverageDraft")
+        .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
             HttpContext context,
@@ -808,6 +917,62 @@ public static class SecurityMasterEndpoints
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
+        /// transitioning the persisted approval status and appending to the durable audit trail.
+        /// Requires the <c>ModifySecurityMaster</c> permission; the reviewer is server-derived from the
+        /// authenticated principal.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns the merged overrides snapshot after the decision is applied, <c>404</c> when
+        /// no overrides exist for the security, or <c>400</c> when the decision is not Approved or
+        /// Rejected.</para>
+        /// </remarks>
+        group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
+            Guid securityId,
+            OperatorOverrideDecisionRequest request,
+            HttpContext context,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            // The reviewer identity is server-derived from the authenticated principal, never taken
+            // from the request body, so a client cannot attribute a decision to someone else.
+            var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
+            try
+            {
+                var updated = await store
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
+            {
+                // Expected domain condition: no overlay exists to decide on.
+                return Results.NotFound();
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("not Pending", StringComparison.Ordinal))
+            {
+                // Expected domain condition: the overlay exists but is not in a reviewable (Pending) state.
+                return Results.Conflict(new { error = exception.Message });
+            }
+            // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
+            // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
+        })
+        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .Accepts<OperatorOverrideDecisionRequest>("application/json")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -1220,12 +1385,15 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterQualityReportRun, async (
             HttpContext context,
             [FromServices] ISecurityMasterDataQualityService qualityService,
+            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
                 return EndpointHelpers.Forbidden();
 
             var report = await qualityService.RunQualityChecksAsync(ct).ConfigureAwait(false);
+            var actor = EndpointAuthorization.TryResolveActor(context, out var username) ? username : null;
+            await caseworkService.SyncQualityViolationCasesAsync(report, actor, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
         .WithName("RunSecurityMasterQualityReport")

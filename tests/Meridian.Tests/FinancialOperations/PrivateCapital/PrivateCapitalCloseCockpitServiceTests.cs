@@ -15,6 +15,221 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     private static readonly Guid FundAccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     [Fact]
+    public async Task GetCockpitAsync_WhenDailyValuationScopeIsMissing_ProjectsVisibleMissingLane()
+    {
+        var activity = BuildActivity();
+        const string summary = "No scheduled daily valuation portfolio scope is configured for this close scope.";
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            null,
+            new StubDailyValuationScheduleStatusSource(new DailyValuationScheduleStatusDto(
+                null,
+                FundProfileId,
+                activity.LedgerBookId,
+                null,
+                IsConfigured: false,
+                IsEnabled: false,
+                NextRunAtUtc: null,
+                LastRunAtUtc: null,
+                DailyValuationScheduleStateDto.NotConfigured,
+                summary,
+                JournalEntryId: null,
+                EvidenceLinks: [],
+                Blockers: [summary])));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "daily-valuation" &&
+            lane.Label == "Daily valuation" &&
+            lane.Status == EvidenceStatusDto.Missing &&
+            !lane.IsReady &&
+            lane.Summary == summary &&
+            lane.RequiredActions.Contains("Configure a governed daily valuation portfolio scope"));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenDailyValuationMarksAreBlocked_ProjectsStatusAndEvidence()
+    {
+        var activity = BuildActivity();
+        var capturedAt = new DateTimeOffset(2026, 6, 30, 16, 0, 0, TimeSpan.Zero);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            null,
+            new StubDailyValuationScheduleStatusSource(new DailyValuationScheduleStatusDto(
+                "daily-valuation-fund-alpha",
+                FundProfileId,
+                activity.LedgerBookId,
+                null,
+                IsConfigured: true,
+                IsEnabled: true,
+                NextRunAtUtc: capturedAt.AddDays(1),
+                LastRunAtUtc: capturedAt,
+                DailyValuationScheduleStateDto.Blocked,
+                "Daily valuation was blocked because one closing mark failed trust policy.",
+                JournalEntryId: null,
+                EvidenceLinks:
+                [
+                    new OperationsEvidenceLinkDto(
+                        "daily-valuation:AAPL",
+                        "Rejected closing mark evidence",
+                        "evidence://prices/AAPL/stale",
+                        "daily-valuation-scheduler",
+                        capturedAt)
+                ],
+                Blockers: ["AAPL: closing mark is stale."])));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "daily-valuation" &&
+            lane.Status == EvidenceStatusDto.Blocked &&
+            !lane.IsReady &&
+            lane.EvidenceLinks.Any(link => link.Route == "evidence://prices/AAPL/stale"));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenPostedFeeAndDividendInvestigationCoexist_KeepsScheduledAccrualsBlocked()
+    {
+        var activity = BuildActivity();
+        var postedFeeId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var postedFee = new ManualJournalEntryDraftDto(
+            JournalEntryId: postedFeeId,
+            Status: ManualJournalEntryStatusDto.Posted,
+            FundProfileId,
+            LedgerBookId: activity.LedgerBookId,
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingDate: new DateOnly(2026, 6, 30),
+            PeriodId,
+            EntityId,
+            FundNodeId: null,
+            Currency: "USD",
+            Memo: "Posted management fee",
+            PreparedBy: "controller",
+            CreatedAtUtc: DateTimeOffset.UtcNow.AddHours(-2),
+            UpdatedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            Version: 3,
+            Lines: [],
+            EvidenceLinks: ["evidence://fees/2026-06"],
+            ValidationIssues: [],
+            TreasuryContext: new TreasuryLedgerContextDto(IdempotencyKey: "mgmt-fee|fund-alpha|2026-06"),
+            PostedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            PostedBy: "controller");
+        var status = new AutomatedJournalScheduleStatusDto(
+            FundProfileId,
+            activity.LedgerBookId,
+            PeriodId,
+            ConfiguredCount: 2,
+            EnabledCount: 2,
+            FeeScheduleCount: 1,
+            DividendScheduleCount: 1,
+            DraftReadyCount: 1,
+            NeedsInvestigationCount: 1,
+            BlockedCount: 0,
+            State: AutomatedJournalScheduleStateDto.NeedsInvestigation,
+            Summary: "One dividend schedule needs evidence investigation.",
+            EvidenceLinks: [Evidence("corp-act-low", "Low-confidence corporate action", "evidence://corporate-actions/low")],
+            Blockers: ["Corporate-action evidence needs investigation."],
+            JournalEntryIds: [postedFeeId]);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity, [postedFee]),
+            null,
+            null,
+            new StubAutomatedJournalScheduleStatusSource(status));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.Blocked);
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "scheduled-accruals" &&
+            lane.Status == EvidenceStatusDto.Blocked &&
+            !lane.IsReady &&
+            lane.Summary.Contains("fee=1", StringComparison.OrdinalIgnoreCase) &&
+            lane.Summary.Contains("dividend=1", StringComparison.OrdinalIgnoreCase) &&
+            lane.EvidenceLinks.Any(link => link.Route == "evidence://corporate-actions/low") &&
+                lane.RequiredActions.Contains("Investigate low-confidence corporate-action evidence before approval"));
+    }
+
+    [Theory]
+    [InlineData(AutomatedJournalScheduleStateDto.Scheduled)]
+    [InlineData(AutomatedJournalScheduleStateDto.Running)]
+    public async Task GetCockpitAsync_ActiveScheduleNeverFallsBackToOlderPostedDrafts(
+        AutomatedJournalScheduleStateDto state)
+    {
+        var activity = BuildActivity();
+        var oldDraftId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var oldPostedDraft = new ManualJournalEntryDraftDto(
+            JournalEntryId: oldDraftId,
+            Status: ManualJournalEntryStatusDto.Posted,
+            FundProfileId,
+            LedgerBookId: activity.LedgerBookId,
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingDate: new DateOnly(2026, 6, 30),
+            PeriodId,
+            EntityId,
+            FundNodeId: null,
+            Currency: "USD",
+            Memo: "Older posted management fee",
+            PreparedBy: "controller",
+            CreatedAtUtc: DateTimeOffset.UtcNow.AddHours(-2),
+            UpdatedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            Version: 3,
+            Lines: [],
+            EvidenceLinks: ["evidence://fees/old-posted-cycle"],
+            ValidationIssues: [],
+            TreasuryContext: new TreasuryLedgerContextDto(IdempotencyKey: "mgmt-fee|fund-alpha|2026-06"),
+            PostedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            PostedBy: "controller");
+        var status = new AutomatedJournalScheduleStatusDto(
+            FundProfileId,
+            activity.LedgerBookId,
+            PeriodId,
+            ConfiguredCount: 1,
+            EnabledCount: 1,
+            FeeScheduleCount: 1,
+            DividendScheduleCount: 0,
+            DraftReadyCount: 0,
+            NeedsInvestigationCount: 0,
+            BlockedCount: 0,
+            State: state,
+            Summary: $"Current fee schedule is {state}.",
+            JournalEntryIds: []);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity, [oldPostedDraft]),
+            null,
+            null,
+            new StubAutomatedJournalScheduleStatusSource(status));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "scheduled-accruals" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.EvidenceLinks.All(link => link.Route != "evidence://fees/old-posted-cycle"));
+    }
+
+    [Fact]
     public async Task GetCockpitAsync_WhenCloseScopeIsSourceBacked_ProjectsReadyV018CloseLanes()
     {
         var activity = BuildActivity();
@@ -233,6 +448,39 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             row.EvidenceLinkCount == 2 &&
             row.EvidenceLinks.Any(link => link.EvidenceId == "INC-123" && link.Source == "incident") &&
             row.EvidenceLinks.Any(link => link.EvidenceId == "approval-ref-123" && link.Source == "approval-reference"));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenWorkflowApprovalIsPending_DoesNotReportReadyToClose()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(approvalState: OperationsApprovalStateDto.Submitted);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.ReadinessScore.Should().Be(90);
+        cockpit.ReadyLaneCount.Should().Be(14);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "approval-close-fund-alpha-2026-06" &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Submitted &&
+            row.DecidedAtUtc == null);
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Retain approved close approval history before audit package release."));
     }
 
     [Fact]
@@ -581,6 +829,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     private static OperationsContinuityWorkflowDto BuildClosedWorkflow(
         bool includeCloseControlEvidence = true,
         bool periodLockPackageReady = true,
+        OperationsApprovalStateDto approvalState = OperationsApprovalStateDto.Approved,
         IReadOnlyList<OperationsTimelineEntryDto>? timeline = null)
     {
         var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -617,7 +866,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             OperationsSecurityMasterStateDto.Complete,
             OperationsLedgerPostingStateDto.Complete,
             OperationsReconciliationStateDto.Complete,
-            OperationsApprovalStateDto.Approved,
+            approvalState,
             Gates:
             [
                 Gate(OperationsGateKeyDto.BrokerIngest),
@@ -633,12 +882,12 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             [
                 new OperationsApprovalDto(
                     "approval-close-fund-alpha-2026-06",
-                    OperationsApprovalStateDto.Approved,
+                    approvalState,
                     "ops-user",
-                    "controller",
+                    approvalState == OperationsApprovalStateDto.Approved ? "controller" : null,
                     "Close approved after evidence package review.",
                     now.AddMinutes(-45),
-                    now.AddMinutes(-30),
+                    approvalState == OperationsApprovalStateDto.Approved ? now.AddMinutes(-30) : null,
                     [Evidence("approval-close", "Approval close evidence", "/evidence/approval-close")])
             ],
             ReportPackReadiness: new OperationsReportPackReadinessDto(
@@ -1351,17 +1600,29 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     private sealed class StubManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService
     {
         private readonly PrivateCapitalActivityProjectionDto _activity;
+        private readonly IReadOnlyList<ManualJournalEntryDraftDto> _drafts;
 
-        public StubManualJournalEntryWorkbenchService(PrivateCapitalActivityProjectionDto activity)
+        public StubManualJournalEntryWorkbenchService(
+            PrivateCapitalActivityProjectionDto activity,
+            IReadOnlyList<ManualJournalEntryDraftDto>? drafts = null)
         {
             _activity = activity;
+            _drafts = drafts ?? [];
         }
 
         public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<string>>([FundProfileId]);
 
         public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
-            => Task.FromResult(new ManualJournalEntryWorkbenchDto(FundProfileId, ledgerBookId, DateTimeOffset.UtcNow, [], [], [], [], _activity));
+            => Task.FromResult(new ManualJournalEntryWorkbenchDto(
+                FundProfileId,
+                ledgerBookId,
+                DateTimeOffset.UtcNow,
+                LedgerBooks: [],
+                ChartOfAccounts: [],
+                Drafts: _drafts,
+                AuditTrail: [],
+                PrivateCapitalActivity: _activity));
 
         public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
         {
@@ -1377,6 +1638,40 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
         public Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default)
             => throw new NotSupportedException();
+    }
+
+    private sealed class StubDailyValuationScheduleStatusSource(DailyValuationScheduleStatusDto status)
+        : IDailyValuationScheduleStatusSource
+    {
+        public Task<DailyValuationScheduleStatusDto> GetStatusAsync(
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? periodId,
+            CancellationToken ct = default,
+            string? entityId = null,
+            string? tenantId = null,
+            string? companyId = null)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(status);
+        }
+    }
+
+    private sealed class StubAutomatedJournalScheduleStatusSource(AutomatedJournalScheduleStatusDto status)
+        : IAutomatedJournalScheduleStatusSource
+    {
+        public Task<AutomatedJournalScheduleStatusDto> GetStatusAsync(
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? periodId,
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null,
+            string? entityId = null)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(status);
+        }
     }
 
     private sealed class StubOperationsContinuityWorkflowService : IOperationsContinuityWorkflowService

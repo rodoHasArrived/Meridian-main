@@ -7,4 +7,9 @@
     <RootNamespace>Meridian.Audit</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
+    <!-- AtomicFileWriter powers durable, torn-write-safe persistence for the compliance audit log. -->
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+  </ItemGroup>
 </Project>

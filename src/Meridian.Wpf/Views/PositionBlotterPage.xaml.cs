@@ -11,12 +11,30 @@ public partial class PositionBlotterPage : Page
     private readonly PositionBlotterViewModel _viewModel;
 
     public PositionBlotterPage()
+        : this(TryResolveOperatingContextService())
+    {
+    }
+
+    public PositionBlotterPage(WorkstationOperatingContextService? operatingContextService)
     {
         InitializeComponent();
         _viewModel = new PositionBlotterViewModel(
             ApiClientService.Instance,
-            Services.NavigationService.Instance);
+            Services.NavigationService.Instance,
+            operatingContextService);
         DataContext = _viewModel;
+    }
+
+    private static WorkstationOperatingContextService? TryResolveOperatingContextService()
+    {
+        try
+        {
+            return App.Services?.GetService(typeof(WorkstationOperatingContextService)) as WorkstationOperatingContextService;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -26,7 +44,13 @@ public partial class PositionBlotterPage : Page
         {
             await _viewModel.InitializeAsync();
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>

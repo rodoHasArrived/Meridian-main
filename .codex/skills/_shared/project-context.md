@@ -27,13 +27,13 @@ repeating the same facts in every `SKILL.md`.
 - Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
   alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
   no-code workflow design can proceed when current source, roadmap, or user direction supports them.
-- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
-  workflows, launch automation, and desktop validation.
+- Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support both desktop and browser surfaces without duplicating business logic.
+  that should support the browser workstation and retained WPF compatibility without duplicating
+  business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -141,7 +141,7 @@ pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
@@ -150,12 +150,20 @@ nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above ins
 
 Prefer the narrowest validation command that matches the files being changed.
 For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
-is the authoritative merge result and work should flow through a `codex/<short-task-name>` branch
-and PR targeting `main`.
+is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
+it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
+`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
-tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
-`tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
+tool before retrying broad local scripts. Select a whitelisted `mode`; for .NET slices, use
+`mode=dotnet-filtered` with a repo-relative test project under `tests/` plus `dotnet_filter` to keep
+the remote run scoped to the failing slice.
+After a timed-out generation, build, or test attempt, run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+validation.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:
@@ -197,7 +205,7 @@ and choose the narrowest lane that matches the user's request:
 | Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
-| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and separate verified evidence from inference. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |
 | CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
 
 ## Solution Map
@@ -222,7 +230,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF shell
+  services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: BenchmarkDotNet performance suites
 
@@ -234,7 +242,7 @@ and choose the narrowest lane that matches the user's request:
 - CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
-- WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+- Active WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
 
 ## Desktop Persistence Baseline
 
@@ -271,8 +279,8 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/Shell/`: WPF shell route, launch, session, refresh, and presentation seams
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: WPF desktop shell view model and workstation navigation anchor
+- `src/Meridian.Wpf/Shell/`: retained WPF shell route, launch, session, refresh, and presentation seams
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained WPF desktop shell view model and workstation navigation anchor
 
 ## Review Guardrails
 

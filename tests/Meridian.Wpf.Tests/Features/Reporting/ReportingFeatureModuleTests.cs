@@ -30,21 +30,30 @@ public sealed class ReportingFeatureModuleTests
 
         workspace.ShellDefinition.ViewModelType.Should().Be(typeof(ReportingWorkspaceShellViewModel));
         workspace.ShellDefinition.StateProviderType.Should().Be(typeof(ReportingWorkspaceShellStateProvider));
+        workspace.ShellDefinition.DefaultPanes.Select(static pane => pane.PageTag)
+            .Should()
+            .Contain("ReportLineProvenanceExplorer");
     }
 
     [Fact]
-    public void DeclareCapabilities_ReturnsNoFeatureCapabilityKeys()
+    public void DeclareCapabilities_ReturnsReportingFeatureCapabilityKeys()
     {
-        DesktopFeatureModuleTestAssertions.AssertNoCapabilities(new ReportingFeatureModule());
+        DesktopFeatureModuleTestAssertions.AssertCapabilityKeys(
+            new ReportingFeatureModule(),
+            "desktop.reporting.workspace",
+            "desktop.reporting.review-workbench",
+            "desktop.reporting.delivery-readiness");
     }
 
     [Fact]
-    public void Register_AddsReportingShellStateViewModelAndPageAsTransient()
+    public void Register_AddsCanonicalReportingClientWorkbenchShellStateViewModelAndPage()
     {
         var services = new ServiceCollection();
 
         new ReportingFeatureModule().Register(services);
 
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IReportingGovernanceApiClient>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingGovernanceWorkbenchViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellStateProvider>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellPage>(services, ServiceLifetime.Transient);

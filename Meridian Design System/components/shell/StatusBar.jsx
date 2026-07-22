@@ -12,13 +12,13 @@ function inject() {
   font-family:var(--font-data);font-size:11px;color:var(--statusbar-text,#D7DCE2);
   font-variant-numeric:tabular-nums;}
 .ws-statusbar__item{display:inline-flex;align-items:center;gap:6px;padding:0 12px;
-  border-right:1px solid #262B31;height:16px;}
+  border-right:1px solid var(--statusbar-border,#262B31);height:16px;}
 .ws-statusbar__item:first-child{padding-left:0;}
-.ws-statusbar__item--push{margin-left:auto;border-right:none;border-left:1px solid #262B31;}
+.ws-statusbar__item--push{margin-left:auto;border-right:none;border-left:1px solid var(--statusbar-border,#262B31);}
 .ws-statusbar__label{font-family:var(--font-body);font-variant:all-small-caps;
-  letter-spacing:.03em;color:#8A929B;}
+  letter-spacing:.03em;color:var(--topbar-text-faint,#8A929B);}
 .ws-statusbar__dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;}
-.ws-st--ok{background:#2FA377;} .ws-st--warn{background:#D6A84A;} .ws-st--err{background:#E27087;}
+.ws-st--ok{background:var(--chrome-ok,#2FA377);} .ws-st--warn{background:var(--chrome-warn,#D6A84A);} .ws-st--err{background:var(--chrome-err,#E27087);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "statusbar");

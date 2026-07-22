@@ -5,11 +5,11 @@ import {
   buildAppShellViewState,
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
-  appendOperatingScopeToRoute,
   normalizeWorkspace,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
+import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
 import type { SessionInfo } from "@/types";
 
 const emptyPayload: AppShellWorkspacePayload = {
@@ -36,13 +36,198 @@ const sessionPayload: AppShellWorkspacePayload = {
 };
 
 describe("app shell view model", () => {
-  it("uses canonical Strategy helper names for shell continuity internals", () => {
-    const source = readFileSync(resolve(process.cwd(), "src/app-shell.view-model.ts"), "utf8");
+  it("keeps the skip link outside screenshot bounds until keyboard focus", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const skipLinkRule = shellStyles.match(/\.skip-link\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const focusedSkipLinkRule = shellStyles.match(/\.skip-link:focus\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
 
-    expect(source).toContain("buildStrategyContinuityStatus");
-    expect(source).toContain("buildOperatorFocusCandidateFromStrategyRun");
+    expect(skipLinkRule).toContain("left: -100vw");
+    expect(skipLinkRule).not.toContain("transform:");
+    expect(focusedSkipLinkRule).toContain("left: 0.75rem");
+  });
+
+  it("keeps route-owned continuity builders outside shell internals", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/app-shell.view-model.ts"), "utf8");
+    const continuitySource = readFileSync(resolve(process.cwd(), "src/app-shell.workflow-continuity.ts"), "utf8");
+    const continuityTypesSource = readFileSync(resolve(process.cwd(), "src/app-shell.workflow-continuity-types.ts"), "utf8");
+    const operatingScopeSource = readFileSync(resolve(process.cwd(), "src/app-shell.operating-scope.ts"), "utf8");
+    const continuityViewModelSource = readFileSync(resolve(process.cwd(), "src/app-shell.workflow-continuity-view-model.ts"), "utf8");
+    const statusPanelSource = readFileSync(resolve(process.cwd(), "src/app-shell.status-panel.ts"), "utf8");
+    const trustStripSource = readFileSync(resolve(process.cwd(), "src/app-shell.trust-strip.ts"), "utf8");
+    const commandPaletteSource = readFileSync(resolve(process.cwd(), "src/app-shell.command-palette.ts"), "utf8");
+    const demoFixtureSource = readFileSync(resolve(process.cwd(), "src/app-shell.development-fixture-notice.ts"), "utf8");
+    const routeFocusSource = readFileSync(resolve(process.cwd(), "src/app-shell.route-focus.ts"), "utf8");
+
+    expect(continuitySource).toContain("const workflowContinuityTrails");
+    expect(continuitySource).toContain("const primaryOperatorWorkflowStepDefinitions");
+    expect(continuitySource).toContain("function resolvePrimaryOperatorWorkflowStepId");
+    expect(continuitySource).toContain("function selectWorkflowContinuityTrail");
+    expect(continuitySource).toContain("function findActiveWorkflowStepIndex");
+    expect(continuitySource).toContain("function scoreWorkflowTrailWorkspaceAffinity");
+    expect(continuitySource).toContain("function scoreWorkflowStepRouteMatch");
+    expect(continuitySource).toContain('title: "Market Data To Paper"');
+    expect(continuitySource).toContain('title: "Accounting Closeout"');
+    expect(continuityTypesSource).toContain("export interface AppShellWorkflowContinuityViewModel");
+    expect(continuityTypesSource).toContain("export interface AppShellDecisionBrief");
+    expect(continuityTypesSource).toContain("export interface AppShellOperatorFocusItem");
+    expect(continuityTypesSource).toContain("export interface AppShellEvidenceTimelineItem");
+    expect(continuityTypesSource).toContain("export type AppShellWorkflowContinuityStatusTone");
+    expect(operatingScopeSource).toContain("export function readOperatingScopeFromSearch");
+    expect(operatingScopeSource).toContain("export function buildOperatingScopeFromSearch");
+    expect(operatingScopeSource).toContain("export function appendOperatingScopeToRoute");
+    expect(operatingScopeSource).toContain("export function summarizeOperatingScopeForRoute");
+    expect(operatingScopeSource).toContain("function operatingScopeKeysForRoute");
+    expect(operatingScopeSource).toContain("function appendSearchValue");
+    expect(continuityViewModelSource).toContain("export function buildWorkflowContinuityViewModel");
+    expect(continuityViewModelSource).toContain('from "@/app-shell.workflow-continuity-types"');
+    expect(continuityViewModelSource).toContain("interface WorkflowContinuityStatusContext");
+    expect(continuityViewModelSource).toContain("buildTrustedDataContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildStrategyContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildPaperReadinessContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildProviderSetupContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildPortfolioLedgerContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildFinancialOperationsWorkflowStepStatus");
+    expect(continuityViewModelSource).toContain("buildAccountingEvidenceTimelineItems");
+    expect(continuityViewModelSource).toContain("buildDataEvidenceTimelineItems");
+    expect(continuityViewModelSource).toContain("buildPortfolioEvidenceTimelineItems");
+    expect(continuityViewModelSource).toContain("buildStrategyEvidenceTimelineItems");
+    expect(continuityViewModelSource).toContain("buildTradingEvidenceTimelineItems");
+    expect(continuityViewModelSource).toContain("buildAccountingOperatorFocusItems");
+    expect(continuityViewModelSource).toContain("buildDataOperatorFocusItems");
+    expect(continuityViewModelSource).toContain("buildPortfolioOperatorFocusItems");
+    expect(continuityViewModelSource).toContain("buildAccountingLinkedContextItem");
+    expect(continuityViewModelSource).toContain("buildAccountingReconciliationContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildDataLinkedContextItem");
+    expect(continuityViewModelSource).toContain("buildPortfolioLinkedContextItem");
+    expect(continuityViewModelSource).toContain("buildReportingOperatorFocusItems");
+    expect(continuityViewModelSource).toContain("buildReportingLinkedContextItem");
+    expect(continuityViewModelSource).toContain("buildReportingGovernedReportContinuityStatus");
+    expect(continuityViewModelSource).toContain("buildStrategyOperatorFocusItems");
+    expect(continuityViewModelSource).toContain("buildTradingLinkedContextItem");
+    expect(continuityViewModelSource).toContain("buildTradingOperatorFocusItems");
+    expect(statusPanelSource).toContain("export function buildShellStatusPanel");
+    expect(statusPanelSource).toContain("export function buildShellFailureItems");
+    expect(statusPanelSource).toContain("function formatUserVisibleWorkspaceError");
+    expect(statusPanelSource).toContain("function looksLikeRawTechnicalResponse");
+    expect(statusPanelSource).toContain('title: "Workspace data unavailable"');
+    expect(trustStripSource).toContain("export function buildTrustStripState");
+    expect(trustStripSource).toContain("function buildProviderTrustStripItem");
+    expect(trustStripSource).toContain("function titleCase");
+    expect(trustStripSource).toContain("function formatCount");
+    expect(trustStripSource).toContain("packageJson.version");
+    expect(trustStripSource).toContain("Provider posture has not loaded yet.");
+    expect(commandPaletteSource).toContain("export function buildCommandPaletteTriggerState");
+    expect(commandPaletteSource).toContain("export function resolveAppShellCommandPaletteShortcut");
+    expect(commandPaletteSource).toContain("export function isAppShellEditableShortcutTarget");
+    expect(commandPaletteSource).toContain('const COMMAND_PALETTE_DIALOG_ID = "command-palette-dialog"');
+    expect(demoFixtureSource).toContain("export function buildDevelopmentFixtureNoticeViewModel");
+    expect(demoFixtureSource).toContain("const developmentFixtureDemoSteps");
+    expect(demoFixtureSource).toContain("function isCurrentDevelopmentFixtureDemoStep");
+    expect(demoFixtureSource).toContain("Showing demo data because live Meridian data is unavailable");
+    expect(routeFocusSource).toContain("export function buildRouteFocusState");
+    expect(routeFocusSource).toContain("function normalizeHashTarget");
+    expect(routeFocusSource).toContain("function formatHashTargetLabel");
+    expect(routeFocusSource).toContain('fallbackElementId: "workbench-content"');
+    expect(source).toContain("buildWorkflowContinuityViewModel");
+    expect(source).toContain("buildShellStatusPanel");
+    expect(source).toContain("buildShellFailureItems");
+    expect(source).toContain("buildTrustStripState");
+    expect(source).toContain("buildCommandPaletteTriggerState");
+    expect(source).toContain("buildRouteFocusState");
+    expect(source).not.toContain("buildTrustedDataContinuityStatus");
+    expect(source).not.toContain("buildStrategyContinuityStatus");
+    expect(source).not.toContain("buildPaperReadinessContinuityStatus");
+    expect(source).not.toContain("buildProviderSetupContinuityStatus");
+    expect(source).not.toContain("buildPortfolioLedgerContinuityStatus");
+    expect(source).not.toContain("buildFinancialOperationsWorkflowStepStatus");
+    expect(source).not.toContain("buildAccountingEvidenceTimelineItems");
+    expect(source).not.toContain("buildDataEvidenceTimelineItems");
+    expect(source).not.toContain("buildPortfolioEvidenceTimelineItems");
+    expect(source).not.toContain("buildStrategyEvidenceTimelineItems");
+    expect(source).not.toContain("buildTradingEvidenceTimelineItems");
+    expect(source).not.toContain("buildAccountingOperatorFocusItems");
+    expect(source).not.toContain("buildDataOperatorFocusItems");
+    expect(source).not.toContain("buildPortfolioOperatorFocusItems");
+    expect(source).not.toContain("buildAccountingLinkedContextItem");
+    expect(source).not.toContain("buildAccountingReconciliationContinuityStatus");
+    expect(source).not.toContain("buildDataLinkedContextItem");
+    expect(source).not.toContain("buildPortfolioLinkedContextItem");
+    expect(source).not.toContain("buildReportingOperatorFocusItems");
+    expect(source).not.toContain("buildReportingLinkedContextItem");
+    expect(source).not.toContain("buildReportingGovernedReportContinuityStatus");
+    expect(source).not.toContain("buildStrategyOperatorFocusItems");
+    expect(source).not.toContain("buildTradingLinkedContextItem");
+    expect(source).not.toContain("buildTradingOperatorFocusItems");
     expect(source).not.toContain("buildResearchContinuityStatus");
     expect(source).not.toContain("buildOperatorFocusCandidateFromResearchRun");
+    expect(source).not.toContain("const workflowContinuityTrails");
+    expect(source).not.toContain("const primaryOperatorWorkflowStepDefinitions");
+    expect(source).not.toContain("function resolvePrimaryOperatorWorkflowStepId");
+    expect(source).not.toContain("function selectWorkflowContinuityTrail");
+    expect(source).not.toContain("function findActiveWorkflowStepIndex");
+    expect(source).not.toContain("function scoreWorkflowTrailWorkspaceAffinity");
+    expect(source).not.toContain("function scoreWorkflowStepRouteMatch");
+    expect(source).not.toContain("export interface AppShellWorkflowContinuityViewModel");
+    expect(source).not.toContain("export interface AppShellDecisionBrief");
+    expect(source).not.toContain("export interface AppShellOperatorFocusItem");
+    expect(source).not.toContain("export interface AppShellEvidenceTimelineItem");
+    expect(source).not.toContain("export type AppShellWorkflowContinuityStatusTone");
+    expect(source).not.toContain("function buildWorkflowContinuityViewModel");
+    expect(source).not.toContain("interface WorkflowContinuityStatusContext");
+    expect(source).not.toContain('title: "Market Data To Paper"');
+    expect(source).not.toContain('title: "Accounting Closeout"');
+    expect(source).not.toContain("function buildTrustedDataContinuityStatus");
+    expect(source).not.toContain("function buildStrategyContinuityStatus");
+    expect(source).not.toContain("function buildPaperReadinessContinuityStatus");
+    expect(source).not.toContain("function buildProviderSetupContinuityStatus");
+    expect(source).not.toContain("function buildPortfolioLedgerContinuityStatus");
+    expect(source).not.toContain("function buildFinancialOperationsWorkflowStepStatus");
+    expect(source).not.toContain("function buildAccountingEvidenceTimelineItems");
+    expect(source).not.toContain("function buildDataEvidenceTimelineItems");
+    expect(source).not.toContain("function buildPortfolioEvidenceTimelineItems");
+    expect(source).not.toContain("function buildStrategyEvidenceTimelineItems");
+    expect(source).not.toContain("function buildTradingEvidenceTimelineItems");
+    expect(source).not.toContain("function buildDataFocusItems");
+    expect(source).not.toContain("function buildPortfolioFocusItems");
+    expect(source).not.toContain("function buildStrategyFocusItems");
+    expect(source).not.toContain("function buildTradingFocusItems");
+    expect(source).not.toContain("function buildAccountingLinkedContextItem");
+    expect(source).not.toContain("function buildDataLinkedContextItem");
+    expect(source).not.toContain("function buildPortfolioLinkedContextItem");
+    expect(source).not.toContain("function buildReportingLinkedContextItem");
+    expect(source).not.toContain("function buildTradingLinkedContextItem");
+    expect(source).not.toContain("function buildLinkedContextItem");
+    expect(source).not.toContain("function buildReconciliationContinuityStatus");
+    expect(source).not.toContain("function buildGovernedReportContinuityStatus");
+    expect(source).not.toContain("function buildCloseSupportContinuityStatus");
+    expect(source).not.toContain("function buildAccountingFocusItems");
+    expect(source).not.toContain("function buildReportingFocusItems");
+    expect(source).not.toContain("function readOperatingScopeFromSearch");
+    expect(source).not.toContain("function buildOperatingScopeFromSearch");
+    expect(source).not.toContain("function appendOperatingScopeToRoute");
+    expect(source).not.toContain("function summarizeOperatingScopeForRoute");
+    expect(source).not.toContain("function operatingScopeKeysForRoute");
+    expect(source).not.toContain("function appendSearchValue");
+    expect(source).not.toContain("function buildShellStatusPanel");
+    expect(source).not.toContain("function buildShellFailureItems");
+    expect(source).not.toContain("function formatUserVisibleWorkspaceError");
+    expect(source).not.toContain("function looksLikeRawTechnicalResponse");
+    expect(source).not.toContain("function buildTrustStripState");
+    expect(source).not.toContain("function buildProviderTrustStripItem");
+    expect(source).not.toContain("function titleCase");
+    expect(source).not.toContain("function formatCount");
+    expect(source).not.toContain("packageJson.version");
+    expect(source).not.toContain("Provider posture has not loaded yet.");
+    expect(source).not.toContain("export function buildCommandPaletteTriggerState");
+    expect(source).not.toContain("export function resolveAppShellCommandPaletteShortcut");
+    expect(source).not.toContain("export function isAppShellEditableShortcutTarget");
+    expect(source).not.toContain("export function buildDevelopmentFixtureNoticeViewModel");
+    expect(source).not.toContain("const developmentFixtureDemoSteps");
+    expect(source).not.toContain("function isCurrentDevelopmentFixtureDemoStep");
+    expect(source).not.toContain("Showing demo data because live Meridian data is unavailable");
+    expect(source).not.toContain("export function buildRouteFocusState");
+    expect(source).not.toContain("function normalizeHashTarget");
+    expect(source).not.toContain("function formatHashTargetLabel");
   });
 
   it("normalizes route paths to workspace keys", () => {
@@ -60,6 +245,33 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("treats the root route as the Daily Control Tower shell focus", () => {
+    const state = buildAppShellViewState({
+      pathname: "/",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.routeFocus).toMatchObject({
+      announcement: "Daily Control Tower loaded.",
+      documentTitle: "Daily Control Tower - Meridian",
+      fallbackElementId: "workbench-content"
+    });
+    expect(state.workflowContinuity.title).toBe("Daily Control Tower");
+    expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
+      "Today",
+      "Exceptions",
+      "Close",
+      "Reconciliation",
+      "Ledger",
+      "Reports",
+      "Evidence",
+      "Data Health"
+    ]);
+  });
+
   it("shows a loading status while bootstrap is in progress", () => {
     const state = buildAppShellViewState({
       pathname: "/trading",
@@ -73,13 +285,13 @@ describe("app shell view model", () => {
     expect(state.canRenderRoutes).toBe(false);
     expect(state.workflowContinuity).toMatchObject({
       operatorFocusSummary: "Loading cross-workspace operator posture.",
-      operatorFocusEmptyText: "Ranked focus actions will appear after workstation payloads load.",
+      operatorFocusEmptyText: "Ranked focus actions will appear after workspace data loads.",
       operatorFocusItems: [],
       evidenceTimelineSummary: "Loading cross-workspace evidence timeline.",
-      evidenceTimelineEmptyText: "Recent audit and workflow events will appear after workstation payloads load.",
+      evidenceTimelineEmptyText: "Recent audit and workflow events will appear after workspace data loads.",
       evidenceTimelineItems: [],
       linkedContextSummary: "Loading linked operating context.",
-      linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
+      linkedContextEmptyText: "Portfolio-aware context links will appear after workspace data loads.",
       linkedContextItems: []
     });
     expect(state.workflowContinuity.disclosure).toMatchObject({
@@ -97,9 +309,9 @@ describe("app shell view model", () => {
       detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
       role: "status",
-      title: "Booting workstation shell",
-      detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
-      itemListLabel: "Workspace bootstrap status",
+      title: "Preparing workspace",
+      detail: "Loading session state, operator workspaces, and the initial evidence views.",
+      itemListLabel: "Workspace data loading status",
       actionLabel: null,
       items: [
         {
@@ -109,7 +321,7 @@ describe("app shell view model", () => {
         },
         {
           key: "workspace-payloads",
-          label: "Workspace payloads",
+          label: "Workspace data",
           detail: "Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
         },
         {
@@ -189,9 +401,9 @@ describe("app shell view model", () => {
         {
           id: "source",
           label: "Source",
-          value: "Demo fixtures",
+          value: "Demo data",
           tone: "pending",
-          detail: "No-host fixture payloads are visible; do not treat this as live operational readiness.",
+          detail: "Demo data is visible; confirm live source status before making operating decisions.",
           href: "/settings#backend-capability-coverage",
           actionLabel: "Open diagnostics"
         },
@@ -283,7 +495,7 @@ describe("app shell view model", () => {
       actionLabel: "Review readiness"
     });
     expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
-      value: "Partial host",
+      value: "Limited data",
       tone: "review",
       href: "/settings#backend-capability-coverage",
       actionLabel: "Open diagnostics"
@@ -338,28 +550,24 @@ describe("app shell view model", () => {
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
-      nextActionLabel: "Next: Price alerts",
-      nextActionHref: "/data/alerts?symbol=AAPL",
+      nextActionLabel: "Next: Readiness",
+      nextActionHref: "/trading/readiness?symbol=AAPL",
       subjectSymbol: "AAPL",
       clearSubjectAriaLabel: "Clear AAPL operating context"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
-      ["watchlist", false, false, "/data/watchlist?symbol=AAPL"],
-      ["quotes", true, false, "/data/quotes?symbol=AAPL"],
-      ["alerts", false, true, "/data/alerts?symbol=AAPL"],
-      ["readiness", false, false, "/trading/readiness?symbol=AAPL"],
+      ["market-data", true, false, "/data/quotes?symbol=AAPL"],
+      ["readiness", false, true, "/trading/readiness?symbol=AAPL"],
       ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.label, step.statusLabel])).toEqual([
-      ["Watchlist", "Waiting"],
-      ["Live quotes", "Current / Waiting"],
-      ["Price alerts", "Next / Waiting"],
-      ["Readiness", "Waiting"],
+      ["Market data", "Current / Waiting"],
+      ["Readiness", "Next / Waiting"],
       ["Provider setup", "Available"]
     ]);
     expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
       ["import", "Import", false, "/data/providers?symbol=AAPL"],
-      ["validate", "Validate", true, "/data/backfills?symbol=AAPL"],
+      ["validate", "Validate", true, "/data/operations?symbol=AAPL"],
       ["reconcile", "Reconcile", false, "/accounting/reconciliation?symbol=AAPL"],
       ["investigate", "Investigate", false, "/portfolio?symbol=AAPL"],
       ["approve", "Approve", false, "/accounting/approvals?symbol=AAPL"],
@@ -394,7 +602,7 @@ describe("app shell view model", () => {
     ]);
 
     const dataState = buildAppShellViewState({
-      pathname: "/data/watchlist",
+      pathname: "/data/quotes",
       operatingContextSymbol: "msft",
       loading: false,
       error: null,
@@ -403,9 +611,7 @@ describe("app shell view model", () => {
     });
 
     expect(dataState.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["watchlist", "/data/watchlist?symbol=MSFT"],
-      ["quotes", "/data/quotes?symbol=MSFT"],
-      ["alerts", "/data/alerts?symbol=MSFT"],
+      ["market-data", "/data/quotes?symbol=MSFT"],
       ["readiness", "/trading/readiness?symbol=MSFT"],
       ["provider-setup", "/settings#alpaca-provider-setup"]
     ]);
@@ -423,14 +629,14 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity).toMatchObject({
       contextValue: "Portfolio / MSFT",
-      clearSubjectAriaLabel: "Clear operating scope: Subject MSFT, Account fund-1, Run run-9, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
+      clearSubjectAriaLabel: "Clear operating scope: Subject MSFT, Account fund-1, Run Selected run, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
     });
     expect(state.workflowContinuity.operatingScope.summary)
-      .toBe("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
+      .toBe("Subject: MSFT / Account: fund-1 / Run: Selected run / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
     expect(state.workflowContinuity.operatingScope.items.map((item) => [item.label, item.value])).toEqual([
       ["Subject", "MSFT"],
       ["Account", "fund-1"],
-      ["Run", "run-9"],
+      ["Run", "Selected run"],
       ["Provider", "Alpaca"],
       ["Window", "2026-05-01 to 2026-05-15"]
     ]);
@@ -441,6 +647,36 @@ describe("app shell view model", () => {
       ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
       ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
+  });
+
+  it("uses workspace-specific run labels without exposing raw run identity", () => {
+    const accountingState = buildAppShellViewState({
+      pathname: "/accounting/ledger",
+      search: "?runId=run-42",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+    const reportingState = buildAppShellViewState({
+      pathname: "/reporting/run-status",
+      search: "?runId=report-run-board-202605",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(accountingState.workflowContinuity.operatingScope).toMatchObject({
+      runId: "run-42",
+      summary: "Run: Selected ledger run"
+    });
+    expect(reportingState.workflowContinuity.operatingScope).toMatchObject({
+      runId: "report-run-board-202605",
+      summary: "Run: Selected report run"
+    });
+    expect(accountingState.workflowContinuity.operatingScope.summary).not.toContain("run-42");
+    expect(reportingState.workflowContinuity.operatingScope.summary).not.toContain("report-run-board-202605");
   });
 
 
@@ -726,13 +962,11 @@ describe("app shell view model", () => {
       nextActionHref: "/settings#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.statusLabel, step.statusTone])).toEqual([
-      ["watchlist", false, false, "Waiting", "pending"],
-      ["quotes", false, false, "Waiting", "pending"],
-      ["alerts", false, false, "Waiting", "pending"],
+      ["market-data", false, false, "Waiting", "pending"],
       ["readiness", false, false, "Waiting", "pending"],
       ["provider-setup", true, false, "Current / Available", "ready"]
     ]);
-    expect(state.workflowContinuity.steps[4].ariaLabel)
+    expect(state.workflowContinuity.steps[2].ariaLabel)
       .toBe("Provider setup, current workflow step, Available");
   });
 
@@ -1112,7 +1346,7 @@ describe("app shell view model", () => {
       .toBe("Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup.");
     expect(state.workflowContinuity.decisionBrief).toMatchObject({
       label: "Decision brief",
-      title: "Resolve Brokerage sync failed",
+      title: "Brokerage sync failed",
       summary: "Settings is the highest-priority loaded issue. 4 focus items across workspaces: 2 blocked and 2 review.",
       reasonLabel: "Why now",
       reason: "Account sync failed after the last provider heartbeat.",
@@ -1158,13 +1392,13 @@ describe("app shell view model", () => {
       detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
       role: "status",
-      title: "Workstation bootstrap is partially degraded",
-      actionLabel: "Retry failed slices",
-      actionAriaLabel: "Retry failed workstation slices",
+      title: "Some workspace data is unavailable",
+      actionLabel: "Retry failed areas",
+      actionAriaLabel: "Retry failed workspace areas",
       secondaryActionLabel: "Review diagnostics",
-      secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
+      secondaryActionAriaLabel: "Review Settings diagnostics for failed workspace areas",
       secondaryActionHref: "/settings#backend-capability-coverage",
-      itemListLabel: "Failed workstation slices"
+      itemListLabel: "Workspace data issues"
     });
     expect(state.statusPanel?.items).toEqual([
       {
@@ -1201,11 +1435,34 @@ describe("app shell view model", () => {
       tone: "danger",
       role: "alert",
       ariaLive: "assertive",
-      title: "Workstation bootstrap failed",
+      title: "Workspace data unavailable",
       detail: "Network offline",
-      actionLabel: "Retry bootstrap",
-      actionAriaLabel: "Retry workstation bootstrap",
-      itemListLabel: "Bootstrap failure details"
+      actionLabel: "Retry workspace data",
+      actionAriaLabel: "Retry workspace data",
+      itemListLabel: "Workspace data issues"
+    });
+  });
+
+  it("hides raw technical response bodies in failed workspace copy", () => {
+    const rawBody = "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>";
+    const state = buildAppShellViewState({
+      pathname: "/reporting",
+      loading: false,
+      error: rawBody,
+      workspaceErrors: {
+        reporting: rawBody
+      },
+      payload: emptyPayload
+    });
+
+    expect(state.statusPanel).toMatchObject({
+      title: "Workspace data unavailable",
+      detail: "Meridian could not load workspace data. Try again or open diagnostics."
+    });
+    expect(state.statusPanel?.items[0]).toMatchObject({
+      label: "Reporting",
+      detail: "Workspace data unavailable. Try again or open diagnostics.",
+      ariaLabel: "Reporting: Workspace data unavailable. Try again or open diagnostics."
     });
   });
 
@@ -1219,10 +1476,10 @@ describe("app shell view model", () => {
       role: "status",
       ariaLive: "polite",
       title: "Demo data",
-      detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
+      detail: "Showing demo data because live Meridian data is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
       workflowLabel: "Evidence path",
       retryLabel: "Retrying live data",
-      retryAriaLabel: "Retrying Meridian API host and live workstation data",
+      retryAriaLabel: "Retrying live Meridian workspace data",
       retryDisabled: true,
       retryBusy: true
     });
@@ -1232,6 +1489,23 @@ describe("app shell view model", () => {
       ["readiness", false],
       ["connect", false]
     ]);
+  });
+
+  it("marks the watchlist demo step active on the market data desk watchlist view", () => {
+    const state = buildDevelopmentFixtureNoticeViewModel({
+      pathname: "/data/quotes",
+      search: "?view=watchlist"
+    });
+
+    expect(state.steps.map((step) => [step.id, step.active])).toEqual([
+      ["watchlist", true],
+      ["quotes", false],
+      ["readiness", false],
+      ["connect", false]
+    ]);
+    expect(state.steps.find((step) => step.id === "watchlist")).toMatchObject({
+      href: "/data/quotes?view=watchlist"
+    });
   });
 
   it("includes workflow catalog failures in the shell degraded status", () => {
@@ -1247,8 +1521,8 @@ describe("app shell view model", () => {
     expect(state.canRenderRoutes).toBe(true);
     expect(state.statusPanel).toMatchObject({
       tone: "warning",
-      title: "Workstation bootstrap is partially degraded",
-      detail: "1 workstation slice failed to load. Available routes remain open while that slice recovers."
+      title: "Some workspace data is unavailable",
+      detail: "1 workspace area did not load. Available routes remain open while that area recovers."
     });
     expect(state.statusPanel?.items).toEqual([
       {

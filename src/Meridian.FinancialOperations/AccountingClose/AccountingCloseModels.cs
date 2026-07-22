@@ -80,6 +80,33 @@ public sealed record CloseEvidence(
     public ImmutableArray<CloseEvidenceCheck> NormalizedChecks => Checks.IsDefault ? ImmutableArray<CloseEvidenceCheck>.Empty : Checks;
 }
 
+public sealed record CloseApprovalHistoryEntry(
+    string ApprovalId,
+    string SourceEventId,
+    Guid? JournalEntryId,
+    string Label,
+    DateOnly? AccountingPeriod,
+    ImmutableArray<string> AccountCodes,
+    bool Required,
+    bool Completed,
+    string Detail);
+
+public sealed record CloseEvidencePackage(
+    string PackageId,
+    string LedgerId,
+    DateOnly Period,
+    ClosePeriodState State,
+    bool IsLocked,
+    bool TrialBalanceBalanced,
+    DateTimeOffset? LockedAt,
+    string? ClosedBy,
+    ImmutableArray<CloseEvidenceCheck> EvidenceChecks,
+    ImmutableArray<CloseApprovalHistoryEntry> ApprovalHistory,
+    ImmutableArray<string> SourceEventIds,
+    ImmutableArray<string> ApprovalIds,
+    ImmutableArray<string> Blockers,
+    string EvidenceHash);
+
 public sealed record ClosePeriod(
     string LedgerId,
     DateOnly Period,

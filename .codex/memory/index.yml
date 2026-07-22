@@ -497,5 +497,5 @@ entries:
     invalidates_when:
       - Financial Record Explorer DTO shape or endpoint routes change materially.
       - Saved-view partitioning or tenant scoping changes.
-      - Browser or WPF stops consuming the shared explorer DTO.
+      - Browser consumption changes materially, WPF compatibility is reactivated, or WPF compatibility is retired.
       - W5X Financial Record Explorer product scope changes materially.

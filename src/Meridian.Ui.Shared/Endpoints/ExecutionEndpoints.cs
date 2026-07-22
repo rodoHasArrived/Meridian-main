@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
@@ -140,8 +142,10 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
             var gateDecision = BrokerageOrderPlacementGate.Evaluate(
-                context.RequestServices.GetService<BrokerageConfiguration>());
+                context.RequestServices.GetService<BrokerageConfiguration>(),
+                activeGatewayId);
             if (!gateDecision.IsAllowed)
             {
                 var blocked = new OrderResult
@@ -156,6 +160,16 @@ public static class ExecutionEndpoints
             if (TryRejectClientControlledExecutionMetadata(request, jsonOptions) is { } brokerAccountFailure)
             {
                 return brokerAccountFailure;
+            }
+
+            if (request.FundAccountId is { } fundAccountId
+                && await RequireExecutionFundAccountAccessAsync(
+                    fundAccountId,
+                    UserPermission.ManageOrders,
+                    context,
+                    jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+            {
+                return accountScopeFailure;
             }
 
             string? correlationId = null;
@@ -192,6 +206,11 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (TryRejectBrokerOrderRouting(context.RequestServices, jsonOptions) is { } blockedRouting)
+            {
+                return blockedRouting;
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -231,6 +250,11 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (TryRejectBrokerOrderRouting(context.RequestServices, jsonOptions) is { } blockedRouting)
+            {
+                return blockedRouting;
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -581,6 +605,28 @@ public static class ExecutionEndpoints
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
+        group.MapGet("/sessions/{sessionId}/tca", async (string sessionId, HttpContext context) =>
+        {
+            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+            if (persistence is null)
+                return Results.NotFound();
+
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            var session = persistence.GetSession(sessionId);
+            if (session is null)
+                return Results.NotFound();
+
+            var report = SessionTcaReporter.Generate(
+                sessionId,
+                session.Summary.StrategyId,
+                session.FillHistory ?? Array.Empty<ExecutionReport>(),
+                session.OrderHistory);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("GetExecutionSessionTcaReport")
+        .Produces<SessionTcaReport>(200)
+        .Produces(404);
+
         group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
@@ -891,6 +937,14 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             return await SubmitPositionActionAsync(
                 position,
                 snapshot.Source,
@@ -898,6 +952,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                fundAccountId: request.FundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -935,6 +990,14 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             return await SubmitPositionActionAsync(
                 position,
                 snapshot.Source,
@@ -942,6 +1005,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Sell : OrderSide.Buy,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "open" : null,
+                fundAccountId: request.FundAccountId,
                 successVerb: "Upsize",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -952,7 +1016,7 @@ public static class ExecutionEndpoints
         .Produces(403)
         .Produces(503);
 
-        group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
+        group.MapPost("/positions/{symbol}/close", async (string symbol, Guid? fundAccountId, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
             {
@@ -991,6 +1055,14 @@ public static class ExecutionEndpoints
                 return Results.Json(ambiguous, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    fundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             var position = matches[0];
             return await SubmitPositionActionAsync(
                 position,
@@ -999,6 +1071,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                fundAccountId: fundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -1078,6 +1151,7 @@ public static class ExecutionEndpoints
         OrderSide side,
         decimal quantity,
         string? positionEffect,
+        Guid? fundAccountId,
         string successVerb,
         JsonSerializerOptions jsonOptions,
         HttpContext context)
@@ -1098,8 +1172,10 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
         var blockedGateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>());
+            context.RequestServices.GetService<BrokerageConfiguration>(),
+            activeGatewayId);
         if (!blockedGateDecision.IsAllowed)
         {
             var blockedActionId = GenerateActionId();
@@ -1135,7 +1211,8 @@ public static class ExecutionEndpoints
         }
 
         var gateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>());
+            context.RequestServices.GetService<BrokerageConfiguration>(),
+            activeGatewayId);
         if (!gateDecision.IsAllowed)
         {
             var blocked = new TradingActionResult(
@@ -1144,6 +1221,16 @@ public static class ExecutionEndpoints
                 Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
                 OccurredAt: DateTimeOffset.UtcNow);
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        if (fundAccountId is { } requestedFundAccountId
+            && await RequireExecutionFundAccountAccessAsync(
+                requestedFundAccountId,
+                UserPermission.ExecuteTrades,
+                context,
+                jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+        {
+            return accountScopeFailure;
         }
 
         var metadata = MergeMetadata(
@@ -1166,6 +1253,7 @@ public static class ExecutionEndpoints
             Type = OrderType.Market,
             Quantity = quantity,
             ClientOrderId = $"{actionName.ToLowerInvariant()}-{position.Symbol}-{Guid.NewGuid():N}",
+            FundAccountId = fundAccountId,
             Metadata = metadata
         };
 
@@ -1284,6 +1372,23 @@ public static class ExecutionEndpoints
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
+    private static IResult? TryRejectBrokerOrderRouting(IServiceProvider services, JsonSerializerOptions jsonOptions)
+    {
+        var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+            services.GetService<BrokerageConfiguration>());
+        if (gateDecision.IsAllowed)
+        {
+            return null;
+        }
+
+        var blocked = new TradingActionResult(
+            ActionId: GenerateActionId(),
+            Status: "Rejected",
+            Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
+            OccurredAt: DateTimeOffset.UtcNow);
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
+
     private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
     {
         var configuration = services.GetService<BrokerageConfiguration>();
@@ -1344,6 +1449,62 @@ public static class ExecutionEndpoints
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
+
+    private static async Task<IResult?> RequireExecutionFundAccountAccessAsync(
+        Guid fundAccountId,
+        UserPermission requiredPermission,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
+        if (scopedAuthorization is null)
+        {
+            return Results.Problem(
+                "Fund account scope authorization is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+            && !await EndpointAuthorization.HasScopedPermissionAsync(
+                context,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId,
+                context.RequestAborted).ConfigureAwait(false))
+        {
+            return ExecutionFundAccountForbidden(jsonOptions);
+        }
+
+        var queryService = ResolveAccountQueryService(context);
+        if (queryService is null)
+        {
+            return Results.Problem(
+                "Fund account scope validation is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var account = await queryService.GetAccountAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
+        return account is null ? ExecutionFundAccountForbidden(jsonOptions) : null;
+    }
+
+    private static IResult ExecutionFundAccountForbidden(JsonSerializerOptions jsonOptions)
+    {
+        var blocked = new TradingActionResult(
+            ActionId: GenerateActionId(),
+            Status: "Rejected",
+            Message: "The requested fund account is not authorized for this execution action.",
+            OccurredAt: DateTimeOffset.UtcNow);
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    private static IAccountQueryService? ResolveAccountQueryService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountQueryService>();
+
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
 
@@ -1352,6 +1513,36 @@ public static class ExecutionEndpoints
 
     private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
         => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static async Task<IResult?> RequireScopedFundAccountOrderAccessAsync(
+        HttpContext context,
+        Guid? fundAccountId,
+        UserPermission requiredPermission)
+    {
+        if (!fundAccountId.HasValue)
+        {
+            return null;
+        }
+
+        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
+        if (scopedAuthorization is null ||
+            !EndpointAuthorization.TryResolveActor(context, out var actor) ||
+            !EndpointAuthorization.TryGetPermissions(context, out var permissions))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var decision = await scopedAuthorization.AuthorizeAsync(
+                actor,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId.Value,
+                permissions,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+
+        return decision.IsAllowed ? null : EndpointHelpers.Forbidden();
+    }
 
     private static IResult? TryRejectClientControlledExecutionMetadata(
         OrderRequest request,

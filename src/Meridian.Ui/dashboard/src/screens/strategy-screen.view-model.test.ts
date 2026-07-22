@@ -255,6 +255,8 @@ describe("strategy-screen view model", () => {
       ariaLabel: "Selected strategy run detail for Mean Reversion FX",
       title: "Mean Reversion FX"
     });
+    expect(state.inspectedRunDetail?.fields).not.toContainEqual(expect.objectContaining({ label: "Run ID" }));
+    expect(state.inspectedRunDetail?.technicalFields).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
     expect(state.runTable.rows[0]).toMatchObject({
       selectedForComparison: true,
       detailExpanded: true,
@@ -563,7 +565,8 @@ describe("strategy-screen view model", () => {
     expect(detail.description).toBe("Mean Reversion FX is Running in PAPER mode.");
     expect(detail.modeBadgeLabel).toBe("PAPER");
     expect(detail.modeBadgeVariant).toBe("paper");
-    expect(detail.summaryRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
+    expect(detail.summaryRows).not.toContainEqual(expect.objectContaining({ label: "Run ID" }));
+    expect(detail.technicalRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
     expect(detail.notesText).toBe("No operator notes were recorded for this run.");
     expect(detail.closeButtonAriaLabel).toBe("Close Mean Reversion FX run detail");
   });
@@ -780,6 +783,10 @@ describe("strategy-screen view model", () => {
 
     const state = buildStrategyRunLibraryState({
       runs,
+      plotToolFromApi: {
+        ...plotTool,
+        tabs: []
+      },
       selectedIds: [],
       selectedRun: null,
       comparison: [],
@@ -1178,6 +1185,29 @@ describe("strategy-screen view model", () => {
 
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
+  });
+
+  it("uses an honest empty PlotTool state when no API payload is provided", () => {
+    const state = buildStrategyRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.plotTool.studies).toEqual([]);
+    expect(state.selectedPlotStudyId).toBeNull();
+    expect(state.selectedPlotStudyDetail).toBeNull();
+    expect(state.plotTool.workspace.title).toBe("PlotTool catalog not connected");
+    expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
+    expect(state.plotTool.statistics.title).toBe("PlotTool statistics not connected");
+    expect(state.plotTool.statistics.sampleTable.rows).toEqual([]);
   });
 
   it("ignores duplicate paper-session submit attempts while creation is unresolved", async () => {

@@ -343,4 +343,18 @@ public sealed class EventCanonicalizerTests
         canonAlpaca.CanonicalVenue.Should().Be(canonPolygon.CanonicalVenue,
             "same exchange from different providers should resolve to same MIC");
     }
+
+    [Fact]
+    public void Canonicalize_UsesProviderScopedMappingBeforeGenericAlias()
+    {
+        _mockRegistry.TryResolve("BRK-B", "YAHOO").Returns("BRK.B");
+        _mockRegistry.ResolveToCanonical("BRK-B").Returns("WRONG-GLOBAL-COLLISION");
+        var raw = CreateTradeEvent("BRK-B", "YAHOO");
+
+        var result = _canonicalizer.Canonicalize(raw);
+
+        result.CanonicalSymbol.Should().Be("BRK.B");
+        _mockRegistry.Received(1).TryResolve("BRK-B", "YAHOO");
+        _mockRegistry.DidNotReceive().ResolveToCanonical("BRK-B");
+    }
 }

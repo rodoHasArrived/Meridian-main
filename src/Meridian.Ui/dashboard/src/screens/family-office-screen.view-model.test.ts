@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildFamilyOfficeScreenViewModel,
+  FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE,
   selectAdjacentFamilyOfficeNode,
   type FamilyOfficeEntityStructure
 } from "@/screens/family-office-screen.view-model";
@@ -24,16 +25,28 @@ describe("buildFamilyOfficeScreenViewModel", () => {
       path: "/portfolio/family-office",
       workspaceLabel: "Portfolio",
       label: "Family office",
-      disabledReason: null
+      disabledReason: expect.stringContaining("Set up family entities")
     });
-    expect(vm.route.emptyState).toContain("Family office data is not connected yet");
-    expect(vm.statusChips.map((chip) => chip.value)).toContain("/portfolio/family-office");
+    expect(vm.route.emptyState).toContain("Set up family entities");
+    expect(vm.statusChips).toContainEqual({ label: "Source", value: "Not connected" });
+    expect(vm.statusChips).toContainEqual({ label: "As of", value: "Unavailable" });
+    expect(vm.notConnected).toBe(true);
+    expect(vm.emptyActionHref).toBe("/accounting/entity-setup");
+    expect(vm.panels).toEqual([]);
+    expect(vm.ownershipGraph.nodes).toEqual([]);
+  });
+
+  it("builds demo family-office panels only when fixture data is supplied", () => {
+    const vm = buildFamilyOfficeScreenViewModel(null, FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE);
+
+    expect(vm.route.disabledReason).toBeNull();
+    expect(vm.notConnected).toBe(false);
     expect(vm.panels.map((panel) => panel.label)).toEqual(requiredPanelLabels);
     expect(vm.panels.every((panel) => panel.emptyState.length > 0 && panel.ariaLabel.includes(panel.value))).toBe(true);
   });
 
   it("builds a selectable ownership graph with an accessible table fallback contract", () => {
-    const vm = buildFamilyOfficeScreenViewModel("beta-llc");
+    const vm = buildFamilyOfficeScreenViewModel("beta-llc", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE);
 
     expect(vm.ownershipGraph.selectedNodeId).toBe("beta-llc");
     expect(vm.ownershipGraph.selectedNode?.label).toBe("Beta Holdings LLC");
@@ -103,7 +116,7 @@ describe("buildFamilyOfficeScreenViewModel", () => {
 
     const vm = buildFamilyOfficeScreenViewModel("trust-a", entityStructure);
 
-    expect(vm.statusChips).toContainEqual({ label: "Entity source", value: "Root Family Office" });
+    expect(vm.statusChips).toContainEqual({ label: "Source", value: "Root Family Office" });
     expect(vm.panels.find((panel) => panel.id === "total-family-net-worth")).toMatchObject({
       value: "$10.0M",
       detail: expect.stringContaining("Root Family Office")
@@ -119,9 +132,10 @@ describe("buildFamilyOfficeScreenViewModel", () => {
   });
 
   it("selects adjacent graph nodes deterministically for keyboard navigation", () => {
-    expect(selectAdjacentFamilyOfficeNode("family-holdco", "next")).toBe("alpha-trust");
-    expect(selectAdjacentFamilyOfficeNode("alpha-trust", "previous")).toBe("family-holdco");
-    expect(selectAdjacentFamilyOfficeNode("private-funds", "last")).toBe("real-estate");
-    expect(selectAdjacentFamilyOfficeNode("missing", "first")).toBe("family-holdco");
+    expect(selectAdjacentFamilyOfficeNode("family-holdco", "next", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("alpha-trust");
+    expect(selectAdjacentFamilyOfficeNode("alpha-trust", "previous", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("family-holdco");
+    expect(selectAdjacentFamilyOfficeNode("private-funds", "last", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("real-estate");
+    expect(selectAdjacentFamilyOfficeNode("missing", "first", FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE)).toBe("family-holdco");
+    expect(selectAdjacentFamilyOfficeNode("missing", "first")).toBeNull();
   });
 });

@@ -27,6 +27,8 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 ## Important workflows
 
 Use this module for pre-trade checks, limits, safety gates, and execution-control evidence.
+Composite risk validation runs rules by priority, uses synchronous fast paths when a rule exposes
+one, and stops at the first rejection so attribution and latency stay predictable on the order path.
 
 ## Diagrams
 

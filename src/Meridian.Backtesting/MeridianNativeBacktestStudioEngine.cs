@@ -258,6 +258,9 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         {
             lock (_gate)
             {
+                if (IsTerminal(_status))
+                    return;
+
                 _status = StrategyRunStatus.Running;
                 _progress = Math.Clamp(evt.ProgressFraction, 0d, 1d);
                 _message = evt.Message;
@@ -338,5 +341,8 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
 
         public TerminalRunSnapshot ToTerminalSnapshot(DateTimeOffset terminalAt)
             => new(ToStatus(), terminalAt, CreateResultAccessor(Result.Task));
+
+        private static bool IsTerminal(StrategyRunStatus status)
+            => status is StrategyRunStatus.Completed or StrategyRunStatus.Cancelled or StrategyRunStatus.Failed;
     }
 }

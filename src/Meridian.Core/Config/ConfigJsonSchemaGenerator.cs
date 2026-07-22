@@ -30,6 +30,7 @@ public sealed class ConfigJsonSchemaGenerator
         _building.Clear();
 
         var rootSchema = BuildDefinition(typeof(AppConfig)).DeepClone().AsObject();
+        AddHostConfigurationSchemas(rootSchema);
         rootSchema["$schema"] = SchemaDialect;
         rootSchema["title"] = "Meridian appsettings schema";
         rootSchema["description"] = "JSON Schema for Meridian application configuration.";
@@ -54,6 +55,143 @@ public sealed class ConfigJsonSchemaGenerator
         }
 
         return rootSchema;
+    }
+
+    private void AddHostConfigurationSchemas(JsonObject rootSchema)
+    {
+        var properties = rootSchema["properties"]?.AsObject();
+        if (properties == null)
+        {
+            return;
+        }
+
+        properties["ApiHost"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/ApiHostOptions"
+        });
+
+        _definitions["ApiHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["AllowedOrigins"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                },
+                ["AllowInsecureTransportForReverseProxy"] = CreateTypedSchema("boolean"),
+                ["DeploymentMode"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["enum"] = new JsonArray(
+                        "LocalWorkstation",
+                        "ProductionApi",
+                        "Worker",
+                        "Migration")
+                },
+                ["ServeWorkstationAssets"] = CreateTypedSchema("boolean"),
+                ["Urls"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                }
+            }
+        };
+
+        properties["SecurityMasterWorkbench"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/SecurityMasterWorkbenchOptions"
+        });
+
+        _definitions["SecurityMasterWorkbenchOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["SourcePrecedence"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                },
+                ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
+                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer")
+            }
+        };
+
+        properties["PaperTrading"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/PaperTradingHostOptions"
+        });
+
+        _definitions["PaperTradingHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["Gateway"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["AllowScaffoldMarketFills"] = CreateTypedSchema("boolean"),
+                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                    }
+                },
+                ["Sessions"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["BaseDirectory"] = AllowNull(CreateTypedSchema("string"))
+                    }
+                }
+            }
+        };
+
+        properties["Status"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/StatusHostOptions"
+        });
+
+        _definitions["StatusHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["SsePublishIntervalMs"] = CreateTypedSchema("integer")
+            }
+        };
+
+        properties["Connectivity"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/ConnectivityHostOptions"
+        });
+
+        _definitions["ConnectivityHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["Probes"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["TcpConnectTimeoutMs"] = CreateTypedSchema("integer")
+                    }
+                }
+            }
+        };
     }
 
     /// <summary>
@@ -275,6 +413,9 @@ public sealed class ConfigJsonSchemaGenerator
     private static IEnumerable<PropertyInfo> GetSchemaProperties(Type type)
         => type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Where(p => p.CanRead && p.GetIndexParameters().Length == 0)
+            // Extension-data catch-alls preserve unmodeled sections at runtime; they are
+            // not declared configuration surface and must not appear in the schema.
+            .Where(p => p.GetCustomAttribute<JsonExtensionDataAttribute>() is null)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
     private string GetDefinitionName(Type type)

@@ -131,9 +131,10 @@ internal sealed partial class ProviderFeatureRegistration
         ProviderRegistry registry,
         AppConfig config,
         IProviderCredentialResolver credentialResolver,
+        Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver? symbolResolver,
         Serilog.ILogger log)
     {
-        var factory = new ProviderFactory(config, credentialResolver, log);
+        var factory = new ProviderFactory(config, credentialResolver, log, symbolResolver);
         var providers = factory.CreateBackfillProviders();
         foreach (var provider in providers)
         {

@@ -1,49 +1,37 @@
 using FluentAssertions;
 using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using FsCheck.Xunit;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class WriteAheadLogTests : IAsyncDisposable
+/// <summary>
+/// Baseline WAL behavior on well-formed logs: initialization, append sequencing/type/checksum/
+/// timestamp, commit markers, uncommitted-record retrieval, flush, truncation and archival, and an
+/// FsCheck property for ordered single-pass replay. Failure-injection coverage is split into
+/// sibling suites so the "happy path" and "what happens on damage" concerns stay separately
+/// readable: <see cref="WriteAheadLogCorruptionModeTests"/> exercises the configured corruption
+/// response modes, and <see cref="WriteAheadLogFuzzTests"/> exercises byte-level truncation and
+/// corruption recovery.
+/// </summary>
+public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
 {
-    private readonly string _walDir;
-
-    public WriteAheadLogTests()
-    {
-        _walDir = Path.Combine(Path.GetTempPath(), $"mdc_wal_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_walDir);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_walDir))
-                    Directory.Delete(_walDir, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { await Task.Delay(20); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { await Task.Delay(20); }
-        }
-    }
 
     [Fact]
     public async Task InitializeAsync_CreatesWalFile()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
 
         await wal.InitializeAsync();
 
-        Directory.GetFiles(_walDir, "*.wal").Should().HaveCount(1);
+        Directory.GetFiles(TestDataRoot, "*.wal").Should().HaveCount(1);
     }
 
     [Fact]
     public async Task AppendAsync_ReturnsRecordWithIncreasingSequence()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var r1 = await wal.AppendAsync(new { Symbol = "SPY", Price = 450.0 }, "trade");
@@ -55,7 +43,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task AppendAsync_SetsRecordType()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var record = await wal.AppendAsync("test data", "marker");
@@ -66,7 +54,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task AppendAsync_SetsNonEmptyChecksum()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var record = await wal.AppendAsync("hello", "test");
@@ -77,7 +65,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task AppendAsync_SetsTimestampNearNow()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var before = DateTime.UtcNow;
@@ -90,7 +78,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task CommitAsync_WritesCommitMarker()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var r1 = await wal.AppendAsync("data1", "trade");
@@ -109,7 +97,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task GetUncommittedRecordsAsync_ReturnsAppendedRecords_BeforeCommit()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
         await wal.InitializeAsync();
 
         await wal.AppendAsync("data1", "trade");
@@ -120,7 +108,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         // Need to read from a new WAL instance to verify recovery
         await wal.DisposeAsync();
 
-        await using var wal2 = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal2 = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         // Don't call InitializeAsync to avoid creating new file
         var uncommitted = new List<WalRecord>();
         await foreach (var record in wal2.GetUncommittedRecordsAsync())
@@ -132,9 +120,37 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task GetUncommittedRecordsAsync_WhenCancelled_ThrowsInsteadOfReturningPartialScan()
+    {
+        // A silently-ended scan is indistinguishable from a complete one, which lets
+        // recovery replay lose records and TruncateAsync delete files that still hold
+        // uncommitted data. Cancellation must surface as an exception.
+        await using (var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        {
+            await wal.InitializeAsync();
+            await wal.AppendAsync(new { Symbol = "SPY", Price = 450.0 }, "trade");
+            await wal.FlushAsync();
+        }
+
+        await using var wal2 = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () =>
+        {
+            await foreach (var _ in wal2.GetUncommittedRecordsAsync(cts.Token))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>(
+            "a cancelled WAL scan must throw rather than masquerade as an empty log");
+    }
+
+    [Fact]
     public async Task FlushAsync_WithNoWriter_DoesNotThrow()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         // Do NOT initialize - writer is null
 
         var act = () => wal.FlushAsync();
@@ -152,7 +168,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
             ArchiveAfterTruncate = false
         };
 
-        await using var wal = new WriteAheadLog(_walDir, options);
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
         await wal.InitializeAsync();
 
         // Write enough to trigger rotation
@@ -162,14 +178,14 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         }
         await wal.FlushAsync();
 
-        var walFilesBefore = Directory.GetFiles(_walDir, "*.wal");
+        var walFilesBefore = Directory.GetFiles(TestDataRoot, "*.wal");
 
         // Commit everything and truncate
         var lastRecord = await wal.AppendAsync("final", "marker");
         await wal.CommitAsync(lastRecord.Sequence);
         await wal.TruncateAsync(lastRecord.Sequence);
 
-        var walFilesAfter = Directory.GetFiles(_walDir, "*.wal");
+        var walFilesAfter = Directory.GetFiles(TestDataRoot, "*.wal");
         walFilesAfter.Length.Should().BeLessThan(walFilesBefore.Length,
             "committed WAL files should be truncated");
     }
@@ -184,7 +200,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
             ArchiveAfterTruncate = true
         };
 
-        await using var wal = new WriteAheadLog(_walDir, options);
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
         await wal.InitializeAsync();
 
         for (int i = 0; i < 20; i++)
@@ -197,7 +213,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         await wal.CommitAsync(lastRecord.Sequence);
         await wal.TruncateAsync(lastRecord.Sequence);
 
-        var archiveDir = Path.Combine(_walDir, "archive");
+        var archiveDir = Path.Combine(TestDataRoot, "archive");
         Directory.Exists(archiveDir).Should().BeTrue(
             "archive directory should be created when ArchiveAfterTruncate is true");
         Directory.GetFiles(archiveDir, "*.gz").Should().NotBeEmpty(
@@ -205,9 +221,135 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task TruncateAsync_UsesSegmentNameMetadata_WithoutRescanningRecords()
+    {
+        // Audit finding P10: truncation used to re-read and re-checksum every record of every
+        // segment. Segment names embed the creation-time sequence counter, so committed-ness
+        // is provable from the successor's name alone. Proof of no-scan: a corrupted record
+        // in a committed segment would increment CorruptedRecordCount if read.
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1, // every append rotates into its own segment
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        for (var i = 0; i < 4; i++)
+        {
+            await wal.AppendAsync($"payload-{i}", "data");
+        }
+
+        var walFiles = Directory.GetFiles(TestDataRoot, "*.wal").OrderBy(f => f, StringComparer.Ordinal).ToList();
+        walFiles.Count.Should().BeGreaterThan(2, "rotation must have produced multiple segments");
+
+        // Corrupt a record in a completed segment: flip the payload so the stored checksum
+        // no longer matches. Metadata-based truncation must not notice.
+        string? tamperedSegment = null;
+        foreach (var walFile in walFiles.Take(walFiles.Count - 1)) // never touch the active tail
+        {
+            var lines = await File.ReadAllLinesAsync(walFile);
+            var recordIndex = Array.FindIndex(lines, l => l.Contains("payload-", StringComparison.Ordinal));
+            if (recordIndex < 0)
+                continue;
+
+            lines[recordIndex] = lines[recordIndex].Replace("payload-", "tampered-", StringComparison.Ordinal);
+            await File.WriteAllLinesAsync(walFile, lines);
+            tamperedSegment = walFile;
+            break;
+        }
+
+        tamperedSegment.Should().NotBeNull("a completed segment holding a record is required for the no-scan proof");
+
+        var last = await wal.AppendAsync("final", "marker");
+        await wal.CommitAsync(last.Sequence);
+        await wal.TruncateAsync(last.Sequence);
+
+        Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle(
+            "every completed segment is provably committed from its successor's base sequence");
+        wal.CorruptedRecordCount.Should().Be(0,
+            "metadata-based truncation must not read (and re-checksum) segment records");
+    }
+
+    [Fact]
+    public async Task TruncateAsync_KeepsSegmentsHoldingRecordsAboveThroughSequence()
+    {
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1, // every append rotates into its own segment
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        var first = await wal.AppendAsync("committed-payload", "data");
+        var second = await wal.AppendAsync("uncommitted-payload-a", "data");
+        await wal.AppendAsync("uncommitted-payload-b", "data");
+        await wal.FlushAsync();
+
+        await wal.CommitAsync(first.Sequence);
+        await wal.TruncateAsync(first.Sequence);
+
+        var uncommitted = new List<long>();
+        await foreach (var record in wal.GetUncommittedRecordsAsync())
+        {
+            uncommitted.Add(record.Sequence);
+        }
+
+        uncommitted.Should().Contain(new[] { second.Sequence, second.Sequence + 1 },
+            "segments with records above the committed sequence must survive truncation");
+    }
+
+    [Fact]
+    public async Task TruncateAsync_ForeignNamedFileWithValidRecords_IsTruncatedViaScanFallback()
+    {
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1,
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        await wal.AppendAsync("first-payload", "data");
+        await wal.AppendAsync("second-payload", "data");
+
+        // Copy a completed, well-formed segment under a name the metadata parser rejects:
+        // eligibility must fall back to the record scan and still truncate it once committed.
+        string? completedSegment = null;
+        foreach (var walFile in Directory.GetFiles(TestDataRoot, "wal_*.wal").OrderBy(f => f, StringComparer.Ordinal))
+        {
+            if ((await File.ReadAllTextAsync(walFile)).Contains("first-payload", StringComparison.Ordinal))
+            {
+                completedSegment = walFile;
+                break;
+            }
+        }
+
+        completedSegment.Should().NotBeNull("the rotated segment holding the first record must exist");
+        var foreignPath = Path.Combine(TestDataRoot, "legacy-import.wal");
+        File.Copy(completedSegment!, foreignPath);
+
+        var last = await wal.AppendAsync("final", "marker");
+        await wal.CommitAsync(last.Sequence);
+        await wal.TruncateAsync(last.Sequence);
+
+        File.Exists(foreignPath).Should().BeFalse(
+            "a fully committed file with an unparsable name must still truncate via the scan fallback");
+        Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle(
+            "only the active segment should remain");
+    }
+
+    [Fact]
     public async Task MultipleAppendAndCommit_MaintainsSequenceOrder()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var sequences = new List<long>();
@@ -232,7 +374,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task WalRecord_DeserializePayload_WorksForSimpleTypes()
     {
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         var record = await wal.AppendAsync("hello world", "string-data");
@@ -244,7 +386,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
     [Fact]
     public async Task DisposeAsync_CanBeCalledMultipleTimes()
     {
-        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
         await wal.InitializeAsync();
 
         await wal.DisposeAsync();
@@ -253,16 +395,41 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         await act.Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task BatchedSync_IdleSingleAppend_IsFlushedWithinMaxDelay()
+    {
+        var root = Path.Combine(TestDataRoot, "idle-flush");
+        await using var wal = new WriteAheadLog(root, new WalOptions
+        {
+            SyncMode = WalSyncMode.BatchedSync,
+            SyncBatchSize = 1_000,
+            MaxFlushDelay = TimeSpan.FromMilliseconds(50)
+        });
+        await wal.InitializeAsync();
+
+        await wal.AppendAsync(new { marker = "idle-single-append" }, "TEST");
+        await Task.Delay(TimeSpan.FromMilliseconds(250));
+
+        var walPath = Directory.GetFiles(root, "*.wal").Should().ContainSingle().Subject;
+        await using var stream = new FileStream(
+            walPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        (await reader.ReadToEndAsync()).Should().Contain("idle-single-append");
+    }
+
     private async Task Scenario_WalReplay_GeneratedUncommittedStreamsReplayOnceInSequenceAsync(
         int recordCountSeed,
         int duplicateModuloSeed)
     {
-        var scenarioDir = Path.Combine(_walDir, $"property_{Guid.NewGuid():N}");
+        var scenarioDir = Path.Combine(TestDataRoot, $"property_{Guid.NewGuid():N}");
         Directory.CreateDirectory(scenarioDir);
         var recordCount = Bound(recordCountSeed, minInclusive: 1, maxInclusive: 120);
         var duplicateModulo = Bound(duplicateModuloSeed, minInclusive: 1, maxInclusive: 12);
 
-        await using (var wal = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite }))
+        await using (var wal = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
         {
             await wal.InitializeAsync();
             for (var i = 0; i < recordCount; i++)

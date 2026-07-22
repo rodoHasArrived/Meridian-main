@@ -13,6 +13,8 @@ import {
   buildBackfillProviderOptions,
   buildBackfillNarrative,
   buildBackfillRequest,
+  buildBackfillLiveProgressState,
+  buildBackfillRemediationQueueState,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
   buildDataUploadPanelState,
@@ -20,6 +22,7 @@ import {
   buildDataLoadingState,
   buildDataPresentationState,
   buildExportSection,
+  formatProviderReasonLabel,
   buildProviderRow,
   buildProviderSection,
   buildPlaidInstitutionSearchState,
@@ -42,9 +45,15 @@ import {
   validateProviderSetupForm,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-screen.view-model";
-import { buildSecurityMasterWorkspaceState } from "@/screens/data-screen.security-master";
+import {
+  buildCorporateActionChipState,
+  buildCorporateActionLifecycleState,
+  buildSecurityMasterWorkspaceState
+} from "@/screens/data-screen.security-master";
+import type { CorporateActionDescriptor } from "@/types";
 import type {
   BackfillProgressResponse,
+  BackfillExecutionHistoryResponse,
   BackfillPreviewResult,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -351,7 +360,8 @@ const providerReadiness: ProviderReadinessSummary = {
 
 describe("data-screen view model", () => {
   it("keeps Data workspace API types canonical with Data Operations compatibility aliases", () => {
-    const typesSource = readFileSync(resolve(process.cwd(), "src/types.ts"), "utf8");
+    // types.ts is a barrel re-export; the Data workspace declarations live in the workstation-3 module.
+    const typesSource = readFileSync(resolve(process.cwd(), "src/types/workstation-3.ts"), "utf8");
 
     expect(typesSource).toContain("export interface DataProviderRecord");
     expect(typesSource).toContain("export interface DataWorkspaceResponse");
@@ -419,11 +429,36 @@ describe("data-screen view model", () => {
     expect(buildDataUploadTemplateCsv(template!)).toContain("trade_id,trade_date,account_code,symbol,side,quantity,price");
   });
 
+  it("surfaces the onboarding workbook download when the catalog advertises it", () => {
+    const catalog = {
+      ...defaultDataUploadTemplateCatalog,
+      workbookFileName: "meridian-onboarding-workbook.xlsx",
+      workbookAcceptedFileExtensions: [".xlsx"],
+      workbookMaxFileBytes: 15 * 1024 * 1024
+    };
+
+    const withWorkbook = buildDataUploadPanelState(catalog, "trade-data", null, null, false, null);
+    expect(withWorkbook.workbookDownload).not.toBeNull();
+    expect(withWorkbook.workbookDownload?.fileName).toBe("meridian-onboarding-workbook.xlsx");
+    expect(withWorkbook.workbookDownload?.href).toContain("/uploads/templates/workbook");
+    expect(withWorkbook.workbookDownload?.label).toContain(".xlsx");
+
+    const withoutWorkbook = buildDataUploadPanelState(
+      defaultDataUploadTemplateCatalog,
+      "trade-data",
+      null,
+      null,
+      false,
+      null
+    );
+    expect(withoutWorkbook.workbookDownload).toBeNull();
+  });
+
   it("derives route-aware loading state with operator recovery actions", () => {
     const overview = buildDataLoadingState("overview");
     expect(overview).toMatchObject({
       title: "Loading Data workspace",
-      statusLabel: "Bootstrap pending",
+      statusLabel: "Workspace data pending",
       role: "status",
       ariaLive: "polite",
       ariaBusy: true,
@@ -446,6 +481,12 @@ describe("data-screen view model", () => {
 
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
+    expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/import")).toBe("import");
+    expect(resolveDataWorkstream("/data/operations")).toBe("operations");
+    expect(resolveDataWorkstream("/data/assurance")).toBe("assurance");
+    expect(resolveDataWorkstream("/data/exports")).toBe("exports");
+    expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
     expect(resolveDataWorkstream("/data-operations/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data-operations")).toBe("overview");
@@ -481,6 +522,17 @@ describe("data-screen view model", () => {
       href: "/accounting/security-master",
       ariaLabel: "Open Security Master in Accounting"
     });
+
+    const importFocus = buildRouteFocusCardState({
+      workstream: "import",
+      selectedBackfillDetail: null,
+      backfillDetailEmptyState: null
+    });
+    expect(importFocus).toMatchObject({
+      ariaLabel: "Data import route focus",
+      eyebrow: "File Intake",
+      title: "Governed file import"
+    });
   });
 
   it("uses canonical Strategy packet labels for Security Master export evidence", () => {
@@ -499,6 +551,125 @@ describe("data-screen view model", () => {
     }));
     expect(exportEvidence.map((item) => item.title)).not.toContain("Research pack");
     expect(exportEvidence.map((item) => item.destination)).not.toContain("report-pack / research");
+  });
+
+  it("projects corporate-action descriptors into chips with CAEV badges and cancelled treatment", () => {
+    const dividend: CorporateActionDescriptor = {
+      corpActId: "ca-1",
+      canonicalName: "Dividend",
+      caevCode: "DVCA",
+      displayName: "Cash dividend",
+      lifecycleState: "Ex",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-1", lifecycleState: "Confirmed", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: false }
+      ]
+    };
+
+    expect(buildCorporateActionChipState(dividend)).toEqual({
+      label: "Cash dividend",
+      caevCode: "DVCA",
+      cancelled: false,
+      ariaLabel: "Cash dividend, CAEV DVCA"
+    });
+
+    const cancelled = buildCorporateActionChipState({
+      ...dividend,
+      displayName: "Special dividend",
+      lifecycleState: "Cancelled",
+      isCancelled: true
+    });
+    expect(cancelled.cancelled).toBe(true);
+    expect(cancelled.ariaLabel).toBe("Special dividend, CAEV DVCA, Cancelled");
+
+    const internalExtension = buildCorporateActionChipState({ ...dividend, caevCode: null, displayName: "Futures expiry" });
+    expect(internalExtension.caevCode).toBeNull();
+    expect(internalExtension.ariaLabel).toBe("Futures expiry");
+  });
+
+  it("fills reached lifecycle stops and marks amendments on the four-stop timeline", () => {
+    const amendedDividend: CorporateActionDescriptor = {
+      corpActId: "ca-tip",
+      canonicalName: "Dividend",
+      caevCode: "DVCA",
+      displayName: "Cash dividend",
+      lifecycleState: "Ex",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-original", lifecycleState: "Announced", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: false },
+        { corpActId: "ca-tip", lifecycleState: "Confirmed", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: true }
+      ]
+    };
+
+    const lifecycle = buildCorporateActionLifecycleState(amendedDividend);
+
+    expect(lifecycle.stops.map((stop) => [stop.id, stop.reached, stop.current])).toEqual([
+      ["announced", true, false],
+      ["confirmed", true, false],
+      ["ex", true, true],
+      ["paid", false, false]
+    ]);
+    expect(lifecycle.stops.find((stop) => stop.id === "ex")?.date).toBe("2026-05-29");
+    expect(lifecycle.stops.find((stop) => stop.id === "paid")?.date).toBe("2026-06-28");
+    expect(lifecycle.amended).toBe(true);
+    expect(lifecycle.entries.map((entry) => [entry.label, entry.amended])).toEqual([
+      ["Original terms", false],
+      ["Amended", true]
+    ]);
+  });
+
+  it("keeps pre-cancellation progress filled but no current stop for cancelled actions", () => {
+    const lifecycle = buildCorporateActionLifecycleState({
+      corpActId: "ca-cancel",
+      canonicalName: "SpecialDividend",
+      caevCode: "DVCA",
+      displayName: "Special dividend",
+      lifecycleState: "Cancelled",
+      isCancelled: true,
+      timeline: [
+        { corpActId: "ca-announce", lifecycleState: "Announced", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: false },
+        { corpActId: "ca-cancel", lifecycleState: "Cancelled", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: true }
+      ]
+    });
+
+    expect(lifecycle.cancelled).toBe(true);
+    expect(lifecycle.stops.map((stop) => [stop.id, stop.reached])).toEqual([
+      ["announced", true],
+      ["confirmed", false],
+      ["ex", false],
+      ["paid", false]
+    ]);
+    expect(lifecycle.stops.every((stop) => !stop.current)).toBe(true);
+  });
+
+  it("builds expandable corporate-action rows from the workspace state", () => {
+    const collapsed = buildSecurityMasterWorkspaceState({
+      query: "GS",
+      selectedSecurityId: "gs-common-us",
+      activeTab: "corporate-actions",
+      statusFilter: "active"
+    });
+    const rows = collapsed.selectedSecurity?.corporateActions ?? [];
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((row) => !row.expanded)).toBe(true);
+    expect(rows[0].chip).toEqual(expect.objectContaining({ label: "Cash dividend", caevCode: "DVCA" }));
+    expect(rows[0].toggleLabel).toContain("Expand lifecycle timeline");
+
+    const cancelledRow = rows.find((row) => row.status === "Cancelled");
+    expect(cancelledRow?.chip.cancelled).toBe(true);
+    expect(cancelledRow?.lifecycle.cancelled).toBe(true);
+
+    const expanded = buildSecurityMasterWorkspaceState({
+      query: "GS",
+      selectedSecurityId: "gs-common-us",
+      activeTab: "corporate-actions",
+      statusFilter: "active",
+      expandedCorporateActionIds: [rows[0].id]
+    });
+    const expandedRow = expanded.selectedSecurity?.corporateActions.find((row) => row.id === rows[0].id);
+    expect(expandedRow?.expanded).toBe(true);
+    expect(expandedRow?.toggleLabel).toContain("Collapse lifecycle timeline");
   });
 
   it("normalizes request data and validates required symbols and date range", () => {
@@ -747,7 +918,7 @@ describe("data-screen view model", () => {
     expect(result.current.error).toEqual({
       summary: "Provider rejected the requested date window.",
       details: [
-        "Endpoint returned 400 for /api/backfill/preview.",
+        "Meridian service returned 400. Open diagnostics for technical details.",
         "Backfill validation failed",
         "symbols: At least one supported symbol is required."
       ]
@@ -771,6 +942,273 @@ describe("data-screen view model", () => {
     expect(completedCard.title).toBe("Backfill complete — polygon");
     expect(completedCard.statusLabel).toBe("Written");
     expect(completedCard.tone).toBe("success");
+  });
+
+  it("derives exact provider fallback progress without hiding dropped notifications", () => {
+    const state = buildBackfillLiveProgressState({
+      isActive: true,
+      timestamp: "2026-07-13T17:05:00Z",
+      providerProgress: {
+        symbols: {
+          AAPL: {
+            symbol: "AAPL",
+            rangeStart: "2026-07-01",
+            rangeEnd: "2026-07-12",
+            totalDays: 12,
+            completedDays: 6,
+            percentComplete: 50,
+            isCompleted: false,
+            isFailed: false,
+            isSkipped: false,
+            currentProvider: "stooq",
+            currentStatus: "Downloading",
+            providerAttempt: 2,
+            retryRound: 1,
+            operation: "daily-bars",
+            attemptStartedAt: "2026-07-13T17:04:30Z",
+            lastUpdatedAt: "2026-07-13T17:05:00Z",
+            error: null
+          }
+        },
+        recentProviderAttempts: [{
+          symbol: "AAPL",
+          provider: "polygon",
+          rangeStart: "2026-07-01",
+          rangeEnd: "2026-07-12",
+          providerAttempt: 1,
+          retryRound: 0,
+          operation: "daily-bars",
+          status: "Failed",
+          barsDownloaded: 0,
+          startedAt: "2026-07-13T17:04:00Z",
+          observedAt: "2026-07-13T17:04:20Z",
+          error: "HTTP 429"
+        }],
+        overallPercentComplete: 50,
+        totalSymbols: 1,
+        completedSymbols: 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 3,
+        timestamp: "2026-07-13T17:05:00Z"
+      }
+    });
+
+    expect(state).toMatchObject({
+      active: true,
+      title: "Live provider progress",
+      overallPercent: 50,
+      droppedNotificationWarning: expect.stringContaining("3 older provider notifications")
+    });
+    expect(state?.symbols[0]).toMatchObject({
+      symbol: "AAPL",
+      range: "2026-07-01 to 2026-07-12",
+      provider: "stooq",
+      attempt: "Attempt 2, retry 1",
+      status: "Downloading",
+      progress: "50%"
+    });
+    expect(state?.recentAttempts[0]).toMatchObject({
+      label: "AAPL · polygon",
+      tone: "danger",
+      detail: expect.stringContaining("HTTP 429")
+    });
+  });
+
+  it("projects durable remediation SLA evidence and sorts by tier or deadline", () => {
+    const history: BackfillExecutionHistoryResponse = {
+      executions: [
+        {
+          executionId: "standard-sooner",
+          scheduleName: "Gap repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Completed",
+          startedAt: "2026-07-15T09:00:00Z",
+          completedAt: "2026-07-15T09:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 4,
+          errorMessage: null,
+          fromDate: "2026-07-10",
+          toDate: "2026-07-11",
+          symbols: ["AAPL"],
+          autoRemediationTriggerReason: "StoredGap",
+          autoRemediationAttemptCount: 1,
+          autoRemediationLastOutcome: "Completed",
+          autoRemediationIdempotencyKey: "aapl|polygon",
+          autoRemediationSla: {
+            tier: "Standard",
+            status: "Completed",
+            dueAtUtc: "2026-07-16T12:00:00Z",
+            requiresOwnerAssignment: false,
+            downstreamWorkflow: "research",
+            reasonCode: "StandardGap",
+            provider: "",
+            triggerSource: "GapAnalyzerScan",
+            isCompatibilityDerived: false
+          }
+        },
+        {
+          executionId: "critical-later",
+          scheduleName: "Accounting repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Failed",
+          startedAt: "2026-07-15T10:00:00Z",
+          completedAt: "2026-07-15T10:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 0,
+          errorMessage: "provider unavailable",
+          fromDate: "2026-07-12",
+          toDate: "2026-07-13",
+          symbols: ["MSFT"],
+          autoRemediationTriggerReason: "CriticalWorkflow",
+          autoRemediationAttemptCount: 2,
+          autoRemediationLastOutcome: "FailedTransient",
+          autoRemediationIdempotencyKey: "msft|stooq",
+          autoRemediationSla: {
+            tier: "SameBusinessDay",
+            status: "Overdue",
+            dueAtUtc: "2026-07-17T12:00:00Z",
+            requiresOwnerAssignment: true,
+            downstreamWorkflow: "accounting",
+            reasonCode: "CriticalWorkflow",
+            provider: "stooq",
+            triggerSource: "QualityAlert",
+            isCompatibilityDerived: true
+          }
+        }
+      ],
+      total: 2,
+      autoRemediation: { total: 2, withReason: 2, lastOutcome: "FailedTransient", defaultProvider: "polygon" },
+      timestamp: "2026-07-15T12:00:00Z"
+    };
+
+    const byTier = buildBackfillRemediationQueueState(history, { columnId: "tier", direction: "asc" });
+    expect(byTier?.rows.map((row) => row.executionId)).toEqual(["critical-later", "standard-sooner"]);
+    expect(byTier?.rows[0]).toMatchObject({
+      tier: "Same business day",
+      status: "Overdue",
+      owner: "Assignment required",
+      provider: "stooq"
+    });
+    expect(byTier?.rows[0].evidence).toContain("Compatibility-derived legacy evidence");
+    expect(byTier?.rows[1].provider).toBe("polygon");
+
+    const byDeadline = buildBackfillRemediationQueueState(history, { columnId: "deadline", direction: "asc" });
+    expect(byDeadline?.rows.map((row) => row.executionId)).toEqual(["standard-sooner", "critical-later"]);
+  });
+
+  it("polls provider progress while a backfill run is in flight and keeps the final snapshot", async () => {
+    let resolveRun!: (value: BackfillTriggerResult) => void;
+    let runSettled = false;
+    const progressReads = vi.fn(async (): Promise<BackfillProgressResponse> => ({
+      isActive: !runSettled,
+      providerProgress: {
+        symbols: {},
+        recentProviderAttempts: [],
+        overallPercentComplete: runSettled ? 100 : 25,
+        totalSymbols: 1,
+        completedSymbols: runSettled ? 1 : 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 0,
+        timestamp: "2026-07-13T17:05:00Z"
+      },
+      timestamp: "2026-07-13T17:05:00Z"
+    }));
+    const refreshedHistory: BackfillExecutionHistoryResponse = {
+      executions: [{
+        executionId: "manual-run-17",
+        scheduleName: "Manual backfill",
+        trigger: "Manual",
+        scheduleId: "",
+        status: "Completed",
+        startedAt: "2026-07-13T17:04:00Z",
+        completedAt: "2026-07-13T17:05:00Z",
+        symbolsProcessed: 1,
+        barsDownloaded: 100,
+        errorMessage: null,
+        fromDate: "2026-07-01",
+        toDate: "2026-07-12",
+        symbols: ["AAPL"],
+        autoRemediationTriggerReason: "OperatorRequested",
+        autoRemediationAttemptCount: 1,
+        autoRemediationLastOutcome: "Completed",
+        autoRemediationIdempotencyKey: "aapl|polygon|manual-run-17",
+        autoRemediationSla: {
+          tier: "Standard",
+          status: "Completed",
+          dueAtUtc: "2026-07-14T17:05:00Z",
+          requiresOwnerAssignment: false,
+          downstreamWorkflow: "research",
+          reasonCode: "OperatorRequested",
+          provider: "polygon",
+          triggerSource: "DataWorkstation",
+          isCompatibilityDerived: false
+        }
+      }],
+      total: 1,
+      autoRemediation: {
+        total: 1,
+        withReason: 1,
+        lastOutcome: "Completed",
+        defaultProvider: "polygon"
+      },
+      timestamp: "2026-07-13T17:05:01Z"
+    };
+    const initialHistory: BackfillExecutionHistoryResponse = {
+      executions: [],
+      total: 0,
+      autoRemediation: { total: 0, withReason: 0, lastOutcome: null, defaultProvider: "polygon" },
+      timestamp: "2026-07-13T17:03:00Z"
+    };
+    let executionReadCount = 0;
+    const executionReads = vi.fn(async (): Promise<BackfillExecutionHistoryResponse> => (
+      executionReadCount++ === 0 ? initialHistory : refreshedHistory
+    ));
+    const services = {
+      preview: async () => preview,
+      run: () => new Promise<BackfillTriggerResult>((resolve) => {
+        resolveRun = resolve;
+      }),
+      getProgress: progressReads,
+      getExecutions: executionReads
+    };
+    const workspace: DataWorkspaceResponse = { metrics: [], providers, backfills: [], exports: [] };
+    const { result } = renderHook(() => useDataViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+    await waitFor(() => expect(executionReads).toHaveBeenCalledTimes(1));
+    act(() => result.current.updateBackfillForm("symbols", "AAPL"));
+    await act(async () => result.current.previewBackfill());
+
+    let runPromise!: Promise<void>;
+    act(() => {
+      runPromise = result.current.runBackfill();
+    });
+
+    await waitFor(() => {
+      expect(progressReads).toHaveBeenCalled();
+      expect(result.current.liveProgressState?.overallPercent).toBe(25);
+    });
+
+    await act(async () => {
+      runSettled = true;
+      resolveRun(completedBackfill);
+      await runPromise;
+    });
+
+    expect(result.current.liveProgressState).toMatchObject({
+      active: false,
+      overallPercent: 100,
+      title: "Final provider progress"
+    });
+    expect(progressReads.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(executionReads).toHaveBeenCalledTimes(2);
+    expect(executionReads.mock.invocationCallOrder[1]).toBeGreaterThan(
+      progressReads.mock.invocationCallOrder.at(-1) ?? 0
+    );
+    expect(result.current.remediationQueueState?.rows.map((row) => row.executionId))
+      .toEqual(["manual-run-17"]);
   });
 
   it("derives failed backfill result cards with danger tone and error evidence", () => {
@@ -973,6 +1411,43 @@ describe("data-screen view model", () => {
       label: "Allowed environments",
       value: "Sandbox, Development, Production"
     });
+  });
+
+  it("merges workspace and routing providers while normalizing trust and readiness coverage", () => {
+    const alpacaRoutingConnection: ProviderRoutingConnection = {
+      ...polygonRoutingConnection,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      displayName: "Alpaca"
+    };
+    const alpacaTrustSnapshot: ProviderRoutingTrustSnapshot = {
+      ...polygonTrustSnapshot,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      score: 0.92,
+      isHealthy: true,
+      healthStatus: "Healthy"
+    };
+
+    const providerSection = buildProviderSection(
+      [...providers, alpacaProvider],
+      "provider-row-alpaca",
+      {
+        providerReadiness,
+        providerConnections: [polygonConnection],
+        providerRoutingConnections: [polygonRoutingConnection, alpacaRoutingConnection],
+        providerRoutingTrustSnapshots: [polygonTrustSnapshot, alpacaTrustSnapshot]
+      }
+    );
+
+    expect(providerSection.rows.filter((row) => row.provider === "Alpaca")).toHaveLength(1);
+    expect(providerSection.rows.find((row) => row.provider === "Alpaca")?.trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "92% · Healthy"
+    });
+    expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
+    expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
   });
 
   it("surfaces verification command state without mutating provider rows", () => {
@@ -1191,7 +1666,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/backfills",
+        href: "/data/operations",
         ariaLabel: "Preview a historical backfill after configuring Yahoo Finance",
         variant: "default"
       }
@@ -1337,7 +1812,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/backfills",
+        href: "/data/operations",
         ariaLabel: "Preview a historical backfill after configuring Polygon.io",
         variant: "outline"
       },
@@ -1386,7 +1861,7 @@ describe("data-screen view model", () => {
         id: "security-master",
         label: "Review Security Master",
         href: "/accounting/security-master",
-        ariaLabel: "Review Security Master coverage after configuring Custom endpoint",
+        ariaLabel: "Review Security Master coverage after configuring Custom data connection",
         variant: "default"
       }
     ]);
@@ -1516,7 +1991,7 @@ describe("data-screen view model", () => {
       expect(result.current.providerSetupError).toEqual({
         summary: "Permission denied for this Meridian role.",
         details: [
-          "Endpoint returned 403 for /api/providers/configure.",
+          "Meridian service returned 403. Open diagnostics for technical details.",
           "Credential verification failed",
           "Paper trading credentials were rejected by the provider.",
           "apiKey: Verify the configured key against the selected environment."
@@ -1555,7 +2030,7 @@ describe("data-screen view model", () => {
       apiSecret: "",
       endpoint: "not-a-url",
       capabilities: ["streaming"]
-    })).toBe("Enter a valid http or https endpoint URL for Interactive Brokers.");
+    })).toBe("Enter a valid http or https service URL for Interactive Brokers.");
 
     expect(validateProviderSetupForm({
       kind: "interactivebrokers",
@@ -1622,7 +2097,16 @@ describe("data-screen view model", () => {
       value: "Trust score not reported"
     });
     expect(row.gateImpactText).toBe("Blocks provider trust gate");
+    expect(row.reasonLabelText).toBe("Checkpoint delay");
+    expect(row.reasonCodeText).toBe("CHECKPOINT_DELAY");
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
+  });
+
+  it("presents provider reason enums as operator labels while preserving non-code copy", () => {
+    expect(formatProviderReasonLabel("READINESS_BLOCKED")).toBe("Readiness blocked");
+    expect(formatProviderReasonLabel("TRUST_OK")).toBe("Trust OK");
+    expect(formatProviderReasonLabel("LATENCY_ELEVATED")).toBe("Latency elevated");
+    expect(formatProviderReasonLabel("Reason code not reported")).toBe("Reason code not reported");
   });
 
   it("derives selected backfill detail panel state with stable linkage ids", () => {

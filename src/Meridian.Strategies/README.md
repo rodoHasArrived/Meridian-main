@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Strategies
@@ -33,6 +33,19 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
+the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
+intent before invoking the external strategy, then return a validated Succeeded,
+CompletedWithWarnings, Failed, or Blocked receipt with recovery guidance. Transient final-evidence
+failures retain a warning and can be reconciled against the already-completed external state without
+repeating the action. Lifecycle snapshots retain deterministic input hashes, actors, correlation and
+attempt lineage, exception details, approvals, evidence, artifacts, legal transition order, and
+monotonic timestamps. Version-two input hashes bind parent-run lineage, portfolio, ledger, audit,
+and fund-profile scope as well as datasets, feeds, engines, and ordered parameters; replay accepts
+verified legacy hashes only for an explicit one-time upgrade and rejects later scope mutation. The
+parameterless store remains an explicit in-memory compatibility seam for
+isolated tests; browser and WPF production composition and the desktop fallback use the same
+data-root-backed durable history store.
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
@@ -45,8 +58,11 @@ vocabulary.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
 each live checklist item, and an active `AllowLivePromotion` manual override. The live checklist
 includes paper-validation, reconciliation, accounting-record, governed-reporting, governance
-sign-off, exception-handling, rollback or kill-switch, and audit-retention evidence before a live
-readiness claim can create a live run. Approved and execution-control-blocked live promotion
+sign-off, exception-handling, rollback or kill-switch, audit-retention, and broker execution
+reconciliation evidence before a live readiness claim can create a live run. Live evidence
+references must use `TOKEN:retained-evidence` rather than bare checklist tokens, and the
+`LIVE_OVERRIDE_REVIEWED` reference must name the active manual override id. Approved,
+checklist-blocked, missing-evidence, invalid-evidence, and execution-control-blocked live promotion
 attempts are written to the durable execution audit trail with source run, target mode, required
 override kind, checklist count, evidence reference count, and control rejection evidence so
 operations review can trace human approval gates even when no live run is created.
@@ -58,12 +74,28 @@ evidence so accounting operations can route principal-paydown blockers precisely
 Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
 when normalizing economic definitions so factor paydowns stay principal events instead of being
 collapsed into generic unsupported instruments.
+External-statement input is an optional reconciliation source. When no provider is configured, the
+production-safe null source contributes no statement rows; retained reconciliation run storage and
+the configured portfolio, ledger, and banking inputs remain authoritative.
+Factor rows retain their evidence link and source-content hash, and the Security Master accounting
+event service delegates factor math and deterministic event identity to Instruments
+`FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event
+identity; missing factor evidence blocks the expected event instead of producing an unverifiable
+posting preview.
+For factor-bearing definitions, the production source adapter resolves a single effective Asset
+Operations book position by Security Master identity and account, carries its durable id/version,
+and fails the factor event closed when that position cannot be resolved. Multiple factor rows advance
+their expected position versions sequentially instead of reusing one optimistic-concurrency token.
 `GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
 exception severities and dashboard projections from this module instead of the Application layer.
 The shared reconciliation break queue also enforces v0.18 reviewed-automation boundaries: assistant
 or automation-origin commands may assist triage, comments, and evidence gathering, but resolve,
 sign-off, dismiss, and privileged reopen paths fail closed with a retained `MaterialActionDenied`
 audit event before case state changes.
+Break records carry explicit Value, Quantity, and CostBasis comparisons. A source that cannot
+provide a measure retains an unavailable reason instead of substituting zero. Governed casework
+supports assign, resolve, waive, and supersede dispositions with evidence hashes, independent
+approval for material dispositions, successor lineage, idempotency, and append-only audit history.
 
 ## Diagrams
 
@@ -77,6 +109,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W7-LIVE-001` | Live-readiness governance |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -97,5 +130,5 @@ Preserve evidence lineage and avoid breaking promotion compatibility across brow
 
 ## Related docs
 
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`
 - `docs/source/generated/source-roadmap-traceability.md`

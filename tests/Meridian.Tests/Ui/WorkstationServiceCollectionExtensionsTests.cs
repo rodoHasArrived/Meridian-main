@@ -1,7 +1,13 @@
 using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Contracts.Workstation;
+using Meridian.Execution.Services;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.AssetOperations;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Tests.Ui;
@@ -39,6 +45,139 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<ReportTemplateGovernanceStoreOptions>().SnapshotPath
             .Should()
             .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-templates.json"));
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_DoesNotRegisterRetiredQueryTokenDeliveryService()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetService<ReportPackDeliveryService>().Should().BeNull(
+            "legacy delivery generated deterministic query-token links and is no longer production-reachable");
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_RegistersSharedLiveOrderReadinessGate()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ILiveOrderReadinessGate>()
+            .Should()
+            .BeOfType<TradingOperatorLiveOrderReadinessGate>();
+        provider.GetRequiredService<ITradingOperatorReadinessProvider>()
+            .Should()
+            .BeSameAs(provider.GetRequiredService<TradingOperatorReadinessService>());
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_ResolvesAccountingEvidenceServicesThroughInterfaces()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IAutomatedJournalCapitalAccountReconciliationResolver>()
+            .Should()
+            .BeOfType<LedgerCapitalAccountReconciliationResolver>();
+        provider.GetRequiredService<IAccountingPositionSnapshotCaptureService>()
+            .Should()
+            .BeOfType<AccountingPositionSnapshotCaptureService>();
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_AliasesAssetOperationsInterfacesToSameInMemoryStore()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        var legacyStore = provider.GetRequiredService<IAssetOperationsProjectionStore>();
+        legacyStore.Should().BeOfType<InMemoryAssetOperationsProjectionStore>();
+        provider.GetRequiredService<IInstrumentPositionProjectionStore>()
+            .Should()
+            .BeSameAs(legacyStore);
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_PreservesPreRegisteredDualAssetOperationsStore()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+        var customStore = Substitute.For<IAssetOperationsProjectionStore, IInstrumentPositionProjectionStore>();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+        services.AddSingleton<IAssetOperationsProjectionStore>(customStore);
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IAssetOperationsProjectionStore>()
+            .Should()
+            .BeSameAs(customStore);
+        provider.GetRequiredService<IInstrumentPositionProjectionStore>()
+            .Should()
+            .BeSameAs(customStore);
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(InMemoryAssetOperationsProjectionStore));
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_WhenEnvironmentIsProduction_OmitsProcessLocalOperatorInbox()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IOperatorInboxService));
     }
 
     [Fact]

@@ -1,10 +1,16 @@
-import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings";
+import { EvidenceList, EvidenceSlaRows } from "@/screens/evidence-workbench-assurance-lists";
 import {
   useEvidenceLineageSelectionViewModel,
   useEvidenceNodeSelectionViewModel,
@@ -14,22 +20,27 @@ import {
   type EvidenceLineageRowViewModel,
   type EvidenceAssurancePanelViewModel,
   type EvidenceProofChainPanelViewModel,
-  type EvidenceSlaAssessmentRowViewModel,
   type EvidenceNodeDetailViewModel,
   type EvidenceNodeGroupViewModel,
   type EvidenceNodeRowViewModel,
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
   type EvidenceStatusTone,
+  type EvidenceWorkbenchQueueFiltersViewModel,
+  type EvidenceVaultDocumentDetailViewModel,
+  type EvidenceVaultDocumentIndexPanelViewModel,
+  type EvidenceVaultDocumentIndexRowViewModel,
   type EvidenceVaultRequestListIndexPanelViewModel
 } from "@/screens/evidence-workbench-screen.view-model";
-
-const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
-  success: "success",
-  warning: "warning",
-  danger: "danger",
-  muted: "outline"
-};
+import type {
+  EvidenceDocumentClassification,
+  EvidenceDocumentIntakeSourceKind,
+  EvidenceDocumentLinkKind,
+  EvidenceDocumentReviewStatus,
+  EvidenceRequestListKindCode,
+  EvidenceExtractionStatus,
+  EvidenceVaultIntakeRequest
+} from "@/types";
 
 const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning" | "danger" | "outline"> = {
   primary: "outline",
@@ -41,7 +52,22 @@ const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning"
 
 export function EvidenceWorkbenchScreen() {
   const location = useLocation();
+  const navigate = useNavigate();
   const vm = useEvidenceWorkbenchViewModel(location.search);
+  const updateQueueFilter = (
+    key: "requestListFamily" | "documentClassification" | "documentReviewStatus",
+    value: string
+  ) => {
+    const params = new URLSearchParams(location.search);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    const nextSearch = params.toString();
+    navigate(`${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`);
+  };
 
   if (vm.loading) {
     return (
@@ -102,7 +128,7 @@ export function EvidenceWorkbenchScreen() {
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Badge variant={badgeVariant[vm.statusTone]} dot>{vm.statusLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(vm.statusTone)} dot>{vm.statusLabel}</Badge>
           <Badge variant="outline">{vm.scoreLabel}</Badge>
           <Badge variant="outline">{vm.generatedLabel}</Badge>
           {vm.sourceWorkflowHref && vm.sourceWorkflowLabel && vm.sourceWorkflowAriaLabel ? (
@@ -134,19 +160,44 @@ export function EvidenceWorkbenchScreen() {
             {vm.hasSubjects ? (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="list" aria-label={vm.subjectsRegionLabel}>
                 {vm.subjects.map((subject) => (
-                  <div key={`${subject.subjectKind}:${subject.subjectId}`} role="listitem">
+                  <div
+                    key={`${subject.subjectKind}:${subject.subjectId}`}
+                    role="listitem"
+                    className={cn(
+                      "rounded-md border bg-secondary/25 transition-colors",
+                      subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId
+                        ? "border-primary/60 ring-1 ring-primary/20"
+                        : "border-border/70"
+                    )}
+                  >
                     <Link
                       to={vm.openSubjectHref(subject)}
-                      className="block rounded-md border border-border/70 bg-secondary/25 px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      aria-label={`Select evidence subject ${subject.label}${subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId ? " (selected)" : ""}`}
+                      aria-current={subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId ? "page" : undefined}
+                      className="block rounded-t-md px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <span className="block font-semibold text-foreground">{subject.label}</span>
-                      <span className="mt-1 block font-mono text-xs text-muted-foreground">
-                        {subject.subjectKind}/{subject.subjectId}
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-foreground">{subject.label}</span>
+                        {subject.subjectKind === vm.selectedSubjectKind && subject.subjectId === vm.selectedSubjectId ? (
+                          <Badge variant="success">Selected</Badge>
+                        ) : null}
                       </span>
                       <span className="mt-3 inline-flex">
                         <Badge variant="outline">{subject.workspace}</Badge>
                       </span>
                     </Link>
+                    <TechnicalDetails label="Technical details" className="mx-3 mb-3">
+                      <dl className="grid gap-2 text-xs">
+                        <div>
+                          <dt className="font-semibold text-muted-foreground">Subject kind</dt>
+                          <dd className="mt-1 break-all font-mono text-foreground">{subject.subjectKind}</dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold text-muted-foreground">Subject identifier</dt>
+                          <dd className="mt-1 break-all font-mono text-foreground">{subject.subjectId}</dd>
+                        </div>
+                      </dl>
+                    </TechnicalDetails>
                   </div>
                 ))}
               </div>
@@ -168,7 +219,47 @@ export function EvidenceWorkbenchScreen() {
         </Card>
       ) : null}
 
+      <EvidenceDocumentIntakePanel vm={vm} />
+      <EvidenceVaultQueueFilters filters={vm.queueFilters} onChange={updateQueueFilter} />
       <EvidenceVaultRequestListPanel panel={vm.requestListPanel} />
+      <EvidenceVaultDocumentPanel panel={vm.documentPanel} />
+
+      {vm.packetError ? (
+        <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-2 font-medium">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                {vm.packetError.summary}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-foreground/80">
+                Evidence subjects, open request lists, and retained documents remain available while packet details are retried.
+              </p>
+              {vm.packetError.details.length > 0 ? (
+                <ul className="mt-2 space-y-1 text-xs leading-5">
+                  {vm.packetError.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={vm.reloadEvidence}
+              busy={vm.reloadCommand.busy}
+              busyLabel={vm.reloadCommand.busyLabel}
+              disabled={vm.reloadCommand.disabled}
+              disabledReason={vm.reloadCommand.disabledReason}
+              aria-label={vm.reloadCommand.ariaLabel}
+            >
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+              {vm.reloadCommand.label}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {vm.hasPacket && vm.packet ? (
         <>
@@ -228,18 +319,31 @@ export function EvidenceWorkbenchScreen() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="font-semibold">{vm.exportResultDetail.title}</div>
-                          <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
                           <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
-                          {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel ? (
+                          {vm.exportResultDetail.storageKindLabel || vm.exportResultDetail.manifestPackageFamilyLabel ? (
                             <div className="mt-2 flex flex-wrap gap-2">
-                              {vm.exportResultDetail.vaultIdLabel ? (
-                                <Badge variant="outline">{vm.exportResultDetail.vaultIdLabel}</Badge>
-                              ) : null}
                               {vm.exportResultDetail.storageKindLabel ? (
                                 <Badge variant="outline">{vm.exportResultDetail.storageKindLabel}</Badge>
                               ) : null}
+                              {vm.exportResultDetail.manifestPackageFamilyLabel ? (
+                                <Badge variant="outline">{vm.exportResultDetail.manifestPackageFamilyLabel}</Badge>
+                              ) : null}
                             </div>
                           ) : null}
+                          <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
+                            <dl className="grid gap-2 text-xs sm:grid-cols-2">
+                              <div>
+                                <dt className="font-semibold text-muted-foreground">Manifest path</dt>
+                                <dd className="mt-1 break-all font-mono">{vm.exportResultDetail.manifestPath}</dd>
+                              </div>
+                              {vm.exportResultDetail.vaultIdLabel ? (
+                                <div>
+                                  <dt className="font-semibold text-muted-foreground">Vault identifier</dt>
+                                  <dd className="mt-1 break-all font-mono">{vm.exportResultDetail.vaultIdLabel}</dd>
+                                </div>
+                              ) : null}
+                            </dl>
+                          </TechnicalDetails>
                         </div>
                         {vm.exportResultDetail.routeHref && vm.exportResultDetail.routeLabel && vm.exportResultDetail.routeAriaLabel ? (
                           <Button asChild variant="outline" size="sm">
@@ -268,15 +372,34 @@ export function EvidenceWorkbenchScreen() {
                                 <span>{artifact.kind}</span>
                                 <Badge variant="success">{artifact.sizeLabel}</Badge>
                               </div>
-                              <div className="mt-1 break-all font-mono">{artifact.relativePath}</div>
-                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
-                                <span className="break-all">{artifact.hashLabel}</span>
-                                <span className="break-all">{artifact.canonicalSubjectLabel}</span>
-                                <span className="break-all">{artifact.sourceLabel}</span>
+                              <div className="mt-2 flex flex-wrap gap-2 text-[0.7rem]">
                                 <span>{artifact.retainedLabel}</span>
-                                <span className="break-all">{artifact.captureLabel}</span>
                                 <span>{artifact.extractionLabel}</span>
                               </div>
+                              <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
+                                <dl className="grid gap-2 font-mono text-[0.7rem] sm:grid-cols-2">
+                                  <div className="sm:col-span-2">
+                                    <dt className="font-semibold text-muted-foreground">Artifact path</dt>
+                                    <dd className="mt-1 break-all">{artifact.relativePath}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Artifact hash</dt>
+                                    <dd className="mt-1 break-all">{artifact.hashLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Canonical subject</dt>
+                                    <dd className="mt-1 break-all">{artifact.canonicalSubjectLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Source</dt>
+                                    <dd className="mt-1 break-all">{artifact.sourceLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Capture</dt>
+                                    <dd className="mt-1 break-all">{artifact.captureLabel}</dd>
+                                  </div>
+                                </dl>
+                              </TechnicalDetails>
                             </li>
                           ))}
                         </ul>
@@ -292,16 +415,19 @@ export function EvidenceWorkbenchScreen() {
                               <div className="flex flex-wrap items-center gap-2 font-semibold">
                                 <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>{requestList.requestListKindLabel}</span>
-                                <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                                <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
+                                <Badge variant={readinessToneToBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
                                 <Badge variant="outline">{requestList.statusLabel}</Badge>
                               </div>
-                              <div className="mt-1 break-all font-mono">{requestList.targetLabel}</div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{requestList.summary}</p>
                               <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
                                 <span className="break-all">{requestList.requestCountLabel}</span>
                                 <span className="break-all">{requestList.evidenceKindsLabel}</span>
                                 <span className="break-all sm:col-span-2">{requestList.blockedOutputsLabel}</span>
                               </div>
+                              <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
+                                <div className="break-all font-mono text-[0.7rem]">{requestList.targetLabel}</div>
+                              </TechnicalDetails>
                             </li>
                           ))}
                         </ul>
@@ -317,17 +443,34 @@ export function EvidenceWorkbenchScreen() {
                               <div className="flex flex-wrap items-center gap-2 font-semibold">
                                 <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>{request.requestKindLabel}</span>
-                                <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                                <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
                                 <Badge variant="outline">{request.statusLabel}</Badge>
                               </div>
-                              <div className="mt-1 break-all font-mono">{request.evidenceLabel}</div>
                               <p className="mt-1 text-xs leading-5 text-primary/90">{request.summary}</p>
-                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
-                                <span className="break-all">{request.evidenceKindLabel}</span>
-                                <span className="break-all">{request.sourceLabel}</span>
-                                <span className="break-all">{request.workItemLabel}</span>
-                                <span className="break-all">{request.blockedOutputLabel}</span>
-                              </div>
+                              <TechnicalDetails label="Technical details" className="mt-2 text-foreground">
+                                <dl className="grid gap-2 font-mono text-[0.7rem] sm:grid-cols-2">
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Evidence identifier</dt>
+                                    <dd className="mt-1 break-all">{request.evidenceLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Evidence kind</dt>
+                                    <dd className="mt-1 break-all">{request.evidenceKindLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Source</dt>
+                                    <dd className="mt-1 break-all">{request.sourceLabel}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="font-semibold text-muted-foreground">Work item</dt>
+                                    <dd className="mt-1 break-all">{request.workItemLabel}</dd>
+                                  </div>
+                                  <div className="sm:col-span-2">
+                                    <dt className="font-semibold text-muted-foreground">Blocked output</dt>
+                                    <dd className="mt-1 break-all">{request.blockedOutputLabel}</dd>
+                                  </div>
+                                </dl>
+                              </TechnicalDetails>
                             </li>
                           ))}
                         </ul>
@@ -370,12 +513,12 @@ export function EvidenceWorkbenchScreen() {
                   onExport={vm.exportManifest}
                 />
               ) : null}
-              <EvidenceList title="Missing evidence" items={vm.missingEvidence} tone="danger" />
-              <EvidenceList title="Stale evidence" items={vm.staleEvidence} tone="warning" />
+              <EvidenceList title="Missing evidence" items={vm.missingEvidence} tone="danger" technical />
+              <EvidenceList title="Stale evidence" items={vm.staleEvidence} tone="warning" technical />
               <EvidenceAssurancePanel panel={vm.assurancePanel} />
-              <EvidenceList title="Orphan evidence" items={vm.orphanEvidence} tone={vm.assurancePanel.orphanTone} />
+              <EvidenceList title="Orphan evidence" items={vm.orphanEvidence} tone={vm.assurancePanel.orphanTone} technical />
               <EvidenceList title="SLA breaches" items={vm.slaBreaches} tone={vm.slaBreaches.length ? "warning" : "success"} />
-              <EvidenceList title="Related work items" items={vm.relatedWorkItemIds} tone="muted" />
+              <EvidenceList title="Related work items" items={vm.relatedWorkItemIds} tone="muted" technical />
               <EvidenceList title="Warnings" items={vm.warnings} tone="warning" />
             </aside>
           </section>
@@ -435,8 +578,8 @@ const lineageColumns: DenseDataTableColumn<EvidenceLineageRowViewModel>[] = [
   {
     id: "from",
     label: "From",
-    className: "max-w-[16rem] break-all font-mono text-xs",
-    render: (row) => row.fromId
+    className: "max-w-[16rem] break-words text-xs font-medium",
+    render: (row) => row.fromLabel
   },
   {
     id: "relationship",
@@ -446,8 +589,8 @@ const lineageColumns: DenseDataTableColumn<EvidenceLineageRowViewModel>[] = [
   {
     id: "to",
     label: "To",
-    className: "max-w-[16rem] break-all font-mono text-xs",
-    render: (row) => row.toId
+    className: "max-w-[16rem] break-words text-xs font-medium",
+    render: (row) => row.toLabel
   },
   {
     id: "reason",
@@ -464,17 +607,19 @@ function EvidenceLineageDetailPanel({ detail, id }: { detail: EvidenceLineageDet
       <div className="body space-y-3">
         <div className="min-w-0">
           <h3 className="font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">{detail.subtitle}</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
         </div>
-        <dl className="grid gap-2">
-          {detail.fields.map((field) => (
-            <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-              <dt className="eyebrow-label">{field.label}</dt>
-              <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <TechnicalDetails label="Technical details">
+          <dl className="grid gap-2">
+            {detail.technicalFields.map((field) => (
+              <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+                <dt className="eyebrow-label">{field.label}</dt>
+                <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </TechnicalDetails>
       </div>
     </aside>
   );
@@ -484,7 +629,7 @@ function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value
   return (
     <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
       <div className="eyebrow-label">{label}</div>
-      <div className={cn("mt-1 font-mono text-lg font-semibold", metricToneClass[tone])}>{value}</div>
+      <div className={cn("mt-1 font-mono tabular-nums text-lg font-semibold", evidenceStatusToneToTextClass(tone))}>{value}</div>
     </div>
   );
 }
@@ -501,7 +646,7 @@ function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelView
             </CardTitle>
             <CardDescription>{panel.summaryLabel}</CardDescription>
           </div>
-          <Badge variant={badgeVariant[panel.statusTone]}>{panel.statusLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(panel.statusTone)}>{panel.statusLabel}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -517,7 +662,7 @@ function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelView
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{row.label}</span>
                   <span className="flex flex-wrap gap-2">
-                    <Badge variant={badgeVariant[row.statusTone]}>{row.statusLabel}</Badge>
+                    <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                     <Badge variant="outline">{row.coverageLabel}</Badge>
                   </span>
                 </div>
@@ -602,14 +747,14 @@ const nodeColumns: DenseDataTableColumn<EvidenceNodeRowViewModel>[] = [
     render: (row) => (
       <div className="min-w-0">
         <div className="font-semibold text-foreground">{row.kindLabel}</div>
-        <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">{row.evidenceId}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{row.subjectLabel}</div>
       </div>
     )
   },
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={badgeVariant[row.statusTone]}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "source",
@@ -621,7 +766,7 @@ const nodeColumns: DenseDataTableColumn<EvidenceNodeRowViewModel>[] = [
     id: "freshness",
     label: "Freshness",
     className: "min-w-[9rem]",
-    render: (row) => <Badge variant={badgeVariant[row.freshnessTone]}>{row.freshnessLabel}</Badge>
+    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.freshnessTone)}>{row.freshnessLabel}</Badge>
   },
   {
     id: "artifacts",
@@ -647,14 +792,14 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
       <div className="head flex flex-wrap items-center justify-between gap-2">
         <span>{detail.eyebrow}</span>
         <span className="flex flex-wrap gap-2">
-          <Badge variant={badgeVariant[detail.statusTone]}>{detail.statusLabel}</Badge>
-          <Badge variant={badgeVariant[detail.freshnessTone]}>{detail.freshnessLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(detail.freshnessTone)}>{detail.freshnessLabel}</Badge>
         </span>
       </div>
       <div className="body space-y-4">
         <div className="min-w-0">
           <h3 className="font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">{detail.subtitle}</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
         </div>
         <dl className="grid gap-2 sm:grid-cols-2">
@@ -665,7 +810,17 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
             </div>
           ))}
         </dl>
-        <section aria-label="Selected evidence artifacts" className="space-y-2">
+        <TechnicalDetails label="Technical details">
+          <dl className="grid gap-2 sm:grid-cols-2">
+            {detail.technicalFields.map((field) => (
+              <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+                <dt className="eyebrow-label">{field.label}</dt>
+                <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </TechnicalDetails>
+        <section aria-label={`${detail.title} selected evidence artifacts`} className="space-y-2">
           <div className="eyebrow-label">Artifacts</div>
           {detail.artifactRows.length > 0 ? (
             <ul className="grid gap-2">
@@ -680,16 +835,25 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
                     <span>{artifact.kind}</span>
                     <Badge variant={artifact.retainedLabel === "Retained" ? "success" : "outline"}>{artifact.retainedLabel}</Badge>
                   </div>
-                  <div className="mt-1 break-all font-mono text-muted-foreground">{artifact.target}</div>
-                  <div className="mt-2 grid gap-1 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
-                    <span>{artifact.generatedLabel}</span>
-                    <span className="break-all">{artifact.hashLabel}</span>
-                  </div>
-                  {artifact.canonicalSubjectLabel ? (
-                    <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">
-                      {artifact.canonicalSubjectLabel}
-                    </div>
-                  ) : null}
+                  <div className="mt-2 text-[0.7rem] text-muted-foreground">Generated {artifact.generatedLabel}</div>
+                  <TechnicalDetails label="Technical details" className="mt-2">
+                    <dl className="grid gap-2 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <dt className="font-semibold">Artifact path</dt>
+                        <dd className="mt-1 break-all">{artifact.target}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold">Artifact hash</dt>
+                        <dd className="mt-1 break-all">{artifact.hashLabel}</dd>
+                      </div>
+                      {artifact.canonicalSubjectLabel ? (
+                        <div>
+                          <dt className="font-semibold">Canonical subject</dt>
+                          <dd className="mt-1 break-all">{artifact.canonicalSubjectLabel}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  </TechnicalDetails>
                 </li>
               ))}
             </ul>
@@ -699,20 +863,22 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
             </p>
           )}
         </section>
-        <section aria-label="Selected evidence work items" className="space-y-2">
+        <section aria-label={`${detail.title} selected evidence work items`} className="space-y-2">
           <div className="eyebrow-label">Work items</div>
           {detail.workItemRows.length > 0 ? (
-            <ul className="grid gap-2">
-              {detail.workItemRows.map((item) => (
-                <li
-                  key={item.id}
-                  aria-label={item.ariaLabel}
-                  className="break-all rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 font-mono text-xs"
-                >
-                  {item.label}
-                </li>
-              ))}
-            </ul>
+            <TechnicalDetails label={`Technical details (${detail.workItemRows.length})`}>
+              <ul className="grid gap-2">
+                {detail.workItemRows.map((item) => (
+                  <li
+                    key={item.id}
+                    aria-label={item.ariaLabel}
+                    className="break-all rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 font-mono text-xs"
+                  >
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
+            </TechnicalDetails>
           ) : (
             <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
               {detail.workItemEmptyText}
@@ -721,6 +887,723 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
         </section>
       </div>
     </aside>
+  );
+}
+
+const documentClassifications: EvidenceDocumentClassification[] = [
+  "BankStatement",
+  "AdminPackage",
+  "Statement",
+  "Invoice",
+  "CapitalNotice",
+  "CustodianFile",
+  "BankEvidence",
+  "ValuationSupport",
+  "Agreement",
+  "TaxSupport",
+  "AuditRequestSupport",
+  "TaxAuditSupport"
+];
+
+const extractionStatuses: EvidenceExtractionStatus[] = ["Pending", "NotExtracted", "Extracted", "NeedsReview", "Rejected"];
+const reviewStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Rejected"];
+const documentReviewFilterStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
+const requestListFamilyFilters: EvidenceRequestListKindCode[] = ["Close", "Audit", "Tax", "ReportPackage", "OperationalEvent"];
+const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = [
+  "UploadedContent",
+  "Email",
+  "Sftp",
+  "Api",
+  "PortalDownload",
+  "LocalFile",
+  "ImportedFileReference"
+];
+const linkKinds: EvidenceDocumentLinkKind[] = [
+  "Period",
+  "Portfolio",
+  "Fund",
+  "Account",
+  "Instrument",
+  "Journal",
+  "ReconciliationCase",
+  "ReportLine",
+  "CloseTask"
+];
+
+function EvidenceVaultQueueFilters({
+  filters,
+  onChange
+}: {
+  filters: EvidenceWorkbenchQueueFiltersViewModel;
+  onChange: (key: "requestListFamily" | "documentClassification" | "documentReviewStatus", value: string) => void;
+}) {
+  return (
+    <Card className="panel-surface" role="region" aria-label="Evidence Vault queue filters">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              Queue filters
+            </CardTitle>
+            <CardDescription>Filter open support requests and retained documents by vault family, classification, and review state.</CardDescription>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {filters.requestListFamily ? <Badge variant="outline">{formatDocumentOption(filters.requestListFamily)}</Badge> : null}
+            {filters.documentClassification ? <Badge variant="outline">{formatDocumentOption(filters.documentClassification)}</Badge> : null}
+            {filters.documentReviewStatus ? <Badge variant="outline">{formatDocumentOption(filters.documentReviewStatus)}</Badge> : null}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 md:grid-cols-3">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Request list family
+            <Select
+              aria-label="Request list family filter"
+              value={filters.requestListFamily ?? ""}
+              onChange={(event) => onChange("requestListFamily", event.target.value)}
+            >
+              <option value="">All request families</option>
+              {requestListFamilyFilters.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Document classification
+            <Select
+              aria-label="Document classification filter"
+              value={filters.documentClassification ?? ""}
+              onChange={(event) => onChange("documentClassification", event.target.value)}
+            >
+              <option value="">All classifications</option>
+              {documentClassifications.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Document review state
+            <Select
+              aria-label="Document review status filter"
+              value={filters.documentReviewStatus ?? ""}
+              onChange={(event) => onChange("documentReviewStatus", event.target.value)}
+            >
+              <option value="">All review states</option>
+              {documentReviewFilterStatuses.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
+  const [sourcePath, setSourcePath] = useState("");
+  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankStatement");
+  const [sourceChannel, setSourceChannel] = useState("upload");
+  const [actor, setActor] = useState("");
+  const [tenantId, setTenantId] = useState("");
+  const [scope, setScope] = useState("");
+  const [sourceSystem, setSourceSystem] = useState("");
+  const [sourceReference, setSourceReference] = useState("");
+  const [extractionStatus, setExtractionStatus] = useState<EvidenceExtractionStatus>("Pending");
+  const [reviewStatus, setReviewStatus] = useState<EvidenceDocumentReviewStatus>("Unreviewed");
+  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
+  const [objectId, setObjectId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const selectedSubject = vm.selectedSubjectLabel;
+  const isUpload = sourceKind === "UploadedContent";
+  const isAdapterSeam = ["Email", "Sftp", "Api", "PortalDownload"].includes(sourceKind);
+  const requiresPayload = isUpload || isAdapterSeam;
+  const hasRequiredSource = requiresPayload ? Boolean(file) : sourcePath.trim().length > 0;
+  const disabledReason = vm.intakeCommand.disabledReason ?? (
+    hasRequiredSource
+      ? null
+      : requiresPayload
+        ? "Choose a document file before retaining it."
+        : "Enter a local or imported file path before retaining it."
+  );
+  const submitDisabled = vm.intakeCommand.disabled || !hasRequiredSource;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!vm.selectedSubjectKind || !vm.selectedSubjectId || !hasRequiredSource) {
+      setFormError(isUpload
+        ? "Select an evidence subject and choose a document file before retaining it."
+        : isAdapterSeam
+          ? "Select an evidence subject and choose a document file before retaining adapter-seam metadata."
+        : "Select an evidence subject and enter a local or imported file path before retaining it.");
+      return;
+    }
+
+    setFormError(null);
+    try {
+      const contentBase64 = requiresPayload && file ? await readFileAsBase64(file) : null;
+      const retainedFileName = requiresPayload && file ? file.name : fileNameFromPath(sourcePath);
+      const sourceReferenceValue = sourceReference.trim() || (requiresPayload ? retainedFileName : sourcePath.trim());
+      const request: EvidenceVaultIntakeRequest = {
+        subjectKind: vm.selectedSubjectKind,
+        subjectId: vm.selectedSubjectId,
+        intakeChannel: sourceChannel.trim() || defaultIntakeChannel(sourceKind),
+        fileName: retainedFileName,
+        contentBase64,
+        contentType: requiresPayload && file ? file.type || "application/octet-stream" : null,
+        sourceSystem: sourceSystem.trim() || null,
+        sourceReference: sourceReferenceValue,
+        receivedBy: actor.trim() || null,
+        classification,
+        actor: actor.trim() || null,
+        tenantId: tenantId.trim() || null,
+        scope: scope.trim() || null,
+        extractionStatus,
+        intakeChannelKind: intakeChannelKindForSource(sourceKind),
+        reviewerState: {
+          status: reviewStatus,
+          reviewer: actor.trim() || null,
+          reviewedAt: reviewStatus === "Unreviewed" ? null : new Date().toISOString(),
+          notes: reviewStatus === "Unreviewed" ? null : "Manual Evidence Workbench intake."
+        },
+        objectLinks: objectId.trim()
+          ? [
+              {
+                linkKind,
+                objectId: objectId.trim(),
+                label: objectId.trim(),
+                relationship: "supports"
+              }
+            ]
+          : [],
+        intakeSource: {
+          sourceKind,
+          path: isUpload || isAdapterSeam ? null : sourcePath.trim(),
+          uri: isAdapterSeam ? sourceReferenceValue : null,
+          displayName: retainedFileName
+        }
+      };
+      await vm.intakeDocument(request);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Could not read the selected document file.");
+    }
+  };
+
+  return (
+    <Card className="panel-surface" role="region" aria-label="Evidence document intake">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" aria-hidden="true" />
+              Document intake
+            </CardTitle>
+            <CardDescription>
+              Retain an uploaded document against the selected evidence subject without mutating accounting authority.
+            </CardDescription>
+          </div>
+          <Badge variant={vm.hasSelection ? "outline" : "warning"}>Selected subject: {selectedSubject}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source kind
+                <Select
+                  aria-label="Document source kind"
+                  value={sourceKind}
+                  onChange={(event) => {
+                    const nextKind = event.currentTarget.value as EvidenceDocumentIntakeSourceKind;
+                    setSourceKind(nextKind);
+                    if (["upload", "local-file", "imported-file-reference"].includes(sourceChannel.trim().toLowerCase())) {
+                      setSourceChannel(defaultIntakeChannel(nextKind));
+                    }
+                    setFormError(null);
+                  }}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {intakeSourceKinds.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              {requiresPayload ? (
+                <label key="uploaded-content-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
+                  Document file
+                  <Input
+                    key={`${sourceKind}-file`}
+                    type="file"
+                    aria-label="Document file"
+                    disabled={vm.intakeCommand.busy}
+                    onChange={(event) => {
+                      setFile(event.currentTarget.files?.[0] ?? null);
+                      setFormError(null);
+                    }}
+                  />
+                </label>
+              ) : (
+                <label key="file-reference-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
+                  Source file path
+                  <Input
+                    key="file-reference-path"
+                    aria-label="Source file path"
+                    value={sourcePath}
+                    onChange={(event) => {
+                      setSourcePath(event.currentTarget.value);
+                      setFormError(null);
+                    }}
+                    disabled={vm.intakeCommand.busy}
+                    placeholder="D:\\imports\\statement.csv"
+                  />
+                </label>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Classification
+                <Select
+                  aria-label="Document classification"
+                  value={classification}
+                  onChange={(event) => setClassification(event.currentTarget.value as EvidenceDocumentClassification)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {documentClassifications.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source channel
+                <Input
+                  aria-label="Source channel"
+                  value={sourceChannel}
+                  onChange={(event) => setSourceChannel(event.currentTarget.value)}
+                  disabled={vm.intakeCommand.busy}
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Extraction status
+                <Select
+                  aria-label="Extraction status"
+                  value={extractionStatus}
+                  onChange={(event) => setExtractionStatus(event.currentTarget.value as EvidenceExtractionStatus)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {extractionStatuses.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Reviewer state
+                <Select
+                  aria-label="Reviewer state"
+                  value={reviewStatus}
+                  onChange={(event) => setReviewStatus(event.currentTarget.value as EvidenceDocumentReviewStatus)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {reviewStatuses.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Actor
+                <Input aria-label="Actor" value={actor} onChange={(event) => setActor(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Tenant
+                <Input aria-label="Tenant" value={tenantId} onChange={(event) => setTenantId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Scope
+                <Input aria-label="Scope" value={scope} onChange={(event) => setScope(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source system
+                <Input aria-label="Source system" value={sourceSystem} onChange={(event) => setSourceSystem(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source reference
+                <Input aria-label="Source reference" value={sourceReference} onChange={(event) => setSourceReference(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Link kind
+                <Select
+                  aria-label="Linked object kind"
+                  value={linkKind}
+                  onChange={(event) => setLinkKind(event.currentTarget.value as EvidenceDocumentLinkKind)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {linkKinds.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Linked object id
+                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="submit"
+                busy={vm.intakeCommand.busy}
+                busyLabel={vm.intakeCommand.busyLabel}
+                disabled={submitDisabled}
+                disabledReason={disabledReason}
+                aria-label={vm.intakeCommand.ariaLabel}
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                {vm.intakeCommand.label}
+              </Button>
+              {requiresPayload && file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
+              {!requiresPayload && sourcePath.trim() ? <span className="break-all font-mono text-xs text-muted-foreground">{sourcePath.trim()}</span> : null}
+            </div>
+          </div>
+        </form>
+        {formError ? (
+          <p role="alert" className="mt-3 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {formError}
+          </p>
+        ) : null}
+        {vm.intakeResultLabel ? (
+          <p role="status" className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+            {vm.intakeResultLabel}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceVaultDocumentPanel({ panel }: { panel: EvidenceVaultDocumentIndexPanelViewModel }) {
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(panel.rows[0]?.id ?? null);
+  const selectedDocument = panel.rows.find((document) => document.id === selectedDocumentId) ?? panel.rows[0] ?? null;
+
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.description}</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="outline">Subject: {panel.scopeLabel}</Badge>
+            <Badge variant={panel.hasRows ? "warning" : "success"}>{panel.summaryLabel}</Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {panel.hasRows ? (
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+            <ul className="grid content-start gap-2" aria-label="Evidence Vault document queue">
+              {panel.rows.map((document) => (
+                <EvidenceVaultDocumentQueueItem
+                  key={document.id}
+                  document={document}
+                  selected={selectedDocument?.id === document.id}
+                  onSelect={() => setSelectedDocumentId(document.id)}
+                />
+              ))}
+            </ul>
+            <div aria-live="polite" aria-atomic="false">
+              {selectedDocument ? <EvidenceVaultDocumentDetailPanel detail={selectedDocument.detail} /> : null}
+            </div>
+          </div>
+        ) : (
+          <div
+            role="status"
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
+          >
+            <div className="font-semibold text-foreground">{panel.emptyTitle}</div>
+            <p className="mt-1 max-w-2xl leading-6">{panel.emptyDetail}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceVaultDocumentQueueItem({
+  document,
+  selected,
+  onSelect
+}: {
+  document: EvidenceVaultDocumentIndexRowViewModel;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <li
+      aria-label={document.ariaLabel}
+      className={cn(
+        "rounded-md border bg-secondary/25 px-3 py-3 text-sm",
+        selected ? "border-primary/60 shadow-sm" : "border-border/70"
+      )}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+            <span className="break-all">{document.fileName}</span>
+            <Badge variant={readinessToneToBadgeVariant(document.extractionTone)}>{document.extractionLabel}</Badge>
+            <Badge variant={readinessToneToBadgeVariant(document.reviewTone)}>{document.reviewLabel}</Badge>
+          </div>
+          <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{document.classificationLabel}</div>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            variant={selected ? "default" : "outline"}
+            size="sm"
+            aria-pressed={selected}
+            aria-expanded={selected}
+            aria-controls={document.detail.id}
+            onClick={onSelect}
+          >
+            <FileText className="h-4 w-4" aria-hidden="true" />
+            Review details
+          </Button>
+          {document.manifestHref && document.manifestLabel && document.manifestAriaLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <a
+                href={document.manifestHref}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={document.manifestAriaLabel}
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                {document.manifestLabel}
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span>{document.receivedLabel}</span>
+        <span>{document.openRequestCountLabel}</span>
+      </div>
+    </li>
+  );
+}
+
+function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      className="rounded-md border border-border/80 bg-background/40 px-4 py-4"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Document review</div>
+          <h3 className="mt-1 break-all text-base font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Badge variant={readinessToneToBadgeVariant(detail.statusTone)}>{detail.statusLabel}</Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!detail.canAccept || detail.reviewBusy}
+            onClick={() => void detail.acceptReview()}
+          >
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            {detail.reviewBusy ? "Saving" : "Accept"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!detail.canReject || detail.reviewBusy}
+            onClick={() => void detail.rejectReview()}
+          >
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            {detail.reviewBusy ? "Saving" : "Reject"}
+          </Button>
+          {detail.manifestHref && detail.manifestLabel && detail.manifestAriaLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <a href={detail.manifestHref} target="_blank" rel="noreferrer" aria-label={detail.manifestAriaLabel}>
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                {detail.manifestLabel}
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <TechnicalDetails label="Technical metadata" className="mt-4">
+        <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-3">
+          {detail.fields.map((field) => (
+            <div key={field.label} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <dt className="font-semibold text-muted-foreground">{field.label}</dt>
+              <dd className="mt-1 break-all font-mono text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-4">
+          <EvidenceVaultDocumentObjectLinks detail={detail} />
+        </div>
+      </TechnicalDetails>
+      <details open className="mt-4 rounded-md border border-border/70 bg-secondary/10 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          Review fields
+        </summary>
+        <div className="mt-3">
+          <EvidenceVaultDocumentReviewFields detail={detail} />
+        </div>
+      </details>
+      <details className="mt-4 rounded-md border border-border/70 bg-secondary/10 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+          Audit trail and support requests
+        </summary>
+        <div className="mt-3 grid gap-4 xl:grid-cols-2">
+          <EvidenceVaultDocumentAuditTrail detail={detail} />
+          <EvidenceVaultDocumentSupportRequests detail={detail} />
+        </div>
+      </details>
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentReviewFields({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Human-confirmed extracted fields" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Review fields</h4>
+      {detail.reviewFieldRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Extracted fields for human confirmation">
+          {detail.reviewFieldRows.map((field) => (
+            <li key={field.id} aria-label={field.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-foreground">{field.fieldLabel}</span>
+                <Badge variant={readinessToneToBadgeVariant(field.statusTone)}>{field.statusLabel}</Badge>
+                <Badge variant="outline">{field.reviewStateLabel}</Badge>
+              </div>
+              <div className="mt-2 grid gap-1 font-mono text-muted-foreground">
+                <span className="break-all">Extracted: {field.valueLabel}</span>
+                <span className="break-all">Expected: {field.expectedLabel}</span>
+                <span>{field.confidenceLabel}</span>
+                <span className="break-all">{field.linkedRecordLabel}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.reviewFieldEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentObjectLinks({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Linked operational objects" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Linked objects</h4>
+      {detail.objectLinkRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Linked operational objects">
+          {detail.objectLinkRows.map((link) => (
+            <li key={link.id} aria-label={link.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="font-semibold text-foreground">{link.kindLabel}</div>
+              <div className="mt-1 break-all font-mono">{link.objectLabel}</div>
+              <div className="mt-1 text-muted-foreground">{link.relationshipLabel}</div>
+              {link.href && link.linkLabel && link.linkAriaLabel ? (
+                <Button asChild variant="ghost" size="sm" className="mt-2 px-0">
+                  <a href={link.href} aria-label={link.linkAriaLabel}>{link.linkLabel}</a>
+                </Button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.objectLinkEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentAuditTrail({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Document audit trail" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Audit trail</h4>
+      {detail.auditRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Document audit events">
+          {detail.auditRows.map((audit) => (
+            <li key={audit.id} aria-label={audit.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="font-semibold text-foreground">{audit.actionLabel}</div>
+              <div className="mt-1 text-muted-foreground">{audit.recordedLabel}</div>
+              <div className="mt-1 break-all font-mono">{audit.actorLabel}</div>
+              <p className="mt-1 leading-5">{audit.summary}</p>
+              <div className="mt-1 break-all font-mono text-muted-foreground">{audit.correlationLabel}</div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.auditEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentSupportRequests({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Linked support requests" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Support requests</h4>
+      {detail.supportRequestRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Linked support requests">
+          {detail.supportRequestRows.map((request) => (
+            <li key={request.id} aria-label={request.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-foreground">{request.requestKindLabel}</span>
+                <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
+              </div>
+              <p className="mt-1 leading-5">{request.summary}</p>
+              <TechnicalDetails label="Technical details" className="mt-2">
+                <dl className="grid gap-2 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                  <div>
+                    <dt className="font-semibold">Evidence identifier</dt>
+                    <dd className="mt-1 break-all">{request.evidenceLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">Work item</dt>
+                    <dd className="mt-1 break-all">{request.workItemLabel}</dd>
+                  </div>
+                </dl>
+              </TechnicalDetails>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.supportRequestEmptyText}</p>
+      )}
+    </section>
   );
 }
 
@@ -737,7 +1620,7 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
             <CardDescription>{panel.description}</CardDescription>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <Badge variant="outline">{panel.scopeLabel}</Badge>
+            <Badge variant="outline">Subject: {panel.scopeLabel}</Badge>
             <Badge variant={panel.hasRows ? "warning" : "success"}>{panel.summaryLabel}</Badge>
           </div>
         </div>
@@ -755,10 +1638,11 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
                       <span>{requestList.requestListKindLabel}</span>
-                      <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                      <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
+                      <Badge variant={readinessToneToBadgeVariant(requestList.highestSeverityTone)}>{requestList.highestSeverityLabel}</Badge>
                       <Badge variant="outline">{requestList.statusLabel}</Badge>
                     </div>
-                    <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{requestList.targetLabel}</div>
+                    <div className="mt-1 text-xs font-medium text-muted-foreground">Selected subject · {panel.scopeLabel}</div>
                   </div>
                   {requestList.manifestHref && requestList.manifestLabel && requestList.manifestAriaLabel ? (
                     <Button asChild variant="outline" size="sm">
@@ -788,13 +1672,23 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                   <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
                     {requestList.blockedOutputsLabel}
                   </span>
-                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
-                    {requestList.subjectLabel}
-                  </span>
-                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
-                    {requestList.vaultLabel}
-                  </span>
                 </div>
+                <TechnicalDetails label="Technical details" className="mt-3">
+                  <dl className="grid gap-2 text-xs sm:grid-cols-2">
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Request target</dt>
+                      <dd className="mt-1 break-all font-mono text-foreground">{requestList.targetLabel}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Subject identifier</dt>
+                      <dd className="mt-1 break-all font-mono text-foreground">{requestList.subjectLabel}</dd>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <dt className="font-semibold text-muted-foreground">Vault identifier</dt>
+                      <dd className="mt-1 break-all font-mono text-foreground">{requestList.vaultLabel}</dd>
+                    </div>
+                  </dl>
+                </TechnicalDetails>
                 {requestList.supportRequestRows.length > 0 ? (
                   <ul className="mt-3 grid gap-2" aria-label={`${requestList.requestListKindLabel} support requests`}>
                     {requestList.supportRequestRows.map((request) => (
@@ -805,16 +1699,30 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                       >
                         <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
                           <span>{request.requestKindLabel}</span>
-                          <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                          <Badge variant={readinessToneToBadgeVariant(request.severityTone)}>{request.severityLabel}</Badge>
                           <Badge variant="outline">{request.statusLabel}</Badge>
                         </div>
-                        <div className="mt-1 break-all font-mono text-muted-foreground">{request.evidenceLabel}</div>
                         <p className="mt-1 leading-5 text-muted-foreground">{request.summary}</p>
-                        <div className="mt-2 grid gap-1 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
-                          <span className="break-all">{request.evidenceKindLabel}</span>
-                          <span className="break-all">{request.workItemLabel}</span>
-                          <span className="break-all sm:col-span-2">{request.blockedOutputLabel}</span>
-                        </div>
+                        <TechnicalDetails label="Technical details" className="mt-2">
+                          <dl className="grid gap-2 text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                            <div>
+                              <dt className="font-semibold">Evidence identifier</dt>
+                              <dd className="mt-1 break-all font-mono">{request.evidenceLabel}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-semibold">Evidence kind</dt>
+                              <dd className="mt-1 break-all font-mono">{request.evidenceKindLabel}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-semibold">Work item</dt>
+                              <dd className="mt-1 break-all font-mono">{request.workItemLabel}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-semibold">Blocked output</dt>
+                              <dd className="mt-1 break-all font-mono">{request.blockedOutputLabel}</dd>
+                            </div>
+                          </dl>
+                        </TechnicalDetails>
                       </li>
                     ))}
                   </ul>
@@ -936,7 +1844,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
             </CardTitle>
             <CardDescription>{panel.summaryLabel}</CardDescription>
           </div>
-          <Badge variant={badgeVariant[panel.statusTone]}>{panel.scoreLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(panel.statusTone)}>{panel.scoreLabel}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -945,7 +1853,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
           <EvidenceMetric label="No orphan rule" value={panel.orphanSummaryLabel} tone={panel.orphanTone} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant={badgeVariant[panel.orphanTone]}>{panel.noOrphanRuleLabel}</Badge>
+          <Badge variant={readinessToneToBadgeVariant(panel.orphanTone)}>{panel.noOrphanRuleLabel}</Badge>
           <Badge variant="outline">{panel.validationIssueLabel}</Badge>
         </div>
         {panel.componentRows.length > 0 ? (
@@ -959,7 +1867,7 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{component.label}</span>
                   <span className="flex flex-wrap gap-2">
-                    <Badge variant={badgeVariant[component.statusTone]}>{component.statusLabel}</Badge>
+                    <Badge variant={readinessToneToBadgeVariant(component.statusTone)}>{component.statusLabel}</Badge>
                     <Badge variant="outline">{component.scoreLabel}</Badge>
                   </span>
                 </div>
@@ -978,82 +1886,6 @@ function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewMo
   );
 }
 
-function EvidenceSlaRows({ rows }: { rows: EvidenceSlaAssessmentRowViewModel[] }) {
-  if (rows.length === 0) {
-    return (
-      <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
-        No evidence SLA assessments returned.
-      </p>
-    );
-  }
-
-  return (
-    <ul className="space-y-2" aria-label="Evidence SLA assessments">
-      {rows.map((row) => (
-        <li
-          key={row.id}
-          aria-label={row.ariaLabel}
-          className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-semibold text-foreground">{row.policyLabel}</span>
-            <Badge variant={badgeVariant[row.tone]}>{row.breached ? "Breached" : "Fresh"}</Badge>
-          </div>
-          <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">{row.evidenceId}</div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="outline">{row.evidenceKindLabel}</Badge>
-            <Badge variant="outline">{row.ageLabel}</Badge>
-            <Badge variant="outline">{row.freshnessLabel}</Badge>
-            <Badge variant="outline">{row.severityLabel}</Badge>
-          </div>
-          <p className="mt-2 leading-5 text-muted-foreground">{row.message}</p>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function EvidenceList({
-  title,
-  items,
-  tone
-}: {
-  title: string;
-  items: string[];
-  tone: EvidenceStatusTone;
-}) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-base">{title}</CardTitle>
-          <Badge variant={badgeVariant[tone]}>{items.length}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {items.length > 0 ? (
-          <ul className="space-y-2 text-sm">
-            {items.map((item) => (
-              <li key={item} className="break-all rounded-md border border-border/70 bg-secondary/25 px-3 py-2 font-mono text-xs">
-                {item}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground">None.</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-const metricToneClass: Record<EvidenceStatusTone, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-foreground"
-};
-
 function buttonVariantForAction(tone: EvidencePacketActionTone) {
   if (tone === "primary" || tone === "success") {
     return "default";
@@ -1062,4 +1894,72 @@ function buttonVariantForAction(tone: EvidencePacketActionTone) {
     return "destructive";
   }
   return "outline";
+}
+
+function formatDocumentOption(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ");
+}
+
+function defaultIntakeChannel(sourceKind: EvidenceDocumentIntakeSourceKind) {
+  switch (sourceKind) {
+    case "LocalFile":
+      return "local-file";
+    case "ImportedFileReference":
+      return "imported-file-reference";
+    case "Email":
+      return "email";
+    case "Sftp":
+      return "sftp";
+    case "Api":
+      return "api";
+    case "PortalDownload":
+      return "portal-download";
+    default:
+      return "upload";
+  }
+}
+
+function intakeChannelKindForSource(sourceKind: EvidenceDocumentIntakeSourceKind) {
+  switch (sourceKind) {
+    case "LocalFile":
+      return "LocalFile";
+    case "ImportedFileReference":
+      return "ImportedFileReference";
+    case "Email":
+      return "Email";
+    case "Sftp":
+      return "Sftp";
+    case "Api":
+      return "Api";
+    case "PortalDownload":
+      return "PortalDownload";
+    default:
+      return "Upload";
+  }
+}
+
+function fileNameFromPath(path: string) {
+  const segments = path.trim().split(/[\\/]/).filter(Boolean);
+  return segments.at(-1) || "document.bin";
+}
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read the selected document file."));
+    reader.onload = () => {
+      const value = reader.result;
+      if (typeof value !== "string") {
+        reject(new Error("Could not read the selected document file."));
+        return;
+      }
+
+      const marker = "base64,";
+      const markerIndex = value.indexOf(marker);
+      resolve(markerIndex >= 0 ? value.slice(markerIndex + marker.length) : value);
+    };
+    reader.readAsDataURL(file);
+  });
 }

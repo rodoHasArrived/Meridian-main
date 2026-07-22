@@ -242,13 +242,13 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
         try
         {
-            var positionsTask = _apiClient.GetAsync<List<AggregatedPositionDto>>("/api/portfolio/aggregate", ct);
-            var exposureTask = _apiClient.GetAsync<ExposureDto>("/api/portfolio/exposure", ct);
+            var positionsTask = _apiClient.GetWithResponseAsync<List<AggregatedPositionDto>>("/api/portfolio/aggregate", ct);
+            var exposureTask = _apiClient.GetWithResponseAsync<ExposureDto>("/api/portfolio/exposure", ct);
 
             await Task.WhenAll(positionsTask, exposureTask);
 
-            var positions = await positionsTask.ConfigureAwait(false);
-            var exposure = await exposureTask.ConfigureAwait(false);
+            var positions = (await positionsTask.ConfigureAwait(false)).DataOrLoggedNull("Load aggregate portfolio positions");
+            var exposure = (await exposureTask.ConfigureAwait(false)).DataOrLoggedNull("Load aggregate portfolio exposure");
 
             if (positions is null)
             {

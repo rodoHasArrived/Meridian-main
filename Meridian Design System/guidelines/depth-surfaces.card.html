@@ -1,0 +1,58 @@
+<!-- @dsCard group="Depth & Motion" viewport="760x330" name="Surface ladder" subtitle="Flat elevation — borders are the depth; only detached overlays cast a shadow" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .theme { border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px; position: relative; }
+  .lbl { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; margin-bottom: 8px; }
+  .tok { font-family: var(--font-data); font-size: 9px; }
+  .band, .panel, .raised, .menu { border-radius: var(--radius-card); padding: 8px 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .n { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; }
+  /* light — real tokens */
+  .light { background: var(--bg); }
+  .light .lbl { color: var(--text-secondary); }
+  .light .band { background: var(--bg-medium); border-bottom: 1px solid var(--border); border-radius: 0; margin: 0 0 8px; }
+  .light .panel { display: block; background: var(--card-surface); border: 1px solid var(--border); }
+  .light .raised { background: var(--card-surface-raised); border: 1px solid var(--border-divider); margin-top: 8px; }
+  .light .menu { position: absolute; right: 14px; bottom: 14px; background: var(--card-surface); border: 1px solid var(--border-hover); box-shadow: var(--shadow-menu); }
+  .light .n { color: var(--text-primary); } .light .tok { color: var(--text-muted); }
+  /* dark — literal dark-scope values (dark tokens bind at :root) */
+  .dark { background: #0E1113; border-color: #45505C; }
+  .dark .lbl { color: #A5AFBC; }
+  .dark .band { background: #232A32; border-bottom: 1px solid #45505C; border-radius: 0; margin: 0 0 8px; }
+  .dark .panel { display: block; background: #1A2026; border: 1px solid #45505C; }
+  .dark .raised { background: #20272E; border: 1px solid #2D353D; margin-top: 8px; }
+  .dark .menu { position: absolute; right: 14px; bottom: 14px; background: #1A2026; border: 1px solid #5A6776; box-shadow: 0 2px 6px rgba(0,0,0,.55); }
+  .dark .n { color: #E5EAEF; } .dark .tok { color: #8893A0; }
+  .rule { margin-top: 12px; font-size: 11px; color: var(--text-secondary); }
+  .rule code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
+</style>
+</head>
+<body>
+  <div class="cols">
+    <div class="theme light">
+      <div class="lbl">Light — concrete</div>
+      <div class="band"><span class="n">structural band</span><span class="tok">--bg-medium</span></div>
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between;"><span class="n">panel</span><span class="tok">--card-surface + --border</span></div>
+        <div class="raised"><span class="n">raised / zebra</span><span class="tok">--card-surface-raised</span></div>
+      </div>
+      <div class="menu"><span class="n">menu</span><span class="tok">--shadow-menu</span></div>
+    </div>
+    <div class="theme dark">
+      <div class="lbl">Dark — graphite</div>
+      <div class="band"><span class="n">structural band</span><span class="tok">--bg-medium</span></div>
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between;"><span class="n">panel</span><span class="tok">--card-surface + --border</span></div>
+        <div class="raised"><span class="n">raised / zebra</span><span class="tok">--card-surface-raised</span></div>
+      </div>
+      <div class="menu"><span class="n">menu</span><span class="tok">--shadow-menu</span></div>
+    </div>
+  </div>
+  <p class="rule">Surfaces are flat — <code>--shadow-card: none</code>. Depth is the border ladder: <code>--border-divider</code> → <code>--border</code> → <code>--border-hover</code> → <code>--border-strong</code>. The one shadow, <code>--shadow-menu</code>, belongs to detached overlays only.</p>
+</body>
+</html>

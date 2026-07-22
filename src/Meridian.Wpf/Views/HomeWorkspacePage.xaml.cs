@@ -18,6 +18,20 @@ public partial class HomeWorkspacePage : Page
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.RefreshAsync();
+        try
+        {
+            await _viewModel.RefreshAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Home Workspace page failed to load.", ex);
+        }
     }
 }

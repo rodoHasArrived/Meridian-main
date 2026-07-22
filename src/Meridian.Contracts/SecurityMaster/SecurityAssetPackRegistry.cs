@@ -178,14 +178,14 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "fixed-income",
             "Fixed income",
-            ["Bond", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo"],
+            ["Bond", "StructuredCredit", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo"],
             ["Purchase", "Sale", "Coupon", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction", "Impairment"],
             ["MarketPrice", "DiscountedCashFlow", "AmortizedCost", "ExternalModel", "UserEstimate"],
             ["coupon accrual", "principal repayment", "amortization", "realized gain/loss", "impairment"]),
         DeepAutomation(
             "private-fund-partnership",
             "Private funds and partnerships",
-            ["PrivateFund", "PartnershipInterest", "CustomAsset"],
+            ["PrivateFund", "PartnershipInterest", "PrivateFundInterest", "PrivateCompanyEquity"],
             ["Purchase", "Sale", "CapitalCall", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["ManagerReportedNav", "Appraisal", "DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             ["capital call", "distribution", "NAV adjustment", "management fee", "performance allocation"]),
@@ -199,7 +199,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "real-estate",
             "Real estate",
-            ["RealEstate", "RealEstateInterest"],
+            ["RealEstate", "RealEstateInterest", "RealEstateHolding"],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "DiscountedCashFlow", "ManagerReportedNav", "UserEstimate", "ExternalModel"],
             ["property acquisition", "rental income", "expense allocation", "appraisal adjustment", "impairment"]),
@@ -220,7 +220,7 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "commitment-guarantee",
             "Unfunded commitments and guarantees",
-            ["UnfundedCommitment", "Guarantee", "CreditFacility"],
+            ["UnfundedCommitment", "Guarantee", "CreditFacility", "CommitmentGuarantee"],
             ["Purchase", "Sale", "Draw", "Repayment", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity"],
             ["UserEstimate", "ExternalModel", "DiscountedCashFlow"],
             ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"]),
