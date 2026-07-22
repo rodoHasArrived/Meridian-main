@@ -56,6 +56,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
         var fileTrailerCount = 0;
         int? declaredFileGroupCount = null;
         var hasBlankAccountId = false;
+        var inAccountSection = false;
+        var transactionOutsideAccount = false;
 
         foreach (var rawLine in content.Split('\n'))
         {
@@ -78,6 +80,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
                 case "03":
                     accountCount++;
+                    inAccountSection = true;
                     var accountId = FieldAt(fields, 1);
                     // A blank 03 account number cannot identify the account being reconciled. Flag it so
                     // the file is rejected below rather than sharing an "unknown-account" placeholder: two
@@ -111,6 +114,15 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     break;
 
                 case "16":
+                    // A transaction must belong to an identified account section (03..49). One appearing
+                    // outside a section would be emitted under the initial "unknown-account" and normalized
+                    // to the run's account, so flag it for rejection rather than reconcile it.
+                    if (!inAccountSection)
+                    {
+                        transactionOutsideAccount = true;
+                        break;
+                    }
+
                     if (asOfDate is not { } transactionDate)
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_NO_ASOF_DATE", "Transaction detail appeared before a group as-of date; skipped.", rowNumber + 1));
@@ -143,6 +155,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
                 case "49":
                     accountTrailerCount++;
+                    inAccountSection = false;
                     break;
 
                 case "98":
@@ -166,6 +179,25 @@ public sealed class Bai2StatementConnector : IStatementConnector
             Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
             detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
             "bai2");
+
+        // Every transaction must belong to an account section. A 16 record outside one (no preceding 03,
+        // or after the 49 that closed the section) would be emitted under the "unknown-account" placeholder
+        // and normalized to the run's account, so reject the file rather than reconcile an unidentifiable
+        // statement against the selected Meridian account.
+        if (transactionOutsideAccount)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_TRANSACTION_WITHOUT_ACCOUNT",
+                "A BAI2 transaction (16) record appears outside an account section (no preceding 03 account identifier); every transaction must belong to an identified account. Repair the file before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
 
         // Every 03 account-identifier record must carry its account number. A blank one cannot identify
         // the account being reconciled and would share the "unknown-account" placeholder with any other

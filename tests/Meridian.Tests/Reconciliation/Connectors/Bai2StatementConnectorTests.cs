@@ -125,6 +125,29 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithTransactionOutsideAccountSection_IsRejected()
+    {
+        // A 02 group carrying a 16 transaction but no 03 account-identifier record. The row would be
+        // emitted under the initial "unknown-account" and normalized to the run's account, so an
+        // unidentifiable statement could reconcile against the selected Meridian account. Reject it.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/
+            98,250000,1,3/
+            99,250000,1,5/
+            """;
+        var document = new StatementSourceDocument("no-account-section.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a BAI2 transaction outside an account section must not commit");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_TRANSACTION_WITHOUT_ACCOUNT");
+    }
+
+    [Fact]
     public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
     {
         // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would
