@@ -22,14 +22,42 @@ public sealed record ProviderDataProvenance(
         "unknown", "unknown", "unknown", "unknown");
 }
 
-/// <summary>IB's reported market-data availability; unknown is never treated as live data.</summary>
-public enum IBMarketDataAvailability { Unknown = 0, Live = 1, Frozen = 2, Delayed = 3, DelayedFrozen = 4 }
 
-/// <summary>Complete, entitlement-aware lineage for an Interactive Brokers request or subscription.</summary>
-public sealed record IBDataLineage(
-    int RequestId, string Service, string Symbol, string? Exchange, string? MarketRuleIds,
-    string? MinimumIncrements, string? Subscription, IBMarketDataAvailability Availability,
-    bool IsDelayed, string Status, DateTimeOffset ObservedAt);
+/// <summary>Provider-neutral contract-definition result.</summary>
+public sealed record ProviderContractDetails(
+    string ProviderContractId, string Symbol, string? LocalSymbol, string? SecurityType,
+    string? Exchange, string? PrimaryExchange, string? Currency, string? TradingClass,
+    string? Multiplier, DateOnly? Expiration, decimal? Strike, string? Right,
+    string? MarketRuleIds, decimal? MinimumTick, string? LongName, string? Industry,
+    string? Category, string? Subcategory, string? TimeZoneId, string? TradingHours, string? LiquidHours);
+
+/// <summary>Provider-neutral option-chain definition returned for an underlying instrument.</summary>
+public sealed record ProviderOptionChainDefinition(
+    string Exchange, string UnderlyingProviderContractId, string TradingClass, string? Multiplier,
+    IReadOnlyList<DateOnly> Expirations, IReadOnlyList<decimal> Strikes);
+
+/// <summary>Provider-neutral historical-news headline.</summary>
+public sealed record ProviderNewsHeadline(DateTimeOffset Timestamp, string ProviderCode, string ArticleId, string Headline);
+
+/// <summary>Provider-neutral news-article payload.</summary>
+public sealed record ProviderNewsArticle(int ArticleType, string Content);
+
+/// <summary>Provider-neutral fundamental report payload.</summary>
+public sealed record ProviderFundamentalReport(string Content);
+
+/// <summary>Provider-neutral tick-by-tick trade, quote, or midpoint observation.</summary>
+public sealed record ProviderTickByTickObservation(
+    DateTimeOffset Timestamp, string Kind, decimal? Price = null, decimal? Size = null,
+    decimal? Bid = null, decimal? Ask = null, decimal? BidSize = null, decimal? AskSize = null,
+    string? Exchange = null, string? SpecialConditions = null);
+
+/// <summary>Provider-neutral market-depth exchange capability.</summary>
+public sealed record ProviderDepthExchangeDescription(string Exchange, string SecurityType, string ListingExchange, string Service, bool IsAggregator);
+
+/// <summary>Provider-neutral dividend and earnings evidence supplied by a market-data callback.</summary>
+public sealed record ProviderDividendEarnings(
+    decimal? TrailingTwelveMonthDividend, decimal? ForwardTwelveMonthDividend, DateOnly? NextDividendDate,
+    decimal? NextDividendAmount, decimal? EarningsPerShare, decimal? PriceEarningsRatio);
 
 /// <summary>Provider-neutral evidence for a discovered option contract.</summary>
 public sealed record ProviderOptionContract(string Symbol, string UnderlyingSymbol, DateOnly Expiration, decimal Strike, string Right, string Exchange, string? TradingClass, string? Multiplier, string? ProviderContractId, ProviderDataProvenance Provenance);
@@ -66,42 +94,14 @@ public sealed record ProviderDataRequestReadModel(
     IReadOnlyList<ProviderHistoricalTick>? HistoricalTicks = null,
     ProviderAccountPnl? Pnl = null,
     IReadOnlyList<ProviderMarketRuleIncrement>? MarketRuleIncrements = null,
-    IBDataLineage? Lineage = null);
-
-/// <summary>
-/// Storage-facing, normalized provider result. Snapshot identities are stable across retries and
-/// restarts; <see cref="NormalizedPayload"/> is the portable serialized read model and lineage is
-/// retained separately so consumers need not recover it from an opaque payload.
-/// </summary>
-public sealed record IBDataResult(
-    string ResultIdentity,
-    string ProviderFamily,
-    string Capability,
-    string RequestIdentity,
-    string? SubscriptionIdentity,
-    string? Symbol,
-    string? AccountId,
-    DateTimeOffset CapturedAt,
-    ProviderDataRequestStatus LifecycleStatus,
-    string NormalizedPayload,
-    IBDataLineage Lineage);
-
-/// <summary>Bounded filter for durable IB materialized results.</summary>
-public sealed record IBDataResultQuery(
-    string? Capability = null,
-    string? RequestIdentity = null,
-    string? Symbol = null,
-    string? AccountId = null,
-    DateTimeOffset? CapturedFrom = null,
-    DateTimeOffset? CapturedTo = null,
-    int Limit = 500);
-
-/// <summary>Durable read/write seam for materialized IB observations and snapshots.</summary>
-public interface IIBDataResultStore
-{
-    ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);
-    ValueTask<IReadOnlyList<IBDataResult>> QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);
-}
+    IReadOnlyList<ProviderContractDetails>? ContractDetails = null,
+    IReadOnlyList<ProviderOptionChainDefinition>? OptionChainDefinitions = null,
+    IReadOnlyList<ProviderNewsHeadline>? NewsHeadlines = null,
+    ProviderNewsArticle? NewsArticle = null,
+    ProviderFundamentalReport? FundamentalReport = null,
+    IReadOnlyList<ProviderTickByTickObservation>? TickByTickObservations = null,
+    IReadOnlyList<ProviderDepthExchangeDescription>? DepthExchanges = null,
+    ProviderDividendEarnings? DividendEarnings = null);
 
 /// <summary>Shared read-model seam for rich provider data requested by an operator workflow.</summary>
 public interface IProviderDataReadService
