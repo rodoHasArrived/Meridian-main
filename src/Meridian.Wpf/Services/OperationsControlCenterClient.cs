@@ -20,13 +20,13 @@ public sealed class OperationsControlCenterClient : IOperationsControlCenterClie
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    public Task<OperationsApprovalPolicyMatrixDto?> GetApprovalPolicyMatrixAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<OperationsApprovalPolicyMatrixDto>(
+    public async Task<OperationsApprovalPolicyMatrixDto?> GetApprovalPolicyMatrixAsync(CancellationToken ct = default)
+        => (await _apiClient.GetWithResponseAsync<OperationsApprovalPolicyMatrixDto>(
             UiApiRoutes.OperationsContinuityApprovalPolicyMatrix,
-            ct);
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get approval policy matrix");
 
-    public Task<OperationsCloseCalendarDto?> GetCloseCalendarAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<OperationsCloseCalendarDto>(
+    public async Task<OperationsCloseCalendarDto?> GetCloseCalendarAsync(CancellationToken ct = default)
+        => (await _apiClient.GetWithResponseAsync<OperationsCloseCalendarDto>(
             UiApiRoutes.OperationsContinuityCloseCalendar,
-            ct);
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get close calendar");
 }

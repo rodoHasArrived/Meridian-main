@@ -1,8 +1,8 @@
-'# Summaries Archive
+# Summaries Archive
 
 **Status:** archived
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
 This bucket stores historical summaries, snapshots, one-off reports, and retrospectives that are retained for traceability but no longer define active implementation guidance.
 
@@ -14,7 +14,7 @@ This bucket stores historical summaries, snapshots, one-off reports, and retrosp
 - [Roadmap Registry](../../../docs/roadmap/README.md)
 
 ## Retired Summary Paths Preserved as Migration Stubs
-'
+
 - [2026-02_PR_SUMMARY.md](2026-02_PR_SUMMARY.md)
 - [2026-02_UI_IMPROVEMENTS_SUMMARY.md](2026-02_UI_IMPROVEMENTS_SUMMARY.md)
 - [2026-02_VISUAL_CODE_EXAMPLES.md](2026-02_VISUAL_CODE_EXAMPLES.md)
@@ -28,6 +28,7 @@ This bucket stores historical summaries, snapshots, one-off reports, and retrosp
 - [desktop-testing-guide.md](desktop-testing-guide.md)
 - [DOCUMENTATION_TRIAGE_2026_03_21.md](DOCUMENTATION_TRIAGE_2026_03_21.md)
 - [documentation-consolidation-inventory-2026-05-17.md](documentation-consolidation-inventory-2026-05-17.md)
+- [documentation-inventory-2026-07-19.md](documentation-inventory-2026-07-19.md)
 - [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
 - [FULL_IMPLEMENTATION_TODO.md](FULL_IMPLEMENTATION_TODO.md)
 - [health-dashboard-2026-05-04.md](health-dashboard-2026-05-04.md)

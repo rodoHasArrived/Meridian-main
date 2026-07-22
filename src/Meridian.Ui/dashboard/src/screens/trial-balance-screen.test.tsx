@@ -108,7 +108,7 @@ const journalLines: LedgerJournalLine[] = [
   }
 ];
 
-async function renderTrialBalanceScreen(initialEntry = "/accounting/trial-balance") {
+async function renderTrialBalanceScreen(initialEntry = "/accounting/ledger?view=trial-balance") {
   const result = renderWithRouter(<TrialBalanceScreen data={data} />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
@@ -116,7 +116,7 @@ async function renderTrialBalanceScreen(initialEntry = "/accounting/trial-balanc
 
 describe("TrialBalanceScreen", () => {
   it("renders a loading state while accounting workspace data is unavailable", async () => {
-    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/trial-balance"] });
+    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
     await waitForAsyncEffects();
 
     expect(screen.getByRole("status", { name: "Loading Trial Balance" })).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe("TrialBalanceScreen", () => {
 
   it("renders an empty state when there are no reconciliation runs", async () => {
     renderWithRouter(<TrialBalanceScreen data={{ ...data, reconciliationQueue: [] }} />, {
-      initialEntries: ["/accounting/trial-balance"]
+      initialEntries: ["/accounting/ledger?view=trial-balance"]
     });
     await waitForAsyncEffects();
 
@@ -135,7 +135,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
     await waitForAsyncEffects();
 
     expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42");
@@ -155,7 +155,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const filterInput = screen.getByPlaceholderText(/Account name, account id, type, symbol, or security/);
     await user.type(filterInput, "Apple");
@@ -170,7 +170,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
     await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
 
     await user.click(screen.getByRole("button", { name: "Hierarchy" }));
@@ -186,7 +186,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const journalLink = await screen.findByRole("link", { name: "Cash sweep" });
     expect(journalLink).toHaveAttribute(
@@ -199,7 +199,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockRejectedValueOnce(new Error("offline"));
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Journal lineage unavailable");
     expect(screen.getByRole("alert")).toHaveTextContent("posting drill-through is unavailable");
@@ -209,7 +209,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const securityLink = await screen.findByRole("link", { name: "Apple Inc." });
     expect(securityLink).toHaveAttribute("href", "/accounting/security-master/detail?securityId=sec-aapl");
@@ -219,7 +219,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([]);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();

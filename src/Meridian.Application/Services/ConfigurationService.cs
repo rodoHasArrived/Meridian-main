@@ -124,9 +124,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public DetectedProvider? GetBestRealTimeProvider()
     {
-        var eligibleProviders = GetProvidersByCapability("RealTime")
-            .Where(p => p.HasCredentials)
-            .ToList();
+        var eligibleProviders = GetEligibleRealTimeProviders();
 
         if (eligibleProviders.Count == 0)
             return null;
@@ -151,6 +149,21 @@ public sealed class ConfigurationService : IAsyncDisposable
                    string.Equals(provider.DisplayName, selected.ConnectionId, StringComparison.OrdinalIgnoreCase))
                ?? eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
     }
+
+    /// <summary>
+    /// Selects the best credentialed provider from static detection data only. Configuration
+    /// self-healing runs while the provider registry may still be under construction, so it must
+    /// not enter the runtime routing graph whose catalog depends on that registry.
+    /// </summary>
+    private DetectedProvider? GetBestDetectedRealTimeProvider()
+        => GetEligibleRealTimeProviders()
+            .OrderBy(static provider => provider.SuggestedPriority)
+            .FirstOrDefault();
+
+    private List<DetectedProvider> GetEligibleRealTimeProviders()
+        => GetProvidersByCapability("RealTime")
+            .Where(static provider => provider.HasCredentials)
+            .ToList();
 
     /// <summary>
     /// Gets available providers for historical data backfill.
@@ -330,7 +343,7 @@ public sealed class ConfigurationService : IAsyncDisposable
             strictness,
             _credentialResolver,
             _ibGatewayAvailabilityProbe,
-            GetBestRealTimeProvider);
+            GetBestDetectedRealTimeProvider);
 
         _log.Information("Self-healing applied {FixCount} fixes, {WarningCount} warnings",
             result.Applied.Count, result.Warnings.Count);
@@ -341,29 +354,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// <summary>
     /// Checks if IB Gateway/TWS is available on default ports.
     /// </summary>
-    public bool IsIBGatewayAvailable()
-    {
-        try
-        {
-            var ports = new[] { 7496, 7497, 4001, 4002 };
-            foreach (var port in ports)
-            {
-                using var client = new System.Net.Sockets.TcpClient();
-                var result = client.BeginConnect("127.0.0.1", port, null, null);
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
-                if (success && client.Connected)
-                {
-                    client.EndConnect(result);
-                    return true;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore connection errors
-        }
-        return false;
-    }
+    public bool IsIBGatewayAvailable() => IBGatewayProbe.IsAvailable();
 
 
 

@@ -6,15 +6,17 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-02
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian
 
-Consumer releases start this host through the installed Meridian launcher. The launcher
-owns dynamic loopback-port selection, first-account bootstrap, data-root separation,
-readiness polling, and browser launch. Direct host commands remain developer/operator
-surfaces, not end-user installation instructions.
+Consumer releases start this host through the persistent per-user lifecycle supervisor; the
+installed launcher is a thin shim. The supervisor owns dynamic loopback-port selection, the
+dedicated database and host process identities, data-root separation, readiness polling, shutdown
+deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
+sequence. Direct host commands remain developer/operator surfaces, not end-user installation
+instructions.
 
 ## Purpose
 
@@ -39,8 +41,9 @@ local workstation API process behavior, or production API binding policy.
 
 `ApiHost` configuration separates local workstation hosting from remote API deployment. The default
 `LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
-`ProductionApi` is the remote service posture for browser and WPF workstations; production
-auth-required startup rejects non-HTTPS bindings unless
+Required-auth production startup permits HTTP only when every `LocalWorkstation` binding is
+loopback. `ProductionApi` is the remote service posture for browser and WPF workstations; it rejects
+non-HTTPS bindings unless
 `AllowInsecureTransportForReverseProxy` is explicitly enabled for a trusted TLS-terminating proxy.
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.

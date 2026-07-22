@@ -159,7 +159,7 @@ public sealed class PostgresSecurityMasterRevisionStore : ISecurityMasterRevisio
     private static SecurityMasterRevisionRecord MapRevision(DbDataReader reader) => new(
         RevisionId: reader.GetGuid(0),
         SecurityId: reader.GetGuid(1),
-        State: Enum.Parse<SecurityMasterRevisionStateDto>(reader.GetString(2), ignoreCase: true),
+        State: SecurityMasterEnumReads.ParseOrFallback(reader.GetString(2), SecurityMasterRevisionStateDto.Unknown),
         Actor: reader.GetString(3),
         CreatedAt: new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
         UpdatedAt: new DateTimeOffset(reader.GetDateTime(5), TimeSpan.Zero),

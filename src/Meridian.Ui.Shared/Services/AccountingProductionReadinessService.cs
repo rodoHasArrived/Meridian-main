@@ -161,6 +161,11 @@ public sealed class AccountingProductionReadinessService
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var retainedEvidence = request.RetainedEvidence
+            .Concat(profile.RetainedEvidence)
+            .Where(AccountingProductionCertificationEvidenceValidator.IsEligible)
+            .DistinctBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var workflowArtifacts = request.WorkflowCertificationArtifacts
             .Concat(profile.WorkflowCertificationArtifacts)
             .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
@@ -193,6 +198,7 @@ public sealed class AccountingProductionReadinessService
             TrialBalanceDimensionFiltersCertified = request.TrialBalanceDimensionFiltersCertified || profile.TrialBalanceDimensionFiltersCertified,
             ReportPackageDimensionProvenanceCertified = request.ReportPackageDimensionProvenanceCertified || profile.ReportPackageDimensionProvenanceCertified,
             DimensionalReportingEvidenceLinks = dimensionalEvidence,
+            RetainedEvidence = retainedEvidence,
             WorkflowCertificationArtifacts = workflowArtifacts,
             DimensionalCertificationArtifacts = dimensionalArtifacts,
             TenantAdminCertificationArtifacts = tenantAdminArtifacts
@@ -201,43 +207,11 @@ public sealed class AccountingProductionReadinessService
 
     private static IReadOnlyList<string> BuildProductionProfileWorkflowEvidence(
         AccountingProductionCertificationProfileDto profile)
-    {
-        var evidence = RetainedProductionProfileEvidence(profile).ToList();
-        if (profile.LedgerBookId is not Guid ledgerBookId)
-        {
-            return evidence;
-        }
-
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.PostingRulesLedgerBookNativeCertified, "posting-rules");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.JournalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.CloseReportingLedgerBookNativeCertified, "close-reporting");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ClosePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ExternalGlLedgerBookNativeCertified, "external-gl");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ReconciliationLedgerBookNativeCertified, "reconciliation");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.DirectLendingLedgerBookNativeCertified, "direct-lending");
-        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.StrategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
-        return evidence;
-    }
+        => RetainedProductionProfileEvidence(profile).ToArray();
 
     private static IReadOnlyList<string> BuildProductionProfileDimensionalEvidence(
         AccountingProductionCertificationProfileDto profile)
-    {
-        var evidence = RetainedProductionProfileEvidence(profile).ToList();
-        if (profile.LedgerBookId is not Guid ledgerBookId)
-        {
-            return evidence;
-        }
-
-        var dimensionScope = ResolveDimensionScopeEvidenceSegment(profile);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.PeriodReportDimensionQueriesCertified, "period-report", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.CrossPeriodReportDimensionQueriesCertified, "cross-period", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.JournalQueryDimensionFiltersCertified, "journal-query", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.ExternalExportDimensionMappingCertified, "external-export", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.LedgerLineDimensionsPersistedCertified, "ledger-line", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.TrialBalanceDimensionFiltersCertified, "trial-balance-filter", dimensionScope);
-        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.ReportPackageDimensionProvenanceCertified, "report-package-provenance", dimensionScope);
-        return evidence;
-    }
+        => RetainedProductionProfileEvidence(profile).ToArray();
 
     private static IEnumerable<string> RetainedProductionProfileEvidence(AccountingProductionCertificationProfileDto profile)
         => profile.EvidenceReferences
@@ -250,72 +224,6 @@ public sealed class AccountingProductionReadinessService
            reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
            reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
            reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase);
-
-    private static void AddProfileEvidence(
-        ICollection<string> evidence,
-        AccountingProductionCertificationProfileDto profile,
-        Guid ledgerBookId,
-        string category,
-        bool certified,
-        string segment,
-        string? dimensionScope = null)
-    {
-        if (!certified)
-        {
-            return;
-        }
-
-        var tenant = Uri.EscapeDataString(TrimOrNull(profile.TenantId) ?? "tenant");
-        var company = Uri.EscapeDataString(TrimOrNull(profile.CompanyId) ?? "company");
-        var fund = Uri.EscapeDataString(NormalizeFundProfileId(profile.FundProfileId));
-        var scopeSuffix = string.IsNullOrWhiteSpace(dimensionScope)
-            ? string.Empty
-            : $"/dimension-scope/{Uri.EscapeDataString(dimensionScope)}";
-        evidence.Add($"evidence://tenant/{tenant}/company/{company}/fund/{fund}/ledger-book/{ledgerBookId:D}/{category}/{segment}/retained-production-profile{scopeSuffix}");
-    }
-
-    private static string ResolveDimensionScopeEvidenceSegment(AccountingProductionCertificationProfileDto profile)
-    {
-        foreach (var reference in profile.EvidenceReferences)
-        {
-            var scope = TryReadEvidenceSegment(reference, "dimension-scope/");
-            if (!string.IsNullOrWhiteSpace(scope))
-            {
-                return scope;
-            }
-
-            scope = TryReadEvidenceSegment(reference, "dimension-scope:");
-            if (!string.IsNullOrWhiteSpace(scope))
-            {
-                return scope;
-            }
-        }
-
-        return "retained-production-profile";
-    }
-
-    private static string? TryReadEvidenceSegment(string? reference, string marker)
-    {
-        if (string.IsNullOrWhiteSpace(reference))
-        {
-            return null;
-        }
-
-        var index = reference.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
-        {
-            return null;
-        }
-
-        var start = index + marker.Length;
-        var end = start;
-        while (end < reference.Length && !IsEvidenceTokenBoundary(reference[end]))
-        {
-            end++;
-        }
-
-        return end > start ? reference[start..end] : null;
-    }
 
     private static AccountingProductionReadinessRequestDto MergeTenantAdministrationProfile(
         AccountingProductionReadinessRequestDto request,
@@ -370,6 +278,11 @@ public sealed class AccountingProductionReadinessService
             ? request.WorkflowCertificationArtifacts
                 .Where(artifact =>
                     artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    HasCompleteCertificationMetadata(
+                        artifact.CertificationId,
+                        artifact.CertifiedBy,
+                        artifact.CertifiedAtUtc,
+                        artifact.SourceService) &&
                     artifact.LedgerBookId == ledgerBookId.Value &&
                     string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
                     ScopeMatches(artifact.TenantId, request.TenantId) &&
@@ -385,6 +298,11 @@ public sealed class AccountingProductionReadinessService
             ? request.DimensionalCertificationArtifacts
                 .Where(artifact =>
                     artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    HasCompleteCertificationMetadata(
+                        artifact.CertificationId,
+                        artifact.CertifiedBy,
+                        artifact.CertifiedAtUtc,
+                        artifact.SourceService) &&
                     artifact.LedgerBookId == ledgerBookId.Value &&
                     !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
                     string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
@@ -399,15 +317,33 @@ public sealed class AccountingProductionReadinessService
         => request.TenantAdminCertificationArtifacts
             .Where(artifact =>
                 artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                HasCompleteCertificationMetadata(
+                    artifact.CertificationId,
+                    artifact.CertifiedBy,
+                    artifact.CertifiedAtUtc,
+                    artifact.SourceService) &&
                 string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(TrimOrNull(artifact.TenantId), TrimOrNull(request.TenantId), StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(TrimOrNull(artifact.CompanyId), TrimOrNull(request.CompanyId), StringComparison.OrdinalIgnoreCase) &&
-                (!request.LedgerBookId.HasValue || artifact.LedgerBookId == request.LedgerBookId.Value))
+                ScopeMatches(artifact.TenantId, request.TenantId) &&
+                ScopeMatches(artifact.CompanyId, request.CompanyId) &&
+                request.LedgerBookId.HasValue &&
+                artifact.LedgerBookId == request.LedgerBookId.Value)
             .ToArray();
 
     private static bool ScopeMatches(string? artifactScope, string? requestScope)
-        => string.IsNullOrWhiteSpace(requestScope) ||
+        => !string.IsNullOrWhiteSpace(artifactScope) &&
+           !string.IsNullOrWhiteSpace(requestScope) &&
            string.Equals(TrimOrNull(artifactScope), TrimOrNull(requestScope), StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasCompleteCertificationMetadata(
+        string? certificationId,
+        string? certifiedBy,
+        DateTimeOffset certifiedAtUtc,
+        string? sourceService)
+        => !string.IsNullOrWhiteSpace(certificationId) &&
+           !string.IsNullOrWhiteSpace(certifiedBy) &&
+           certifiedAtUtc != default &&
+           certifiedAtUtc.Offset == TimeSpan.Zero &&
+           !string.IsNullOrWhiteSpace(sourceService);
 
     private static bool HasPassedWorkflowLane(
         IEnumerable<AccountingWorkflowCertificationArtifactDto> artifacts,
@@ -449,16 +385,21 @@ public sealed class AccountingProductionReadinessService
         var workflowEvidence = NormalizeEvidenceReferences(
             request.LedgerBookWorkflowEvidenceLinks.Concat(workflowArtifacts.SelectMany(ArtifactEvidenceReferences)));
         var workflowReadiness = new AccountingLedgerBookWorkflowReadinessDto(
-            request.LedgerBookId,
-            request.PostingRulesLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.PostingRules),
-            request.JournalLifecycleLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle),
-            request.CloseReportingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.CloseReporting),
-            request.ClosePlanConfigurationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration),
-            request.ExternalGlLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ExternalGl),
-            request.ReconciliationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.Reconciliation),
-            request.DirectLendingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection),
-            request.StrategyLedgerReadLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads),
-            workflowEvidence);
+            LedgerBookId: request.LedgerBookId,
+            PostingRulesLedgerBookNativeCertified: request.PostingRulesLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.PostingRules),
+            JournalLifecycleLedgerBookNativeCertified: request.JournalLifecycleLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle),
+            CloseReportingLedgerBookNativeCertified: request.CloseReportingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.CloseReporting),
+            ClosePlanConfigurationLedgerBookNativeCertified: request.ClosePlanConfigurationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration),
+            ExternalGlLedgerBookNativeCertified: request.ExternalGlLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ExternalGl),
+            ReconciliationLedgerBookNativeCertified: request.ReconciliationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.Reconciliation),
+            DirectLendingLedgerBookNativeCertified: request.DirectLendingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection),
+            StrategyLedgerReadLedgerBookNativeCertified: request.StrategyLedgerReadLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads),
+            EvidenceReferences: workflowEvidence,
+            RetainedEvidence: request.RetainedEvidence,
+            TenantId: request.TenantId,
+            CompanyId: request.CompanyId,
+            FundProfileId: fundProfileId,
+            CertificationArtifacts: workflowArtifacts);
         var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness, request, fundProfileId);
         var service = _services.GetService<ILedgerBookService>();
         if (service is null)
@@ -559,20 +500,6 @@ public sealed class AccountingProductionReadinessService
                 "Retain workflow certification evidence that names the selected ledgerBookId before production rollout.",
                 readiness.EvidenceReferences));
         }
-        else if (readiness.HasLedgerBookScope &&
-                 readiness.HasLedgerBookScopedEvidence &&
-                 HasRolloutScope(request, fundProfileId) &&
-                 !HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, readiness.LedgerBookId))
-        {
-            issues.Add(Issue(
-                "ledger-books.workflow-evidence-rollout-scope-mismatch",
-                AccountingProductionReadinessAreaDto.LedgerBooks,
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Ledger-book-native workflow certification evidence does not identify the selected tenant, company, fund, and ledger book.",
-                "Retain workflow certification evidence that names the authenticated tenant, company, fund profile, and selected ledgerBookId before production rollout.",
-                readiness.EvidenceReferences));
-        }
-
         if (!readiness.PostingRulesLedgerBookNativeCertified)
         {
             issues.Add(Issue(
@@ -888,72 +815,31 @@ public sealed class AccountingProductionReadinessService
         }
     }
 
-    private async Task<AccountingDimensionalReportingReadinessDto> BuildDimensionalReportingReadinessAsync(
+    private static Task<AccountingDimensionalReportingReadinessDto> BuildDimensionalReportingReadinessAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
         CancellationToken ct)
     {
-        var retainedPackageEvidence = await LoadCertifiedReportPackageDimensionEvidenceAsync(request, fundProfileId, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
         var dimensionalArtifacts = CertifiedDimensionalArtifacts(request, fundProfileId, request.LedgerBookId);
         var evidenceReferences = NormalizeEvidenceReferences(
             request.DimensionalReportingEvidenceLinks
-                .Concat(retainedPackageEvidence)
                 .Concat(dimensionalArtifacts.SelectMany(ArtifactEvidenceReferences)));
-        return new AccountingDimensionalReportingReadinessDto(
-            request.LedgerBookId,
-            request.PeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.PeriodReports),
-            request.CrossPeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports),
-            request.JournalQueryDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.JournalFilters),
-            request.ExternalExportDimensionMappingCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings),
-            request.LedgerLineDimensionsPersistedCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence),
-            request.TrialBalanceDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters),
-            request.ReportPackageDimensionProvenanceCertified || retainedPackageEvidence.Count > 0 || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance),
-            evidenceReferences);
-    }
-
-    private async Task<IReadOnlyList<string>> LoadCertifiedReportPackageDimensionEvidenceAsync(
-        AccountingProductionReadinessRequestDto request,
-        string fundProfileId,
-        CancellationToken ct)
-    {
-        if (!request.LedgerBookId.HasValue)
-        {
-            return [];
-        }
-
-        var service = _services.GetService<IAccountingReportPackageService>();
-        if (service is null)
-        {
-            return [];
-        }
-
-        var packages = await service
-            .ListPackagesAsync(fundProfileId, null, request.LedgerBookId, null, request.TenantId, request.CompanyId, ct)
-            .ConfigureAwait(false);
-        return packages
-            .Where(static package => package.Certification.State == AccountingCertificationStateDto.Certified)
-            .Select(package => BuildReportPackageDimensionEvidenceReference(package, request.LedgerBookId.Value))
-            .Where(static reference => !string.IsNullOrWhiteSpace(reference))
-            .Select(static reference => reference!)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static string? BuildReportPackageDimensionEvidenceReference(
-        AccountingReportPackageBundleDto package,
-        Guid ledgerBookId)
-    {
-        var scope = package.DimensionScope;
-        if (scope is null ||
-            !scope.HasExplicitScope ||
-            scope.LedgerBookId != ledgerBookId ||
-            string.IsNullOrWhiteSpace(scope.ScopeHash))
-        {
-            return null;
-        }
-
-        return $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-package-provenance/{package.FinancialStatements.PackageId}/dimension-scope/{scope.ScopeHash}";
+        return Task.FromResult(new AccountingDimensionalReportingReadinessDto(
+            LedgerBookId: request.LedgerBookId,
+            PeriodReportDimensionQueriesCertified: request.PeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.PeriodReports),
+            CrossPeriodReportDimensionQueriesCertified: request.CrossPeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports),
+            JournalQueryDimensionFiltersCertified: request.JournalQueryDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.JournalFilters),
+            ExternalExportDimensionMappingCertified: request.ExternalExportDimensionMappingCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings),
+            LedgerLineDimensionsPersistedCertified: request.LedgerLineDimensionsPersistedCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence),
+            TrialBalanceDimensionFiltersCertified: request.TrialBalanceDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters),
+            ReportPackageDimensionProvenanceCertified: request.ReportPackageDimensionProvenanceCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance),
+            EvidenceReferences: evidenceReferences,
+            RetainedEvidence: request.RetainedEvidence,
+            TenantId: request.TenantId,
+            CompanyId: request.CompanyId,
+            FundProfileId: fundProfileId,
+            CertificationArtifacts: dimensionalArtifacts));
     }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
@@ -1001,20 +887,6 @@ public sealed class AccountingProductionReadinessService
                 "Retain dimensional reporting evidence that names the selected ledgerBookId before production rollout.",
                 readiness.EvidenceReferences));
         }
-        else if (readiness.HasLedgerBookScope &&
-                 readiness.HasLedgerBookScopedEvidence &&
-                 HasRolloutScope(request, fundProfileId) &&
-                 !HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, readiness.LedgerBookId))
-        {
-            issues.Add(Issue(
-                "dimensions.reporting-evidence-rollout-scope-mismatch",
-                AccountingProductionReadinessAreaDto.DimensionalAccounting,
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Dimensional reporting certification evidence does not identify the selected tenant, company, fund, and ledger book.",
-                "Retain dimensional reporting evidence that names the authenticated tenant, company, fund profile, and selected ledgerBookId before production reporting rollout.",
-                readiness.EvidenceReferences));
-        }
-
         if (readiness.HasRetainedEvidence &&
             readiness.HasLedgerBookScopedEvidence &&
             !readiness.HasExplicitDimensionScopeEvidence)
@@ -1624,7 +1496,11 @@ public sealed class AccountingProductionReadinessService
             PostingRuleAuthoringStudioConfigured: request.PostingRuleAuthoringStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio),
             ApprovalQueueStudioConfigured: request.ApprovalQueueStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio),
             DimensionMappingStudioConfigured: request.DimensionMappingStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio),
-            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox));
+            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox),
+            RetainedEvidence: request.RetainedEvidence,
+            FundProfileId: fundProfileId,
+            LedgerBookId: request.LedgerBookId,
+            CertificationArtifacts: tenantAdminArtifacts);
         var issues = new List<AccountingProductionReadinessIssueDto>();
         AddLegacyFullTokenWarning(
             issues,
@@ -3131,7 +3007,7 @@ public sealed class AccountingProductionReadinessService
     {
         IReadOnlyList<string> evidence = evidenceReferences is { Count: > 0 }
             ? evidenceReferences
-            : route is null ? Array.Empty<string>() : [route];
+            : Array.Empty<string>();
         return new(area, label, status, Math.Clamp(score, 0, 100), summary, issues, evidence, route);
     }
 
@@ -3143,66 +3019,19 @@ public sealed class AccountingProductionReadinessService
            !string.IsNullOrWhiteSpace(fundProfileId) &&
            request.LedgerBookId.HasValue;
 
-    private static bool HasRolloutScopedEvidence(
-        IEnumerable<string> evidenceReferences,
-        AccountingProductionReadinessRequestDto request,
-        string fundProfileId,
-        Guid? ledgerBookId)
-    {
-        if (string.IsNullOrWhiteSpace(request.TenantId) ||
-            string.IsNullOrWhiteSpace(request.CompanyId) ||
-            string.IsNullOrWhiteSpace(fundProfileId) ||
-            !ledgerBookId.HasValue)
-        {
-            return false;
-        }
-
-        return evidenceReferences.Any(reference => IsRolloutScopedEvidenceReference(reference, request, fundProfileId, ledgerBookId.Value));
-    }
-
     private static bool HasRolloutScopedDimensionEvidence(
         AccountingDimensionalReportingReadinessDto readiness,
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
         params string[] aliases)
     {
-        if (!HasRolloutScope(request, fundProfileId) ||
-            readiness.LedgerBookId is not Guid ledgerBookId)
-        {
-            return true;
-        }
-
-        if (!HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, ledgerBookId))
-        {
-            return false;
-        }
-
-        return readiness.EvidenceReferences.Any(reference =>
-            IsRolloutScopedEvidenceReference(reference, request, fundProfileId, ledgerBookId) &&
-            ReferencesDimensionScopeEvidence(reference) &&
-            (reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
-             reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
-             reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
-             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+        _ = aliases;
+        return HasRolloutScope(request, fundProfileId) &&
+               readiness.LedgerBookId == request.LedgerBookId &&
+               string.Equals(readiness.TenantId?.Trim(), request.TenantId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(readiness.CompanyId?.Trim(), request.CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(readiness.FundProfileId?.Trim(), fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool IsRolloutScopedEvidenceReference(
-        string? reference,
-        AccountingProductionReadinessRequestDto request,
-        string fundProfileId,
-        Guid ledgerBookId)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           ReferencesEvidenceToken(reference, request.TenantId!) &&
-           ReferencesEvidenceToken(reference, request.CompanyId!) &&
-           ReferencesEvidenceToken(reference, fundProfileId) &&
-           ReferencesLedgerBookEvidence(reference, ledgerBookId);
-
-    private static bool ReferencesDimensionScopeEvidence(string? reference)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           (reference.Contains("dimension-scope:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("dimension-scope/", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set/", StringComparison.OrdinalIgnoreCase));
 
     private static AccountingProductionReadinessIssueDto DimensionEvidenceRolloutScopeIssue(
         string code,
@@ -3249,62 +3078,10 @@ public sealed class AccountingProductionReadinessService
         IEnumerable<string> evidenceReferences,
         params string[] aliases)
     {
-        if (request.LedgerBookId is not Guid ledgerBookId)
-        {
-            return true;
-        }
-
-        return evidenceReferences.Any(reference =>
-            !string.IsNullOrWhiteSpace(reference) &&
-            reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
-            ReferencesLedgerBookEvidence(reference, ledgerBookId) &&
-            (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
-             reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
-             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+        _ = evidenceReferences;
+        _ = aliases;
+        return request.LedgerBookId.HasValue;
     }
-
-    private static bool ReferencesLedgerBookEvidence(string reference, Guid ledgerBookId)
-    {
-        var ledgerBookText = ledgerBookId.ToString("D");
-        return ReferencesEvidenceToken(reference, ledgerBookText);
-    }
-
-    private static bool ReferencesEvidenceToken(string reference, string token)
-    {
-        if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-
-        var comparison = StringComparison.OrdinalIgnoreCase;
-        var searchIndex = 0;
-        while (searchIndex < reference.Length)
-        {
-            var tokenIndex = reference.IndexOf(token, searchIndex, comparison);
-            if (tokenIndex < 0)
-            {
-                return false;
-            }
-
-            var before = tokenIndex == 0 ? '\0' : reference[tokenIndex - 1];
-            var afterIndex = tokenIndex + token.Length;
-            var after = afterIndex >= reference.Length ? '\0' : reference[afterIndex];
-
-            if (IsEvidenceTokenBoundary(before) && IsEvidenceTokenBoundary(after))
-            {
-                return true;
-            }
-
-            searchIndex = tokenIndex + token.Length;
-        }
-
-        return false;
-    }
-
-    private static bool IsEvidenceTokenBoundary(char value)
-        => value == '\0' ||
-           char.IsWhiteSpace(value) ||
-           value is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}';
 
     private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(
         IReadOnlyCollection<AccountingProductionReadinessComponentDto> components)

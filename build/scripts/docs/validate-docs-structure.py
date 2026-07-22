@@ -32,10 +32,10 @@ from pathlib import Path
 # and should be excluded from hand-authored structure checks.
 GENERATED_DIRS = {"generated", "_site"}
 
-# Canonical top-level folders for the documentation rebuild. Legacy folders are still allowed
-# during migration, but this list is used to report which active lanes belong to the target model.
+# Canonical top-level folders for the current documentation model.
 CANONICAL_TOP_LEVEL_DIRS = {
     "ai",
+    "architecture",
     "domain",
     "engineering",
     "generated",
@@ -47,33 +47,26 @@ CANONICAL_TOP_LEVEL_DIRS = {
     "start",
 }
 
-# Legacy folders allowed during the staged documentation rebuild. These folders should not be used
-# as new canonical destinations; they remain so current content can be mined, redirected, generated,
-# or archived in reviewable batches.
-LEGACY_TOP_LEVEL_DIRS = {
+# Active specialist and automation-owned folders that are routed through a canonical entrypoint.
+# These are supported locations, but they must not compete with their canonical owner for durable
+# product, roadmap, source-module, or workflow truth.
+SUPPORTING_TOP_LEVEL_DIRS = {
     "adr",
-    "api",
-    "architecture",
-    "audits",
-    "design",
-    "developer",
     "development",
     "diagrams",
     "docfx",
-    "evaluations",
     "examples",
-    "getting-started",
     "integrations",
-    "operations",
-    "plans",
     "prompts",
-    "providers",
     "screenshots",
     "security",
     "status",
     "testing",
-    "ui",
 }
+
+# Compatibility lanes that still have active tool, test, or strong-link consumers. They remain
+# allowed but warn so new durable guidance is not added there.
+TRANSITIONAL_TOP_LEVEL_DIRS = {"operations", "plans"}
 
 # Directories that are exempt from README requirement (meta files at top level)
 README_EXEMPT_FILES = {"README.md", "HELP.md", "DEPENDENCIES.md", "toc.yml"}
@@ -135,26 +128,31 @@ def check_readme_exists(docs_dir: Path, github_actions: bool) -> list[str]:
 
 
 def check_canonical_model(docs_dir: Path, github_actions: bool) -> list[str]:
-    """Return warnings for missing canonical rebuild folders."""
+    """Return warnings for missing canonical documentation folders."""
     warnings = []
     for name in sorted(CANONICAL_TOP_LEVEL_DIRS):
         path = docs_dir / name
         if not path.is_dir():
-            msg = f"Missing canonical docs rebuild folder docs/{name}/"
+            msg = f"Missing canonical documentation folder docs/{name}/"
             emit("warning", str(path), msg, github_actions)
             warnings.append(msg)
     return warnings
 
 
 def check_top_level_model(docs_dir: Path, github_actions: bool) -> tuple[list[str], list[str]]:
-    """Validate top-level docs folders against the rebuild model.
+    """Validate top-level docs folders against the current documentation model.
 
-    Returns (errors, warnings). Unknown folders are errors because they would create another
-    ambiguous taxonomy. Known legacy folders are warnings so the staged migration can proceed.
+    Returns (errors, warnings). Unknown or retired folders are errors because they would create
+    another ambiguous taxonomy. Transitional compatibility folders warn until their consumers move.
     """
     errors = []
     warnings = []
-    allowed = CANONICAL_TOP_LEVEL_DIRS | LEGACY_TOP_LEVEL_DIRS | GENERATED_DIRS
+    allowed = (
+        CANONICAL_TOP_LEVEL_DIRS
+        | SUPPORTING_TOP_LEVEL_DIRS
+        | TRANSITIONAL_TOP_LEVEL_DIRS
+        | GENERATED_DIRS
+    )
 
     for subdir in sorted(docs_dir.iterdir()):
         if not subdir.is_dir() or subdir.name.startswith("."):
@@ -163,16 +161,15 @@ def check_top_level_model(docs_dir: Path, github_actions: bool) -> tuple[list[st
         if subdir.name not in allowed:
             msg = (
                 f"Unexpected top-level docs folder docs/{subdir.name}/. "
-                "Choose docs/start, docs/product, docs/engineering, docs/operators, "
-                "docs/reference, docs/ai, docs/roadmap, docs/source, docs/generated, "
-                "or archive/docs."
+                "Choose a documented canonical or supporting lane from docs/documentation-inventory.md, "
+                "or use archive/docs for historical material."
             )
             emit("error", str(rel), msg, github_actions)
             errors.append(msg)
-        elif subdir.name in LEGACY_TOP_LEVEL_DIRS:
+        elif subdir.name in TRANSITIONAL_TOP_LEVEL_DIRS:
             msg = (
-                f"Known legacy/source-material folder docs/{subdir.name}/ remains during migration; "
-                "do not add new canonical docs here."
+                f"Transitional compatibility folder docs/{subdir.name}/ is retained for active "
+                "tooling or strong-link consumers; do not add new durable guidance here."
             )
             emit("warning", str(rel), msg, github_actions)
             warnings.append(msg)
@@ -338,8 +335,8 @@ def main() -> int:
             print("  OK All subdirectories have README.md")
         print()
 
-        # ── Check 1b: Canonical rebuild model ────────────────────────────────
-        print("Check 1b: Canonical documentation rebuild folders are present")
+        # ── Check 1b: Canonical documentation model ─────────────────────────
+        print("Check 1b: Canonical documentation folders are present")
         canonical_warnings = check_canonical_model(docs_dir, args.github_actions)
         if not canonical_warnings:
             print("  OK Canonical rebuild folders are present")
@@ -348,14 +345,14 @@ def main() -> int:
         print()
 
         # ── Check 1c: Top-level taxonomy guard ───────────────────────────────
-        print("Check 1c: Top-level docs folders match the rebuild model")
+        print("Check 1c: Top-level docs folders match the current model")
         top_level_errors, top_level_warnings = check_top_level_model(docs_dir, args.github_actions)
         if not top_level_errors and not top_level_warnings:
-            print("  OK Top-level docs folders are canonical")
+            print("  OK Top-level docs folders match canonical and supporting lanes")
         else:
             print(
                 f"  Found {len(top_level_errors)} top-level folder error(s), "
-                f"{len(top_level_warnings)} migration warning(s) — see above for details."
+                f"{len(top_level_warnings)} transition warning(s) — see above for details."
             )
         print()
 

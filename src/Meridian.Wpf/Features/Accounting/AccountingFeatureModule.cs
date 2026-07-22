@@ -18,6 +18,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
@@ -27,6 +28,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
+using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +69,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
         services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        // Operator accounting-configuration traffic goes through the server's governed HTTP
+        // surface (audit finding P8) so the server stays the single writer and stamps the
+        // session actor; the in-process IAccountingConfigurationService below remains for
+        // background workers that have not yet migrated.
+        services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
@@ -110,6 +117,14 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAccountingPositionSnapshotCaptureService>(sp =>
+            new AccountingPositionSnapshotCaptureService(
+                sp.GetService<IPositionSnapshotStore>(),
+                sp.GetService<IDailyValuationPortfolioSource>(),
+                sp.GetService<IAutomatedJournalScheduleStore>(),
+                sp.GetService<IAccountQueryService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
         services.TryAddSingleton<IAutomatedJournalDividendPositionResolver>(sp =>
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
@@ -162,7 +177,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<AutomatedJournalIntakeRunner>(),
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
-                sp.GetService<ILedgerBookService>()));
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
@@ -210,10 +227,28 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
+            sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
+            ?? throw new InvalidOperationException(
+                "The configured accounting posting candidate write builder must also implement " +
+                $"{nameof(IAccountingPostingCandidateAuthorityBuilder)}."));
+        services.TryAddSingleton<IAssetAccountingEventSpineService>(sp =>
+            AssetAccountingEventSpineService.TryCreate(
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IInstrumentPositionProjectionStore>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingPolicyService>(),
+                sp.GetService<IAccountingConfigurationService>(),
+                sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
+                sp.GetService<ILedgerJournalStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IAtomicTaxLotJournalStore>(),
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(

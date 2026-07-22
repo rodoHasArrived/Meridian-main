@@ -237,14 +237,18 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Abort in-flight requests on unmount or symbol change so rapid symbol
+    // switching does not leave four stale requests running per hop.
+    const controller = new AbortController();
+    const { signal } = controller;
     setLoading(true);
     setNotFound(false);
 
     Promise.all([
-      getSecurityDetail(securityId),
-      getSecurityIdentity(securityId).catch(() => null),
-      getCorporateActions(securityId).catch(() => []),
-      getTradingParameters(securityId).catch(() => null)
+      getSecurityDetail(securityId, { signal }),
+      getSecurityIdentity(securityId, { signal }).catch(() => null),
+      getCorporateActions(securityId, { signal }).catch(() => []),
+      getTradingParameters(securityId, { signal }).catch(() => null)
     ])
       .then(([detail, identityResult, corporateActionsResult, tradingParametersResult]) => {
         if (cancelled) {
@@ -270,6 +274,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [securityId]);
 

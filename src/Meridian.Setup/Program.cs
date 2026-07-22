@@ -17,6 +17,7 @@ internal static class Program
         try
         {
             Directory.CreateDirectory(installRoot);
+            StopOwnedRuntime(installRoot);
             ExtractPayload(installRoot);
             var installedSetup = Path.Combine(installRoot, "Meridian-Setup.exe");
             if (!string.Equals(Environment.ProcessPath, installedSetup, StringComparison.OrdinalIgnoreCase))
@@ -79,6 +80,7 @@ internal static class Program
     {
         try
         {
+            StopOwnedRuntime(installRoot);
             var shortcut = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs", "Meridian.url");
             if (File.Exists(shortcut)) File.Delete(shortcut);
             Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\Meridian", false);
@@ -90,6 +92,29 @@ internal static class Program
         catch (Exception ex) { Show($"Meridian could not be removed. Your data was not changed.\n\n{ex.Message}"); return 1; }
     }
 
-    private static void Show(string message) =>
-        Process.Start(new ProcessStartInfo("mshta.exe", $"javascript:alert('{message.Replace("'", "").Replace("\n", "\\n")}');close()") { UseShellExecute = true });
+    private static void Show(string message)
+        => NativeMessageBox(IntPtr.Zero, message, "Meridian Setup", 0x00000010);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "MessageBoxW")]
+    private static extern int NativeMessageBox(IntPtr windowHandle, string text, string caption, uint type);
+
+    private static void StopOwnedRuntime(string installRoot)
+    {
+        var supervisor = Path.Combine(installRoot, "Meridian.LifecycleSupervisor.exe");
+        if (!File.Exists(supervisor)) return;
+
+        var start = new ProcessStartInfo(supervisor)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = installRoot
+        };
+        start.ArgumentList.Add("stop");
+        using var process = Process.Start(start);
+        if (process is null) throw new InvalidOperationException("Could not request Meridian shutdown before setup.");
+        if (!process.WaitForExit((int)TimeSpan.FromSeconds(140).TotalMilliseconds))
+            throw new TimeoutException("Meridian did not stop before setup's file-replacement deadline.");
+        if (process.ExitCode is not (0 or 3))
+            throw new InvalidOperationException($"Meridian lifecycle shutdown failed with exit code {process.ExitCode}.");
+    }
 }

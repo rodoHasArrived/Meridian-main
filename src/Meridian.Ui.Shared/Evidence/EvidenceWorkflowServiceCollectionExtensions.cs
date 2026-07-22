@@ -20,6 +20,14 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddSingleton(sp => new StatementImportEvidenceBridge(
             sp.GetRequiredService<IEvidenceArtifactStore>(),
             FileEvidenceArtifactStore.ResolveDataRoot(sp)));
+        services.TryAddSingleton<IStatementImportEvidenceRetainer>(sp =>
+            sp.GetRequiredService<StatementImportEvidenceBridge>());
+        services.TryAddSingleton(sp => new StatementToReportWorkflowService(
+            sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService>(),
+            sp.GetRequiredService<IStatementImportEvidenceRetainer>(),
+            sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowService>(),
+            FileEvidenceArtifactStore.ResolveDataRoot(sp),
+            sp.GetService<ILogger<StatementToReportWorkflowService>>()));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, StrategyRunEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, TradingReadinessEvidenceContributor>());

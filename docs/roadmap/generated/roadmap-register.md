@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-07-11
+Snapshot date: 2026-07-21
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -259,11 +259,11 @@ Completed the shared multi-asset operations proof lane by exposing Security Mast
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-07-02 |
+| Last reviewed | 2026-07-18 |
 
 ### Current Summary
 
-Delivered 2026-07-02. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. Scheduled fetches run through persisted schedules with duplicate-key idempotency; the Accounting workspace gains an Import Statement surface with a live mapping-profile editor.
+Delivered 2026-07-02 and completed operator scheduled-fetch coverage 2026-07-18. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. The Accounting Import Statement surface now accepts file upload or remote provider preview, provides a live mapping-profile editor, and lets operators create, edit, pause, delete, refresh, and run persisted broker- or custodian-classified fetch schedules. Duplicate-key idempotency is preserved; transient scheduled-fetch failures do not advance the successful watermark or expose exception messages.
 
 ### Exit Criteria
 
@@ -462,6 +462,33 @@ Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion 
 - `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`
 
+## W8-UX-CONSOL-001 - Browser workstation screen consolidation
+| Field | Value |
+| --- | --- |
+| Wave | W8 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | medium |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-19 |
+
+### Current Summary
+
+Reduces standalone browser-workstation screens by folding closely related tools into deeper host screens behind the seven charter root workspaces. Phase 1 folds Trial Balance into the Ledger Explorer and the Formula Workbench into Quant Lab; Phase 2 canonicalizes the Evidence Workbench to a single Reporting home; Phase 3 merges Live Quotes, Watchlist, and Price Alerts into one Market Data desk. Every retired route remains a redirect that preserves query and hash scope, and the WPF parity matrix is refreshed in the same change as each fold. Reporting run-flow consolidation and reconciliation module extraction are sequenced as later phases.
+
+### Exit Criteria
+
+- Retired screen routes redirect to their host screens with query and hash scope preserved.
+- Sidebar sub-items, the workstation route catalog, mounted routes, and command palette route commands stay one taxonomy for each fold.
+- The WPF web-UI alignment plan parity matrix reflects consolidated browser screen names in the same change that folds them.
+- Folds compose tabs, master panes, or context rails without stacking screen content beyond the structural proposal page-height budget.
+- No read-model, contract, or endpoint changes ship as part of screen consolidation.
+
+### Source Modules
+
+- `SRC-UI-DASHBOARD`
+
 ## W8-WPF-PARITY-001 - WPF desktop workstation reactivation and web-UI parity
 | Field | Value |
 | --- | --- |
@@ -491,3 +518,295 @@ Reactivated 2026-07-06. The WPF desktop workstation returns to the active produc
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-CONTRACTS`
+
+## W9-ALPACA-004 - Alpaca fill streaming into order and ledger state
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey live venue and its order feedback loop is broken; trade-update and fill events must stream back into order lifecycle state, positions, and the durable trade-fill posting path instead of relying on polling or manual refresh.
+
+### Exit Criteria
+
+- Alpaca trade-update and fill events stream into the execution gateway and drive order lifecycle state, including partial fills, cancels, and rejects, without polling.
+- Streamed fills flow into the existing durable trade-fill posting and ledger handoff path.
+- Reconnect recovery backfills fills missed during a disconnect, with tests covering duplicate and out-of-order delivery.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-INFRASTRUCTURE`
+- `SRC-APP`
+
+## W9-ASSET-010 - Asset Accounting Event Spine and atomic lot posting
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | critical |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Active 2026-07-21. Establishes one evidence-backed Asset Accounting Event Spine across acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal. Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported remain distinct lifecycle states; only a retained immutable journal may establish Posted impact. Acquisition lot creation and versioned selected-lot disposal are joined to the governed journal append in one idempotent serializable transaction, while readiness and UI projections fail closed when retained evidence identity, hash, source, review, effective-date, version, or scope is incomplete. Completion remains gated on focused and full CI evidence plus authoritative GitHub Actions checks.
+
+### Exit Criteria
+
+- All eight canonical asset accounting event kinds resolve Security Master identity, authoritative book position and version, ledger book, period and version, accounting basis, promoted rule pack, projection lineage, and complete retained evidence before candidate drafting.
+- Lifecycle contracts and shared read models never collapse Expected or Projected into a candidate, Approved into Posted, or Reported into Published; journal impact is absent unless an immutable journal id, ledger book, period, balanced amounts, currency, and Posted status are retained.
+- Acquisition creates its lot with the journal, and disposal consumes explicitly selected lot ids and expected versions with retained selection evidence, relief policy, before/after snapshots, correction lineage, and replay-safe fingerprints in one database transaction.
+- Production-readiness flags, service or endpoint availability, navigation links, legacy full tokens, and synthesized obligations cannot substitute for complete typed retained evidence.
+- Focused contract, spine, storage, endpoint, shared-read-model, and readiness tests pass before the full repository CI and GitHub Actions authority gates.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-LEDGER`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+
+## W9-DEMO-002 - One-command seeded demo with durable storage
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | critical |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 2 of the 2026-07 first-order improvement slate. The first evaluation hour currently ends in an empty screen; nothing else matters if evaluation fails, so a single documented command must stand up a seeded demo workspace over durable storage that shows the product working before any manual configuration.
+
+### Exit Criteria
+
+- A single documented command provisions a demo workspace with seeded provider data, portfolios, ledger records, reconciliation cases, and report packs over durable storage rather than in-memory persistence.
+- Seeded demo data survives restart and renders with the persistent simulation labeling required by W9-TRUTH-001 everywhere it appears.
+- The seeded demo path runs in CI so a broken first-run experience fails a check instead of a first evaluation.
+- Demo tear-down or reset is one command and cannot touch non-demo data roots.
+
+### Source Modules
+
+- `SRC-HOST`
+- `SRC-APP`
+- `SRC-STORAGE`
+- `SRC-UI-DASHBOARD`
+
+## W9-GOV-008 - Route-level authorization, fail-closed tenancy, and hash-chained accounting audit
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Platform Security and Governance |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 8 of the 2026-07 first-order improvement slate. Governance is the brand and these are the gaps in it; every mapped route needs explicit authorization coverage, tenancy must fail closed instead of defaulting, and accounting audit history needs tamper-evident hash chaining, aligned with PRD-001, PRD-007, and PRD-009.
+
+### Exit Criteria
+
+- An authorization coverage test enumerates every mapped endpoint and fails when a route lacks an explicit policy or permission declaration.
+- Cross-tenant reads and writes fail closed with tests, and requests without resolvable tenant scope are rejected rather than defaulted.
+- Accounting and ledger audit events append to a hash-chained tamper-evident log with cross-process serialization, verification tooling, and tamper-detection tests.
+
+### Source Modules
+
+- `SRC-UI-SHARED`
+- `SRC-DESIGN-IDENTITY`
+- `SRC-DESIGN-AUDIT`
+- `SRC-STORAGE`
+- `SRC-LEDGER`
+
+## W9-INGEST-009 - Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 9 of the 2026-07 first-order improvement slate. Reconciliation value is capped by what can be ingested and trusted; ISO 20022 camt.053 and BAI2 bank statements must normalize through the delivered W5X-CONNECT-001 connector seam, and the reconciliation matcher must become explicitly sided between statement and ledger populations with deterministic match and break semantics.
+
+### Exit Criteria
+
+- camt.053 and BAI2 statement connectors normalize through the W5X-CONNECT-001 connector seam with retained raw and canonical evidence and golden-file regression coverage.
+- Bounded schema-aware parsing enforces the PRD-010 ingress limits for both formats.
+- The reconciliation matcher distinguishes statement-side and ledger-side populations with deterministic one-to-one, one-to-many, and unmatched-break outcomes, stable tie-breakers, and idempotent re-runs.
+- Sided match results feed the existing reconciliation casework queue without synthetic completeness.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-DESIGN-DATA-INTEGRATION`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+
+## W9-NAV-006 - Unitized NAV and real fee, waterfall, and capital-call economics
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 6 of the 2026-07 first-order improvement slate. The hard math a fund accountant needs still lives in Excel; unitized NAV series, fee accruals with hurdles and crystallization, distribution waterfalls, and capital-call and commitment tracking must become ledger-backed first-class calculations.
+
+### Exit Criteria
+
+- Unitized NAV per share class is computed from ledger-backed valuations with an auditable calculation trail and restatement support.
+- Management fee, performance fee or carried interest with hurdle, high-water mark, and crystallization treatment, and expense accruals post governed ledger entries.
+- Distribution waterfall and capital-call or commitment schedules compute from capital-account records and reconcile to the partners-capital statement delivered by W9-REPORT-005.
+- Golden-file tests cover the calculation kernels against worked examples.
+
+### Source Modules
+
+- `SRC-LEDGER`
+- `SRC-FSHARP-LEDGER`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-CONTRACTS`
+
+## W9-PAPER-003 - Paper-trading realism with limit/stop matching and costs
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | critical |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 3 of the 2026-07 first-order improvement slate. The promotion gate currently launders overfit strategies because paper fills ignore limit/stop semantics and trading costs and can print placeholder prices; paper evidence must stop overstating live viability before it feeds promotion review.
+
+### Exit Criteria
+
+- Paper matching honors order-type semantics - limit orders fill only at or better than the limit price, stops trigger per a documented trade/quote policy, and market orders fill from observed market data, never at placeholder prices such as one dollar.
+- Commission, fee, slippage, and spread cost models apply to every paper fill and are visible in paper-session economics.
+- A regression suite proves no paper fill can occur at a price outside the observed market-data envelope for the bar or tick in effect.
+- Promotion evidence records the matching and cost model version used by the paper session it cites.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-APP`
+- `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
+
+## W9-REPORT-005 - Client-grade PDF/XLSX exports and partners-capital statement
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 5 of the 2026-07 first-order improvement slate. Ops teams currently re-type every deliverable into Excel; governed report packs must export client-presentable PDF and XLSX artifacts, including a partners-capital statement, so the governed output is the deliverable rather than an input to manual reformatting.
+
+### Exit Criteria
+
+- Governed report packs export deterministic client-presentable PDF and XLSX artifacts with retained hash and provenance manifests.
+- A partners-capital statement covering opening balance, contributions, distributions, income/expense/gain allocations, fees, and closing balance renders per partner and per period from ledger-backed data.
+- Exported artifacts carry the same approval and provenance evidence chain as existing report-pack outputs.
+
+### Source Modules
+
+- `SRC-DESIGN-REPORTING`
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+
+## W9-SAFETY-007 - Kill-switch cancel-all and fat-finger, notional, and collar rules
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 7 of the 2026-07 first-order improvement slate. Safety surfaces must never overpromise; the kill switch must actually cancel all open orders and halt routing, pre-trade rules must cover fat-finger, max-notional, and price-collar checks, and WPF safety buttons must be wired to the real shared controls or visibly demoted.
+
+### Exit Criteria
+
+- Kill-switch activation cancels all open orders across gateways, blocks new order submission, and persists breaker state fail-closed across restart.
+- Pre-trade risk includes fat-finger quantity and price-deviation, max-notional, and price-collar rules enforced by the single mandatory production risk validator.
+- Every WPF and browser safety control either invokes the real shared execution-control service or is disabled with an explicit not-wired state, leaving no dead safety buttons.
+- Activation, failure, and override events append to the execution audit trail.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-RISK`
+- `SRC-WPF`
+- `SRC-UI-SHARED`
+
+## W9-TRUTH-001 - Loud fail-closed handling of simulated data and in-memory persistence
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | planned |
+| Health | green |
+| Priority | critical |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Rank 1 of the 2026-07 first-order improvement slate. Fake-looking-real output is fatal for a prove-the-number product, so every simulated, sample, or synthetic surface must be loudly labeled and every in-memory or placeholder persistence selection must fail closed in supported production profiles, extending the PRD-000/PRD-005/PRD-007/PRD-012 posture in the production-readiness tracker.
+
+### Exit Criteria
+
+- Every simulated, sample, or synthetic data surface renders a persistent operator-visible simulation label in both the browser and WPF workstations.
+- Supported production profiles refuse startup when an in-memory, null, no-op, or placeholder persistence implementation is selected for a durable role, with startup rejection tests per prohibited binding.
+- Non-production adapters carry an explicit non-production marker and registration guards keep them out of production composition with focused test coverage.
+- No figure derived from simulated or seeded data can enter ledger, reconciliation, report-pack, or promotion evidence without a blocking simulation provenance mark.
+
+### Source Modules
+
+- `SRC-HOST`
+- `SRC-APP`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`

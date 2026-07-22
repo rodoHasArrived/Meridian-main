@@ -65,8 +65,12 @@ public sealed class LoginSessionMiddleware
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
         "/healthz",
+        "/ready",
         "/readyz",
-        "/livez"
+        "/live",
+        "/livez",
+        "/startup",
+        "/startupz"
     };
 
     private readonly RequestDelegate _next;
@@ -95,6 +99,13 @@ public sealed class LoginSessionMiddleware
         if (!sessionService.IsConfigured)
         {
             if (sessionService.AllowAnonymousWhenUnconfigured)
+            {
+                await _next(context);
+                return;
+            }
+
+            // API-key clients authenticate downstream via ApiKeyMiddleware, not sessions.
+            if (ApiKeyMiddleware.IsApiKeyCandidate(context))
             {
                 await _next(context);
                 return;
@@ -144,6 +155,14 @@ public sealed class LoginSessionMiddleware
             }
         }
 
+        // Defer to the API-key middleware when API-key auth is configured and the caller
+        // presented a key: out-of-band API clients authenticate with X-Api-Key, not sessions.
+        if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+        {
+            await _next(context);
+            return;
+        }
+
         // Unauthenticated request — differentiate API from browser
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
@@ -180,7 +199,8 @@ public sealed class LoginSessionMiddleware
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
     {
         if (!trimmedPath.Equals("/api/system/lifecycle", StringComparison.OrdinalIgnoreCase) &&
-            !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase))
+            !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase) &&
+            !trimmedPath.StartsWith("/api/system/shutdown/", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

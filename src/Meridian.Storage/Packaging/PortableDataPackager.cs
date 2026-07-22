@@ -57,6 +57,15 @@ public sealed partial class PortableDataPackager
             _log.Information("Starting package creation: {PackageName}", options.Name);
             ReportProgress(result.JobId, PackageStage.Initializing, 0, 0, 0, 0);
 
+            // Only Zip is actually implemented. The former TarGz writer emitted a bespoke gzip
+            // text stream (not tar) that irreversibly corrupted binary content, and SevenZip
+            // silently produced an empty file. Fail before anything is written.
+            if (options.Format != PackageFormat.Zip)
+            {
+                return PackageResult.CreateFailure(
+                    $"Package format '{options.Format}' is not implemented; use PackageFormat.Zip.");
+            }
+
             // Ensure output directory exists
             Directory.CreateDirectory(options.OutputDirectory);
 
@@ -161,6 +170,14 @@ public sealed partial class PortableDataPackager
 
             // Determine package format
             var format = DetectPackageFormat(packagePath);
+            if (format != PackageFormat.Zip)
+            {
+                // Non-Zip packages were never correctly written (see CreatePackageAsync); the old
+                // import path silently extracted zero files and still reported success.
+                return ImportResult.CreateFailure(
+                    packagePath,
+                    $"Package format '{format}' is not supported for import; only Zip packages can be imported.");
+            }
 
             // Extract and read manifest first
             ReportProgress(result.JobId, PackageStage.Scanning, 0, 0, 0, 0);
@@ -250,6 +267,17 @@ public sealed partial class PortableDataPackager
             }
 
             var format = DetectPackageFormat(packagePath);
+            if (format != PackageFormat.Zip)
+            {
+                // Legacy pseudo-TarGz artifacts must not validate clean: the old verification
+                // only implemented Zip and reported every other format as having no missing files.
+                return new PackageValidationResult
+                {
+                    IsValid = false,
+                    Error = $"Package format '{format}' is not supported; only Zip packages can be validated."
+                };
+            }
+
             var manifest = await ReadManifestFromPackageAsync(packagePath, format, ct);
 
             if (manifest == null)

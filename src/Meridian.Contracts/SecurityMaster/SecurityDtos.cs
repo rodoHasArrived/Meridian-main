@@ -7,7 +7,13 @@ namespace Meridian.Contracts.SecurityMaster;
 public enum SecurityStatusDto
 {
     Active,
-    Inactive
+    Inactive,
+    /// <summary>
+    /// Read-tolerance member: a status written by a newer node that this node does not recognize.
+    /// Treated as not-Active by filters, so unrecognized states degrade to conservative visibility
+    /// instead of failing every read of the row.
+    /// </summary>
+    Unknown
 }
 
 public sealed record SecuritySummaryDto(
@@ -129,7 +135,16 @@ public sealed record TradingParametersDto(
     decimal? MarginRequirementPct,
     string? TradingHoursUtc,
     decimal? CircuitBreakerThresholdPct,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    public bool? IsMarginable { get; init; }
+    public bool? IsShortable { get; init; }
+    public bool? IsEasyToBorrow { get; init; }
+    public bool? IsFractionable { get; init; }
+    public decimal? MinimumOrderSize { get; init; }
+    public decimal? MinimumTradeIncrement { get; init; }
+    public decimal? PriceIncrement { get; init; }
+}
 
 /// <summary>
 /// A single corporate action event envelope returned by the corporate actions query.

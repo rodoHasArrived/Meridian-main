@@ -7,9 +7,9 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-07-11
+  snapshot_date: 2026-07-21
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, and bounded W7 live-readiness governance milestones; active Evidence Vault productization, statement reconciliation onboarding, and WPF parity remain in progress
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, and bounded W7 live-readiness governance milestones; active Evidence Vault productization, statement reconciliation onboarding, and WPF parity remain in progress; the ranked W9 first-order improvement slate (W9-TRUTH-001 through W9-INGEST-009) is the accepted planned priority order for the next delivery decisions
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
@@ -43,10 +43,11 @@ program:
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
     - Evidence Vault productization and statement reconciliation onboarding over governed connector evidence
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
+    - Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion
   production_readiness:
     status: blocked
-    reviewed: 2026-07-11
-    baseline_commit: f0ac384a2
+    reviewed: 2026-07-18
+    baseline_commit: aa3d7edde
     canonical_tracker: docs/product/implementation-todo-list.md
     release_gate: Every P0 row in the canonical production-readiness tracker must be complete on the same release commit; unsupported paths must be explicitly scoped out and fail closed.
   deferred_lanes:

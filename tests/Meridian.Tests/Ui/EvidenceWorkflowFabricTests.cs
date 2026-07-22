@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -2756,6 +2758,30 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringMissingVaultDocumentReviews_DoesNotRetainVaultLocks()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-missing-review-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        for (var index = 0; index < 32; index++)
+        {
+            var result = await store.ReviewDocumentAsync(
+                $"ev-{index:x24}",
+                "missing-document",
+                new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Rejected, "controller"),
+                cts.Token);
+
+            result.Should().BeNull();
+        }
+
+        var locks = (ConcurrentDictionary<string, SemaphoreSlim>)typeof(FileEvidenceArtifactStore)
+            .GetField("_vaultWriteLocks", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(store)!;
+        locks.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task FileEvidenceArtifactStore_DuringVaultLocalFileIntake_CopiesImportedReferenceIntoVault()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-local-intake-{Guid.NewGuid():N}");
@@ -4414,6 +4440,12 @@ public sealed class EvidenceWorkflowFabricTests
         }
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;

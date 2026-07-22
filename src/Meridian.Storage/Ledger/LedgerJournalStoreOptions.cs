@@ -15,4 +15,16 @@ public sealed class LedgerJournalStoreOptions
     /// issues <c>FOR UPDATE</c> before applying the optimistic-version guard.
     /// </summary>
     public bool EnablePeriodLocking { get; set; } = true;
+
+    /// <summary>
+    /// Rejects every append that does not carry the typed accounting posting command. Supported
+    /// production composition enables this; isolated compatibility tests may leave it disabled.
+    /// </summary>
+    public bool RequireGovernedPostingCommand { get; set; }
+
+    /// <summary>
+    /// Requires the typed posting command to carry the accounting-period version observed by the
+    /// caller. The store compares it while holding the same transaction/row lock as the append.
+    /// </summary>
+    public bool RequireExpectedVersion { get; set; }
 }

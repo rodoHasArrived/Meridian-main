@@ -83,6 +83,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
         await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+        // The amend seam is the one place the pre-write golden copy and the incoming revision are
+        // both in hand: record field-level cross-source conflicts (a different source disagreeing
+        // on economic/common terms) so the authority policy has non-identifier conflicts to judge.
+        await TryRecordFieldConflictsAsync(currentProjection, projection, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -290,6 +294,25 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
+        }
+    }
+
+    private async Task TryRecordFieldConflictsAsync(
+        SecurityProjectionRecord previous,
+        SecurityProjectionRecord incoming,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        if (_conflictService is null)
+            return;
+
+        try
+        {
+            await _conflictService.RecordFieldConflictsAsync(previous, incoming, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Field conflict detection failed for security {SecurityId}", securityId);
         }
     }
 

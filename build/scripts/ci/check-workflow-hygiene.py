@@ -38,7 +38,6 @@ OLD_WORKFLOW_FILENAMES = {
     "bottleneck-detection.yml",
     "build-observability.yml",
     "code-quality.yml",
-    "codeql.yml",
     "desktop-builds.yml",
     "docker.yml",
     "export-standalone-exe.yml",

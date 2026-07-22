@@ -168,6 +168,7 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
         }
         catch (ReportingReconciliationReadinessException exception)
         {
+            var invalid = exception as ReportingReconciliationEvidenceInvalidException;
             return
             [
                 sourceCheck,
@@ -176,11 +177,15 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
                     "Exact close and reconciliation evidence",
                     ReportingRunReadinessStatusDto.Blocked,
                     exception.Message,
-                    1,
+                    invalid?.BlockingCount ?? 1,
                     BlocksDraft: true,
                     BlocksFinal: true,
                     "/workstation/accounting/close",
-                    capture.Checkpoint.EvidenceIds)
+                    (invalid?.EvidenceReferences ?? capture.Checkpoint.EvidenceIds)
+                        .Concat(capture.Checkpoint.EvidenceIds)
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(static evidence => evidence, StringComparer.Ordinal)
+                        .ToArray())
             ];
         }
         catch (ReportingArtifactCatalogIntegrityException exception)
@@ -545,8 +550,28 @@ public sealed class ReportingRunReadinessService
         ReportingTemplateMetadata template,
         ReportAccessQueryContext? accessContext)
     {
-        var evaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
-            ?? ReportAccessPolicyEvaluator.Evaluate(template.AccessPolicy, accessContext);
+        ReportAccessEvaluationDto evaluation;
+        if (_governedTemplateCatalog is not null)
+        {
+            evaluation = _governedTemplateCatalog.EvaluateAccess(templateId, accessContext);
+        }
+        else
+        {
+            // Built-in templates carry no explicit access policy, which normalizes to an
+            // unbound company-wide policy. Bind it to the caller's resolved company so the
+            // fallback matches GovernedReportingTemplateCatalog.BindCompanyWideTemplatePolicy
+            // instead of failing closed on RequireBoundScope.
+            var policy = ReportAccessPolicyEvaluator.Normalize(template.AccessPolicy);
+            if (policy.Mode == ReportAccessModeDto.CompanyWide
+                && string.IsNullOrWhiteSpace(policy.CompanyId)
+                && !string.IsNullOrWhiteSpace(accessContext?.CompanyId))
+            {
+                policy = policy with { CompanyId = accessContext.CompanyId.Trim() };
+            }
+
+            evaluation = ReportAccessPolicyEvaluator.Evaluate(policy, accessContext);
+        }
+
         if (!evaluation.IsAccessible)
         {
             throw new UnauthorizedAccessException(evaluation.Reason);

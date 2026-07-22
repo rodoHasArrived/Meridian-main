@@ -394,8 +394,8 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
     {
         try
         {
-            var remoteWatchlists = await _remoteClient.GetAsync<List<Watchlist>>("/api/watchlists", ct)
-                .ConfigureAwait(false);
+            var remoteWatchlists = (await _remoteClient.GetWithResponseAsync<List<Watchlist>>("/api/watchlists", ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Sync watchlists from backend");
 
             if (remoteWatchlists is null)
             {

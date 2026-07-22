@@ -138,7 +138,7 @@ public sealed class ImmutableAuditLogServiceTests
             var reloaded = new ImmutableAuditLogService(path);
 
             reloaded.GetAll().Select(static e => e.Hash).Should()
-                .ContainInOrder(firstHash, secondHash, "persisted audit events must survive a restart");
+                .ContainInOrder([firstHash, secondHash], "persisted audit events must survive a restart");
             reloaded.VerifyIntegrity().Should().BeTrue("the rehydrated hash chain must still verify");
 
             // A new append must continue the persisted chain, not fork from an empty log.

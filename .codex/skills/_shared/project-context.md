@@ -205,7 +205,7 @@ and choose the narrowest lane that matches the user's request:
 | Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
-| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and separate verified evidence from inference. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |
 | CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
 
 ## Solution Map

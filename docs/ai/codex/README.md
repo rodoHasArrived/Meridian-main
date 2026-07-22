@@ -81,7 +81,7 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
-| `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-simulated-user-panel.toml` | Run evidence-led canonical Persona Matrix panels with fail-closed release gates |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
 | `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
@@ -112,6 +112,9 @@ These Codex profiles simulate one role at a time from the Persona Matrix in
 `meridian-simulated-user-panel` when the review needs a multi-persona panel; use these profiles when
 a workflow needs focused feedback from a specific persona. Each profile carries the persona's
 matrix facts plus domain experience, familiar programs, preferences, and testing pressure points.
+These are simulations, not recruited-user research; every result must state that limitation and
+separate verified evidence, inference, and missing proof. Independent persona agents are optional
+and should be used only when the user explicitly requests independent panel voices.
 
 | Profile | Persona category |
 | ------ | --------- |
@@ -162,7 +165,7 @@ matrix facts plus domain experience, familiar programs, preferences, and testing
 | `meridian-provider-builder` | Build and extend provider integrations |
 | `meridian-repo-navigation` | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | Refresh roadmap, delivery-plan, and target-state docs |
-| `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
+| `meridian-simulated-user-panel` | Run evidence-led design-partner, usability-lab, and fail-closed release-gate reviews |
 | `meridian-test-writer` | Write scenario-first Meridian tests |
 | `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
 | `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
@@ -199,7 +202,7 @@ route by task phase:
 | Archive | `meridian-archive-organizer` | Classify stale material and update archive/navigation evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile status, waves, opportunities, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code or duplication. |
-| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and explicit evidence. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, evidence sufficiency, and an explicit simulation disclaimer. |
 | Desktop implementation | `modular-desktop-mvvm` | Implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
 | Desktop composition | `workstation-screen-composition` | Shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
 | Component extraction | `shared-component-extraction` | Consolidate repeated controls, templates, commands, view models, and services. |

@@ -1,0 +1,118 @@
+classDiagram
+    %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
+        +decimal? CurrentIndexRate
+        +string? DayCountConvention
+        +CashFlowLegDirection? Direction
+        +bool ExchangesPrincipal
+        +decimal? FixedRate
+        +string? IndexName
+        +string LegId
+        +decimal? Notional
+        +string? PaymentFrequency
+        +CashFlowLegRateKind RateKind
+        +decimal? SpreadBps
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
+        +CashFlowLegDirection? Direction
+        +string LegId
+        +CashFlowLegRateKind RateKind
+        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto["StructuredCashFlowProjectionDto"] {
+        +DateTimeOffset AsOf
+        +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
+        +IReadOnlyList~StructuredCashFlowLegSchedule~? LegSchedules
+        +StructuredCashFlowScenario Scenario
+        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+        +DateTimeOffset? SourceLastUpdatedUtc
+        +StructuredCashFlowStaleness Staleness
+        +StructuredCashFlowTerms? TermsUsed
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
+        +decimal Factor
+        +decimal InterestAmount
+        +DateTimeOffset PeriodDate
+        +decimal PrincipalAmount
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind["StructuredCashFlowSourceKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness["StructuredCashFlowStaleness"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms["StructuredCashFlowTerms"] {
+        +decimal? CouponRate
+        +decimal? CurrentFactor
+        +string? DayCountConvention
+        +StructuredCashFlowTerms Empty
+        +IReadOnlyList~StructuredFactorScheduleEntry~ FactorSchedule
+        +DateOnly? IssueDate
+        +IReadOnlyList~StructuredCashFlowLeg~? Legs
+        +DateOnly? MaturityDate
+        +string? PaymentFrequency
+        +decimal? PrincipalFace
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
+        +DateTimeOffset AsOf
+        +decimal? CircuitBreakerThresholdPct
+        +decimal? ContractMultiplier
+        +decimal? LotSize
+        +decimal? MarginRequirementPct
+        +Guid SecurityId
+        +decimal? TickSize
+        +string? TradingHoursUtc
+    }
+    class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
+        +string Actor
+        +string? ClientConfirmedBy
+        +bool Force
+        +bool IsClientOverride
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+    }
+    class Meridian_Contracts_SecurityMaster_UpsertDataVendorEntitlementRequest["UpsertDataVendorEntitlementRequest"] {
+        +string? AccountId
+        +string Actor
+        +decimal? AumThresholdUsd
+        +string? ClientId
+        +string? ContactEmail
+        +string? ContractReference
+        +DataVendorDataType DataType
+        +int? DefaultMaxDaysStale
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid? EntitlementId
+        +string? ExpectedRefreshCadence
+    }
+    class Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest["UpsertSecurityAliasRequest"] {
+        +Guid AliasId
+        +string AliasKind
+        +string AliasValue
+        +string CreatedBy
+        +string? Provider
+        +string? Reason
+        +SecurityAliasScope Scope
+        +Guid SecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind

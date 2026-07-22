@@ -882,11 +882,7 @@ public sealed class ReportingTenantIsolationTests
             artifactId.Contains("manifest", StringComparison.Ordinal)
             || artifactId.Contains("evidence-appendix", StringComparison.Ordinal));
 
-        var interruptedSchedulePath = Path.Combine(root, "interrupted-reporting-schedules.json");
-        var interruptedStore = new FileReportingScheduleStore(
-            new ReportingScheduleStoreOptions(interruptedSchedulePath),
-            NullLogger<FileReportingScheduleStore>.Instance);
-        interruptedStore.Save(
+        var interruptedStore = new StubReportingScheduleStore(
         [
             incompleteDraft with { State = ReportingScheduleStateDto.Active },
             retainedSchedule
@@ -899,9 +895,7 @@ public sealed class ReportingTenantIsolationTests
         var restartedGovernance = new RecordingScheduleGovernanceCoordinator(restartedOrchestration);
         var recoveredService = new ReportingScheduleService(
             restartedOrchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(interruptedSchedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,
@@ -924,9 +918,7 @@ public sealed class ReportingTenantIsolationTests
 
         var secondRestart = new ReportingScheduleService(
             restartedOrchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(interruptedSchedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,
@@ -940,9 +932,7 @@ public sealed class ReportingTenantIsolationTests
 
         var reloaded = new ReportingScheduleService(
             orchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(schedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,
@@ -1105,42 +1095,18 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
-    public async Task ReportWriterGridRead_CrossTenantAdminIsDeniedBeforeArtifactLookup()
+    public void ReportWriterGridRead_CrossTenantAdminIsDeniedBeforeArtifactLookup()
     {
-        var catalog = new DefaultReportingTemplateCatalog();
+        var snapshot = BuildRunSnapshot("tenant-a-grid", "tenant-a", "company-shared");
         var orchestration = new ReportingOrchestrationService(
-            catalog,
+            new DefaultReportingTemplateCatalog(),
             new DeterministicReportingSectionRenderer(),
-            () => FixedNow);
-        var manifest = await orchestration.ExecuteAsync(
-            new ReportingJobContract(
-                "tenant-a-grid",
-                "investor-monthly-statement",
-                new DateOnly(2026, 7, 15),
-                ReportingRunTrigger.AdHoc,
-                0,
-                "operator-a",
-                FixedNow,
-                OperationalScope: new ReportingOperationalScope(
-                    "tenant-a",
-                    "organization-a",
-                    "company-shared",
-                    FundId: null,
-                    BookId: "book-a",
-                    PeriodId: "2026-07"),
-                ImmutableAccessScope: new ReportingAccessScope(
-                    "policy-a",
-                    "1",
-                    ReportingGovernanceAccessMode.CompanyWide,
-                    OwnerPrincipalId: null,
-                    AllowOwnerAccess: false,
-                    Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
-                    PolicyHash: "policy-hash-a")),
-            CancellationToken.None);
+            () => FixedNow,
+            new StubReportingRunStore([snapshot]));
         var service = new ReportWriterGridArtifactService(orchestration);
         var tenantBAdmin = Scope("admin-b", "tenant-b", "company-shared", isAdmin: true);
 
-        var read = () => service.GetGrid(manifest.RunId, "any-grid", tenantBAdmin);
+        var read = () => service.GetGrid(snapshot.Manifest.RunId, "any-grid", tenantBAdmin);
 
         read.Should().Throw<UnauthorizedAccessException>()
             .WithMessage("*another tenant or company*");

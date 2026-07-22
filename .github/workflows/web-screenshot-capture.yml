@@ -54,7 +54,9 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
+        # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
+        # run is reproducible and cannot silently drift the dependency tree.
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Cache Playwright browsers
         uses: actions/cache@v6.1.0
@@ -186,12 +188,27 @@ jobs:
           fi
 
       - name: Upload screenshot artifacts
-        if: ${{ steps.capture_web.outcome == 'success' }}
+        # Upload whatever screenshots were captured even when some routes failed
+        # to render, so a partial run still surfaces the screens that worked.
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload capture manifest
+        # The run manifest records per-route pass/fail status, browser render
+        # errors, and the tail of the dev-server logs. Uploading it on every run
+        # (including failures) makes a broken capture diagnosable without a
+        # re-run.
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: web-screenshots-manifest-${{ github.run_number }}
+          path: artifacts/web-screenshots/manifest.json
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Open screenshot refresh pull request

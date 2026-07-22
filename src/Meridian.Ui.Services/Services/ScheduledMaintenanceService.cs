@@ -15,10 +15,12 @@ public sealed class ScheduledMaintenanceService
 {
     private static readonly Lazy<ScheduledMaintenanceService> _instance = new(() => new ScheduledMaintenanceService());
     private readonly NotificationService _notificationService;
+    private readonly object _stateGate = new();
     private readonly List<MaintenanceTask> _tasks = new();
     private readonly List<MaintenanceExecutionLog> _executionLog = new();
     private readonly Dictionary<string, CancellationTokenSource> _runningTasks = new();
     private Timer? _schedulerTimer;
+    private CancellationTokenSource? _schedulerCancellationSource;
     private const int MaxLogEntries = 100;
 
     public static ScheduledMaintenanceService Instance => _instance.Value;
@@ -32,29 +34,72 @@ public sealed class ScheduledMaintenanceService
     /// <summary>
     /// Gets all configured maintenance tasks.
     /// </summary>
-    public IReadOnlyList<MaintenanceTask> Tasks => _tasks.AsReadOnly();
+    public IReadOnlyList<MaintenanceTask> Tasks
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _tasks.ToArray();
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the maintenance execution log.
     /// </summary>
-    public IReadOnlyList<MaintenanceExecutionLog> ExecutionLog => _executionLog.AsReadOnly();
+    public IReadOnlyList<MaintenanceExecutionLog> ExecutionLog
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _executionLog.ToArray();
+            }
+        }
+    }
 
     /// <summary>
     /// Gets whether the scheduler is running.
     /// </summary>
-    public bool IsSchedulerRunning => _schedulerTimer != null;
+    public bool IsSchedulerRunning
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _schedulerTimer != null;
+            }
+        }
+    }
 
     /// <summary>
     /// Starts the maintenance scheduler.
     /// </summary>
     public void StartScheduler()
     {
-        _schedulerTimer?.Dispose();
-        _schedulerTimer = new Timer(
-            async _ => await CheckAndExecuteScheduledTasksAsync(),
-            null,
-            TimeSpan.Zero,
-            TimeSpan.FromMinutes(1)); // Check every minute
+        Timer? previousTimer;
+        CancellationTokenSource? previousCancellationSource;
+        var cancellationSource = new CancellationTokenSource();
+
+        lock (_stateGate)
+        {
+            previousTimer = _schedulerTimer;
+            previousCancellationSource = _schedulerCancellationSource;
+            _schedulerCancellationSource = cancellationSource;
+            _schedulerTimer = new Timer(
+                static state =>
+                {
+                    var context = (SchedulerTickContext)state!;
+                    context.Service.QueueSchedulerTick(context.CancellationToken);
+                },
+                new SchedulerTickContext(this, cancellationSource.Token),
+                TimeSpan.Zero,
+                TimeSpan.FromMinutes(1)); // Check every minute
+        }
+
+        previousTimer?.Dispose();
+        CancelAndDispose(previousCancellationSource);
 
         SchedulerStarted?.Invoke(this, EventArgs.Empty);
     }
@@ -64,15 +109,27 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public void StopScheduler()
     {
-        _schedulerTimer?.Dispose();
-        _schedulerTimer = null;
+        Timer? timer;
+        CancellationTokenSource? schedulerCancellationSource;
+        CancellationTokenSource[] runningTasks;
 
-        // Cancel all running tasks
-        foreach (var cts in _runningTasks.Values)
+        lock (_stateGate)
         {
-            cts.Cancel();
+            timer = _schedulerTimer;
+            schedulerCancellationSource = _schedulerCancellationSource;
+            _schedulerTimer = null;
+            _schedulerCancellationSource = null;
+            runningTasks = _runningTasks.Values.ToArray();
+            _runningTasks.Clear();
         }
-        _runningTasks.Clear();
+
+        timer?.Dispose();
+        CancelAndDispose(schedulerCancellationSource);
+
+        foreach (var cts in runningTasks)
+        {
+            CancelSafely(cts);
+        }
 
         SchedulerStopped?.Invoke(this, EventArgs.Empty);
     }
@@ -87,7 +144,11 @@ public sealed class ScheduledMaintenanceService
             task.Id = Guid.NewGuid().ToString();
         }
 
-        _tasks.Add(task);
+        lock (_stateGate)
+        {
+            _tasks.Add(task);
+        }
+
         TaskAdded?.Invoke(this, task);
     }
 
@@ -96,14 +157,23 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public bool RemoveTask(string taskId)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
-        if (task != null)
+        MaintenanceTask? task;
+        lock (_stateGate)
         {
-            _tasks.Remove(task);
-            TaskRemoved?.Invoke(this, task);
-            return true;
+            task = _tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task != null)
+            {
+                _tasks.Remove(task);
+            }
         }
-        return false;
+
+        if (task == null)
+        {
+            return false;
+        }
+
+        TaskRemoved?.Invoke(this, task);
+        return true;
     }
 
     /// <summary>
@@ -111,14 +181,19 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public bool UpdateTask(MaintenanceTask updatedTask)
     {
-        var index = _tasks.FindIndex(t => t.Id == updatedTask.Id);
-        if (index >= 0)
+        lock (_stateGate)
         {
+            var index = _tasks.FindIndex(t => t.Id == updatedTask.Id);
+            if (index < 0)
+            {
+                return false;
+            }
+
             _tasks[index] = updatedTask;
-            TaskUpdated?.Invoke(this, updatedTask);
-            return true;
         }
-        return false;
+
+        TaskUpdated?.Invoke(this, updatedTask);
+        return true;
     }
 
     /// <summary>
@@ -126,10 +201,18 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public void SetTaskEnabled(string taskId, bool enabled)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        MaintenanceTask? task;
+        lock (_stateGate)
+        {
+            task = _tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task != null)
+            {
+                task.IsEnabled = enabled;
+            }
+        }
+
         if (task != null)
         {
-            task.IsEnabled = enabled;
             TaskUpdated?.Invoke(this, task);
         }
     }
@@ -139,7 +222,12 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public async Task<MaintenanceResult> RunTaskNowAsync(string taskId, bool dryRun = false, CancellationToken ct = default)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        MaintenanceTask? task;
+        lock (_stateGate)
+        {
+            task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        }
+
         if (task == null)
         {
             return new MaintenanceResult
@@ -150,7 +238,7 @@ public sealed class ScheduledMaintenanceService
             };
         }
 
-        return await ExecuteTaskAsync(task, dryRun);
+        return await ExecuteTaskAsync(task, dryRun, ct);
     }
 
     /// <summary>
@@ -158,13 +246,19 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public bool CancelTask(string taskId)
     {
-        if (_runningTasks.TryGetValue(taskId, out var cts))
+        CancellationTokenSource? cts;
+        lock (_stateGate)
         {
-            cts.Cancel();
+            if (!_runningTasks.TryGetValue(taskId, out cts))
+            {
+                return false;
+            }
+
             _runningTasks.Remove(taskId);
-            return true;
         }
-        return false;
+
+        CancelSafely(cts);
+        return true;
     }
 
     /// <summary>
@@ -172,7 +266,12 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public DateTime? GetNextRunTime(string taskId)
     {
-        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        MaintenanceTask? task;
+        lock (_stateGate)
+        {
+            task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        }
+
         return task?.GetNextRunTime();
     }
 
@@ -181,7 +280,13 @@ public sealed class ScheduledMaintenanceService
     /// </summary>
     public IReadOnlyList<(MaintenanceTask Task, DateTime NextRun)> GetUpcomingTasks(int count = 5)
     {
-        return _tasks
+        MaintenanceTask[] tasks;
+        lock (_stateGate)
+        {
+            tasks = _tasks.ToArray();
+        }
+
+        return tasks
             .Where(t => t.IsEnabled)
             .Select(t => (Task: t, NextRun: t.GetNextRunTime()))
             .Where(x => x.NextRun.HasValue)
@@ -257,23 +362,71 @@ public sealed class ScheduledMaintenanceService
         });
     }
 
-    private async Task CheckAndExecuteScheduledTasksAsync(CancellationToken ct = default)
+    private void QueueSchedulerTick(CancellationToken ct)
     {
-        var now = DateTime.UtcNow;
+        _ = RunSchedulerTickAsync(ct);
+    }
 
-        foreach (var task in _tasks.Where(t => t.IsEnabled && !_runningTasks.ContainsKey(t.Id)))
+    private async Task RunSchedulerTickAsync(CancellationToken ct)
+    {
+        try
         {
+            await CheckAndExecuteScheduledTasksAsync(ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Scheduler shutdown is an expected terminal state for an in-flight timer callback.
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Scheduled maintenance timer tick failed.");
+        }
+    }
+
+    internal async Task CheckAndExecuteScheduledTasksAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var now = DateTime.UtcNow;
+        MaintenanceTask[] candidates;
+
+        lock (_stateGate)
+        {
+            candidates = _tasks
+                .Where(t => t.IsEnabled && !_runningTasks.ContainsKey(t.Id))
+                .ToArray();
+        }
+
+        foreach (var task in candidates)
+        {
+            ct.ThrowIfCancellationRequested();
             if (task.ShouldRunNow(now))
             {
-                _ = ExecuteTaskAsync(task, dryRun: false);
+                _ = RunScheduledTaskAsync(task, ct);
             }
         }
 
         await Task.CompletedTask;
     }
 
+    private async Task RunScheduledTaskAsync(MaintenanceTask task, CancellationToken ct)
+    {
+        try
+        {
+            await ExecuteTaskAsync(task, dryRun: false, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Scheduler shutdown cancels scheduled work that has not completed.
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Scheduled maintenance task {TaskId} failed outside its execution boundary.", task.Id);
+        }
+    }
+
     private async Task<MaintenanceResult> ExecuteTaskAsync(MaintenanceTask task, bool dryRun, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var result = new MaintenanceResult
         {
             TaskId = task.Id,
@@ -282,18 +435,26 @@ public sealed class ScheduledMaintenanceService
             IsDryRun = dryRun
         };
 
-        // Mark task as running
-        var cts = new CancellationTokenSource();
-        _runningTasks[task.Id] = cts;
-        task.IsRunning = true;
-        task.LastRunStart = result.StartTime;
+        CancellationTokenSource cts;
+        lock (_stateGate)
+        {
+            if (_runningTasks.ContainsKey(task.Id))
+            {
+                result.Message = "Task is already running";
+                return result;
+            }
 
-        TaskStarted?.Invoke(this, task);
-
-        await _notificationService.NotifyScheduledJobAsync(task.Name, started: true);
+            cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            _runningTasks[task.Id] = cts;
+            task.IsRunning = true;
+            task.LastRunStart = result.StartTime;
+        }
 
         try
         {
+            TaskStarted?.Invoke(this, task);
+            await _notificationService.NotifyScheduledJobAsync(task.Name, started: true);
+
             // Execute based on task type
             result = task.TaskType switch
             {
@@ -323,13 +484,16 @@ public sealed class ScheduledMaintenanceService
             result.EndTime = DateTime.UtcNow;
             result.Duration = result.EndTime.Value - result.StartTime;
 
-            // Update task status
-            task.IsRunning = false;
-            task.LastRunEnd = result.EndTime;
-            task.LastRunSuccess = result.Success;
-            task.LastRunMessage = result.Message;
+            lock (_stateGate)
+            {
+                task.IsRunning = false;
+                task.LastRunEnd = result.EndTime;
+                task.LastRunSuccess = result.Success;
+                task.LastRunMessage = result.Message;
+                _runningTasks.Remove(task.Id);
+            }
 
-            _runningTasks.Remove(task.Id);
+            cts.Dispose();
 
             // Log execution
             LogExecution(result);
@@ -523,26 +687,55 @@ public sealed class ScheduledMaintenanceService
 
     private void LogExecution(MaintenanceResult result)
     {
-        _executionLog.Insert(0, new MaintenanceExecutionLog
+        lock (_stateGate)
         {
-            TaskId = result.TaskId,
-            TaskName = result.TaskName,
-            StartTime = result.StartTime,
-            EndTime = result.EndTime,
-            Duration = result.Duration,
-            Success = result.Success,
-            Message = result.Message,
-            IsDryRun = result.IsDryRun,
-            FilesProcessed = result.FilesProcessed,
-            BytesSaved = result.BytesSaved
-        });
+            _executionLog.Insert(0, new MaintenanceExecutionLog
+            {
+                TaskId = result.TaskId,
+                TaskName = result.TaskName,
+                StartTime = result.StartTime,
+                EndTime = result.EndTime,
+                Duration = result.Duration,
+                Success = result.Success,
+                Message = result.Message,
+                IsDryRun = result.IsDryRun,
+                FilesProcessed = result.FilesProcessed,
+                BytesSaved = result.BytesSaved
+            });
 
-        // Trim log
-        while (_executionLog.Count > MaxLogEntries)
-        {
-            _executionLog.RemoveAt(_executionLog.Count - 1);
+            while (_executionLog.Count > MaxLogEntries)
+            {
+                _executionLog.RemoveAt(_executionLog.Count - 1);
+            }
         }
     }
+
+    private static void CancelAndDispose(CancellationTokenSource? cancellationSource)
+    {
+        if (cancellationSource == null)
+        {
+            return;
+        }
+
+        CancelSafely(cancellationSource);
+        cancellationSource.Dispose();
+    }
+
+    private static void CancelSafely(CancellationTokenSource cancellationSource)
+    {
+        try
+        {
+            cancellationSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Completion can dispose a task source while an operator cancellation is in flight.
+        }
+    }
+
+    private sealed record SchedulerTickContext(
+        ScheduledMaintenanceService Service,
+        CancellationToken CancellationToken);
 
     /// <summary>
     /// Event raised when the scheduler starts.

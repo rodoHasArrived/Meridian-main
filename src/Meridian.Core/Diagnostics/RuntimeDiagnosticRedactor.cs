@@ -8,13 +8,6 @@ namespace Meridian.Core.Diagnostics;
 /// </summary>
 public static class RuntimeDiagnosticRedactor
 {
-    private static readonly string[] SensitiveKeys =
-    [
-        "password", "secret", "key", "token", "apikey", "api_key", "api-key",
-        "connectionstring", "connection_string", "credential", "auth", "authorization",
-        "clientsecret", "client_secret", "refresh", "session", "accountkey"
-    ];
-
     public static string SanitizeText(string? content)
     {
         if (string.IsNullOrEmpty(content))
@@ -51,9 +44,6 @@ public static class RuntimeDiagnosticRedactor
         key.Equals("PATH", StringComparison.OrdinalIgnoreCase) ? "[PATH variable - omitted for brevity]" :
         SanitizeText(value);
 
-    public static bool IsSensitiveKey(string key)
-    {
-        return SensitiveKeys.Any(s =>
-            key.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
-    }
+    // Delegates to the shared registry so every redaction surface uses one taxonomy.
+    public static bool IsSensitiveKey(string key) => SensitiveKeyRegistry.IsSensitive(key);
 }

@@ -258,6 +258,148 @@ public sealed class SecurityMasterCashFlowServiceTests
         result.Postings.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task GetProjectionAsync_SwapLegsWithDirections_ShouldNetReceiveMinusPay()
+    {
+        var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate = asOf,
+                maturityDate = asOf.AddYears(1),
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                legs = new object[]
+                {
+                    new { legType = "Fixed", direction = "Receive", fixedRate = 0.04m, notional = 1000m },
+                    new { legType = "Float", direction = "Pay", index = "SOFR", currentIndexRate = 0.03m, spreadBps = 25m, notional = 1000m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.TermsUsed!.HasLegs.Should().BeTrue();
+
+        // Receive fixed: 1000 x 4% x 0.5 = 20 per period; pay float at last fixing + spread:
+        // 1000 x 3.25% x 0.5 = 16.25 -> net 3.75, no principal (no exchange declared).
+        projection.Schedule.Should().HaveCount(2);
+        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 3.75m && row.PrincipalAmount == 0m);
+
+        projection.LegSchedules.Should().HaveCount(2);
+        projection.LegSchedules![0].Schedule.Should().OnlyContain(static row => row.InterestAmount == 20m);
+        projection.LegSchedules[1].Schedule.Should().OnlyContain(static row => row.InterestAmount == 16.25m);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_SingleFloatingLeg_ProjectsFloatingRateNoteWithPrincipalExchange()
+    {
+        var securityId = Guid.Parse("77777777-aaaa-bbbb-cccc-777777777777");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var terms = JsonSerializer.SerializeToElement(new
+        {
+            issueDate = asOf,
+            maturityDate = asOf.AddYears(1),
+            paymentFrequency = "Quarterly",
+            dayCountConvention = "30/360",
+            legs = new object[]
+            {
+                new { legType = "Float", index = "SOFR", currentIndexRate = 0.05m, spreadBps = 100m, notional = 500m, exchangesPrincipal = true }
+            }
+        });
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, terms));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        // A single directionless leg projects as Receive: 500 x (5% + 100bps) x 0.25 = 7.5 per
+        // quarter, principal returned at maturity.
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().HaveCount(4);
+        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 7.5m);
+        projection.Schedule.Last().PrincipalAmount.Should().Be(500m);
+        projection.Schedule.Last().Factor.Should().Be(0m);
+        projection.Schedule.Take(3).Should().OnlyContain(static row => row.PrincipalAmount == 0m);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_FloatingLeg_AppliesScenarioShiftToFloatingRatesOnly()
+    {
+        var securityId = Guid.Parse("88888888-aaaa-bbbb-cccc-888888888888");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate = asOf,
+                maturityDate = asOf.AddYears(1),
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                legs = new object[]
+                {
+                    new { legType = "Fixed", direction = "Receive", fixedRate = 0.04m, notional = 1000m },
+                    new { legType = "Float", direction = "Pay", index = "SOFR", currentIndexRate = 0.03m, spreadBps = 25m, notional = 1000m }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Up200);
+
+        // +200bps moves only the floating leg: pay side becomes 5.25% -> 26.25 per period, while
+        // the contractual fixed 4% is unchanged -> net 20 - 26.25 = -6.25 (the position pays net).
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().OnlyContain(static row => row.InterestAmount == -6.25m);
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_PersistedSwapLegsWithoutDirections_ProducesLegSchedulesButNoNet()
+    {
+        var securityId = Guid.Parse("99999999-aaaa-bbbb-cccc-999999999999");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var service = BuildService(
+            StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
+            QueryWith(securityId, JsonSerializer.SerializeToElement(new
+            {
+                issueDate = asOf,
+                maturityDate = asOf.AddYears(1),
+                paymentFrequency = "SemiAnnual",
+                dayCountConvention = "30/360",
+                notional = 1000m,
+                legs = new object[]
+                {
+                    new { legType = "Fixed", currency = "USD", fixedRate = 0.041m },
+                    new { legType = "Float", currency = "USD", index = "SOFR" }
+                }
+            })));
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        // Directions are unknown for a persisted F#-shape swap, so netting would be a guess: the
+        // flat schedule stays empty (nothing can post) while per-leg detail remains available.
+        projection.Should().NotBeNull();
+        projection!.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().HaveCount(2);
+        projection.LegSchedules![0].Schedule.Should().NotBeEmpty();
+    }
+
+    private static ISecurityMasterCashFlowStore StoreWith(Guid securityId, StructuredCashFlowSourceKind sourceKind)
+    {
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(securityId, sourceKind, DateTimeOffset.UtcNow, false, null, null));
+        return store;
+    }
+
+    private static SecurityMasterQueryContract QueryWith(Guid securityId, JsonElement assetSpecificTerms)
+    {
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, assetSpecificTerms));
+        return query;
+    }
+
     private static SecurityMasterCashFlowService BuildService(
         ISecurityMasterCashFlowStore store,
         SecurityMasterQueryContract query)

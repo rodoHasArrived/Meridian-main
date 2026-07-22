@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -59,7 +60,7 @@ public sealed record EvidenceManifestFile(
     string FileName,
     DateTimeOffset LastModified);
 
-public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
+public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";
     private const string FileManifestStorageKind = "file-manifest";
@@ -94,6 +95,12 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
+
+    // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
+    // only makes each single write atomic; without this, concurrent document reviews on the
+    // same vault could read the same snapshot and silently clobber each other's updates.
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _vaultWriteLocks =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -647,93 +654,27 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
         var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
         var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
-        var reviewedAt = DateTimeOffset.UtcNow;
+
+        // Avoid retaining a process-lifetime lock for a vault that does not exist. The identity is
+        // read again after acquiring the lock so a concurrent review still operates on the latest
+        // persisted state.
         var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
-        var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-        if (identity is null)
+        if (await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false) is null)
         {
             return null;
         }
 
-        var document = ResolveIdentityDocuments(identity)
-            .FirstOrDefault(item => string.Equals(item.DocumentId, normalizedDocumentId, StringComparison.OrdinalIgnoreCase));
-        if (document is null)
+        var vaultLock = _vaultWriteLocks.GetOrAdd(safeVaultId, static _ => new SemaphoreSlim(1, 1));
+        await vaultLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            return null;
+            return await ReviewDocumentUnderLockAsync(safeVaultId, normalizedDocumentId, reviewer, request, ct)
+                .ConfigureAwait(false);
         }
-
-        var confirmedFields = NormalizeConfirmedFields(request.ConfirmedFields, reviewer, reviewedAt);
-        if (request.Status == EvidenceDocumentReviewStatusDto.Accepted && confirmedFields.Count == 0)
+        finally
         {
-            throw new ArgumentException(
-                "Accepted evidence vault document reviews require at least one human-confirmed field.",
-                nameof(request));
+            vaultLock.Release();
         }
-
-        var extractionStatus = request.ExtractionStatus ?? ResolveReviewedExtractionStatus(document.ExtractionStatus, request.Status);
-        var reviewState = new EvidenceDocumentReviewStateDto(
-            request.Status,
-            reviewer,
-            reviewedAt,
-            NormalizeOptional(request.Notes))
-        {
-            ConfirmedFields = confirmedFields
-        };
-        var auditEvent = new EvidenceDocumentAuditEventDto(
-            reviewedAt,
-            reviewer,
-            "DocumentReviewRecorded",
-            confirmedFields.Count == 0
-                ? $"Document review state set to {request.Status}."
-                : $"Document review state set to {request.Status} with {confirmedFields.Count} human-confirmed field(s).",
-            NormalizeOptional(request.CorrelationId));
-        var reviewedDocument = document with
-        {
-            ExtractionStatus = extractionStatus,
-            ReviewerState = reviewState,
-            AuditTrail = document.AuditTrail
-                .Concat([auditEvent])
-                .OrderBy(static item => item.RecordedAt)
-                .ThenBy(static item => item.Action, StringComparer.OrdinalIgnoreCase)
-                .ToArray()
-        };
-
-        var reviewedIdentity = ReplaceIdentityDocument(identity, reviewedDocument);
-        var manifestPath = ResolveVaultManifestPath(identity, safeVaultId);
-        if (manifestPath is not null)
-        {
-            var manifest = await TryReadRetainedManifestAsync(manifestPath, ct).ConfigureAwait(false);
-            if (manifest is not null)
-            {
-                var reviewedManifest = manifest with
-                {
-                    VaultIdentity = reviewedIdentity
-                };
-                reviewedIdentity = RefreshVaultIdentityContentHash(reviewedIdentity, reviewedManifest);
-                reviewedManifest = reviewedManifest with
-                {
-                    VaultIdentity = reviewedIdentity
-                };
-                await AtomicFileWriter
-                    .WriteAsync(manifestPath, JsonSerializer.Serialize(reviewedManifest, _jsonOptions), ct)
-                    .ConfigureAwait(false);
-            }
-        }
-
-        await WriteVaultIndexAsync(reviewedIdentity, ct).ConfigureAwait(false);
-
-        var entry = new EvidenceVaultDocumentEntryDto(
-            reviewedDocument,
-            reviewedIdentity.VaultId,
-            reviewedIdentity.SubjectKind,
-            reviewedIdentity.SubjectId,
-            reviewedIdentity.ManifestRoute,
-            reviewedIdentity.RetainedAt,
-            reviewedIdentity.StorageKind,
-            reviewedIdentity.SupportRequests.Count(static supportRequest =>
-                string.Equals(supportRequest.Status, "Open", StringComparison.OrdinalIgnoreCase)),
-            reviewedIdentity.SupportRequests);
-        return new EvidenceVaultDocumentReviewResponseDto(entry, auditEvent);
     }
 
     private static IReadOnlyList<EvidenceDocumentConfirmedFieldDto> NormalizeConfirmedFields(
@@ -2289,6 +2230,18 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
             return null;
         }
+        catch (IOException ex)
+        {
+            // A locked or transiently unreadable file must skip this entry, not fail the
+            // whole vault listing.
+            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            return null;
+        }
     }
 
     private async Task<RetainedEvidenceManifestDto?> TryReadRetainedManifestAsync(
@@ -2316,6 +2269,16 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         catch (JsonException ex)
         {
             _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
+            return null;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be read.", manifestPath);
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be accessed.", manifestPath);
             return null;
         }
     }

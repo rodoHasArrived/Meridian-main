@@ -555,6 +555,7 @@ Use this generated snapshot when validating docs automation and workflow drift.
 | Workflow ID | Prerequisites | Validation checks |
 | --- | --- | --- |
 | `docs-automation-core` | Python 3.11+ available on PATH; Repository dependencies installed via make install | docs automation summary exists; workflow drift report exists |
+| `postgresql-schema-control` | Python 3.10+ available on PATH; Disposable PostgreSQL 16 database; Schema-control Python requirements installed | static migration inventory passes; generated schema artifacts match a migrated candidate database |
 | `desktop-screenshot-catalog` | Windows build host with PowerShell; Release WPF build available when using -SkipBuild | screenshot workflow artifacts produced |
 | `provider-validation-wave1` | Provider credentials configured for Wave 1 adapters; PowerShell available | provider validation summary exists |
 | `operator-inbox-route-validation` | dotnet SDK with Windows targeting packs; PowerShell available | operator inbox route artifact directory exists |

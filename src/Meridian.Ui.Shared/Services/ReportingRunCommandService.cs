@@ -216,7 +216,9 @@ public sealed class ReportingRunCommandService
             manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
-            manifest.Sections.Count(static section => section.Lineage is not null),
+            manifest.Sections.Count(static section =>
+                !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
+                && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
             manifest.Artifacts
                 .Concat([
                     $"reporting-run://{manifest.RunId}/manifest",
@@ -250,17 +252,34 @@ public sealed class ReportingRunCommandService
                     "ReportingOrchestration")
             ],
             NextActions:
-            [
-                new WorkstationReportingRunNextActionPayload(
-                    $"{manifest.RunId}:submit",
-                    "approval-submit",
-                    "Submit run for review",
-                    $"reporting-run://{manifest.RunId}/approval/submit",
-                    "POST",
-                    manifest.Status == ReportingRunStatus.Draft,
-                    manifest.Status == ReportingRunStatus.Draft ? null : "Only draft reporting runs can be submitted.",
-                    false)
-            ],
+                ReportPackRunReadService.HasCertifiedImmutableGovernanceBinding(manifest)
+                    ?
+                    [
+                        new WorkstationReportingRunNextActionPayload(
+                            $"{manifest.RunId}:submit",
+                            "approval-submit",
+                            "Submit run for review",
+                            $"reporting-run://{manifest.RunId}/approval/submit",
+                            "POST",
+                            manifest.Status == ReportingRunStatus.Draft,
+                            manifest.Status == ReportingRunStatus.Draft ? null : "Only draft reporting runs can be submitted.",
+                            false)
+                    ]
+                    :
+                    [
+                        // Mirrors ReportPackRunReadService.BuildGenericRunNextActions: a manifest
+                        // without the exact certified immutable binding cannot enter approval and
+                        // must be re-run through the governed path.
+                        new WorkstationReportingRunNextActionPayload(
+                            $"{manifest.RunId}:migration-required",
+                            "migration-required",
+                            "Create a certified governed run",
+                            string.Empty,
+                            "GET",
+                            false,
+                            "This orchestration manifest is reference-only and does not retain an exact certified tenant, company, scope, access-policy, and run binding.",
+                            false)
+                    ],
             GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray(),
             ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
             ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,

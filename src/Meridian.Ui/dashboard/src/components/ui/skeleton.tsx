@@ -1,5 +1,10 @@
 import { cn } from "@/lib/utils";
 
+// NOTE: a second, CSS-in-JS Skeleton family lives in `components/data/skeleton.tsx` as
+// part of the independent "Concrete" design-system surface (variant/width/lines props).
+// The two APIs are incompatible by design — pick the family that matches the screen you
+// are working in; do not mix them.
+
 /**
  * Placeholder block that occupies the same footprint as content that has not
  * loaded yet. On a data-dense operator screen this is what preserves spatial

@@ -24,7 +24,10 @@ public enum ProviderCapabilityKind : byte
     CashTransactions = 13,
     BankStatements = 14,
     ReconciliationFeed = 15,
-    FactorSchedule = 16
+    FactorSchedule = 16,
+
+    /// <summary>Provider-supplied exchange sessions, closures, and early-close calendar data.</summary>
+    TradingCalendar = 17
 }
 
 /// <summary>

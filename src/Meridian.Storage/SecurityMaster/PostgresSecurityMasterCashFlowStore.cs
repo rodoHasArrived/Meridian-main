@@ -28,7 +28,7 @@ public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlo
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
             return null;
 
-        var sourceKind = Enum.Parse<StructuredCashFlowSourceKind>(reader.GetString(0));
+        var sourceKind = SecurityMasterEnumReads.ParseOrFallback(reader.GetString(0), StructuredCashFlowSourceKind.Unknown);
         var lastUpdated = reader.IsDBNull(1)
             ? (DateTimeOffset?)null
             : reader.GetFieldValue<DateTimeOffset>(1);

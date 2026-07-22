@@ -9,8 +9,8 @@ using Serilog;
 namespace Meridian.Platform.Runtime;
 
 /// <summary>
-/// IHostedService that ensures graceful shutdown by flushing all registered buffers
-/// before the application terminates. This prevents data loss during shutdown.
+/// Compatibility IHostedService for non-lifecycle-control-plane callers. Runtime hosts use
+/// LifecycleControlPlaneHostedService and must not co-register this adapter.
 /// </summary>
 public sealed class GracefulShutdownService : IHostedService
 {

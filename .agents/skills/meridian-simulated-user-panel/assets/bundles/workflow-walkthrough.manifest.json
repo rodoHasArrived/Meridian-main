@@ -1,5 +1,5 @@
 {
-  "schema_version": "2026-04-14",
+  "schema_version": "2026-07-19",
   "mode": "release_gate",
   "artifact_type": "workflow-walkthrough",
   "artifact_paths": [
@@ -7,12 +7,30 @@
     "artifacts/desktop-workflows/example-run/screenshots/01-step.png",
     "artifacts/desktop-workflows/example-run/results.json"
   ],
+  "artifact_evidence": [
+    {
+      "path": "artifacts/desktop-workflows/example-run/manifest.json",
+      "kind": "workflow-manifest",
+      "status": "verified"
+    },
+    {
+      "path": "artifacts/desktop-workflows/example-run/screenshots/01-step.png",
+      "kind": "screenshot",
+      "status": "verified"
+    },
+    {
+      "path": "artifacts/desktop-workflows/example-run/results.json",
+      "kind": "smoke-result",
+      "status": "verified"
+    }
+  ],
+  "artifact_freshness": "current",
   "artifact_summary": "Repeatable operator walkthrough backed by manifest, screenshots, and smoke output.",
   "persona_set": {
     "panel": "operations-controls",
     "required_roles": [
-      "Fund Operations Lead",
-      "Owner-Operator"
+      "Operations Manager",
+      "Integration Administrator"
     ]
   },
   "focus_areas": [

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Storage
@@ -56,6 +56,10 @@ lookup paths, and evidence trails those layers rely on.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
   quarantine, quarantine-review decision, quarantine replay payload, staging-record, and
   reconciliation-handoff evidence persistence for replayable no-code provider intake.
+- `Operations/` - the shared append-only operational case-history implementation. It assigns a
+  global sequence and SHA-256 predecessor/current hash, verifies the complete chain before reads or
+  writes, rejects duplicate event identities and corrupt retained data, and uses an OS lock plus
+  `AtomicFileWriter` copy-on-write append for browser/WPF processes sharing one data root.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
@@ -75,10 +79,44 @@ lookup paths, and evidence trails those layers rely on.
   `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
   remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
   part of the same reporting state set.
+- `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
+  supervisor session receipts remain below the supervisor-managed data root and use the same
+  write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
+- `Services/QualityTrendStore.cs` - crash-safe append-only quality history. New score events retain
+  immutable input snapshots, input and canonical result SHA-256 identities, and a verified
+  quality-evaluation outcome. Sequence/predecessor hashes, a durable chain head, deterministic
+  pending-append recovery, and evaluation-id idempotency detect deletion, reordering, duplicate
+  retries, malformed rows, and semantic edits instead of silently skipping them. Scores enter the
+  process cache only after durable append succeeds; evaluation or retention failures return a
+  validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+### Operational case history
+
+`FileOperationalCaseHistoryStore` persists Contracts-owned workflow transitions, actors, reasons,
+assignments, retries, exceptions, input hashes, approvals, evidence, artifacts, recovery attempts,
+terminal receipts, and bounded source-owned replay data at
+`<DataRoot>/operations/case-history.jsonl`. Reads validate the whole global chain before filtering
+by case or case type, so corruption is surfaced instead of skipped or silently truncated. The
+browser and WPF composition roots share this same data-root-backed port; source modules such as
+Strategies project their compatible read models from the retained history without depending on
+Storage directly. Chain-head checkpoints are finalized without caller cancellation after the JSONL
+commit, retry transient checkpoint failures, and surface an explicit post-commit exception carrying
+the committed record when repair remains pending so callers never infer that durable work rolled
+back.
+
+Maintenance executions compose the shared terminal-outcome contract. Index rebuild invokes the
+real `IStorageSearchService`; when that dependency is absent the operation returns `Blocked`
+instead of claiming a no-op success. A successful rebuild must supply canonical before, staged,
+and read-back item counts and SHA-256 snapshots; missing, incomplete, or mismatched proof blocks or
+fails the operation. Scheduled, running, and terminal maintenance transitions are
+retained through the same case-history spine when a durable history store is configured. Quality
+maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
+no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
+a false terminal failure.
 
 ### Market data and evidence
 
@@ -143,6 +181,10 @@ be reconstructed from durable journal evidence. Postgres journal storage also ke
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
 checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period/ledger-book scope, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
+Canonical `AssetAccounting.*` commands use the stricter evidence contract: operator rationale and
+string links are navigation only, and storage requires complete typed retained identity, SHA-256,
+source reference, accepted reviewer, UTC review/retention timestamps, effective date, positive
+version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
@@ -251,7 +293,10 @@ plus append-only position economic-state history. `IInstrumentPositionProjection
 unfiltered security history, effective-dated security/book lookup, position lookup, and a
 transactional compare-and-swap write without exposing a ledger-balance API. Its PostgreSQL and
 in-memory implementations apply the same missing-role, date-window, overlap, cross-book, owner,
-dimension, provenance, and stale-version guards. The compatibility aggregate command derives the
+dimension, provenance, stale-version, identity, state-version, lineage, approval, and replay guards.
+Composition binds both Asset Operations projection interfaces to the PostgreSQL store when its
+connection is configured and only registers the in-memory fallback when that durable store is
+absent. The compatibility aggregate command derives the
 persisted version inside the same serializable write while preserving the legacy ability to import a
 strictly newer sparse version; exact `ExpectedVersion` compare-and-swap remains exclusive to the
 dedicated store. New dedicated writes require retained event provenance and evidence. PostgreSQL
@@ -269,6 +314,15 @@ migrated. Economic-state payloads retain their matching typed lineage, allowing 
 factor event to survive a later current-position update. Role and position identities cannot move
 across Security Master, owner, role, or ledger-book boundaries, state versions cannot be replaced,
 and idempotent replay preserves the original approval actor, reference, rationale, and timestamp.
+`004_asset_accounting_event_spine.sql` adds append-only, fingerprinted versions of the canonical
+Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment,
+Depreciation/Amortization, and Disposal spine. Store writes require exact prior spine and current
+book-position versions, preserve lifecycle/evidence history, and reject payload drift on replay.
+`V_ledger_027__atomic_tax_lot_posting.sql` adds immutable mutation-batch and tax-lot mutation
+evidence beside versioned lots. `PostgresLedgerJournalStore.AppendAssetPostingAsync` takes
+serializable scope locks, rechecks period and selected-lot CAS, appends the governed journal, creates
+or consumes lots, and retains before/after snapshots in one transaction; stale state or any failed
+append rolls the entire batch back, while an exact canonical fingerprint returns the retained result.
 Asset Operations migrations run under a schema-scoped advisory lock and a checksummed migration
 ledger, preventing concurrent first-start races and repeated DDL/history rewrites after restart.
 
@@ -372,6 +426,14 @@ flowchart TB
     books --> reports
 ```
 
+Asset Accounting Event Spine persistence is append-only. A Posted append is accepted only after
+the store resolves one exact immutable journal with matching event, book, period, basis, timestamp,
+balanced lines, currencies, and dimensions. Atomic acquisition/disposal persistence uses one
+serializable transaction for the journal, scoped tax lots, immutable mutation snapshots, evidence,
+and correction lineage. Every atomic lot carries Security Master plus book-position identity;
+disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
+selected-lot cost basis.
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
@@ -382,6 +444,7 @@ flowchart TB
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

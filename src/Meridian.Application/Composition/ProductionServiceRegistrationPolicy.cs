@@ -1,4 +1,5 @@
 using System.Reflection;
+using Meridian.Contracts.Operations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition;
@@ -109,9 +110,162 @@ public static class ProductionServiceRegistrationPolicy
                 nameof(ProductionSafeImplementationAttribute),
                 StringComparison.Ordinal));
 
-    internal static bool IsProductionComposition(IServiceCollection services)
+    /// <summary>
+    /// Returns whether registrations added to <paramref name="services"/> are being composed for a
+    /// production environment or an explicitly production API posture. Downstream feature modules use
+    /// this to omit unsupported fallback capabilities before the final graph guard runs.
+    /// </summary>
+    public static bool IsProductionComposition(IServiceCollection services)
         => ResolveDeclaredPosture(services) == MeridianDeploymentPosture.ProductionApi
            || IsProductionEnvironment();
+
+    /// <summary>
+    /// Rejects the current in-process Quant Lab compiler in every supported production or
+    /// customer-distribution posture. Quant Lab compiles arbitrary C# and must remain unavailable
+    /// until execution is moved behind a separately isolated worker boundary.
+    /// </summary>
+    public static void EnsureInProcessQuantLabIsAllowed(IServiceCollection services, bool enabled)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (!enabled)
+        {
+            return;
+        }
+
+        if (IsProductionComposition(services) ||
+            IsTruthy(Environment.GetEnvironmentVariable("MDC_PACKAGED_BUILD")) ||
+            IsTruthy(Environment.GetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD")))
+        {
+            throw new InvalidOperationException(
+                "QuantLab:Enabled cannot be used in a production, packaged, or customer build. " +
+                "In-process arbitrary-code execution is outside the ADR-019 supported envelope " +
+                "until Quant Lab runs in an isolated worker.");
+        }
+    }
+
+    // ── Supported local-workstation data posture (ADR-019) ──────────────────────────────────────
+    //
+    // Production rejects every non-production binding outright. The supported *local* posture is
+    // softer but still fail-closed about one thing: a money-path durable store must never run
+    // in-memory while the operator is led to believe the data is real. So under the local posture we
+    // either fail closed on an in-memory durable binding (when the host asserts durability), or force
+    // the persistent simulated label so nothing fabricated is ever mistaken for real.
+
+    private static readonly string[] DurableStoreServiceNameMarkers =
+        ["Store", "Repository", "Sink", "Journal", "Ledger", "Archive", "Wal", "Persistence"];
+
+    /// <summary>
+    /// Whether registrations are being composed for the supported single-operator local-workstation
+    /// posture. Distinct from <see cref="IsProductionComposition"/>: production owns its own outright
+    /// rejection, so this returns <c>false</c> in a production composition.
+    /// </summary>
+    public static bool IsSupportedLocalComposition(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (IsProductionComposition(services))
+        {
+            return false;
+        }
+
+        return ResolveDeclaredPosture(services) == MeridianDeploymentPosture.LocalWorkstation
+               || IsLocalWorkstationEnvironment();
+    }
+
+    internal static bool IsLocalWorkstationEnvironment()
+        => string.Equals(
+            Environment.GetEnvironmentVariable("MERIDIAN_API_DEPLOYMENT_MODE"),
+            nameof(MeridianDeploymentPosture.LocalWorkstation),
+            StringComparison.OrdinalIgnoreCase);
+
+    internal static bool IsDurableStoreServiceType(Type? serviceType)
+    {
+        if (serviceType is null)
+        {
+            return false;
+        }
+
+        var name = serviceType.Name;
+        return DurableStoreServiceNameMarkers.Any(marker => name.Contains(marker, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Durable-store service contracts bound to a non-production (in-memory/null/no-op/…)
+    /// implementation, formatted as <c>Service -> Implementation</c> for diagnostics.
+    /// </summary>
+    internal static IReadOnlyList<string> CollectNonDurableStoreBindings(IServiceCollection services)
+        => services
+            .Where(descriptor => IsDurableStoreServiceType(descriptor.ServiceType))
+            .Select(descriptor => (Service: descriptor.ServiceType, Implementation: GetRegisteredImplementationType(descriptor)))
+            .Where(pair => pair.Implementation is not null && IsNonProductionOnlyImplementation(pair.Implementation!))
+            .Select(pair => $"{pair.Service.FullName ?? pair.Service.Name} -> {pair.Implementation!.FullName ?? pair.Implementation!.Name}")
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+    /// <summary>
+    /// The provenance a composed graph must surface. An explicit <see cref="MeridianDataProvenanceDeclaration"/>
+    /// wins; otherwise a supported-local composition that bound any in-memory durable store forces
+    /// <see cref="DataProvenance.Simulated"/> so fabricated data cannot pass for real. Real data (the
+    /// only unlabeled state) requires either durable stores or no local fabrication at all.
+    /// </summary>
+    public static DataProvenance ResolveComposedDataProvenance(IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (TryResolveForcedProvenance(services, out var forced))
+        {
+            return forced;
+        }
+
+        return IsSupportedLocalComposition(services) && CollectNonDurableStoreBindings(services).Count > 0
+            ? DataProvenance.Simulated
+            : DataProvenance.Real;
+    }
+
+    internal static bool TryResolveForcedProvenance(IServiceCollection services, out DataProvenance provenance)
+    {
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            if (!services[i].IsKeyedService &&
+                services[i].ImplementationInstance is MeridianDataProvenanceDeclaration declaration)
+            {
+                provenance = declaration.Provenance;
+                return true;
+            }
+        }
+
+        provenance = DataProvenance.Real;
+        return false;
+    }
+
+    /// <summary>
+    /// Fail-closed variant for the supported local posture. When <paramref name="requireDurableStores"/>
+    /// is set (the host asserts real durability) any in-memory money-path store binding aborts
+    /// composition with the offending bindings named. When durability is not required, callers force
+    /// the persistent label via <see cref="ResolveComposedDataProvenance"/> instead of throwing.
+    /// </summary>
+    public static void ValidateSupportedLocal(IServiceCollection services, bool requireDurableStores)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (!requireDurableStores || !IsSupportedLocalComposition(services))
+        {
+            return;
+        }
+
+        var bindings = CollectNonDurableStoreBindings(services);
+        if (bindings.Count == 0)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            "Supported local-workstation posture requires durable money-path stores but found in-memory " +
+            $"bindings: {string.Join(", ", bindings)}. Bind a durable store, or drop the durability requirement " +
+            "and force the persistent simulated-data label so fabricated data can never be mistaken for real.");
+    }
 
     internal static MeridianDeploymentPosture ResolveDeclaredPosture(IServiceCollection services)
     {
@@ -142,4 +296,10 @@ public static class ProductionServiceRegistrationPolicy
                || string.Equals(mode, "Live", StringComparison.OrdinalIgnoreCase)
                || string.Equals(apiDeploymentMode, nameof(MeridianDeploymentPosture.ProductionApi), StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsTruthy(string? value)
+        => value is not null &&
+           (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("yes", StringComparison.OrdinalIgnoreCase));
 }

@@ -976,4 +976,77 @@ describe("PortfolioScreen", () => {
     expect(api.getRunCashFlows).toHaveBeenCalledWith("run-1");
     expect(api.getRunFills).toHaveBeenCalledWith("run-1");
   });
+
+  it("charts the daily-return distribution from a multi-point drill-in equity curve", async () => {
+    vi.spyOn(api, "getRunAttribution").mockResolvedValue({
+      runId: "run-1",
+      totalRealizedPnl: 120,
+      totalUnrealizedPnl: 80,
+      totalCommissions: 5,
+      bySymbol: []
+    });
+    vi.spyOn(api, "getRunEquityCurve").mockResolvedValue({
+      runId: "run-1",
+      initialEquity: 100000,
+      finalEquity: 101900,
+      maxDrawdown: 800,
+      maxDrawdownPercent: 0.008,
+      maxDrawdownRecoveryDays: 2,
+      sharpeRatio: 1.41,
+      sortinoRatio: 1.8,
+      points: [
+        { date: "2026-05-01", totalEquity: 100000, cash: 50000, dailyReturn: 0, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 },
+        { date: "2026-05-02", totalEquity: 101200, cash: 50000, dailyReturn: 0.012, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 },
+        { date: "2026-05-03", totalEquity: 100390, cash: 50000, dailyReturn: -0.008, drawdownFromPeak: 810, drawdownFromPeakPercent: 0.008 },
+        { date: "2026-05-04", totalEquity: 102398, cash: 50000, dailyReturn: 0.02, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 },
+        { date: "2026-05-05", totalEquity: 101886, cash: 50000, dailyReturn: -0.005, drawdownFromPeak: 512, drawdownFromPeakPercent: 0.005 }
+      ]
+    });
+    vi.spyOn(api, "getRunCashFlows").mockResolvedValue({
+      runId: "run-1",
+      asOf: "2026-05-07T12:00:00Z",
+      currency: "USD",
+      totalEntries: 0,
+      totalInflows: 0,
+      totalOutflows: 0,
+      netCashFlow: 0,
+      entries: [],
+      ladder: {
+        asOf: "2026-05-07T12:00:00Z",
+        currency: "USD",
+        bucketDays: 7,
+        totalProjectedInflows: 0,
+        totalProjectedOutflows: 0,
+        netPosition: 0,
+        buckets: []
+      }
+    });
+    vi.spyOn(api, "getRunFills").mockResolvedValue({
+      runId: "run-1",
+      totalFills: 0,
+      totalCommissions: 0,
+      fills: []
+    });
+    const user = userEvent.setup();
+
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/attribution"]
+    });
+
+    await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
+
+    // Equity/drawdown curve renders for a multi-point profile.
+    expect(await screen.findByRole("img", { name: "Equity performance curve" })).toBeDefined();
+
+    // The daily-return distribution reuses the same fetched points — no extra request — and
+    // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the
+    // readout assertions to the distribution card so a matching value elsewhere (e.g. the equity
+    // card's max-drawdown readout) cannot satisfy them.
+    const distribution = await screen.findByRole("img", { name: "Distribution histogram" });
+    const distributionCard = distribution.closest("div")!.parentElement!;
+    expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
+    expect(within(distributionCard).getByText("+0.38%")).toBeDefined();
+    expect(within(distributionCard).getByText("+2.00%")).toBeDefined();
+    expect(within(distributionCard).getByText("-0.80%")).toBeDefined();
+  });
 });

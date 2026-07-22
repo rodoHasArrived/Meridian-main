@@ -64,7 +64,7 @@ public sealed class StatementFetchScheduleRunner(
                     new StatementImportCommitRequest(
                         document,
                         schedule.ConnectorId,
-                        SourceKind: "broker",
+                        SourceKind: schedule.SourceKind,
                         SourceInstitution: schedule.SourceInstitution,
                         FundAccountId: schedule.FundAccountId,
                         ExternalAccountId: schedule.ExternalAccountId,
@@ -89,7 +89,11 @@ public sealed class StatementFetchScheduleRunner(
                 schedule.ScheduleId,
                 schedule.ConnectorId,
                 schedule.ExternalAccountId);
-            await scheduleStore.RecordRunAsync(schedule.ScheduleId, nowUtc, $"Failed: {ex.Message}", ct).ConfigureAwait(false);
+            await scheduleStore.RecordFailureAsync(
+                    schedule.ScheduleId,
+                    $"Failed: {ex.GetType().Name}",
+                    ct)
+                .ConfigureAwait(false);
             return null;
         }
     }

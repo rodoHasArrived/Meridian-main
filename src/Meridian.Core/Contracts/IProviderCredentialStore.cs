@@ -1,9 +1,8 @@
 namespace Meridian.Core.Contracts;
 
 /// <summary>
-/// Stores and retrieves provider credentials outside of appsettings.json.
-/// Credentials are persisted as plaintext in a restricted-access sidecar file
-/// ({DataRoot}/provider-credentials.json) and are never returned to browser clients.
+/// Compatibility contract for provider-module setup. Production implementations must delegate to
+/// the encrypted, audited credential vault; no implementation may persist plaintext sidecars.
 /// </summary>
 public interface IProviderCredentialStore
 {

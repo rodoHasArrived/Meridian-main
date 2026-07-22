@@ -322,7 +322,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
 
         queuedUser.Payload.RecipientKind.Should().Be(ReportingAccessPrincipalKind.User);
         await replayAsGroup.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*different immutable delivery request*");
+            .WithMessage("*different immutable delivery content*");
         fixture.DeliveryStore.Count.Should().Be(1);
     }
 
@@ -902,8 +902,14 @@ public sealed class ReportingSecureDistributionAuthorizationTests
                 MaxUses: 1),
             Authority("owner-a", "tenant-a", "company-a", ["owner-a"], isAdmin: false));
 
+        // Both unavailability modes fail closed with InvalidDataException and issue no grant;
+        // the message is case-specific (corrupt bytes fail integrity verification, absent bytes
+        // are reported missing from immutable storage).
+        var expectedMessage = corruptBytes
+            ? "*exact integrity verification*"
+            : "*missing from immutable storage*";
         await issue.Should().ThrowAsync<InvalidDataException>()
-            .WithMessage("*exact integrity verification*");
+            .WithMessage(expectedMessage);
         fixture.AccessGrantStore.Count.Should().Be(0);
     }
 
@@ -1589,13 +1595,15 @@ public sealed class ReportingSecureDistributionAuthorizationTests
 
     private sealed class MemoryDeliveryStore(ReportingDeliveryJobRecord job) : IReportingDeliveryStore
     {
+        private ReportingDeliveryJobRecord _job = job;
+
         public Task<ReportingDeliveryJobRecord?> GetAsync(string jobId, CancellationToken ct = default) =>
-            Task.FromResult<ReportingDeliveryJobRecord?>(job.JobId == jobId ? job : null);
+            Task.FromResult<ReportingDeliveryJobRecord?>(_job.JobId == jobId ? _job : null);
 
         public Task<ReportingDeliveryJobRecord?> GetByIdempotencyKeyAsync(
             string idempotencyKey,
             CancellationToken ct = default) =>
-            Task.FromResult<ReportingDeliveryJobRecord?>(job.IdempotencyKey == idempotencyKey ? job : null);
+            Task.FromResult<ReportingDeliveryJobRecord?>(_job.IdempotencyKey == idempotencyKey ? _job : null);
 
         public Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
             string accessGrantId,
@@ -1607,7 +1615,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             string packageId,
             CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>(
-                job.TenantId == tenantId && job.PackageId == packageId ? [job] : []);
+                _job.TenantId == tenantId && _job.PackageId == packageId ? [_job] : []);
 
         public Task<bool> TryCreateAsync(ReportingDeliveryJobRecord created, CancellationToken ct = default) =>
             Task.FromResult(false);
@@ -1620,12 +1628,24 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>([]);
 
+        // Optimistic-concurrency update matching the real store contract: succeed and retain the
+        // new record when the expected version matches, so receipt-recording success paths can be
+        // exercised. A hardcoded false would make every receipt update loop until it reports a
+        // spurious "conflicted repeatedly".
         public Task<bool> TryUpdateAsync(
             string jobId,
             long expectedVersion,
             ReportingDeliveryJobRecord updatedJob,
-            CancellationToken ct = default) =>
-            Task.FromResult(false);
+            CancellationToken ct = default)
+        {
+            if (_job.JobId != jobId || _job.Version != expectedVersion)
+            {
+                return Task.FromResult(false);
+            }
+
+            _job = updatedJob;
+            return Task.FromResult(true);
+        }
     }
 
     private sealed class ReleasedDeliveryStore : IReportingDeliveryStore

@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `00679d1be9ef`
+- Source fingerprint: `4d9ed86b3933`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `92`
-- Open automated tasks: `0`
+- Registered WPF screens: `93`
+- Open automated tasks: `1`
 
 ## Workspace Summary
 
@@ -30,7 +30,7 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | Reporting | 8 | 5 | 3 | 0 | 8 | 8 | 0 |
 | Strategy | 13 | 6 | 3 | 3 | 13 | 13 | 0 |
 | Data | 25 | 6 | 9 | 10 | 25 | 25 | 0 |
-| Settings | 17 | 5 | 6 | 6 | 17 | 17 | 0 |
+| Settings | 18 | 6 | 6 | 6 | 17 | 18 | 1 |
 
 ## Gantt Chart
 
@@ -133,6 +133,7 @@ gantt
     Settings evidence :done, settings_settings, 2026-06-26, 1d
     Credential management evidence :done, settings_credentialmanagement, 2026-06-26, 1d
     System health evidence :done, settings_systemhealth, 2026-06-26, 1d
+    Lifecycle control Needs screenshot :crit, active, settings_lifecyclecontrol, 2026-06-17, 3d
     Diagnostics evidence :done, settings_diagnostics, 2026-06-26, 1d
     Service manager evidence :done, settings_servicemanager, 2026-06-26, 1d
     Admin maintenance evidence :done, settings_adminmaintenance, 2026-06-26, 1d
@@ -390,7 +391,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as ReportingShell (ReportingWorkspaceShellPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-reporting-shell.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +8 more.
 
 #### Fund report pack (`FundReportPack`)
 
@@ -520,7 +521,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as RunMat (RunMatPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-run-mat.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +79 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +80 more.
 
 #### Batch backtest (`BatchBacktest`)
 
@@ -602,7 +603,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +29 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +33 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -650,7 +651,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Provider (ProviderPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +75 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +78 more.
 
 #### Backfill (`Backfill`)
 
@@ -674,7 +675,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Storage (StoragePage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +36 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +37 more.
 
 #### Data export (`DataExport`)
 
@@ -714,7 +715,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as SecurityMaster (SecurityMasterPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +24 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, +25 more.
 
 #### Symbol mapping (`SymbolMapping`)
 
@@ -738,7 +739,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Schedules (ScheduleManagerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-schedules.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingGovernanceWorkbenchViewModelTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingWorkspaceGovernanceSurfaceTests.cs, +3 more.
 
 #### Collection sessions (`CollectionSessions`)
 
@@ -837,6 +838,14 @@ gantt
 - [x] Registered in the WPF shell registry as SystemHealth (SystemHealthPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-system-health.png (2026-06-26).
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more.
+
+#### Lifecycle control (`LifecycleControl`)
+
+- Workspace section: `Operations`; visibility: `Primary`; page class: `LifecycleControlPage`.
+- Status: `Needs screenshot`.
+- [x] Registered in the WPF shell registry as LifecycleControl (LifecycleControlPage).
+- [ ] Capture a fixture-mode desktop screenshot for LifecycleControl or record an explicit non-capture decision.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StartupWindowViewModelTests.cs, +1 more.
 
 #### Diagnostics (`Diagnostics`)
 

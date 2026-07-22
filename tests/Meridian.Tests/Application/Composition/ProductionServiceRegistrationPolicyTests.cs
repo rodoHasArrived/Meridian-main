@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Application.Composition.Features;
+using Meridian.Contracts.Operations;
+using Meridian.DataIntegration.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
@@ -45,6 +48,126 @@ public sealed class ProductionServiceRegistrationPolicyTests
     }
 
     [Fact]
+    public void ResolveComposedDataProvenance_LocalWorkstationWithInMemoryDurableStore_ForcesSimulatedLabel()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.AddSingleton<IMoneyPathStore, InMemoryMoneyPathStore>();
+
+        ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(services)
+            .Should().Be(DataProvenance.Simulated);
+    }
+
+    [Fact]
+    public void ResolveComposedDataProvenance_LocalWorkstationWithDurableStore_StaysReal()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.AddSingleton<IMoneyPathStore, PostgresMoneyPathStore>();
+
+        ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(services)
+            .Should().Be(DataProvenance.Real);
+    }
+
+    [Fact]
+    public void ResolveComposedDataProvenance_HonorsForcedProvenanceDeclaration()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.AddSingleton<IMoneyPathStore, PostgresMoneyPathStore>();
+        services.ForceDataProvenanceLabel(DataProvenance.Seeded);
+
+        ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(services)
+            .Should().Be(DataProvenance.Seeded);
+    }
+
+    [Fact]
+    public void ValidateSupportedLocal_WhenDurabilityRequiredAndInMemoryStoreBound_RejectsStartup()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.AddSingleton<IMoneyPathStore, InMemoryMoneyPathStore>();
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .ValidateSupportedLocal(services, requireDurableStores: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*requires durable money-path stores*InMemoryMoneyPathStore*");
+    }
+
+    [Fact]
+    public void ValidateSupportedLocal_WhenDurabilityNotRequired_ForcesLabelInsteadOfThrowing()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.AddSingleton<IMoneyPathStore, InMemoryMoneyPathStore>();
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .ValidateSupportedLocal(services, requireDurableStores: false);
+
+        act.Should().NotThrow();
+        ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(services)
+            .Should().Be(DataProvenance.Simulated);
+    }
+
+    [Theory]
+    [InlineData(typeof(IMoneyPathStore), true)]
+    [InlineData(typeof(ISampleReconciliationRepository), true)]
+    [InlineData(typeof(IPlainService), false)]
+    public void IsDurableStoreServiceType_FlagsStoreContracts(Type serviceType, bool expected)
+    {
+        ProductionServiceRegistrationPolicy.IsDurableStoreServiceType(serviceType).Should().Be(expected);
+    }
+
+    [Fact]
+    public void ResolveComposedDataProvenance_DurableSelectionPersistsAcrossRecomposition()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+
+        static DataProvenance Compose()
+        {
+            var services = new ServiceCollection();
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.AddSingleton<IMoneyPathStore, PostgresMoneyPathStore>();
+            return ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance(services);
+        }
+
+        // Two independent compositions model two process starts: a durable selection stays Real both
+        // times — it is never silently downgraded to a simulated label between restarts.
+        Compose().Should().Be(DataProvenance.Real);
+        Compose().Should().Be(DataProvenance.Real);
+    }
+
+    [Fact]
+    public void DiagnosticsFeatureRegistration_WhenEnvironmentIsProduction_OmitsSampleDataGenerator()
+    {
+        using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Production");
+        var services = new ServiceCollection();
+
+        new DiagnosticsFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(SampleDataGenerator));
+    }
+
+    [Fact]
+    public void DiagnosticsFeatureRegistration_WhenEnvironmentIsNotProduction_RegistersSampleDataGenerator()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+
+        new DiagnosticsFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        services.Should().ContainSingle(descriptor =>
+            descriptor.ServiceType == typeof(SampleDataGenerator));
+    }
+
+    [Fact]
     public void ResolveDeclaredPosture_LastDeclarationWins()
     {
         var services = new ServiceCollection();
@@ -69,6 +192,50 @@ public sealed class ProductionServiceRegistrationPolicyTests
         using var deploymentMode = new EnvironmentVariableScope("MERIDIAN_API_DEPLOYMENT_MODE", "ProductionApi");
 
         ProductionServiceRegistrationPolicy.IsProductionEnvironment().Should().BeTrue();
+    }
+
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenProductionPostureAndEnabled_RejectsStartup()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*isolated worker*");
+    }
+
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenPackagedBuildAndEnabled_RejectsStartup()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*packaged*");
+    }
+
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenDevelopmentPosture_AllowsExplicitOptIn()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
+        using var customerBuild = new EnvironmentVariableScope("MERIDIAN_CUSTOMER_BUILD", null);
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().NotThrow();
     }
 
     [Theory]
@@ -115,6 +282,17 @@ public sealed class ProductionServiceRegistrationPolicyTests
 
     [NonProductionOnlyImplementation]
     private sealed class MarkerOnlyService;
+
+    // Durable money-path store contract (name contains "Store") plus in-memory and durable bindings.
+    private interface IMoneyPathStore;
+
+    private sealed class InMemoryMoneyPathStore : IMoneyPathStore;
+
+    private sealed class PostgresMoneyPathStore : IMoneyPathStore;
+
+    private interface ISampleReconciliationRepository;
+
+    private interface IPlainService;
 
     private sealed class InMemorySampleService;
 

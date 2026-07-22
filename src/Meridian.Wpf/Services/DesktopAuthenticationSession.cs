@@ -11,6 +11,8 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 {
     private string? _sessionToken;
 
+    public event EventHandler? SignedOut;
+
     public bool IsConfigured => loginSessionService.IsConfigured;
 
     public bool CanContinueWithoutCredentials =>
@@ -107,6 +109,7 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
         _sessionToken = null;
         IsAnonymousDevelopmentSession = false;
+        SignedOut?.Invoke(this, EventArgs.Empty);
     }
 }
 
