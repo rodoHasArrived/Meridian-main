@@ -37,6 +37,10 @@ public sealed class StatementRunWorkflowService(
         ArgumentNullException.ThrowIfNull(request);
 
         var normalizedRequest = await NormalizeAndValidateAsync(request, cancellationToken).ConfigureAwait(false);
+        // Resolve the selected tolerance profile before committing the import. An unknown profile must
+        // fail the run before ImportAsync persists it; otherwise the stored import would be left with no
+        // breaks or cases and the duplicate-source guard would reject a corrected retry of the same file.
+        var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
         var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
 
         // Reconcile the imported statement against Meridian's own book. The population provider
@@ -55,7 +59,6 @@ public sealed class StatementRunWorkflowService(
                 cancellationToken)
             .ConfigureAwait(false);
 
-        var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
         var createdAtUtc = DateTimeOffset.UtcNow;
         var matchResult = StatementRunMatcher.Match(
             imported.Import,

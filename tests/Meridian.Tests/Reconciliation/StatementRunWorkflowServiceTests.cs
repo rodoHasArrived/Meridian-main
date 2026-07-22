@@ -196,6 +196,11 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
+
+        // The import must not be committed when tolerance resolution fails, so a corrected retry of the
+        // same statement is not blocked by the duplicate-source guard.
+        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        imports.Should().BeEmpty("the import must not be persisted when the run fails before matching");
     }
 
     private StatementRunWorkflowService CreateWorkflow(
