@@ -160,7 +160,10 @@ internal static class StatementRunMatcher
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
-        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence);
+        // Carry the statement balance's as-of date into the cash identity. The internal cash is the book's
+        // balance as of its own recorded date, and the engine now requires the two dates to agree, so a
+        // closing balance from the wrong period cannot exact-match a period-appropriate internal balance.
+        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence, row.TradeDate);
     }
 
     private static NormalizedStatementTransaction MapTransaction(

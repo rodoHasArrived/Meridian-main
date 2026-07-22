@@ -62,13 +62,36 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             "FUND-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
-            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash")],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 28))],
             [new InternalLedgerTransaction("i-tx", "EXT-9", "EXT-1", "MSFT", "USD", new DateOnly(2026, 5, 28), new DateOnly(2026, 5, 30), "trade", 5m, -100m, "internal:tx")])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 
         result.Breaks.Should().BeEmpty();
         result.Cases.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenCashBalanceDateDiffersFromInternal_DoesNotMatchOnAmountAlone()
+    {
+        // The statement closing balance carries the same amount as the internal book but a different date
+        // (30 Apr vs the internal 31 May balance). A wrong-period closing balance must not exact-match the
+        // period-appropriate internal balance on account, currency, and amount alone; it surfaces as a break.
+        var path = await WriteStatementAsync(
+            "wrong-period-cash.csv",
+            "FUND-1,,0,0,2500.25,cash,2026-04-30,,USD,,");
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
+            [],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 31))],
+            [])));
+
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        // Both sides are now unmatched — the wrong-period statement balance on one side and the
+        // period-end internal balance on the other — instead of a fabricated exact match on amount alone.
+        result.Breaks.Should().HaveCount(2);
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference == "internal:cash",
+            "the period-end internal balance has no same-date statement counterpart, so it is a one-sided internal break");
     }
 
     [Fact]
@@ -81,7 +104,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash")],
+                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 28))],
                 [])),
             new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m, new DateOnly(2026, 5, 1))]));
 
@@ -98,7 +121,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             "FUND-1,,0,0,1000,cash,2026-05-28,,EUR,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
-            [new InternalCashBalance("i-cash", "FUND-1", "USD", 1085m, "internal:cash")],
+            [new InternalCashBalance("i-cash", "FUND-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 28))],
             [])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -151,7 +174,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
-            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash")],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
             [])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -177,7 +200,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash")],
+                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
                 [])),
             toleranceProfileProvider: new InMemoryStatementToleranceProfileProvider(
                 [StatementToleranceProfile.Default, looseProfile]));

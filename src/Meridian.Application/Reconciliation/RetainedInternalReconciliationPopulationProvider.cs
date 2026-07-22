@@ -137,7 +137,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                     accountKey,
                     latest.Currency,
                     latest.CashBalance,
-                    $"internal:balance:{latest.SnapshotId:D}");
+                    $"internal:balance:{latest.SnapshotId:D}",
+                    latest.AsOfDate);
             })
             .ToArray();
     }
