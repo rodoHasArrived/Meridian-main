@@ -117,7 +117,8 @@ public sealed record ProviderNewsItem(
     DateTimeOffset PublishedAt,
     string? Symbol = null,
     string? Source = null,
-    string? Url = null);
+    string? Url = null,
+    ProviderDataProvenance? Provenance = null);
 
 /// <summary>Presentation-safe trading-calendar event supplied by providers that support calendars.</summary>
 public sealed record ProviderCalendarEvent(
@@ -126,7 +127,8 @@ public sealed record ProviderCalendarEvent(
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
     string EventType,
-    string? Description = null);
+    string? Description = null,
+    ProviderDataProvenance? Provenance = null);
 
 /// <summary>Presentation-safe instrument discovery result supplied by providers that support search.</summary>
 public sealed record ProviderInstrumentDiscoveryResult(
@@ -134,7 +136,8 @@ public sealed record ProviderInstrumentDiscoveryResult(
     string Symbol,
     string DisplayName,
     string? Exchange = null,
-    string? AssetClass = null);
+    string? AssetClass = null,
+    ProviderDataProvenance? Provenance = null);
 
 /// <summary>
 /// Provider availability and entitlement evidence. Implement this optional interface instead of
