@@ -80,6 +80,7 @@ public static class WorkstationServiceCollectionExtensions
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        services.TryAddSingleton<ProviderDataReadModelService>();
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
 

@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Threading.Channels;
 using Meridian.Contracts.Configuration;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -39,6 +41,12 @@ public sealed record IBScannerRequest(
     string? AbovePrice = null,
     string? AboveVolume = null);
 
+/// <summary>Explicit parameters for a five-second IB real-time-bar stream.</summary>
+public sealed record IBRealTimeBarRequest(SymbolConfig Contract, string WhatToShow = "TRADES", bool UseRegularTradingHours = true);
+
+/// <summary>Explicit parameters for an IB historical-tick request.</summary>
+public sealed record IBHistoricalTickRequest(SymbolConfig Contract, DateTimeOffset? Start, DateTimeOffset? End, int NumberOfTicks, string WhatToShow = "TRADES", bool UseRegularTradingHours = true);
+
 /// <summary>
 /// Compile-neutral IB data-service transport. The connection manager supplies the vendor calls in
 /// an IBAPI build; tests can supply a deterministic transport without an official SDK assembly.
@@ -56,12 +64,28 @@ public interface IIBDataServiceTransport
     void RequestPnl(int requestId, string account, string? modelCode);
     void RequestMarketRule(int requestId, int marketRuleId);
     void RequestDepthExchanges(int requestId);
+    void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) => throw new NotSupportedException("The configured IB transport does not support real-time bars.");
+    void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) => throw new NotSupportedException("The configured IB transport does not support historical ticks.");
+    void CancelDataRequest(int requestId, string capability) { }
 }
 
 /// <summary>Optional runtime callback source for automatically captured IB entitlement evidence.</summary>
 public interface IIBDataLineageSource
 {
     event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+}
+
+/// <summary>Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.</summary>
+public interface IIBDataCallbackSource
+{
+    event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
+    event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
+    event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
+    event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
+    event EventHandler<(int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments)>? MarketRuleReceived;
+    event EventHandler<int>? RequestCompleted;
+    event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 }
 
 /// <summary>IB's actual live/frozen/delayed classification for a request.</summary>
@@ -72,10 +96,14 @@ public sealed record IBMarketDataTypeUpdate(int RequestId, int MarketDataType);
 /// while retaining request lineage. This surface never fabricates availability: callers begin at
 /// <see cref="IBMarketDataAvailability.Unknown"/> until TWS/Gateway reports a data type.
 /// </summary>
-public sealed class IBDataServices
+public sealed class IBDataServices : IProviderDataReadService, IDisposable
 {
     private readonly IIBDataServiceTransport _transport;
+    private readonly IIBDataCallbackSource? _callbackSource;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
+    private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
+    private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
+        new BoundedChannelOptions(256) { SingleReader = false, SingleWriter = false, FullMode = BoundedChannelFullMode.DropOldest });
     private int _nextRequestId = 90_000;
 
     public IBDataServices(IIBDataServiceTransport transport)
@@ -83,13 +111,36 @@ public sealed class IBDataServices
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
         if (transport is IIBDataLineageSource source)
             source.MarketDataTypeReceived += OnMarketDataTypeReceived;
+        if (transport is IIBDataCallbackSource callbacks)
+        {
+            _callbackSource = callbacks;
+            callbacks.OptionContractReceived += OnOptionContractReceived;
+            callbacks.ScannerResultReceived += OnScannerResultReceived;
+            callbacks.RealTimeBarReceived += OnRealTimeBarReceived;
+            callbacks.HistoricalTickReceived += OnHistoricalTickReceived;
+            callbacks.PnlReceived += OnPnlReceived;
+            callbacks.MarketRuleReceived += OnMarketRuleReceived;
+            callbacks.RequestCompleted += OnRequestCompleted;
+            callbacks.RequestRejected += OnRequestRejected;
+        }
     }
 
     /// <summary>Raised after request, status, or contract-lineage evidence changes.</summary>
     public event Action<IBDataLineage>? LineageUpdated;
 
+    /// <summary>Raised when a provider-neutral request projection changes.</summary>
+    public event Action<ProviderDataRequestReadModel>? ReadModelUpdated;
+
     /// <summary>Returns the current lineage evidence in stable request-id order.</summary>
     public IReadOnlyList<IBDataLineage> GetLineage() => _lineage.Values.OrderBy(x => x.RequestId).ToArray();
+
+    public IReadOnlyList<ProviderDataRequestReadModel> GetRequests() => _requests.Values.OrderBy(x => x.RequestId).ToArray();
+
+    public async IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in _updates.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            yield return update;
+    }
 
     public int RequestScanner(IBScannerRequest request, CancellationToken ct = default)
     {
@@ -149,6 +200,20 @@ public sealed class IBDataServices
         return Issue("pnl", account, null, modelCode, id => _transport.RequestPnl(id, account, modelCode), ct);
     }
 
+    public int SubscribeRealTimeBars(IBRealTimeBarRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return Issue("real-time-bars", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestRealTimeBars(id, request), ct);
+    }
+
+    public int RequestHistoricalTicks(IBHistoricalTickRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.NumberOfTicks is < 1 or > 1000) throw new ArgumentOutOfRangeException(nameof(request), "IB historical-tick requests must contain 1 to 1,000 ticks.");
+        if (request.Start.HasValue && request.End.HasValue && request.Start > request.End) throw new ArgumentException("Historical tick start must not be after end.", nameof(request));
+        return Issue("historical-ticks", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestHistoricalTicks(id, request), ct);
+    }
+
     public int RequestMarketRule(int marketRuleId, CancellationToken ct = default)
     {
         if (marketRuleId <= 0) throw new ArgumentOutOfRangeException(nameof(marketRuleId));
@@ -196,11 +261,87 @@ public sealed class IBDataServices
         Update(requestId, x => x with { Status = status, ObservedAt = DateTimeOffset.UtcNow });
     }
 
+    /// <summary>Correlates an option-discovery callback to its originating request.</summary>
+    public void RecordOptionContract(int requestId, ProviderOptionContract contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        UpdateReadModel(requestId, current => current with
+        {
+            Status = ProviderDataRequestStatus.Streaming,
+            OptionContracts = Append(current.OptionContracts, contract)
+        });
+    }
+
+    public void RecordScannerResult(int requestId, ProviderScannerResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ScannerResults = Append(current.ScannerResults, result) });
+    }
+
+    public void RecordRealTimeBar(int requestId, ProviderRealTimeBar bar)
+    {
+        ArgumentNullException.ThrowIfNull(bar);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, RealTimeBars = Append(current.RealTimeBars, bar) });
+    }
+
+    public void RecordHistoricalTick(int requestId, ProviderHistoricalTick tick, bool completed = false)
+    {
+        ArgumentNullException.ThrowIfNull(tick);
+        UpdateReadModel(requestId, current => current with { Status = completed ? ProviderDataRequestStatus.Completed : ProviderDataRequestStatus.Streaming, HistoricalTicks = Append(current.HistoricalTicks, tick) });
+    }
+
+    public void RecordPnl(int requestId, ProviderAccountPnl pnl)
+    {
+        ArgumentNullException.ThrowIfNull(pnl);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, AccountId = pnl.AccountId, ModelAccountId = pnl.ModelAccountId, Pnl = pnl });
+    }
+
+    public void RecordMarketRule(int requestId, IEnumerable<ProviderMarketRuleIncrement> increments)
+    {
+        ArgumentNullException.ThrowIfNull(increments);
+        var values = increments.ToArray();
+        if (values.Length == 0) throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, MarketRuleIncrements = values });
+    }
+
+    public void CompleteRequest(int requestId) => UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed });
+
+    public void CancelRequest(int requestId) => UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Cancelled });
+
+    /// <summary>Cancels the vendor request and marks only its correlated read model as cancelled.</summary>
+    public void CancelRequest(int requestId, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!_requests.TryGetValue(requestId, out var request)) throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+        _transport.CancelDataRequest(requestId, request.Capability);
+        CancelRequest(requestId);
+    }
+
+    /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
+    public void TimeoutRequest(int requestId)
+    {
+        if (!_requests.TryGetValue(requestId, out var request)) throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+        _transport.CancelDataRequest(requestId, request.Capability);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
+    }
+
+    public void RejectRequest(int requestId, string code, string message)
+        => UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Rejected, ErrorCode = code, ErrorMessage = message });
+
     private void OnMarketDataTypeReceived(object? sender, IBMarketDataTypeUpdate update)
     {
         if (_lineage.ContainsKey(update.RequestId))
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
+
+    private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value) => RecordOptionContract(value.RequestId, value.Contract);
+    private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value) => RecordScannerResult(value.RequestId, value.Result);
+    private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value) => RecordRealTimeBar(value.RequestId, value.Bar);
+    private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value) => RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
+    private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value) => RecordPnl(value.RequestId, value.Pnl);
+    private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value) => RecordMarketRule(value.RequestId, value.Increments);
+    private void OnRequestCompleted(object? sender, int requestId) => CompleteRequest(requestId);
+    private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value) => RejectRequest(value.RequestId, value.Code, value.Message);
 
     private int Issue(string service, string symbol, string? exchange, string? subscription, Action<int> send, CancellationToken ct)
     {
@@ -208,9 +349,12 @@ public sealed class IBDataServices
         var requestId = Interlocked.Increment(ref _nextRequestId);
         var evidence = new IBDataLineage(requestId, service, symbol, exchange, null, null, subscription, IBMarketDataAvailability.Unknown, false, "requested", DateTimeOffset.UtcNow);
         if (!_lineage.TryAdd(requestId, evidence)) throw new InvalidOperationException($"Duplicate IB request id {requestId}.");
+        var projection = new ProviderDataRequestReadModel(requestId, "interactive-brokers", service, ProviderDataRequestStatus.Requested, evidence.ObservedAt);
+        _requests.TryAdd(requestId, projection);
         try { send(requestId); }
-        catch { _lineage.TryRemove(requestId, out _); throw; }
+        catch { _lineage.TryRemove(requestId, out _); _requests.TryRemove(requestId, out _); throw; }
         LineageUpdated?.Invoke(evidence);
+        Publish(projection);
         return requestId;
     }
 
@@ -218,6 +362,39 @@ public sealed class IBDataServices
     {
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
         LineageUpdated?.Invoke(updated);
+    }
+
+    private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
+    {
+        var updated = _requests.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current) with { UpdatedAt = DateTimeOffset.UtcNow });
+        Publish(updated);
+    }
+
+    private void Publish(ProviderDataRequestReadModel model)
+    {
+        _updates.Writer.TryWrite(model);
+        ReadModelUpdated?.Invoke(model);
+    }
+
+    private static IReadOnlyList<T> Append<T>(IReadOnlyList<T>? existing, T value)
+        => existing is null ? [value] : [.. existing, value];
+
+    public void Dispose()
+    {
+        if (_transport is IIBDataLineageSource source)
+            source.MarketDataTypeReceived -= OnMarketDataTypeReceived;
+        if (_callbackSource is { } callbacks)
+        {
+            callbacks.OptionContractReceived -= OnOptionContractReceived;
+            callbacks.ScannerResultReceived -= OnScannerResultReceived;
+            callbacks.RealTimeBarReceived -= OnRealTimeBarReceived;
+            callbacks.HistoricalTickReceived -= OnHistoricalTickReceived;
+            callbacks.PnlReceived -= OnPnlReceived;
+            callbacks.MarketRuleReceived -= OnMarketRuleReceived;
+            callbacks.RequestCompleted -= OnRequestCompleted;
+            callbacks.RequestRejected -= OnRequestRejected;
+        }
+        _updates.Writer.TryComplete();
     }
 
     private static string RequireSymbol(SymbolConfig contract)

@@ -20,7 +20,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Interactive Brokers brokerage gateway for live or paper order execution via the TWS/Gateway API.
 /// Uses the native IB socket path when the official vendor SDK is available.
 /// </summary>
-[DataSource("ib-brokerage", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("ibkr", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 5, Description = "Interactive Brokers TWS/Gateway order execution")]
 [ImplementsAdr("ADR-001", "IB brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
@@ -79,7 +79,7 @@ public sealed class IBBrokerageGateway :
     }
 
     /// <inheritdoc />
-    public string GatewayId => "ib";
+    public string GatewayId => "ibkr";
 
     /// <inheritdoc />
     public bool IsConnected => _connected && _client.IsConnected;

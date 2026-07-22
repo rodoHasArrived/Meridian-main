@@ -22,7 +22,7 @@ public sealed class IBBrokerageGatewayTests
     {
         var sut = CreateSut(new FakeIbBrokerageClient());
 
-        sut.GatewayId.Should().Be("ib");
+        sut.GatewayId.Should().Be("ibkr");
         sut.BrokerDisplayName.Should().Contain("Interactive Brokers");
         sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain(["equity", "bond"]);
         sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);

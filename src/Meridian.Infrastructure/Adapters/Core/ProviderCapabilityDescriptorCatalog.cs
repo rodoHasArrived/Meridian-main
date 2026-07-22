@@ -29,14 +29,8 @@ public static class ProviderCapabilityDescriptorCatalog
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
-        new("ib", Streaming: typeof(IBMarketDataClient),
-            InstrumentTypes:
-            [
-                InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
-                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
-                InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
-            ]),
-        new("ibkr", Historical: typeof(IBHistoricalDataProvider),
+        new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
+            ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
             InstrumentTypes:
             [
                 InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
@@ -82,6 +76,7 @@ public sealed record ProviderCapabilityDescriptor(
     Type? CorporateActions = null,
     Type? Options = null,
     Type? Brokerage = null,
+    IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable,
     IReadOnlyList<InstrumentType>? InstrumentTypes = null)
 {
     /// <summary>
@@ -113,4 +108,12 @@ public sealed record ProviderCapabilityDescriptor(
         if (Brokerage is not null)
             yield return Brokerage;
     }
+}
+
+/// <summary>Catalog-level readiness signal; inventory cannot promote a guidance build to live routing.</summary>
+public enum IBProviderCapabilityExecutionMode
+{
+    NotApplicable,
+    SimulationWhenVendorSdkUnavailable,
+    VendorRuntimeRequiredForLive
 }

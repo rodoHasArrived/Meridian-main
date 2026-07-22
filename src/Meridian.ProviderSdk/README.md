@@ -56,6 +56,9 @@ entries project this contract rather than maintaining a separate UI capability i
 chart-of-accounts, journal-entry, trial-balance, and reconciliation-preview evidence. It is
 read-oriented by default; write/posting support must be exposed explicitly by provider capabilities
 before any service or client can offer export actions.
+`IProviderDataReadService` owns vendor-neutral, request-correlated read models for option discovery,
+scanner rows, real-time bars, historical ticks, account/model-account P&L, and market-rule increments;
+operator surfaces consume this seam rather than vendor callback types.
 
 ## Diagrams
 

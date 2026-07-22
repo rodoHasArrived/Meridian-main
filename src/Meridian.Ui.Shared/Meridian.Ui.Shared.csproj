@@ -51,6 +51,7 @@
     <ProjectReference Include="..\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\Meridian.Risk\Meridian.Risk.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>
 </Project>
