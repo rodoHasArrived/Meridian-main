@@ -100,15 +100,17 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
 {
     private readonly IIBDataServiceTransport _transport;
     private readonly IIBDataCallbackSource? _callbackSource;
+    private readonly IBDataResultMaterializer? _materializer;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
         new BoundedChannelOptions(256) { SingleReader = false, SingleWriter = false, FullMode = BoundedChannelFullMode.DropOldest });
     private int _nextRequestId = 90_000;
 
-    public IBDataServices(IIBDataServiceTransport transport)
+    public IBDataServices(IIBDataServiceTransport transport, IBDataResultMaterializer? materializer = null)
     {
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        _materializer = materializer;
         if (transport is IIBDataLineageSource source)
             source.MarketDataTypeReceived += OnMarketDataTypeReceived;
         if (transport is IIBDataCallbackSource callbacks)
@@ -362,6 +364,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     {
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
         LineageUpdated?.Invoke(updated);
+        if (_requests.TryGetValue(requestId, out var request)) _materializer?.Materialize(request, updated);
     }
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
@@ -374,6 +377,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     {
         _updates.Writer.TryWrite(model);
         ReadModelUpdated?.Invoke(model);
+        _materializer?.Materialize(model, _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
     }
 
     private static IReadOnlyList<T> Append<T>(IReadOnlyList<T>? existing, T value)
