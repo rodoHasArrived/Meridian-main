@@ -83,6 +83,37 @@ public sealed class Camt053StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Camt053_WithMultipleStatementsForOneAccount_IsRejected()
+    {
+        // Two Stmt elements for the SAME IBAN across different periods. Combining them would give the
+        // matcher two closing balances for one internal cash record, letting it match one and open a
+        // false break for the other under the single operator-supplied period, so it must be rejected.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-04-30</Dt></Dt></Bal>
+                </Stmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">200.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("multi-statement.xml", Encoding.UTF8.GetBytes(xml));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("multiple statements for one account must not combine into a single run");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_MULTIPLE_STATEMENTS");
+    }
+
+    [Fact]
     public async Task Parse_Camt053_WithNonNumericClosingBalanceAmount_IsRejected()
     {
         // The closing-balance Amt is non-numeric. Emitting it as 0 could exact-match an internal zero

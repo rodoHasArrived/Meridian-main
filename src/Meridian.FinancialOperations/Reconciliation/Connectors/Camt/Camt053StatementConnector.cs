@@ -60,20 +60,24 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return Task.FromResult(EmptyResult(issues));
         }
 
-        // A camt.053 file may carry statements for several accounts, but a statement run reconciles a
-        // single account and the matcher normalizes every imported row to the run's one external
-        // account. Committing a multi-account file would compare (and coincidentally match) one account's
-        // balances and entries against another account's Meridian records, so reject it: the operator
-        // must split the file into one document per account before importing.
-        var distinctAccounts = statements
-            .Select(static statement => ResolveAccount(Element(statement, "Acct")))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (distinctAccounts.Length > 1)
+        // A camt.053 file may carry several Stmt elements, but a statement run reconciles a single
+        // account for a single statement period against one internal cash record. Combining multiple
+        // statements — even for the same account across different periods — would give the matcher
+        // several closing balances for one internal record and let it match one while opening a false
+        // break for the others under the single operator-supplied period. Require exactly one statement;
+        // the operator must split the file into one document per statement before importing.
+        if (statements.Length > 1)
         {
-            issues.Add(StatementParseIssue.Error(
-                "CAMT_MULTIPLE_ACCOUNTS",
-                $"The camt.053 document contains statements for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing."));
+            var distinctAccounts = statements
+                .Select(static statement => ResolveAccount(Element(statement, "Acct")))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var (code, message) = distinctAccounts.Length > 1
+                ? ("CAMT_MULTIPLE_ACCOUNTS",
+                    $"The camt.053 document contains statements for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing.")
+                : ("CAMT_MULTIPLE_STATEMENTS",
+                    $"The camt.053 document contains {statements.Length} statements for one account, but a statement run reconciles a single statement period. Split the file into one document per statement before importing.");
+            issues.Add(StatementParseIssue.Error(code, message));
             return Task.FromResult(EmptyResult(issues));
         }
 
