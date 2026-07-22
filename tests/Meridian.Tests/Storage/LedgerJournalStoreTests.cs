@@ -995,10 +995,17 @@ public sealed class LedgerJournalStoreTests
     }
 
 
-    [Fact]
-    public void PostingCommand_UnmarkedSimulatedEvidence_IsRejectedAtAppendBoundary()
+    [Theory]
+    [InlineData("Simulated")]
+    [InlineData("seeded")]
+    [InlineData("seed")]
+    [InlineData("demo")]
+    [InlineData("fixture")]
+    [InlineData("sample")]
+    [InlineData("placeholder")]
+    public void PostingCommand_UnmarkedNonRealEvidence_IsRejectedAtAppendBoundary(string evidenceSource)
     {
-        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Real);
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Real, evidenceSource);
 
         var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
 
@@ -1017,7 +1024,9 @@ public sealed class LedgerJournalStoreTests
         normalized.Entry.Metadata.Tags["dataProvenance"].Should().Be("SIMULATED");
     }
 
-    private static LedgerJournalEntryWrite BuildSimulatedOriginPostingWrite(DataProvenance provenance)
+    private static LedgerJournalEntryWrite BuildSimulatedOriginPostingWrite(
+        DataProvenance provenance,
+        string evidenceSource = "Simulated")
     {
         var periodId = Guid.NewGuid();
         var aggregateId = Guid.NewGuid();
@@ -1041,7 +1050,7 @@ public sealed class LedgerJournalStoreTests
                         "evidence-sim-1",
                         "evidence://sim/shadow-book-1",
                         AccountingPostingEvidenceKindDto.Source,
-                        "Simulated",
+                        evidenceSource,
                         DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
                         "fund-controller")
                 ],
