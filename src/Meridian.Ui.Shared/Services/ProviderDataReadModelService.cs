@@ -9,7 +9,8 @@ public sealed record ProviderProjectionProvenance(
     string ProviderFamily,
     int RequestId,
     string Capability,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt,
+    ProviderDataProvenance? Source);
 
 /// <summary>Connection and entitlement evidence retained alongside every projection row.</summary>
 public sealed record ProviderProjectionAvailability(
@@ -36,7 +37,7 @@ public sealed record ProviderDataProjectionSnapshot(
 
 /// <summary>
 /// Aggregates provider-neutral read interfaces. Rows are de-duplicated by the stable provenance
-/// key (<c>provider-family/request-id/capability/item-id</c>), so repeated live snapshots replace
+/// key (<see cref="ProviderDataProvenance.StableDeduplicationKey"/>), so repeated live snapshots replace
 /// older evidence rather than making either workstation show duplicate vendor data.
 /// </summary>
 public sealed class ProviderDataReadModelService
@@ -96,19 +97,19 @@ public sealed class ProviderDataReadModelService
             .ToDictionary(static group => group.Key, static group => group.OrderByDescending(x => x.ObservedAt).First(), StringComparer.OrdinalIgnoreCase);
         var requests = GetRequests();
 
-        var news = _newsProviders.SelectMany(provider => provider.GetNews().Select(item => (provider.ProviderFamily, item))).Select((entry, index) =>
-            new ProviderNewsReadModel(CreateOptionalProvenance(entry.ProviderFamily, "news", entry.item.NewsId, entry.item.PublishedAt, index), OptionalAvailability(entry.ProviderFamily, entry.item.PublishedAt, availability), entry.item));
-        var calendars = _calendarProviders.SelectMany(provider => provider.GetCalendarEvents().Select(item => (provider.ProviderFamily, item))).Select((entry, index) =>
-            new ProviderCalendarReadModel(CreateOptionalProvenance(entry.ProviderFamily, "calendar", entry.item.EventId, entry.item.StartsAt, index), OptionalAvailability(entry.ProviderFamily, entry.item.StartsAt, availability), entry.item));
-        var instruments = _instrumentProviders.SelectMany(provider => provider.GetInstruments().Select(item => (provider.ProviderFamily, item))).Select((entry, index) =>
-            new ProviderInstrumentDiscoveryReadModel(CreateOptionalProvenance(entry.ProviderFamily, "instrument-discovery", entry.item.InstrumentId, DateTimeOffset.MinValue, index), OptionalAvailability(entry.ProviderFamily, DateTimeOffset.MinValue, availability), entry.item));
+        var news = _newsProviders.SelectMany(provider => provider.GetNews().Select(item => (provider.ProviderFamily, item)))
+            .Select(entry => new ProviderNewsReadModel(OptionalProvenance(entry.ProviderFamily, "news", entry.item.NewsId, entry.item.PublishedAt, entry.item.Provenance), OptionalAvailability(entry.ProviderFamily, entry.item.PublishedAt, availability), entry.item));
+        var calendars = _calendarProviders.SelectMany(provider => provider.GetCalendarEvents().Select(item => (provider.ProviderFamily, item)))
+            .Select(entry => new ProviderCalendarReadModel(OptionalProvenance(entry.ProviderFamily, "calendar", entry.item.EventId, entry.item.StartsAt, entry.item.Provenance), OptionalAvailability(entry.ProviderFamily, entry.item.StartsAt, availability), entry.item));
+        var instruments = _instrumentProviders.SelectMany(provider => provider.GetInstruments().Select(item => (provider.ProviderFamily, item)))
+            .Select(entry => new ProviderInstrumentDiscoveryReadModel(OptionalProvenance(entry.ProviderFamily, "instrument-discovery", entry.item.InstrumentId, DateTimeOffset.MinValue, entry.item.Provenance), OptionalAvailability(entry.ProviderFamily, DateTimeOffset.MinValue, availability), entry.item));
 
         return new ProviderDataProjectionSnapshot(
             Deduplicate(news, x => x.Provenance.Key, x => x.Provenance.ObservedAt),
-            Deduplicate(requests.Where(x => x.ScannerResults is not null).SelectMany(request => request.ScannerResults!.Select((item, index) => new ProviderScannerReadModel(Provenance(request, $"scanner:{item.Symbol}:{item.Rank}:{index}"), Availability(request, availability), item))), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
-            Deduplicate(requests.Where(x => x.Pnl is not null).Select(request => new ProviderPnlReadModel(Provenance(request, $"pnl:{request.Pnl!.AccountId}:{request.Pnl.ModelAccountId}"), Availability(request, availability), request.Pnl!)), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
+            Deduplicate(requests.Where(x => x.ScannerResults is not null).SelectMany(request => request.ScannerResults!.Select(item => new ProviderScannerReadModel(Provenance(request, item.Provenance, $"scanner:{item.Symbol}:{item.Rank}"), Availability(request, availability), item))), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
+            Deduplicate(requests.Where(x => x.Pnl is not null).Select(request => new ProviderPnlReadModel(Provenance(request, request.Pnl!.Provenance, $"pnl:{request.Pnl.AccountId}:{request.Pnl.ModelAccountId}"), Availability(request, availability), request.Pnl!)), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
             Deduplicate(calendars, x => x.Provenance.Key, x => x.Provenance.ObservedAt),
-            Deduplicate(requests.Where(x => x.MarketRuleIncrements is not null).SelectMany(request => request.MarketRuleIncrements!.Select((item, index) => new ProviderMarketRuleReadModel(Provenance(request, $"market-rule:{item.LowEdge}:{item.Increment}:{index}"), Availability(request, availability), item))), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
+            Deduplicate(requests.Where(x => x.MarketRuleIncrements is not null).SelectMany(request => request.MarketRuleIncrements!.Select(item => new ProviderMarketRuleReadModel(Provenance(request, item.Provenance, $"market-rule:{item.LowEdge}:{item.Increment}"), Availability(request, availability), item))), x => x.Provenance.Key, x => x.Provenance.ObservedAt),
             Deduplicate(instruments, x => x.Provenance.Key, x => x.Provenance.ObservedAt));
     }
 
@@ -119,11 +120,17 @@ public sealed class ProviderDataReadModelService
         .ThenBy(key, StringComparer.Ordinal)
         .ToArray();
 
-    private static ProviderProjectionProvenance Provenance(ProviderDataRequestReadModel request, string itemKey) =>
-        new($"{request.ProviderFamily}/{request.RequestId}/{request.Capability}/{itemKey}", request.ProviderFamily, request.RequestId, request.Capability, request.UpdatedAt);
+    private static ProviderProjectionProvenance Provenance(ProviderDataRequestReadModel request, ProviderDataProvenance source, string legacyItemKey) =>
+        new(StableKey(source, $"{request.ProviderFamily}/{request.RequestId}/{request.Capability}/{legacyItemKey}"), request.ProviderFamily, request.RequestId, request.Capability, ObservedAt(source, request.UpdatedAt), source);
 
-    private static ProviderProjectionProvenance CreateOptionalProvenance(string providerFamily, string capability, string itemKey, DateTimeOffset observedAt, int index) =>
-        new($"{providerFamily}/{index}/{capability}/{itemKey}", providerFamily, index, capability, observedAt);
+    private static ProviderProjectionProvenance OptionalProvenance(string providerFamily, string capability, string itemKey, DateTimeOffset observedAt, ProviderDataProvenance? source) =>
+        new(StableKey(source, $"{providerFamily}/{capability}/{itemKey}"), providerFamily, 0, capability, ObservedAt(source, observedAt), source);
+
+    private static string StableKey(ProviderDataProvenance? source, string fallback) =>
+        string.IsNullOrWhiteSpace(source?.StableDeduplicationKey) ? fallback : source.StableDeduplicationKey;
+
+    private static DateTimeOffset ObservedAt(ProviderDataProvenance? source, DateTimeOffset fallback) =>
+        source is null ? fallback : source.ReceiptTimestamp > source.SourceTimestamp ? source.ReceiptTimestamp : source.SourceTimestamp;
 
     private static ProviderProjectionAvailability Availability(ProviderDataRequestReadModel request, IReadOnlyDictionary<string, ProviderDataAvailability> availability) =>
         availability.TryGetValue(request.ProviderFamily, out var item)
