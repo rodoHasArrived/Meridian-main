@@ -38,15 +38,16 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
-        // A statement run reconciles a single custodian account. Before replacing the source-row
-        // account with the run-level key, reject any populated source account that names a different
-        // custodian account. Otherwise a statement for account B could be normalized to account A and
-        // falsely reconcile against A's internal book. Account aliases must be resolved before this
-        // boundary; this matcher never silently treats distinct account identifiers as equivalent.
+        // A statement run reconciles a single custodian account. Preserve the identifier supplied by
+        // the statement rather than replacing it with the operator's run-level key: connectors often
+        // supply a bank-native account number or IBAN while the run uses Meridian's external key.
+        // Rewriting that identifier could make a statement for account B falsely reconcile against
+        // account A's internal book. A multi-account statement remains invalid, but a single source
+        // identifier need not equal the run-level external key.
         var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
             ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
-        ValidateStatementAccounts(rows, canonicalAccount);
+        ValidateSingleStatementAccount(rows);
 
         foreach (var row in rows)
         {
@@ -55,13 +56,13 @@ internal static class StatementRunMatcher
             switch (Classify(row.ActivityType))
             {
                 case StatementRowKind.Position:
-                    statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementPositions.Add(MapPosition(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
                 default:
-                    statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementTransactions.Add(MapTransaction(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
             }
         }
@@ -123,26 +124,24 @@ internal static class StatementRunMatcher
         return new StatementRunMatchResult(breaks, matchCount);
     }
 
-    private static void ValidateStatementAccounts(
-        IReadOnlyList<CanonicalStatementRow> rows,
-        string canonicalAccount)
+    private static void ValidateSingleStatementAccount(IReadOnlyList<CanonicalStatementRow> rows)
     {
-        foreach (var row in rows)
-        {
-            if (string.IsNullOrWhiteSpace(row.Account))
-            {
-                continue;
-            }
+        var accounts = rows
+            .Where(static row => !string.IsNullOrWhiteSpace(row.Account))
+            .Select(static row => row.Account.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(2)
+            .ToArray();
 
-            var sourceAccount = row.Account.Trim();
-            if (!string.Equals(sourceAccount, canonicalAccount, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidDataException(
-                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
-                    $"which does not match the requested external account '{canonicalAccount}'.");
-            }
+        if (accounts.Length > 1)
+        {
+            throw new InvalidDataException(
+                "Statement contains rows for different accounts; a statement run reconciles a single account.");
         }
     }
+
+    private static string StatementAccount(CanonicalStatementRow row, string fallbackAccount) =>
+        string.IsNullOrWhiteSpace(row.Account) ? fallbackAccount : row.Account.Trim();
 
     private static NormalizedStatementPosition MapPosition(
         CanonicalStatementRow row,

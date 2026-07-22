@@ -236,11 +236,10 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_WhenStatementAccountDiffersFromRequestedExternalAccount_FailsClosed()
+    public async Task CreateAsync_WhenStatementAccountDiffersFromRequestedExternalAccount_PreservesSourceAccountAndCreatesBreaks()
     {
-        // The internal book belongs to EXT-1 and would exactly match this row if the matcher rewrote
-        // its retained source account. The run must instead reject a populated account B before that
-        // normalization can turn this into a false reconciliation for account A.
+        // Connector imports can use a bank-native account number while the run uses Meridian's
+        // external key. Preserve that source account so it cannot falsely match EXT-1's internal book.
         var path = await WriteStatementAsync(
             "wrong-account.csv",
             "EXT-B,SPY,10,500,5000,position,2026-05-28,,USD,,");
@@ -249,10 +248,29 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             [],
             [])));
 
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        result.Breaks.Should().HaveCount(2);
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":2", StringComparison.Ordinal));
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference == "internal:pos:spy");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenStatementContainsMultipleAccounts_FailsBeforePersistingImport()
+    {
+        var path = await WriteStatementAsync(
+            "multiple-accounts.csv",
+            "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
+            "EXT-B,MSFT,5,20,100,position,2026-05-28,,USD,,");
+        var workflow = CreateWorkflow();
+
         var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidDataException>()
-            .WithMessage("*account 'EXT-B'*requested external account 'EXT-1'*");
+            .WithMessage("*different accounts*");
+
+        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        imports.Should().BeEmpty("multi-account validation must complete before the import claims its duplicate key");
     }
 
     [Fact]
