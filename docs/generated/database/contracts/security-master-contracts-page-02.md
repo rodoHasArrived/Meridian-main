@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 170. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 174. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -194,8 +194,22 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterChain["SecurityAssetSpecificTermsUpcasterChain"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline["SecurityAssetSpecificTermsUpcasterPipeline"] {
+        +SecurityAssetSpecificTermsUpcasterPipeline Instance
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster["SecurityAssetSpecificTermsV0ToCurrentUpcaster"] {
         +SecurityAssetSpecificTermsV0ToCurrentUpcaster Instance
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermField["SecurityAssetTermField"] {
+        +IReadOnlyList~string~ Aliases
+        +string Key
+        +bool Required
+        +SecurityAssetTermFieldType Type
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType["SecurityAssetTermFieldType"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsSchema["SecurityAssetTermsSchema"] {
+        +IReadOnlyCollection~string~ AssetClasses
     }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto["SecurityCashFlowSourceDto"] {
         +DateTimeOffset? ClientConfirmedAt
@@ -521,39 +535,6 @@ classDiagram
         +IReadOnlyList~StructuredCashFlowLedgerPosting~ Postings
         +Guid SecurityId
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
-        +decimal? CurrentIndexRate
-        +string? DayCountConvention
-        +CashFlowLegDirection? Direction
-        +bool ExchangesPrincipal
-        +decimal? FixedRate
-        +string? IndexName
-        +string LegId
-        +decimal? Notional
-        +string? PaymentFrequency
-        +CashFlowLegRateKind RateKind
-        +decimal? SpreadBps
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
-        +CashFlowLegDirection? Direction
-        +string LegId
-        +CashFlowLegRateKind RateKind
-        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto["StructuredCashFlowProjectionDto"] {
-        +DateTimeOffset AsOf
-        +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
-        +IReadOnlyList~StructuredCashFlowLegSchedule~? LegSchedules
-        +StructuredCashFlowScenario Scenario
-        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-        +DateTimeOffset? SourceLastUpdatedUtc
-        +StructuredCashFlowStaleness Staleness
-        +StructuredCashFlowTerms? TermsUsed
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
@@ -578,7 +559,9 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
+    Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
@@ -611,6 +594,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
 ```

@@ -2,11 +2,34 @@
 
 # `ledger-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 281. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 283. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_AccountingPolicyDto["AccountingPolicyDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +DateTimeOffset CreatedAt
+        +string DisplayName
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +bool IsDefault
+        +string PolicyId
+        +AccountingPolicyRulePackDto? RulePack
+        +string RulesJson
+    }
+    class Meridian_Contracts_Ledger_AccountingPolicyQuery["AccountingPolicyQuery"] {
+        +AccountingBasisKindDto AccountingBasis
+        +DateOnly? EffectiveDate
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +string? PolicyId
+        +Guid? SourceEventId
+    }
     class Meridian_Contracts_Ledger_AccountingPolicyRuleDto["AccountingPolicyRuleDto"] {
         +bool AllowsAutoPosting
         +string? Description
@@ -46,13 +69,16 @@ classDiagram
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto["AccountingPostingEvidenceReferenceDto"] {
         +string? ContentHash
         +string? Description
+        +DateOnly? EffectiveDate
         +string EvidenceId
+        +long? EvidenceVersion
         +AccountingPostingEvidenceKindDto Kind
         +DateTimeOffset RetainedAtUtc
         +string RetainedBy
-        +string SourceSystem
-        +string? SubjectId
-        +string Uri
+        +DateTimeOffset? ReviewedAtUtc
+        +string? Reviewer
+        +string? ReviewStatus
+        +string? SourceReference
     }
     class Meridian_Contracts_Ledger_AccountingPostingIntentDto["AccountingPostingIntentDto"] {
     }
@@ -698,10 +724,7 @@ classDiagram
         +string LineId
         +AccountingTemplateLineSideDto Side
     }
-    class Meridian_Contracts_Ledger_IAccountingActionAuditStore["IAccountingActionAuditStore"] {
-    }
-    class Meridian_Contracts_Ledger_IAccountingConfigurationService["IAccountingConfigurationService"] {
-    }
+    Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto
     Meridian_Contracts_Ledger_AccountingPolicyRuleDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
     Meridian_Contracts_Ledger_AccountingPolicyRulePackDto --> Meridian_Contracts_Ledger_AccountingPolicyRuleDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingApprovalStateDto

@@ -136,6 +136,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto"
     },
     {
@@ -1642,6 +1654,90 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -1654,6 +1750,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
     },
     {
@@ -1661,6 +1763,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "kind": "contract-set-member",
@@ -1822,6 +1942,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto"
     },
     {
@@ -1888,7 +2014,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "kind": "contract-set-member",
@@ -8440,7 +8614,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -12694,6 +12892,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityClassificationSummaryDto"
     },
     {
@@ -14494,6 +14728,90 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -14506,6 +14824,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
     },
     {
@@ -14513,6 +14837,24 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "kind": "contract-set-member",
@@ -14674,6 +15016,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto"
     },
     {
@@ -14740,7 +15088,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "kind": "contract-set-member",
@@ -16667,6 +17063,18 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
     },
     {
       "kind": "contract-set-member",
@@ -19006,7 +19414,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -19431,6 +19863,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalReportingReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalReportingReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingLedgerBookWorkflowReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingLedgerBookWorkflowReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRolloutPlanItemDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunKindDto"
     },
@@ -19581,8 +20037,20 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -19756,6 +20224,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionReadinessRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionReadinessRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
@@ -19919,6 +20393,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -20661,6 +21147,228 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsDetailDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
@@ -20751,6 +21459,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsDetailDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
@@ -20837,6 +21551,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetProjectedCashFlowDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetReconciliationRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsObligationTimelineEventDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -20853,6 +21603,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsObligationsTimelineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsVersionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTimelineVarianceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
@@ -20872,13 +21640,31 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBookContextDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.InstrumentRoleDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.InstrumentRoleDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -20925,8 +21711,98 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PositionEconomicStateDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -26332,6 +27208,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto"
     },
     {
@@ -26345,6 +27227,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
     },
     {
       "kind": "contract-reference",
@@ -26416,6 +27310,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -26423,6 +27323,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -28041,6 +28947,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "target": "contract:Meridian.Contracts.Schema.ISchemaUpcaster"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "target": "contract:Meridian.Contracts.Schema.ISchemaUpcaster"
     },
@@ -28049,6 +28967,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
     },
     {
       "kind": "contract-reference",
@@ -29639,6 +30563,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.RecommendedActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto"
     },
     {
       "kind": "contract-reference",
@@ -33725,6 +34655,36 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.RunReconciliation",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto"
     },
     {
       "kind": "contract-reference",
@@ -39850,7 +40810,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "52bfb73c7d5db9d87cb245136e68bf2a20ab9a61155080f37926564b04b34b29",
+  "fingerprint": "f620816e46e8dfbd58ea1994bf99b0caf769364a87c0c54dba0403cd9cf74078",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -40034,6 +40994,18 @@
       "id": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
     },
     {
       "classification": "dto",
@@ -41543,6 +42515,90 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetActualActivityDto"
@@ -41555,6 +42611,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
@@ -41564,6 +42626,24 @@
       "id": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "classification": "dto",
@@ -41722,6 +42802,12 @@
       "label": "Meridian.Contracts.AssetOperations.InstrumentRoleKinds"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto",
       "kind": "contract-type",
@@ -41789,9 +42875,57 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "classification": "class",
@@ -48341,9 +49475,33 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "classification": "dto",
@@ -52592,6 +53750,42 @@
       "id": "contract:Meridian.Contracts.Workstation.RunReconciliation",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.RunReconciliation"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleArtifactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleBreakDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleHighlightDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleHoldingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleMarketHistoryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleWorkspaceDto"
     },
     {
       "classification": "dto",
@@ -57745,11 +58939,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2801,
-    "contract_set_memberships": 3230,
-    "edges": 6626,
+    "contract_references": 2889,
+    "contract_set_memberships": 3302,
+    "edges": 6786,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 3055
+    "nodes": 3094
   }
 }

@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.5,
-  "endpoint_coverage_percent": 41.4,
-  "contract_coverage_percent": 11.7,
+  "score_percent": 29.4,
+  "endpoint_coverage_percent": 41.2,
+  "contract_coverage_percent": 11.6,
   "summary": {
-    "endpoint_count": 613,
+    "endpoint_count": 616,
     "documented_endpoint_count": 254,
-    "undocumented_endpoint_count": 359,
-    "workstation_contract_count": 884,
+    "undocumented_endpoint_count": 362,
+    "workstation_contract_count": 890,
     "documented_workstation_contract_count": 103,
-    "undocumented_workstation_contract_count": 781
+    "undocumented_workstation_contract_count": 787
   },
   "endpoints": [
     {
@@ -1877,85 +1877,103 @@
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:14",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:15",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/chart",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:42",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:43",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:73",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:74",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:104",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:105",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/promotion-approvals",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:136",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/test-cases",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:171",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:172",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:202",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:203",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/dry-run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:237",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:238",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:278",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:279",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/asset-accounting/events/project",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:322",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:376",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:417",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates/post",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:321",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:474",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/projection-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:365",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:531",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/tests",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:408",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:574",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/activate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:449",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:615",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:484",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:650",
       "documented": true
     },
     {
@@ -4705,38 +4723,68 @@
       "documented": false
     },
     {
+      "name": "SampleWorkspaceDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:19",
+      "documented": false
+    },
+    {
+      "name": "SampleHoldingDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:33",
+      "documented": false
+    },
+    {
+      "name": "SampleBreakDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:41",
+      "documented": false
+    },
+    {
+      "name": "SampleArtifactDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:50",
+      "documented": false
+    },
+    {
+      "name": "SampleMarketHistoryDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:52",
+      "documented": false
+    },
+    {
+      "name": "SampleHighlightDto",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:54",
+      "documented": false
+    },
+    {
       "name": "WorkspaceModeDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:12",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:56",
       "documented": false
     },
     {
       "name": "StarterWorkspaceDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:20",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:64",
       "documented": false
     },
     {
       "name": "ActivationOutcomeDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:27",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:71",
       "documented": false
     },
     {
       "name": "RecommendedActionDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:35",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:79",
       "documented": true
     },
     {
       "name": "CompleteFirstRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:37",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:81",
       "documented": false
     },
     {
       "name": "CompleteActivationOutcomeRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:43",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:87",
       "documented": false
     },
     {
       "name": "DesktopLaunchTicketRedemptionDto",
-      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:45",
+      "source": "src/Meridian.Contracts/Workstation/FirstRunDtos.cs:89",
       "documented": false
     },
     {
