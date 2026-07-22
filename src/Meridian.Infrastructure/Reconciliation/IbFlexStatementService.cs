@@ -87,6 +87,14 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                 + "include those sections in the Flex Query definition.");
         }
 
+        var distinctAccounts = DistinctRowAccounts(document);
+        if (distinctAccounts.Length > 1)
+        {
+            errors.Add(
+                $"Flex report contains rows for {distinctAccounts.Length} different accounts; a statement run reconciles a single account. "
+                + "Split the report into one document per account before importing.");
+        }
+
         return new BrokerStatementValidationResult(errors.Count == 0, errors, rowCount);
     }
 
@@ -128,6 +136,21 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             throw new InvalidDataException(
                 "Flex report contains no Trade, OpenPosition, or CashTransaction rows; "
                 + "include those sections in the Flex Query definition.");
+        }
+
+        // An advisor Flex report can carry several accounts, but a statement run reconciles a single
+        // account and the matcher normalizes every row to the run's one external account. Committing a
+        // multi-account report would match one account's rows against another account's Meridian
+        // records, so reject it: the operator must split it into one document per account.
+        var distinctAccounts = rows
+            .Select(static row => row.Account)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            throw new InvalidDataException(
+                $"Flex report contains rows for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the report into one document per account before importing.");
         }
 
         var import = new CanonicalStatementImport(
@@ -289,6 +312,19 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
 
     private static string Account(XElement element, string statementAccount) =>
         (string?)element.Attribute("accountId") is { Length: > 0 } account ? account : statementAccount;
+
+    private static string[] DistinctRowAccounts(XDocument document) =>
+        document.Root!.Descendants("FlexStatement")
+            .SelectMany(static statement =>
+            {
+                var statementAccount = (string?)statement.Attribute("accountId") ?? string.Empty;
+                return statement.Descendants()
+                    .Where(static element => element.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction")
+                    .Select(element => Account(element, statementAccount));
+            })
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     /// <summary>
     /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type. Cash transactions are

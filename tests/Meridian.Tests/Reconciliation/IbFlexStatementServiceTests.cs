@@ -382,6 +382,38 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MultiAccountFlexReport_IsRejectedByValidateAndImport()
+    {
+        // Two FlexStatement sections for two different IB accounts. The matcher would normalize every
+        // row to the run's single external account, so a multi-account report must be rejected rather
+        // than reconciling one account's rows against another account's Meridian records.
+        const string multiAccountXml = """
+            <FlexQueryResponse queryName="MeridianDaily" type="AF">
+              <FlexStatements count="2">
+                <FlexStatement accountId="U1234567" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U1234567" symbol="AAPL" tradeDate="20260615" quantity="100" tradePrice="201.35" netCash="-20136.00" currency="USD" buySell="BUY" tradeID="1000001" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+                <FlexStatement accountId="U7654321" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U7654321" symbol="MSFT" tradeDate="20260616" quantity="10" tradePrice="500.10" netCash="-5001.00" currency="USD" buySell="BUY" tradeID="1000002" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+              </FlexStatements>
+            </FlexQueryResponse>
+            """;
+        var path = WriteFlexFile(multiAccountXml, "multi-account.xml");
+
+        var validation = await _service.ValidateAsync(MakeRequest(path));
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("different accounts", StringComparison.OrdinalIgnoreCase));
+
+        var import = async () => await _service.ImportAsync(MakeRequest(path));
+        await import.Should().ThrowAsync<System.IO.InvalidDataException>();
+    }
+
+    [Fact]
     public void MappingProfileRegistry_RegistersIbFlexProfile()
     {
         var registry = StatementMappingProfileRegistry.Defaults;
