@@ -38,6 +38,15 @@ public static class BrokerageOrderPlacementGate
             flow = new BrokerFlowFlags();
         }
 
+        // A broker selected for production routing must be backed by a real runtime.  In
+        // particular, an IBAPI guidance/simulation build must never become a live route merely
+        // because the surrounding configuration has completed its other promotion gates.
+        if (configuration.LiveExecutionEnabled && IsSimulatedMode(executionMode))
+        {
+            return BrokerageOrderPlacementGateDecision.Rejected(
+                $"Live execution cannot route through broker '{gatewayId}' because its runtime mode is {executionMode}.");
+        }
+
         if (IsSimulatedMode(executionMode))
         {
             return flow.PaperOrderFlowEnabled

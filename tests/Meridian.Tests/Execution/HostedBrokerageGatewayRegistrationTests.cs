@@ -43,7 +43,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         provider.GetServices<IBrokerageActivitySync>()
             .Select(sync => sync.ProviderId)
             .Should()
-            .Contain(["alpaca", "robinhood"]);
+            .Contain(["alpaca", "ibkr", "robinhood"]);
 
         var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
         surfaces.Should().Contain(surface =>
@@ -65,7 +65,7 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
             surface.SupportsPortfolioSync &&
-            !surface.SupportsActivitySync &&
+            surface.SupportsActivitySync &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
             surface.GatewayId == "ibkr" &&

@@ -131,6 +131,20 @@ public sealed class BrokerageOrderPlacementGateTests : IDisposable
         decision.RejectReason.Should().Contain("Live execution must be explicitly enabled");
     }
 
+    [Fact]
+    public void Evaluate_LiveConfiguredWithSimulationRuntime_Rejects()
+    {
+        var configuration = CreateLiveReadyConfiguration(gateway: "ib");
+
+        var decision = BrokerageOrderPlacementGate.Evaluate(
+            configuration,
+            selectedGatewayId: "ib",
+            selectedExecutionMode: ExecutionMode.Simulation);
+
+        decision.IsAllowed.Should().BeFalse();
+        decision.RejectReason.Should().Contain("cannot route").And.Contain("Simulation");
+    }
+
     [Theory]
     [InlineData(nameof(BrokerageConfiguration.ReadOnlyPhaseEnabled), "read-only phase is disabled")]
     [InlineData(nameof(BrokerageConfiguration.PaperTradingPhaseEnabled), "paper-trading phase is disabled")]

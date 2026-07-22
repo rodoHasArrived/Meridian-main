@@ -9,6 +9,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Tiingo;
@@ -73,9 +74,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         services.AddSingleton(new AlpacaOptions(
             KeyId: "AKTESTDESCRIPTOR0001",
             SecretKey: "descriptor-secret-for-di-tests"));
+        services.AddSingleton(new IBOptions());
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
         services.AddSingleton<QuoteCollector>();
         services.AddSingleton<TradeDataCollector>();
+        services.AddSingleton<MarketDepthCollector>();
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
@@ -114,6 +117,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         robinhood.Brokerage.Should().Be(typeof(RobinhoodBrokerageGateway));
         robinhood.CorporateActions.Should().BeNull(
             "Robinhood has no dedicated ICorporateActionProvider implementation in the runtime catalog");
+
+        var ibkr = descriptorsById["ib"];
+        ibkr.Streaming.Should().Be(typeof(IBMarketDataClient));
+        ibkr.Historical.Should().Be(typeof(IBHistoricalDataProvider));
+        ibkr.Brokerage.Should().Be(typeof(IBBrokerageGateway));
 
         descriptorsById.Keys.Should().Contain("edgar");
         var edgar = descriptorsById["edgar"];

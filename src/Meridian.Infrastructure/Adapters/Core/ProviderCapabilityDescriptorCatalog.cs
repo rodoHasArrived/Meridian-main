@@ -29,7 +29,7 @@ public static class ProviderCapabilityDescriptorCatalog
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
-        new("ib", Historical: typeof(IBHistoricalDataProvider),
+        new("ib", typeof(IBMarketDataClient), typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
             InstrumentTypes:
             [
                 InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
