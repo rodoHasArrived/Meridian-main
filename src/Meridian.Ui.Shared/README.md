@@ -67,9 +67,10 @@ should use that accessor instead of reparsing `HttpContext.Items` or trusting cl
 and company fields. The `/api/workstation` route group also requires that tenant scope before any
 workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
 tenant-scoped session rather than relying on client-supplied organization fields.
-Session and CSRF cookies are marked `Secure` for HTTPS and non-loopback production requests. The
-supported local-workstation HTTP binding omits that flag only when both ends of the connection are
-loopback, allowing the packaged browser login to return its `SameSite=Strict` cookies on localhost.
+Session and CSRF cookies are marked `Secure` by default, including `ProductionApi` loopback
+reverse-proxy traffic. The supported `LocalWorkstation` HTTP binding omits that flag only when both
+ends of the connection are loopback, allowing the packaged browser login to return its
+`SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Statement connector endpoints expose file and remote
