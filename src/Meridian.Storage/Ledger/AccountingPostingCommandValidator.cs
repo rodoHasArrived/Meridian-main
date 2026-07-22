@@ -179,7 +179,11 @@ public static class AccountingPostingCommandValidator
     // command Provenance mark is the primary gate; this is a narrow safety net for a source that is
     // labeled simulated while the posting forgot to carry the mark.
     private static readonly string[] SimulatedOriginTokens =
-        ["simulated", "simulation", "synthetic", "backtest"];
+    [
+        "simulated", "simulation", "synthetic", "backtest",
+        "seeded", "seed", "demo", "fixture",
+        "sample", "placeholder"
+    ];
 
     private static bool DeclaresSimulatedOrigin(AccountingPostingCommandDto command)
     {
