@@ -77,3 +77,67 @@ public interface IProviderDataReadService
 
     IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(CancellationToken cancellationToken = default);
 }
+
+/// <summary>Presentation-safe provider news item supplied by providers that support news.</summary>
+public sealed record ProviderNewsItem(
+    string NewsId,
+    string Headline,
+    DateTimeOffset PublishedAt,
+    string? Symbol = null,
+    string? Source = null,
+    string? Url = null);
+
+/// <summary>Presentation-safe trading-calendar event supplied by providers that support calendars.</summary>
+public sealed record ProviderCalendarEvent(
+    string EventId,
+    string Market,
+    DateTimeOffset StartsAt,
+    DateTimeOffset EndsAt,
+    string EventType,
+    string? Description = null);
+
+/// <summary>Presentation-safe instrument discovery result supplied by providers that support search.</summary>
+public sealed record ProviderInstrumentDiscoveryResult(
+    string InstrumentId,
+    string Symbol,
+    string DisplayName,
+    string? Exchange = null,
+    string? AssetClass = null);
+
+/// <summary>
+/// Provider availability and entitlement evidence. Implement this optional interface instead of
+/// leaking adapter connection objects into workstation projections.
+/// </summary>
+public sealed record ProviderDataAvailability(
+    string ProviderFamily,
+    bool IsAvailable,
+    string ConnectionState,
+    DateTimeOffset ObservedAt,
+    string? Entitlement = null,
+    string? Detail = null);
+
+public interface IProviderDataAvailabilityReadService
+{
+    IReadOnlyList<ProviderDataAvailability> GetAvailability();
+}
+
+public interface IProviderNewsReadService
+{
+    string ProviderFamily { get; }
+    IReadOnlyList<ProviderNewsItem> GetNews();
+    IAsyncEnumerable<ProviderNewsItem> WatchNewsAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IProviderCalendarReadService
+{
+    string ProviderFamily { get; }
+    IReadOnlyList<ProviderCalendarEvent> GetCalendarEvents();
+    IAsyncEnumerable<ProviderCalendarEvent> WatchCalendarEventsAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IProviderInstrumentDiscoveryReadService
+{
+    string ProviderFamily { get; }
+    IReadOnlyList<ProviderInstrumentDiscoveryResult> GetInstruments();
+    IAsyncEnumerable<ProviderInstrumentDiscoveryResult> WatchInstrumentsAsync(CancellationToken cancellationToken = default);
+}
