@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 19
-- Functions/procedures: 0
-- Triggers: 0
+- Relations: 21
+- Functions/procedures: 1
+- Triggers: 2
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -118,6 +118,24 @@ erDiagram
         boolean is_default
         jsonb rules_json
         timestamp_with_time_zone created_at
+    }
+    ledger_atomic_tax_lot_posting_batches {
+        uuid mutation_batch_id PK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        uuid journal_entry_id FK
+        uuid source_event_id
+        text idempotency_key
+        text canonical_fingerprint
+        bigint expected_period_version
+        text mutation_kind
+        jsonb retained_evidence
+        uuid corrects_mutation_batch_id FK
+        text relief_method
+        text policy_revision
+        timestamp_with_time_zone created_at
+        uuid security_id
+        uuid book_position_id
     }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
@@ -247,6 +265,33 @@ erDiagram
         timestamp_with_time_zone recorded_at
         bigint period_version
     }
+    ledger_tax_lot_mutations {
+        uuid mutation_record_id PK
+        uuid mutation_batch_id FK
+        text mutation_kind
+        uuid tax_lot_record_id FK
+        text lot_id
+        integer selection_ordinal
+        numeric_38_12_ quantity_before
+        numeric_38_12_ quantity_delta
+        numeric_38_12_ quantity_after
+        numeric_38_12_ unit_cost
+        numeric_38_12_ cost_basis
+        bigint expected_version
+        bigint result_version
+        text selection_evidence_id
+        jsonb retained_evidence
+        uuid journal_entry_id FK
+        uuid source_event_id
+        uuid corrects_mutation_batch_id FK
+        text relief_method
+        text policy_revision
+        jsonb lot_snapshot_before
+        jsonb lot_snapshot_after
+        timestamp_with_time_zone recorded_at
+        uuid security_id
+        uuid book_position_id
+    }
     ledger_tax_lot_policies {
         uuid policy_record_id PK
         uuid ledger_book_id FK
@@ -278,18 +323,33 @@ erDiagram
         text evidence_ref
         timestamp_with_time_zone created_at
         timestamp_with_time_zone updated_at
+        bigint version
+        uuid security_id
+        uuid book_position_id
+        uuid originating_mutation_batch_id FK
+        uuid last_mutation_batch_id FK
     }
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
+    ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
+    ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_tax_lots ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_tax_lot_record_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
@@ -302,6 +362,7 @@ erDiagram
 | `accounting_configuration_workspaces` | table | 9 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id` | 0 | 1 | - |
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
+| `atomic_tax_lot_posting_batches` | table | 16 | `mutation_batch_id` | 4 | 5 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
@@ -311,5 +372,6 @@ erDiagram
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
+| `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 12 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 16 | `tax_lot_record_id` | 2 | 4 | - |
+| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 7 | - |

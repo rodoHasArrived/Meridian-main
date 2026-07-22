@@ -19,6 +19,8 @@
                 <ResourceDictionary Source="Styles/ThemeTypography.xaml" />
                 <ResourceDictionary Source="Styles/ThemeSurfaces.xaml" />
                 <ResourceDictionary Source="Styles/ThemeControls.xaml" />
+                <!-- Shared data-provenance badge (persistent, non-dismissable) -->
+                <ResourceDictionary Source="Styles/DataProvenanceBadge.xaml" />
                 <!-- Icon Resources -->
                 <ResourceDictionary Source="Styles/IconResources.xaml" />
                 <!-- Animation Resources -->

@@ -42,6 +42,19 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
             <StackPanel MaxWidth="1400">
+                <!-- Persistent, non-dismissable data-provenance badge. No close affordance; the
+                     operator keeps seeing the label whenever data is seeded or fallback. -->
+                <Border Style="{StaticResource DataProvenanceBadgeBorderStyle}"
+                        Margin="0,0,0,20"
+                        Visibility="{Binding IsDataProvenanceBadgeVisible, Converter={StaticResource BoolToVisibility}}"
+                        AutomationProperties.Name="Data provenance">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource DataProvenanceBadgeLabelStyle}"
+                                   Text="{Binding DataProvenanceBadgeLabel}" />
+                        <TextBlock Style="{StaticResource DataProvenanceBadgeDetailStyle}"
+                                   Text="{Binding DataProvenanceBadgeDetail}" />
+                    </StackPanel>
+                </Border>
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
                     <Grid>
                         <Grid.ColumnDefinitions>

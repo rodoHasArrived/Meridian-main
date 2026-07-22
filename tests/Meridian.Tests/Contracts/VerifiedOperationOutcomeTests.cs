@@ -26,6 +26,39 @@ public sealed class VerifiedOperationOutcomeTests
     }
 
     [Fact]
+    public void Validator_DefaultProvenance_IsRealAndAccepted()
+    {
+        var outcome = CreateOutcome(OperationTerminalState.Succeeded);
+
+        outcome.Provenance.Should().Be(DataProvenance.Real);
+        VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Validator_SimulatedProvenance_IsRetainedAndAccepted()
+    {
+        var outcome = CreateOutcome(OperationTerminalState.Succeeded) with
+        {
+            Provenance = DataProvenance.Simulated
+        };
+
+        outcome.Provenance.Should().Be(DataProvenance.Simulated);
+        VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Validator_UndefinedProvenance_RejectsOutcome()
+    {
+        var outcome = CreateOutcome(OperationTerminalState.Succeeded) with
+        {
+            Provenance = (DataProvenance)200
+        };
+
+        VerifiedOperationOutcomeValidator.Validate(outcome)
+            .Should().Contain(error => error.Contains("not a defined DataProvenance", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Validator_UnknownSchemaVersion_RejectsOutcome()
     {
         var outcome = CreateOutcome(OperationTerminalState.Succeeded) with

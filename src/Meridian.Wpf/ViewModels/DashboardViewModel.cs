@@ -84,6 +84,21 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
     public string HoldingsSnapshotCountText => $"{HoldingsSnapshotItems.Count:N0} holdings";
 
+    // ── Data-provenance badge (persistent, non-dismissable) ───────────────────────
+    // Same signal the browser client renders (components/meridian/data-provenance-banner.tsx),
+    // styled by the shared DataProvenanceBadge* resources. Whenever the workstation is showing
+    // seeded or fallback data the operator keeps seeing the label; it is never dismissable. Real
+    // data hides the badge.
+
+    private bool _isDataProvenanceBadgeVisible;
+    public bool IsDataProvenanceBadgeVisible { get => _isDataProvenanceBadgeVisible; private set => SetProperty(ref _isDataProvenanceBadgeVisible, value); }
+
+    private string _dataProvenanceBadgeLabel = string.Empty;
+    public string DataProvenanceBadgeLabel { get => _dataProvenanceBadgeLabel; private set => SetProperty(ref _dataProvenanceBadgeLabel, value); }
+
+    private string _dataProvenanceBadgeDetail = string.Empty;
+    public string DataProvenanceBadgeDetail { get => _dataProvenanceBadgeDetail; private set => SetProperty(ref _dataProvenanceBadgeDetail, value); }
+
     // ── Metric-card properties ────────────────────────────────────────────────────
 
     private string _publishedCount = "0";
@@ -405,6 +420,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _connectionService.LatencyUpdated += OnLatencyUpdated;
         _statusService.LiveStatusReceived += OnLiveStatusReceived;
         _statusService.BackendReachabilityChanged += OnBackendReachabilityChanged;
+        Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeChanged += OnFixtureModeChanged;
 
         // Create timers (DispatcherTimer must be created on the UI thread).
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -415,6 +431,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _activityPollTimer.Tick += OnActivityPollTimerTick;
 
         InitializeOperationalDashboardEmptyState();
+        UpdateDataProvenanceBadge();
     }
 
     private void InitializeOperationalDashboardEmptyState()
@@ -472,6 +489,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _connectionService.LatencyUpdated -= OnLatencyUpdated;
         _statusService.LiveStatusReceived -= OnLiveStatusReceived;
         _statusService.BackendReachabilityChanged -= OnBackendReachabilityChanged;
+        Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeChanged -= OnFixtureModeChanged;
     }
 
     // ── Service event handlers ────────────────────────────────────────────────────
@@ -488,6 +506,28 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
             UpdateStaleIndicator(e.IsStale);
         });
+    }
+
+    private void OnFixtureModeChanged(object? sender, EventArgs e)
+        => _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(UpdateDataProvenanceBadge);
+
+    /// <summary>
+    /// Maps the current fixture/offline posture onto the shared <see cref="DataProvenance"/> badge so
+    /// seeded or fallback data is always labeled. Real (live) data hides the badge entirely.
+    /// </summary>
+    private void UpdateDataProvenanceBadge()
+    {
+        var provenance = Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeKind switch
+        {
+            Meridian.Ui.Services.Services.FixtureModeKind.Fixture => Meridian.Contracts.Operations.DataProvenance.Seeded,
+            Meridian.Ui.Services.Services.FixtureModeKind.Offline => Meridian.Contracts.Operations.DataProvenance.Sample,
+            _ => Meridian.Contracts.Operations.DataProvenance.Real
+        };
+
+        var badge = Meridian.Contracts.Operations.DataProvenanceBadge.TryCreate(provenance);
+        IsDataProvenanceBadgeVisible = badge is not null;
+        DataProvenanceBadgeLabel = badge?.Label ?? string.Empty;
+        DataProvenanceBadgeDetail = badge?.Detail ?? string.Empty;
     }
 
     private void OnBackendReachabilityChanged(object? sender, bool isReachable)
