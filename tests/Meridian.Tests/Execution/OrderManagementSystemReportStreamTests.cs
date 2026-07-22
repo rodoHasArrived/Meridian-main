@@ -145,6 +145,89 @@ public sealed class OrderManagementSystemReportStreamTests
             because: "published fills must carry the increment, not the cumulative quantity");
     }
 
+    [Fact]
+    public async Task OversizedStreamedFill_IsCappedToRemainingOrderQuantity()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the oversized completion report still reaches tracked order state");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.FilledQuantity.Should().Be(10m,
+            because: "streamed cumulative fill quantities must be capped to the original order quantity");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "portfolio side effects may only apply the remaining authorized quantity");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        published.FilledQuantity.Should().Be(10m,
+            because: "downstream consumers must receive the validated fill delta, not the oversized broker value");
+    }
+
+    [Fact]
+    public async Task LateFillAfterTerminalOrder_DoesNotMutatePortfolioOrOrderState()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+        await gateway.PublishAsync(
+            BuildReport("external-2", OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1m, fillPrice: 10m, symbol: "ZZZ"));
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while ((await oms.ExecutionReports.ReadAsync(readCts.Token)).OrderId != "external-2")
+        {
+        }
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m,
+            because: "late reports for terminal orders must not resize completed orders");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "late reports for terminal orders must not apply additional portfolio fills");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+    }
+
     private static ExecutionReport BuildReport(
         string orderId,
         OrderStatus status,

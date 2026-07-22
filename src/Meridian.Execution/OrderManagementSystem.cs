@@ -536,16 +536,17 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)
     {
-        // A replayed or late non-terminal report (e.g. the submit ack racing the async
-        // report stream) must not regress an order that already reached a terminal status.
-        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
-            ? current.Status
-            : report.OrderStatus;
+        // Once the OMS has reached a terminal state, late or malicious stream reports
+        // must not reopen, resize, or otherwise mutate the completed local order.
+        if (IsTerminal(current.Status))
+        {
+            return current;
+        }
 
         return current with
         {
-            Status = status,
-            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
+            Status = report.OrderStatus,
+            FilledQuantity = Math.Min(current.Quantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
@@ -662,7 +663,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         // Alpaca filled_qty) while fill consumers treat each report as a discrete
         // trade, so only the increment since the last tracked fill may be forwarded —
         // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
-        var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+        var acceptedFilledQuantity = report.FilledQuantity;
+        if (!string.IsNullOrWhiteSpace(report.ClientOrderId ?? report.OrderId)
+            && _orders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var currentOrder))
+        {
+            acceptedFilledQuantity = currentOrder.FilledQuantity;
+        }
+
+        var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
         if (incrementQuantity <= 0m)
         {
             return;
