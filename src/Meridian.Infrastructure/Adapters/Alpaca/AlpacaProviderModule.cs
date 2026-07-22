@@ -110,12 +110,16 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
                 sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
             services.AddSingleton<AlpacaCryptoMarketDataClient>(sp => new(
                 sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaNewsEventBuffer>();
+            services.AddSingleton<IAlpacaNewsEventSink>(sp => sp.GetRequiredService<AlpacaNewsEventBuffer>());
             services.AddSingleton<AlpacaNewsMarketDataClient>(sp => new(
-                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions,
+                sp.GetRequiredService<IAlpacaNewsEventSink>()));
             services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaMarketDataClient>());
             services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaOptionsMarketDataClient>());
             services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaCryptoMarketDataClient>());
             services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaNewsMarketDataClient>());
+            services.AddSingleton<IAlpacaMarketDataRouter, AlpacaMarketDataRouter>();
         }
 
         // ----------------------------------------------------------------

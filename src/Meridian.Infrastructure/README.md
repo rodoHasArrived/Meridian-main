@@ -41,7 +41,8 @@ diagnostics, `WebSocketState` is `None`. Consumers should use this contract inst
 into provider-specific transport internals.
 
 Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
-WebSocket endpoints. Its diagnostics carry a per-stream selected feed and entitlement (for
+WebSocket endpoints. Consumers resolve them through the capability-aware Alpaca asset-stream router, which
+fails closed when a requested stream has no usable entitlement rather than falling back to equities. Its diagnostics carry a per-stream selected feed and entitlement (for
 example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
 misrepresented as consolidated or OPRA-entitled data.
 
