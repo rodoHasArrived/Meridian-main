@@ -1,6 +1,8 @@
 # Architecture Documentation
 
-**Owner:** Core Team
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-07-19
 **Scope:** Engineering
 **Review Cadence:** Quarterly or when significant architectural decisions are made
 
@@ -23,10 +25,12 @@ This directory contains documentation about the system's design, architectural d
 
 ## What Does NOT Belong Here
 
-- Step-by-step developer guides → use `development/`
-- Provider-specific setup or comparison content → use `providers/`
-- Operational runbooks or deployment procedures → use `operations/`
-- Architecture Decision Records (those live in `adr/`)
+- Step-by-step developer guides → use [Engineering](../engineering/README.md) or
+  [Development Guides](../development/README.md)
+- Provider setup and recovery → use [Operators](../operators/README.md); provider capability and
+  evidence lookup → use [Reference](../reference/README.md)
+- Operational runbooks or deployment procedures → use [Operators](../operators/README.md)
+- Architecture Decision Records → use [ADRs](../adr/README.md)
 
 ---
 

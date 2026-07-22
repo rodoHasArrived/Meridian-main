@@ -117,6 +117,7 @@ Summaries archive:
 - [desktop-testing-guide](summaries/desktop-testing-guide.md)
 - [DOCUMENTATION_TRIAGE_2026_03_21](summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
 - [documentation-consolidation-inventory-2026-05-17](summaries/documentation-consolidation-inventory-2026-05-17.md)
+- [documentation-inventory-2026-07-19](summaries/documentation-inventory-2026-07-19.md)
 - [FEATURE_INVENTORY](summaries/FEATURE_INVENTORY.md)
 - [FULL_IMPLEMENTATION_TODO](summaries/FULL_IMPLEMENTATION_TODO.md)
 - [health-dashboard-2026-05-04](summaries/health-dashboard-2026-05-04.md)

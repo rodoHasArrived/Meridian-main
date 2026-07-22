@@ -1,10 +1,12 @@
 # Operations Documentation
 
-**Status:** source-material
+**Status:** transitional-compatibility
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
-This folder is now migration source material. Active operational guidance is in [operators/README.md](../operators/README.md).
+This folder is a compatibility lane. Active operational guidance is in
+[Operators](../operators/README.md), but a small set of paths remains because tests, monitoring
+registries, rules, or strong links still consume them. Do not add new durable guidance here.
 
 ## Canonical Operator Paths
 
@@ -15,10 +17,9 @@ This folder is now migration source material. Active operational guidance is in 
 
 ## Migration Notes
 
-The legacy archive-migration stubs that previously lived in this folder have been removed; full
-historical copies are retained in [archive/docs/operations/](../../archive/docs/operations/README.md),
-and the legacy-path routing table in [operators/README.md](../operators/README.md) maps each old
-`docs/operations/*` path to its canonical replacement.
+Full historical copies are retained in
+[archive/docs/operations/](../../archive/docs/operations/README.md), and the legacy-path routing
+table in [Operators](../operators/README.md) maps old paths to canonical replacements.
 
 The files still present here stay because active tooling consumes them at these paths:
 

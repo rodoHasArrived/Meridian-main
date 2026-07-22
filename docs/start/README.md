@@ -2,21 +2,24 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-30
+**Reviewed:** 2026-07-19
 
-Use this page for the fastest safe orientation in a fresh Meridian checkout. It replaces the old split between first-run, developer quickstart, and operator quickstart indexes.
-
-Current local project path: `D:\Meridian-main`.
+Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
+repository root unless a command says otherwise.
 
 ## What Meridian Is
 
-Meridian is a .NET 10 fund-management and trading-platform codebase focused on evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reporting.
+Meridian is a .NET 10 operational-finance and trading-platform codebase focused on evidence-backed
+investment operations: trusted data, reconciliation, accounting records, approvals, governed
+reporting, research continuity, and paper-first execution controls. Fund management is a
+first-class specialization, not the root model for every workflow.
 
 The active user-facing surfaces are:
 
 - Windows desktop workstation: `src/Meridian.Wpf/`
 - Browser workstation dashboard: `src/Meridian.Ui/dashboard/`
-- Built browser assets served by the host: `src/Meridian.Ui/wwwroot/workstation/`
+- Generated browser assets served by the host after a dashboard build:
+  `src/Meridian.Ui/wwwroot/workstation/`
 - Shared workstation API/read-model support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`
 
 For the current product framing and capability thesis, use the [Meridian Design Document](../product/meridian-design-document.md) before planning changes.

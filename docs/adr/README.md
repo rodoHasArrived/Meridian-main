@@ -1,5 +1,9 @@
 # Architectural Decision Records (ADRs)
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 Active architectural decisions are routed through:
 
 - [engineering docs](../engineering/README.md)

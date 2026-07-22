@@ -1,5 +1,9 @@
 # Roadmap Registry
 
+**Status:** canonical-registry
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This directory is the structured source of truth for Meridian roadmap status.
 Human-facing status pages may summarize it, but durable roadmap truth belongs in
 `docs/roadmap/data/*.yml`.
