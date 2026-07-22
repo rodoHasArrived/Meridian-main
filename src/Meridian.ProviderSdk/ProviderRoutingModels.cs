@@ -24,7 +24,13 @@ public enum ProviderCapabilityKind : byte
     CashTransactions = 13,
     BankStatements = 14,
     ReconciliationFeed = 15,
-    FactorSchedule = 16
+    FactorSchedule = 16,
+    News = 17,
+    Scanner = 18,
+    PnLStream = 19,
+    TradingCalendar = 20,
+    MarketRules = 21,
+    InstrumentDiscovery = 22
 }
 
 /// <summary>
