@@ -38,30 +38,33 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
-        // A statement run reconciles a single custodian account. Before replacing the source-row
-        // account with the run-level key, reject any populated source account that names a different
-        // custodian account. Otherwise a statement for account B could be normalized to account A and
-        // falsely reconcile against A's internal book. Account aliases must be resolved before this
-        // boundary; this matcher never silently treats distinct account identifiers as equivalent.
-        var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
+        // Keep the requested run account only as a fallback for source formats that do not carry an
+        // account identifier. A source statement account is evidence from the custodian, and it can
+        // legitimately differ from Meridian's configured external key (for example, BAI2 account
+        // numbers and camt.053 IBANs). Replacing it with the run key would let account B match
+        // account A's internal book. Keeping it instead makes the account difference surface as
+        // ordinary statement and internal breaks until an explicit alias-resolution seam is wired.
+        var fallbackAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
             ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
-        ValidateStatementAccounts(rows, canonicalAccount);
 
         foreach (var row in rows)
         {
+            var statementAccount = string.IsNullOrWhiteSpace(row.Account)
+                ? fallbackAccount
+                : row.Account.Trim();
             var evidence = $"{import.ImportId}:{row.SourceRowNumber}";
             rowByEvidence[evidence] = row;
             switch (Classify(row.ActivityType))
             {
                 case StatementRowKind.Position:
-                    statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementPositions.Add(MapPosition(row, statementAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, statementAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 default:
-                    statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementTransactions.Add(MapTransaction(row, statementAccount, evidence, fxRateProvider, normalizedBase));
                     break;
             }
         }
@@ -121,27 +124,6 @@ internal static class StatementRunMatcher
         }
 
         return new StatementRunMatchResult(breaks, matchCount);
-    }
-
-    private static void ValidateStatementAccounts(
-        IReadOnlyList<CanonicalStatementRow> rows,
-        string canonicalAccount)
-    {
-        foreach (var row in rows)
-        {
-            if (string.IsNullOrWhiteSpace(row.Account))
-            {
-                continue;
-            }
-
-            var sourceAccount = row.Account.Trim();
-            if (!string.Equals(sourceAccount, canonicalAccount, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidDataException(
-                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
-                    $"which does not match the requested external account '{canonicalAccount}'.");
-            }
-        }
     }
 
     private static NormalizedStatementPosition MapPosition(
