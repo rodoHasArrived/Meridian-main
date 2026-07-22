@@ -73,8 +73,8 @@ public enum MigrationDriftPolicy
     Throw,
 
     /// <summary>
-    /// Re-apply the changed script and update the ledger checksum. Used by schemas whose scripts
-    /// were historically re-run on every startup and are written to be idempotent.
+    /// Re-apply the script on every startup and update the ledger checksum. Used by schemas whose
+    /// scripts were historically re-run on every startup and are written to be idempotent.
     /// </summary>
     Reapply,
 }

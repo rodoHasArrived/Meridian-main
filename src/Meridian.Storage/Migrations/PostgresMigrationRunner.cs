@@ -58,33 +58,31 @@ public sealed class PostgresMigrationRunner
 
             if (applied.IsApplied)
             {
-                if (applied.Checksum is null)
+                var action = ResolveAppliedMigrationAction(applied.Checksum, checksum, _options.DriftPolicy);
+                switch (action)
                 {
-                    // Row recorded before checksums were tracked: adopt the current content as the
-                    // canonical version so future drift is detected, without re-running the script.
-                    await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
-                        .ConfigureAwait(false);
-                    continue;
+                    case AppliedMigrationAction.Skip:
+                        continue;
+                    case AppliedMigrationAction.UpdateChecksum:
+                        // Row recorded before checksums were tracked: adopt the current content as the
+                        // canonical version so future drift is detected, without re-running the script.
+                        await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
+                            .ConfigureAwait(false);
+                        continue;
+                    case AppliedMigrationAction.Throw:
+                        throw new InvalidOperationException(
+                            $"{_options.DisplayName} migration '{script.FileName}' has changed since it was applied.");
+                    case AppliedMigrationAction.ExecuteAndUpdateChecksum:
+                        // MigrationDriftPolicy.Reapply preserves the no-ledger runner convention:
+                        // idempotent scripts run on every startup, including unchanged backfills
+                        // that repair legacy rows after ownership bindings become available.
+                        await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
+                        await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
+                            .ConfigureAwait(false);
+                        continue;
+                    default:
+                        throw new InvalidOperationException($"Unsupported applied migration action '{action}'.");
                 }
-
-                if (string.Equals(applied.Checksum, checksum, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                if (_options.DriftPolicy == MigrationDriftPolicy.Throw)
-                {
-                    throw new InvalidOperationException(
-                        $"{_options.DisplayName} migration '{script.FileName}' has changed since it was applied.");
-                }
-
-                // MigrationDriftPolicy.Reapply: schemas whose scripts were historically re-run on
-                // every startup keep their edit-in-place workflow — a changed script is applied
-                // again and the ledger checksum updated.
-                await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
-                await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
-                    .ConfigureAwait(false);
-                continue;
             }
 
             await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
@@ -179,6 +177,29 @@ public sealed class PostgresMigrationRunner
         command.Transaction = transaction;
         command.CommandText = rendered;
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    internal static AppliedMigrationAction ResolveAppliedMigrationAction(
+        string? appliedChecksum,
+        string currentChecksum,
+        MigrationDriftPolicy driftPolicy)
+    {
+        if (driftPolicy == MigrationDriftPolicy.Reapply)
+        {
+            return AppliedMigrationAction.ExecuteAndUpdateChecksum;
+        }
+
+        if (appliedChecksum is null)
+        {
+            return AppliedMigrationAction.UpdateChecksum;
+        }
+
+        if (string.Equals(appliedChecksum, currentChecksum, StringComparison.Ordinal))
+        {
+            return AppliedMigrationAction.Skip;
+        }
+
+        return AppliedMigrationAction.Throw;
     }
 
     private async Task RecordMigrationAsync(
@@ -302,6 +323,14 @@ public sealed class PostgresMigrationRunner
         }
 
         return value.All(static character => char.IsAsciiLetterOrDigit(character) || character == '_');
+    }
+
+    internal enum AppliedMigrationAction
+    {
+        Skip,
+        UpdateChecksum,
+        Throw,
+        ExecuteAndUpdateChecksum,
     }
 
     private readonly record struct MigrationScript(string Path, string FileName, int Ordinal);

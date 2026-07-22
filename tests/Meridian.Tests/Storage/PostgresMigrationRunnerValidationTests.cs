@@ -66,6 +66,53 @@ public sealed class PostgresMigrationRunnerValidationTests
         act.Should().NotThrow();
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("same-checksum")]
+    [InlineData("old-checksum")]
+    public void ResolveAppliedMigrationAction_ReapplyExecutesAlreadyAppliedScriptsEveryStartup(string? appliedChecksum)
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            appliedChecksum,
+            "same-checksum",
+            MigrationDriftPolicy.Reapply);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.ExecuteAndUpdateChecksum);
+    }
+
+    [Fact]
+    public void ResolveAppliedMigrationAction_ThrowPolicySkipsUnchangedScripts()
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            "same-checksum",
+            "same-checksum",
+            MigrationDriftPolicy.Throw);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.Skip);
+    }
+
+    [Fact]
+    public void ResolveAppliedMigrationAction_ThrowPolicyAdoptsMissingChecksumsWithoutExecuting()
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            null,
+            "same-checksum",
+            MigrationDriftPolicy.Throw);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.UpdateChecksum);
+    }
+
+    [Fact]
+    public void ResolveAppliedMigrationAction_ThrowPolicyFailsOnChecksumDrift()
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            "old-checksum",
+            "new-checksum",
+            MigrationDriftPolicy.Throw);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.Throw);
+    }
+
     [Fact]
     public async Task EnsureMigratedAsync_ThrowsWhenConnectionStringMissing()
     {
