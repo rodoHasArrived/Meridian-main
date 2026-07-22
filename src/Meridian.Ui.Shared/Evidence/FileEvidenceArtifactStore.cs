@@ -655,6 +655,15 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
         var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
 
+        // Avoid retaining a process-lifetime lock for a vault that does not exist. The identity is
+        // read again after acquiring the lock so a concurrent review still operates on the latest
+        // persisted state.
+        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
+        if (await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false) is null)
+        {
+            return null;
+        }
+
         var vaultLock = _vaultWriteLocks.GetOrAdd(safeVaultId, static _ => new SemaphoreSlim(1, 1));
         await vaultLock.WaitAsync(ct).ConfigureAwait(false);
         try
