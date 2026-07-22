@@ -7,6 +7,8 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.TestHost;
@@ -100,10 +102,13 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_StatementRunMutationRoutes_ShouldTrustAuthenticatedActor()
     {
         var service = new StubReconciliationApiService();
+        var accountId = Guid.NewGuid();
+        var accounts = CreateStatementAccount(accountId);
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationApiService>(service);
-        });
+            services.AddSingleton<IAccountQueryService>(accounts);
+        }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
 
         var create = await client.PostAsJsonAsync(
@@ -111,8 +116,8 @@ public sealed partial class WorkstationEndpointsTests
             new StatementRunCreateDto(
                 Broker: "custodian",
                 SourceInstitution: "Sample Custodian",
-                FundAccountId: "fund-1",
-                ExternalAccountId: "external-1",
+                FundAccountId: accountId.ToString("D"),
+                ExternalAccountId: "external-allowed",
                 StatementPeriodStart: new DateOnly(2026, 5, 1),
                 StatementPeriodEnd: new DateOnly(2026, 5, 31),
                 SourcePath: @"C:\imports\statement.csv",
@@ -133,6 +138,87 @@ public sealed partial class WorkstationEndpointsTests
         service.ReconciledRequests.Should().ContainSingle();
         service.ReconciledRequests[0].RunId.Should().Be("statement-run-1");
         service.ReconciledRequests[0].Request.Actor.Should().Be("ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunCreate_ShouldRejectUnboundExternalAccount()
+    {
+        var service = new StubReconciliationApiService();
+        var accounts = CreateStatementAccount(Guid.NewGuid());
+        var account = (await accounts.ListAccountsAsync(null, null, null)).Single();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+            services.AddSingleton<IAccountQueryService>(accounts);
+        }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "custodian",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: account.AccountId.ToString("D"),
+                ExternalAccountId: "external-other",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 31),
+                SourcePath: @"C:\imports\statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "browser-spoof"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.CreatedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunCreate_ShouldRejectUnscopedAccount()
+    {
+        var service = new StubReconciliationApiService();
+        var accounts = CreateStatementAccount(Guid.NewGuid());
+        var account = (await accounts.ListAccountsAsync(null, null, null)).Single();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+            services.AddSingleton<IAccountQueryService>(accounts);
+        }, currentUserPermissions: Meridian.Identity.Auth.UserPermission.ManageDirectLending);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "custodian",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: account.AccountId.ToString("D"),
+                ExternalAccountId: "external-allowed",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 31),
+                SourcePath: @"C:\imports\statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "browser-spoof"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.CreatedRequests.Should().BeEmpty();
+    }
+
+    private static InMemoryFundAccountService CreateStatementAccount(Guid accountId)
+    {
+        var accounts = new InMemoryFundAccountService();
+        accounts.CreateAccountAsync(new Meridian.Contracts.FundStructure.CreateAccountRequest(
+            accountId,
+            Meridian.Contracts.FundStructure.AccountTypeDto.Custody,
+            "ACCOUNT-ALLOWED",
+            "Allowed statement account",
+            "USD",
+            DateTimeOffset.UtcNow,
+            "test-operator",
+            Institution: "Sample Custodian",
+            CustodianDetails: new Meridian.Contracts.FundStructure.CustodianAccountDetailsDto(
+                "external-allowed", null, null, null, null, null, null, null))).GetAwaiter().GetResult();
+        return accounts;
     }
 
     private static MultipartFormDataContent BuildStatementToReportContent()
