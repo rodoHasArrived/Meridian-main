@@ -93,6 +93,16 @@ public record ProviderComparisonResponse(
     int HealthyProviders);
 
 /// <summary>Response containing provider connection status.</summary>
+public record ProviderStreamStatusResponse(
+    string AssetClass,
+    string Feed,
+    string Entitlement,
+    string LifecycleState,
+    bool IsConnected,
+    bool IsDegraded,
+    string? DegradationReason);
+
+/// <summary>Response containing provider connection status.</summary>
 public record ProviderStatusResponse(
     string ProviderId,
     string Name,
@@ -114,7 +124,8 @@ public record ProviderStatusResponse(
     int? RecoveringSubscriptions = null,
     DateTimeOffset? LastSubscriptionMessageAt = null,
     string? ConnectionState = null,
-    bool DiagnosticsAvailable = false);
+    bool DiagnosticsAvailable = false,
+    IReadOnlyList<ProviderStreamStatusResponse>? Streams = null);
 
 /// <summary>Response containing detailed provider metrics.</summary>
 public record ProviderMetricsResponse(

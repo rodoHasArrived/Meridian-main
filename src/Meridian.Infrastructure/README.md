@@ -40,6 +40,16 @@ transport-specific lifecycle evidence. For polling, raw-socket, simulation, and 
 diagnostics, `WebSocketState` is `None`. Consumers should use this contract instead of reaching
 into provider-specific transport internals.
 
+Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
+WebSocket endpoints. Its diagnostics carry a per-stream selected feed and entitlement (for
+example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
+misrepresented as consolidated or OPRA-entitled data.
+
+Alpaca reference-data search preserves broker-supplied marginability, shortability,
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Search no
+longer silently defaults omitted asset-class filters to equities; it can discover equities, crypto,
+options, and fixed-income assets when the configured Alpaca API entitlement exposes them.
+
 The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
 existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
 Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former

@@ -7,6 +7,7 @@ using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -418,7 +419,8 @@ public static class ProviderEndpoints
                     RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
                     LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
                     ConnectionState: connectionState,
-                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null
+                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null,
+                    Streams: ToStreamResponses(diagnostics?.Streams)
                 );
             }).ToList();
 
@@ -471,7 +473,8 @@ public static class ProviderEndpoints
                         RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
                         LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
                         ConnectionState: connectionState,
-                        DiagnosticsAvailable: diagnostics is not null));
+                        DiagnosticsAvailable: diagnostics is not null,
+                        Streams: ToStreamResponses(diagnostics?.Streams)));
                 }
             }
 
@@ -711,6 +714,13 @@ public static class ProviderEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
+
+    private static IReadOnlyList<ProviderStreamStatusResponse>? ToStreamResponses(
+        IReadOnlyList<ProviderStreamDiagnostics>? streams)
+        => streams?.Select(stream => new ProviderStreamStatusResponse(
+            stream.AssetClass.ToString(), stream.Feed, stream.Entitlement,
+            stream.LifecycleState.ToString(), stream.IsConnected, stream.IsDegraded,
+            RuntimeDiagnosticRedactor.SanitizeText(stream.DegradationReason))).ToArray();
 
     internal static ProviderRegistrationReportDto CreateRegistrationReportDto(ProviderRegistrationReport report)
     {
