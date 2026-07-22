@@ -20,17 +20,28 @@ namespace Meridian.Application.Reconciliation;
 ///     (<see cref="IAccountQueryService.GetBalanceTimelineAsync"/>) — the most recent internal balance
 ///     at or before the period close, not the account's newest balance, so a closed statement is never
 ///     reconciled against a balance recorded after the period.</item>
-///   <item>Positions are read best-effort from the retained position snapshot for the account's
-///     strategy run (<see cref="IPositionSnapshotStore.GetLatestSnapshotAsync(string,string,System.Threading.CancellationToken)"/>).
-///     A snapshot captured after the statement period end fails closed to no positions; market value is
-///     left unspecified so the engine matches on quantity and account/security identity.</item>
+///   <item>Positions are read best-effort from the retained position snapshot effective at or before the
+///     statement period end, selected from snapshot history (see <c>ResolvePeriodSnapshotAsync</c>) so a
+///     later snapshot never displaces the period-appropriate book; market value is left unspecified so the
+///     engine matches on quantity and account/security identity. Known limitation: this reads the legacy
+///     unowned snapshot partition via the two-argument <see cref="IPositionSnapshotStore.GetLatestSnapshotAsync(string,string,System.Threading.CancellationToken)"/>
+///     and history overloads. Snapshots written through the owner-scoped accounting-capture path
+///     (tenant/company/fund/book/entity) are invisible here and fail closed to position breaks until an
+///     appropriately authorized owner-scoped query seam is resolved for the account.</item>
 ///   <item>The statement run's <c>FundAccountId</c> must be a Meridian fund-account GUID; an operator
 ///     label that is not a GUID resolves no internal book, and every row fails closed to a break.</item>
 ///   <item>Internal records are labeled with the run's external (custodian) account key — the same key
 ///     the statement side normalizes to — so a statement row reconciles against Meridian's book for the
 ///     account under reconciliation regardless of the per-row account string the custodian emits.</item>
-///   <item>Ledger-transaction population is not sourced here yet; statement transaction rows therefore
-///     continue to fail closed to breaks until a ledger-journal mapping is added.</item>
+///   <item>Ledger-transaction population is intentionally left empty (fail closed to breaks). Sourcing it
+///     is a domain decision, not a wiring gap: the reconciliation context carries no ledger-book/period
+///     scope key, the ledger journal is double-entry (each entry has several GL lines, so projecting a
+///     single custodian-visible movement — its net amount, quantity, security, external id, and type — is
+///     a modeling choice), only custodian-reconcilable postings should be projected (accruals,
+///     revaluations, and inter-book transfers never appear on a statement), and fund-scoped journal reads
+///     are tenant-authorized. Populating it wrongly would fabricate false matches or flood false
+///     internal-only breaks, both worse than the current fail-closed behavior, so it awaits an authorized
+///     period-scoped ledger source and an agreed journal→transaction projection.</item>
 /// </list>
 /// Every resolution failure degrades to <see cref="InternalReconciliationPopulations.Empty"/> so the
 /// matcher never fabricates a match and the import workflow never throws.
