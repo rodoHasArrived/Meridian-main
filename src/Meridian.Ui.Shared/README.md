@@ -44,6 +44,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`ProviderDataReadModelService` projects `IProviderDataReadService` records for both workstation
+lanes, keeping provider option/scanner/bar/tick/P&L/market-rule data outside provider-specific UI code.
+
 The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
 and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,

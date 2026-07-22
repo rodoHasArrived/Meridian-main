@@ -17,7 +17,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Without IBAPI defined, delegates to IBSimulationClient (generates synthetic data for testing).
 /// - With IBAPI defined, uses EnhancedIBConnectionManager + IBCallbackRouter for real TWS/Gateway.
 /// </summary>
-[DataSource("ib", "Interactive Brokers", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("ibkr", "Interactive Brokers", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 1, Description = "Interactive Brokers TWS/Gateway for real-time market data")]
 [ImplementsAdr("ADR-001", "Interactive Brokers streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
@@ -41,7 +41,7 @@ public sealed class IBMarketDataClient :
     {
         _streamingRateLimits = new ProviderRateLimitTracker();
         _streamingRateLimits.RegisterProvider(
-            "ib",
+            "ibkr",
             maxRequestsPerWindow: 50,
             window: TimeSpan.FromSeconds(1),
             minDelay: TimeSpan.FromMilliseconds(20));
@@ -92,7 +92,7 @@ public sealed class IBMarketDataClient :
 
 
     /// <inheritdoc/>
-    public string ProviderId => "ib";
+    public string ProviderId => "ibkr";
 
     /// <inheritdoc/>
     public string ProviderDisplayName => "Interactive Brokers";

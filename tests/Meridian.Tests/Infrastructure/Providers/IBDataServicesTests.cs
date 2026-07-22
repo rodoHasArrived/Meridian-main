@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
@@ -65,6 +66,76 @@ public sealed class IBDataServicesTests
         services.GetLineage().Single().Subscription.Should().Be("456,258");
     }
 
+    [Fact]
+    public void CallbackCorrelation_OnlyUpdatesItsOriginatingRequest()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var first = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+        var second = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "HOT_BY_VOLUME"));
+
+        services.RecordScannerResult(second, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null));
+        services.CompleteRequest(second);
+
+        services.GetRequests().Single(request => request.RequestId == first).Status.Should().Be(ProviderDataRequestStatus.Requested);
+        var correlated = services.GetRequests().Single(request => request.RequestId == second);
+        correlated.Status.Should().Be(ProviderDataRequestStatus.Completed);
+        correlated.ScannerResults.Should().ContainSingle().Which.Symbol.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public void Cancellation_MarksOnlyTheRequestedStreamAndCallsTransportCancellation()
+    {
+        var transport = new RecordingTransport();
+        var services = new IBDataServices(transport);
+        var requestId = services.SubscribePnl("DU123", "model-a");
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        transport.Calls.Should().Contain($"cancel:{requestId}:pnl");
+    }
+
+    [Fact]
+    public void PnlCallbacks_RetainAccountAndModelIsolation()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var first = services.SubscribePnl("DU111", "growth");
+        var second = services.SubscribePnl("DU222", "income");
+
+        services.RecordPnl(first, new ProviderAccountPnl("DU111", "growth", 10m, 4m, 6m));
+        services.RecordPnl(second, new ProviderAccountPnl("DU222", "income", 20m, 7m, 13m));
+
+        services.GetRequests().Single(x => x.RequestId == first).Pnl!.AccountId.Should().Be("DU111");
+        services.GetRequests().Single(x => x.RequestId == second).Pnl!.ModelAccountId.Should().Be("income");
+    }
+
+    [Fact]
+    public void UnavailableMarketDataPermission_RejectsCorrelatedRequestWithoutClaimingLiveData()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.SubscribeRealTimeBars(new IBRealTimeBarRequest(new SymbolConfig("AAPL")));
+
+        services.RejectRequest(requestId, "354", "Requested market data is not subscribed.");
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Rejected);
+        request.ErrorCode.Should().Be("354");
+        request.RealTimeBars.Should().BeNull();
+    }
+
+    [Fact]
+    public void PacingViolation_RejectsOnlyTheCorrelatedHistoricalTickRequest()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var first = services.RequestHistoricalTicks(new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 100));
+        var second = services.RequestHistoricalTicks(new IBHistoricalTickRequest(new SymbolConfig("MSFT"), null, DateTimeOffset.UtcNow, 100));
+
+        services.RejectRequest(first, IBApiLimits.ErrorPacingViolation.ToString(), "Historical data query pacing violation.");
+
+        services.GetRequests().Single(request => request.RequestId == first).Status.Should().Be(ProviderDataRequestStatus.Rejected);
+        services.GetRequests().Single(request => request.RequestId == second).Status.Should().Be(ProviderDataRequestStatus.Requested);
+    }
+
     private sealed class RecordingTransport : IIBDataServiceTransport
     {
         public List<string> Calls { get; } = [];
@@ -79,5 +150,6 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) => Calls.Add($"pnl:{requestId}:{account}");
         public void RequestMarketRule(int requestId, int marketRuleId) => Calls.Add($"market-rule:{requestId}:{marketRuleId}");
         public void RequestDepthExchanges(int requestId) => Calls.Add($"depth-exchanges:{requestId}");
+        public void CancelDataRequest(int requestId, string capability) => Calls.Add($"cancel:{requestId}:{capability}");
     }
 }

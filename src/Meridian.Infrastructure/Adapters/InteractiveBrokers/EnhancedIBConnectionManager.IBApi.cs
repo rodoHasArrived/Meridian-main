@@ -11,6 +11,7 @@ using Meridian.Core.Logging;
 using Meridian.Core.Performance;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Resilience;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -45,6 +46,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private readonly ConcurrentDictionary<int, TaskCompletionSource<List<IBApi.Bar>>> _historicalDataRequests = new();
     private readonly ConcurrentDictionary<int, List<IBApi.Bar>> _historicalDataBuffers = new();
     private int _nextBrokerRequestId = 50_000;
+    private readonly ConcurrentDictionary<int, int> _marketRuleRequests = new();
 
     // Performance monitoring
     private readonly ConnectionWarmUp _warmUp;
@@ -151,6 +153,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler? PositionsCompleted;
     public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     public event EventHandler<int>? AccountSummaryCompleted;
+    public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
+    public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
+    public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
+    public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments)>? MarketRuleReceived;
+    public event EventHandler<int>? RequestCompleted;
+    public event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
@@ -833,6 +843,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void RequestMarketRule(int requestId, int marketRuleId)
     {
         ThrowIfNotConnected();
+        _marketRuleRequests[marketRuleId] = requestId;
         _clientSocket.reqMarketRule(marketRuleId);
     }
 
@@ -840,6 +851,58 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         ThrowIfNotConnected();
         _clientSocket.reqMktDepthExchanges();
+    }
+
+    /// <summary>Starts a correlated, five-second real-time bar stream.</summary>
+    public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request)
+    {
+        ThrowIfNotConnected();
+#if IBAPI_VENDOR
+        _clientSocket.reqRealTimeBars(requestId, ContractFactory.Create(request.Contract), 5, request.WhatToShow, request.UseRegularTradingHours, []);
+#else
+        throw new NotSupportedException("Real-time bars require the official Interactive Brokers vendor SDK.");
+#endif
+    }
+
+    /// <summary>Requests a bounded historical-tick page with explicit time bounds.</summary>
+    public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request)
+    {
+        ThrowIfNotConnected();
+#if IBAPI_VENDOR
+        _clientSocket.reqHistoricalTicks(requestId, ContractFactory.Create(request.Contract),
+            request.Start?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+            request.End?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+            request.NumberOfTicks, request.WhatToShow, request.UseRegularTradingHours ? 1 : 0, false, []);
+#else
+        throw new NotSupportedException("Historical ticks require the official Interactive Brokers vendor SDK.");
+#endif
+    }
+
+    /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
+    public void CancelDataRequest(int requestId, string capability)
+    {
+        if (!IsConnected) return;
+        switch (capability)
+        {
+            case "scanner":
+#if IBAPI_VENDOR
+                _clientSocket.cancelScannerSubscription(requestId);
+#endif
+                break;
+            case "tick-by-tick": _clientSocket.cancelTickByTickData(requestId); break;
+            case "pnl":
+#if IBAPI_VENDOR
+                _clientSocket.cancelPnL(requestId);
+#endif
+                break;
+            case "real-time-bars":
+#if IBAPI_VENDOR
+                _clientSocket.cancelRealTimeBars(requestId);
+#endif
+                break;
+            case "historical-ticks":
+                break; // IB historical ticks are bounded and complete from their terminal callback.
+        }
     }
 
     // -----------------------
@@ -931,6 +994,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
 
         ErrorOccurred?.Invoke(this, new IBApiError(id, errorCode, errorMsg, advancedOrderRejectJson));
+        if (id > 0)
+            RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
     }
 
     public void connectionClosed()
@@ -1039,8 +1104,21 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(reqId, marketDataType));
     }
-    public void contractDetails(int reqId, ContractDetails contractDetails) { }
-    public void contractDetailsEnd(int reqId) { }
+    public void contractDetails(int reqId, ContractDetails contractDetails)
+    {
+        RecordMessageReceived();
+#if IBAPI_VENDOR
+        var contract = contractDetails.Contract;
+        var expiration = DateOnly.TryParse(contract.LastTradeDateOrContractMonth, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : DateOnly.MinValue;
+        if (expiration != DateOnly.MinValue && contract.Strike > 0 && !string.IsNullOrWhiteSpace(contract.Right))
+            OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(contract.Symbol, string.Empty, expiration, (decimal)contract.Strike, contract.Right, contract.Exchange, contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture))));
+#endif
+    }
+    public void contractDetailsEnd(int reqId)
+    {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
+    }
     public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) { }
     public void reqMktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions) { }
     public void tickReqParams(int tickerId, double minTick, string bboExchange, int snapshotPermissions) { }
