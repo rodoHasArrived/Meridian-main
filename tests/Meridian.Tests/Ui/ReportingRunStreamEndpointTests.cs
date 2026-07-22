@@ -329,35 +329,11 @@ public sealed class ReportingRunStreamEndpointTests
         string requestCompanyId = SeededCompanyId,
         bool grantAdminOverride = false)
     {
-        // Certified orchestration rejects partially-bound contracts (ValidateCertifiedContract),
-        // so seed the tenant-scoped run through the store fallback instead of ExecuteAsync: these
-        // tests exercise streaming and access enforcement, not certification.
-        var seededManifest = new ReportingOutputManifest(
-            SeededRunId,
-            "investor-monthly-statement",
-            new DateOnly(2026, 5, 1),
-            ReportingRunStatus.Draft,
-            ImmutableArray<ReportingSectionManifest>.Empty,
-            ImmutableArray<string>.Empty,
-            1,
-            ReportingRunTrigger.AdHoc,
-            OperationalScope: new ReportingOperationalScope(
-                SeededTenantId,
-                "organization-a",
-                SeededCompanyId,
-                FundId: null,
-                BookId: "book-a",
-                PeriodId: "2026-05"),
-            ImmutableAccessScope: new ReportingAccessScope(
-                "policy-a",
-                "1",
-                ReportingGovernanceAccessMode.CompanyWide,
-                OwnerPrincipalId: null,
-                AllowOwnerAccess: false,
-                Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
-                PolicyHash: "policy-hash-a"));
         var orchestration = new ReportingOrchestrationService(
             new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        // Exercise the same complete certified-contract path used in production before testing
+        // stream authorization and subscription behavior. A partial fixture would be rejected by
+        // ValidateCertifiedContract before the endpoint can expose the seeded run.
         await orchestration.ExecuteAsync(BuildCertifiedStreamContract(), CancellationToken.None);
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
