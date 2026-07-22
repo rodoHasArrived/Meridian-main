@@ -241,6 +241,48 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task UnsolicitedAcceptedModification_CannotIncreaseAuthorizedQuantity()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Accepted, ExecutionReportType.Modified, filledQty: 0m, fillPrice: null, orderQuantity: 1_000m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Accepted,
+            "the unsolicited report still reaches the tracked order");
+
+        oms.GetOrder(result.OrderId)!.Quantity.Should().Be(10m,
+            because: "a gateway report without a local modification must not authorize a larger order");
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the oversized completion report reaches the tracked order");
+
+        oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "the portfolio must only receive the originally authorized fill quantity");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+    }
+
+    [Fact]
     public async Task LateFillAfterTerminalOrder_DoesNotMutatePortfolioOrOrderState()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
