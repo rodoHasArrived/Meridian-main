@@ -1001,6 +1001,59 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerCloseManagementEndpoints_AccountingUserCannotConfigureOrSignOffElevatedCloseApprovalRole()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ManageDirectLending,
+            currentUserRole: UserRole.Accounting,
+            currentUserRoleProfileName: "accounting-ops");
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                Guid.NewGuid(),
+                "2026-08",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor",
+                LedgerBookId: ledgerBookId));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+        var taskId = start.Workflow.CloseChecklist[0].TaskId;
+
+        using var configureResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodPlanConfiguration,
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        taskId,
+                        RequiredApprovalCount: 1,
+                        RequiredApprovalRole: "CFO")
+                ],
+                Actor: "payload-actor",
+                EvidenceLinks: [$"evidence:close-plan:{workflowId:D}:2026-08:book:{ledgerBookId:D}:configuration-approval"]));
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var signOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskId,
+                "CFO",
+                ManualJournalEntryStatusDto.Approved,
+                "accounting-user",
+                "Attempted elevated CFO sign-off.",
+                EvidenceLinks: [$"evidence:close-task:{taskId}:CFO:2026-08:book:{ledgerBookId:D}:cfo-signoff"]));
+        signOffResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task LedgerCloseManagementEndpoints_ConfigureClosePlanMaterialitySignOffsAndDependencies()
     {
         var fundAccountId = Guid.NewGuid();
