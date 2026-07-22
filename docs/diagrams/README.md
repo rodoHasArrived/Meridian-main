@@ -39,6 +39,7 @@ The index below keeps basename references for readability; use the folders above
 | **Data Flow** | End-to-end data flow from sources to export | `data-flow.dot` |
 | **Provider Architecture** | Data provider abstraction, manifest-driven setup, sync-run evidence, staging, and reconciliation handoff | `provider-architecture.dot` |
 | **Storage Architecture** | Storage pipeline with WAL, compression, tiering | `storage-architecture.dot` |
+| **Storage Topology** | Maintained Mermaid view of file-backed stores, PostgreSQL governed records, lifecycle controls, and consumers | `../architecture/diagrams/meridian-storage-topology.mmd` |
 | **Event Pipeline Sequence** | Detailed event processing sequence | `event-pipeline-sequence.dot` |
 | **Resilience Patterns** | Circuit breakers, retry, failover patterns | `resilience-patterns.dot` |
 | **Deployment Options** | Standalone and Docker deployment paths | `deployment-options.dot` |

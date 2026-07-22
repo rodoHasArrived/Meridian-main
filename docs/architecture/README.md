@@ -50,6 +50,7 @@ This directory contains documentation about the system's design, architectural d
 | [MVVM Guidelines](mvvm-guidelines.md) | Browser workstation and WPF desktop view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
+| [Storage Topology Diagram](diagrams/meridian-storage-topology.mmd) | File-backed and PostgreSQL durable stores, control services, and their consumers |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
 | [Desktop Layers](desktop-layers.md) | WPF desktop application architecture |
 | [Why This Architecture](why-this-architecture.md) | Design rationale and tradeoffs |
