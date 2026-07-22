@@ -49,7 +49,6 @@ public sealed class PostgresOperationsContinuityStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
         await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
@@ -218,6 +217,8 @@ public sealed class PostgresOperationsContinuityStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        // Reject an unresolved book before a transactional ledger append can create any related writes.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
         await _ledgerJournalStore.AppendAsync(connection, transaction, journalEntry, ct).ConfigureAwait(false);
         var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
         workflow.Touch(audit.OccurredAtUtc);
@@ -349,6 +350,10 @@ public sealed class PostgresOperationsContinuityStore :
         OperationsContinuityWorkflow workflow,
         CancellationToken ct)
     {
+        // Keep the tenant-resolution precondition at the write seam so all workflow upserts, including
+        // transactional workflow starts, reject book-scoped workflows that cannot be tenant-stamped.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =

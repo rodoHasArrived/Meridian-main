@@ -31,6 +31,42 @@ public sealed class OperationsContinuityPostgresRoundTripTests
     }
 
     [LedgerDatabaseFact]
+    public async Task PostgresOperationsContinuityStore_ShouldRejectUnresolvedBookWhenStartingWorkflowTransactionally()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var workflow = OperationsContinuityWorkflow.Start(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "2026-05-invalid-book-transactional-start",
+            securityMasterSnapshotId: Guid.NewGuid(),
+            brokerSource: "postgres-fixture",
+            now: DateTimeOffset.UtcNow,
+            ledgerBookId: Guid.NewGuid());
+        var auditDraft = new OperationsWorkflowAuditDraft(
+            workflow.WorkflowId,
+            workflow.FundAccountId,
+            workflow.PeriodId,
+            "workflow-started",
+            OperationsWorkflowStatusDto.NotStarted,
+            OperationsWorkflowStatusDto.NotStarted,
+            OperationsGateKeyDto.BrokerIngest,
+            OperationsGateStatusDto.NotStarted,
+            OperationsGateStatusDto.InProgress,
+            "ops-user",
+            "Reject an unresolved book before committing the workflow start.",
+            "postgres-unresolved-book-transactional-start",
+            EvidenceLinks());
+
+        var act = () => database.OperationsStore.CommitWorkflowStartAsync(workflow, auditDraft);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not resolve to a claimed fund tenant*");
+
+        (await database.OperationsStore.GetAsync(workflow.WorkflowId)).Should().BeNull();
+        (await database.OperationsStore.GetTimelineAsync(workflow.WorkflowId)).Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
     public async Task PostgresOperationsContinuityStore_ShouldRoundTripTransactionalLedgerPosting()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
