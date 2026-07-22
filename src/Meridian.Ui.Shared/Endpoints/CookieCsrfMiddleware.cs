@@ -102,17 +102,20 @@ internal static class CookieCsrfProtection
             return true;
         }
 
+        var environment = context.RequestServices.GetService(typeof(IHostEnvironment)) as IHostEnvironment;
+        var isLocalDevelopmentEnvironment = environment is not null &&
+                                            (environment.IsDevelopment() || environment.IsEnvironment("Test"));
         var remoteAddress = context.Connection.RemoteIpAddress;
         var localAddress = context.Connection.LocalIpAddress;
-        if (remoteAddress is not null &&
+        if (isLocalDevelopmentEnvironment &&
+            remoteAddress is not null &&
             System.Net.IPAddress.IsLoopback(remoteAddress) &&
             (localAddress is null || System.Net.IPAddress.IsLoopback(localAddress)))
         {
             return false;
         }
 
-        var environment = context.RequestServices.GetService(typeof(IHostEnvironment)) as IHostEnvironment;
-        return environment is null || (!environment.IsDevelopment() && !environment.IsEnvironment("Test"));
+        return environment is null || !isLocalDevelopmentEnvironment;
     }
 }
 

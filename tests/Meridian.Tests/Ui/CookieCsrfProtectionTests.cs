@@ -11,9 +11,18 @@ namespace Meridian.Tests.Ui;
 public sealed class CookieCsrfProtectionTests
 {
     [Fact]
-    public void ShouldUseSecureCookies_WhenProductionHttpRequestIsLoopback_ReturnsFalse()
+    public void ShouldUseSecureCookies_WhenProductionHttpRequestIsLoopback_ReturnsTrue()
     {
         var context = CreateContext(IPAddress.Loopback, IPAddress.Loopback, isHttps: false);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
+    }
+
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenDevelopmentHttpRequestIsLoopback_ReturnsFalse()
+    {
+        var context = CreateContext(IPAddress.Loopback, IPAddress.Loopback, isHttps: false, Environments.Development);
 
         CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeFalse();
     }
@@ -34,10 +43,10 @@ public sealed class CookieCsrfProtectionTests
         CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
     }
 
-    private static DefaultHttpContext CreateContext(IPAddress remoteAddress, IPAddress localAddress, bool isHttps)
+    private static DefaultHttpContext CreateContext(IPAddress remoteAddress, IPAddress localAddress, bool isHttps, string environmentName = Environments.Production)
     {
         var services = new ServiceCollection()
-            .AddSingleton<IHostEnvironment>(new ProductionHostEnvironment())
+            .AddSingleton<IHostEnvironment>(new TestHostEnvironment(environmentName))
             .BuildServiceProvider();
         var context = new DefaultHttpContext { RequestServices = services };
         context.Connection.RemoteIpAddress = remoteAddress;
@@ -46,9 +55,9 @@ public sealed class CookieCsrfProtectionTests
         return context;
     }
 
-    private sealed class ProductionHostEnvironment : IHostEnvironment
+    private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
     {
-        public string EnvironmentName { get; set; } = Environments.Production;
+        public string EnvironmentName { get; set; } = environmentName;
         public string ApplicationName { get; set; } = "Meridian.Tests";
         public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
