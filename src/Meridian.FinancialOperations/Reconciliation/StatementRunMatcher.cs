@@ -51,6 +51,9 @@ internal static class StatementRunMatcher
 
         foreach (var row in rows)
         {
+            var statementAccount = string.IsNullOrWhiteSpace(row.Account)
+                ? fallbackAccount
+                : row.Account.Trim();
             var evidence = $"{import.ImportId}:{row.SourceRowNumber}";
             rowByEvidence[evidence] = row;
             switch (Classify(row.ActivityType))
