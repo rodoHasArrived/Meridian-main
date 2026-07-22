@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Reporting
@@ -36,6 +36,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   Released` aggregates, maker-checker rules, governed restatement, and append-only audit contracts.
 - `ReportingArtifactContracts.cs` and `ReportingArtifactDeclaration.cs` - immutable package,
   content-addressed artifact, access-audit, and deterministic output-declaration contracts.
+- `ReportingReconciliationEvidenceContracts.cs` - exact close/reconciliation receipts, including
+  item-level value, quantity, and cost-basis measures, unresolved blocked outputs, dispositions,
+  approval lineage, and per-break evidence hashes.
 - `ReportingDistributionContracts.cs` - opaque scoped grants, durable delivery jobs, leases,
   retries, provider receipts, and release authorization contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
@@ -56,6 +59,11 @@ artifact, governance, restatement, and distribution contracts plus deterministic
 UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
 implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
 server-returned action availability.
+Artifact declarations are not completion evidence by themselves. UI Shared renders the declared
+PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty content and SHA-256
+identity, and retains them in one immutable package. Final report readiness fails closed when exact
+reconciliation evidence identifies an unresolved break; blocker evidence names the break, measures,
+impacted outputs, and retained evidence hash.
 
 ## Diagrams
 

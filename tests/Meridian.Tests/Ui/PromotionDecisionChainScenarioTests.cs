@@ -42,7 +42,9 @@ public sealed class PromotionDecisionChainScenarioTests
             auditTrail);
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
@@ -222,7 +224,9 @@ public sealed class PromotionDecisionChainScenarioTests
         await controls.SetCircuitBreakerAsync(true, "Operator halt for risk review", "risk-officer");
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,

@@ -22,7 +22,8 @@ internal sealed record ProviderConnectionDiagnosticsSummary(
     int ActiveSubscriptions,
     int FailedSubscriptions,
     int RecoveringSubscriptions,
-    DateTimeOffset? LastSubscriptionMessageAt);
+    DateTimeOffset? LastSubscriptionMessageAt,
+    IReadOnlyList<ProviderStreamDiagnostics>? Streams);
 
 internal static class ProviderConnectionDiagnosticsProjection
 {
@@ -101,7 +102,8 @@ internal static class ProviderConnectionDiagnosticsProjection
             ActiveSubscriptions: snapshot.ActiveSubscriptions,
             FailedSubscriptions: snapshot.FailedSubscriptions,
             RecoveringSubscriptions: snapshot.RecoveringSubscriptions,
-            LastSubscriptionMessageAt: snapshot.LastSubscriptionMessageAt);
+            LastSubscriptionMessageAt: snapshot.LastSubscriptionMessageAt,
+            Streams: snapshot.Streams);
 
     private static void AddIfPresent(
         IDictionary<string, ProviderConnectionDiagnosticsSummary> diagnostics,

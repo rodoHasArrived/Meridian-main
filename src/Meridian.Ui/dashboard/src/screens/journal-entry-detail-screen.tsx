@@ -348,7 +348,7 @@ export function JournalEntryDetailScreen() {
       <div className="flex flex-wrap gap-2">
         {runId ? (
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingTrialBalance", { runId })}>Back to Trial Balance</Link>
+            <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId })}>Back to Trial Balance</Link>
           </Button>
         ) : null}
         <Button asChild size="sm" variant="outline">

@@ -2,7 +2,7 @@
 title: Environment Variable Reference
 status: active
 owner: core-team
-reviewed: 2026-06-02
+reviewed: 2026-07-17
 audience: developers-and-operators
 ---
 
@@ -36,7 +36,8 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | `MDC_SYNTHETIC_MODE` | `DataSource` convenience toggle | Forces synthetic/offline provider posture. | Can hide live-provider failures if accidentally left enabled. |
 | `MDC_DEBUG` | `Serilog:MinimumLevel` override path | Raises logging verbosity for troubleshooting. | Can increase sensitive log exposure and operational noise. |
 | `MDC_LOG_LEVEL` | `Serilog:MinimumLevel:Default` | Explicit minimum log level override. | Overly verbose output can leak operational details and overwhelm alerting. |
-| `MDC_SHUTDOWN_TOKEN` | Host shutdown guard | Token required by guarded shutdown flows. | Missing/weak token weakens operational shutdown controls. |
+| `MDC_SHUTDOWN_TOKEN` | Internal host shutdown guard | Supervisor-to-host fallback capability. Installed releases generate it, store it only in a current-user DPAPI sidecar, and never expose it through runtime JSON. It is not user configuration. | Manually setting, logging, or sharing it breaks the intended current-user capability boundary. |
+| `MDC_LIFECYCLE_PIPE` | Internal supervisor bridge | Per-install current-user named-pipe name injected into the host by the lifecycle supervisor. It is not user configuration. | Pointing a host at an unrelated pipe breaks status/restart coordination and session evidence. |
 
 ## Core Configuration
 
@@ -45,6 +46,25 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 | `MDC_DATA_ROOT` | `DataRoot` | Root directory for data storage | No | `data` |
 | `MDC_COMPRESS` | `Compress` | Enable gzip compression (`true`/`false`) | No | `false` |
 | `MDC_DATASOURCE` | `DataSource` | Streaming provider: `IB`, `Alpaca`, `Polygon`, `StockSharp`, `NYSE` | No | `IB` |
+
+Installed releases do not require users to set `MDC_DATA_ROOT`: the lifecycle supervisor injects the
+resolved manifest data root, defaulting to `%LOCALAPPDATA%\Meridian\Data`.
+
+## Lifecycle Supervisor and Release Packaging
+
+These variables support development or release machinery. They are not end-user setup steps.
+
+| Variable | Consumer | Description | Default |
+|----------|----------|-------------|---------|
+| `MDC_POSTGRES_PAYLOAD_ROOT` | Consumer setup build | Root containing runtime-specific `win-x64` and `win-arm64` PostgreSQL payloads used to build the signed installer. | Required packaging input unless `-PostgreSqlPayloadRoot` is supplied. |
+| `MDC_POSTGRES_HOME` | Lifecycle supervisor development fallback | PostgreSQL installation root used only when neither the manifest nor bundled `database\bin` supplies binaries. | None; production installers bundle PostgreSQL. |
+| `MDC_LIFECYCLE_PIPE` | Host bridge | Supervisor-injected current-user pipe name described above. | Derived from the canonical installation path. |
+| `MDC_SHUTDOWN_TOKEN` | Host bridge | Supervisor-injected guarded HTTP fallback capability described above. | Generated per installation and DPAPI-protected. |
+
+Dedicated database mode also injects local connection strings into the host process. Treat them as
+runtime-owned values; do not persist the generated value into checked-in configuration. External
+database mode instead reads the manifest-named connection-string environment variable and remains
+strictly non-owning.
 
 ## Alpaca Provider
 
@@ -89,6 +109,28 @@ IB credentials are managed via TWS/Gateway, not environment variables. However, 
 | `ALPHAVANTAGE__APIKEY` | — | .NET config binding alias | — | — |
 | `NYSE__APIKEY` | `NYSE:ApiKey` | NYSE market data API key | When using NYSE | — |
 | `NASDAQ__APIKEY` | — | Nasdaq Data Link API key | When using Nasdaq | — |
+
+## Database Persistence
+
+**Without any of these variables, every money-path store (ledger, security master, fund
+accounts, fund structure, direct lending, asset operations, banking, money market, reporting,
+scoped access) runs in-memory and loses its data on restart.** Hosts log a loud
+`PERSISTENCE: NONE`/`PARTIAL` warning, report it in the `postgresql` readiness check, and the
+browser workstation shows a persistent red banner until persistence is configured.
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `MERIDIAN_DATABASE_URL` | Unified PostgreSQL connection for **all** store domains. Accepts `postgres://user:pass@host:port/db` URLs or Npgsql keyword form. Propagated at startup into every unset `MERIDIAN_*_CONNECTION_STRING`. | No | — (in-memory stores) |
+| `MERIDIAN_LEDGER_CONNECTION_STRING` | Ledger journal store (per-domain override; wins over `MERIDIAN_DATABASE_URL`). | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` | Security Master store (also inherited by Direct Lending unless its dedicated variable is set). | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` | Fund accounts governance store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` | Fund structure governance store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` | Asset operations projection store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_BANKING_CONNECTION_STRING` | Banking store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_MONEY_MARKET_CONNECTION_STRING` | Money market fund store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING` | Scoped access assignment store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_REPORTING_CONNECTION_STRING` | Reporting stores. | No | inherits the ledger connection |
+| `MERIDIAN_DIRECT_LENDING_CONNECTION_STRING` | Direct lending store (dedicated/test databases only). | No | inherits the Security Master connection |
 
 ## Storage Configuration
 

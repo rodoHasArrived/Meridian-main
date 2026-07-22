@@ -522,6 +522,30 @@ public sealed class Ledger : IReadOnlyLedger
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
     }
 
+    /// <summary>
+    /// Creates and posts a balanced journal entry whose lines carry explicit transaction-currency
+    /// detail alongside their functional (base) debit/credit amounts.
+    /// </summary>
+    public void PostLines(
+        DateTimeOffset timestamp,
+        string description,
+        IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)> lines,
+        JournalEntryMetadata? metadata = null)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Journal entry description must not be null or whitespace.", nameof(description));
+        if (lines.Count == 0)
+            throw new ArgumentException("A journal entry must have at least one line.", nameof(lines));
+
+        var journalId = Guid.NewGuid();
+        var entries = lines
+            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions, l.currency))
+            .ToList();
+
+        Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
+    }
+
     private static LedgerAccountSummary BuildAccountSummary(LedgerAccount account, AccountTotals totals)
         => new(
             account,

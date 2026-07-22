@@ -64,8 +64,15 @@ public sealed class ReportingRunCertificationService
         }
         catch (ReportingReconciliationReadinessException exception)
         {
+            var invalid = exception as ReportingReconciliationEvidenceInvalidException;
             throw new ReportingRunReadinessBlockedException(
-                BuildMissingReconciliationReadiness(template, readiness, capture, exception.Message));
+                BuildMissingReconciliationReadiness(
+                    template,
+                    readiness,
+                    capture,
+                    exception.Message,
+                    invalid?.BlockingCount ?? 1,
+                    invalid?.EvidenceReferences));
         }
 
         var parameters = NormalizeParameters(readiness.ResolvedParameters, capture.Checkpoint);
@@ -188,6 +195,81 @@ public sealed class ReportingRunCertificationService
             capture.DatasetRows,
             certifiedReadiness);
     }
+
+    /// <summary>
+    /// Rechecks the exact authoritative source and canonical reconciliation queue immediately
+    /// before final release. Approval of a frozen snapshot must not allow a later queue mutation
+    /// or ledger change to pass on stale certification.
+    /// </summary>
+    public async ValueTask RevalidateForReleaseAsync(
+        ReportingRunParametersDto parameters,
+        ReportingAuthoritativeSourceCheckpoint certifiedSource,
+        ReportingCertifiedSnapshotScope certifiedSnapshot,
+        ReportAccessQueryContext accessContext,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentNullException.ThrowIfNull(certifiedSource);
+        ArgumentNullException.ThrowIfNull(certifiedSnapshot);
+        ArgumentNullException.ThrowIfNull(accessContext);
+        RequireBoundScope(accessContext);
+        ValidateParameters(parameters);
+        var source = _authoritativeSource
+            ?? throw new ReportingAuthoritativeSourceUnavailableException(
+                "No durable authoritative reporting source is configured; final release revalidation is blocked.");
+        var reconciliationSource = _reconciliationEvidenceSource
+            ?? throw new ReportingAuthoritativeSourceUnavailableException(
+                "No durable reconciliation/close evidence source is configured; final release revalidation is blocked.");
+
+        var current = await source
+            .CaptureAsync(parameters, accessContext, cancellationToken)
+            .ConfigureAwait(false);
+        ValidateCapture(current, parameters, accessContext);
+        if (!SameCertifiedSource(current.Checkpoint, certifiedSource, certifiedSnapshot))
+        {
+            throw new ReportingGovernanceException(
+                "Final release is blocked because the authoritative ledger source changed after certification. Regenerate and reapprove the report from a fresh certified snapshot.");
+        }
+
+        var reconciliation = await reconciliationSource
+            .ResolveAsync(parameters, current.Checkpoint, accessContext, cancellationToken)
+            .ConfigureAwait(false);
+        if (!string.Equals(
+                reconciliation.ReconciliationCheckpointId,
+                certifiedSnapshot.ReconciliationCheckpointId,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                reconciliation.ReconciliationCheckpointHash,
+                certifiedSnapshot.ReconciliationCheckpointHash,
+                StringComparison.Ordinal))
+        {
+            throw new ReportingGovernanceException(
+                "Final release is blocked because reconciliation evidence changed after certification. Re-run reconciliation and close, then regenerate and reapprove the report.");
+        }
+    }
+
+    private static bool SameCertifiedSource(
+        ReportingAuthoritativeSourceCheckpoint current,
+        ReportingAuthoritativeSourceCheckpoint certified,
+        ReportingCertifiedSnapshotScope snapshot) =>
+        string.Equals(current.TenantId, certified.TenantId, StringComparison.Ordinal)
+        && string.Equals(current.OrganizationId, certified.OrganizationId, StringComparison.Ordinal)
+        && string.Equals(current.CompanyId, certified.CompanyId, StringComparison.Ordinal)
+        && string.Equals(current.FundId, certified.FundId, StringComparison.Ordinal)
+        && string.Equals(current.LedgerBookId, certified.LedgerBookId, StringComparison.Ordinal)
+        && string.Equals(current.AccountingPeriodId, certified.AccountingPeriodId, StringComparison.Ordinal)
+        && string.Equals(current.AccountingBasis, certified.AccountingBasis, StringComparison.Ordinal)
+        && current.AsOfDate == certified.AsOfDate
+        && string.Equals(current.CheckpointId, certified.CheckpointId, StringComparison.Ordinal)
+        && string.Equals(current.CheckpointHash, certified.CheckpointHash, StringComparison.Ordinal)
+        && string.Equals(current.TenantId, snapshot.TenantId, StringComparison.Ordinal)
+        && string.Equals(current.OrganizationId, snapshot.OrganizationId, StringComparison.Ordinal)
+        && string.Equals(current.CompanyId, snapshot.CompanyId, StringComparison.Ordinal)
+        && string.Equals(current.FundId, snapshot.FundId, StringComparison.Ordinal)
+        && string.Equals(current.LedgerBookId, snapshot.BookId, StringComparison.Ordinal)
+        && string.Equals(current.AccountingPeriodId, snapshot.PeriodId, StringComparison.Ordinal)
+        && string.Equals(current.CheckpointId, snapshot.SourceCheckpointId, StringComparison.Ordinal)
+        && string.Equals(current.CheckpointHash, snapshot.SourceCheckpointHash, StringComparison.Ordinal);
 
     /// <summary>
     /// Compatibility signature retained so old callers fail closed instead of silently certifying
@@ -360,7 +442,9 @@ public sealed class ReportingRunCertificationService
         ReportingTemplateMetadata template,
         ReportingRunReadinessDto readiness,
         ReportingAuthoritativeSourceCapture capture,
-        string reason)
+        string reason,
+        int blockingCount = 1,
+        IReadOnlyList<string>? reconciliationEvidence = null)
     {
         var parameters = NormalizeParameters(readiness.ResolvedParameters, capture.Checkpoint);
         var sourceReady = template.ReportWriterGrids is not { Count: > 0 }
@@ -382,11 +466,15 @@ public sealed class ReportingRunCertificationService
             "Exact close and reconciliation evidence",
             ReportingRunReadinessStatusDto.Blocked,
             reason,
-            1,
+            blockingCount,
             BlocksDraft: true,
             BlocksFinal: true,
             "/workstation/accounting/close",
-            capture.Checkpoint.EvidenceIds);
+            (reconciliationEvidence ?? capture.Checkpoint.EvidenceIds)
+                .Concat(capture.Checkpoint.EvidenceIds)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(static evidence => evidence, StringComparer.Ordinal)
+                .ToArray());
         var checks = readiness.Checks
             .Where(static check =>
                 !string.Equals(check.CheckId, "report-dataset", StringComparison.Ordinal)
@@ -559,7 +647,9 @@ public sealed class ReportingRunCertificationService
             root.GetProperty("periodId").GetString()!,
             DateOnly.ParseExact(root.GetProperty("asOfDate").GetString()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             new ReportingLedgerBookSelectionDto(
-                Guid.Parse(root.GetProperty("ledgerBookId").GetString()!),
+                Guid.TryParse(ReadOptional(root, "ledgerBookId"), out var ledgerBookId)
+                    ? ledgerBookId
+                    : null,
                 ReadOptional(root, "ledgerBookCode")),
             Enum.Parse<ReportingAccountingBasisDto>(root.GetProperty("accountingBasis").GetString()!, ignoreCase: false),
             root.GetProperty("presentationCurrency").GetString()!,

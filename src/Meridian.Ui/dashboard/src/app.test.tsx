@@ -485,7 +485,7 @@ describe("App", () => {
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Live quotes, current workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Market data, current workflow step, Waiting" })).toHaveAttribute(
       "href",
       "/data/quotes?symbol=MSFT"
     );
@@ -493,13 +493,13 @@ describe("App", () => {
       "href",
       "/data/operations?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Readiness, next workflow step, Waiting" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/trading/readiness?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: "Continue workflow to Price alerts" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Continue workflow to Readiness" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/trading/readiness?symbol=MSFT"
     );
     expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
   });
@@ -729,7 +729,7 @@ describe("App", () => {
     );
     expect(screen.getByRole("link", { name: "Open Price alerts route" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/data/quotes?view=alerts&symbol=MSFT"
     );
 
     await user.keyboard("{Escape}");

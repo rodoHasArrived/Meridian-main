@@ -10,8 +10,8 @@
 -- The column is nullable and INERT in this slice: nothing reads or writes it yet (that is 4c-ii), so there
 -- is no behavior change. A null tenant_id means "unknown/unbound" and stays fail-open (legacy rows, and any
 -- new row until 4c-ii stamps writes), matching the registry guard's deployment-boundary posture. The
--- backfill is idempotent -- guarded by `tenant_id is null` -- and re-runs safely since the migration runner
--- replays every script on each startup (there is no version table).
+-- backfill is idempotent -- guarded by `tenant_id is null` -- and re-runs safely because this
+-- migration is explicitly configured as repeatable on startup.
 --
 -- tenant_id is backfilled from the authoritative fund_profile_tenancy registry (itself backfilled from
 -- tenant-attributed audit history in V_ledger_019), joined on the application's normalized fund key

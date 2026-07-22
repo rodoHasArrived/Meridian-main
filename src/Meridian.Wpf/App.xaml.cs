@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +14,7 @@ using Meridian.Application.Services;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Lifecycle;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
@@ -165,26 +167,43 @@ public partial class App : System.Windows.Application
         _isFixtureMode = DetectFixtureMode(_launchArgs);
         ApplyRenderModeOverrides();
 
+        var includeDesktopConfiguration = true;
+        try
+        {
+            var recoveryOutcome = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Desktop configuration preflight completed before host construction",
+                ("Outcome", recoveryOutcome.ToString()));
+        }
+        catch (Exception ex) when (IsConfigurationStartupFailure(ex))
+        {
+            includeDesktopConfiguration = false;
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration could not be recovered; starting with host defaults so configuration can be repaired in-app",
+                ex);
+        }
+
         // Configure the host with dependency injection
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration(config =>
-            {
-                // The operator's desktop settings file is the source for host-level
-                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
-                config.AddJsonFile(
-                    Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
-                    optional: true,
-                    reloadOnChange: false);
-            })
-            .ConfigureServices((context, services) =>
-            {
-                ConfigureServices(services, context.Configuration);
-            })
-            .Build();
+        try
+        {
+            _host = BuildDesktopHost(includeDesktopConfiguration);
+        }
+        catch (Exception ex) when (includeDesktopConfiguration && IsConfigurationStartupFailure(ex))
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration failed during host construction; retrying startup with host defaults",
+                ex);
+            _host = BuildDesktopHost(includeDesktopConfiguration: false);
+        }
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
+
+        // Desktop sign-out must also end the shared workstation API session so no request
+        // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
+        Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
+            static (_, _) => _ = ApiClientService.Instance.SignOutAsync();
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
@@ -224,6 +243,39 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
+    }
+
+    private static IHost BuildDesktopHost(bool includeDesktopConfiguration)
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                // The operator's desktop settings file is the source for host-level
+                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
+                if (includeDesktopConfiguration)
+                {
+                    config.AddJsonFile(
+                        Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
+                        optional: true,
+                        reloadOnChange: false);
+                }
+            })
+            .ConfigureServices((context, services) =>
+            {
+                ConfigureServices(services, context.Configuration);
+            })
+            .Build();
+    }
+
+    private static bool IsConfigurationStartupFailure(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is JsonException or FormatException or InvalidDataException or IOException or UnauthorizedAccessException)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -271,6 +323,10 @@ public partial class App : System.Windows.Application
     /// </summary>
     private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
+        // Unified persistence config must resolve before feature modules read the
+        // per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         AddHostEnvironmentFallback(services);
 
         // Register shared desktop HttpClient configurations
@@ -315,7 +371,19 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
         services.AddSingleton<WpfServices.DemoTourService>(_ => WpfServices.DemoTourService.Instance);
-        services.AddSingleton<UserProfileRegistry>();
+        var identityDataRoot = Environment.GetEnvironmentVariable("MDC_DATA_ROOT") ??
+                               ResolveLifecycleManifestDataRoot(AppContext.BaseDirectory) ??
+                               configuration["DataRoot"] ??
+                               Path.Combine(
+                                   Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                   "Meridian",
+                                   "Data");
+        services.AddSingleton<IUserAccountStore>(sp => new FileUserAccountStore(
+            new Meridian.Storage.StorageOptions { RootPath = Path.GetFullPath(identityDataRoot) },
+            sp.GetService<Microsoft.Extensions.Logging.ILogger<FileUserAccountStore>>()));
+        services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
+            roleProfileStore: null,
+            accountStore: sp.GetRequiredService<IUserAccountStore>()));
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();
@@ -371,6 +439,46 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
         services.AddSingleton<Meridian.ProviderSdk.IPluginLoaderService,
                               Meridian.ProviderSdk.PluginLoaderService>();
+    }
+
+    internal static string? ResolveLifecycleManifestDataRoot(string appBaseDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(appBaseDirectory);
+        var baseDirectory = Path.GetFullPath(appBaseDirectory);
+        var installRoots = new[]
+        {
+            baseDirectory,
+            Directory.GetParent(baseDirectory)?.FullName
+        }.Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var installRoot in installRoots)
+        {
+            var manifestPath = Path.Combine(installRoot!, "service", "lifecycle-supervisor.json");
+            if (!File.Exists(manifestPath))
+                continue;
+            try
+            {
+                var manifest = JsonSerializer.Deserialize(
+                    File.ReadAllText(manifestPath),
+                    LifecycleContractsJsonContext.Default.LifecycleSupervisorManifestDto);
+                if (string.IsNullOrWhiteSpace(manifest?.DataRoot))
+                    continue;
+                var expanded = Environment.ExpandEnvironmentVariables(manifest.DataRoot);
+                return Path.GetFullPath(
+                    Path.IsPathRooted(expanded)
+                        ? expanded
+                        : Path.Combine(installRoot!, expanded));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Could not resolve lifecycle supervisor data root for desktop authentication",
+                    ("ManifestPath", manifestPath),
+                    ("Error", ex.GetType().Name));
+            }
+        }
+
+        return null;
     }
 
     private static void AddHostEnvironmentFallback(IServiceCollection services)
@@ -439,6 +547,11 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
+            // Arm offline replay: materialize the clients that register durable-queue handlers,
+            // drain operations persisted by earlier sessions, and replay again whenever
+            // connectivity to the workstation service is restored.
+            WireOfflineOperationReplay();
+
             // Notify if running in fixture/demo mode
             if (_isFixtureMode)
             {
@@ -504,6 +617,51 @@ public partial class App : System.Windows.Application
         {
             WpfServices.LoggingService.Instance.LogWarning(
                 "Offline tracking persistence failed to initialize; continuing without crash recovery persistence");
+        }
+    }
+
+    /// <summary>
+    /// Wires durable offline-operation replay: resolves the API clients whose constructors
+    /// register pending-operation handlers, replays operations persisted by earlier sessions,
+    /// and subscribes reconnect events so queued mutations drain when the backend returns.
+    /// </summary>
+    private void WireOfflineOperationReplay()
+    {
+        try
+        {
+            // Resolving the client registers its pending-operation replay handlers.
+            _ = Services.GetService<WpfServices.IWorkstationReconciliationApiClient>();
+
+            WpfServices.ConnectionService.Instance.ReconnectSucceeded += static (_, _) =>
+                _ = ReplayPendingOperationsAsync("reconnect");
+
+            _ = ReplayPendingOperationsAsync("startup");
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Offline operation replay wiring failed: {ex.Message}");
+        }
+    }
+
+    private static async Task ReplayPendingOperationsAsync(string trigger)
+    {
+        try
+        {
+            var queue = WpfServices.PendingOperationsQueueService.Instance;
+            if (queue.PendingCount == 0)
+            {
+                return;
+            }
+
+            WpfServices.LoggingService.Instance.LogInfo(
+                $"Replaying {queue.PendingCount} pending offline operation(s) ({trigger})");
+            await queue.ProcessAllAsync();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Pending operation replay failed: {ex.Message}");
         }
     }
 
@@ -661,8 +819,7 @@ public partial class App : System.Windows.Application
                 ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(cts.Token), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
-                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
-                ShutdownServiceAsync(() => StopManagedBackendAsync(cts.Token), "BackendServiceManager", cts.Token)
+                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token)
             };
 
             await Task.WhenAll(shutdownTasks).ConfigureAwait(false);
@@ -733,17 +890,6 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError("WPF host dispose failed", ex);
-        }
-    }
-
-    private static async Task StopManagedBackendAsync(CancellationToken ct)
-    {
-        var result = await WpfServices.BackendServiceManager.Instance.StopAsync(ct).ConfigureAwait(false);
-        if (!result.Success)
-        {
-            WpfServices.LoggingService.Instance.LogWarning(
-                "Backend service manager reported a shutdown failure",
-                ("Message", result.Message));
         }
     }
 
@@ -881,7 +1027,9 @@ public partial class App : System.Windows.Application
                  System.Net.Http.HttpRequestException or
                  TimeoutException or
                  OperationCanceledException or
-                 System.IO.IOException;
+                 System.IO.IOException or
+                 UnauthorizedAccessException or
+                 JsonException;
 
         // Always log with structured logging so the error is visible in the log file.
         WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);

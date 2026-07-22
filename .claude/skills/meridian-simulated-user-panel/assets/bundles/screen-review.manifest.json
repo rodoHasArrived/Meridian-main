@@ -1,16 +1,29 @@
 {
-  "schema_version": "2026-04-14",
+  "schema_version": "2026-07-19",
   "mode": "design_partner",
   "artifact_type": "screen-review",
   "artifact_paths": [
     "docs/screenshots/desktop/example-screen.png",
     "src/Meridian.Wpf/Views/ExamplePage.xaml"
   ],
+  "artifact_evidence": [
+    {
+      "path": "docs/screenshots/desktop/example-screen.png",
+      "kind": "screenshot",
+      "status": "supplied"
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/ExamplePage.xaml",
+      "kind": "source",
+      "status": "supplied"
+    }
+  ],
+  "artifact_freshness": "unknown",
   "artifact_summary": "Static screen review for a WPF surface.",
   "persona_set": {
     "panel": "growth-adoption",
     "required_roles": [
-      "Owner-Operator"
+      "RIA Client"
     ]
   },
   "focus_areas": [

@@ -110,7 +110,9 @@ public sealed record PortfolioCashLadderDto(
     IReadOnlyList<string> Warnings,
     DateTimeOffset GeneratedAt,
     int SecuritiesEvaluated,
-    int SecuritiesWithFlows);
+    int SecuritiesWithFlows,
+    bool IsDecisionReady,
+    IReadOnlyList<string> BlockingReasons);
 
 /// <summary>Query parameters for the portfolio cash ladder read model.</summary>
 public sealed record PortfolioCashLadderQuery(

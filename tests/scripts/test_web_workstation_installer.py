@@ -14,6 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install-web-workstation.ps1"
 ROOT_INSTALL_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install.ps1"
 SMOKE_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "smoke-web-workstation-install.ps1"
+CONSUMER_SETUP_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "build-consumer-setup.ps1"
 
 
 @unittest.skipIf(os.name != "nt", "PowerShell installer behavior is validated on Windows")
@@ -47,6 +48,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             shutil.copy2(SCRIPT_PATH, script_copy)
 
             self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.LifecycleSupervisor" / "Meridian.LifecycleSupervisor.csproj", "<Project />")
             self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
             desktop_root = repo_root / "desktop"
             start_menu_root = repo_root / "start-menu"
@@ -94,6 +96,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             shutil.copy2(SCRIPT_PATH, script_copy)
 
             self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.LifecycleSupervisor" / "Meridian.LifecycleSupervisor.csproj", "<Project />")
             self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
             self._write_file(
                 repo_root / "src" / "Meridian.Ui" / "wwwroot" / "workstation" / "index.html",
@@ -107,6 +110,15 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                 / "win-x64"
                 / "Meridian.exe",
                 "fake executable",
+            )
+            self._write_file(
+                repo_root
+                / "artifacts"
+                / "publish"
+                / "web-workstation"
+                / "win-x64"
+                / "Meridian.LifecycleSupervisor.exe",
+                "fake supervisor",
             )
 
             install_root = repo_root / "installed-app"
@@ -142,6 +154,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((install_root / "Meridian.exe").exists())
+            self.assertTrue((install_root / "Meridian.LifecycleSupervisor.exe").exists())
             self.assertTrue((install_root / "wwwroot" / "workstation" / "index.html").exists())
             self.assertTrue((install_root / "Launch-MeridianWebWorkstation.ps1").exists())
             self.assertTrue((app_data_root / "data" / "workstation" / "evidence").is_dir())
@@ -157,16 +170,17 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn('"hostCopySkipped": false', install_manifest)
             self.assertIn('"bundleCopySkipped": false', install_manifest)
             launcher = (install_root / "Launch-MeridianWebWorkstation.ps1").read_text()
-            self.assertIn("--mode", launcher)
-            self.assertIn("workstation", launcher)
-            self.assertIn("http://localhost:$Port/workstation/", launcher)
-            self.assertIn("web-workstation-runtime.json", launcher)
+            self.assertIn("Meridian.LifecycleSupervisor.exe", launcher)
+            self.assertIn('$command = if ($Stop) { "stop" } elseif ($Status) { "status" } else { "start" }', launcher)
             self.assertIn("web-workstation-install-manifest.json", result.stdout)
-            self.assertIn("X-Meridian-Shutdown-Token", launcher)
             self.assertIn("[System.Diagnostics.ProcessStartInfo]::new()", launcher)
-            self.assertIn("ArgumentList.Add($argument)", launcher)
+            self.assertIn("ArgumentList.Add($command)", launcher)
             self.assertIn("[switch]$Stop", launcher)
-            self.assertIn('"--config", $configPath', launcher)
+            lifecycle_manifest = json.loads(
+                (install_root / "service" / "lifecycle-supervisor.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(lifecycle_manifest["databaseMode"], "Dedicated")
+            self.assertEqual(lifecycle_manifest["hostRelativePath"], "Meridian.exe")
 
     def test_skip_build_install_quotes_special_config_path_in_launcher_arguments(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
@@ -180,6 +194,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             shutil.copy2(SCRIPT_PATH, script_copy)
 
             self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.LifecycleSupervisor" / "Meridian.LifecycleSupervisor.csproj", "<Project />")
             self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
             self._write_file(
                 repo_root / "src" / "Meridian.Ui" / "wwwroot" / "workstation" / "index.html",
@@ -193,6 +208,15 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                 / "win-x64"
                 / "Meridian.exe",
                 "fake executable",
+            )
+            self._write_file(
+                repo_root
+                / "artifacts"
+                / "publish"
+                / "web-workstation"
+                / "win-x64"
+                / "Meridian.LifecycleSupervisor.exe",
+                "fake supervisor",
             )
 
             install_root = repo_root / "installed app & shell"
@@ -224,15 +248,14 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             launcher_path = install_root / "Launch-MeridianWebWorkstation.ps1"
             launcher = launcher_path.read_text(encoding="utf-8")
             config_path = app_data_root / "appsettings.json"
-            expected_literal = "'" + str(config_path).replace("'", "''") + "'"
-            self.assertIn(f"$configPath = {expected_literal}", launcher)
-            self.assertIn(
-                'foreach ($argument in @("--mode", "workstation", "--http-port", [string]$Port, "--config", $configPath))',
-                launcher,
+            self.assertIn("Meridian.LifecycleSupervisor.exe", launcher)
+            self.assertIn("[void]$startInfo.ArgumentList.Add($command)", launcher)
+            self.assertNotIn("MDC_SHUTDOWN_TOKEN", launcher)
+
+            lifecycle_manifest = json.loads(
+                (install_root / "service" / "lifecycle-supervisor.json").read_text(encoding="utf-8")
             )
-            self.assertIn("[void]$startInfo.ArgumentList.Add($argument)", launcher)
-            self.assertNotIn('$arguments = "--mode workstation', launcher)
-            self.assertNotIn('--config `"$configPath`"', launcher)
+            self.assertEqual(lifecycle_manifest["configPath"], str(config_path))
 
             install_manifest = json.loads(
                 (app_data_root / "service" / "web-workstation-install-manifest.json").read_text(encoding="utf-8")
@@ -268,6 +291,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             shutil.copy2(SCRIPT_PATH, script_copy)
 
             self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.LifecycleSupervisor" / "Meridian.LifecycleSupervisor.csproj", "<Project />")
             self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
             self._write_file(
                 repo_root / "src" / "Meridian.Ui" / "wwwroot" / "workstation" / "index.html",
@@ -281,6 +305,15 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                 / "win-x64"
                 / "Meridian.exe",
                 "fake executable",
+            )
+            self._write_file(
+                repo_root
+                / "artifacts"
+                / "publish"
+                / "web-workstation"
+                / "win-x64"
+                / "Meridian.LifecycleSupervisor.exe",
+                "fake supervisor",
             )
 
             install_root = repo_root / "Meridian Web Workstation"
@@ -422,9 +455,8 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
 
         self.assertIn("src\\Meridian.Ui\\wwwroot\\workstation", script)
         self.assertIn("wwwroot\\workstation", script)
-        self.assertIn("--mode", script)
-        self.assertIn("workstation", script)
-        self.assertIn("--config", script)
+        self.assertIn("Meridian.LifecycleSupervisor.exe", script)
+        self.assertIn("lifecycle-supervisor.json", script)
         self.assertIn("Meridian Web Workstation.lnk", script)
         self.assertIn("Stop Meridian Web Workstation.lnk", script)
         self.assertIn("Launch-MeridianWebWorkstation.ps1", script)
@@ -436,8 +468,9 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("configRepair", script)
         self.assertIn("Clear stale Meridian runtime state", script)
         self.assertIn("runtimeStateCleanup", script)
+        self.assertIn("Stop-LifecycleSupervisorForInstallRoot", script)
+        self.assertIn("WaitForExit(140000)", script)
         self.assertIn("SkipLegacyInstallCleanup", script)
-        self.assertIn("X-Meridian-Shutdown-Token", script)
         self.assertIn("ProcessStartInfo", script)
         self.assertIn("ArgumentList.Add", script)
         self.assertNotIn("MDC_CONFIG_PATH", script)
@@ -464,6 +497,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             shutil.copy2(SCRIPT_PATH, install_dir / "install-web-workstation.ps1")
 
             self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.LifecycleSupervisor" / "Meridian.LifecycleSupervisor.csproj", "<Project />")
             self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
 
             command = [powershell, "-NoProfile"]
@@ -491,6 +525,36 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn("Meridian Web Workstation install plan", result.stdout)
             self.assertIn("http://localhost:8098/workstation/", result.stdout)
             self.assertFalse((repo_root / "installed-app").exists())
+
+    def test_consumer_setup_requires_supervisor_and_runtime_specific_postgresql_payloads(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        parse = subprocess.run(
+            [
+                powershell,
+                "-NoProfile",
+                "-Command",
+                (
+                    "$tokens=$null; $errors=$null; "
+                    f"[System.Management.Automation.Language.Parser]::ParseFile('{CONSUMER_SETUP_SCRIPT_PATH}', [ref]$tokens, [ref]$errors) | Out-Null; "
+                    "if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(parse.returncode, 0, parse.stderr)
+
+        script = CONSUMER_SETUP_SCRIPT_PATH.read_text(encoding="utf-8")
+        self.assertIn("PostgreSqlPayloadRoot", script)
+        self.assertIn("MDC_POSTGRES_PAYLOAD_ROOT", script)
+        self.assertIn("bin\\postgres.exe", script)
+        self.assertIn("bin\\pg_ctl.exe", script)
+        self.assertIn("bin\\initdb.exe", script)
+        self.assertIn("Meridian.LifecycleSupervisor.csproj", script)
+        self.assertIn('Join-Path $runtimeRoot "database"', script)
 
     def test_web_workstation_install_smoke_script_parses_and_probes_installed_copy(self) -> None:
         powershell = shutil.which("pwsh") or shutil.which("powershell")
@@ -523,17 +587,25 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("-NoDesktopShortcut", smoke_script)
         self.assertIn("-NoStartMenuShortcut", smoke_script)
         self.assertIn("Meridian.exe", smoke_script)
-        self.assertIn("--mode workstation --http-port", smoke_script)
-        self.assertIn("MDC_AUTH_MODE = \"optional\"", smoke_script)
-        self.assertIn("MDC_PACKAGED_BUILD = \"true\"", install_script)
+        self.assertIn("Meridian.LifecycleSupervisor.exe", smoke_script)
+        self.assertIn("-ArgumentList \"start\"", smoke_script)
+        self.assertIn("PostgreSqlPayloadRoot", smoke_script)
+        self.assertIn("database\\bin\\postgres.exe", smoke_script)
+        self.assertIn("MDC_AUTH_MODE = \"required\"", smoke_script)
+        self.assertIn("pbkdf2-sha256$210000$", smoke_script)
+        self.assertIn("/api/auth/login", smoke_script)
+        self.assertIn("WebRequestSession", smoke_script)
+        self.assertIn('databaseMode = "Dedicated"', install_script)
         self.assertIn("Remove-Item -LiteralPath $publishRoot -Recurse -Force", install_script)
         self.assertIn("Copy-PublishedHostContents", install_script)
         self.assertIn("Test-PublishedHostContentsMatch", install_script)
         self.assertIn("MDC_USERS = $null", smoke_script)
-        self.assertIn("-MaximumRedirection 0", smoke_script)
+        self.assertIn("MaximumRedirection = 0", smoke_script)
+        self.assertIn("/startupz", smoke_script)
         self.assertIn("/healthz", smoke_script)
-        self.assertIn("/api/system/shutdown", smoke_script)
-        self.assertIn("X-Meridian-Shutdown-Token", smoke_script)
+        self.assertNotIn("/api/system/shutdown", smoke_script)
+        self.assertNotIn("X-Meridian-Shutdown-Token", smoke_script)
+        self.assertIn("session-*.json", smoke_script)
         self.assertIn("/workstation/", smoke_script)
         self.assertIn("first workstation asset", smoke_script)
         self.assertIn("Invoke-WebRequest", smoke_script)

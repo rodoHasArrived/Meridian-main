@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-07-11
+Snapshot date: 2026-07-21
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -37,4 +37,15 @@ Snapshot date: 2026-07-11
 | W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | in_progress | green | high | Accounting and Ledger |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
+| W8-UX-CONSOL-001 | Browser workstation screen consolidation | in_progress | on_track | medium | Workstation Shell and UX |
 | W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |
+| W9-ALPACA-004 | Alpaca fill streaming into order and ledger state | planned | green | high | Execution and Fund Accounts |
+| W9-ASSET-010 | Asset Accounting Event Spine and atomic lot posting | in_progress | on_track | critical | Accounting and Ledger |
+| W9-DEMO-002 | One-command seeded demo with durable storage | planned | green | critical | Workstation Shell and UX |
+| W9-GOV-008 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | planned | green | high | Platform Security and Governance |
+| W9-INGEST-009 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | planned | green | high | Accounting and Ledger |
+| W9-NAV-006 | Unitized NAV and real fee, waterfall, and capital-call economics | planned | green | high | Accounting and Ledger |
+| W9-PAPER-003 | Paper-trading realism with limit/stop matching and costs | planned | green | critical | Execution and Fund Accounts |
+| W9-REPORT-005 | Client-grade PDF/XLSX exports and partners-capital statement | planned | green | high | Accounting and Ledger |
+| W9-SAFETY-007 | Kill-switch cancel-all and fat-finger, notional, and collar rules | planned | green | high | Execution and Fund Accounts |
+| W9-TRUTH-001 | Loud fail-closed handling of simulated data and in-memory persistence | planned | green | critical | Data Confidence and Validation |

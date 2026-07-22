@@ -131,9 +131,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 persistencePath: null));
 
         _app = builder.Build();
-        _app.UseApiKeyAuthentication();
+        // Mirror the production UiServer pipeline order: session auth first so the API-key
+        // gate can exempt session-authenticated browser requests. The X-Test-Auth marker
+        // middleware emulates LoginSessionMiddleware's session validation (setting the
+        // CurrentUser items), so it must also run before the API-key gate.
         _app.UseLoginSessionAuthentication();
-        _app.UseCookieCsrfProtection();
         _app.Use(next => async context =>
         {
             if (context.Request.Headers.TryGetValue("X-Test-Auth", out var mode) &&
@@ -156,6 +158,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
 
             await next(context);
         });
+        _app.UseApiKeyAuthentication();
+        _app.UseCookieCsrfProtection();
 
         // Test-only affordance: lets endpoint tests exercise permission-gated routes on the shared
         // host without a full login round-trip by declaring the caller's permissions through the

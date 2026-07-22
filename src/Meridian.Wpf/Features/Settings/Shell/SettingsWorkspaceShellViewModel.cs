@@ -230,6 +230,7 @@ public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBas
         "CredentialManagement" => PaneDropAction.SplitRight,
         "Diagnostics" => PaneDropAction.SplitRight,
         "SystemHealth" => PaneDropAction.SplitBelow,
+        "LifecycleControl" => PaneDropAction.SplitBelow,
         "NotificationCenter" => PaneDropAction.OpenTab,
         "ActivityLog" => PaneDropAction.OpenTab,
         "Help" => PaneDropAction.OpenTab,

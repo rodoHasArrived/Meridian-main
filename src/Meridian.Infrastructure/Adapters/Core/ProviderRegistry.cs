@@ -136,11 +136,12 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Creates a streaming client for the specified provider ID using the registered factory.
-    /// Falls back to the <c>"ib"</c> factory if the requested ID has no registered factory.
+    /// Unknown provider IDs fail closed: silently substituting a default provider would route
+    /// the operator to a data source they did not configure, so no fallback exists.
     /// </summary>
     /// <param name="providerId">The provider ID to create a client for (case-insensitive).</param>
     /// <returns>A new streaming client instance.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the ID and no IB fallback is available.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the ID.</exception>
     public IMarketDataClient CreateStreamingClient(string providerId)
     {
         var key = ProviderIdentity.NormalizeId(providerId);
@@ -151,16 +152,17 @@ public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
             return factory();
         }
 
-        // Fallback to "ib" (default provider)
-        if (key != "ib" && _streamingFactories.TryGetValue("ib", out var ibFactory))
-        {
-            _log.Warning("No factory registered for {DataSource}, falling back to IB", key);
-            return ibFactory();
-        }
-
+        var registered = SupportedStreamingSources;
+        _log.Error(
+            "No streaming factory registered for {DataSource}. Registered providers: {RegisteredProviders}",
+            key,
+            registered);
         throw new InvalidOperationException(
-            $"No streaming factory registered for '{key}' and no IB fallback available. " +
-            "Register factories via RegisterStreamingFactory() during startup.");
+            $"No streaming factory registered for '{key}'. " +
+            (registered.Count > 0
+                ? $"Registered providers: {string.Join(", ", registered)}. "
+                : "No streaming factories are registered. ") +
+            "Check the configured DataSource for typos, or register the provider via RegisterStreamingFactory() during startup.");
     }
 
     /// <summary>

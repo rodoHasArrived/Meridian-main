@@ -45,6 +45,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
+    private long _droppedExecutionReports;
     private Task? _disposeTask;
     private TaskCompletionSource? _operationsDrained;
     private int _orderSequence;
@@ -110,17 +111,36 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             }
         }
         _options = options ?? new OrderManagementSystemOptions();
+        if (_options.RequireProductionSafetyDependencies)
+        {
+            if (_riskValidator is null)
+                throw new InvalidOperationException("Production OMS requires a pre-trade risk validator.");
+            if (_portfolioState is null)
+                throw new InvalidOperationException("Production OMS requires authoritative portfolio position state.");
+            if (_operatorControls is null)
+                throw new InvalidOperationException("Production OMS requires durable operator controls.");
+        }
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
-        // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
+        // ExecutionReports is a best-effort observer stream: order state, session fill history,
+        // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
+        // slow (or absent — there is no production reader today) subscriber block WriteAsync on
+        // the fill path, stalling the report pump and submit callers once the channel filled.
+        // DropOldest keeps fills flowing; drops are counted and logged.
         var executionPolicy = new EventPipelinePolicy(
             Capacity: _options.ValidatedExecutionChannelCapacity,
-            FullMode: BoundedChannelFullMode.Wait,
+            FullMode: BoundedChannelFullMode.DropOldest,
             EnableMetrics: false);
-        _executionChannel = executionPolicy.CreateChannel<ExecutionReport>(
-            singleReader: true,
-            singleWriter: false);
+        _executionChannel = Channel.CreateBounded<ExecutionReport>(
+            executionPolicy.ToBoundedOptions(singleReader: true, singleWriter: false),
+            dropped =>
+            {
+                var totalDropped = Interlocked.Increment(ref _droppedExecutionReports);
+                _logger.LogWarning(
+                    "Execution-report observer channel is full; dropped oldest report for order {OrderId} ({ReportType}). Total dropped: {DroppedTotal}",
+                    dropped.OrderId, dropped.ReportType, totalDropped);
+            });
 
         // Consume the gateway's asynchronous execution report stream so partial fills,
         // rejects, and cancels that arrive after the synchronous submit ack still reach
@@ -766,10 +786,20 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     /// by portfolio trackers and audit subscribers.  Reports are published as each order
     /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
     /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
-    /// (gateways report cumulative quantities). Consumers must drain this reader promptly
-    /// to avoid backpressure.
+    /// (gateways report cumulative quantities). This is a lossy observer stream: when a
+    /// subscriber lags behind <see cref="OrderManagementSystemOptions.ExecutionChannelCapacity"/>,
+    /// the oldest unread report is dropped (logged and counted via
+    /// <see cref="DroppedExecutionReports"/>) rather than blocking the fill path. Order state,
+    /// session fill history, and the durable accounting handoff remain authoritative and lossless.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
+
+    /// <summary>
+    /// Total execution reports dropped from the <see cref="ExecutionReports"/> observer channel
+    /// because no subscriber drained it in time. Fills themselves are never lost — order state
+    /// and the accounting handoff do not flow through this channel.
+    /// </summary>
+    public long DroppedExecutionReports => Interlocked.Read(ref _droppedExecutionReports);
 
     /// <summary>
     /// Returns OMS-level accounting handoff failures that could not enter the primary publisher.
@@ -822,16 +852,27 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)
     {
-        // A replayed or late non-terminal report (e.g. the submit ack racing the async
-        // report stream) must not regress an order that already reached a terminal status.
-        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
-            ? current.Status
-            : report.OrderStatus;
+        // Once the OMS has reached a terminal state, late or malicious stream reports
+        // must not reopen, resize, or otherwise mutate the completed local order.
+        if (IsTerminal(current.Status))
+        {
+            return current;
+        }
+
+        // A broker-accepted modification establishes the new authorized order
+        // quantity. Preserve the current quantity for report types that do not
+        // carry a reliable order quantity (for example, fills from some brokers).
+        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
+            && report.OrderStatus is OrderStatus.Accepted
+            && report.OrderQuantity > 0m
+            ? Math.Max(report.OrderQuantity, current.FilledQuantity)
+            : current.Quantity;
 
         return current with
         {
-            Status = status,
-            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
+            Status = report.OrderStatus,
+            Quantity = authorizedQuantity,
+            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
@@ -859,33 +900,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
             }
 
-        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
-        try
-        {
-            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
-            return;
-        }
-
-        foreach (var failure in retained)
-        {
-            if (ct.IsCancellationRequested)
-                return;
-            try
-            {
-                await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
-                await _tradeFillHandoffFailureStore
-                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
+            if (!IsTerminalStatus(existing.Status))
             {
                 return false;
             }
@@ -910,152 +925,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     {
         var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
 
-            var fillIncrement = progress.FillIncrement;
-
-            if (!progress.PortfolioApplied)
-            {
-                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
-
-                // Only fills for orders this OMS placed may mutate the paper portfolio;
-                // stream reports for external/untracked orders are still published below.
-                if (_portfolioState is PaperTradingPortfolio paperPortfolio
-                    && progress.IsTrackedOrder)
-                {
-                    paperPortfolio.ApplyFill(fillIncrement);
-                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
-                }
-
-                progress.NewCash = _portfolioState?.Cash ?? 0m;
-                progress.PortfolioApplied = true;
-            }
-
-            if (!progress.TradeEventPublished)
-            {
-                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
-                {
-                    progress.TradeEvent ??= CreateTradeExecutedEvent(
-                        fillIncrement,
-                        progress.CumulativeFilledQuantity,
-                        progress.RealizedPnl,
-                        progress.NewCash,
-                        ResolveFinancialAccountId(orderId));
-                    try
-                    {
-                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        var wasRetained = await RetainAccountingHandoffFailureAsync(
-                                progress.TradeEvent,
-                                ex,
-                                CancellationToken.None)
-                            .ConfigureAwait(false);
-                        throw new AccountingHandoffException(progress.TradeEvent, wasRetained, ex);
-                    }
-                }
-
-                progress.TradeEventPublished = true;
-            }
-
-            if (!progress.SessionRecorded)
-            {
-                await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
-                progress.SessionRecorded = true;
-            }
-
-            if (!progress.ExecutionReportPublished)
-            {
-                // FullMode.Wait must be observed asynchronously. TryWrite here silently lost
-                // accepted fills whenever subscribers lagged behind the configured capacity.
-                await _executionChannel.Writer.WriteAsync(fillIncrement, ct).ConfigureAwait(false);
-                progress.ExecutionReportPublished = true;
-            }
-
-            progress.IsComplete = true;
-            TrackCompletedFill(report);
-        }
-        catch (AccountingHandoffException)
-        {
-            throw;
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            // Preserve the per-side-effect progress object. An identical gateway replay can
-            // resume at the failed step without applying portfolio/session/publication twice.
-            _logger.LogError(
-                ex,
-                "Fill processing paused for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); a replay will resume the unfinished side effects",
-                progress.FillIncrement.OrderId,
-                progress.FillIncrement.Symbol,
-                progress.FillIncrement.FilledQuantity,
-                progress.FillIncrement.FillPrice);
-        }
-        finally
-        {
-            progress.Gate.Release();
-        }
-    }
-
-    private void TrackCompletedFill(ExecutionReport report)
-    {
-        _completedFillReportOrder.Enqueue(report);
-        while (_completedFillReportOrder.Count > MaxTrackedFillReports
-            && _completedFillReportOrder.TryDequeue(out var oldest))
-        {
-            if (_fillProcessing.TryGetValue(oldest, out var progress) && progress.IsComplete)
-                _fillProcessing.TryRemove(oldest, out _);
-        }
-    }
-
-    private string? ResolveFinancialAccountId(string? orderId)
-        => !string.IsNullOrWhiteSpace(orderId)
-            && _orderFinancialAccountIds.TryGetValue(orderId, out var accountId)
-                ? accountId
-                : null;
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
 
         return new OrderResult
         {
-            throw new InvalidOperationException(
-                $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
-        }
-
-        // STABILITY CONTRACT: the deterministic fillId below is derived from this exact field
-        // list, order, and encoding. Ledger entries already posted for a fill are keyed by it,
-        // so changing any part of the identity (adding/removing/reordering fields, formats)
-        // silently changes fill identity and re-posts fills after a restart. Do not modify
-        // without a migration plan for previously posted ledger entries.
-        var canonicalIdentity = string.Join(
-            "|",
-            EncodeIdentityPart(fillIncrement.OrderId),
-            EncodeIdentityPart(fillIncrement.ClientOrderId),
-            EncodeIdentityPart(fillIncrement.GatewayOrderId),
-            EncodeIdentityPart(fillIncrement.Symbol),
-            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
-            fillPrice.ToString(CultureInfo.InvariantCulture),
-            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
-            EncodeIdentityPart(financialAccountId));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
-        var fillId = new Guid(hash.AsSpan(0, 16));
-
-        return new TradeExecutedEvent(
-            fillId,
-            fillIncrement.ClientOrderId ?? fillIncrement.OrderId,
-            fillIncrement.Symbol,
-            fillIncrement.Side,
-            fillIncrement.FilledQuantity,
-            fillPrice,
-            fillIncrement.Commission ?? 0m,
-            realizedPnl,
-            newCash,
-            fillIncrement.Timestamp,
-            financialAccountId);
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
     }
 
     private static OrderState CreateRejectedState(
@@ -1295,11 +1182,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
-        // A broker-accepted fill may not be abandoned because the caller or report-pump token
-        // was cancelled after dequeue. Admission to the durable accounting handoff is therefore
-        // non-cancellable; only downstream session/channel bookkeeping observes cancellation.
-        await progress.Gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-        try
+        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+        // Alpaca filled_qty) while fill consumers treat each report as a discrete
+        // trade, so only the increment since the last tracked fill may be forwarded —
+        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
+        var acceptedFilledQuantity = report.FilledQuantity;
+        if (!string.IsNullOrWhiteSpace(report.ClientOrderId ?? report.OrderId)
+            && _orders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var currentOrder))
+        {
+            acceptedFilledQuantity = currentOrder.FilledQuantity;
+        }
+
+        var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
+        if (incrementQuantity <= 0m)
         {
             if (progress.IsComplete)
                 return;
@@ -1369,8 +1264,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
             if (!progress.ExecutionReportPublished)
             {
-                // FullMode.Wait must be observed asynchronously. TryWrite here silently lost
-                // accepted fills whenever subscribers lagged behind the configured capacity.
+                // DropOldest semantics: this write completes without blocking even when the
+                // observer channel is full — the channel's drop callback logs and counts the
+                // evicted report. The fill path must never stall on observer lag.
                 try
                 {
                     await _executionChannel.Writer.WriteAsync(fillIncrement, postHandoffCt).ConfigureAwait(false);

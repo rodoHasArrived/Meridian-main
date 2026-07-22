@@ -179,6 +179,7 @@ import type {
   StatementRunException,
   StatementRunSummary,
   ReconciliationCaseworkCommand,
+  ReconciliationCaseworkOperationResult,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
@@ -422,9 +423,11 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementExceptionsEndpoint,
   reconciliationStatementFetchScheduleEndpoint,
@@ -541,6 +544,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDegradedMode } from "@/lib/system-status";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
@@ -780,7 +784,7 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   return fixture;
 }
 
-function markDevelopmentFixtureUsage() {
+export function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
@@ -3179,53 +3183,51 @@ function appendOptionalStatementFormField(formData: FormData, name: string, valu
   }
 }
 
-export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
-  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
-}
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) { return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId })); }
 
-export function getReconciliationBreakDetail(breakId: string) {
-  return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId));
-}
+export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
 
-export function getReconciliationBreakAudit(breakId: string) {
-  return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId));
-}
+export function getReconciliationBreakAudit(breakId: string) { return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId)); }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakReviewEndpoint(request.breakId),
     request
   );
 }
 
 export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
 }
 
+export function waiveReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakWaiveEndpoint(request.breakId), request); }
+
+export function supersedeReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSupersedeEndpoint(request.breakId), request); }
+
 export function assignReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakAssignEndpoint(request.breakId), request);
 }
 
 export function transitionReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakTransitionEndpoint(request.breakId), request);
 }
 
 export function addReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakCommentsEndpoint(request.breakId), request);
 }
 
 export function editReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     request
   );
 }
 
 export function deleteReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return deleteJson<ReconciliationBreakQueueItem>(
+  return deleteJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     {},
     request
@@ -3233,19 +3235,19 @@ export function deleteReconciliationBreakComment(request: ReconciliationCasework
 }
 
 export function setReconciliationBreakRootCause(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
 }
 
 export function setReconciliationBreakResolution(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakResolutionEndpoint(request.breakId), request);
 }
 
 export function signOffReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSignOffEndpoint(request.breakId), request);
 }
 
 export function reopenReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakReopenEndpoint(request.breakId), request);
 }
 
 export function dryRunReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
@@ -3261,8 +3263,7 @@ export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
 }
 
 export function getReconciliationCalibrationSummary() {
-  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary);
-}
+  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary); }
 
 // --- Backfill mutations ---
 
@@ -3559,7 +3560,8 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
       storageHealth: readStorageHealth(payload.storageHealth),
       lastHeartbeatUtc: heartbeat,
       metrics: Array.isArray(payload.metrics) ? payload.metrics as MetricSnapshot[] : [],
-      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : []
+      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : [],
+      degradedMode: readDegradedMode(payload.degradedMode)
     };
   }
 
@@ -3633,60 +3635,13 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         source: "Meridian host",
         timestamp: timestampUtc
       }
-    ]
+    ],
+    degradedMode: readDegradedMode(payload.degradedMode)
   };
 }
 
-function fallbackSystemOverview(): SystemOverviewResponse {
-  const timestampUtc = new Date().toISOString();
-  return {
-    systemStatus: "Degraded",
-    providersOnline: 0,
-    providersTotal: 0,
-    activeRuns: 0,
-    openPositions: 0,
-    activeBackfills: 0,
-    symbolsMonitored: 0,
-    storageHealth: "Warning",
-    lastHeartbeatUtc: timestampUtc,
-    metrics: [],
-    recentEvents: [
-      {
-        id: "status-unavailable",
-        type: "warning",
-        message: "The host returned an unrecognized status payload.",
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ]
-  };
-}
 
-function deriveSystemStatus(
-  isConnected: boolean,
-  isStale: boolean,
-  dropped: number,
-  dropRate: number,
-  queueUtilization: number
-): SystemOverviewResponse["systemStatus"] {
-  if (!isConnected) {
-    return "Offline";
-  }
 
-  return isStale || dropped > 0 || dropRate > 0 || queueUtilization >= 0.8 ? "Degraded" : "Healthy";
-}
-
-function deriveStorageHealth(
-  systemStatus: SystemOverviewResponse["systemStatus"],
-  dropped: number,
-  queueUtilization: number
-): SystemOverviewResponse["storageHealth"] {
-  if (systemStatus === "Offline") {
-    return "Critical";
-  }
-
-  return dropped > 0 || queueUtilization >= 0.8 ? "Warning" : "Healthy";
-}
 
 function buildLegacyStatusMessage(
   systemStatus: SystemOverviewResponse["systemStatus"],
@@ -3912,6 +3867,36 @@ export function getPortfolioExposure() {
 
 export function getPortfolioSymbolExposure(symbol: string) {
   return getJson<NetSymbolPosition>(portfolioSymbolExposureEndpoint(symbol));
+}
+
+// --- Runtime lifecycle ---
+
+export function getRuntimeLifecycle(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").RuntimeLifecycleSnapshot>(WORKSTATION_API_ENDPOINTS.runtimeLifecycle, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function requestRuntimeShutdown(
+  request: import("@/types").LifecycleShutdownRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").LifecycleShutdownAccepted>(WORKSTATION_API_ENDPOINTS.runtimeShutdown, request, options);
+}
+
+export function getRuntimeShutdownOperation(operationUri: string, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownOperation>(operationUri, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function getLatestRuntimeShutdownReceipt(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownReceipt>(WORKSTATION_API_ENDPOINTS.runtimeShutdownReceiptsLatest, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
 }
 
 // --- Live market data ---

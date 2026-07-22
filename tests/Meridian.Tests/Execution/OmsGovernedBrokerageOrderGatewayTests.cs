@@ -16,6 +16,22 @@ namespace Meridian.Tests.Execution;
 public sealed class OmsGovernedBrokerageOrderGatewayTests
 {
     [Fact]
+    public async Task UnifiedExecutionView_BlocksDirectMutationsOnAuthoritativeGateway()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("paper");
+        var view = new OmsGovernedExecutionOrderGateway(gateway);
+
+        Func<Task> submit = async () => await view.SubmitAsync(MarketBuy());
+        Func<Task> cancel = async () => await view.CancelAsync("order-1");
+
+        await submit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*OMS*");
+        await cancel.Should().ThrowAsync<InvalidOperationException>().WithMessage("*OMS*");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+        await gateway.DidNotReceive().CancelOrderAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public void Constructor_WithNullAdapter_Throws()
     {
         var act = () => new OmsGovernedBrokerageOrderGateway(null!);

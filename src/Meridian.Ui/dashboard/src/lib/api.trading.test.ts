@@ -95,11 +95,13 @@ import {
   setReplaySpeed,
   startReplay,
   stopReplay,
+  supersedeReconciliationBreak,
   submitChiefOfStaffDecision,
   submitOrder,
   updateExecutionDefaultPositionLimit,
   updateExecutionSymbolPositionLimit,
-  updateWorkflowPreset
+  updateWorkflowPreset,
+  waiveReconciliationBreak
 } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
@@ -110,6 +112,41 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "{}" });
     vi.stubGlobal("fetch", fetchMock);
     resetDevelopmentFixtureUsage();
+  });
+
+  it("wires governed reconciliation waive and supersede actions with disposition evidence", async () => {
+    const waiver = {
+      breakId: "break / 1",
+      action: "Waive" as const,
+      actor: "operator-1",
+      commandId: "cmd-waive-1",
+      correlationId: "corr-1",
+      source: "accounting-workstation",
+      expectedVersion: 4,
+      reason: "Reviewed immaterial difference",
+      evidenceLinks: ["evidence://waiver/1"],
+      actionOrigin: "HumanOperator" as const,
+      approvalActor: "controller-1",
+      approvalReference: "approval://waiver/1"
+    };
+    const supersede = {
+      ...waiver,
+      action: "Supersede" as const,
+      commandId: "cmd-supersede-1",
+      supersedingBreakId: "break-2"
+    };
+
+    await waiveReconciliationBreak(waiver);
+    await supersedeReconciliationBreak(supersede);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(waiver) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(supersede) })
+    );
   });
 
   it("wires promotion endpoints", async () => {

@@ -161,7 +161,7 @@ public abstract class BackendServiceManagerBase
         }
     }
 
-    public async Task<BackendServiceOperationResult> StartAsync(CancellationToken ct = default)
+    public virtual async Task<BackendServiceOperationResult> StartAsync(CancellationToken ct = default)
     {
         await _operationLock.WaitAsync(ct);
         try
@@ -248,7 +248,7 @@ public abstract class BackendServiceManagerBase
         }
     }
 
-    public async Task<BackendServiceOperationResult> StopAsync(CancellationToken ct = default)
+    public virtual async Task<BackendServiceOperationResult> StopAsync(CancellationToken ct = default)
     {
         await _operationLock.WaitAsync(ct);
         try
@@ -298,7 +298,7 @@ public abstract class BackendServiceManagerBase
         }
     }
 
-    public async Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default)
+    public virtual async Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default)
     {
         var stopResult = await StopAsync(ct);
         if (!stopResult.Success)

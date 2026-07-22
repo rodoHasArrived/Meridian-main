@@ -16,6 +16,15 @@ internal static class AlpacaEndpoints
     /// </summary>
     public static Uri WssUri(string host, string feed) =>
         new($"wss://{host}/v2/{feed}");
+
+    /// <summary>Dedicated endpoint for the US crypto stream.</summary>
+    public static Uri CryptoWssUri(string host) => new($"wss://{host}/v1beta3/crypto/us");
+
+    /// <summary>Dedicated endpoint for the options stream.</summary>
+    public static Uri OptionsWssUri(string host) => new($"wss://{host}/v1beta1/options");
+
+    /// <summary>Dedicated endpoint for the news stream.</summary>
+    public static Uri NewsWssUri(string host) => new($"wss://{host}/v1beta1/news");
 }
 
 /// <summary>

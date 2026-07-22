@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Identity.Auth;
 using Meridian.FSharp.Operations;
 
@@ -66,7 +67,11 @@ public sealed record ImmutableAuditEvent(
     string PreviousHash,
     string Hash);
 
-public sealed class ImmutableAuditLogService
+/// <summary>
+/// In-memory test/demo audit chain. Production composition uses the durable
+/// <c>Meridian.Audit.Compliance.ImmutableAuditLogService</c> instead.
+/// </summary>
+public sealed class ImmutableAuditLogService : INonProductionOnlyService
 {
     private readonly ConcurrentQueue<ImmutableAuditEvent> _events = new();
 

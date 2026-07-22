@@ -6,6 +6,7 @@ import unittest
 from decimal import Decimal
 from typing import Any
 
+from tools.schema_control import catalog
 from tools.schema_control.catalog import extract_catalog
 from tools.schema_control.common import sha256_text
 
@@ -635,7 +636,20 @@ def _extract(
     return manifest, connection, urls
 
 
+def _object_fingerprint_index(manifest: dict[str, Any]) -> dict[str, str]:
+    return {
+        record["object"]: record["fingerprint"]
+        for record in manifest["object_fingerprints"]
+    }
+
+
 class CatalogExtractionTests(unittest.TestCase):
+    def test_catalog_queries_do_not_use_collation_as_a_relation_alias(self) -> None:
+        query_text = "\n".join(query for _, query in catalog._QUERIES)
+
+        self.assertNotIn("pg_collation collation on", query_text)
+        self.assertIn("pg_collation collation_record on", query_text)
+
     def test_extracts_postgresql_categories_and_logical_schema_mapping(self) -> None:
         manifest, connection, urls = _extract(_catalog_rows())
 
@@ -847,25 +861,29 @@ class CatalogExtractionTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertRegex(first["database_fingerprint"], r"^[0-9a-f]{64}$")
+        records = first["object_fingerprints"]
+        fingerprints = _object_fingerprint_index(first)
         self.assertEqual(
-            sorted(first["object_fingerprints"]),
-            list(first["object_fingerprints"]),
+            sorted(record["object"] for record in records),
+            [record["object"] for record in records],
         )
-        self.assertGreater(len(first["object_fingerprints"]), 20)
-        for value in first["object_fingerprints"].values():
-            self.assertRegex(value, r"^[0-9a-f]{64}$")
+        self.assertEqual(len(records), len(fingerprints))
+        self.assertGreater(len(records), 20)
+        for record in records:
+            self.assertEqual({"fingerprint", "object"}, set(record))
+            self.assertRegex(record["fingerprint"], r"^[0-9a-f]{64}$")
         for schema in first["schemas"]:
             self.assertEqual(
                 schema["fingerprint"],
-                first["object_fingerprints"][f"schema:{schema['name']}"],
+                fingerprints[f"schema:{schema['name']}"],
             )
         self.assertIn(
             "table:ledger.journal_entry",
-            first["object_fingerprints"],
+            fingerprints,
         )
         self.assertIn(
             "function:ledger.post_transaction(jsonb)",
-            first["object_fingerprints"],
+            fingerprints,
         )
 
     def test_audit_schemas_are_inspected_without_becoming_physical_modules(
@@ -925,13 +943,15 @@ class CatalogExtractionTests(unittest.TestCase):
 
         changed, _, _ = _extract(changed_rows)
 
+        original_fingerprints = _object_fingerprint_index(original)
+        changed_fingerprints = _object_fingerprint_index(changed)
         self.assertNotEqual(
-            original["object_fingerprints"]["table:ledger.journal_entry"],
-            changed["object_fingerprints"]["table:ledger.journal_entry"],
+            original_fingerprints["table:ledger.journal_entry"],
+            changed_fingerprints["table:ledger.journal_entry"],
         )
         self.assertNotEqual(
-            original["object_fingerprints"]["schema:ledger"],
-            changed["object_fingerprints"]["schema:ledger"],
+            original_fingerprints["schema:ledger"],
+            changed_fingerprints["schema:ledger"],
         )
         self.assertNotEqual(
             original["database_fingerprint"], changed["database_fingerprint"]
@@ -971,13 +991,15 @@ class CatalogExtractionTests(unittest.TestCase):
         changed, _, _ = _extract(changed_rows)
 
         key = "table:ledger.journal_entry"
+        original_fingerprints = _object_fingerprint_index(original)
+        changed_fingerprints = _object_fingerprint_index(changed)
         self.assertNotEqual(
-            original["object_fingerprints"][key],
-            changed["object_fingerprints"][key],
+            original_fingerprints[key],
+            changed_fingerprints[key],
         )
         self.assertNotEqual(
-            original["object_fingerprints"]["schema:ledger"],
-            changed["object_fingerprints"]["schema:ledger"],
+            original_fingerprints["schema:ledger"],
+            changed_fingerprints["schema:ledger"],
         )
         self.assertNotEqual(
             original["database_fingerprint"], changed["database_fingerprint"]
@@ -1059,9 +1081,11 @@ class CatalogExtractionTests(unittest.TestCase):
                 changed_rows = _catalog_rows()
                 mutate(changed_rows)
                 changed, _, _ = _extract(changed_rows)
+                original_fingerprints = _object_fingerprint_index(original)
+                changed_fingerprints = _object_fingerprint_index(changed)
                 self.assertNotEqual(
-                    original["object_fingerprints"][key],
-                    changed["object_fingerprints"][key],
+                    original_fingerprints[key],
+                    changed_fingerprints[key],
                 )
                 self.assertNotEqual(
                     original["database_fingerprint"],

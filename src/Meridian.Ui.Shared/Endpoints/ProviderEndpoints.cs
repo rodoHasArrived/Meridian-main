@@ -7,6 +7,7 @@ using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -83,6 +84,15 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -91,7 +101,7 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
                 Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
                     ? t
@@ -409,7 +419,8 @@ public static class ProviderEndpoints
                     RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
                     LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
                     ConnectionState: connectionState,
-                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null
+                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null,
+                    Streams: ToStreamResponses(diagnostics?.Streams)
                 );
             }).ToList();
 
@@ -462,7 +473,8 @@ public static class ProviderEndpoints
                         RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
                         LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
                         ConnectionState: connectionState,
-                        DiagnosticsAvailable: diagnostics is not null));
+                        DiagnosticsAvailable: diagnostics is not null,
+                        Streams: ToStreamResponses(diagnostics?.Streams)));
                 }
             }
 
@@ -652,6 +664,15 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -660,7 +681,7 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
                 Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
                     ? t
@@ -693,6 +714,13 @@ public static class ProviderEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
+
+    private static IReadOnlyList<ProviderStreamStatusResponse>? ToStreamResponses(
+        IReadOnlyList<ProviderStreamDiagnostics>? streams)
+        => streams?.Select(stream => new ProviderStreamStatusResponse(
+            stream.AssetClass.ToString(), stream.Feed, stream.Entitlement,
+            stream.LifecycleState.ToString(), stream.IsConnected, stream.IsDegraded,
+            RuntimeDiagnosticRedactor.SanitizeText(stream.DegradationReason))).ToArray();
 
     internal static ProviderRegistrationReportDto CreateRegistrationReportDto(ProviderRegistrationReport report)
     {

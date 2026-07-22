@@ -4,7 +4,7 @@
 
 - Manifest path: `docs/status/workflow-manifest.json`
 - Workflow count: `12`
-- Status: `drift-detected`
+- Status: `clean`
 
 ## Missing declared commands
 
@@ -13,7 +13,7 @@
 
 ## Artifact governance violations
 
-- Missing expected artifacts (6): `postgresql-schema-control:database/manifest/catalog.json`, `postgresql-schema-control:database/manifest/contracts.json`, `postgresql-schema-control:database/manifest/dependencies.json`, `postgresql-schema-control:database/manifest/migrations.json`, `postgresql-schema-control:database/manifest/policies.json`, `postgresql-schema-control:docs/generated/database`
+- Missing expected artifacts (0): None
 - Stale artifacts (0): None
 - Outside canonical paths (0): None
 - Orphan generated outputs (0): None
@@ -62,14 +62,14 @@
 - `build/scripts/ai/tests/test_ai_edit_tool.py`
 - `build/scripts/ai/tests/test_context_budget.py`
 - `build/scripts/ai/tests/test_promptfoo_adapter.py`
+- `build/scripts/ci/check-apiclient-callers.py`
 - `build/scripts/ci/check-file-size.py`
 - `build/scripts/ci/check-lane-manifest.py`
 - `build/scripts/ci/check-warning-suppressions.py`
 - `build/scripts/ci/check-workflow-hygiene.py`
 - `build/scripts/ci/generate-release-evidence-manifest.py`
 - `build/scripts/ci/run-dotnet-ci-tests.py`
+- `build/scripts/ci/run-script-tests.py`
 - `build/scripts/ci/summarize-ci-artifacts.py`
+- `build/scripts/ci/validate-test-results.py`
 - `build/scripts/docs/add-todos.py`
-- `build/scripts/docs/ai-docs-maintenance.py`
-- `build/scripts/docs/check-ai-contract-drift.py`
-- `build/scripts/docs/check-ai-handoff.py`

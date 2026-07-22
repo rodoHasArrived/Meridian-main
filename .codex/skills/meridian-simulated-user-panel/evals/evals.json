@@ -1,35 +1,121 @@
 {
   "skill_name": "meridian-simulated-user-panel",
-  "last_updated": "2026-06-19",
+  "schema_version": "2026-07-19",
+  "last_updated": "2026-07-19",
   "evals": [
     {
       "id": 1,
-      "description": "Simulated user panel output follows the review contract and evidence boundary",
-      "deterministic_command": [
-        "{python}",
-        "{skill_dir}/scripts/simulated_user_output_check.py",
-        "--sample",
-        "standard",
-        "--json"
-      ],
-      "prompt": "Use $meridian-simulated-user-panel to critique a concrete Meridian artifact.",
-      "assertions": [
-        "Must include the meridian-simulated-user-panel skill selection receipt",
-        "Must include the review contract headings",
-        "Must separate verified, inferred, and missing evidence"
-      ],
-      "expect": {
-        "exit_code": 0,
-        "json_equals": {
-          "status": "pass",
-          "summary.skill": "meridian-simulated-user-panel"
-        },
-        "json_min": {
-          "summary.heading_count": 7,
-          "summary.required_terms_count": 7,
-          "summary.receipt_count": 1
-        }
-      }
+      "description": "Design-partner onboarding panel satisfies the structural contract",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-01-welcome-onboarding-design-partner.md", "--mode", "design_partner", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "steer"}, "json_min": {"summary.heading_count": 7, "summary.persona_count": 4}}
+    },
+    {
+      "id": 2,
+      "description": "Provider onboarding release gate supports a caveated recommendation with evidence",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-02-provider-onboarding-release-gate.md", "--mode", "release_gate", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "ship_with_caveats", "summary.evidence_status": "sufficient"}, "json_min": {"summary.persona_count": 4}}
+    },
+    {
+      "id": 3,
+      "description": "Accounting controls release gate fails closed with hold",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-03-fund-ledger-controls-review.md", "--mode", "release_gate", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "hold", "summary.evidence_status": "insufficient"}, "json_min": {"summary.persona_count": 4}}
+    },
+    {
+      "id": 4,
+      "description": "Research export design-partner panel satisfies the structural contract",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-04-analysis-export-power-user-review.md", "--mode", "design_partner", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "prototype"}, "json_min": {"summary.persona_count": 4}}
+    },
+    {
+      "id": 5,
+      "description": "Roadmap design-partner panel satisfies the structural contract",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-05-research-promotion-roadmap-review.md", "--mode", "design_partner", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "steer"}, "json_min": {"summary.persona_count": 4}}
+    },
+    {
+      "id": 6,
+      "description": "Usability-lab panel supports rerun recommendation and complaint clustering",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/golden/eval-06-provider-health-usability-lab.md", "--mode", "usability_lab", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.recommendation": "rerun_after_changes"}, "json_min": {"summary.persona_count": 4}}
+    },
+    {
+      "id": 7,
+      "description": "Shallow one-persona output is rejected",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/negative/shallow-panel.md", "--mode", "design_partner", "--json"],
+      "expect": {"exit_code": 1, "json_equals": {"status": "fail"}, "json_min": {"summary.failure_count": 2}}
+    },
+    {
+      "id": 8,
+      "description": "Release gate cannot ship with insufficient evidence",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/simulated_user_output_check.py", "--file", "{skill_dir}/evals/negative/release-gate-insufficient-ship.md", "--mode", "release_gate", "--json"],
+      "expect": {"exit_code": 1, "json_equals": {"status": "fail"}, "json_min": {"summary.failure_count": 1}}
+    },
+    {
+      "id": 9,
+      "description": "Valid review manifest sample passes",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--sample", "valid", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}, "json_min": {"summary.artifact_count": 1}}
+    },
+    {
+      "id": 10,
+      "description": "Empty custom review manifest fails",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--sample", "invalid-empty", "--json"],
+      "expect": {"exit_code": 1, "json_equals": {"status": "fail"}, "json_min": {"summary.failure_count": 4}}
+    },
+    {
+      "id": 11,
+      "description": "Screen review bundle validates",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--file", "{skill_dir}/assets/bundles/screen-review.manifest.json", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}}
+    },
+    {
+      "id": 12,
+      "description": "Workflow walkthrough bundle validates",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--file", "{skill_dir}/assets/bundles/workflow-walkthrough.manifest.json", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.functional_evidence_verified": true}}
+    },
+    {
+      "id": 13,
+      "description": "Roadmap review bundle validates",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--file", "{skill_dir}/assets/bundles/roadmap-review.manifest.json", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}}
+    },
+    {
+      "id": 14,
+      "description": "Ship readiness bundle validates with functional evidence",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--file", "{skill_dir}/assets/bundles/ship-readiness.manifest.json", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "summary.functional_evidence_verified": true}}
+    },
+    {
+      "id": 15,
+      "description": "Cross-surface bundle validates",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--file", "{skill_dir}/assets/bundles/cross-surface-review.manifest.json", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}, "json_min": {"summary.artifact_count": 2}}
+    },
+    {
+      "id": 16,
+      "description": "Host-neutral review contracts remain synchronized",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/check_shared_contracts.py", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}, "json_min": {"summary.checked": 26}}
+    },
+    {
+      "id": 17,
+      "description": "Promotion rubric accepts a fully evidenced candidate",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/score_eval.py", "--scenario", "promotion", "--scores", "{\"artifact_grounding\":2,\"persona_specificity\":2,\"persona_alignment\":2,\"evidence_boundary\":2,\"recommendation_integrity\":2,\"owner_actions\":2}", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass", "total": 12.0}}
+    },
+    {
+      "id": 18,
+      "description": "Trigger fixtures include positive and negative routing controls",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/check_trigger_prompts.py", "--json"],
+      "expect": {"exit_code": 0, "json_equals": {"status": "pass"}, "json_min": {"summary.positive": 3, "summary.negative": 3}}
+    },
+    {
+      "id": 19,
+      "description": "Malformed and misaligned release evidence is rejected",
+      "deterministic_command": ["{python}", "{skill_dir}/scripts/validate_review_manifest.py", "--sample", "invalid-evidence", "--json"],
+      "expect": {"exit_code": 1, "json_equals": {"status": "fail", "summary.functional_evidence_verified": false}, "json_min": {"summary.failure_count": 8}}
     }
   ]
 }

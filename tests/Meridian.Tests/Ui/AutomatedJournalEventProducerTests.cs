@@ -3,11 +3,14 @@ using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
+using Meridian.Reporting;
 using Meridian.Storage.Ledger;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -972,11 +975,67 @@ public sealed class AutomatedJournalEventProducerTests
             TotalCredits = zeroBalance.CreditTotal,
             NetIncome = 0m
         };
+        var retainedReportingEvidence = new List<ReportingReconciliationEvidenceReceipt>();
+        var reportingEvidenceStore = Substitute.For<IReportingReconciliationEvidenceRetentionStore>();
+        reportingEvidenceStore.RetainAsync(
+                Arg.Do<ReportingReconciliationEvidenceReceipt>(retainedReportingEvidence.Add),
+                Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult(false));
+        var authoritativeSource = Substitute.For<IReportingAuthoritativeSource>();
+        authoritativeSource.CaptureAsync(
+                Arg.Any<ReportingRunParametersDto>(),
+                Arg.Any<ReportAccessQueryContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var parameters = callInfo.ArgAt<ReportingRunParametersDto>(0);
+                var access = callInfo.ArgAt<ReportAccessQueryContext>(1);
+                var selectedBookId = parameters.LedgerBook.LedgerBookId
+                    ?? throw new InvalidOperationException("The hard-close evidence request must select a ledger book.");
+                var checkpointId = $"test-hard-close-source-{selectedBookId:N}-{parameters.PeriodId}";
+                var checkpointHash = new string('d', 64);
+                var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
+                    "test-durable-ledger-journal",
+                    $"ledger:{selectedBookId:D}:{parameters.PeriodId}",
+                    access.TenantId!,
+                    "organization-alpha",
+                    access.CompanyId,
+                    parameters.Scope.FundProfileId,
+                    selectedBookId.ToString("D"),
+                    parameters.PeriodId,
+                    parameters.AccountingBasis.ToString(),
+                    parameters.AsOfDate,
+                    new DateTimeOffset(
+                        parameters.AsOfDate.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc),
+                        TimeSpan.Zero),
+                    17,
+                    1,
+                    1,
+                    checkpointId,
+                    checkpointHash,
+                    AsOf,
+                    [$"reporting-source-checkpoint:{checkpointId}:{checkpointHash}"]);
+                return ValueTask.FromResult(new ReportingAuthoritativeSourceCapture(checkpoint, []));
+            });
+        var reportingEvidenceRetention = new ReportingReconciliationEvidenceRetentionService(
+            reportingEvidenceStore,
+            authoritativeSource);
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync("fund-alpha", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-alpha", "tenant-alpha", "company-alpha"));
+        var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
+        breakQueue.GetAllAsync(
+                Arg.Any<ReconciliationBreakQueueStatus?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>([]));
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             fixture.Workbench,
             (IManualJournalEntryLifecycleService)fixture.Workbench,
-            bookService);
+            bookService,
+            reportingEvidenceRetention,
+            tenancy,
+            breakQueue);
         var context = new AccountingClosePostingContext(
             Guid.NewGuid(),
             FundAccountId,
@@ -1016,6 +1075,15 @@ public sealed class AutomatedJournalEventProducerTests
             transition.EvidenceLinks.Any(link =>
                 link.Contains("accounting-close/period-lock", StringComparison.OrdinalIgnoreCase) &&
                 link.Contains(posted.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+        retainedReportingEvidence.Should().HaveCount(2,
+            "the hard-close retry must re-verify and idempotently retain the exact reporting evidence");
+        ReportingReconciliationEvidenceValidation.SameReceipt(
+                retainedReportingEvidence[0],
+                retainedReportingEvidence[1])
+            .Should().BeTrue();
+        retainedReportingEvidence.Should().OnlyContain(receipt =>
+            receipt.CompletionCheckpointId == $"hard-close-{ClosedPeriodId:N}-v{closed.Version}" &&
+            !receipt.HasOpenBreaks);
     }
 
     [Fact]

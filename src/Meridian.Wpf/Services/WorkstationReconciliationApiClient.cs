@@ -1,4 +1,7 @@
+using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Operations;
+using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Wpf.Services;
@@ -6,7 +9,22 @@ namespace Meridian.Wpf.Services;
 public sealed record WorkstationReconciliationActionResult(
     bool Success,
     string? ErrorMessage,
-    ReconciliationBreakQueueItem? Item);
+    ReconciliationBreakQueueItem? Item)
+{
+    public VerifiedOperationOutcome? Outcome { get; init; }
+
+    /// <summary>
+    /// True when the action failed because the workstation service was unreachable and the
+    /// operation was captured in the durable pending-operations queue for automatic replay.
+    /// </summary>
+    public bool QueuedForRetry { get; init; }
+}
+
+/// <summary>Durable payload for a queued break review.</summary>
+public sealed record PendingReviewBreakOperation(string BreakId, ReviewReconciliationBreakRequest Request);
+
+/// <summary>Durable payload for a queued break resolution.</summary>
+public sealed record PendingResolveBreakOperation(string BreakId, ResolveReconciliationBreakRequest Request);
 
 public interface IWorkstationReconciliationApiClient
 {
@@ -43,11 +61,50 @@ public interface IWorkstationReconciliationApiClient
 
 public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliationApiClient
 {
+    /// <summary>Pending-operations queue type for a break review captured while offline.</summary>
+    public const string ReviewBreakOperationType = "reconciliation.review-break";
+
+    /// <summary>Pending-operations queue type for a break resolution captured while offline.</summary>
+    public const string ResolveBreakOperationType = "reconciliation.resolve-break";
+
     private readonly Meridian.Ui.Services.ApiClientService _apiClient;
+    private readonly PendingOperationsQueueService _pendingOperations;
 
     public WorkstationReconciliationApiClient(Meridian.Ui.Services.ApiClientService apiClient)
+        : this(apiClient, PendingOperationsQueueService.Instance)
+    {
+    }
+
+    internal WorkstationReconciliationApiClient(
+        Meridian.Ui.Services.ApiClientService apiClient,
+        PendingOperationsQueueService pendingOperations)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _pendingOperations = pendingOperations ?? throw new ArgumentNullException(nameof(pendingOperations));
+
+        // Replay handlers: re-issue queued mutations against the backend. Throwing on a
+        // still-unreachable backend lets ProcessAllAsync's retry/re-enqueue semantics keep the
+        // operation durable instead of dropping it.
+        _pendingOperations.RegisterHandler(ReviewBreakOperationType, async payload =>
+        {
+            if (DeserializePayload<PendingReviewBreakOperation>(payload) is not { } operation)
+            {
+                return;
+            }
+
+            var result = await ReviewBreakCoreAsync(operation.BreakId, operation.Request).ConfigureAwait(false);
+            ThrowIfStillUnreachable(result);
+        });
+        _pendingOperations.RegisterHandler(ResolveBreakOperationType, async payload =>
+        {
+            if (DeserializePayload<PendingResolveBreakOperation>(payload) is not { } operation)
+            {
+                return;
+            }
+
+            var result = await ResolveBreakCoreAsync(operation.BreakId, operation.Request).ConfigureAwait(false);
+            ThrowIfStillUnreachable(result);
+        });
     }
 
     public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
@@ -58,24 +115,24 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         ?? [];
 
     public async Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<StatementRunSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRuns, ct).ConfigureAwait(false) ?? [];
+        => (await _apiClient.GetWithResponseAsync<List<StatementRunSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRuns, ct).ConfigureAwait(false)).DataOrLoggedNull("Get statement runs") ?? [];
 
-    public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
-        => _apiClient.GetAsync<StatementRunSummaryDto>(
+    public async Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        => (await _apiClient.GetWithResponseAsync<StatementRunSummaryDto>(
             Meridian.Contracts.Api.UiApiRoutes.WithParam(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementRunById, "runId", runId),
-            ct);
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get statement run");
 
     public async Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<StatementRunExceptionDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementExceptions, ct).ConfigureAwait(false) ?? [];
+        => (await _apiClient.GetWithResponseAsync<List<StatementRunExceptionDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementExceptions, ct).ConfigureAwait(false)).DataOrLoggedNull("Get statement exceptions") ?? [];
 
     public async Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<StatementBreakDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementBreaks, ct).ConfigureAwait(false) ?? [];
+        => (await _apiClient.GetWithResponseAsync<List<StatementBreakDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationStatementBreaks, ct).ConfigureAwait(false)).DataOrLoggedNull("Get open statement breaks") ?? [];
 
     public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<ReconciliationCaseSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationOpenCases, ct).ConfigureAwait(false) ?? [];
+        => (await _apiClient.GetWithResponseAsync<List<ReconciliationCaseSummaryDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationOpenCases, ct).ConfigureAwait(false)).DataOrLoggedNull("Get open reconciliation cases") ?? [];
 
     public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default)
-        => await _apiClient.GetAsync<List<ReconciliationQueueAccountStatusDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationQueueStatus, ct).ConfigureAwait(false) ?? [];
+        => (await _apiClient.GetWithResponseAsync<List<ReconciliationQueueAccountStatusDto>>(Meridian.Contracts.Api.UiApiRoutes.ReconciliationQueueStatus, ct).ConfigureAwait(false)).DataOrLoggedNull("Get reconciliation queue status") ?? [];
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
         => _apiClient.UiApi.GetLatestRunReconciliationAsync(runId, ct);
@@ -83,25 +140,95 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
         => _apiClient.UiApi.GetReconciliationRunAsync(reconciliationRunId, ct);
 
-    public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
+    public async Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
+        string breakId,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await ReviewBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
+        return result.QueuedForRetry
+            ? EnqueueForRetry(ReviewBreakOperationType, new PendingReviewBreakOperation(breakId, request), result)
+            : result;
+    }
+
+    public async Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
+        string breakId,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await ResolveBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
+        return result.QueuedForRetry
+            ? EnqueueForRetry(ResolveBreakOperationType, new PendingResolveBreakOperation(breakId, request), result)
+            : result;
+    }
+
+    private Task<WorkstationReconciliationActionResult> ReviewBreakCoreAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
         => ToActionResultAsync(_apiClient.UiApi.ReviewReconciliationBreakAsync(breakId, request, ct));
 
-    public Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
+    private Task<WorkstationReconciliationActionResult> ResolveBreakCoreAsync(
         string breakId,
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
         => ToActionResultAsync(_apiClient.UiApi.ResolveReconciliationBreakAsync(breakId, request, ct));
 
+    private WorkstationReconciliationActionResult EnqueueForRetry(
+        string operationType,
+        object payload,
+        WorkstationReconciliationActionResult result)
+    {
+        _pendingOperations.Enqueue(operationType, payload);
+        return result with
+        {
+            ErrorMessage =
+                "The workstation service is unreachable. The action was saved and will be " +
+                "retried automatically when the connection is restored."
+        };
+    }
+
+    private static void ThrowIfStillUnreachable(WorkstationReconciliationActionResult result)
+    {
+        if (result.QueuedForRetry)
+        {
+            throw new InvalidOperationException(
+                "The workstation service is still unreachable; the queued reconciliation action will be retried.");
+        }
+    }
+
+    private static T? DeserializePayload<T>(object? payload) where T : class => payload switch
+    {
+        T typed => typed,
+        JsonElement element => element.Deserialize<T>(Meridian.Ui.Services.DesktopJsonOptions.Api),
+        _ => null
+    };
+
     private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
-        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationBreakQueueItem>> responseTask)
+        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationCaseworkOperationResult>> responseTask)
     {
         var response = await responseTask.ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+        {
+            return new WorkstationReconciliationActionResult(false, response.ErrorMessage, null)
+            {
+                QueuedForRetry = response.IsConnectionError
+            };
+        }
 
-        return response.Success
-            ? new WorkstationReconciliationActionResult(true, null, response.Data)
-            : new WorkstationReconciliationActionResult(false, response.ErrorMessage, null);
+        var operation = response.Data;
+        var succeeded = operation.Outcome.State is
+            OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;
+        return new WorkstationReconciliationActionResult(
+            succeeded,
+            succeeded
+                ? null
+                : operation.Error
+                    ?? operation.Outcome.Issues.FirstOrDefault()?.Message
+                    ?? $"Reconciliation operation ended in {operation.Outcome.State}.",
+            operation.Item)
+        {
+            Outcome = operation.Outcome
+        };
     }
 }

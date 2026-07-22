@@ -68,6 +68,8 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
@@ -104,16 +106,14 @@ const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
-const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
+const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
-const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
 const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
 const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
 const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
-const EvidenceDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.EvidenceDetailScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
@@ -125,15 +125,12 @@ const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-re
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
-const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
-const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
-const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
 
 export function App() {
   return (
@@ -511,6 +508,9 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
         )}
       />
 
+      <DegradedModeBanner degradedMode={overview?.degradedMode} />
+      <DataProvenanceBanner provenance={usingDevelopmentFixtures ? "seeded" : "real"} />
+
       <div className="workstation-shell">
         <WorkspaceNav
           className="workstation-rail-desktop"
@@ -596,7 +596,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
-                  <Route path="/accounting/trial-balance" element={<TrialBalanceScreen data={accounting} />} />
+                  <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
@@ -604,8 +604,8 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
-                  <Route path="/accounting/evidence/detail" element={<EvidenceDetailScreen />} />
-                  <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
@@ -616,13 +616,13 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
-                  <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
+                  <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
-                  <Route path="/data/quotes" element={<LiveQuotesScreen />} />
-                  <Route path="/data/watchlist" element={<WatchlistScreen />} />
-                  <Route path="/data/alerts" element={<PriceAlertsScreen />} />
-                  <Route path="/data/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/data/quotes" element={<MarketDataScreen />} />
+                  <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(

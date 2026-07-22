@@ -134,7 +134,7 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         }, ct);
 
         var repairableIssues = healthCheck.Issues
-            .Where(i => i.AutoRepairable && MatchesScope(i, options.Scope))
+            .Where(i => i.AutoRepairable && MatchesScope(i, options))
             .ToList();
 
         if (options.DryRun)
@@ -148,15 +148,25 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             );
         }
 
-        // Create backup if requested
-        if (options.BackupBeforeRepair && !string.IsNullOrEmpty(options.BackupPath))
+        // Create backup if requested. With no BackupPath configured, back up next to the file
+        // instead of silently repairing a possibly-destructive strategy with no safety copy.
+        if (options.BackupBeforeRepair)
         {
             foreach (var issue in repairableIssues)
             {
                 try
                 {
-                    var backupFile = Path.Combine(options.BackupPath, Path.GetFileName(issue.Path));
-                    Directory.CreateDirectory(options.BackupPath);
+                    string backupFile;
+                    if (!string.IsNullOrEmpty(options.BackupPath))
+                    {
+                        Directory.CreateDirectory(options.BackupPath);
+                        backupFile = Path.Combine(options.BackupPath, Path.GetFileName(issue.Path));
+                    }
+                    else
+                    {
+                        backupFile = issue.Path + ".pre-repair.bak";
+                    }
+
                     File.Copy(issue.Path, backupFile, overwrite: true);
                 }
                 catch (Exception ex)
@@ -206,24 +216,76 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         var startTime = DateTime.UtcNow;
         var filesProcessed = 0;
         var filesCreated = 0;
+        var filesDeleted = 0;
+        var mergeGroupsAttempted = 0;
+        var mergeGroupsSucceeded = 0;
+        var errors = new List<string>();
         long bytesBefore = 0;
         long bytesAfter = 0;
 
         var cutoffDate = DateTime.UtcNow - options.MaxFileAge;
 
-        // Find small files eligible for merging
-        var smallFiles = Directory.EnumerateFiles(_options.RootPath, "*", SearchOption.AllDirectories)
+        // Find small files eligible for merging. Only plain .jsonl files qualify: merging is a
+        // text concatenation, and running it over compressed (.gz/.zst/.lz4) or parquet files
+        // corrupted their bytes irreversibly before the originals were deleted.
+        var allSmallDataFiles = Directory.EnumerateFiles(_options.RootPath, "*", SearchOption.AllDirectories)
             .Where(f => DataExtensions.Any(ext => f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
             .Select(f => new FileInfo(f))
             .Where(f => f.Length < options.MinFileSizeBytes && f.LastWriteTimeUtc < cutoffDate)
+            .ToList();
+
+        var smallFiles = allSmallDataFiles
+            .Where(f => f.FullName.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             .OrderBy(f => f.DirectoryName)
             .ThenBy(f => f.Name)
             .ToList();
+
+        var excludedCount = allSmallDataFiles.Count - smallFiles.Count;
+        if (excludedCount > 0)
+        {
+            _log.Information(
+                "Defragmentation skipped {ExcludedCount} small compressed/binary files; only plain .jsonl files are merged",
+                excludedCount);
+        }
 
         // Group files by directory for merging
         var groups = smallFiles
             .GroupBy(f => f.DirectoryName)
             .Where(g => g.Count() >= 2);
+
+        if (options.DryRun)
+        {
+            // Report the would-merge plan without touching the filesystem. The previous scheduler
+            // wiring mapped DryRun onto PreserveOriginals, so a "dry run" still wrote real
+            // merged_* files that duplicated events on replay.
+            long plannedBytes = 0;
+            var plannedFiles = 0;
+            var plannedGroups = 0;
+            foreach (var group in groups)
+            {
+                var candidates = group.Take(options.MaxFilesPerMerge).ToList();
+                plannedFiles += candidates.Count;
+                plannedBytes += candidates.Sum(f => f.Length);
+                plannedGroups++;
+            }
+
+            _log.Information(
+                "Defragmentation dry run: {PlannedFiles} files ({PlannedBytes} bytes) would be merged; no files were written or deleted",
+                plannedFiles, plannedBytes);
+
+            return new DefragResult(
+                FilesProcessed: plannedFiles,
+                FilesCreated: 0,
+                BytesBefore: plannedBytes,
+                BytesAfter: plannedBytes,
+                CompressionImprovement: 0,
+                Duration: DateTime.UtcNow - startTime,
+                MergeGroupsAttempted: plannedGroups,
+                MergeGroupsSucceeded: 0,
+                FilesDeleted: 0,
+                Errors: []
+            );
+        }
 
         foreach (var group in groups)
         {
@@ -232,6 +294,8 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             var filesToMerge = group.Take(options.MaxFilesPerMerge).ToList();
             bytesBefore += filesToMerge.Sum(f => f.Length);
             filesProcessed += filesToMerge.Count;
+            mergeGroupsAttempted++;
+            var groupErrorCount = errors.Count;
 
             try
             {
@@ -246,13 +310,19 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                     {
                         foreach (var file in filesToMerge)
                         {
+                            var sourceLength = file.Length;
                             try
-                            { file.Delete(); }
-                            catch (IOException ex)
+                            {
+                                file.Delete();
+                                filesDeleted++;
+                            }
+                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                             {
                                 // A source file survived the merge. It must be surfaced: on replay the
                                 // merged file and the undeleted original both contribute the same
                                 // events, producing duplicates. Log it rather than swallowing it.
+                                errors.Add($"Failed to delete merged-source file '{file.FullName}': {ex.Message}");
+                                bytesAfter += sourceLength;
                                 _log.Warning(
                                     ex,
                                     "Failed to delete merged-source file {FilePath} after defragmentation; duplicate events may appear on replay",
@@ -260,11 +330,28 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                             }
                         }
                     }
+                    else
+                    {
+                        bytesAfter += filesToMerge.Sum(file => file.Length);
+                    }
+
+                    if (errors.Count == groupErrorCount)
+                        mergeGroupsSucceeded++;
                 }
+                else
+                {
+                    errors.Add($"Defragmentation produced no merged file for a group of {filesToMerge.Count} files.");
+                    bytesAfter += filesToMerge.Sum(file => file.Length);
+                }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 // Skip this group on error, but record why rather than dropping it silently.
+                errors.Add($"Defragmentation failed for a group of {filesToMerge.Count} files: {ex.Message}");
                 _log.Warning(ex, "Defragmentation failed for a file group of {FileCount} files; skipping the group", filesToMerge.Count);
                 bytesAfter += filesToMerge.Sum(f => f.Length);
             }
@@ -276,7 +363,11 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             BytesBefore: bytesBefore,
             BytesAfter: bytesAfter,
             CompressionImprovement: bytesBefore > 0 ? (double)(bytesBefore - bytesAfter) / bytesBefore * 100 : 0,
-            Duration: DateTime.UtcNow - startTime
+            Duration: DateTime.UtcNow - startTime,
+            MergeGroupsAttempted: mergeGroupsAttempted,
+            MergeGroupsSucceeded: mergeGroupsSucceeded,
+            FilesDeleted: filesDeleted,
+            Errors: errors
         );
     }
 
@@ -468,45 +559,114 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private bool MatchesScope(HealthIssue issue, RepairScope scope)
+    private static bool MatchesScope(HealthIssue issue, RepairOptions options)
     {
-        return scope switch
+        switch (options.Scope)
         {
-            RepairScope.All => true,
-            RepairScope.SingleFile => true, // Would need specific file filter
-            RepairScope.Directory => true,  // Would need directory filter
-            _ => true
-        };
+            case RepairScope.All:
+                return true;
+            case RepairScope.SingleFile:
+                if (string.IsNullOrWhiteSpace(options.ScopeTarget))
+                    throw new ArgumentException("RepairScope.SingleFile requires RepairOptions.ScopeTarget to name the file.", nameof(options));
+                return string.Equals(Path.GetFullPath(issue.Path), Path.GetFullPath(options.ScopeTarget), StringComparison.OrdinalIgnoreCase);
+            case RepairScope.Directory:
+                if (string.IsNullOrWhiteSpace(options.ScopeTarget))
+                    throw new ArgumentException("RepairScope.Directory requires RepairOptions.ScopeTarget to name the directory.", nameof(options));
+                var directory = Path.GetFullPath(options.ScopeTarget)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                return Path.GetFullPath(issue.Path).StartsWith(directory, StringComparison.OrdinalIgnoreCase);
+            default:
+                // Symbol/DateRange/EventType have no mapping from a HealthIssue path; matching
+                // everything here silently repaired the entire store under a narrow-sounding scope.
+                throw new NotSupportedException(
+                    $"RepairScope.{options.Scope} is not supported; use All, SingleFile, or Directory.");
+        }
     }
 
     private async Task<bool> TruncateCorruptedAsync(string filePath, CancellationToken ct)
     {
-        // Find last valid JSON line and truncate
-        var lines = await File.ReadAllLinesAsync(filePath, ct);
-        var validLines = new List<string>();
+        // Line-level salvage only makes sense for plain JSONL. On compressed or binary formats
+        // every "line" parses as invalid, and the old behaviour atomically rewrote the file as
+        // empty — destroying the data this repair exists to protect.
+        if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new NotSupportedException(
+                $"TruncateCorrupted repair only supports plain .jsonl files; '{Path.GetFileName(filePath)}' must be repaired by re-ingest or restore.");
+        }
 
-        foreach (var line in lines)
+        // Pass 1: stream the file, buffering only the rejected lines (bounded by corruption
+        // volume) so multi-GB day files are never loaded whole into memory.
+        var validCount = 0;
+        var rejectedLines = new List<string>();
+        await foreach (var line in File.ReadLinesAsync(filePath, ct))
         {
             if (string.IsNullOrWhiteSpace(line))
                 continue;
             try
             {
                 JsonDocument.Parse(line);
-                validLines.Add(line);
+                validCount++;
             }
-            catch
+            catch (JsonException)
             {
-                break; // Stop at first invalid line
+                // Salvage every parseable line rather than discarding the valid tail after the
+                // first corrupt one; rejected lines are preserved in a sidecar for inspection.
+                rejectedLines.Add(line);
             }
         }
 
-        if (validLines.Count < lines.Length)
-        {
-            await AtomicFileWriter.WriteAsync(filePath, string.Join(Environment.NewLine, validLines) + Environment.NewLine, ct);
-            return true;
-        }
+        if (rejectedLines.Count == 0)
+            return false;
 
-        return false;
+        await AtomicFileWriter.WriteStreamAsync(filePath + ".corrupt-lines", async stream =>
+        {
+            // encoding: null selects BOM-less UTF-8; a BOM would corrupt line-oriented readers
+            // (same rationale as AtomicFileWriter.Utf8NoBom).
+            await using var writer = new StreamWriter(stream, encoding: null, leaveOpen: true);
+            foreach (var line in rejectedLines)
+                await writer.WriteLineAsync(line.AsMemory(), ct);
+        }, ct);
+
+        // Pass 2: stream the salvaged content into the atomic temp file. The source is re-read
+        // and fully closed inside the callback, before the atomic rename replaces it.
+        await AtomicFileWriter.WriteStreamAsync(filePath, async stream =>
+        {
+            await using var writer = new StreamWriter(stream, encoding: null, leaveOpen: true);
+            await foreach (var line in File.ReadLinesAsync(filePath, ct))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                try
+                {
+                    JsonDocument.Parse(line);
+                }
+                catch (JsonException)
+                {
+                    continue;
+                }
+
+                await writer.WriteLineAsync(line.AsMemory(), ct);
+            }
+        }, ct);
+
+        await RefreshChecksumSidecarAsync(filePath, ct);
+
+        _log.Information(
+            "Truncate repair salvaged {ValidCount} lines and quarantined {RejectedCount} corrupt lines for {FilePath}",
+            validCount, rejectedLines.Count, filePath);
+        return true;
+    }
+
+    // A repaired file's bytes changed; a stale sha256 sidecar would report the repair itself as
+    // corruption on the next health check, permanently. Rewrite it in sha256sum format.
+    private async Task RefreshChecksumSidecarAsync(string filePath, CancellationToken ct)
+    {
+        var sidecarPath = filePath + ".sha256";
+        if (!File.Exists(sidecarPath))
+            return;
+
+        var checksum = await ComputeChecksumAsync(filePath, ct);
+        await AtomicFileWriter.WriteAsync(sidecarPath, $"{checksum}  {Path.GetFileName(filePath)}", ct);
     }
 
     private Task<bool> RebuildIndexAsync(string filePath, CancellationToken ct)
@@ -535,11 +695,24 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             return false;
 
+        // Write the compressed copy atomically, then remove the original so exactly one canonical
+        // copy remains. Leaving both files meant every replay double-counted these events.
         var outputPath = filePath + ".gz";
-        await using var input = File.OpenRead(filePath);
-        await using var output = File.Create(outputPath);
-        await using var gzip = new System.IO.Compression.GZipStream(output, System.IO.Compression.CompressionLevel.Optimal);
-        await input.CopyToAsync(gzip, ct);
+        await AtomicFileWriter.WriteStreamAsync(outputPath, async output =>
+        {
+            await using var input = File.OpenRead(filePath);
+            await using var gzip = new System.IO.Compression.GZipStream(
+                output, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true);
+            await input.CopyToAsync(gzip, ct);
+        }, ct);
+
+        File.Delete(filePath);
+
+        // The plain-file sidecar no longer matches anything on disk; drop it rather than leaving
+        // a dangling checksum that the health check reports as an orphan/mismatch.
+        var staleSidecar = filePath + ".sha256";
+        if (File.Exists(staleSidecar))
+            File.Delete(staleSidecar);
 
         return true;
     }
@@ -548,6 +721,15 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
     {
         if (files.Count == 0)
             return null;
+
+        // Defense in depth behind DefragmentAsync's candidate filter: text concatenation is only
+        // valid for plain .jsonl files, and the originals are deleted after a merge.
+        var nonJsonl = files.FirstOrDefault(f => !f.FullName.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase));
+        if (nonJsonl is not null)
+        {
+            throw new NotSupportedException(
+                $"Refusing to merge '{nonJsonl.Name}': only plain .jsonl files can be text-merged without corruption.");
+        }
 
         var directory = files[0].DirectoryName!;
         var extension = files[0].Extension;
@@ -654,7 +836,8 @@ public sealed record RepairOptions(
     bool DryRun = false,
     bool BackupBeforeRepair = true,
     string? BackupPath = null,
-    RepairScope Scope = RepairScope.All
+    RepairScope Scope = RepairScope.All,
+    string? ScopeTarget = null
 );
 
 public enum RepairStrategy : byte
@@ -683,7 +866,8 @@ public sealed record DefragOptions(
     int MaxFilesPerMerge = 100,
     bool PreserveOriginals = false,
     System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal,
-    TimeSpan MaxFileAge = default
+    TimeSpan MaxFileAge = default,
+    bool DryRun = false
 )
 {
     public DefragOptions() : this(1_048_576) { }
@@ -695,7 +879,11 @@ public sealed record DefragResult(
     long BytesBefore,
     long BytesAfter,
     double CompressionImprovement,
-    TimeSpan Duration
+    TimeSpan Duration,
+    int MergeGroupsAttempted = 0,
+    int MergeGroupsSucceeded = 0,
+    int FilesDeleted = 0,
+    IReadOnlyList<string>? Errors = null
 );
 
 // Orphan types

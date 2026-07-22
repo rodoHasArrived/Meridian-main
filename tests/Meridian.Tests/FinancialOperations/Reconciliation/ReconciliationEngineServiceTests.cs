@@ -37,6 +37,70 @@ public sealed class ReconciliationEngineServiceTests
         result.Breaks.Should().ContainSingle();
     }
 
+    [Fact]
+    public async Task RunAsync_ZeroLedgerBalance_IsPresentAndMatchesZeroExpectation()
+    {
+        // A legitimately zero ledger balance previously read as "absent" (ActualPresent was
+        // inferred from `!= 0m`), misclassifying the check as missing_ledger_coverage instead
+        // of comparing amounts.
+        var service = new ReconciliationEngineService(
+            new EmptySecurityMasterQueryService(),
+            NullLogger<ReconciliationEngineService>.Instance);
+        var request = new EngineReconciliationRequest(
+            PortfolioId: "portfolio-zero",
+            AsOf: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            PortfolioPositions:
+            [
+                new PortfolioPositionInput("CASH_USD", 0m)
+            ],
+            LedgerBalances: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["CASH_USD"] = 0m
+            },
+            SecurityIdentifiers: []);
+
+        var result = await service.RunAsync(request);
+
+        result.TotalChecks.Should().Be(1);
+        result.MatchCount.Should().Be(1, "zero expected versus zero ledger balance is an exact amount match");
+        result.Breaks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_ZeroLedgerBalanceWithNonZeroExpectation_ClassifiesAsVarianceNotMissingCoverage()
+    {
+        var service = new ReconciliationEngineService(
+            new EmptySecurityMasterQueryService(),
+            NullLogger<ReconciliationEngineService>.Instance);
+        var request = new EngineReconciliationRequest(
+            PortfolioId: "portfolio-variance",
+            AsOf: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            PortfolioPositions:
+            [
+                new PortfolioPositionInput("AAPL", 100m),
+                new PortfolioPositionInput("GONE", 50m)
+            ],
+            LedgerBalances: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = 0m
+            },
+            SecurityIdentifiers: []);
+
+        var result = await service.RunAsync(request);
+
+        result.TotalChecks.Should().Be(2);
+        result.Breaks.Should().HaveCount(2);
+
+        var aaplBreak = result.Breaks.Should().ContainSingle(b => b.Label == "AAPL").Subject;
+        aaplBreak.Category.Should().NotBe("missing_ledger_coverage",
+            "a ledger symbol carrying a zero balance is present; the discrepancy is an amount variance");
+        aaplBreak.ActualAmount.Should().Be(0m);
+
+        var goneBreak = result.Breaks.Should().ContainSingle(b => b.Label == "GONE").Subject;
+        goneBreak.Category.Should().Be("missing_ledger_coverage",
+            "a symbol wholly absent from the ledger is genuinely missing coverage");
+    }
+
     private sealed class EmptySecurityMasterQueryService : ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)

@@ -1,0 +1,9 @@
+prompt,should_trigger,expected_lane
+"Run a simulated user panel on this browser workstation screen.",true,meridian-simulated-user-panel
+"Give me release-gate feedback from accounting and compliance personas.",true,meridian-simulated-user-panel
+"Compare the browser and WPF workflows with realistic users.",true,meridian-simulated-user-panel
+"Cluster complaints from two usability-lab runs.",true,meridian-simulated-user-panel
+"Review this diff for correctness and regressions.",false,meridian-code-review
+"Brainstorm product ideas without reviewing an artifact.",false,meridian-brainstorm
+"Sequence these accepted roadmap items into delivery waves.",false,meridian-roadmap-strategist
+"Write tests for the existing service.",false,meridian-test-writer

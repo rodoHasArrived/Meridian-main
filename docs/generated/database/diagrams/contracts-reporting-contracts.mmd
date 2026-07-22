@@ -1,0 +1,185 @@
+classDiagram
+    %% reporting-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Reporting_GovernedReportingRunDto["GovernedReportingRunDto"] {
+        +ReportingGovernanceAccessScopeDto Access
+        +IReadOnlyList~ReportingGovernanceActionAvailabilityDto~ ActionAvailability
+        +ReportingGovernanceApprovalDto? Approval
+        +IReadOnlyList~ReportingGovernanceAuditEntryDto~ AuditTrail
+        +DateTimeOffset CreatedAtUtc
+        +ReportingGovernanceAuthorityDto CreationAuthority
+        +string ExecutionState
+        +string GovernanceState
+        +ReportingRunParametersDto? NormalizedParameters
+        +ReportingGovernanceReadinessDto? Readiness
+        +ReportingGovernanceReleaseDto? Release
+        +string? RestatementOfRunId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceAccessPrincipalDto["ReportingGovernanceAccessPrincipalDto"] {
+        +string Kind
+        +string PrincipalId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceAccessScopeDto["ReportingGovernanceAccessScopeDto"] {
+        +bool AllowOwnerAccess
+        +string Mode
+        +string? OwnerPrincipalId
+        +string PolicyHash
+        +string PolicyId
+        +string PolicyVersion
+        +IReadOnlyList~ReportingGovernanceAccessPrincipalDto~ Principals
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceActionAvailabilityDto["ReportingGovernanceActionAvailabilityDto"] {
+        +string Action
+        +string? BlockedReason
+        +long ExpectedVersion
+        +bool IsAllowed
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceApprovalDto["ReportingGovernanceApprovalDto"] {
+        +DateTimeOffset ApprovedAtUtc
+        +ReportingGovernanceAuthorityDto Authority
+        +string DecisionNote
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceApprovalRequestDto["ReportingGovernanceApprovalRequestDto"] {
+        +string DecisionNote
+        +long ExpectedVersion
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceArtifactDto["ReportingGovernanceArtifactDto"] {
+        +string ArtifactHash
+        +string ArtifactId
+        +long ByteLength
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceAuditEntryDto["ReportingGovernanceAuditEntryDto"] {
+        +string Action
+        +string AggregateId
+        +string AggregateKind
+        +long AggregateVersion
+        +ReportingGovernanceAuthorityDto Authority
+        +string EventId
+        +string? FromExecutionState
+        +string? FromGovernanceState
+        +string? FromRestatementState
+        +string Hash
+        +string? Note
+        +DateTimeOffset OccurredAtUtc
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto["ReportingGovernanceAuthorityDto"] {
+        +string ActorId
+        +string? CompanyId
+        +string CorrelationId
+        +string OrganizationId
+        +string Origin
+        +IReadOnlyList~string~ Permissions
+        +IReadOnlyList~string~ PrincipalIds
+        +string TenantId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceCertifiedSnapshotDto["ReportingGovernanceCertifiedSnapshotDto"] {
+        +DateTimeOffset CapturedAtUtc
+        +string? ParametersCanonicalJson
+        +string? ParametersHash
+        +string? ReconciliationCheckpointHash
+        +string ReconciliationCheckpointId
+        +string SnapshotHash
+        +string SnapshotId
+        +string? SourceCheckpointHash
+        +string? SourceCheckpointId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceChangedLineDto["ReportingGovernanceChangedLineDto"] {
+        +string CurrentValue
+        +IReadOnlyList~string~ EvidenceIds
+        +string LineKey
+        +string PreviousValue
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceOperationalScopeDto["ReportingGovernanceOperationalScopeDto"] {
+        +string BookId
+        +string? CompanyId
+        +string? FundId
+        +string OrganizationId
+        +string PeriodId
+        +string TenantId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceReadinessCheckDto["ReportingGovernanceReadinessCheckDto"] {
+        +string CheckId
+        +IReadOnlyList~string~ EvidenceIds
+        +string? FailureReason
+        +bool Passed
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceReadinessDto["ReportingGovernanceReadinessDto"] {
+        +IReadOnlyList~ReportingGovernanceReadinessCheckDto~ Checks
+        +DateTimeOffset EvaluatedAtUtc
+        +bool IsReady
+        +string ReceiptHash
+        +string ReceiptId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceReleaseDto["ReportingGovernanceReleaseDto"] {
+        +IReadOnlyList~ReportingGovernanceArtifactDto~ Artifacts
+        +ReportingGovernanceAuthorityDto Authority
+        +IReadOnlyList~string~ EvidenceIds
+        +string ManifestHash
+        +string ManifestId
+        +DateTimeOffset ReleasedAtUtc
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRestatementApprovalDto["ReportingGovernanceRestatementApprovalDto"] {
+        +GovernedReportingRunDto DraftRun
+        +ReportingGovernanceRestatementDto Request
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRestatementApprovalRequestDto["ReportingGovernanceRestatementApprovalRequestDto"] {
+        +long ExpectedVersion
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto["ReportingGovernanceRestatementDto"] {
+        +IReadOnlyList~ReportingGovernanceActionAvailabilityDto~ ActionAvailability
+        +DateTimeOffset? ApprovedAtUtc
+        +ReportingGovernanceAuthorityDto? ApprovedBy
+        +IReadOnlyList~ReportingGovernanceAuditEntryDto~ AuditTrail
+        +IReadOnlyList~ReportingGovernanceChangedLineDto~ ChangedLines
+        +string? DraftRunId
+        +int PredecessorRevision
+        +string PredecessorRunId
+        +long PredecessorVersion
+        +string Reason
+        +DateTimeOffset RequestedAtUtc
+        +ReportingGovernanceAuthorityDto RequestedBy
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRestatementRequestDto["ReportingGovernanceRestatementRequestDto"] {
+        +long ExpectedVersion
+        +string Reason
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRetainedArtifactDto["ReportingGovernanceRetainedArtifactDto"] {
+        +string ArtifactId
+        +long ByteLength
+        +string ContentHashSha256
+        +string ContentType
+        +string DownloadRoute
+        +string FileName
+        +bool IsPreview
+        +string Kind
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceSeriesHistoryDto["ReportingGovernanceSeriesHistoryDto"] {
+        +IReadOnlyList~ReportingGovernanceRestatementDto~ RestatementRequests
+        +IReadOnlyList~GovernedReportingRunDto~ Runs
+        +string SeriesId
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceVersionRequestDto["ReportingGovernanceVersionRequestDto"] {
+        +long ExpectedVersion
+    }
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceAccessScopeDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceActionAvailabilityDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceApprovalDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuditEntryDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceCertifiedSnapshotDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceOperationalScopeDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceReadinessDto
+    Meridian_Contracts_Reporting_GovernedReportingRunDto --> Meridian_Contracts_Reporting_ReportingGovernanceReleaseDto
+    Meridian_Contracts_Reporting_ReportingGovernanceAccessScopeDto --> Meridian_Contracts_Reporting_ReportingGovernanceAccessPrincipalDto
+    Meridian_Contracts_Reporting_ReportingGovernanceApprovalDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto
+    Meridian_Contracts_Reporting_ReportingGovernanceAuditEntryDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto
+    Meridian_Contracts_Reporting_ReportingGovernanceReadinessDto --> Meridian_Contracts_Reporting_ReportingGovernanceReadinessCheckDto
+    Meridian_Contracts_Reporting_ReportingGovernanceReleaseDto --> Meridian_Contracts_Reporting_ReportingGovernanceArtifactDto
+    Meridian_Contracts_Reporting_ReportingGovernanceReleaseDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementApprovalDto --> Meridian_Contracts_Reporting_GovernedReportingRunDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementApprovalDto --> Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto --> Meridian_Contracts_Reporting_ReportingGovernanceActionAvailabilityDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuditEntryDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto --> Meridian_Contracts_Reporting_ReportingGovernanceAuthorityDto
+    Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto --> Meridian_Contracts_Reporting_ReportingGovernanceChangedLineDto
+    Meridian_Contracts_Reporting_ReportingGovernanceSeriesHistoryDto --> Meridian_Contracts_Reporting_GovernedReportingRunDto
+    Meridian_Contracts_Reporting_ReportingGovernanceSeriesHistoryDto --> Meridian_Contracts_Reporting_ReportingGovernanceRestatementDto

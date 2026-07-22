@@ -90,6 +90,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private FinancialOperationsCommandCenterDto? _financialOperationsCommandCenter;
     private PrivateCapitalCloseScope? _privateCapitalCloseScope;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
         FundContextService fundContextService,
@@ -101,7 +103,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         StrategyRunWorkspaceService runWorkspaceService,
         IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null,
         IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
-        IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null)
+        IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -114,6 +117,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
         _financialOperationsCommandCenterReadService = financialOperationsCommandCenterReadService;
+        _authenticationSession = authenticationSession;
+        ReconciliationSection.OperatorText = ResolveReconciliationOperator();
 
         AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
             Accounts,

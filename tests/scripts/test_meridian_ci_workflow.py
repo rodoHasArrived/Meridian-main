@@ -43,6 +43,13 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", ci_script)
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", ci_script)
 
+    def test_docs_lane_keeps_subset_receipt_out_of_tracked_status_docs(self) -> None:
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+
+        self.assertIn('handoff_summary_json="${ci_summary_dir}/ai-handoff-docs-automation-summary.json"', ci_script)
+        self.assertIn('--summary-json "$handoff_summary_json"', ci_script)
+        self.assertNotIn("--json-output docs/status/docs-automation-summary.json", ci_script)
+
 
 if __name__ == "__main__":
     unittest.main()

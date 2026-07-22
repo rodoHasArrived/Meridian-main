@@ -107,7 +107,20 @@ public sealed record CanonicalStatementRow(
     decimal CashAmount,
     string ActivityType,
     DateOnly TradeDate,
-    string RawChecksum);
+    string RawChecksum)
+{
+    /// <summary>ISO 4217 currency of the row's monetary amounts. Defaults to USD when unmapped.</summary>
+    public string Currency { get; init; } = "USD";
+
+    /// <summary>Settlement date when the source provides one; otherwise null.</summary>
+    public DateOnly? SettlementDate { get; init; }
+
+    /// <summary>Fees or commission carried on the row, when present.</summary>
+    public decimal? FeesCommission { get; init; }
+
+    /// <summary>The broker/custodian transaction identifier, used for exact transaction matching.</summary>
+    public string? ExternalTransactionId { get; init; }
+}
 
 public sealed record ReconciliationCase(
     string CaseId,

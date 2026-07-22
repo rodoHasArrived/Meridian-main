@@ -1,0 +1,13 @@
+classDiagram
+    %% money-market-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_MoneyMarketFunds_MoneyMarketFundReferenceDto["MoneyMarketFundReferenceDto"] {
+        +string Currency
+        +string DisplayName
+        +string? FundFamily
+        +bool LiquidityFeeEligible
+        +string PrimaryIdentifier
+        +Guid SecurityId
+        +bool SweepEligible
+        +long Version
+        +int? WeightedAverageMaturityDays
+    }

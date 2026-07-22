@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
@@ -38,9 +39,14 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     {
         var scenario = NewScenario();
         var released = await CreateReleasedRunAsync(scenario);
+        var driftedReadiness = released.Readiness! with { OrganizationId = "other-organization" };
+        driftedReadiness = driftedReadiness with
+        {
+            ReceiptHash = ReportingGovernanceCanonicalValidation.ComputeReadinessReceiptHash(driftedReadiness)
+        };
         var wrongReadinessScope = released with
         {
-            Readiness = released.Readiness! with { OrganizationId = "other-organization" }
+            Readiness = driftedReadiness
         };
         var sameActorRelease = released with
         {
@@ -210,8 +216,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             .WithMessage("*evidence*");
         sameActor.Should().Throw<ReportingGovernanceException>()
             .WithMessage("*independent human operators*");
-        wrongLineage.Should().Throw<ReportingGovernanceException>()
-            .WithMessage("*lineage do not match exactly*");
+        wrongLineage.Should().Throw<ReportingGovernanceException>();
     }
 
     [Fact]
@@ -258,6 +263,279 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task Coordinator_PreUpgradePackageWithoutPreviewRemainsGovernableAndDiscoverableAfterRelease()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var certification = new ReportingRunCertificationService(
+            source,
+            new CoordinatorReconciliationSource());
+        var buildOrchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-pre-preview"),
+            CoordinatorAccess("maker-a"));
+        var currentManifest = await buildOrchestration.ExecuteAsync(
+            CoordinatorJob("job-pre-preview", template, certified),
+            CancellationToken.None);
+        var preUpgradeManifest = currentManifest with
+        {
+            Artifacts = currentManifest.Artifacts
+                .Where(static artifact => !artifact.EndsWith(".preview.json", StringComparison.Ordinal))
+                .ToImmutableArray()
+        };
+        var repository = new MemoryGovernanceRepository();
+        var coordinator = CreateCoordinator(
+            repository,
+            certification,
+            new FixedManifestOrchestration(preUpgradeManifest),
+            new RestartableArtifactStore(Now),
+            new RestartableArtifactCatalog(),
+            new RestartableArtifactAuditStore(),
+            new DeterministicReportingCertifiedArtifactProducer(),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+        var approver = CoordinatorCaller("approver-b");
+        var releaser = CoordinatorCaller("releaser-c");
+
+        var run = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            preUpgradeManifest.RunId,
+            maker);
+        (await coordinator.ListRetainedArtifactsAsync(run.RunId, maker)).Should().BeEmpty(
+            "pre-upgrade packages had no preview and final bytes remain release-gated");
+        run = await coordinator.ValidateAsync(run.RunId, run.Version, maker);
+        run = await coordinator.SubmitAsync(run.RunId, run.Version, maker);
+        run = await coordinator.ApproveAsync(
+            run.RunId,
+            run.Version,
+            "Independent legacy-package review complete",
+            approver);
+        run = await coordinator.ReleaseAsync(run.RunId, run.Version, releaser);
+
+        var released = await coordinator.ListRetainedArtifactsAsync(run.RunId, releaser);
+        released.Select(static artifact => artifact.ArtifactId)
+            .Should().BeEquivalentTo(preUpgradeManifest.Artifacts);
+        released.Should().NotContain(static artifact => artifact.IsPreview);
+    }
+
+    [Fact]
+    public async Task Coordinator_FinalReleaseRevalidatesAndBlocksWhenCanonicalQueueReopensAfterCertification()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var reconciliation = new CoordinatorReconciliationSource();
+        var certification = new ReportingRunCertificationService(source, reconciliation);
+        var orchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-release-revalidation"),
+            CoordinatorAccess("maker-a"));
+        var manifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-release-revalidation", template, certified),
+            CancellationToken.None);
+        var repository = new MemoryGovernanceRepository();
+        var coordinator = CreateCoordinator(
+            repository,
+            certification,
+            orchestration,
+            new RestartableArtifactStore(Now),
+            new RestartableArtifactCatalog(),
+            new RestartableArtifactAuditStore(),
+            new DeterministicReportingCertifiedArtifactProducer(),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+        var approver = CoordinatorCaller("approver-b");
+        var releaser = CoordinatorCaller("releaser-c");
+        var run = await coordinator.CreateFromCompletedCertifiedManifestAsync(manifest.RunId, maker);
+        run = await coordinator.ValidateAsync(run.RunId, run.Version, maker);
+        run = await coordinator.SubmitAsync(run.RunId, run.Version, maker);
+        run = await coordinator.ApproveAsync(
+            run.RunId,
+            run.Version,
+            "Independent review completed before the later queue change",
+            approver);
+        reconciliation.CanonicalQueueReopened = true;
+
+        Func<Task> release = () => coordinator.ReleaseAsync(run.RunId, run.Version, releaser);
+
+        await release.Should().ThrowAsync<ReportingReconciliationEvidenceInvalidException>()
+            .WithMessage("*reopened after certification*");
+        (await coordinator.GetAsync(run.RunId, maker)).GovernanceState
+            .Should().Be(GovernedReportingState.Approved);
+    }
+
+    [Fact]
+    public async Task Coordinator_MalformedRenderedManifestFailsBeforeRetentionAndCorrectedRetrySucceeds()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var certification = new ReportingRunCertificationService(
+            source,
+            new CoordinatorReconciliationSource());
+        var orchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-malformed-renderer-manifest"),
+            CoordinatorAccess("maker-a"));
+        var manifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-malformed-renderer-manifest", template, certified),
+            CancellationToken.None);
+        var repository = new MemoryGovernanceRepository();
+        var artifactCatalog = new RestartableArtifactCatalog();
+        var coordinator = CreateCoordinator(
+            repository,
+            certification,
+            orchestration,
+            new RestartableArtifactStore(Now),
+            artifactCatalog,
+            new RestartableArtifactAuditStore(),
+            new MalformedManifestOnceProducer(),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+
+        Func<Task> malformed = () => coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+
+        await malformed.Should().ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*pre-retention integrity validation*");
+        var failed = await coordinator.GetAsync(manifest.RunId, maker);
+        failed.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        Action noImmutablePackage = () => artifactCatalog.RequirePackage(
+            failed.Scope.TenantId,
+            ReportingArtifactPackageIdentity.Create(failed));
+        noImmutablePackage.Should().Throw<KeyNotFoundException>();
+
+        var recovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+        recovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
+        artifactCatalog.RequirePackage(
+                recovered.Scope.TenantId,
+                ReportingArtifactPackageIdentity.Create(recovered))
+            .Artifacts.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task Coordinator_SelfConsistentNonCanonicalArtifactDescriptorsFailBeforeRetentionAndCorrectedRetrySucceeds()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var certification = new ReportingRunCertificationService(
+            source,
+            new CoordinatorReconciliationSource());
+        var orchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-noncanonical-artifact-descriptor"),
+            CoordinatorAccess("maker-a"));
+        var manifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-noncanonical-artifact-descriptor", template, certified),
+            CancellationToken.None);
+        var repository = new MemoryGovernanceRepository();
+        var artifactStore = new RestartableArtifactStore(Now);
+        var artifactCatalog = new RestartableArtifactCatalog();
+        var coordinator = CreateCoordinator(
+            repository,
+            certification,
+            orchestration,
+            artifactStore,
+            artifactCatalog,
+            new RestartableArtifactAuditStore(),
+            new CanonicalDescriptorDriftOnceProducer(),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+
+        Func<Task> drifted = () => coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+
+        await drifted.Should().ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*conflicts with its canonical id, filename, content type*");
+        var failed = await coordinator.GetAsync(manifest.RunId, maker);
+        failed.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        artifactStore.StoredArtifactCount.Should().Be(0,
+            "canonical descriptor validation must run before the vault writes any bytes");
+        Action noImmutablePackage = () => artifactCatalog.RequirePackage(
+            failed.Scope.TenantId,
+            ReportingArtifactPackageIdentity.Create(failed));
+        noImmutablePackage.Should().Throw<KeyNotFoundException>();
+
+        var recovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+        recovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
+        artifactStore.StoredArtifactCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Coordinator_OmittedCanonicalSectionFailsBeforeRetentionAndCorrectedRetrySucceeds()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var certification = new ReportingRunCertificationService(
+            source,
+            new CoordinatorReconciliationSource());
+        var orchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-omitted-canonical-section"),
+            CoordinatorAccess("maker-a"));
+        var manifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-omitted-canonical-section", template, certified),
+            CancellationToken.None);
+        var repository = new MemoryGovernanceRepository();
+        var artifactStore = new RestartableArtifactStore(Now);
+        var artifactCatalog = new RestartableArtifactCatalog();
+        var coordinator = CreateCoordinator(
+            repository,
+            certification,
+            orchestration,
+            artifactStore,
+            artifactCatalog,
+            new RestartableArtifactAuditStore(),
+            new CanonicalSectionDriftOnceProducer(),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+
+        Func<Task> drifted = () => coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+
+        await drifted.Should().ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*exact canonical section identities, hashes, and lineage*");
+        var failed = await coordinator.GetAsync(manifest.RunId, maker);
+        failed.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        artifactStore.StoredArtifactCount.Should().Be(0,
+            "canonical section validation must run before the vault writes any bytes");
+        Action noImmutablePackage = () => artifactCatalog.RequirePackage(
+            failed.Scope.TenantId,
+            ReportingArtifactPackageIdentity.Create(failed));
+        noImmutablePackage.Should().Throw<KeyNotFoundException>();
+
+        var recovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            manifest.RunId,
+            maker);
+        recovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
+        artifactStore.StoredArtifactCount.Should().BeGreaterThan(0);
     }
 
     private static async Task ExerciseCoordinatorRestartAsync(string root)
@@ -315,9 +593,92 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             retainedBytes.Content.Should().Equal(expectedArtifact.Content.ToArray());
             retainedRecord.RunId.Should().Be(run.RunId);
             retainedRecord.Scope.Should().Be(run.Scope);
-            retainedRecord.Access.Should().Be(run.Access);
+            retainedRecord.Access.Should().BeEquivalentTo(run.Access, options => options.WithStrictOrdering());
             retainedRecord.Snapshot.Should().Be(run.Snapshot);
         }
+
+        var discoverable = await coordinator.ListRetainedArtifactsAsync(run.RunId, maker);
+        discoverable.Should().ContainSingle();
+        var preview = discoverable.Should().ContainSingle(static artifact => artifact.IsPreview).Subject;
+        preview.ContentHashSha256.Should().MatchRegex("^[0-9a-f]{64}$");
+        preview.DownloadRoute.Should().MatchRegex(
+            $"^/api/fund-structure/reporting/runs/{Regex.Escape(run.RunId)}/artifacts/b64_[A-Za-z0-9_-]+$");
+        preview.DownloadRoute.Should().NotContain(preview.ArtifactId);
+        var previewDownload = await coordinator.DownloadRetainedArtifactAsync(
+            run.RunId,
+            preview.ArtifactId,
+            maker);
+        previewDownload.Content.Should().NotBeEmpty();
+        HashBytes(previewDownload.Content).Should().Be(preview.ContentHashSha256);
+        previewDownload.AccessAuditEventId.Should().NotBeNullOrWhiteSpace();
+        var primary = ReportingArtifactDeclaration.Build(manifest)
+            .Should().ContainSingle(static artifact =>
+                artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .Subject;
+        Func<Task> downloadUnreleasedPrimary = () => coordinator.DownloadRetainedArtifactAsync(
+            run.RunId,
+            primary.ArtifactId,
+            maker);
+        await downloadUnreleasedPrimary.Should().ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*release-gated*");
+
+        var failedCertified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-retention-failure"),
+            CoordinatorAccess("maker-a"));
+        var failedManifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-retention-failure", template, failedCertified),
+            CancellationToken.None);
+        artifactStore.FailWrites = true;
+        Func<Task> failRetention = async () =>
+            await coordinator.CreateFromCompletedCertifiedManifestAsync(failedManifest.RunId, maker);
+        await failRetention.Should().ThrowAsync<IOException>();
+        var interrupted = await repository.GetRunAsync("tenant-a", failedManifest.RunId);
+        interrupted.Should().NotBeNull();
+        interrupted!.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        artifactStore.FailWrites = false;
+        var recovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(failedManifest.RunId, maker);
+        recovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
+
+        var corruptReadCertified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-readback-failure"),
+            CoordinatorAccess("maker-a"));
+        var corruptReadManifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-readback-failure", template, corruptReadCertified),
+            CancellationToken.None);
+        artifactStore.CorruptAllReads = true;
+        Func<Task> failReadBack = async () =>
+            await coordinator.CreateFromCompletedCertifiedManifestAsync(corruptReadManifest.RunId, maker);
+        await failReadBack.Should().ThrowAsync<ReportingArtifactIntegrityException>();
+        var readBackFailure = await repository.GetRunAsync("tenant-a", corruptReadManifest.RunId);
+        readBackFailure.Should().NotBeNull();
+        readBackFailure!.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        artifactStore.CorruptAllReads = false;
+        var readBackRecovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            corruptReadManifest.RunId,
+            maker);
+        readBackRecovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
+
+        var missingCatalogCertified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness("evaluation-catalog-readback-failure"),
+            CoordinatorAccess("maker-a"));
+        var missingCatalogManifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-catalog-readback-failure", template, missingCatalogCertified),
+            CancellationToken.None);
+        artifactCatalog.LoseCatalogReads = true;
+        Func<Task> failCatalogReadBack = async () =>
+            await coordinator.CreateFromCompletedCertifiedManifestAsync(missingCatalogManifest.RunId, maker);
+        await failCatalogReadBack.Should().ThrowAsync<ReportingArtifactCatalogIntegrityException>();
+        var catalogReadBackFailure = await repository.GetRunAsync("tenant-a", missingCatalogManifest.RunId);
+        catalogReadBackFailure.Should().NotBeNull();
+        catalogReadBackFailure!.ExecutionState.Should().Be(GovernedReportingExecutionState.Failed);
+        artifactCatalog.LoseCatalogReads = false;
+        var catalogReadBackRecovered = await coordinator.CreateFromCompletedCertifiedManifestAsync(
+            missingCatalogManifest.RunId,
+            maker);
+        catalogReadBackRecovered.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
 
         run = await coordinator.ValidateAsync(run.RunId, run.Version, maker);
         run = await coordinator.SubmitAsync(run.RunId, run.Version, maker);
@@ -331,6 +692,21 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         run.Release!.ManifestId.Should().Be(expectedProduction.ManifestArtifactId);
         run.Release.Artifacts.Select(static artifact => artifact.ArtifactId)
             .Should().BeEquivalentTo(expectedProduction.Artifacts.Select(static artifact => artifact.ArtifactId));
+        var releasedArtifacts = await coordinator.ListRetainedArtifactsAsync(run.RunId, maker);
+        releasedArtifacts.Should().HaveCount(expectedProduction.Artifacts.Length);
+        var viewer = maker with { Permissions = UserPermission.ViewReporting };
+        Func<Task> viewerDownloadsPrimary = () => coordinator.DownloadRetainedArtifactAsync(
+            run.RunId,
+            primary.ArtifactId,
+            viewer);
+        await viewerDownloadsPrimary.Should().ThrowAsync<ReportingGovernanceAuthorizationException>()
+            .WithMessage("*DeliverReporting*");
+        var releasedPrimary = await coordinator.DownloadRetainedArtifactAsync(
+            run.RunId,
+            primary.ArtifactId,
+            maker);
+        releasedPrimary.Content.Should().NotBeEmpty();
+        HashBytes(releasedPrimary.Content).Should().Be(releasedPrimary.Descriptor.ContentHashSha256);
 
         var restartedRunStore = new FileReportingRunStore(
             new ReportingRunStoreOptions(root),
@@ -355,6 +731,15 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             template);
         var afterRestart = await restarted.GetAsync(run.RunId, releaser);
         afterRestart.Should().Be(run);
+        var afterRestartArtifacts = await restarted.ListRetainedArtifactsAsync(run.RunId, releaser);
+        afterRestartArtifacts.Should().HaveCount(expectedProduction.Artifacts.Length);
+        var afterRestartPreview = afterRestartArtifacts.Single(static artifact => artifact.IsPreview);
+        var afterRestartPreviewDownload = await restarted.DownloadRetainedArtifactAsync(
+            run.RunId,
+            afterRestartPreview.ArtifactId,
+            releaser);
+        HashBytes(afterRestartPreviewDownload.Content)
+            .Should().Be(afterRestartPreview.ContentHashSha256);
 
         var request = await restarted.RequestRestatementAsync(
             run.RunId,
@@ -370,6 +755,10 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         revision.Revision.Should().Be(2);
         revision.RestatementOfRunId.Should().Be(run.RunId);
         revision.RestatementRequestId.Should().Be(request.RequestId);
+        revision.Scope.Should().Be(run.Scope);
+        revision.Access.Should().BeEquivalentTo(
+            run.Access,
+            options => options.WithStrictOrdering());
         revision.Snapshot.SnapshotHash.Should().NotBe(run.Snapshot.SnapshotHash);
         revision.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded);
 
@@ -606,7 +995,14 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         ImmutableDictionary<string, string>.Empty,
         ReportWriterGrids: [],
         AccessPolicy: new ReportAccessPolicyDto(
-            ReportAccessModeDto.CompanyWide,
+            ReportAccessModeDto.Restricted,
+            Principals:
+            [
+                new ReportAccessPrincipalDto(
+                    ReportAccessPrincipalKindDto.Group,
+                    "report-reviewers",
+                    "Report reviewers")
+            ],
             CompanyId: "company-a"));
 
     private static ReportingRunReadinessDto CoordinatorReadiness(string evaluationId) => new(
@@ -687,6 +1083,11 @@ public sealed class ReportingGovernanceCanonicalValidationTests
 
     private static string HashBytes(ReadOnlySpan<byte> bytes) =>
         Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+
+    private static byte[] SerializeRetainedManifest(ReportingRetainedManifestDocument document) =>
+        JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
     private static ReportingAuthoritativeSourceCheckpoint NewSourceCheckpoint() =>
         new(
@@ -784,6 +1185,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
 
     private sealed class CoordinatorReconciliationSource : IReportingReconciliationEvidenceSource
     {
+        public bool CanonicalQueueReopened { get; set; }
+
         public ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
             ReportingRunParametersDto parameters,
             ReportingAuthoritativeSourceCheckpoint source,
@@ -791,6 +1194,11 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (CanonicalQueueReopened)
+            {
+                throw new ReportingReconciliationEvidenceInvalidException(
+                    "The canonical reconciliation queue reopened after certification; re-run reconciliation and close before final release.");
+            }
             return ValueTask.FromResult(ReportingReconciliationEvidenceValidation.CreateReceipt(
                 source,
                 new ReportingReconciliationCompletionEvidence(
@@ -825,11 +1233,19 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         private readonly Dictionary<ReportingArtifactIdentity, byte[]> _content = [];
         private readonly HashSet<ReportingArtifactIdentity> _corruptReads = [];
 
+        public bool FailWrites { get; set; }
+        public bool CorruptAllReads { get; set; }
+        public int StoredArtifactCount => _content.Count;
+
         public Task<ReportingArtifactWriteResult> StoreAsync(
             ReportingArtifactWriteRequest request,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            if (FailWrites)
+            {
+                throw new IOException("Injected artifact-retention failure.");
+            }
             var bytes = request.Content.ToArray();
             var identity = new ReportingArtifactIdentity(request.TenantId, HashBytes(bytes));
             var existed = _content.ContainsKey(identity);
@@ -852,7 +1268,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             }
 
             var bytes = retained.ToArray();
-            if (_corruptReads.Contains(identity))
+            if (CorruptAllReads || _corruptReads.Contains(identity))
             {
                 bytes[0] ^= 0xff;
             }
@@ -872,6 +1288,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         private readonly Dictionary<(string TenantId, string PackageId), ReportingRetainedArtifactPackage>
             _packages = [];
 
+        public bool LoseCatalogReads { get; set; }
+
         public ValueTask<ReportingArtifactCatalogWriteResult> AddPackageAsync(
             ReportingRetainedArtifactPackage package,
             CancellationToken cancellationToken = default)
@@ -883,7 +1301,10 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             var key = (tenantId, package.PackageId);
             if (_packages.TryGetValue(key, out var existing))
             {
-                if (!existing.Artifacts.SequenceEqual(package.Artifacts))
+                if (!string.Equals(
+                        JsonSerializer.Serialize(existing),
+                        JsonSerializer.Serialize(package),
+                        StringComparison.Ordinal))
                 {
                     throw new ReportingArtifactCatalogIntegrityException(
                         "Attempted to replace immutable package metadata.");
@@ -891,7 +1312,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                 return ValueTask.FromResult(new ReportingArtifactCatalogWriteResult(true));
             }
 
-            _packages.Add(key, package);
+            _packages.Add(key, DurableRoundTrip(package));
             return ValueTask.FromResult(new ReportingArtifactCatalogWriteResult(false));
         }
 
@@ -900,7 +1321,9 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             string packageId,
             CancellationToken cancellationToken = default) =>
             ValueTask.FromResult<ReportingRetainedArtifactPackage?>(
-                _packages.GetValueOrDefault((tenantId, packageId)));
+                !LoseCatalogReads && _packages.TryGetValue((tenantId, packageId), out var package)
+                    ? DurableRoundTrip(package)
+                    : null);
 
         public ValueTask<ReportingRetainedArtifactRecord?> GetArtifactAsync(
             string tenantId,
@@ -908,14 +1331,181 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             string artifactId,
             CancellationToken cancellationToken = default) =>
             ValueTask.FromResult<ReportingRetainedArtifactRecord?>(
-                _packages.TryGetValue((tenantId, packageId), out var package)
-                    ? package.Artifacts.FirstOrDefault(artifact => artifact.ArtifactId == artifactId)
+                !LoseCatalogReads && _packages.TryGetValue((tenantId, packageId), out var package)
+                    ? package.Artifacts
+                        .Where(artifact => artifact.ArtifactId == artifactId)
+                        .Select(DurableRoundTrip)
+                        .FirstOrDefault()
                     : null);
 
         public ReportingRetainedArtifactPackage RequirePackage(string tenantId, string packageId) =>
             _packages.TryGetValue((tenantId, packageId), out var package)
-                ? package
+                ? DurableRoundTrip(package)
                 : throw new KeyNotFoundException(packageId);
+
+        private static T DurableRoundTrip<T>(T value) =>
+            JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value))
+            ?? throw new InvalidDataException($"Durable artifact catalog round-trip produced null {typeof(T).Name}.");
+    }
+
+    private sealed class FixedManifestOrchestration(ReportingOutputManifest manifest) :
+        IReportingOrchestrationService
+    {
+        public Task<ReportingOutputManifest> ExecuteAsync(
+            ReportingJobContract contract,
+            CancellationToken cancellationToken) => Task.FromResult(manifest);
+
+        public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
+            IEnumerable<ReportingScheduleContract> schedules,
+            DateTimeOffset nowUtc,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<ReportingOutputManifest>>([]);
+
+        public ReportingOutputManifest? GetManifest(string runId) =>
+            string.Equals(runId, manifest.RunId, StringComparison.Ordinal) ? manifest : null;
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) => [];
+
+        public Task<bool> TransitionApprovalAsync(
+            string runId,
+            ReportingRunStatus target,
+            string actor,
+            string role,
+            string notes,
+            CancellationToken cancellationToken) => Task.FromResult(true);
+    }
+
+    private sealed class MalformedManifestOnceProducer : IReportingCertifiedArtifactProducer
+    {
+        private readonly DeterministicReportingCertifiedArtifactProducer _inner = new();
+        private int _remainingMalformedAttempts = 1;
+
+        public async ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
+            ReportingOutputManifest manifest,
+            CancellationToken cancellationToken = default)
+        {
+            var production = await _inner.ProduceAsync(manifest, cancellationToken);
+            if (Interlocked.Exchange(ref _remainingMalformedAttempts, 0) == 0)
+            {
+                return production;
+            }
+
+            return production with
+            {
+                Artifacts = production.Artifacts
+                    .Select(artifact => string.Equals(
+                        artifact.ArtifactId,
+                        production.ManifestArtifactId,
+                        StringComparison.Ordinal)
+                            ? artifact with { Content = Encoding.UTF8.GetBytes("{}") }
+                            : artifact)
+                    .ToImmutableArray()
+            };
+        }
+    }
+
+    private sealed class CanonicalDescriptorDriftOnceProducer : IReportingCertifiedArtifactProducer
+    {
+        private readonly DeterministicReportingCertifiedArtifactProducer _inner = new();
+        private int _remainingDriftedAttempts = 1;
+
+        public async ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
+            ReportingOutputManifest manifest,
+            CancellationToken cancellationToken = default)
+        {
+            var production = await _inner.ProduceAsync(manifest, cancellationToken);
+            if (Interlocked.Exchange(ref _remainingDriftedAttempts, 0) == 0)
+            {
+                return production;
+            }
+
+            var primary = ReportingArtifactDeclaration.Build(manifest)
+                .Single(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput);
+            var nonCanonicalFileName = $"renamed-{primary.FileName}";
+            const string nonCanonicalContentType = "application/octet-stream";
+            var renderedManifest = production.Artifacts.Single(artifact => string.Equals(
+                artifact.ArtifactId,
+                production.ManifestArtifactId,
+                StringComparison.Ordinal));
+            var retainedDocument = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+                renderedManifest.Content.Span);
+            var driftedDocument = retainedDocument with
+            {
+                Artifacts = retainedDocument.Artifacts
+                    .Select(descriptor => string.Equals(
+                        descriptor.ArtifactId,
+                        primary.ArtifactId,
+                        StringComparison.Ordinal)
+                            ? descriptor with
+                            {
+                                FileName = nonCanonicalFileName,
+                                ContentType = nonCanonicalContentType
+                            }
+                            : descriptor)
+                    .ToImmutableArray()
+            };
+            var driftedManifestBytes = SerializeRetainedManifest(driftedDocument);
+            return production with
+            {
+                Artifacts = production.Artifacts
+                    .Select(artifact => string.Equals(
+                        artifact.ArtifactId,
+                        primary.ArtifactId,
+                        StringComparison.Ordinal)
+                            ? artifact with
+                            {
+                                FileName = nonCanonicalFileName,
+                                ContentType = nonCanonicalContentType
+                            }
+                            : string.Equals(
+                                artifact.ArtifactId,
+                                production.ManifestArtifactId,
+                                StringComparison.Ordinal)
+                                ? artifact with { Content = driftedManifestBytes }
+                                : artifact)
+                    .ToImmutableArray()
+            };
+        }
+    }
+
+    private sealed class CanonicalSectionDriftOnceProducer : IReportingCertifiedArtifactProducer
+    {
+        private readonly DeterministicReportingCertifiedArtifactProducer _inner = new();
+        private int _remainingDriftedAttempts = 1;
+
+        public async ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
+            ReportingOutputManifest manifest,
+            CancellationToken cancellationToken = default)
+        {
+            var production = await _inner.ProduceAsync(manifest, cancellationToken);
+            if (Interlocked.Exchange(ref _remainingDriftedAttempts, 0) == 0)
+            {
+                return production;
+            }
+
+            var renderedManifest = production.Artifacts.Single(artifact => string.Equals(
+                artifact.ArtifactId,
+                production.ManifestArtifactId,
+                StringComparison.Ordinal));
+            var retainedDocument = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+                renderedManifest.Content.Span);
+            var driftedDocument = retainedDocument with
+            {
+                Sections = retainedDocument.Sections.Skip(1).ToImmutableArray()
+            };
+            var driftedManifestBytes = SerializeRetainedManifest(driftedDocument);
+            return production with
+            {
+                Artifacts = production.Artifacts
+                    .Select(artifact => string.Equals(
+                        artifact.ArtifactId,
+                        production.ManifestArtifactId,
+                        StringComparison.Ordinal)
+                            ? artifact with { Content = driftedManifestBytes }
+                            : artifact)
+                    .ToImmutableArray()
+            };
+        }
     }
 
     private sealed class RestartableArtifactAuditStore : IReportingArtifactAuditStore

@@ -16,6 +16,7 @@ public sealed class SettingsFeatureModuleTests
             "Settings",
             "CredentialManagement",
             "SystemHealth",
+            "LifecycleControl",
             "Diagnostics",
             "ServiceManager",
             "AdminMaintenance",
