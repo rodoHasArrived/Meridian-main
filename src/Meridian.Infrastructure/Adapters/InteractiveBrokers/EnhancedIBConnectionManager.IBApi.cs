@@ -1111,7 +1111,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         var contract = contractDetails.Contract;
         var expiration = DateOnly.TryParse(contract.LastTradeDateOrContractMonth, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : DateOnly.MinValue;
         if (expiration != DateOnly.MinValue && contract.Strike > 0 && !string.IsNullOrWhiteSpace(contract.Right))
-            OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(contract.Symbol, string.Empty, expiration, (decimal)contract.Strike, contract.Right, contract.Exchange, contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture))));
+            OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(contract.Symbol, string.Empty, expiration, (decimal)contract.Strike, contract.Right, contract.Exchange, contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture), ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
 #endif
     }
     public void contractDetailsEnd(int reqId)

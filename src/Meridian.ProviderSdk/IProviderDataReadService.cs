@@ -2,78 +2,59 @@ using System.Runtime.CompilerServices;
 
 namespace Meridian.ProviderSdk;
 
-/// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>
-public enum ProviderDataRequestStatus
+/// <summary>Immutable evidence describing the origin and availability posture of provider data.</summary>
+public sealed record ProviderDataProvenance(
+    string ProviderId,
+    string ProviderConnectionId,
+    DateTimeOffset SourceTimestamp,
+    DateTimeOffset ReceiptTimestamp,
+    string Entitlement,
+    string Feed,
+    string MarketDataAvailability,
+    string RequestOrSubscriptionDescriptor,
+    string ProviderNativeId,
+    string CorrelationId,
+    string StableDeduplicationKey)
 {
-    Requested,
-    Streaming,
-    Completed,
-    Cancelled,
-    TimedOut,
-    Rejected,
-    Failed
+    /// <summary>Creates explicit placeholder provenance for callback bridges before their request context is known.</summary>
+    public static ProviderDataProvenance Unattributed(DateTimeOffset sourceTimestamp) => new(
+        "unknown", "unknown", sourceTimestamp, DateTimeOffset.UtcNow, "unknown", "unknown", "unknown",
+        "unknown", "unknown", "unknown", "unknown");
 }
 
+/// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>
+public enum ProviderDataRequestStatus { Requested, Streaming, Completed, Cancelled, TimedOut, Rejected, Failed }
+
 /// <summary>Provider-neutral evidence for a discovered option contract.</summary>
-public sealed record ProviderOptionContract(
-    string Symbol,
-    string UnderlyingSymbol,
-    DateOnly Expiration,
-    decimal Strike,
-    string Right,
-    string Exchange,
-    string? TradingClass = null,
-    string? Multiplier = null,
-    string? ProviderContractId = null);
+public sealed record ProviderOptionContract(string Symbol, string UnderlyingSymbol, DateOnly Expiration, decimal Strike, string Right, string Exchange, string? TradingClass, string? Multiplier, string? ProviderContractId, ProviderDataProvenance Provenance);
 
 /// <summary>Provider-neutral scanner row, retaining the source rank and optional metrics.</summary>
-public sealed record ProviderScannerResult(
-    int Rank,
-    string Symbol,
-    string? Exchange,
-    string? ProviderContractId,
-    string? Distance,
-    string? Benchmark,
-    string? Projection,
-    string? Legs);
+public sealed record ProviderScannerResult(int Rank, string Symbol, string? Exchange, string? ProviderContractId, string? Distance, string? Benchmark, string? Projection, string? Legs, ProviderDataProvenance Provenance);
 
 /// <summary>Provider-neutral real-time bar observation.</summary>
-public sealed record ProviderRealTimeBar(DateTimeOffset Timestamp, decimal Open, decimal High, decimal Low, decimal Close, decimal Volume, decimal WeightedAveragePrice, int TradeCount);
+public sealed record ProviderRealTimeBar(DateTimeOffset Timestamp, decimal Open, decimal High, decimal Low, decimal Close, decimal Volume, decimal WeightedAveragePrice, int TradeCount, ProviderDataProvenance Provenance);
 
 /// <summary>Provider-neutral historical tick observation.</summary>
-public sealed record ProviderHistoricalTick(DateTimeOffset Timestamp, decimal Price, decimal Size, string TickKind, decimal? Bid = null, decimal? Ask = null, string? Exchange = null);
+public sealed record ProviderHistoricalTick(DateTimeOffset Timestamp, decimal Price, decimal Size, string TickKind, decimal? Bid, decimal? Ask, string? Exchange, ProviderDataProvenance Provenance);
 
 /// <summary>Provider-neutral account or model-account P&amp;L observation.</summary>
-public sealed record ProviderAccountPnl(string AccountId, string? ModelAccountId, decimal Daily, decimal Unrealized, decimal Realized, decimal? Position = null, decimal? Value = null);
+public sealed record ProviderAccountPnl(string AccountId, string? ModelAccountId, decimal Daily, decimal Unrealized, decimal Realized, decimal? Position, decimal? Value, ProviderDataProvenance Provenance);
 
 /// <summary>One price-band increment in a provider market rule.</summary>
-public sealed record ProviderMarketRuleIncrement(decimal LowEdge, decimal Increment);
+public sealed record ProviderMarketRuleIncrement(decimal LowEdge, decimal Increment, ProviderDataProvenance Provenance);
 
-/// <summary>
-/// A correlated, presentation-safe snapshot of provider data. It deliberately contains no vendor
-/// transport objects so browser and desktop workstation services can consume the same seam.
-/// </summary>
+/// <summary>A correlated, presentation-safe snapshot of provider data.</summary>
 public sealed record ProviderDataRequestReadModel(
-    int RequestId,
-    string ProviderFamily,
-    string Capability,
-    ProviderDataRequestStatus Status,
-    DateTimeOffset UpdatedAt,
-    string? AccountId = null,
-    string? ModelAccountId = null,
-    string? ErrorCode = null,
-    string? ErrorMessage = null,
-    IReadOnlyList<ProviderOptionContract>? OptionContracts = null,
-    IReadOnlyList<ProviderScannerResult>? ScannerResults = null,
-    IReadOnlyList<ProviderRealTimeBar>? RealTimeBars = null,
-    IReadOnlyList<ProviderHistoricalTick>? HistoricalTicks = null,
-    ProviderAccountPnl? Pnl = null,
+    int RequestId, string ProviderFamily, string Capability, ProviderDataRequestStatus Status, DateTimeOffset UpdatedAt,
+    ProviderDataProvenance Provenance, string? AccountId = null, string? ModelAccountId = null, string? ErrorCode = null,
+    string? ErrorMessage = null, IReadOnlyList<ProviderOptionContract>? OptionContracts = null,
+    IReadOnlyList<ProviderScannerResult>? ScannerResults = null, IReadOnlyList<ProviderRealTimeBar>? RealTimeBars = null,
+    IReadOnlyList<ProviderHistoricalTick>? HistoricalTicks = null, ProviderAccountPnl? Pnl = null,
     IReadOnlyList<ProviderMarketRuleIncrement>? MarketRuleIncrements = null);
 
 /// <summary>Shared read-model seam for rich provider data requested by an operator workflow.</summary>
 public interface IProviderDataReadService
 {
     IReadOnlyList<ProviderDataRequestReadModel> GetRequests();
-
     IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(CancellationToken cancellationToken = default);
 }
