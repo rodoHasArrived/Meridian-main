@@ -104,13 +104,68 @@ public sealed class IBDataServicesTests
         var first = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
         var second = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "HOT_BY_VOLUME"));
 
-        services.RecordScannerResult(second, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null));
+        services.RecordScannerResult(second, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
         services.CompleteRequest(second);
 
         services.GetRequests().Single(request => request.RequestId == first).Status.Should().Be(ProviderDataRequestStatus.Requested);
         var correlated = services.GetRequests().Single(request => request.RequestId == second);
         correlated.Status.Should().Be(ProviderDataRequestStatus.Completed);
         correlated.ScannerResults.Should().ContainSingle().Which.Symbol.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public void ReturnedRecords_CarryCompleteProvenanceAndRepeatedCallbacksUseStableDeduplicationKeys()
+    {
+        var services = new IBDataServices(new RecordingTransport(), "ib-gateway:paper:17");
+        var scanner = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+        var bars = services.SubscribeRealTimeBars(new IBRealTimeBarRequest(new SymbolConfig("AAPL")));
+        var ticks = services.RequestHistoricalTicks(new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 1));
+        var pnl = services.SubscribePnl("DU111", "model-a");
+        var marketRule = services.RequestMarketRule(26);
+        var options = services.RequestOptionChain(new SymbolConfig("SPY"));
+        services.RecordMarketDataType(scanner, 3);
+
+        var callbackTime = DateTimeOffset.Parse("2026-07-22T12:00:00+00:00");
+        var scannerRow = new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null, ProviderDataProvenance.Unattributed(callbackTime));
+        services.RecordScannerResult(scanner, scannerRow);
+        services.RecordScannerResult(scanner, scannerRow);
+        services.RecordRealTimeBar(bars, new ProviderRealTimeBar(callbackTime, 1m, 2m, 1m, 2m, 10m, 1.5m, 3, ProviderDataProvenance.Unattributed(callbackTime)));
+        services.RecordHistoricalTick(ticks, new ProviderHistoricalTick(callbackTime, 2m, 10m, "TRADES", null, null, "NASDAQ", ProviderDataProvenance.Unattributed(callbackTime)));
+        services.RecordPnl(pnl, new ProviderAccountPnl("DU111", "model-a", 1m, 2m, 3m, null, null, ProviderDataProvenance.Unattributed(callbackTime)));
+        services.RecordMarketRule(marketRule, [new ProviderMarketRuleIncrement(0m, 0.01m, ProviderDataProvenance.Unattributed(callbackTime))]);
+        services.RecordOptionContract(options, new ProviderOptionContract("SPY", "SPY", new DateOnly(2026, 8, 21), 650m, "C", "SMART", null, null, "756733", ProviderDataProvenance.Unattributed(callbackTime)));
+
+        var records = services.GetRequests();
+        var observations = records.SelectMany(request => new object?[]
+        {
+            request.Provenance,
+            request.OptionContracts?.SingleOrDefault()?.Provenance,
+            request.RealTimeBars?.SingleOrDefault()?.Provenance,
+            request.HistoricalTicks?.SingleOrDefault()?.Provenance,
+            request.Pnl?.Provenance,
+            request.MarketRuleIncrements?.SingleOrDefault()?.Provenance
+        }).OfType<ProviderDataProvenance>().Concat(records.Single(x => x.RequestId == scanner).ScannerResults!.Select(x => x.Provenance));
+
+        foreach (var provenance in observations)
+        {
+            provenance.ProviderId.Should().Be("interactive-brokers");
+            provenance.ProviderConnectionId.Should().Be("ib-gateway:paper:17");
+            provenance.SourceTimestamp.Should().NotBe(default);
+            provenance.ReceiptTimestamp.Should().NotBe(default);
+            provenance.Entitlement.Should().NotBeNullOrWhiteSpace();
+            provenance.Feed.Should().NotBeNullOrWhiteSpace();
+            provenance.MarketDataAvailability.Should().NotBeNullOrWhiteSpace();
+            provenance.RequestOrSubscriptionDescriptor.Should().NotBeNullOrWhiteSpace();
+            provenance.ProviderNativeId.Should().NotBeNullOrWhiteSpace();
+            provenance.CorrelationId.Should().NotBeNullOrWhiteSpace();
+            provenance.StableDeduplicationKey.Should().NotBeNullOrWhiteSpace();
+        }
+
+        var scannerKeys = records.Single(x => x.RequestId == scanner).ScannerResults!.Select(x => x.Provenance.StableDeduplicationKey).ToArray();
+        scannerKeys.Should().HaveCount(2);
+        scannerKeys[0].Should().Be(scannerKeys[1], "identical provider callbacks must retain the same deduplication key");
+        records.Single(x => x.RequestId == bars).RealTimeBars!.Single().Provenance.SourceTimestamp.Should().Be(callbackTime);
+        records.Single(x => x.RequestId == scanner).ScannerResults!.Single().Provenance.MarketDataAvailability.Should().Be("Delayed");
     }
 
     [Fact]
@@ -133,8 +188,8 @@ public sealed class IBDataServicesTests
         var first = services.SubscribePnl("DU111", "growth");
         var second = services.SubscribePnl("DU222", "income");
 
-        services.RecordPnl(first, new ProviderAccountPnl("DU111", "growth", 10m, 4m, 6m));
-        services.RecordPnl(second, new ProviderAccountPnl("DU222", "income", 20m, 7m, 13m));
+        services.RecordPnl(first, new ProviderAccountPnl("DU111", "growth", 10m, 4m, 6m, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        services.RecordPnl(second, new ProviderAccountPnl("DU222", "income", 20m, 7m, 13m, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
 
         services.GetRequests().Single(x => x.RequestId == first).Pnl!.AccountId.Should().Be("DU111");
         services.GetRequests().Single(x => x.RequestId == second).Pnl!.ModelAccountId.Should().Be("income");

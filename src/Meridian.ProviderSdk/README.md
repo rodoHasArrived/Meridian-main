@@ -14,7 +14,7 @@ last_reviewed: 2026-07-15
 ## Purpose
 
 ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill
-job descriptors, dynamic provider plugin discovery, and accounting-system integrations.
+job descriptors, dynamic provider plugin discovery, accounting-system integrations, and provenance-complete provider trading-calendar data.
 
 ## Layer responsibility
 
@@ -45,6 +45,7 @@ conversion helpers.
 `PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
 `DataSourceRegistry` under the `Meridian.ProviderSdk` namespace; WPF and host composition consume that ProviderSdk-owned loader rather than
 keeping reflection-based provider discovery in Application.
+Provider trading-calendar output is requested through `ITradingCalendarProvider` and must include `ProviderCalendarProvenance`, including the shared `DataProvenance` classification, provider identifier, source reference, and retrieval time. Local `IOperationalTradingCalendar` policy remains deterministic and is not a provider adapter.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.

@@ -129,7 +129,9 @@ it commits each `WatchAsync` update to `IIBDataResultStore` before making that u
 operator readers; successful request submission is not evidence of a live entitlement.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
-rules. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
+rules. Each returned request and observation carries required provenance: provider and configured
+connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

@@ -48,6 +48,12 @@ public interface IIBDataLineageSource
     event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
 }
 
+/// <summary>Exposes the configured physical/logical IB connection identity for provenance.</summary>
+public interface IIBProviderConnectionIdentity
+{
+    string ProviderConnectionId { get; }
+}
+
 /// <summary>Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.</summary>
 public interface IIBDataCallbackSource
 {
@@ -71,17 +77,25 @@ public sealed record IBMarketDataTypeUpdate(int RequestId, int MarketDataType);
 /// </summary>
 public sealed class IBDataServices : IProviderDataReadService, IDisposable
 {
+    private const string ProviderId = "interactive-brokers";
+    private readonly string _providerConnectionId;
     private readonly IIBDataServiceTransport _transport;
     private readonly IIBDataCallbackSource? _callbackSource;
+    private readonly IBDataResultMaterializer? _materializer;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
         new BoundedChannelOptions(256) { SingleReader = false, SingleWriter = false, FullMode = BoundedChannelFullMode.DropOldest });
     private int _nextRequestId = 90_000;
 
-    public IBDataServices(IIBDataServiceTransport transport)
+    public IBDataServices(IIBDataServiceTransport transport, string providerConnectionId = "interactive-brokers/default")
     {
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        _providerConnectionId = transport is IIBProviderConnectionIdentity identity
+            ? identity.ProviderConnectionId
+            : providerConnectionId;
+        if (string.IsNullOrWhiteSpace(_providerConnectionId))
+            throw new ArgumentException("Provider connection identity is required.", nameof(providerConnectionId));
         if (transport is IIBDataLineageSource source)
             source.MarketDataTypeReceived += OnMarketDataTypeReceived;
         if (transport is IIBDataCallbackSource callbacks)
@@ -207,7 +221,8 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             4 => IBMarketDataAvailability.DelayedFrozen,
             _ => IBMarketDataAvailability.Unknown
         };
-        Update(requestId, x => x with { Availability = availability, IsDelayed = availability is IBMarketDataAvailability.Delayed or IBMarketDataAvailability.DelayedFrozen, Status = "market-data-type", ObservedAt = DateTimeOffset.UtcNow });
+        var lineage = Update(requestId, x => x with { Availability = availability, IsDelayed = availability is IBMarketDataAvailability.Delayed or IBMarketDataAvailability.DelayedFrozen, Status = "market-data-type", ObservedAt = DateTimeOffset.UtcNow });
+        UpdateReadModel(requestId, current => current with { Provenance = CreateRequestProvenance(lineage) });
     }
 
     /// <summary>Records contract exchange and market-rule evidence returned by IB.</summary>
@@ -241,32 +256,32 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         UpdateReadModel(requestId, current => current with
         {
             Status = ProviderDataRequestStatus.Streaming,
-            OptionContracts = Append(current.OptionContracts, contract)
+            OptionContracts = Append(current.OptionContracts, contract with { Provenance = CreateObservationProvenance(current, contract.ProviderContractId ?? contract.Symbol, contract.Provenance.SourceTimestamp) })
         });
     }
 
     public void RecordScannerResult(int requestId, ProviderScannerResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ScannerResults = Append(current.ScannerResults, result) });
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ScannerResults = Append(current.ScannerResults, result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) }) });
     }
 
     public void RecordRealTimeBar(int requestId, ProviderRealTimeBar bar)
     {
         ArgumentNullException.ThrowIfNull(bar);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, RealTimeBars = Append(current.RealTimeBars, bar) });
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, RealTimeBars = Append(current.RealTimeBars, bar with { Provenance = CreateObservationProvenance(current, $"{bar.Timestamp:O}:{bar.Open}:{bar.High}:{bar.Low}:{bar.Close}:{bar.Volume}:{bar.TradeCount}", bar.Timestamp) }) });
     }
 
     public void RecordHistoricalTick(int requestId, ProviderHistoricalTick tick, bool completed = false)
     {
         ArgumentNullException.ThrowIfNull(tick);
-        UpdateReadModel(requestId, current => current with { Status = completed ? ProviderDataRequestStatus.Completed : ProviderDataRequestStatus.Streaming, HistoricalTicks = Append(current.HistoricalTicks, tick) });
+        UpdateReadModel(requestId, current => current with { Status = completed ? ProviderDataRequestStatus.Completed : ProviderDataRequestStatus.Streaming, HistoricalTicks = Append(current.HistoricalTicks, tick with { Provenance = CreateObservationProvenance(current, $"{tick.Timestamp:O}:{tick.TickKind}:{tick.Price}:{tick.Size}", tick.Timestamp) }) });
     }
 
     public void RecordPnl(int requestId, ProviderAccountPnl pnl)
     {
         ArgumentNullException.ThrowIfNull(pnl);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, AccountId = pnl.AccountId, ModelAccountId = pnl.ModelAccountId, Pnl = pnl });
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, AccountId = pnl.AccountId, ModelAccountId = pnl.ModelAccountId, Pnl = pnl with { Provenance = CreateObservationProvenance(current, $"{pnl.AccountId}:{pnl.ModelAccountId ?? string.Empty}", pnl.Provenance.SourceTimestamp) } });
     }
 
     public void RecordMarketRule(int requestId, IEnumerable<ProviderMarketRuleIncrement> increments)
@@ -274,7 +289,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         ArgumentNullException.ThrowIfNull(increments);
         var values = increments.ToArray();
         if (values.Length == 0) throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, MarketRuleIncrements = values });
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, MarketRuleIncrements = values.Select((value, index) => value with { Provenance = CreateObservationProvenance(current, $"{value.LowEdge}:{value.Increment}:{index}", value.Provenance.SourceTimestamp) }).ToArray() });
     }
 
     public void CompleteRequest(int requestId) => UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed });
@@ -331,7 +346,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         return requestId;
     }
 
-    private void Update(int requestId, Func<IBDataLineage, IBDataLineage> update)
+    private IBDataLineage Update(int requestId, Func<IBDataLineage, IBDataLineage> update)
     {
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
         LineageUpdated?.Invoke(updated);
@@ -345,10 +360,34 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         Publish(updated);
     }
 
+    private ProviderDataProvenance CreateRequestProvenance(IBDataLineage lineage)
+        => CreateProvenance(lineage, lineage.Symbol, lineage.ObservedAt);
+
+    private ProviderDataProvenance CreateObservationProvenance(ProviderDataRequestReadModel request, string providerNativeId, DateTimeOffset sourceTimestamp)
+    {
+        var lineage = _lineage.TryGetValue(request.RequestId, out var current)
+            ? current
+            : throw new KeyNotFoundException($"Unknown IB request id {request.RequestId}.");
+        return CreateProvenance(lineage, providerNativeId, sourceTimestamp);
+    }
+
+    private ProviderDataProvenance CreateProvenance(IBDataLineage lineage, string providerNativeId, DateTimeOffset sourceTimestamp)
+    {
+        var availability = lineage.Availability.ToString();
+        var descriptor = string.Join("|", lineage.Service, lineage.Symbol, lineage.Exchange ?? string.Empty, lineage.Subscription ?? string.Empty);
+        var correlationId = lineage.RequestId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var keyMaterial = string.Join("|", ProviderId, _providerConnectionId, providerNativeId, descriptor, correlationId);
+        var deduplicationKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(keyMaterial))).ToLowerInvariant();
+        return new ProviderDataProvenance(ProviderId, _providerConnectionId, sourceTimestamp, DateTimeOffset.UtcNow,
+            availability == nameof(IBMarketDataAvailability.Unknown) ? "unknown" : "reported", lineage.Subscription ?? "unspecified",
+            availability, descriptor, providerNativeId, correlationId, deduplicationKey);
+    }
+
     private void Publish(ProviderDataRequestReadModel model)
     {
         _updates.Writer.TryWrite(model);
         ReadModelUpdated?.Invoke(model);
+        _materializer?.Materialize(model, _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
     }
 
     private static IReadOnlyList<T> Append<T>(IReadOnlyList<T>? existing, T value)
