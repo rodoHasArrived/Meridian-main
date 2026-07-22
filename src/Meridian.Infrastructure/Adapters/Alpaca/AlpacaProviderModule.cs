@@ -127,7 +127,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // Constructor does not validate credentials eagerly; auth errors
         // surface when orders are submitted.
         // ----------------------------------------------------------------
-        services.AddSingleton<AlpacaBrokerageGateway>(sp =>
+            services.AddSingleton<AlpacaBrokerageGateway>(sp =>
         {
             var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
             // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
@@ -135,7 +135,9 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
                 ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
                 : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
-            return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
+            var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
+            var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger);
+            return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream);
         });
         services.AddSingleton<IBrokerageAccountCatalog>(sp =>
             sp.GetRequiredService<AlpacaBrokerageGateway>());
