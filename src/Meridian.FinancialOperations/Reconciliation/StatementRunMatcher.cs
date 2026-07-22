@@ -176,11 +176,14 @@ internal static class StatementRunMatcher
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
-        var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
+        var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
         // Carry the statement balance's as-of date into the cash identity. The internal cash is the book's
         // balance as of its own recorded date, and the engine now requires the two dates to agree, so a
         // closing balance from the wrong period cannot exact-match a period-appropriate internal balance.
-        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence, row.TradeDate);
+        // Keep the source currency as the identity after FX conversion so separate cash balances for one
+        // account cannot cross-match merely because their converted amounts share the base denomination.
+        return new NormalizedStatementCashBalance(evidence, account, sourceCurrency, amount, evidence, row.TradeDate);
     }
 
     private static NormalizedStatementTransaction MapTransaction(
@@ -212,8 +215,9 @@ internal static class StatementRunMatcher
         string baseCurrency,
         DateOnly asOf)
     {
-        var (currency, amount) = ToBaseCurrency(cash.Balance, cash.Currency, baseCurrency, asOf, fxRateProvider);
-        return cash with { Currency = currency, Balance = amount };
+        var sourceCurrency = NormalizeCurrency(cash.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(cash.Balance, sourceCurrency, baseCurrency, asOf, fxRateProvider);
+        return cash with { Currency = sourceCurrency, Balance = amount };
     }
 
     private static InternalLedgerTransaction NormalizeInternalTransaction(
@@ -243,6 +247,9 @@ internal static class StatementRunMatcher
             ? (baseCurrency, converted)
             : (from, amount);
     }
+
+    private static string NormalizeCurrency(string? currency, string baseCurrency) =>
+        string.IsNullOrWhiteSpace(currency) ? baseCurrency : currency.Trim().ToUpperInvariant();
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
     {

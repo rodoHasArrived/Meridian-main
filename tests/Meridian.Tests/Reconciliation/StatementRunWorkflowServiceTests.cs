@@ -114,22 +114,51 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_ConvertsForeignCashToBaseCurrency_UsingFxRates()
+    public async Task CreateAsync_ConvertsForeignCashAmountsWithoutErasingCurrencyIdentity()
     {
-        // 1,000 EUR converts to 1,085 USD at 1.085; the internal book holds 1,085 USD for the account.
+        // Both EUR balances convert to 1,085 in the USD reporting base while retaining EUR as their
+        // matching identity. A USD reporting-currency balance must not substitute for this EUR balance.
         var path = await WriteStatementAsync(
             "fx.csv",
             "EXT-1,,0,0,1000,cash,2026-05-28,,EUR,,");
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 28))],
+                [new InternalCashBalance("i-cash", "EXT-1", "EUR", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
                 [])),
             new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m, new DateOnly(2026, 5, 1))]));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 
-        result.Breaks.Should().BeEmpty("the foreign-currency cash line reconciles once converted to the USD base");
+        result.Breaks.Should().BeEmpty("matching EUR balances reconcile after their amounts convert to the USD reporting base");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenPerCurrencyCashBalancesAreSwappedAfterFxConversion_SurfacesCandidateBreaks()
+    {
+        // A corrupt statement swaps USD and EUR cash balances. FX conversion makes the swapped amounts
+        // numerically equal to the opposite internal balance, but source-currency identity must still
+        // prevent an exact match and leave both discrepancies for operator review.
+        var path = await WriteStatementAsync(
+            "swapped-per-currency-cash.csv",
+            "EXT-1,,0,0,200,cash,2026-05-28,,USD,,",
+            "EXT-1,,0,0,120,cash,2026-05-28,,EUR,,");
+        var workflow = CreateWorkflow(
+            Populations(new InternalReconciliationPopulations(
+                [],
+                [
+                    new InternalCashBalance("i-usd", "EXT-1", "USD", 240m, "internal:cash:usd", new DateOnly(2026, 5, 28)),
+                    new InternalCashBalance("i-eur", "EXT-1", "EUR", 100m, "internal:cash:eur", new DateOnly(2026, 5, 28)),
+                ],
+                [])),
+            new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 2m, new DateOnly(2026, 5, 1))]));
+
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        result.Breaks.Should().HaveCount(2);
+        result.Breaks.Should().OnlyContain(breakRecord => breakRecord.BreakCode == "CASH_CANDIDATE");
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":1", StringComparison.Ordinal));
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":2", StringComparison.Ordinal));
     }
 
     [Fact]
