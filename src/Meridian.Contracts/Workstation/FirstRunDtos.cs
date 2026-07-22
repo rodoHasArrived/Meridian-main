@@ -16,6 +16,10 @@ public sealed record FirstRunStatusDto(
 /// Present only for sample workspaces; lets onboarding surfaces show a believable, populated
 /// workspace (holdings, breaks, a report, a paper strategy) instead of only a mode badge.
 /// </summary>
+/// <remarks>
+/// <see cref="Provenance"/> carries the Blueprint-1 provenance label ("Seeded") that every
+/// artifact in this workspace shares, so onboarding can render it without inferring the source.
+/// </remarks>
 public sealed record SampleWorkspaceDto(
     string Headline,
     string Summary,
@@ -29,7 +33,8 @@ public sealed record SampleWorkspaceDto(
     SampleArtifactDto Report,
     SampleArtifactDto Strategy,
     SampleMarketHistoryDto MarketHistory,
-    IReadOnlyList<SampleHighlightDto> Highlights);
+    IReadOnlyList<SampleHighlightDto> Highlights,
+    string Provenance = "Seeded");
 
 public sealed record SampleHoldingDto(
     string Symbol,

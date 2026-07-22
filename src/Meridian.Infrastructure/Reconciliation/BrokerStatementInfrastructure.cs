@@ -266,6 +266,43 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 throw new InvalidDataException($"Statement CSV row {sourceRowNumber} contains an invalid numeric or date value.");
             }
 
+            // Capture the optional canonical columns (settlementDate, currency, feesCommission,
+            // externalTransactionId) that the header validation already guaranteed are present in
+            // order. These flow into currency-aware, external-id-based matching downstream instead
+            // of being discarded at the canonical-row boundary.
+            DateOnly? settlementDate = null;
+            var currency = "USD";
+            decimal? feesCommission = null;
+            string? externalTransactionId = null;
+            if (fields.Count > 7 && !string.IsNullOrWhiteSpace(fields[7]))
+            {
+                // A blank optional settlement date is legitimately absent, but a nonblank malformed value
+                // must not be silently dropped to null: the matcher substitutes TradeDate for a null
+                // settlement date, so a bad source date could exact-match a same-day ledger transaction.
+                if (!DateOnly.TryParse(fields[7], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedSettlement))
+                {
+                    throw new InvalidDataException(
+                        $"Statement CSV row {sourceRowNumber} has an invalid optional settlement date '{fields[7]}'.");
+                }
+
+                settlementDate = parsedSettlement;
+            }
+
+            if (fields.Count > 8 && !string.IsNullOrWhiteSpace(fields[8]))
+            {
+                currency = fields[8].Trim().ToUpperInvariant();
+            }
+
+            if (fields.Count > 9 && decimal.TryParse(fields[9], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedFees))
+            {
+                feesCommission = parsedFees;
+            }
+
+            if (fields.Count > 10 && !string.IsNullOrWhiteSpace(fields[10]))
+            {
+                externalTransactionId = fields[10].Trim();
+            }
+
             rows.Add(new CanonicalStatementRow(
                 importId,
                 sourceRowNumber,
@@ -276,7 +313,13 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 cashAmount,
                 fields[5],
                 tradeDate,
-                Hash(line)));
+                Hash(line))
+            {
+                Currency = currency,
+                SettlementDate = settlementDate,
+                FeesCommission = feesCommission,
+                ExternalTransactionId = externalTransactionId
+            });
         }
 
         return rows;

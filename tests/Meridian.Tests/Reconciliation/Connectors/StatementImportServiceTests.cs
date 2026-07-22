@@ -128,9 +128,9 @@ public sealed class StatementImportServiceTests : IDisposable
         result.RunId.Should().NotBeNullOrWhiteSpace();
         result.RecordCount.Should().Be(6);
         result.KindSummaries.Should().HaveCount(5);
-        // Sided matcher against an unprovisioned (empty) internal book: with no internal
-        // counterpart, all six statement rows are honest unmatched breaks — none are fabricated as
-        // self-matches. Each break becomes a queue case.
+        // The matcher now reconciles against Meridian's own book. This test wires no internal
+        // populations, so every one of the 6 statement rows is correctly unmatched — each becomes a
+        // break and a queue case, instead of the old self-matcher fabricating position/near-zero matches.
         result.BreakCount.Should().Be(6);
         result.CaseCount.Should().Be(6);
         result.BreakIds.Should().HaveCount(6);
@@ -178,6 +178,31 @@ public sealed class StatementImportServiceTests : IDisposable
             "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
             "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
             "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+    }
+
+    [Fact]
+    public async Task Commit_SourceFileNamedCanonicalCsv_RetainsRawAndCanonicalSeparately()
+    {
+        // A source file literally named "canonical.csv" must not collide with the rendered canonical
+        // artifact. The raw evidence is retained under its own subdirectory, so neither file overwrites
+        // the other and the original source bytes survive intact.
+        var rawContent = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv");
+        var document = new StatementSourceDocument("canonical.csv", rawContent);
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        var rawPath = Path.Combine(_root, result.RetainedSourcePath);
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        File.Exists(rawPath).Should().BeTrue();
+        File.Exists(canonicalPath).Should().BeTrue();
+        Path.GetFullPath(rawPath).Should().NotBe(
+            Path.GetFullPath(canonicalPath),
+            "the raw source and the rendered canonical artifact must be retained at distinct paths");
+        (await File.ReadAllBytesAsync(rawPath)).Should().Equal(
+            rawContent,
+            "the retained raw evidence must be the untouched source bytes, not the canonical rendering");
+        (await File.ReadAllTextAsync(canonicalPath)).Should().StartWith(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate");
     }
 
     [Fact]

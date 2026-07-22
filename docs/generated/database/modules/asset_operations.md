@@ -2,15 +2,40 @@
 
 # `asset_operations` schema
 
-- Relations: 15
-- Functions/procedures: 0
-- Triggers: 0
+- Relations: 16
+- Functions/procedures: 1
+- Triggers: 2
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
 
 ```mermaid
 erDiagram
+    asset_operations_asset_accounting_event_projections {
+        uuid event_id PK
+        bigint event_version PK
+        bigint spine_version PK
+        bigint prior_spine_version
+        text event_kind
+        uuid security_id
+        bigint expected_security_version
+        uuid book_position_id FK
+        bigint expected_book_position_version
+        uuid ledger_book_id
+        uuid period_id
+        date effective_date
+        numeric_38_18_ event_amount
+        text currency
+        text source_content_hash
+        uuid projection_run_id
+        text projection_model_key
+        text projection_model_version
+        uuid posted_journal_entry_id
+        uuid tax_lot_mutation_batch_id
+        character_64_ canonical_fingerprint
+        jsonb payload
+        timestamp_with_time_zone created_at
+    }
     asset_operations_asset_actual_activity {
         uuid id PK
         uuid security_id
@@ -176,12 +201,14 @@ erDiagram
         uuid projection_run_id
         uuid projection_event_id
     }
+    asset_operations_book_position_projections ||--o{ asset_operations_asset_accounting_event_projections : "fk_asset_accounting_event_book_position"
     asset_operations_book_position_projections ||--o{ asset_operations_position_economic_state_projections : "fk_position_economic_state_position_scope"
     asset_operations_instrument_role_projections ||--o{ asset_operations_book_position_projections : "fk_book_position_projection_role_scope"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
+| `asset_accounting_event_projections` | table | 23 | `event_id`, `event_version`, `spine_version` | 1 | 5 | - |
 | `asset_actual_activity` | table | 6 | `id` | 0 | 2 | - |
 | `asset_cash_flow_projection_runs` | table | 6 | `id` | 0 | 2 | - |
 | `asset_ledger_projections` | table | 6 | `id` | 0 | 2 | - |

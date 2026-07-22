@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.IO.Compression;
 using System.Text;
 using ClosedXML.Excel;
 using Meridian.Ledger;
@@ -19,14 +18,7 @@ namespace Meridian.Documents;
 /// </summary>
 public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRenderer
 {
-    private static readonly DateTime FixedTimestamp = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    static FinancialReportDocumentRenderer()
-    {
-        QuestPDF.Settings.License = LicenseType.Community;
-        QuestPDF.Settings.EnableDebugging = false;
-        QuestPDF.Settings.CheckIfAllTextGlyphsAreAvailable = false;
-    }
+    static FinancialReportDocumentRenderer() => DeterministicDocumentPackaging.ConfigureQuestPdf();
 
     public byte[] RenderPdf(LedgerFinancialReportPack reportPack)
     {
@@ -80,8 +72,8 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
             Subject = request.ReportId,
             Creator = "Meridian",
             Producer = "Meridian",
-            CreationDate = new DateTimeOffset(FixedTimestamp, TimeSpan.Zero),
-            ModifiedDate = new DateTimeOffset(FixedTimestamp, TimeSpan.Zero),
+            CreationDate = new DateTimeOffset(DeterministicDocumentPackaging.FixedTimestamp, TimeSpan.Zero),
+            ModifiedDate = new DateTimeOffset(DeterministicDocumentPackaging.FixedTimestamp, TimeSpan.Zero),
         });
 
         return document.GeneratePdf();
@@ -124,8 +116,8 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
 
             workbook.Properties.Author = "Meridian";
             workbook.Properties.Title = $"{reportPack.Request.FundId} {reportPack.Request.PeriodId}";
-            workbook.Properties.Created = FixedTimestamp;
-            workbook.Properties.Modified = FixedTimestamp;
+            workbook.Properties.Created = DeterministicDocumentPackaging.FixedTimestamp;
+            workbook.Properties.Modified = DeterministicDocumentPackaging.FixedTimestamp;
             workbook.Properties.LastModifiedBy = "Meridian";
 
             using var buffer = new MemoryStream();
@@ -133,7 +125,7 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
             rendered = buffer.ToArray();
         }
 
-        return Canonicalize(rendered);
+        return DeterministicDocumentPackaging.Canonicalize(rendered);
     }
 
     private static void RenderTable(ColumnDescriptor column, LedgerReportTable table)
@@ -197,87 +189,6 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
             cleaned = "Sheet";
         return cleaned.Length > 31 ? cleaned[..31] : cleaned;
     }
-
-    // ClosedXML names the OPC core-properties part with a fresh random GUID each save (and references
-    // it by that GUID in _rels/.rels) and reorders zip entries; re-zip deterministically with a fixed
-    // core-properties name, fixed timestamps, and sorted entries so re-rendering yields stable bytes.
-    private const string CanonicalCorePropertiesPart = "package/services/metadata/core-properties/core.psmdcp";
-
-    private static byte[] Canonicalize(byte[] workbookBytes)
-    {
-        var parts = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-        string? volatileCorePropertiesPart = null;
-        using (var source = new ZipArchive(new MemoryStream(workbookBytes), ZipArchiveMode.Read))
-        {
-            foreach (var entry in source.Entries)
-            {
-                using var entryStream = entry.Open();
-                using var buffer = new MemoryStream();
-                entryStream.CopyTo(buffer);
-                var name = entry.FullName;
-                if (name.StartsWith("package/services/metadata/core-properties/", StringComparison.Ordinal)
-                    && name.EndsWith(".psmdcp", StringComparison.Ordinal))
-                {
-                    volatileCorePropertiesPart = name;
-                    name = CanonicalCorePropertiesPart;
-                }
-
-                parts[name] = buffer.ToArray();
-            }
-        }
-
-        // Repoint every reference to the GUID-named core-properties part (_rels/.rels targets it and
-        // [Content_Types].xml overrides it by full part name), and pin the wall-clock created/modified
-        // timestamps ClosedXML stamps into the core-properties part regardless of Properties.
-        if (volatileCorePropertiesPart is not null)
-        {
-            var oldFileName = volatileCorePropertiesPart[(volatileCorePropertiesPart.LastIndexOf('/') + 1)..];
-            foreach (var referencingPart in new[] { "_rels/.rels", "[Content_Types].xml" })
-            {
-                if (parts.TryGetValue(referencingPart, out var bytes))
-                {
-                    var rewritten = Encoding.UTF8.GetString(bytes).Replace(oldFileName, "core.psmdcp", StringComparison.Ordinal);
-                    if (referencingPart == "_rels/.rels")
-                        rewritten = NormalizeRelationshipIds(rewritten);
-                    parts[referencingPart] = Encoding.UTF8.GetBytes(rewritten);
-                }
-            }
-
-            if (parts.TryGetValue(CanonicalCorePropertiesPart, out var coreBytes))
-                parts[CanonicalCorePropertiesPart] = Encoding.UTF8.GetBytes(PinCoreTimestamps(Encoding.UTF8.GetString(coreBytes)));
-        }
-
-        using var output = new MemoryStream();
-        using (var target = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true, Encoding.UTF8))
-        {
-            foreach (var part in parts.OrderBy(static item => item.Key, StringComparer.Ordinal))
-            {
-                var targetEntry = target.CreateEntry(part.Key, CompressionLevel.NoCompression);
-                targetEntry.LastWriteTime = new DateTimeOffset(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
-                using var targetStream = targetEntry.Open();
-                targetStream.Write(part.Value, 0, part.Value.Length);
-            }
-        }
-
-        return output.ToArray();
-    }
-
-    // Package-level relationships carry random 16-hex ids that no other part references by id;
-    // replace them with sequential canonical ids so re-rendering is byte-stable.
-    private static string NormalizeRelationshipIds(string rels)
-    {
-        var counter = 0;
-        return System.Text.RegularExpressions.Regex.Replace(
-            rels,
-            "Id=\"R[0-9a-fA-F]{16}\"",
-            _ => $"Id=\"Rc{++counter}\"");
-    }
-
-    private static string PinCoreTimestamps(string coreProperties)
-        => System.Text.RegularExpressions.Regex.Replace(
-            coreProperties,
-            @"(<dcterms:(?:created|modified)[^>]*>)[^<]*(</dcterms:(?:created|modified)>)",
-            "${1}2000-01-01T00:00:00Z${2}");
 
     private static string Shorten(string value) => value.Length <= 16 ? value : value[..16];
 }

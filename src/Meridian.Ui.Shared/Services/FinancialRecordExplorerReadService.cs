@@ -2664,7 +2664,7 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             relationships.Add(new(
                 "report-line-provenance",
-                "Reported-line provenance",
+                "Report-line provenance",
                 $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} published or restated report line{Plural(enrichment.ReportLineUsages.Count)} with publication evidence reference this security.",
                 BuildReportLineProvenanceHref(),
                 FinancialRecordExplorerTone.Success));

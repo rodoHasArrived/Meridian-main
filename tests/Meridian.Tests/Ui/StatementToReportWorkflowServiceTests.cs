@@ -207,6 +207,12 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
             CommitCount++;
             return Task.FromResult(result);
         }
+
+        public Task<StatementImportValidationResult> ValidateAsync(
+            StatementSourceDocument document,
+            string? connectorId,
+            CancellationToken ct = default)
+            => Task.FromResult(new StatementImportValidationResult(true, result.RecordCount, []));
     }
 
     private sealed class FakeEvidenceRetainer : IStatementImportEvidenceRetainer

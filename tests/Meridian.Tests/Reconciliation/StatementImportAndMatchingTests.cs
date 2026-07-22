@@ -112,4 +112,25 @@ public sealed class StatementImportAndMatchingTests
         Assert.Equal(first.DuplicateKey, imported.Import.DuplicateKey);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ImportAsync(second.ToBrokerStatementImportRequest()));
     }
+
+    [Fact]
+    public async Task Import_captures_optional_currency_and_external_id_columns()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "statement.csv");
+        await File.WriteAllTextAsync(
+            path,
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
+            + "A1,SPY,10,500,-5000,BUY,2026-01-02,2026-01-04,EUR,1.5,EXT-42\n");
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
+
+        var imported = await service.ImportAsync(new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)));
+
+        var row = Assert.Single(imported.Rows);
+        Assert.Equal("EUR", row.Currency);
+        Assert.Equal(new DateOnly(2026, 1, 4), row.SettlementDate);
+        Assert.Equal(1.5m, row.FeesCommission);
+        Assert.Equal("EXT-42", row.ExternalTransactionId);
+    }
 }

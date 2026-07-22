@@ -143,7 +143,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         position.TradeDate.Should().Be(new DateOnly(2026, 6, 30));
 
         var dividend = result.Rows[3];
-        dividend.ActivityType.Should().Be("cash");
+        dividend.ActivityType.Should().Be("dividend", "cash transactions are ledger movements matched against transactions, not the ending cash balance");
         dividend.CashAmount.Should().Be(24.00m);
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10)); // date part of dateTime
 
@@ -193,22 +193,19 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Import_RowsFlowThroughStatementMatching()
+    public async Task Import_ProducesCanonicalRowsWithCurrencyAndExternalIds()
     {
         var path = WriteFlexFile(SampleFlexXml);
         var imported = await _service.ImportAsync(MakeRequest(path));
 
-        var result = StatementRunMatchingService.Match(
-            imported.Import,
-            imported.Rows,
-            InternalReconciliationBook.Empty,
-            StatementToleranceProfile.Default);
-
-        result.Outcomes.Should().HaveCount(5);
-        // With no internal book wired, the sided engine reports every row as an honest unmatched
-        // break — nothing is fabricated as a self-match.
-        result.Outcomes.Should().OnlyContain(outcome => outcome.OutcomeType != "matched");
-        result.Breaks.Should().HaveCount(5);
+        imported.Rows.Should().HaveCount(5);
+        // Rows are emitted trades first, then open positions, then cash transactions.
+        imported.Rows[2].ActivityType.Should().Be("position");
+        imported.Rows[2].Symbol.Should().Be("AAPL");
+        // Currency and the broker transaction identifier now flow through to the canonical row so
+        // the reconciliation engine can normalize FX and match on external id.
+        imported.Rows.Should().OnlyContain(row => row.Currency == "USD");
+        imported.Rows[0].ExternalTransactionId.Should().Be("1000001");
     }
 
     [Theory]
@@ -385,13 +382,45 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task MultiAccountFlexReport_IsRejectedByValidateAndImport()
+    {
+        // Two FlexStatement sections for two different IB accounts. The matcher would normalize every
+        // row to the run's single external account, so a multi-account report must be rejected rather
+        // than reconciling one account's rows against another account's Meridian records.
+        const string multiAccountXml = """
+            <FlexQueryResponse queryName="MeridianDaily" type="AF">
+              <FlexStatements count="2">
+                <FlexStatement accountId="U1234567" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U1234567" symbol="AAPL" tradeDate="20260615" quantity="100" tradePrice="201.35" netCash="-20136.00" currency="USD" buySell="BUY" tradeID="1000001" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+                <FlexStatement accountId="U7654321" fromDate="20260601" toDate="20260630" period="Month">
+                  <Trades>
+                    <Trade accountId="U7654321" symbol="MSFT" tradeDate="20260616" quantity="10" tradePrice="500.10" netCash="-5001.00" currency="USD" buySell="BUY" tradeID="1000002" assetCategory="STK" />
+                  </Trades>
+                </FlexStatement>
+              </FlexStatements>
+            </FlexQueryResponse>
+            """;
+        var path = WriteFlexFile(multiAccountXml, "multi-account.xml");
+
+        var validation = await _service.ValidateAsync(MakeRequest(path));
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("different accounts", StringComparison.OrdinalIgnoreCase));
+
+        var import = async () => await _service.ImportAsync(MakeRequest(path));
+        await import.Should().ThrowAsync<System.IO.InvalidDataException>();
+    }
+
+    [Fact]
     public void MappingProfileRegistry_RegistersIbFlexProfile()
     {
         var registry = StatementMappingProfileRegistry.Defaults;
 
         var profile = registry.Resolve(StatementMappingProfileRegistry.IbFlexV1ProfileId);
         profile.DisplayName.Should().Contain("Interactive Brokers");
-        profile.MapActivityType("Dividends").Should().Be("cash");
+        profile.MapActivityType("Dividends").Should().Be("dividend");
         profile.MapActivityType("BUY").Should().Be("trade");
 
         registry.ResolveForSourceKind("ib-flex").ProfileId

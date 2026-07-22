@@ -15,6 +15,19 @@ namespace Meridian.Ui.Shared.Services;
 /// </remarks>
 public static class DemoTenantBlueprint
 {
+    /// <summary>
+    /// Blueprint-1 provenance stamp shared by every durable record the demo seeds. Carrying an
+    /// explicit "seeded" source (rather than a generic "sample" tag) lets desk surfaces render the
+    /// <see cref="SeededProvenanceLabel"/> and lets teardown and audit reason about demo data.
+    /// </summary>
+    public const string SeededSourceType = "seeded";
+
+    /// <summary>Human-facing source system stamped on seeded records and rendered on desk surfaces.</summary>
+    public const string SeededSourceSystem = "Meridian Seeded Demo";
+
+    /// <summary>The provenance label onboarding renders for the seeded workspace.</summary>
+    public const string SeededProvenanceLabel = "Seeded";
+
     public const string PortfolioName = "Northstar Sample Portfolio";
     public const decimal Cash = 125_000m;
 
@@ -145,7 +158,8 @@ public static class DemoTenantBlueprint
             Report: report,
             Strategy: strategy,
             MarketHistory: marketHistory,
-            Highlights: highlights);
+            Highlights: highlights,
+            Provenance: SeededProvenanceLabel);
     }
 
     private static string Capitalize(string value) =>

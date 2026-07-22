@@ -136,6 +136,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto"
     },
     {
@@ -1642,6 +1654,90 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -1654,6 +1750,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
     },
     {
@@ -1661,6 +1763,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "kind": "contract-set-member",
@@ -1822,6 +1942,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto"
     },
     {
@@ -1888,7 +2014,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "kind": "contract-set-member",
@@ -7198,6 +7372,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceBadge"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
     },
     {
@@ -8440,7 +8632,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -12694,6 +12910,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityClassificationSummaryDto"
     },
     {
@@ -14494,6 +14746,90 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
     {
@@ -14506,6 +14842,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
     },
     {
@@ -14513,6 +14855,24 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "kind": "contract-set-member",
@@ -14674,6 +15034,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto"
     },
     {
@@ -14740,7 +15106,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "kind": "contract-set-member",
@@ -16667,6 +17081,18 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
     },
     {
       "kind": "contract-set-member",
@@ -19006,7 +19432,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "kind": "contract-set-member",
@@ -19431,6 +19881,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalReportingReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingDimensionalReportingReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingLedgerBookWorkflowReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingLedgerBookWorkflowReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRolloutPlanItemDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunKindDto"
     },
@@ -19581,8 +20055,20 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationProfileUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -19756,6 +20242,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionReadinessRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionReadinessRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
@@ -19923,6 +20415,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationReadinessDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdminCertificationArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingTenantAdministrationReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationArtifactDto",
       "target": "contract:Meridian.Contracts.AccountingSystem.AccountingCertificationArtifactIssueDto"
     },
@@ -20081,6 +20585,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.DataSourceConfigRequest",
       "target": "contract:Meridian.Contracts.Configuration.PolygonOptionsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoMarketSnapshot",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoModeConfig",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoModeConfig",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceBadge"
     },
     {
       "kind": "contract-reference",
@@ -20661,6 +21183,228 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsDetailDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
@@ -20751,6 +21495,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsDetailDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto"
     },
@@ -20837,6 +21587,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetOperationsReadinessDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetProjectedCashFlowDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetReconciliationResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetReconciliationRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsObligationTimelineEventDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -20853,6 +21639,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsObligationsTimelineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTermsVersionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetTimelineVarianceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
@@ -20872,13 +21676,31 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBookContextDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.InstrumentRoleDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.InstrumentRoleDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -20925,8 +21747,98 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PositionEconomicStateDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -24958,6 +25870,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -26332,6 +27250,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto"
     },
     {
@@ -26345,6 +27269,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPostingRuleJournalCandidateResultDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
     },
     {
       "kind": "contract-reference",
@@ -26416,6 +27352,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.EconomicEventReferenceDto"
     },
     {
@@ -26423,6 +27365,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
     {
       "kind": "contract-reference",
@@ -27195,6 +28143,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Operations.DataProvenanceBadge",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationIssue",
       "target": "contract:Meridian.Contracts.Operations.OperationIssueSeverity"
     },
@@ -27311,6 +28265,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
       "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
     },
     {
       "kind": "contract-reference",
@@ -28041,6 +29001,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "target": "contract:Meridian.Contracts.Schema.ISchemaUpcaster"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "target": "contract:Meridian.Contracts.Schema.ISchemaUpcaster"
     },
@@ -28049,6 +29021,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
     },
     {
       "kind": "contract-reference",
@@ -29639,6 +30617,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
       "target": "contract:Meridian.Contracts.Workstation.RecommendedActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FirstRunStatusDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto"
     },
     {
       "kind": "contract-reference",
@@ -33729,6 +34713,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityIdentityDrillInDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto"
     },
@@ -36187,11 +37201,66 @@
       "target": "contract:Meridian.Identity.Auth.UserRole"
     },
     {
+      "constraint": "fk_asset_accounting_event_book_position",
+      "kind": "foreign-key",
+      "label": "book_position_id",
+      "source": "database:asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections"
+    },
+    {
       "constraint": "fk_book_position_projection_role_scope",
       "kind": "foreign-key",
       "label": "role_id, security_id, owner_scope_id, owner_scope_kind",
       "source": "database:asset_operations.book_position_projections",
       "target": "database:asset_operations.instrument_role_projections"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.expected_book_position_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.expected_security_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.canonical_fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.source_content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.event_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.prior_spine_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.spine_version"
     },
     {
       "kind": "normal",
@@ -36234,6 +37303,18 @@
       "label": "",
       "source": "database:asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections",
       "target": "database:asset_operations.position_economic_state_projections.version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections.position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections_pkey"
     },
     {
       "kind": "normal",
@@ -36699,6 +37780,82 @@
       "target": "database:ledger.ledger_books_pkey"
     },
     {
+      "constraint": "atomic_tax_lot_posting_batches_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "corrects_mutation_batch_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
@@ -36715,6 +37872,48 @@
       "label": "",
       "source": "database:ledger.ck_accounting_periods_status on ledger.accounting_periods",
       "target": "database:ledger.accounting_periods.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.retained_evidence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.idempotency_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.expected_period_version"
     },
     {
       "kind": "normal",
@@ -36821,8 +38020,122 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.cost_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.unit_cost"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.retained_evidence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.selection_evidence_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.selection_ordinal"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_after"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_before"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_after"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_before"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.expected_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.result_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies",
       "target": "database:ledger.tax_lot_policies.relief_method"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.security_id"
     },
     {
       "kind": "normal",
@@ -36847,6 +38160,12 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_unit_cost on ledger.tax_lots",
       "target": "database:ledger.tax_lots.unit_cost"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.version"
     },
     {
       "constraint": "journal_legs_journal_entry_id_fkey",
@@ -36906,6 +38225,82 @@
       "target": "database:ledger.accounting_periods_pkey"
     },
     {
+      "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "corrects_mutation_batch_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lot_mutations_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "mutation_batch_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lot_mutations_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "tax_lot_mutations_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "tax_lot_record_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
       "constraint": "tax_lot_policies_ledger_book_id_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id",
@@ -36925,6 +38320,20 @@
       "target": "database:ledger.ledger_books_pkey"
     },
     {
+      "constraint": "tax_lots_last_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "last_mutation_batch_id",
+      "source": "database:ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lots_originating_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "originating_mutation_batch_id",
+      "source": "database:ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
       "constraint": "tax_lots_source_journal_entry_id_fkey",
       "kind": "foreign-key",
       "label": "source_journal_entry_id",
@@ -36941,6 +38350,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "target": "database:ledger.ledger_books.ledger_book_id"
     },
@@ -36949,6 +38370,18 @@
       "label": "",
       "source": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
     },
     {
       "kind": "normal",
@@ -38816,6 +40249,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:asset_operations",
+      "target": "database:asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:asset_operations",
       "target": "database:asset_operations.asset_actual_activity"
     },
     {
@@ -39188,6 +40627,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.fund_profile_tenancy"
     },
     {
@@ -39237,6 +40682,12 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.period_close_events"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.tax_lot_mutations"
     },
     {
       "kind": "contains",
@@ -39850,7 +41301,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "52bfb73c7d5db9d87cb245136e68bf2a20ab9a61155080f37926564b04b34b29",
+  "fingerprint": "9dfa9018cdbd2e1ad6f9a3417f0a2426be230c8b45876ec337520bb689034175",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -40034,6 +41485,18 @@
       "id": "contract:Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AccountingSystem.AccountingMigrationRunWorkerPlanUpsertRequestDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceSubjectTypes"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.AccountingProductionCertificationEvidenceValidator"
     },
     {
       "classification": "dto",
@@ -41543,6 +43006,90 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AppendAssetAccountingLifecycleStageRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingCorrectionReferenceDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventKindDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineAppendResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventSpineValidator"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEventTypeNames"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingEvidenceSubjects"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingLifecycleStageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAcquisitionLotDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AssetActualActivityDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetActualActivityDto"
@@ -41555,6 +43102,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto"
@@ -41564,6 +43117,24 @@
       "id": "contract:Meridian.Contracts.AssetOperations.AssetLifecycleEventDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetLifecycleEventDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto"
     },
     {
       "classification": "dto",
@@ -41722,6 +43293,12 @@
       "label": "Meridian.Contracts.AssetOperations.InstrumentRoleKinds"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto",
       "kind": "contract-type",
@@ -41789,9 +43366,57 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactLineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactValidator"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.ProjectionLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.ProjectionLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator"
     },
     {
       "classification": "class",
@@ -47098,6 +48723,24 @@
       "label": "Meridian.Contracts.Monitoring.MetricsSnapshot"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenance",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenanceBadge",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenanceBadge"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenanceExtensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenanceExtensions"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore",
       "kind": "contract-type",
@@ -48341,9 +49984,33 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermField"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema"
     },
     {
       "classification": "dto",
@@ -52595,6 +54262,42 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleArtifactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleArtifactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleBreakDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleBreakDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleHighlightDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleHighlightDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleHoldingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleHoldingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleMarketHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleMarketHistoryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SampleWorkspaceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SampleWorkspaceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SecurityClassificationSummaryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityClassificationSummaryDto"
@@ -54694,6 +56397,52 @@
       "label": "Meridian.Identity.UserProfileRegistry"
     },
     {
+      "id": "database:asset_operations.asset_accounting_event_projections",
+      "kind": "database-table",
+      "label": "asset_operations.asset_accounting_event_projections",
+      "schema": "asset_operations"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.canonical_fingerprint",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.canonical_fingerprint"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.currency",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.currency"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.event_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.event_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.expected_book_position_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.expected_book_position_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.expected_security_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.expected_security_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.prior_spine_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.prior_spine_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.source_content_hash",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.source_content_hash"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.spine_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.spine_version"
+    },
+    {
       "id": "database:asset_operations.asset_actual_activity",
       "kind": "database-table",
       "label": "asset_operations.asset_actual_activity",
@@ -54812,6 +56561,36 @@
       "label": "asset_operations.book_position_projections.version"
     },
     {
+      "id": "database:asset_operations.book_position_projections_pkey",
+      "kind": "database-object",
+      "label": "asset_operations.book_position_projections_pkey"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections"
+    },
+    {
       "id": "database:asset_operations.ck_book_position_projection_dates on asset_operations.book_position_projections",
       "kind": "database-object",
       "label": "asset_operations.ck_book_position_projection_dates on asset_operations.book_position_projections"
@@ -54835,6 +56614,11 @@
       "id": "database:asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections",
       "kind": "database-object",
       "label": "asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections"
+    },
+    {
+      "id": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections"
     },
     {
       "id": "database:asset_operations.fk_book_position_projection_role_scope on asset_operations.book_position_projections",
@@ -55289,6 +57073,77 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-table",
+      "label": "ledger.atomic_tax_lot_posting_batches",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.book_position_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.canonical_fingerprint",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.expected_period_version",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.expected_period_version"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.idempotency_key",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.idempotency_key"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.retained_evidence",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.retained_evidence"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.security_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.security_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_pkey",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
       "id": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
       "kind": "database-object",
       "label": "ledger.ck_accounting_periods_date_range on ledger.accounting_periods"
@@ -55297,6 +57152,36 @@
       "id": "database:ledger.ck_accounting_periods_status on ledger.accounting_periods",
       "kind": "database-object",
       "label": "ledger.ck_accounting_periods_status on ledger.accounting_periods"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches"
     },
     {
       "id": "database:ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -55344,9 +57229,54 @@
       "label": "ledger.ck_period_close_events_prior_status on ledger.period_close_events"
     },
     {
+      "id": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations"
+    },
+    {
       "id": "database:ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies",
       "kind": "database-object",
       "label": "ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
     },
     {
       "id": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
@@ -55362,6 +57292,11 @@
       "id": "database:ledger.ck_tax_lots_unit_cost on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_unit_cost on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_version on ledger.tax_lots"
     },
     {
       "id": "database:ledger.fund_profile_tenancy",
@@ -55528,6 +57463,107 @@
       "label": "ledger.period_close_events_period_id_fkey on ledger.period_close_events"
     },
     {
+      "id": "database:ledger.tax_lot_mutations",
+      "kind": "database-table",
+      "label": "ledger.tax_lot_mutations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.book_position_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.cost_basis",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.cost_basis"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.expected_version",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.expected_version"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.lot_snapshot_after",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.lot_snapshot_after"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.lot_snapshot_before",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.lot_snapshot_before"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.mutation_kind",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_after",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_after"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_before",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_before"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_delta",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.result_version",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.result_version"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.retained_evidence",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.retained_evidence"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.security_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.security_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.selection_evidence_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.selection_evidence_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.selection_ordinal",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.selection_ordinal"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.unit_cost",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.unit_cost"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
       "id": "database:ledger.tax_lot_policies",
       "kind": "database-table",
       "label": "ledger.tax_lot_policies",
@@ -55550,6 +57586,11 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.tax_lots.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.book_position_id"
+    },
+    {
       "id": "database:ledger.tax_lots.currency",
       "kind": "database-object",
       "label": "ledger.tax_lots.currency"
@@ -55565,14 +57606,44 @@
       "label": "ledger.tax_lots.original_quantity"
     },
     {
+      "id": "database:ledger.tax_lots.security_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.security_id"
+    },
+    {
+      "id": "database:ledger.tax_lots.tax_lot_record_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.tax_lot_record_id"
+    },
+    {
       "id": "database:ledger.tax_lots.unit_cost",
       "kind": "database-object",
       "label": "ledger.tax_lots.unit_cost"
     },
     {
+      "id": "database:ledger.tax_lots.version",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.version"
+    },
+    {
+      "id": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.tax_lots_pkey",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_pkey"
     },
     {
       "id": "database:ledger.tax_lots_source_journal_entry_id_fkey on ledger.tax_lots",
@@ -57745,11 +59816,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2801,
-    "contract_set_memberships": 3230,
-    "edges": 6626,
-    "foreign_keys": 77,
+    "contract_references": 2895,
+    "contract_set_memberships": 3305,
+    "edges": 6866,
+    "foreign_keys": 88,
     "logical_references": 6,
-    "nodes": 3055
+    "nodes": 3170
   }
 }

@@ -35,7 +35,7 @@ This lane is the canonical operator procedure page for reconciliation exception 
 
 1. Open `Accounting` -> `Import statement`.
 2. Choose the source path:
-   - `File upload` for CSV, OFX/QFX, IB Flex XML, or connector JSON; or
+   - `File upload` for CSV, OFX/QFX, IB Flex XML, ISO 20022 camt.053, BAI2, or connector JSON; or
    - `Scheduled fetch` for a fetch-capable provider connection such as Alpaca.
 3. Review the detected canonical columns, per-column confidence, position/transaction/cash/fee/
    dividend record counts, sample rows, mapping-profile suggestion, and format-drift warnings.

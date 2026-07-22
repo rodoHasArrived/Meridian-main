@@ -5,10 +5,13 @@ using Meridian.Application.Composition.Startup;
 using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Config;
+using Meridian.Application.Reconciliation;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Platform.Runtime;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Xunit;
 
@@ -90,9 +93,10 @@ public sealed class CommandModeRunnerTests
             imports.Should().ContainSingle();
             imports[0].Broker.Should().Be("custodian");
 
-            // Sided reconciliation against an unprovisioned (empty) internal book: the position,
-            // cash, and fee rows each lack an internal counterpart, so all three are honest
-            // unmatched breaks (the retired shim fabricated a position self-match).
+            // The retained internal-book provider is wired into the CLI graph, but this run's
+            // fund-account id ("fund-account-1") is an operator label rather than a Meridian
+            // fund-account GUID, so the provider fails closed to an empty book and all three statement
+            // rows (position, cash, fee) reconcile to unmatched breaks.
             var breaks = await breakStore.ListOpenAsync();
             breaks.Should().HaveCount(3);
             breaks.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
@@ -105,6 +109,38 @@ public sealed class CommandModeRunnerTests
         {
             CommandDispatchLifetimeDiagnostics.OnDisposed = null;
             Console.SetOut(originalOut);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AddCommandDispatchServices_WiresRetainedInternalReconciliationProvider()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-cli-recon-wiring-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var dataRoot = Path.Combine(root, "data");
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(dataRoot));
+
+        var log = Logger.None;
+        await using var configService = new ConfigurationService(log);
+        var cfg = configService.LoadAndPrepareConfig(configPath);
+
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddCommandDispatchServices(cfg, configPath, log, configService);
+            using var provider = services.BuildServiceProvider();
+
+            provider.GetRequiredService<IInternalReconciliationPopulationProvider>()
+                .Should().BeOfType<RetainedInternalReconciliationPopulationProvider>(
+                    "the CLI statement-import graph must reconcile against retained records, not the fail-closed empty book");
+        }
+        finally
+        {
             if (Directory.Exists(root))
             {
                 Directory.Delete(root, recursive: true);

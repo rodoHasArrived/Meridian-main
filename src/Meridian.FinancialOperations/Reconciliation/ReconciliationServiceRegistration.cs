@@ -1,6 +1,8 @@
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
@@ -61,6 +63,15 @@ public static class ReconciliationServiceRegistration
 
     private static void AddSharedServices(IServiceCollection services)
     {
+        // Safe, fail-closed defaults for the statement-run matcher. A deployment wires a real
+        // internal-population provider (live positions/cash/ledger) and FX rate table by registering
+        // its own implementations before calling AddStatementReconciliationServices, or via Replace.
+        services.TryAddSingleton<IInternalReconciliationPopulationProvider>(EmptyInternalReconciliationPopulationProvider.Instance);
+        services.TryAddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        // Knows only the built-in default profile; a deployment registers a provider carrying its
+        // operator profiles (first-wins/Replace) so non-default runs are matched with the selected
+        // profile's thresholds instead of silently falling back to the defaults.
+        services.TryAddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.TryAddSingleton<StatementReconciliationService>();
         services.TryAddSingleton<StatementReconciliationContextAdapter>();
         services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
@@ -93,6 +104,8 @@ public static class ReconciliationServiceRegistration
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, IbFlexStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, AlpacaActivityStatementConnector>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Camt053StatementConnector>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Bai2StatementConnector>());
         services.TryAddSingleton<StatementConnectorRegistry>();
 
         services.TryAddSingleton(sp => new StatementImportService(

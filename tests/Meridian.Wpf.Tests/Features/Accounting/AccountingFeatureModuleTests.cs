@@ -109,7 +109,11 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateService, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateAuthorityBuilder>(services, ServiceLifetime.Singleton);
-        DesktopFeatureModuleTestAssertions.AssertRegistered<IAssetAccountingEventSpineService, AssetAccountingEventSpineService>(services, ServiceLifetime.Singleton);
+        // Registered as a graceful singleton via AssetAccountingEventSpineService.TryCreate (mirroring
+        // LedgerFeatureRegistration): the WPF host does not register the asset-operations projection
+        // stores, so a concrete-type registration would fail Development ValidateOnBuild. The concrete
+        // resolution is asserted by Register_WiresAssetAccountingDependenciesIntoPostingService below.
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAssetAccountingEventSpineService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidatePostService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>(services, ServiceLifetime.Singleton);
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(QuickBooksFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
