@@ -27,7 +27,12 @@ public enum ProviderCapabilityKind : byte
     FactorSchedule = 16,
 
     /// <summary>Provider-supplied exchange sessions, closures, and early-close calendar data.</summary>
-    TradingCalendar = 17
+    TradingCalendar = 17,
+    News = 18,
+    Scanner = 19,
+    PnLStream = 20,
+    MarketRules = 21,
+    InstrumentDiscovery = 22
 }
 
 /// <summary>
