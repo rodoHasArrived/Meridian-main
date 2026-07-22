@@ -55,7 +55,8 @@ public static class StatementRunMatchingService
                         row.Account,
                         UnknownCurrency,
                         row.CashAmount,
-                        reference));
+                        reference,
+                        row.TradeDate));
                     break;
                 default:
                     statementTransactions.Add(new NormalizedStatementTransaction(
