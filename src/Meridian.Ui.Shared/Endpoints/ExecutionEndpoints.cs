@@ -207,6 +207,11 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            if (TryRejectBrokerOrderRouting(context.RequestServices, jsonOptions) is { } blockedRouting)
+            {
+                return blockedRouting;
+            }
+
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
             var result = await oms.CancelOrderAsync(orderId, context.RequestAborted).ConfigureAwait(false);
@@ -245,6 +250,11 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (TryRejectBrokerOrderRouting(context.RequestServices, jsonOptions) is { } blockedRouting)
+            {
+                return blockedRouting;
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -1361,6 +1371,23 @@ public static class ExecutionEndpoints
     }
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
+
+    private static IResult? TryRejectBrokerOrderRouting(IServiceProvider services, JsonSerializerOptions jsonOptions)
+    {
+        var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+            services.GetService<BrokerageConfiguration>());
+        if (gateDecision.IsAllowed)
+        {
+            return null;
+        }
+
+        var blocked = new TradingActionResult(
+            ActionId: GenerateActionId(),
+            Status: "Rejected",
+            Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
+            OccurredAt: DateTimeOffset.UtcNow);
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
 
     private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
     {
