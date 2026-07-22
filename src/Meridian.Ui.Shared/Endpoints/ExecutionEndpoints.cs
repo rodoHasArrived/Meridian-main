@@ -160,6 +160,11 @@ public static class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
+            if (await RequireScopedOrderAccountAccessAsync(request, context).ConfigureAwait(false) is { } accountScopeFailure)
+            {
+                return accountScopeFailure;
+            }
+
             string? correlationId = null;
             request.Metadata?.TryGetValue("correlationId", out correlationId);
             var normalizedRequest = request with
@@ -1384,6 +1389,25 @@ public static class ExecutionEndpoints
 
     private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
         => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static async Task<IResult?> RequireScopedOrderAccountAccessAsync(
+        OrderRequest request,
+        HttpContext context)
+    {
+        if (!request.FundAccountId.HasValue)
+        {
+            return null;
+        }
+
+        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
+            context,
+            UserPermission.ManageOrders,
+            AccessScopeKindDto.Account,
+            request.FundAccountId.Value,
+            context.RequestAborted).ConfigureAwait(false);
+
+        return allowed ? null : EndpointHelpers.Forbidden();
+    }
 
     private static IResult? TryRejectClientControlledExecutionMetadata(
         OrderRequest request,

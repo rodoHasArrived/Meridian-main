@@ -177,6 +177,10 @@ The shared workstation trading endpoint accepts the same optional GUID `fundAcco
 standalone trading-readiness and operator-inbox endpoints. When present, the embedded readiness
 payload resolves account-scoped brokerage-sync and broker-execution reconciliation evidence so
 initial browser payloads and refresh-only calls evaluate the same W7 live-readiness account.
+Execution order submission treats `OrderRequest.FundAccountId` as an account-scoped authorization
+selector rather than a trusted client assertion: when the field is present, the shared submit
+endpoint requires `ManageOrders` scoped to that account before forwarding the request to the OMS and
+live-order readiness gate.
 `TradingOperatorLiveOrderReadinessGate` adapts that service-owned W7 projection into
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a

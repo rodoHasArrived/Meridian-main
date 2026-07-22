@@ -34,9 +34,11 @@ gateway and all live-routing, phase, validation, and sign-off gates are explicit
 brokerage configuration remains allowed only for the default paper gateway.
 After the brokerage gate allows a non-paper broker, the OMS also requires `runId` metadata,
 `OrderRequest.FundAccountId`, and a registered `ILiveOrderReadinessGate` approval with a retained
-evidence reference before submitting to the gateway; missing run/account context, missing readiness
-registration, rejected readiness, or an approval without retained evidence produces an audited
-rejection instead of a broker submit.
+evidence reference before submitting to the gateway; shared HTTP order submission must authorize any
+present `FundAccountId` against the authenticated actor's account-scoped `ManageOrders` access
+before the OMS can use that account in live-readiness evaluation. Missing run/account context,
+missing readiness registration, rejected readiness, or an approval without retained evidence
+produces an audited rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
