@@ -199,6 +199,25 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 fingerprint));
         }
 
+        // A structurally complete file with a group but no account section cannot be associated with
+        // the account selected for the run. Do not accept it merely because it has no 16 records: it
+        // is still an unidentifiable statement, and accepting it would report a misleading successful
+        // import with no usable account evidence.
+        if (accountCount == 0)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_MISSING_ACCOUNT_SECTION",
+                "The BAI2 file has no 03 account identifier record; a statement run must contain at least one identified account section. Repair the file before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
+
         // Every 03 account-identifier record must carry its account number. A blank one cannot identify
         // the account being reconciled and would share the "unknown-account" placeholder with any other
         // blank section, so reject the file rather than reconcile an unidentifiable account.

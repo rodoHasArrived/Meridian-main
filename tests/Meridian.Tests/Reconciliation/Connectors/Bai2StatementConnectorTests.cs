@@ -169,6 +169,28 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithoutAccountSection_IsRejected()
+    {
+        // An empty custody statement with a valid group and trailers still must identify the account it
+        // covers. Otherwise import would succeed without account evidence and operators could mistake it
+        // for an empty statement for the selected Meridian account.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            98,0,1,2/
+            99,0,1,4/
+            """;
+        var document = new StatementSourceDocument("missing-account-section.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a BAI2 statement must identify an account even when it has no activity");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MISSING_ACCOUNT_SECTION");
+    }
+
+    [Fact]
     public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
     {
         // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would
