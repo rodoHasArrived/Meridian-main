@@ -19,10 +19,31 @@ public sealed record StatementImportCommitRequest(
     string? ToleranceProfileId,
     string ImportedBy);
 
+/// <summary>
+/// The outcome of validating a statement document through the connector pipeline without
+/// committing it: whether the document parsed cleanly into canonical records, how many records it
+/// produced, and any blocking error messages. Mirrors the connector's parse result so an operator
+/// can validate a bank file (camt.053, BAI2, ...) before importing it, not only CSV/IB Flex.
+/// </summary>
+public sealed record StatementImportValidationResult(
+    bool IsValid,
+    int RecordCount,
+    IReadOnlyList<string> Errors);
+
 public interface IStatementImportCommitService
 {
     Task<StatementImportCommitResultDto> CommitAsync(
         StatementImportCommitRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Validates a statement document through the connector pipeline (resolve connector, parse, no
+    /// commit), so the newly supported bank formats are validatable from the CLI just as they are
+    /// importable. Returns the record count and any blocking parse errors.
+    /// </summary>
+    Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
         CancellationToken ct = default);
 }
 
@@ -203,6 +224,43 @@ public sealed class StatementImportService(
                 .ToArray(),
             ReconciliationCaseLinks = caseLinks
         };
+    }
+
+    public async Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
+        if (connector is null)
+        {
+            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+        }
+
+        var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        var errors = parse.Issues
+            .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
+            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .ToArray();
+
+        if (parse.HasErrors)
+        {
+            return new StatementImportValidationResult(false, parse.Records.Count, errors);
+        }
+
+        // A well-formed document that yields no canonical rows cannot be imported (CommitAsync rejects
+        // it the same way), so report it as invalid rather than a passing empty validation.
+        if (parse.Records.Count == 0)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                ["Statement produced no canonical records; nothing to import."]);
+        }
+
+        return new StatementImportValidationResult(true, parse.Records.Count, errors);
     }
 
     /// <summary>Fetches a remote statement document through a fetch-capable connector.</summary>

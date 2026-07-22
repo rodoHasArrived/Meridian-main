@@ -7,7 +7,6 @@ using Serilog;
 namespace Meridian.Application.Commands;
 
 public sealed class StatementImportCommands(
-    IBrokerStatementService brokerStatementService,
     IStatementImportCommitService importCommitService,
     ILogger log) : ICliCommand
 {
@@ -35,25 +34,27 @@ public sealed class StatementImportCommands(
             return CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
-        if (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase))
-        {
-            var result = await brokerStatementService.ValidateAsync(new BrokerStatementImportRequest(broker, path, statementDate), ct);
-            Console.WriteLine($"valid={result.IsValid}; rows={result.RowCount}");
-            foreach (var error in result.Errors)
-                Console.WriteLine($"error={error}");
-            return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
-        }
-
-        // Route the import through the connector pipeline (CSV, OFX, IB Flex, Alpaca, camt.053, BAI2)
-        // rather than the CSV/IB-Flex-only broker router, so the bank formats registered for the
-        // workstation are also importable from the CLI. The connector resolves from file content unless
-        // an explicit connector id is supplied.
+        // Read the raw source once and route both validate and import through the connector pipeline
+        // (CSV, OFX, IB Flex, Alpaca, camt.053, BAI2) rather than the CSV/IB-Flex-only broker router,
+        // so the bank formats registered for the workstation are equally usable from the CLI. The
+        // connector resolves from file content unless an explicit connector id is supplied.
         var content = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
         var document = new StatementSourceDocument(
             Path.GetFileName(path),
             content,
             MappingProfileId: Get(args, "--statement-mapping-profile-id"),
             ExternalAccountId: Get(args, "--statement-external-account-id"));
+
+        if (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase))
+        {
+            var result = await importCommitService
+                .ValidateAsync(document, Get(args, "--statement-connector-id"), ct)
+                .ConfigureAwait(false);
+            Console.WriteLine($"valid={result.IsValid}; rows={result.RecordCount}");
+            foreach (var error in result.Errors)
+                Console.WriteLine($"error={error}");
+            return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
+        }
 
         // The connector pipeline distinguishes the source channel (broker vs custodian), not a broker
         // name; derive it from the request and carry the operator's broker/custodian label as the

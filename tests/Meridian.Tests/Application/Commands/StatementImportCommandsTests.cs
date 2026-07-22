@@ -19,7 +19,7 @@ public sealed class StatementImportCommandsTests
     [Fact]
     public void CanHandle_BrokerSpecificValidate_ReturnsTrue()
     {
-        var command = new StatementImportCommands(new StubBrokerStatementService(), new StubStatementImportCommitService(), Logger.None);
+        var command = new StatementImportCommands(new StubStatementImportCommitService(), Logger.None);
 
         command.CanHandle(
             [
@@ -32,7 +32,7 @@ public sealed class StatementImportCommandsTests
     [Fact]
     public void CanHandle_GenericLocalValidate_ReturnsFalse()
     {
-        var command = new StatementImportCommands(new StubBrokerStatementService(), new StubStatementImportCommitService(), Logger.None);
+        var command = new StatementImportCommands(new StubStatementImportCommitService(), Logger.None);
 
         command.CanHandle(
             [
@@ -45,7 +45,7 @@ public sealed class StatementImportCommandsTests
     [Fact]
     public async Task ExecuteAsync_InvalidStatementDate_ReturnsValidationFailure()
     {
-        var command = new StatementImportCommands(new StubBrokerStatementService(), new StubStatementImportCommitService(), Logger.None);
+        var command = new StatementImportCommands(new StubStatementImportCommitService(), Logger.None);
 
         var result = await CommandTestConsole.CaptureErrorAsync(
             () => command.ExecuteAsync(
@@ -68,13 +68,12 @@ public sealed class StatementImportCommandsTests
         await File.WriteAllTextAsync(
             statementPath,
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,5000,BUY,2026-01-02\n");
-        var brokerStatementService = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
         var commitService = new StubStatementImportCommitService();
         var statementService = new StatementReconciliationService();
         var statementAdapter = new StatementReconciliationContextAdapter(statementService);
 
         var dispatcher = new CommandDispatcher(
-            new StatementImportCommands(brokerStatementService, commitService, Logger.None),
+            new StatementImportCommands(commitService, Logger.None),
             new StatementCommands(
                 statementAdapter,
                 statementAdapter,
@@ -117,7 +116,7 @@ public sealed class StatementImportCommandsTests
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,5000,BUY,2026-01-02\n");
 
         var commitService = new StubStatementImportCommitService();
-        var command = new StatementImportCommands(new StubBrokerStatementService(), commitService, Logger.None);
+        var command = new StatementImportCommands(commitService, Logger.None);
         var originalOut = Console.Out;
 
         try
@@ -164,7 +163,6 @@ public sealed class StatementImportCommandsTests
         services.AddStatementReconciliationServices(root);
         using var provider = services.BuildServiceProvider();
         var command = new StatementImportCommands(
-            provider.GetRequiredService<IBrokerStatementService>(),
             provider.GetRequiredService<Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService>(),
             Logger.None);
         var importStore = provider.GetRequiredService<ICanonicalStatementStore>();
@@ -242,7 +240,6 @@ public sealed class StatementImportCommandsTests
         services.AddStatementReconciliationServices(root);
         using var provider = services.BuildServiceProvider();
         var command = new StatementImportCommands(
-            provider.GetRequiredService<IBrokerStatementService>(),
             provider.GetRequiredService<IStatementImportCommitService>(),
             Logger.None);
         var breakStore = provider.GetRequiredService<IReconciliationBreakStore>();
@@ -278,18 +275,59 @@ public sealed class StatementImportCommandsTests
         }
     }
 
-    private sealed class StubBrokerStatementService : IBrokerStatementService
+    [Fact]
+    public async Task ExecuteAsync_StatementValidate_ValidatesBai2BankFileThroughConnectorPipeline()
     {
-        public Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
-            => Task.FromResult(new BrokerStatementValidationResult(true, [], 1));
+        // A BAI2 bank file must be validatable from the CLI, not only importable. Before routing
+        // --statement-validate through the connector pipeline, the legacy RoutingBrokerStatementService
+        // sent .bai files to the canonical-CSV validator and reported them invalid.
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-bai2-validate-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var statementPath = Path.Combine(root, "statement.bai");
+        await File.WriteAllTextAsync(statementPath, string.Join("\n",
+            "01,CITIBANK,MERIDIAN,260531,0800,1,,,2/",
+            "02,MERIDIAN,CITIBANK,1,260531,,USD,2/",
+            "03,0975312468,USD,015,1234567,,/",
+            "16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/",
+            "49,1234567,3/",
+            "98,1234567,1,3/",
+            "99,1234567,1,5/"));
 
-        public Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
-            => throw new NotSupportedException("Import should flow through the connector commit pipeline.");
+        var services = new ServiceCollection();
+        services.AddStatementReconciliationServices(root);
+        using var provider = services.BuildServiceProvider();
+        var command = new StatementImportCommands(
+            provider.GetRequiredService<IStatementImportCommitService>(),
+            Logger.None);
+        var originalOut = Console.Out;
+
+        try
+        {
+            using var writer = new StringWriter();
+            Console.SetOut(writer);
+
+            var result = await command.ExecuteAsync(
+                [
+                    "--statement-validate",
+                    "--statement-broker", "custodian",
+                    "--statement-source-path", statementPath,
+                    "--statement-date", "2026-05-31"
+                ]);
+
+            result.Success.Should().BeTrue("a BAI2 bank file must validate from the CLI, not be rejected as invalid CSV");
+            writer.ToString().Should().Contain("valid=True");
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     private sealed class StubStatementImportCommitService : IStatementImportCommitService
     {
         public List<StatementImportCommitRequest> Requests { get; } = [];
+        public List<StatementSourceDocument> ValidatedDocuments { get; } = [];
 
         public Task<StatementImportCommitResultDto> CommitAsync(StatementImportCommitRequest request, CancellationToken ct = default)
         {
@@ -305,6 +343,15 @@ public sealed class StatementImportCommandsTests
                 RetainedCanonicalPath: "canonical",
                 Status: "Committed",
                 NextAction: "Review breaks"));
+        }
+
+        public Task<StatementImportValidationResult> ValidateAsync(
+            StatementSourceDocument document,
+            string? connectorId,
+            CancellationToken ct = default)
+        {
+            ValidatedDocuments.Add(document);
+            return Task.FromResult(new StatementImportValidationResult(true, 1, []));
         }
     }
 }
