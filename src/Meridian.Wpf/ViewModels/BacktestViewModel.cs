@@ -177,6 +177,16 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
     public ObservableCollection<CashFlowVm> CashFlows { get; } = [];
     public ObservableCollection<SymbolAttributionVm> Attribution { get; } = [];
 
+    // ── Bias disclosure ───────────────────────────────────────────────────────
+
+    public ObservableCollection<BiasDisclosureItemVm> BiasDisclosures { get; } = [];
+
+    private bool _hasBiasDisclosures;
+    public bool HasBiasDisclosures { get => _hasBiasDisclosures; set => SetProperty(ref _hasBiasDisclosures, value); }
+
+    private string _biasDisclosureSummary = "-";
+    public string BiasDisclosureSummary { get => _biasDisclosureSummary; set => SetProperty(ref _biasDisclosureSummary, value); }
+
     // ── Commands ─────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand RunBacktestCommand { get; }
@@ -262,6 +272,9 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
         Fills.Clear();
         CashFlows.Clear();
         Attribution.Clear();
+        BiasDisclosures.Clear();
+        HasBiasDisclosures = false;
+        BiasDisclosureSummary = "-";
         StatusText = "Running…";
         ProgressFraction = 0;
         IsLiveMetricsActive = false;
@@ -370,6 +383,30 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
         AttributionCountText = $"{Attribution.Count} symbol{(Attribution.Count == 1 ? "" : "s")}";
         FillsCountText = $"{Fills.Count} trade{(Fills.Count == 1 ? "" : "s")}";
         CashFlowsCountText = $"{CashFlows.Count} entr{(CashFlows.Count == 1 ? "y" : "ies")}";
+
+        ApplyBiasDisclosure(result.BiasDisclosure);
+    }
+
+    private void ApplyBiasDisclosure(BiasDisclosureReport? disclosure)
+    {
+        BiasDisclosures.Clear();
+
+        if (disclosure is null || disclosure.Items.Count == 0)
+        {
+            HasBiasDisclosures = false;
+            BiasDisclosureSummary = "-";
+            return;
+        }
+
+        foreach (var item in disclosure.Items)
+            BiasDisclosures.Add(new BiasDisclosureItemVm(item));
+
+        var warnings = disclosure.Items.Count(static item => item.Severity == BiasSeverity.Warning);
+        var cautions = disclosure.Items.Count(static item => item.Severity == BiasSeverity.Caution);
+        HasBiasDisclosures = true;
+        BiasDisclosureSummary =
+            $"{disclosure.FillTiming} fills · {disclosure.FillConservatism} limit/stop · " +
+            $"{warnings} warning{(warnings == 1 ? "" : "s")}, {cautions} caution{(cautions == 1 ? "" : "s")}";
     }
 
     private void OpenRunSurface(string pageTag)
@@ -597,6 +634,16 @@ public sealed record CashFlowVm(CashFlowEntry CashFlow)
         DividendCashFlow d => d.Symbol,
         _ => "-"
     };
+}
+
+/// <summary>UI display wrapper for a single bias-disclosure line item.</summary>
+public sealed record BiasDisclosureItemVm(BiasDisclosureItem Item)
+{
+    public string Severity => Item.Severity.ToString();
+    public string Title => Item.Title;
+    public string Detail => Item.Detail;
+    public bool IsWarning => Item.Severity == BiasSeverity.Warning;
+    public bool IsCaution => Item.Severity == BiasSeverity.Caution;
 }
 
 /// <summary>UI display wrapper for per-symbol attribution.</summary>

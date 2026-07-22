@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Ui.Shared
@@ -31,15 +31,24 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 ## Key folders and files
 
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
-  fund-structure ownership lifecycle, portable packaging, archive-maintenance, and data-quality
-  monitoring routes.
+  host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
+  archive-maintenance, and data-quality monitoring routes.
 - `Extensibility/` - shared extensibility catalog service, tenant-template activation service, and
   provider adapters that expose configurable workflow registrations through
   `Meridian.Contracts.Extensibility`.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
+- `Evidence/StatementToReportWorkflowService.cs` - tenant/company-scoped persisted coordinator for
+  statement retention, import, Evidence Vault linkage, reconciliation gating, restart recovery, and
+  hash-verified JSON/CSV report artifacts.
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
+and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
+and WPF operator controls use the loopback-only `/api/system/lifecycle`,
+`/api/system/shutdown`, shutdown-operation, and latest-receipt routes. Clients consume the shared
+`Meridian.Contracts.Lifecycle` payloads and never infer readiness or terminate processes locally.
 
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.
@@ -64,7 +73,14 @@ ends of the connection are loopback, allowing the packaged browser login to retu
 `SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
-source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
+source-of-truth services authoritative. Statement connector endpoints expose file and remote
+preview plus persisted fetch-schedule CRUD/run operations over shared DTOs; schedule upserts default
+an omitted source kind to `broker`, while explicit `custodian` values pass unchanged into Financial
+Operations. The golden-path `POST /api/workstation/reconciliation/statement-to-report` route
+persists the source before import, checkpoints every completed stage, pauses while reconciliation
+cases remain open, and resumes without repeating a committed import. Status, resume, and
+artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
+artifacts before serving them. `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
@@ -76,6 +92,10 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+The canonical reconciliation queue publishes explicit assign, resolve, waive, and supersede
+actions. Waive and supersede routes preserve the authenticated operator, approval and successor
+lineage, typed Value/Quantity/CostBasis measures, blocked outputs, and disposition evidence hashes;
+browser API contracts mirror these fields rather than inferring terminal state from queue status.
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close
@@ -127,10 +147,13 @@ presentation code renders it.
 The existing explorer route now renders the retained `PositionId` dimension as a shared Position
 field when present. Browser and WPF clients consume the same server-built field and proof graph; no
 instrument-accounting-specific explorer route or client-side ledger query is added.
-For typed factor events the shared explorer queries `ILedgerJournalStore` with the exact ledger book,
-book aggregate, and indexed source event, then renders factor evidence -> holder role/book position
--> economic projection -> posting candidate -> independent approval -> immutable `JournalEntry` ->
-ledger/report evidence. The identities are present in shared selected-record fields and
+For canonical Asset Accounting events the shared explorer resolves the typed spine and queries
+`ILedgerJournalStore` with the exact ledger book, book aggregate, and indexed source event. It keeps
+Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct, and renders
+retained source evidence -> Security Master/book position -> projection -> posting candidate ->
+independent approval -> immutable `JournalEntry` -> reconciliation/report lineage. Journal impact is
+absent unless the durable journal identity, book, period, balanced amounts, and Posted status match
+the spine. The identities are present in shared selected-record fields and
 relationships as well as the proof graph, so the browser and WPF generic explorers remain thin and
 show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
@@ -186,6 +209,10 @@ desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book
 for a single source event while keeping ledger posting behind explicit approval. The generated
 candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
 the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
+The canonical Asset Accounting candidate endpoint is also separate from the generic request path.
+It stamps trusted scope, invokes `IAssetAccountingEventSpineService`, and requires the server to
+re-read the retained projected spine, authoritative position/book/period/policy/rule pack, and typed
+evidence before Drafted state can be appended.
 Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
 the promotion gate requires the full live approval checklist plus evidence-reference keys for each
 W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can
@@ -362,8 +389,10 @@ guidance into one shared fail-closed payload for browser, WPF, and admin setup s
 Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
 lifecycle, close/reporting, close-plan configuration, external GL, reconciliation, direct-lending
 projections, and strategy ledger reads only count as complete when the selected ledger book has
-retained evidence for that workflow or an explicit full workflow certification packet. A generic
-ledger-book evidence link no longer certifies every workflow control by implication. Posting Rule
+complete typed retained evidence for that workflow. String links, legacy full-token packets,
+boolean flags, service registration, and route availability remain navigation or prerequisite
+metadata and cannot establish readiness. A generic ledger-book evidence link no longer certifies
+every workflow control by implication. Posting Rule
 Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation, direct-lending, and
 strategy-ledger readiness controls consume
 the same workflow certification state, so those lanes remain blocked even when their services or
@@ -1920,6 +1949,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

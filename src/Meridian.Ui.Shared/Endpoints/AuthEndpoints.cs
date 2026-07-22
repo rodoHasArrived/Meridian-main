@@ -77,8 +77,22 @@ public static class AuthEndpoints
                 return Results.Redirect(errorRedirect);
             }
 
-            var token = sessionService.CreateSession(username, password);
-            if (token is null)
+            var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var login = sessionService.TryCreateSession(username, password, clientKey);
+            context.Response.Headers["RateLimit-Limit"] = "5";
+            context.Response.Headers["RateLimit-Remaining"] = login.RemainingAttempts.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (login.Status == LoginAttemptStatus.LockedOut)
+            {
+                var retryAfterSeconds = Math.Max(1, (int)Math.Ceiling(login.RetryAfter.GetValueOrDefault().TotalSeconds));
+                context.Response.Headers["Retry-After"] = retryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                context.Response.Headers["RateLimit-Reset"] = retryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Json(
+                    new { error = "Too many failed login attempts. Try again later.", retryAfterSeconds },
+                    statusCode: StatusCodes.Status429TooManyRequests);
+            }
+
+            var token = login.Token;
+            if (login.Status != LoginAttemptStatus.Succeeded || token is null)
             {
                 if (context.Request.HasJsonContentType())
                     return Results.Json(

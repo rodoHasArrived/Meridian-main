@@ -26,6 +26,12 @@ public sealed class OrderManagementSystemOptions
     /// </summary>
     public int CancelAllMaxConcurrency { get; init; } = DefaultCancelAllMaxConcurrency;
 
+    /// <summary>
+    /// Requires risk, portfolio-state, and operator-control dependencies during construction.
+    /// Supported production composition enables this so order routing cannot silently degrade.
+    /// </summary>
+    public bool RequireProductionSafetyDependencies { get; init; }
+
     public int ValidatedMaxRetainedOrders => MaxRetainedOrders > 0
         ? MaxRetainedOrders
         : DefaultMaxRetainedOrders;

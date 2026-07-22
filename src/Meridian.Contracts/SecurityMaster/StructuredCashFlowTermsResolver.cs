@@ -25,6 +25,21 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] FactorScheduleDateAliases = ["asOfDate", "factorDate", "effectiveDate", "date"];
     private static readonly string[] FactorScheduleFactorAliases = ["factor", "currentFactor"];
 
+    // Leg-container keys and, within each leg row, the per-field key aliases. "legType" is the
+    // spelling the F# SwapLeg serializer persists; the rest cover vendor variants.
+    private static readonly string[] LegContainerAliases = ["legs", "swapLegs", "cashFlowLegs"];
+    private static readonly string[] LegIdAliases = ["legId", "id", "name"];
+    private static readonly string[] LegRateKindAliases = ["legType", "rateType", "type"];
+    private static readonly string[] LegDirectionAliases = ["direction", "payReceive", "payOrReceive", "side"];
+    private static readonly string[] LegFixedRateAliases = ["fixedRate", "rate", "couponRate"];
+    private static readonly string[] LegIndexAliases = ["index", "indexName", "referenceIndex"];
+    private static readonly string[] LegSpreadBpsAliases = ["spreadBps"];
+    private static readonly string[] LegCurrentIndexRateAliases = ["currentIndexRate", "lastFixing", "currentRate", "indexRate"];
+    private static readonly string[] LegNotionalAliases = ["notional", "notionalAmount", "faceAmount", "principal"];
+    private static readonly string[] LegPaymentFrequencyAliases = ["paymentFrequency", "frequency"];
+    private static readonly string[] LegDayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
+    private static readonly string[] LegPrincipalExchangeAliases = ["exchangesPrincipal", "principalExchange", "notionalExchange"];
+
     /// <summary>Resolves the typed cash flow terms for <paramref name="security"/>.</summary>
     public static StructuredCashFlowTerms Resolve(SecurityDetailDto security)
     {
@@ -40,7 +55,127 @@ public static class StructuredCashFlowTermsResolver
             CouponRate: SecurityTermReader.ReadDecimal(sources, CouponRateAliases),
             PaymentFrequency: SecurityTermReader.ReadString(sources, PaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(sources, DayCountAliases),
-            FactorSchedule: ReadFactorSchedule(sources));
+            FactorSchedule: ReadFactorSchedule(sources),
+            Legs: ReadLegs(sources));
+    }
+
+    private static IReadOnlyList<StructuredCashFlowLeg>? ReadLegs(IReadOnlyList<JsonElement> sources)
+    {
+        foreach (var source in sources)
+        {
+            foreach (var alias in LegContainerAliases)
+            {
+                if (!SecurityTermReader.TryGetProperty(source, alias, out var array) || array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                var legs = new List<StructuredCashFlowLeg>();
+                var ordinal = 0;
+                foreach (var item in array.EnumerateArray())
+                {
+                    ordinal++;
+                    if (item.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    legs.Add(ReadLeg(item, ordinal));
+                }
+
+                if (legs.Count > 0)
+                {
+                    // First container that yields usable rows wins, mirroring alias priority.
+                    return legs;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static StructuredCashFlowLeg ReadLeg(JsonElement leg, int ordinal)
+    {
+        var rateKindToken = SecurityTermReader.ReadString(leg, LegRateKindAliases);
+        var directionToken = SecurityTermReader.ReadString(leg, LegDirectionAliases);
+        var fixedRate = SecurityTermReader.ReadDecimal(leg, LegFixedRateAliases);
+        var indexName = SecurityTermReader.ReadString(leg, LegIndexAliases);
+
+        return new StructuredCashFlowLeg(
+            LegId: SecurityTermReader.ReadString(leg, LegIdAliases) ?? $"leg-{ordinal}",
+            RateKind: ResolveRateKind(rateKindToken, fixedRate, indexName),
+            Direction: ResolveDirection(directionToken) ?? ResolveDirection(rateKindToken),
+            FixedRate: fixedRate,
+            IndexName: indexName,
+            SpreadBps: SecurityTermReader.ReadDecimal(leg, LegSpreadBpsAliases),
+            CurrentIndexRate: SecurityTermReader.ReadDecimal(leg, LegCurrentIndexRateAliases),
+            Notional: SecurityTermReader.ReadDecimal(leg, LegNotionalAliases),
+            PaymentFrequency: SecurityTermReader.ReadString(leg, LegPaymentFrequencyAliases),
+            DayCountConvention: SecurityTermReader.ReadString(leg, LegDayCountAliases),
+            ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases));
+    }
+
+    private static CashFlowLegRateKind ResolveRateKind(string? token, decimal? fixedRate, string? indexName)
+    {
+        if (token is not null)
+        {
+            var normalized = token.ToUpperInvariant();
+            if (normalized.Contains("FLOAT", StringComparison.Ordinal) || normalized.Contains("FLT", StringComparison.Ordinal))
+            {
+                return CashFlowLegRateKind.Floating;
+            }
+
+            if (normalized.Contains("FIX", StringComparison.Ordinal))
+            {
+                return CashFlowLegRateKind.Fixed;
+            }
+        }
+
+        if (fixedRate is not null)
+        {
+            return CashFlowLegRateKind.Fixed;
+        }
+
+        return indexName is not null ? CashFlowLegRateKind.Floating : CashFlowLegRateKind.Fixed;
+    }
+
+    private static CashFlowLegDirection? ResolveDirection(string? token)
+    {
+        if (token is null)
+        {
+            return null;
+        }
+
+        var normalized = token.ToUpperInvariant();
+        if (normalized.Contains("PAY", StringComparison.Ordinal))
+        {
+            return CashFlowLegDirection.Pay;
+        }
+
+        return normalized.Contains("REC", StringComparison.Ordinal) ? CashFlowLegDirection.Receive : null;
+    }
+
+    private static bool ReadBoolean(JsonElement source, string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!SecurityTermReader.TryGetProperty(source, propertyName, out var property))
+            {
+                continue;
+            }
+
+            if (property.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return property.GetBoolean();
+            }
+
+            if (property.ValueKind == JsonValueKind.String && bool.TryParse(property.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return false;
     }
 
     private static IReadOnlyList<StructuredFactorScheduleEntry> ReadFactorSchedule(IReadOnlyList<JsonElement> sources)

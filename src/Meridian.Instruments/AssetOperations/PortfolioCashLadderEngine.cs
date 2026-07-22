@@ -27,6 +27,12 @@ public sealed record PortfolioCashLadderInputs(
     /// visible rather than silent.
     /// </summary>
     public IReadOnlyList<string> PositionSourceNotices { get; init; } = [];
+
+    /// <summary>
+    /// Missing authoritative inputs that make a liquidity conclusion unsafe. When populated the
+    /// engine returns a blocked result with no buckets or breach flags.
+    /// </summary>
+    public IReadOnlyList<string> DecisionBlockers { get; init; } = [];
 }
 
 /// <summary>
@@ -134,6 +140,28 @@ public static class PortfolioCashLadderEngine
 
         var scenario = ResolveScenario(scenarioId, warnings);
         warnings.AddRange(inputs.PositionSourceNotices);
+        if (inputs.DecisionBlockers.Count > 0)
+        {
+            return new PortfolioCashLadderDto(
+                EngineVersion,
+                inputs.AsOfDate,
+                horizonDays,
+                inputs.BaseCurrency,
+                scenario.ScenarioId,
+                OpeningCash: 0m,
+                inputs.MinimumCashThreshold,
+                Buckets: [],
+                Contributions: [],
+                ScenarioCatalog,
+                Assumptions: [],
+                Warnings: warnings.Concat(inputs.DecisionBlockers).Distinct(StringComparer.Ordinal).ToArray(),
+                DateTimeOffset.UtcNow,
+                SecuritiesEvaluated: 0,
+                SecuritiesWithFlows: 0,
+                IsDecisionReady: false,
+                BlockingReasons: inputs.DecisionBlockers.Distinct(StringComparer.Ordinal).ToArray());
+        }
+
         var openingCash = inputs.CashBalances.Sum(static balance => balance.Amount);
 
         var contributions = new List<PortfolioCashLadderContributionDto>();
@@ -226,7 +254,9 @@ public static class PortfolioCashLadderEngine
             warnings,
             DateTimeOffset.UtcNow,
             inputs.Positions.Count,
-            securitiesWithFlows);
+            securitiesWithFlows,
+            IsDecisionReady: true,
+            BlockingReasons: []);
     }
 
     private static PortfolioCashScenarioDto ResolveScenario(string? scenarioId, List<string> warnings)

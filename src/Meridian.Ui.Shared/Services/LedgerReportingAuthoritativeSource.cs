@@ -730,7 +730,10 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 rows.Add(row);
             }
         }
-        return rows.MoveToImmutable();
+        // The builder is created without a fixed capacity and filled dynamically, so its Capacity
+        // over-allocates and does not equal Count; MoveToImmutable would throw. ToImmutable freezes
+        // the exact contents regardless of capacity.
+        return rows.ToImmutable();
     }
 
     private static string ComputeCheckpointHash(

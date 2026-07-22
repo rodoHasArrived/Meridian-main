@@ -6,9 +6,10 @@
 .DESCRIPTION
     Runs build/scripts/install/install.ps1 -Mode WebWorkstation into an isolated
     install root, starts the installed Meridian.exe from that installed copy, and
-    verifies that /healthz and /workstation/ respond over HTTP. The smoke disables
-    auth only for the launched smoke process so the static workstation route can
-    be validated without local credentials.
+    verifies that /startupz, /healthz, and /workstation/ respond over HTTP. The smoke configures
+    a temporary hash-backed operator for the launched process so authenticated workstation access
+    is validated without weakening packaged authentication. The installed lifecycle supervisor owns
+    both the Meridian host and its bundled dedicated PostgreSQL process.
 
 .EXAMPLE
     .\build\scripts\install\smoke-web-workstation-install.ps1
@@ -27,6 +28,8 @@ param(
 
     [ValidateRange(10, 600)]
     [int]$TimeoutSeconds = 90,
+
+    [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
 
     [string]$OutputRoot = "artifacts/install-smoke/web-workstation",
 
@@ -60,7 +63,8 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         "-RuntimeIdentifier", $RuntimeIdentifier,
         "-Port", $Port.ToString(),
         "-TimeoutSeconds", $TimeoutSeconds.ToString(),
-        "-OutputRoot", $OutputRoot
+        "-OutputRoot", $OutputRoot,
+        "-PostgreSqlPayloadRoot", $PostgreSqlPayloadRoot
     )
 
     if ($SkipDashboardBuild) { $argList += "-SkipDashboardBuild" }
@@ -209,7 +213,8 @@ function Invoke-EndpointProbe {
         [Parameter(Mandatory)][string]$Name,
         [Parameter(Mandatory)][string]$Uri,
         [Parameter(Mandatory)][int]$TimeoutSeconds,
-        [string]$ContentPattern = ""
+        [string]$ContentPattern = "",
+        [Microsoft.PowerShell.Commands.WebRequestSession]$WebSession
     )
 
     Write-Step "Probe $Name"
@@ -218,7 +223,16 @@ function Invoke-EndpointProbe {
 
     while ([DateTimeOffset]::UtcNow -lt $deadline) {
         try {
-            $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing -TimeoutSec 5 -MaximumRedirection 0
+            $requestParameters = @{
+                Uri = $Uri
+                UseBasicParsing = $true
+                TimeoutSec = 5
+                MaximumRedirection = 0
+            }
+            if ($null -ne $WebSession) {
+                $requestParameters.WebSession = $WebSession
+            }
+            $response = Invoke-WebRequest @requestParameters
             if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
                 $content = [string]$response.Content
                 if (-not [string]::IsNullOrWhiteSpace($ContentPattern) -and $content -notmatch $ContentPattern) {
@@ -323,9 +337,9 @@ $portToUse = if ($Port -eq 0) { Get-FreeTcpPort } else { $Port }
 $baseUrl = "http://localhost:$portToUse"
 $healthUri = "$baseUrl/healthz"
 $workstationUri = "$baseUrl/workstation/"
-$shutdownUri = "$baseUrl/api/system/shutdown"
-$hostProcess = $null
-$shutdownToken = ([guid]::NewGuid().ToString("N") + [guid]::NewGuid().ToString("N"))
+$startupUri = "$baseUrl/startupz"
+$loginUri = "$baseUrl/api/auth/login"
+$supervisorProcess = $null
 $result = "failed"
 $failure = $null
 $steps = New-Object System.Collections.Generic.List[object]
@@ -337,12 +351,22 @@ $previousDisableRateLimit = $env:MDC_DISABLE_RATE_LIMIT
 $previousUsers = $env:MDC_USERS
 $previousUsername = $env:MDC_USERNAME
 $previousPasswordHash = $env:MDC_PASSWORD_HASH
-$previousShutdownToken = $env:MDC_SHUTDOWN_TOKEN
+$previousPostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT
 
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
 try {
     Assert-RequiredPath -Path $installScript -Description "Root installer script"
+    if ([string]::IsNullOrWhiteSpace($PostgreSqlPayloadRoot)) {
+        throw "A runtime-specific PostgreSQL payload is required. Set -PostgreSqlPayloadRoot or MDC_POSTGRES_PAYLOAD_ROOT."
+    }
+    $resolvedPostgreSqlPayloadRoot = [System.IO.Path]::GetFullPath($PostgreSqlPayloadRoot)
+    foreach ($requiredTool in @("postgres.exe", "pg_ctl.exe", "initdb.exe")) {
+        Assert-RequiredPath `
+            -Path (Join-Path $resolvedPostgreSqlPayloadRoot "$RuntimeIdentifier\bin\$requiredTool") `
+            -Description "PostgreSQL $RuntimeIdentifier $requiredTool"
+    }
+    $env:MDC_POSTGRES_PAYLOAD_ROOT = $resolvedPostgreSqlPayloadRoot
 
     $powershell = Get-PowerShellExecutable
     $installCommand = @(
@@ -367,48 +391,97 @@ try {
     $steps.Add((Invoke-LoggedCommand -Name "Install isolated WebWorkstation copy" -Command $installCommand -LogPath $installLogPath)) | Out-Null
 
     $exePath = Join-Path $installRoot "Meridian.exe"
+    $supervisorPath = Join-Path $installRoot "Meridian.LifecycleSupervisor.exe"
     $configPath = Join-Path $appDataRoot "appsettings.json"
     $installedIndexPath = Join-Path $installRoot "wwwroot\workstation\index.html"
 
     Assert-RequiredPath -Path $exePath -Description "Installed Meridian.exe"
+    Assert-RequiredPath -Path $supervisorPath -Description "Installed lifecycle supervisor"
+    Assert-RequiredPath -Path (Join-Path $installRoot "database\bin\postgres.exe") -Description "Bundled PostgreSQL server"
     Assert-RequiredPath -Path $configPath -Description "Installed appsettings.json"
     Assert-RequiredPath -Path $installedIndexPath -Description "Installed workstation index.html"
 
-    Write-Step "Start installed Meridian host"
-    $env:MDC_AUTH_MODE = "optional"
+    Write-Step "Start installed lifecycle supervisor"
+    $smokeUsername = "lifecycle-smoke"
+    $smokePassword = "test-password"
+    $smokePasswordHash = 'pbkdf2-sha256$210000$oOQU8zfLm/Pzwrl8VZlatQ==$ePPcBmch9qAIfhbablmoBT/tKPGb/TKmFBHlFWKV1uU='
+    $env:MDC_AUTH_MODE = "required"
     $env:MDC_DISABLE_RATE_LIMIT = "true"
     $env:MDC_USERS = $null
-    $env:MDC_USERNAME = $null
-    $env:MDC_PASSWORD_HASH = $null
-    $env:MDC_SHUTDOWN_TOKEN = $shutdownToken
-    $hostArgumentLine = '--mode workstation --http-port {0} --config "{1}"' -f $portToUse, $configPath.Replace('"', '\"')
-    $hostProcess = Start-Process `
-        -FilePath $exePath `
-        -ArgumentList $hostArgumentLine `
+    $env:MDC_USERNAME = $smokeUsername
+    $env:MDC_PASSWORD_HASH = $smokePasswordHash
+    $supervisorProcess = Start-Process `
+        -FilePath $supervisorPath `
+        -ArgumentList "start" `
         -WorkingDirectory $installRoot `
         -WindowStyle Hidden `
         -RedirectStandardOutput $hostStdoutPath `
         -RedirectStandardError $hostStderrPath `
         -PassThru
 
-    Write-Ok "Started installed host PID $($hostProcess.Id)"
+    Write-Ok "Started lifecycle supervisor PID $($supervisorProcess.Id)"
+
+    $probes.Add((Invoke-EndpointProbe -Name "startupz" -Uri $startupUri -TimeoutSeconds $TimeoutSeconds -ContentPattern '"readiness":"(Ready|Degraded)"')) | Out-Null
 
     $probes.Add((Invoke-EndpointProbe -Name "healthz" -Uri $healthUri -TimeoutSeconds $TimeoutSeconds -ContentPattern "healthy")) | Out-Null
+
+    Write-Step "Authenticate installed workstation smoke operator"
+    $smokeSession = [Microsoft.PowerShell.Commands.WebRequestSession]::new()
+    $loginBody = @{ username = $smokeUsername; password = $smokePassword; returnUrl = "/workstation/" } | ConvertTo-Json -Compress
+    $loginResponse = Invoke-WebRequest `
+        -Uri $loginUri `
+        -Method Post `
+        -ContentType "application/json" `
+        -Body $loginBody `
+        -WebSession $smokeSession `
+        -UseBasicParsing `
+        -TimeoutSec 10
+    if ($loginResponse.StatusCode -ne 200) {
+        throw "Installed workstation authentication failed with HTTP $($loginResponse.StatusCode)."
+    }
+    Write-Ok "Installed workstation issued an authenticated smoke session"
 
     $workstationProbe = Invoke-EndpointProbe `
         -Name "workstation shell" `
         -Uri $workstationUri `
         -TimeoutSeconds $TimeoutSeconds `
-        -ContentPattern "Meridian Web Workstation|/workstation/assets/|id=`"root`""
+        -ContentPattern "Meridian Web Workstation|/workstation/assets/|id=`"root`"" `
+        -WebSession $smokeSession
     $probes.Add($workstationProbe) | Out-Null
 
-    $workstationResponse = Invoke-WebRequest -Uri $workstationUri -UseBasicParsing -TimeoutSec 5
+    $workstationResponse = Invoke-WebRequest -Uri $workstationUri -WebSession $smokeSession -UseBasicParsing -TimeoutSec 5
     $assetUri = Get-FirstWorkstationAssetUri -Html ([string]$workstationResponse.Content) -BaseUrl $baseUrl
     if (-not $assetUri) {
         throw "No workstation asset reference was found in /workstation/; the response may not be the installed workstation shell."
     }
 
-    $probes.Add((Invoke-EndpointProbe -Name "first workstation asset" -Uri $assetUri -TimeoutSeconds 15)) | Out-Null
+    $probes.Add((Invoke-EndpointProbe -Name "first workstation asset" -Uri $assetUri -TimeoutSeconds 15 -WebSession $smokeSession)) | Out-Null
+
+    if (-not $KeepHostOpen) {
+        Write-Step "Stop installed lifecycle session"
+        & $supervisorPath stop
+        if ($LASTEXITCODE -notin @(0, 3)) {
+            throw "Lifecycle supervisor stop failed with exit code $LASTEXITCODE."
+        }
+        if (-not $supervisorProcess.WaitForExit(($TimeoutSeconds + 15) * 1000)) {
+            throw "Lifecycle supervisor did not exit within the shutdown deadline."
+        }
+        $receiptRoot = Join-Path $appDataRoot "data\runtime\lifecycle\receipts"
+        $sessionReceipt = Get-ChildItem -LiteralPath $receiptRoot -Filter "session-*.json" -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+        if ($null -eq $sessionReceipt) {
+            throw "The lifecycle supervisor did not persist a terminal session receipt under $receiptRoot."
+        }
+        $probes.Add([ordered]@{
+            name = "shutdown receipt"
+            uri = $sessionReceipt.FullName
+            statusCode = 200
+            contentLength = $sessionReceipt.Length
+            contentType = "application/json"
+        }) | Out-Null
+        Write-Ok "Lifecycle supervisor stopped host and dedicated database with a persisted receipt"
+    }
 
     $result = "passed"
 }
@@ -423,30 +496,17 @@ finally {
     $env:MDC_USERS = $previousUsers
     $env:MDC_USERNAME = $previousUsername
     $env:MDC_PASSWORD_HASH = $previousPasswordHash
-    $env:MDC_SHUTDOWN_TOKEN = $previousShutdownToken
+    $env:MDC_POSTGRES_PAYLOAD_ROOT = $previousPostgreSqlPayloadRoot
 
-    if ($null -ne $hostProcess -and -not $hostProcess.HasExited -and -not $KeepHostOpen) {
+    if ($null -ne $supervisorProcess -and -not $supervisorProcess.HasExited -and -not $KeepHostOpen) {
         try {
-            Write-Info "Requesting graceful shutdown for installed host PID $($hostProcess.Id)..."
-            Invoke-WebRequest `
-                -Uri $shutdownUri `
-                -Method Post `
-                -UseBasicParsing `
-                -TimeoutSec 5 `
-                -Headers @{ "X-Meridian-Shutdown-Token" = $shutdownToken } | Out-Null
-            if (-not $hostProcess.WaitForExit(15000)) {
-                Write-Warn "Graceful shutdown timed out; terminating installed host PID $($hostProcess.Id)."
-                Stop-Process -Id $hostProcess.Id -Force -ErrorAction Stop
-                $hostProcess.WaitForExit()
-            }
+            Write-Info "Requesting supervisor-owned shutdown for installed session PID $($supervisorProcess.Id)..."
+            $supervisorPath = Join-Path $installRoot "Meridian.LifecycleSupervisor.exe"
+            & $supervisorPath stop
+            [void]$supervisorProcess.WaitForExit(($TimeoutSeconds + 15) * 1000)
         }
         catch {
-            Write-Warn "Failed to stop installed host PID $($hostProcess.Id): $($_.Exception.Message)"
-            if (-not $hostProcess.HasExited) {
-                Write-Warn "Terminating installed host PID $($hostProcess.Id) after graceful shutdown failure."
-                Stop-Process -Id $hostProcess.Id -Force -ErrorAction SilentlyContinue
-                $hostProcess.WaitForExit()
-            }
+            Write-Warn "Failed to stop installed lifecycle session PID $($supervisorProcess.Id): $($_.Exception.Message)"
         }
     }
 
@@ -485,8 +545,8 @@ finally {
             enableTrimmedPublish = $EnableTrimmedPublish.IsPresent
             logs = [ordered]@{
                 install = $installLogPath
-                hostStdout = $hostStdoutPath
-                hostStderr = $hostStderrPath
+                supervisorStdout = $hostStdoutPath
+                supervisorStderr = $hostStderrPath
             }
             steps = $stepsSnapshot
             probes = $probesSnapshot

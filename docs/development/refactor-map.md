@@ -113,7 +113,9 @@
   - `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` (new)
 
 ### Step 3.2 — Migrate Polygon reconnection to shared helper ✅
-- **Status:** Complete (partial migration).
+- **Status:** Complete (partial migration). *(Historical: the interim `WebSocketReconnectionHelper`
+  was later superseded by `WebSocketConnectionManager` — which owns reconnection and raises
+  `GapDetected` — and has been removed.)*
 - **What was done:**
   - Replaced Polygon's ~60-line manual reconnection logic (`SemaphoreSlim` gating, `CalculateReconnectDelay`, manual attempt tracking) with `WebSocketReconnectionHelper.TryReconnectAsync()`.
   - Polygon still manages its own `ClientWebSocket` directly (required for protocol-specific handshake: sync message exchange for `WaitForConnectionMessage` and `Authenticate` before receive loop).
@@ -134,7 +136,7 @@
 - **What was done:**
   - Removed Polygon's manual `SemaphoreSlim _reconnectGate`, `_reconnectAttempts`, `MaxReconnectAttempts`, `ReconnectBaseDelay`, `ReconnectMaxDelay` fields.
   - Removed `CalculateReconnectDelay()` method.
-  - Reconnection now delegated to `WebSocketReconnectionHelper` which provides identical behavior (gated exponential backoff with jitter).
+  - Reconnection now delegated to the shared reconnection layer (gated exponential backoff with jitter); today this is `WebSocketConnectionManager` (the interim `WebSocketReconnectionHelper` has been removed).
 - **Key files:**
   - `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs`
 
@@ -213,7 +215,7 @@
 - **What was done:**
   - Removed `ConfigValidationHelper` static class (3 obsolete methods: `ValidateAndLog()` × 2, `ValidateOrThrow()`).
   - Preserved all FluentValidation validator classes (`AppConfigValidator`, `AlpacaOptionsValidator`, etc.) as they're used by `ConfigValidationPipeline`.
-  - Polygon reconnection logic consolidated to `WebSocketReconnectionHelper`.
+  - Polygon reconnection logic consolidated to the shared reconnection layer (now `WebSocketConnectionManager`).
 - **Key files:**
   - `src/Meridian.Core/Config/ConfigValidationHelper.cs`
 
@@ -244,7 +246,7 @@ at every migrated site except where a divergence was itself the defect (noted pe
 
 ### Step 8.2 — Canonical backoff primitive ✅
 - **What was done:**
-  - `Backoff.ExponentialDelay(attempt, baseDelay, maxDelay, jitterFraction, multiplier, random)` in `src/Meridian.Core/Resilience/Backoff.cs` replaces ~10 hand-rolled `Math.Pow(2, …)` variants: `WebSocketConnectionManager`, `WebSocketReconnectionHelper`, `NYSEDataSource`, `BackfillWorkerService`, `PriorityBackfillQueue`, `PollingProviderBase`, `DataSourceBase`, `BaseBrokerageGateway`, `DailySummaryWebhook`, `ReconciliationOrchestrationResilienceOptions`, and `ExponentialBackoffRetry` (ConnectionWarmUp).
+  - `Backoff.ExponentialDelay(attempt, baseDelay, maxDelay, jitterFraction, multiplier, random)` in `src/Meridian.Core/Resilience/Backoff.cs` replaces ~10 hand-rolled `Math.Pow(2, …)` variants: `WebSocketConnectionManager`, `NYSEDataSource`, `BackfillWorkerService`, `PriorityBackfillQueue`, `PollingProviderBase`, `DataSourceBase`, `BaseBrokerageGateway`, `DailySummaryWebhook`, `ReconciliationOrchestrationResilienceOptions`, and `ExponentialBackoffRetry` (ConnectionWarmUp).
   - Robustness fixes riding along: `BaseBrokerageGateway` reconnect delays are now capped (60 s) and jittered; `DailySummaryWebhook` retries are capped (2 min); `ExponentialBackoffRetry` uses `Random.Shared` instead of a private `Random`; the IB reconnect loop passes its cancellation token into the backoff wait; integer-overflow on high attempt counts is guarded.
 - **Key files:**
   - `src/Meridian.Core/Resilience/Backoff.cs`

@@ -1,5 +1,9 @@
 # Architectural Decision Records (ADRs)
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 Active architectural decisions are routed through:
 
 - [engineering docs](../engineering/README.md)
@@ -17,4 +21,6 @@ This folder keeps only current material:
 - [017-modular-operational-monolith.md](017-modular-operational-monolith.md)
 - [018-declarative-statement-mapping-profiles.md](018-declarative-statement-mapping-profiles.md)
 - [019-production-support-matrix-and-deployment-posture.md](019-production-support-matrix-and-deployment-posture.md)
+- [020-lifecycle-control-plane.md](020-lifecycle-control-plane.md)
+- [021-verified-operation-outcomes-and-case-history.md](021-verified-operation-outcomes-and-case-history.md)
 - [_template.md](_template.md) — template for authoring new ADRs

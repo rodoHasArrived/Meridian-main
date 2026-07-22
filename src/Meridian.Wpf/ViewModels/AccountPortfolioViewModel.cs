@@ -331,8 +331,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
         try
         {
-            var snapshot = await _apiClient.GetAsync<AccountDetailDto>(
-                $"/api/execution/accounts/{Uri.EscapeDataString(AccountId)}", ct);
+            var snapshot = (await _apiClient.GetWithResponseAsync<AccountDetailDto>(
+                $"/api/execution/accounts/{Uri.EscapeDataString(AccountId)}", ct)).DataOrLoggedNull("Load account portfolio snapshot");
 
             if (snapshot is null)
             {

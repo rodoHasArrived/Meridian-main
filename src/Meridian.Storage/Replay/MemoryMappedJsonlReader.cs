@@ -217,7 +217,13 @@ public sealed class MemoryMappedJsonlReader
     {
         Interlocked.Increment(ref _memoryMappedFilesUsed);
 
-        using var mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.Read);
+        // Open the backing stream explicitly with ReadWrite|Delete sharing: the string-path
+        // overload requests exclusive-ish sharing that conflicts with the sink's persistent
+        // append handle on the active day file.
+        using var backing = new FileStream(
+            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, useAsync: false);
+        using var mmf = MemoryMappedFile.CreateFromFile(
+            backing, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: false);
 
         long position = 0;
         var pendingLines = new List<string>(_options.BatchSize);
@@ -319,7 +325,10 @@ public sealed class MemoryMappedJsonlReader
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
+        // ReadWrite|Delete sharing: the sink holds a persistent append handle on the active
+        // day file, and retention may delete files mid-enumeration; neither should fail reads.
+        await using var fs = new FileStream(
+            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
         // Shared codec detection (magic bytes, extension fallback) so streaming replay honors every
         // compression suffix the storage policy can emit, not just gzip.
         Stream stream = CompressedJsonlStream.Decompress(fs, file);
@@ -328,11 +337,26 @@ public sealed class MemoryMappedJsonlReader
 
         var pendingLines = new List<string>(_options.BatchSize);
 
-        while (!reader.EndOfStream)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
 
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            string? line;
+            try
+            {
+                line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            }
+            catch (InvalidDataException ex)
+            {
+                // A crash mid-append can tear the trailing compressed member; every complete
+                // earlier member was already decoded, so stop at the last whole block.
+                Log.Warning(ex, "Truncated compressed tail in {File}; stopping at the last complete block", file);
+                Interlocked.Increment(ref _corruptedLines);
+                break;
+            }
+
+            if (line is null)
+                break;
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 

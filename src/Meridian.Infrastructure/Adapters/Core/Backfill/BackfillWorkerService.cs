@@ -282,6 +282,21 @@ public sealed class BackfillWorkerService : IDisposable
                     var bars = await FetchBarsAsync(request, ct).ConfigureAwait(false);
                     MarketDataTracing.RecordEventCount(fetchActivity, bars.Count);
 
+                    bars = BackfillBarValidation.RemoveFutureDatedBars(bars, out var futureDropped);
+                    if (futureDropped > 0)
+                    {
+                        scopedLog.Warning(
+                            "Dropped {FutureDropped} future-dated bars for {Symbol} from {Provider}",
+                            futureDropped, request.Symbol, providerName);
+                    }
+
+                    if (BackfillBarValidation.EvaluateDailyRecency(bars, request.ToDate) is { } staleVerdict)
+                    {
+                        scopedLog.Warning(
+                            "Stale backfill persisted for {Symbol} via {Provider}: {StaleReason}. The provider's dataset may be frozen or paywalled.",
+                            request.Symbol, providerName, staleVerdict.Description);
+                    }
+
                     if (bars.Count > 0)
                     {
                         // Write to storage

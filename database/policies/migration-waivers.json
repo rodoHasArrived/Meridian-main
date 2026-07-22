@@ -1,0 +1,11 @@
+{
+  "destructive_changes": [],
+  "removed_migrations": [
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/026_security_operator_override_approval_trail.sql",
+      "reason": "Removed the later duplicate of 026_security_master_operator_override_approvals.sql; both files contained the same idempotent DDL and their shared ordinal made the production runner fail before opening PostgreSQL.",
+      "review_after": "2027-01-15"
+    }
+  ],
+  "version": 1
+}

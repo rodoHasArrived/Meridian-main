@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
 
@@ -372,8 +373,9 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             return;
         }
 
-        var accrualDays = CalculateDayCountDays(start, end, terms.DayCountConvention!);
-        var fraction = CalculateDayCountFraction(start, end, terms.DayCountConvention!);
+        var convention = DayCountConventions.Parse(terms.DayCountConvention);
+        var accrualDays = DayCountConventions.Days(convention, start, end);
+        var fraction = DayCountConventions.Fraction(convention, start, end);
         var accruedAmount = RoundMoney(position.ParAmount * NormalizeRate(terms.CouponRate!.Value) * fraction);
         if (accruedAmount <= 0m)
         {
@@ -791,36 +793,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         decimal? expectedAmount = null,
         decimal? actualAmount = null) =>
         new(code, source, symbol, accountId, reason, severity, "/workstation/data/security-master", expectedAmount, actualAmount);
-
-    private static int CalculateDayCountDays(DateOnly start, DateOnly end, string dayCountConvention)
-    {
-        if (dayCountConvention.Equals("30/360", StringComparison.OrdinalIgnoreCase) ||
-            dayCountConvention.Equals("Thirty360", StringComparison.OrdinalIgnoreCase))
-        {
-            var d1 = Math.Min(start.Day, 30);
-            var d2 = start.Day == 30 ? Math.Min(end.Day, 30) : end.Day;
-            return ((end.Year - start.Year) * 360) + ((end.Month - start.Month) * 30) + (d2 - d1);
-        }
-
-        return end.DayNumber - start.DayNumber;
-    }
-
-    private static decimal CalculateDayCountFraction(DateOnly start, DateOnly end, string dayCountConvention)
-    {
-        var days = CalculateDayCountDays(start, end, dayCountConvention);
-        var denominator = dayCountConvention.Equals("ACT/360", StringComparison.OrdinalIgnoreCase) ||
-            dayCountConvention.Equals("Actual360", StringComparison.OrdinalIgnoreCase)
-                ? 360m
-                : 365m;
-
-        if (dayCountConvention.Equals("30/360", StringComparison.OrdinalIgnoreCase) ||
-            dayCountConvention.Equals("Thirty360", StringComparison.OrdinalIgnoreCase))
-        {
-            denominator = 360m;
-        }
-
-        return decimal.Round(days / denominator, 10, MidpointRounding.AwayFromZero);
-    }
 
     private static decimal NormalizeRate(decimal rate) => rate > 1m ? rate / 100m : rate;
 

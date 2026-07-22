@@ -18,6 +18,15 @@ type AccrualValidationDto = {
 }
 
 [<CLIMutable>]
+type PerformanceFeeAccrualDto = {
+    GrossProfit: decimal
+    FeeBase: decimal
+    PerformanceFee: decimal
+    CrystallizedFee: decimal
+    NewHighWaterMark: decimal
+}
+
+[<CLIMutable>]
 type LedgerBalanceResultDto = {
     AccountName: string
     AccountType: int
@@ -191,6 +200,45 @@ type LedgerInterop private () =
 
     static member CalculateNetBalance(accountType: int, debits: decimal, credits: decimal) =
         Posting.calculateNetBalance accountType debits credits
+
+    // ── Fund-economics accruals ──────────────────────────────────────────────
+
+    /// <summary>Day-weighted management fee accrual (net assets × rate × days / basis).</summary>
+    static member ManagementFeeAccrual(
+        netAssets: decimal,
+        annualRate: decimal,
+        accrualDays: int,
+        yearBasisDays: int) : decimal =
+        FundEconomics.managementFeeAccrual netAssets annualRate accrualDays yearBasisDays
+
+    /// <summary>Straight-line expense accrual (annual amount × days / basis).</summary>
+    static member ExpenseAccrual(
+        annualAmount: decimal,
+        accrualDays: int,
+        yearBasisDays: int) : decimal =
+        FundEconomics.expenseAccrual annualAmount accrualDays yearBasisDays
+
+    /// <summary>Performance fee against the high-water mark, net of a hurdle, with crystallization.</summary>
+    static member PerformanceFeeAccrual(
+        endingNavBeforeFee: decimal,
+        priorHighWaterMark: decimal,
+        hurdleAmount: decimal,
+        performanceFeeRate: decimal,
+        crystallize: bool) : PerformanceFeeAccrualDto =
+        let result =
+            FundEconomics.performanceFeeAccrual
+                endingNavBeforeFee
+                priorHighWaterMark
+                hurdleAmount
+                performanceFeeRate
+                crystallize
+        ({
+            GrossProfit = result.GrossProfit
+            FeeBase = result.FeeBase
+            PerformanceFee = result.PerformanceFee
+            CrystallizedFee = result.CrystallizedFee
+            NewHighWaterMark = result.NewHighWaterMark
+        } : PerformanceFeeAccrualDto)
 
     static member ValidateAccrualEntry(entry: AccrualEntry) =
         let errors = AccrualEntry.validate entry

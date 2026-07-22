@@ -172,13 +172,22 @@ public sealed class SecurityMasterQueryService :
 
         return new TradingParametersDto(
             SecurityId: securityId,
-            LotSize: ReadDecimal(common, "lotSize"),
-            TickSize: ReadDecimal(common, "tickSize"),
+            LotSize: ReadDecimal(common, "lotSize") ?? ReadDecimal(common, "minimumTradeIncrement"),
+            TickSize: ReadDecimal(common, "tickSize") ?? ReadDecimal(common, "priceIncrement"),
             ContractMultiplier: ReadDecimal(common, "contractMultiplier"),
             MarginRequirementPct: ReadDecimal(common, "marginRequirementPct"),
             TradingHoursUtc: ReadString(common, "tradingHoursUtc"),
             CircuitBreakerThresholdPct: ReadDecimal(common, "circuitBreakerThresholdPct"),
-            AsOf: asOf);
+            AsOf: asOf)
+        {
+            IsMarginable = ReadBool(common, "isMarginable"),
+            IsShortable = ReadBool(common, "isShortable"),
+            IsEasyToBorrow = ReadBool(common, "isEasyToBorrow"),
+            IsFractionable = ReadBool(common, "isFractionable"),
+            MinimumOrderSize = ReadDecimal(common, "minimumOrderSize"),
+            MinimumTradeIncrement = ReadDecimal(common, "minimumTradeIncrement"),
+            PriceIncrement = ReadDecimal(common, "priceIncrement")
+        };
     }
 
     private static decimal? ReadDecimal(System.Text.Json.JsonElement element, string propertyName)

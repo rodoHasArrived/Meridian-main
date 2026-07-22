@@ -76,7 +76,8 @@ public sealed class FillModelExpansionTests
     [Fact]
     public void BarMidpointFillModel_StopMarketBuy_TriggersWhenHighReachesStop()
     {
-        // stop-market buy, stopPrice=405, bar high=406 → triggers and fills at midpoint
+        // stop-market buy, stopPrice=405, bar high=406 → triggers; conservative pricing anchors
+        // the fill to max(stop, open) = 405 instead of the (better) bar midpoint of 402.
         var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m);
         var order = new Order(
             Guid.NewGuid(), "SPY", OrderType.StopMarket, 10L,
@@ -87,10 +88,26 @@ public sealed class FillModelExpansionTests
 
         result.WasTriggered.Should().BeTrue();
         result.Fills.Should().HaveCount(1);
-        // midpoint = (400 + 404) / 2 = 402, slippage = 0
-        result.Fills[0].FillPrice.Should().Be(402m);
+        result.Fills[0].FillPrice.Should().Be(405m);
         result.Fills[0].FilledQuantity.Should().Be(10L);
         result.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
+    public void BarMidpointFillModel_StopMarketBuy_OptimisticMode_FillsAtMidpoint()
+    {
+        // Legacy optimistic mode preserves the historical midpoint execution for triggered stops.
+        var model = new BarMidpointFillModel(new FixedCommissionModel(0m), slippageBasisPoints: 0m, conservatism: FillConservatism.Optimistic);
+        var order = new Order(
+            Guid.NewGuid(), "SPY", OrderType.StopMarket, 10L,
+            LimitPrice: null, StopPrice: 405m, DateTimeOffset.UtcNow);
+        var evt = MakeBarEvent("SPY", 400m, 406m, 398m, 404m);
+
+        var result = model.TryFill(order, evt);
+
+        result.WasTriggered.Should().BeTrue();
+        // midpoint = (400 + 404) / 2 = 402, slippage = 0
+        result.Fills[0].FillPrice.Should().Be(402m);
     }
 
     [Fact]

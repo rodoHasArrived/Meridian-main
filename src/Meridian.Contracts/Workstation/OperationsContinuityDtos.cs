@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
@@ -263,8 +264,10 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_VALIDATED_JOURNAL_REQUIRED",
         "LEDGER_VALIDATION_REQUIRED",
         "OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS",
+        "OPERATIONS_ATOMIC_COMMIT_UNAVAILABLE",
         "OPERATIONS_GATES_NOT_PASSED",
         "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
+        "OPERATIONS_TRANSITION_COMMIT_FAILED",
         "PERIOD_REQUIRED",
         "POSITION_COVERAGE_INCOMPLETE",
         "PRICING_COVERAGE_INCOMPLETE",
@@ -283,6 +286,7 @@ public static class OperationsWorkflowContractMatrix
         "RECONCILIATION_PRINCIPAL_INCOME_CLASSIFICATION_MISMATCH",
         "RECONCILIATION_RUN_NOT_FOUND",
         "RECONCILIATION_RUN_REQUIRED",
+        "RECONCILIATION_SUCCESSOR_REQUIRED",
         "RECONCILIATION_UNASSIGNED_OWNER",
         "REJECTION_METADATA_REQUIRED",
         "REOPEN_GOVERNANCE_METADATA_REQUIRED",
@@ -431,6 +435,8 @@ public static class OperationsWorkflowContractMatrix
         "approval-approved",
         "approval-rejected",
         "workflow-closed",
+        "workflow-transition-blocked",
+        "workflow-transition-failed",
         "workflow-reopened"
     };
 }
@@ -586,7 +592,8 @@ public sealed record OperationsLedgerJournalCandidateDto(
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     OperationsJournalEntryMetadataDto? Metadata = null,
     string? IdempotencyKey = null,
-    string? SecurityMasterProvenance = null);
+    string? SecurityMasterProvenance = null,
+    long? ExpectedLedgerVersion = null);
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,
@@ -644,7 +651,10 @@ public sealed record OperationsResolveBreakCaseRequestDto(
     string Rationale,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? ApprovalActor = null,
+    string? ApprovalReference = null,
+    string? SupersedingBreakId = null);
 
 public sealed record OperationsAssignBreakCaseRequestDto(
     long ExpectedVersion,
@@ -847,15 +857,144 @@ public sealed record OperationsCloseCalendarItemAuditEventDto(
     DateOnly DueDate,
     string Owner);
 
-public sealed record OperationsTransitionResultDto(
-    bool Success,
-    string? ErrorCode,
-    string? ErrorMessage,
-    OperationsContinuityWorkflowDto? Workflow,
-    IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions,
-    long? NewVersion = null,
-    OperationsCloseReadinessDto? CloseReadiness = null);
+public sealed record OperationsTransitionResultDto
+{
+    private const string LegacyInputHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+    /// <summary>
+    /// JSON-compatible constructor. <paramref name="Success"/> is accepted only to deserialize
+    /// legacy payloads that predate <see cref="Outcome"/>; whenever an outcome is present the
+    /// compatibility boolean is derived exclusively from its terminal state.
+    /// </summary>
+    [JsonConstructor]
+    public OperationsTransitionResultDto(
+        bool Success,
+        string? ErrorCode,
+        string? ErrorMessage,
+        OperationsContinuityWorkflowDto? Workflow,
+        IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
+        IReadOnlyList<OperationsNextActionDto> NextActions,
+        long? NewVersion = null,
+        OperationsCloseReadinessDto? CloseReadiness = null,
+        VerifiedOperationOutcome? Outcome = null)
+    {
+        this.Outcome = Outcome ?? CreateLegacyOutcome(Success, ErrorCode, ErrorMessage, Blockers, NextActions);
+        this.ErrorCode = ErrorCode;
+        this.ErrorMessage = ErrorMessage;
+        this.Workflow = Workflow;
+        this.Blockers = Blockers ?? [];
+        this.NextActions = NextActions ?? [];
+        this.NewVersion = NewVersion;
+        this.CloseReadiness = CloseReadiness;
+    }
+
+    public OperationsTransitionResultDto(
+        VerifiedOperationOutcome outcome,
+        string? errorCode,
+        string? errorMessage,
+        OperationsContinuityWorkflowDto? workflow,
+        IReadOnlyList<OperationsWorkflowBlockerDto> blockers,
+        IReadOnlyList<OperationsNextActionDto> nextActions,
+        long? newVersion = null,
+        OperationsCloseReadinessDto? closeReadiness = null)
+        : this(
+            outcome?.IsSuccessful ?? false,
+            errorCode,
+            errorMessage,
+            workflow,
+            blockers,
+            nextActions,
+            newVersion,
+            closeReadiness,
+            outcome)
+    {
+    }
+
+    public VerifiedOperationOutcome Outcome { get; init; }
+
+    public bool Success => Outcome.IsSuccessful;
+
+    public string? ErrorCode { get; init; }
+
+    public string? ErrorMessage { get; init; }
+
+    public OperationsContinuityWorkflowDto? Workflow { get; init; }
+
+    public IReadOnlyList<OperationsWorkflowBlockerDto> Blockers { get; init; }
+
+    public IReadOnlyList<OperationsNextActionDto> NextActions { get; init; }
+
+    public long? NewVersion { get; init; }
+
+    public OperationsCloseReadinessDto? CloseReadiness { get; init; }
+
+    private static VerifiedOperationOutcome CreateLegacyOutcome(
+        bool success,
+        string? errorCode,
+        string? errorMessage,
+        IReadOnlyList<OperationsWorkflowBlockerDto>? blockers,
+        IReadOnlyList<OperationsNextActionDto>? nextActions)
+    {
+        var operationId = $"legacy-operations-transition-{Guid.NewGuid():N}";
+        var evidenceId = $"{operationId}-receipt";
+        var now = DateTimeOffset.UtcNow;
+        var state = success
+            ? OperationTerminalState.Succeeded
+            : blockers is { Count: > 0 }
+                ? OperationTerminalState.Blocked
+                : OperationTerminalState.Failed;
+        var postconditionState = success
+            ? OperationPostconditionState.Satisfied
+            : OperationPostconditionState.NotSatisfied;
+        var issues = success
+            ? []
+            : (IReadOnlyList<OperationIssue>)[new OperationIssue(
+                errorCode ?? "LEGACY_OPERATION_UNSUCCESSFUL",
+                errorMessage ?? "The legacy operation did not report success.",
+                OperationIssueSeverity.Error,
+                EvidenceId: evidenceId)
+            {
+                IsBlocking = state == OperationTerminalState.Blocked
+            }];
+        var recovery = success
+            ? []
+            : (IReadOnlyList<OperationRecoveryAction>)[new OperationRecoveryAction(
+                "review-legacy-operation",
+                nextActions?.FirstOrDefault()?.Label ?? "Review operation",
+                errorMessage ?? "Review the operation evidence and retry when the blocking condition is resolved.",
+                Retryable: true,
+                RequiresHumanAction: true,
+                Route: nextActions?.FirstOrDefault()?.Route)
+            {
+                EvidenceIds = [evidenceId]
+            }];
+
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            operationId,
+            "operations-continuity-legacy-result",
+            state,
+            now,
+            now,
+            1,
+            operationId,
+            LegacyInputHash,
+            [new OperationPostcondition(
+                "legacy-result-received",
+                "The legacy transition result was received and normalized to the verified outcome contract.",
+                postconditionState,
+                Required: true,
+                EvidenceIds: [evidenceId])],
+            [new OperationEvidenceReference(
+                evidenceId,
+                "legacy-transition-receipt",
+                "Compatibility receipt created while reading a legacy Operations Continuity result.",
+                Uri: $"urn:meridian:operations-continuity:{operationId}",
+                CapturedAtUtc: now)],
+            [],
+            issues,
+            recovery));
+    }
+}
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -1092,7 +1231,8 @@ public sealed record OperationsTimelineEntryDto(
     OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
-    string CurrentHash);
+    string CurrentHash,
+    VerifiedOperationOutcome? Outcome = null);
 
 public sealed record OperationsWorkflowAuditDto(
     Guid AuditId,
@@ -1112,7 +1252,8 @@ public sealed record OperationsWorkflowAuditDto(
     OperationsContinuityCorrelationKeysDto? CorrelationKeys,
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
-    string CurrentHash);
+    string CurrentHash,
+    VerifiedOperationOutcome? Outcome = null);
 
 public sealed record OperationsBreakCaseDto(
     string BreakId,
@@ -1140,7 +1281,15 @@ public sealed record OperationsBreakCaseDto(
     decimal? Materiality = null,
     string? RootCauseCode = null,
     string? ApprovalState = null,
-    IReadOnlyList<string>? BlockedOutputs = null);
+    IReadOnlyList<string>? BlockedOutputs = null,
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null,
+    ReconciliationBreakDispositionDto? Disposition = null,
+    string? DispositionReason = null,
+    string? SupersedingBreakId = null,
+    string? DispositionApprovedBy = null,
+    string? DispositionApprovalReference = null,
+    string? DispositionEvidenceHash = null,
+    DateTimeOffset? DisposedAtUtc = null);
 
 public sealed record OperationsContinuityCorrelationKeysDto(
     string? RunId = null,

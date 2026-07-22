@@ -29,6 +29,8 @@ param(
 
     [string]$Configuration = "Release",
 
+    [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
+
     [switch]$SkipDashboardBuild,
 
     [switch]$SkipNpmInstall,
@@ -771,6 +773,41 @@ function Stop-MeridianProcessesForInstallRoot {
     return $results.ToArray()
 }
 
+function Stop-LifecycleSupervisorForInstallRoot {
+    param(
+        [Parameter(Mandatory)][string]$InstallRootPath
+    )
+
+    $supervisorPath = Join-Path $InstallRootPath "Meridian.LifecycleSupervisor.exe"
+    if (-not (Test-Path -LiteralPath $supervisorPath)) {
+        return [pscustomobject]@{ attempted = $false; stopped = $false; reason = "supervisor-not-installed" }
+    }
+
+    $start = [Diagnostics.ProcessStartInfo]::new()
+    $start.FileName = $supervisorPath
+    $start.WorkingDirectory = $InstallRootPath
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    $start.ArgumentList.Add("stop")
+    $process = [Diagnostics.Process]::Start($start)
+    if ($null -eq $process) {
+        throw "Could not request lifecycle supervisor shutdown before file replacement."
+    }
+
+    try {
+        if (-not $process.WaitForExit(140000)) {
+            throw "Lifecycle supervisor did not stop before the combined host/database deadline."
+        }
+        if ($process.ExitCode -notin @(0, 3)) {
+            throw "Lifecycle supervisor shutdown failed with exit code $($process.ExitCode)."
+        }
+        return [pscustomobject]@{ attempted = $true; stopped = $true; reason = "supervisor-stop-completed" }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
 function Remove-StaleShortcut {
     param(
         [Parameter(Mandatory)]$ShortcutRecord
@@ -1034,25 +1071,15 @@ function Repair-InvalidWorkstationConfig {
     }
 }
 
-function ConvertTo-PowerShellSingleQuotedLiteral {
-    param([Parameter(Mandatory)][string]$Value)
-
-    return "'" + $Value.Replace("'", "''") + "'"
-}
-
-function New-LauncherScript {
+function New-LifecycleSupervisorLauncherScript {
     param(
-        [Parameter(Mandatory)][string]$LauncherPath,
-        [Parameter(Mandatory)][string]$ConfigPath,
-        [Parameter(Mandatory)][int]$DefaultPort
+        [Parameter(Mandatory)][string]$LauncherPath
     )
 
-    $canonicalConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
-    $configPathLiteral = ConvertTo-PowerShellSingleQuotedLiteral -Value $canonicalConfigPath
     $launcher = @"
 param(
     [ValidateRange(1, 65535)]
-    [int]`$Port = $DefaultPort,
+    [int]`$Port = 8080,
 
     [switch]`$Stop,
 
@@ -1061,231 +1088,29 @@ param(
 
 `$ErrorActionPreference = "Stop"
 `$installRoot = Split-Path -Parent `$MyInvocation.MyCommand.Path
-`$exePath = Join-Path `$installRoot "Meridian.exe"
-`$configPath = $configPathLiteral
-`$stateRoot = Join-Path (Split-Path -Parent `$configPath) "service"
-`$runtimePath = Join-Path `$stateRoot "web-workstation-runtime.json"
-`$healthUrl = "http://localhost:`$Port/healthz"
-`$lifecycleUrl = "http://localhost:`$Port/api/system/lifecycle"
-`$shutdownUrl = "http://localhost:`$Port/api/system/shutdown"
-`$workstationUrl = "http://localhost:`$Port/workstation/"
-`$loginUrl = "http://localhost:`$Port/login?returnUrl=%2Fworkstation%2F"
-
-if ([string]::IsNullOrWhiteSpace(`$env:MDC_AUTH_MODE)) {
-    `$env:MDC_AUTH_MODE = "required"
-}
-if ([string]::IsNullOrWhiteSpace(`$env:MDC_PACKAGED_BUILD)) {
-    `$env:MDC_PACKAGED_BUILD = "true"
+`$supervisorPath = Join-Path `$installRoot "Meridian.LifecycleSupervisor.exe"
+if (-not (Test-Path -LiteralPath `$supervisorPath)) {
+    throw "Meridian.LifecycleSupervisor.exe was not found at `$supervisorPath. Re-run the workstation installer."
 }
 
-function Test-MeridianEndpoint {
-    param(
-        [Parameter(Mandatory)][string]`$Uri,
-        [hashtable]`$Headers = @{}
-    )
-
-    try {
-        `$response = Invoke-WebRequest -Uri `$Uri -UseBasicParsing -TimeoutSec 2 -Headers `$Headers
-        return `$response.StatusCode -ge 200 -and `$response.StatusCode -lt 500
-    }
-    catch {
-        return `$false
-    }
+`$command = if (`$Stop) { "stop" } elseif (`$Status) { "status" } else { "start" }
+`$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+`$startInfo.FileName = `$supervisorPath
+`$startInfo.WorkingDirectory = `$installRoot
+`$startInfo.UseShellExecute = `$false
+`$startInfo.CreateNoWindow = `$true
+[void]`$startInfo.ArgumentList.Add(`$command)
+`$process = [System.Diagnostics.Process]::Start(`$startInfo)
+if (`$null -eq `$process) {
+    throw "Failed to invoke the Meridian lifecycle supervisor."
 }
 
-function New-ShutdownToken {
-    return (([guid]::NewGuid().ToString("N")) + ([guid]::NewGuid().ToString("N")))
-}
-
-function Read-RuntimeState {
-    if (-not (Test-Path -LiteralPath `$runtimePath)) {
-        return `$null
-    }
-
-    try {
-        return Get-Content -LiteralPath `$runtimePath -Raw | ConvertFrom-Json
-    }
-    catch {
-        Write-Warning "Ignoring unreadable Meridian runtime state at `${runtimePath}: `$(`$_.Exception.Message)"
-        return `$null
+if (`$Stop -or `$Status) {
+    `$process.WaitForExit()
+    if (`$process.ExitCode -ne 0 -and -not (`$Stop -and `$process.ExitCode -eq 3)) {
+        throw "Meridian lifecycle supervisor command '`$command' failed with exit code `$(`$process.ExitCode)."
     }
 }
-
-function Write-RuntimeState {
-    param(
-        [Parameter(Mandatory)]`$Process,
-        [Parameter(Mandatory)][string]`$ShutdownToken
-    )
-
-    New-Item -ItemType Directory -Path `$stateRoot -Force | Out-Null
-    [ordered]@{
-        processId = [int]`$Process.Id
-        startedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
-        port = [int]`$Port
-        exePath = `$exePath
-        installRoot = `$installRoot
-        configPath = `$configPath
-        shutdownToken = `$ShutdownToken
-    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath `$runtimePath -Encoding UTF8
-}
-
-function Remove-RuntimeState {
-    if (Test-Path -LiteralPath `$runtimePath) {
-        Remove-Item -LiteralPath `$runtimePath -Force
-    }
-}
-
-function Get-TrackedProcess {
-    param(`$Runtime)
-
-    if (`$null -eq `$Runtime -or `$null -eq `$Runtime.processId) {
-        return `$null
-    }
-
-    try {
-        return Get-Process -Id ([int]`$Runtime.processId) -ErrorAction Stop
-    }
-    catch {
-        return `$null
-    }
-}
-
-function Test-TrackedProcessMatches {
-    param(`$Runtime)
-
-    `$process = Get-TrackedProcess -Runtime `$Runtime
-    if (`$null -eq `$process) {
-        return `$false
-    }
-
-    if (`$Runtime.exePath -and `$process.Path) {
-        if (-not [string]::Equals(`$process.Path, [string]`$Runtime.exePath, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return `$false
-        }
-    }
-
-    if (`$Runtime.startedAtUtc) {
-        try {
-            `$runtimeStart = [DateTimeOffset]::Parse([string]`$Runtime.startedAtUtc).UtcDateTime
-            if (`$process.StartTime.ToUniversalTime() -lt `$runtimeStart.AddSeconds(-5)) {
-                return `$false
-            }
-        }
-        catch {
-            return `$false
-        }
-    }
-
-    return `$process.ProcessName -like "Meridian*"
-}
-
-function Get-LifecycleHeaders {
-    param(`$Runtime)
-
-    if (`$null -ne `$Runtime -and -not [string]::IsNullOrWhiteSpace([string]`$Runtime.shutdownToken)) {
-        return @{ "X-Meridian-Shutdown-Token" = [string]`$Runtime.shutdownToken }
-    }
-
-    return @{}
-}
-
-function Stop-MeridianHost {
-    `$runtime = Read-RuntimeState
-    if (`$null -eq `$runtime) {
-        Write-Warning "No Meridian runtime state was found at `$runtimePath."
-        return
-    }
-
-    `$headers = Get-LifecycleHeaders -Runtime `$runtime
-    if (`$headers.Count -gt 0) {
-        try {
-            Invoke-WebRequest -Uri `$shutdownUrl -Method Post -UseBasicParsing -TimeoutSec 5 -Headers `$headers | Out-Null
-            for (`$attempt = 0; `$attempt -lt 40; `$attempt++) {
-                Start-Sleep -Milliseconds 250
-                if (`$null -eq (Get-TrackedProcess -Runtime `$runtime)) {
-                    Remove-RuntimeState
-                    Write-Host "Meridian host stopped gracefully."
-                    return
-                }
-            }
-        }
-        catch {
-            Write-Warning "Graceful Meridian shutdown request failed: `$(`$_.Exception.Message)"
-        }
-    }
-
-    if (Test-TrackedProcessMatches -Runtime `$runtime) {
-        Write-Warning "Meridian did not stop gracefully; terminating the tracked owned process `$(`$runtime.processId)."
-        Stop-Process -Id ([int]`$runtime.processId) -Force
-        Remove-RuntimeState
-        return
-    }
-
-    throw "Refusing to stop process `$(`$runtime.processId) because it no longer matches the stored Meridian runtime metadata."
-}
-
-function Show-MeridianStatus {
-    `$runtime = Read-RuntimeState
-    if (`$null -eq `$runtime) {
-        Write-Host "No Meridian runtime state is currently tracked."
-        return
-    }
-
-    `$process = Get-TrackedProcess -Runtime `$runtime
-    `$state = if (`$null -eq `$process) { "stopped" } else { "running" }
-    Write-Host "Meridian host state: `$state"
-    Write-Host "  PID: `$(`$runtime.processId)"
-    Write-Host "  Port: `$(`$runtime.port)"
-    Write-Host "  Config: `$(`$runtime.configPath)"
-}
-
-if (-not (Test-Path -LiteralPath `$exePath)) {
-    throw "Meridian.exe was not found at `$exePath. Re-run the workstation installer."
-}
-
-if (`$Stop) {
-    Stop-MeridianHost
-    return
-}
-
-if (`$Status) {
-    Show-MeridianStatus
-    return
-}
-
-if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
-    `$shutdownToken = New-ShutdownToken
-    `$env:MDC_SHUTDOWN_TOKEN = `$shutdownToken
-    `$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
-    `$startInfo.FileName = `$exePath
-    `$startInfo.WorkingDirectory = `$installRoot
-    `$startInfo.UseShellExecute = `$false
-    `$startInfo.CreateNoWindow = `$true
-    foreach (`$argument in @("--mode", "workstation", "--http-port", [string]`$Port, "--config", `$configPath)) {
-        [void]`$startInfo.ArgumentList.Add(`$argument)
-    }
-
-    `$process = [System.Diagnostics.Process]::Start(`$startInfo)
-    if (`$null -eq `$process) {
-        throw "Failed to start Meridian host."
-    }
-    Write-RuntimeState -Process `$process -ShutdownToken `$shutdownToken
-
-    `$ready = `$false
-    for (`$attempt = 0; `$attempt -lt 45; `$attempt++) {
-        Start-Sleep -Seconds 1
-        if (Test-MeridianEndpoint -Uri `$healthUrl) {
-            `$ready = `$true
-            break
-        }
-    }
-
-    if (-not `$ready) {
-        Write-Warning "Meridian host did not answer `$healthUrl within 45 seconds. Opening the workstation route anyway."
-    }
-}
-
-Start-Process `$loginUrl
 "@
 
     Set-Content -LiteralPath $LauncherPath -Value $launcher -Encoding UTF8
@@ -1341,6 +1166,7 @@ $configPath = Join-Path $appDataRootPath "appsettings.json"
 $runtimePath = Join-Path $serviceRootPath "web-workstation-runtime.json"
 $installManifestPath = Join-Path $serviceRootPath "web-workstation-install-manifest.json"
 $hostProject = Join-Path $repoRoot "src\Meridian\Meridian.csproj"
+$supervisorProject = Join-Path $repoRoot "src\Meridian.LifecycleSupervisor\Meridian.LifecycleSupervisor.csproj"
 $dashboardRoot = Join-Path $repoRoot "src\Meridian.Ui\dashboard"
 $dashboardPackageJson = Join-Path $dashboardRoot "package.json"
 $dashboardNodeModules = Join-Path $dashboardRoot "node_modules"
@@ -1450,6 +1276,7 @@ $discoverySnapshot = [ordered]@{
 }
 
 Assert-RequiredPath -Path $hostProject -Description "Meridian host project"
+Assert-RequiredPath -Path $supervisorProject -Description "Meridian lifecycle supervisor project"
 Assert-RequiredPath -Path $dashboardPackageJson -Description "Dashboard package.json"
 
 Write-Host ""
@@ -1567,6 +1394,10 @@ Assert-RequiredPath -Path (Join-Path $workstationAssetSource "index.html") -Desc
 
 if (-not $SkipHostPublish) {
     Invoke-Step -Name "Publish Meridian local host" -Action {
+        if ([string]::IsNullOrWhiteSpace($PostgreSqlPayloadRoot)) {
+            throw "A runtime-specific PostgreSQL payload is required. Set -PostgreSqlPayloadRoot or MDC_POSTGRES_PAYLOAD_ROOT."
+        }
+
         if (Test-Path -LiteralPath $publishRoot) {
             Remove-Item -LiteralPath $publishRoot -Recurse -Force
         }
@@ -1589,6 +1420,29 @@ if (-not $SkipHostPublish) {
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet publish failed with exit code $LASTEXITCODE"
         }
+
+        $supervisorPublishArgs = @(
+            "publish",
+            $supervisorProject,
+            "-c", $Configuration,
+            "-r", $RuntimeIdentifier,
+            "-o", $publishRoot,
+            "--self-contained", "true",
+            "-p:PublishSingleFile=true",
+            "-p:PublishReadyToRun=false",
+            "-p:PublishTrimmed=false"
+        )
+
+        & dotnet $supervisorPublishArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "lifecycle supervisor publish failed with exit code $LASTEXITCODE"
+        }
+
+        $runtimePostgresRoot = Join-Path ([System.IO.Path]::GetFullPath($PostgreSqlPayloadRoot)) $RuntimeIdentifier
+        foreach ($requiredTool in @("postgres.exe", "pg_ctl.exe", "initdb.exe")) {
+            Assert-RequiredPath -Path (Join-Path $runtimePostgresRoot "bin\$requiredTool") -Description "PostgreSQL $RuntimeIdentifier $requiredTool"
+        }
+        Copy-Item -Path $runtimePostgresRoot -Destination (Join-Path $publishRoot "database") -Recurse -Force
     }
 }
 
@@ -1628,6 +1482,10 @@ Invoke-Step -Name "Clear stale Meridian runtime state" -Action {
 }
 
 if (-not $hostCopySkipped -or -not $bundleCopySkipped) {
+    Invoke-Step -Name "Stop lifecycle supervisor before file replacement" -Action {
+        $script:supervisorStopResult = Stop-LifecycleSupervisorForInstallRoot -InstallRootPath $installRootPath
+        Write-Info "Lifecycle supervisor file-replacement gate: $($script:supervisorStopResult.reason)."
+    }
     Invoke-Step -Name "Stop tracked Meridian host before file replacement" -Action {
         $script:stopResult = Stop-TrackedMeridianHost -RuntimePath $runtimePath -InstallRootPath $installRootPath
         if ($script:stopResult.attempted) {
@@ -1670,7 +1528,22 @@ else {
 }
 
 Invoke-Step -Name "Create launcher script" -Action {
-    New-LauncherScript -LauncherPath $launcherPath -ConfigPath $configPath -DefaultPort $Port
+    $lifecycleManifestRoot = Join-Path $installRootPath "service"
+    New-Item -ItemType Directory -Path $lifecycleManifestRoot -Force | Out-Null
+    $lifecycleManifest = [ordered]@{
+        schemaVersion = 1
+        databaseMode = "Dedicated"
+        hostRelativePath = "Meridian.exe"
+        configPath = $configPath
+        dataRoot = $dataRootPath
+        httpPort = $Port
+        databasePort = 54329
+        startupTimeoutSeconds = 60
+        shutdownTimeoutSeconds = 45
+        databaseTimeoutSeconds = 60
+    }
+    Write-JsonFile -Path (Join-Path $lifecycleManifestRoot "lifecycle-supervisor.json") -InputObject $lifecycleManifest
+    New-LifecycleSupervisorLauncherScript -LauncherPath $launcherPath
 }
 
 Invoke-Step -Name "Remove stale Meridian shortcuts" -Action {

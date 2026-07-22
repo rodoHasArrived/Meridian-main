@@ -279,11 +279,21 @@ public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, I
     /// </summary>
     public bool Remove(T item)
     {
-        var index = _items.IndexOf(item);
-        if (index < 0)
-            return false;
+        int index;
+        lock (_syncRoot)
+        {
+            // Lookup and removal must happen under one lock: a concurrent mutation between
+            // IndexOf and RemoveAt would make the index stale and remove the wrong element.
+            index = _items.IndexOf(item);
+            if (index < 0)
+                return false;
 
-        RemoveAt(index);
+            _items.RemoveAt(index);
+        }
+
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+            NotifyCollectionChangedAction.Remove, item, index));
+        OnPropertyChanged(nameof(Count));
         return true;
     }
 

@@ -28,6 +28,13 @@ public interface IMarketDataClient :
 {
     bool IsEnabled { get; }
 
+    /// <summary>
+    /// True when this client fabricates synthetic data instead of delivering real market data.
+    /// Hosts surface this loudly (status endpoints, workstation banner) so simulated prices are
+    /// never mistaken for live ones.
+    /// </summary>
+    bool IsSimulated => false;
+
     Task ConnectAsync(CancellationToken ct = default);
     Task DisconnectAsync(CancellationToken ct = default);
 

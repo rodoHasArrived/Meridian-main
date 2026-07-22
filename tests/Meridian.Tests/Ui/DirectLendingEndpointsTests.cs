@@ -9,6 +9,9 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -433,6 +436,26 @@ public sealed class DirectLendingEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task DirectLendingEndpoints_EveryMutationUsesOwnedRateLimitPolicy()
+    {
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>());
+
+        var mutationEndpoints = app.Services.GetRequiredService<EndpointDataSource>()
+            .Endpoints
+            .OfType<RouteEndpoint>()
+            .Where(endpoint => endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods
+                .Any(method => !HttpMethods.IsGet(method) && !HttpMethods.IsHead(method)) == true)
+            .ToArray();
+
+        mutationEndpoints.Should().NotBeEmpty();
+        mutationEndpoints
+            .Select(endpoint => endpoint.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName)
+            .Should()
+            .OnlyContain(policyName => policyName == UiEndpoints.DirectLendingMutationRateLimitPolicy);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending)
@@ -444,8 +467,10 @@ public sealed class DirectLendingEndpointsTests
         builder.WebHost.UseTestServer();
         configureServices(builder.Services);
         builder.Services.AddSingleton<DirectLendingOperationsReadService>();
+        builder.Services.AddMutationRateLimiter();
 
         var app = builder.Build();
+        app.UseRateLimiter();
 
         // SEC-001: direct-lending routes now require ViewDirectLending/ManageDirectLending. This
         // standalone host has no LoginSessionMiddleware, so seed the manage permission directly into

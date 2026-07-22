@@ -2,6 +2,9 @@ import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 export const WORKSTATION_API_ENDPOINTS = {
   systemStatus: UI_API_ROUTES.Status,
+  runtimeLifecycle: "/api/system/lifecycle",
+  runtimeShutdown: "/api/system/shutdown",
+  runtimeShutdownReceiptsLatest: "/api/system/shutdown/receipts/latest",
   session: UI_API_ROUTES.WorkstationSession,
   strategy: UI_API_ROUTES.WorkstationStrategy,
   strategyBriefing: UI_API_ROUTES.WorkstationStrategyBriefing,
@@ -12,6 +15,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
   assetOperations: "/api/workstation/assets",
+  firstRunStatus: "/api/workstation/first-run/",
+  firstRunComplete: "/api/workstation/first-run/complete",
+  desktopLaunch: "/api/workstation/desktop/launch",
   financialRecordExplorer: UI_API_ROUTES.WorkstationFinancialRecordExplorer,
   financialRecordExplorerRecord: UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord,
   financialRecordExplorerSavedViews: UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews,
@@ -1559,6 +1565,14 @@ export function reconciliationBreakReviewEndpoint(breakId: string): string {
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationBreakResolve, "breakId", breakId);
+}
+
+export function reconciliationBreakWaiveEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakWaive, "breakId", breakId);
+}
+
+export function reconciliationBreakSupersedeEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakSupersede, "breakId", breakId);
 }
 
 export function reconciliationBreakAssignEndpoint(breakId: string): string {

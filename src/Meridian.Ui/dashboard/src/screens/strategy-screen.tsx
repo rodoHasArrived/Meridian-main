@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
@@ -1115,6 +1116,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
             </section>
+
+            <BiasDisclosurePanel disclosure={vm.selectedRunDetail.biasDisclosure} className="mt-4" />
           </DialogContent>
         )}
       </Dialog>

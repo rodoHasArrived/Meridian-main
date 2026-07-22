@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Streaming;
 
@@ -41,7 +43,8 @@ public sealed class ReportRunStreamBroadcaster : IReportingRunNotifier, IAsyncDi
             options.CoalesceIntervalMs,
             options.SubscriberChannelCapacity,
             // Run-id topics are an unbounded universe — evict empty topics so they cannot leak.
-            evictEmptyTopics: true);
+            evictEmptyTopics: true,
+            logger: services.GetService<ILoggerFactory>()?.CreateLogger<ReportRunStreamBroadcaster>());
     }
 
     /// <inheritdoc />

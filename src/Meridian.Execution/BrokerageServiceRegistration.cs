@@ -128,6 +128,7 @@ public static class BrokerageServiceRegistration
         ArgumentNullException.ThrowIfNull(handoffFailureStoreFactory);
 
         postingContext = postingContext.Validate();
+        var expectedScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
         var options = new TradeFillLedgerPostingOptions();
         configure?.Invoke(options);
         if (options.ChannelCapacity <= 0)
@@ -153,17 +154,51 @@ public static class BrokerageServiceRegistration
                 "A trade-fill publisher or posting store is already registered. Compose multiple ledger scopes explicitly instead of allowing one registration to shadow another.");
         }
 
-        services.AddSingleton<ITradeFillPostingStore>(postingStoreFactory);
+        services.AddSingleton<ITradeFillPostingStore>(sp =>
+        {
+            var store = postingStoreFactory(sp)
+                ?? throw new InvalidOperationException("The trade-fill posting store factory returned null.");
+            TradeFillPostingScopeIdentity storeScopeIdentity;
+            try
+            {
+                storeScopeIdentity = store.ScopeIdentity.Validate();
+            }
+            catch
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw;
+            }
+
+            if (!storeScopeIdentity.IsExact || storeScopeIdentity != expectedScopeIdentity)
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw new InvalidOperationException(
+                    $"Trade-fill posting store scope identity '{storeScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.");
+            }
+
+            return store;
+        });
         services.AddSingleton<ITradeFillLedgerPostingTarget>(postingTargetFactory);
         services.AddSingleton<ITradeFillHandoffFailureStore>(sp =>
         {
             var store = handoffFailureStoreFactory(sp)
                 ?? throw new InvalidOperationException("The trade-fill handoff-failure store factory returned null.");
-            if (!string.Equals(store.PostingScope, postingContext.PostingScope, StringComparison.Ordinal))
+            TradeFillPostingScopeIdentity storeScopeIdentity;
+            try
+            {
+                storeScopeIdentity = store.ScopeIdentity.Validate();
+            }
+            catch
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw;
+            }
+
+            if (!storeScopeIdentity.IsExact || storeScopeIdentity != expectedScopeIdentity)
             {
                 store.DisposeAsync().AsTask().GetAwaiter().GetResult();
                 throw new InvalidOperationException(
-                    $"Handoff-failure store scope '{store.PostingScope}' does not match ledger scope '{postingContext.PostingScope}'.");
+                    $"Handoff-failure store scope identity '{storeScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.");
             }
 
             return store;
@@ -258,4 +293,57 @@ public sealed class TradeFillLedgerPostingOptions
     public TimeSpan? DrainTimeout { get; set; }
 
     public TimeSpan? CancellationTimeout { get; set; }
+}
+
+/// <summary>
+/// Configuration-owned exact ledger scope for the production execution host. A period or book
+/// rollover requires updated values and a host restart so retained fills can never cross scopes.
+/// </summary>
+public sealed class TradeFillLedgerPostingHostOptions
+{
+    public const string SectionKey = "Execution:TradeFillLedgerPosting";
+
+    public bool Enabled { get; set; }
+
+    public Guid AggregateId { get; set; }
+
+    public Guid PeriodId { get; set; }
+
+    public Guid LedgerBookId { get; set; }
+
+    public string AccountingPolicyId { get; set; } = "execution-trade-fill";
+
+    public string AccountingPolicyVersion { get; set; } = "1";
+
+    public long? ExpectedPeriodVersion { get; set; }
+
+    public int ChannelCapacity { get; set; } = 10_000;
+
+    public TimeSpan? DrainTimeout { get; set; }
+
+    public TimeSpan? CancellationTimeout { get; set; }
+
+    public TradeFillLedgerPostingContext BuildContext()
+    {
+        if (!Enabled)
+            throw new InvalidOperationException("Trade-fill ledger posting is not enabled.");
+        if (AggregateId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires AggregateId.");
+        if (PeriodId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires PeriodId.");
+        if (LedgerBookId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires LedgerBookId.");
+        if (!ExpectedPeriodVersion.HasValue || ExpectedPeriodVersion.Value < 0)
+            throw new InvalidOperationException(
+                "Execution trade-fill posting requires the authoritative ExpectedPeriodVersion.");
+
+        return new TradeFillLedgerPostingContext(
+            $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}",
+            AggregateId,
+            PeriodId,
+            LedgerBookId,
+            AccountingPolicyId,
+            AccountingPolicyVersion,
+            ExpectedPeriodVersion).Validate();
+    }
 }

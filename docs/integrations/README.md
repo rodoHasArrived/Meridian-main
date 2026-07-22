@@ -1,5 +1,9 @@
 # Integration Guides
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 Documentation for third-party integrations and language interoperability.
 
 ## Documents

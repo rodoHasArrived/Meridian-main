@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-07-13
+**Reviewed:** 2026-07-19
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -14,6 +14,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
+  - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
+    priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
+    live status stays in the roadmap registry
 - Treat the following as dated working design inputs, not canonical status sources:
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
@@ -36,6 +39,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
+
+## Current Project Snapshot
+
+The registry snapshot dated 2026-07-18 records Evidence Vault productization, statement
+reconciliation onboarding, and WPF parity as the active productization targets. The accepted
+W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion claims,
+not blanket production certification.
+
+Production readiness is currently **blocked**. The release posture changes only when the
+[Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
+operator preflight, and required GitHub Actions evidence agree on the same release commit.
 
 ## Canonical Product Design Charter
 
@@ -145,13 +159,14 @@ and required GitHub Actions evidence.
 - W1-W5 are closed baselines in the registry and form the coherent accepted operational-record baseline unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
 - W5X-FREX-001 is complete. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, proof state, evidence links, and audit routing across the accepted browser and WPF scope.
-- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. Evidence Vault and statement onboarding proceed through their own active rows; the Operational Event Command Spine and additional fund-event command-center specializations remain separate roadmap decisions.
+- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. Evidence Vault and statement onboarding proceed through their own active rows. The bounded Asset Accounting Event Spine is now active under `W9-ASSET-010`; additional fund-event command-center specializations remain separate roadmap decisions.
 - W5X-CONNECT-001 is complete. Declarative CSV/OFX profiles, IB Flex XML, OFX bank/investment, and Alpaca statement connectors normalize into the shared reconciliation workflow with preview, drift, confidence, and retained-source evidence.
 - W5X-EVIDENCE-001 and W5X-STMT-ONBOARD-001 are in progress. The current acceptance path is browser-first statement reconciliation onboarding into retained Evidence Vault proof; broader document-portal and collaboration scope remains separate.
 - W6-BTSTUDIO-001 remains planned rather than active.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
-- The remaining proof-layer targets, including the broader Operational Evidence Graph, Operational Event Command Spine, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
+- `W9-ASSET-010` is in progress. It establishes the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction. Completion remains gated on repository CI and authoritative GitHub Actions evidence.
+- The remaining proof-layer targets, including the broader Operational Evidence Graph, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
 For exact wave rows and acceptance language, use the roadmap registry, then follow links into generated outputs.

@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Ui/dashboard
@@ -111,11 +111,17 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
-Statement import commit results render the shared Evidence Vault identity, Evidence Workbench route,
-reconciliation route, and structured reconciliation case links directly from the commit response,
-including status, priority, reason, and suggested next action. The browser blocks commit while
-preview errors remain, so operators can move from imported custodian/broker source to retained
-proof and exact casework without browser-local routing rules or avoidable server rejections.
+Statement import accepts either a bounded file upload or a remote fetch through a fetch-capable
+provider connection. The scheduled-fetch tab previews remote activity with the same canonical
+column-confidence and per-kind breakdown as file import, then lets operators create, edit, pause,
+delete, refresh, or run persisted schedules with an explicit broker/custodian classification without
+collecting credentials in the browser. Run-now
+results render the shared Evidence Vault and reconciliation routes. File-import commit results also
+render Evidence Vault identity, the Evidence Workbench route, reconciliation route, and structured
+reconciliation case links directly from the commit response, including status, priority, reason,
+and suggested next action. The browser blocks file commit while preview errors remain, so operators
+can move from imported custodian/broker source to retained proof and exact casework without
+browser-local routing rules or avoidable server rejections.
 The request-list queue renders typed close, audit, tax, report-package, and operational-event family
 badges beside each frozen support list so operators can distinguish close binder blockers from audit
 or report-support package gaps without parsing manifest JSON.
@@ -217,6 +223,15 @@ tolerance profile, priority, SLA badge label/tone, age band, root cause, resolut
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
 source origin/fingerprint, and decision note so browser recovery posture matches the WPF desktop
 Fund Ledger detail panel without reimplementing casework rules.
+Accounting reconciliation casework actions now consume the server-owned verified outcome on every
+assign, resolve, waive,
+supersede, comment, and lifecycle transition. The queue exposes item-level value, quantity, and
+cost-basis measures, exact fund/book/period/as-of scope, continuity blockers, immutable evidence and
+approval lineage, and conflict-safe replay receipts. Browser success UI is driven only by
+`Succeeded` or `CompletedWithWarnings`; `Blocked` and `Failed` retain recovery guidance and do not
+optimistically mutate local state. Material waiver or supersession remains unavailable when the
+server cannot resolve independent approval evidence.
+
 Accounting reconciliation narratives use canonical Accounting review language while retained
 Governance view-model names remain compatibility seams.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for

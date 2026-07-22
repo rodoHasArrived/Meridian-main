@@ -280,6 +280,12 @@ public static partial class AtomicFileWriter
     /// The original file is preserved until the new file containing both the original and
     /// appended bytes has been fully written and renamed into place.
     /// </summary>
+    /// <summary>
+    /// Atomically appends by copying the ENTIRE existing destination into a temp file, appending,
+    /// and renaming — O(destination size) per call. Suitable for small, low-frequency artifacts
+    /// only; hot-path day files use the JSONL sink's persistent append streams instead
+    /// (JsonlWriteMode.AppendStream), with the WAL as the crash backstop.
+    /// </summary>
     public static async Task AppendAsync(
         string destinationPath,
         Func<Stream, Task> appendAction,

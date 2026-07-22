@@ -213,7 +213,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         var factorSchedule = terms.FactorSchedule;
 
         StructuredCashFlowProjectionDto Empty() => new(
-            security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule);
+            security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule, terms);
 
         if (terms.MaturityDate is not DateOnly maturity)
         {
@@ -225,6 +225,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (issueDate > maturity)
         {
             return Empty();
+        }
+
+        // Leg-based structures (swaps, floating-rate notes) project per leg; the single-stream
+        // coupon walk below cannot represent them and previously produced a meaningless bullet.
+        if (terms.HasLegs)
+        {
+            return BuildLegBasedProjection(
+                security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
+                terms, factorSchedule, issueDate, maturity, asOf, asOfDate);
         }
 
         var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m;
@@ -263,7 +272,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             }
 
             var interest = annualRate > 0m && outstanding > 0m
-                ? RoundCash(outstanding * annualRate * CalculateYearFraction(terms.DayCountConvention, accrualStart, date, periodMonths))
+                ? RoundCash(outstanding * annualRate * DayCountConventions.Fraction(terms.DayCountConvention, accrualStart, date))
                 : 0m;
             var principal = 0m;
             var isLast = i == dates.Length - 1;
@@ -286,7 +295,136 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         return new StructuredCashFlowProjectionDto(
-            security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, factorSchedule);
+            security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, factorSchedule, terms);
+    }
+
+    private static StructuredCashFlowProjectionDto BuildLegBasedProjection(
+        SecurityDetailDto security,
+        StructuredCashFlowSourceKind sourceKind,
+        StructuredCashFlowScenario scenario,
+        StructuredCashFlowStaleness staleness,
+        DateTimeOffset? sourceLastUpdatedUtc,
+        StructuredCashFlowTerms terms,
+        IReadOnlyList<StructuredFactorScheduleEntry> factorSchedule,
+        DateOnly issueDate,
+        DateOnly maturity,
+        DateTimeOffset asOf,
+        DateOnly asOfDate)
+    {
+        var legs = terms.Legs!;
+        var legSchedules = new List<StructuredCashFlowLegSchedule>(legs.Count);
+        foreach (var leg in legs)
+        {
+            legSchedules.Add(new StructuredCashFlowLegSchedule(
+                leg.LegId, leg.RateKind, leg.Direction,
+                BuildLegSchedule(leg, terms, scenario, issueDate, maturity, asOfDate)));
+        }
+
+        // Net receive-minus-pay only when every leg's direction is known (a single directionless
+        // leg projects as Receive). A multi-leg structure with an unknown direction cannot be
+        // netted honestly, so the flat schedule stays empty (never posted) and consumers read the
+        // per-leg schedules instead.
+        var netSchedule = legs.Count == 1 || legs.All(static leg => leg.Direction is not null)
+            ? BuildNetSchedule(legs, legSchedules)
+            : [];
+
+        return new StructuredCashFlowProjectionDto(
+            security.SecurityId, sourceKind, scenario, asOf, netSchedule, staleness,
+            sourceLastUpdatedUtc, factorSchedule, terms, legSchedules);
+    }
+
+    private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildLegSchedule(
+        StructuredCashFlowLeg leg,
+        StructuredCashFlowTerms terms,
+        StructuredCashFlowScenario scenario,
+        DateOnly issueDate,
+        DateOnly maturity,
+        DateOnly asOfDate)
+    {
+        var notional = leg.Notional ?? terms.PrincipalFace ?? 100m;
+        if (notional <= 0m)
+        {
+            return [];
+        }
+
+        var annualRate = ResolveLegAnnualRate(leg, scenario);
+        var dayCount = leg.DayCountConvention ?? terms.DayCountConvention;
+        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
+        var dates = BuildPaymentDates(issueDate, maturity, periodMonths)
+            .Where(date => date >= asOfDate)
+            .ToArray();
+        if (dates.Length == 0)
+        {
+            return [];
+        }
+
+        var entries = new List<StructuredCashFlowScheduleEntry>(dates.Length);
+        var accrualStart = issueDate;
+        for (var i = 0; i < dates.Length; i++)
+        {
+            var date = dates[i];
+            while (accrualStart.AddMonths(periodMonths) < date)
+            {
+                accrualStart = accrualStart.AddMonths(periodMonths);
+            }
+
+            var interest = annualRate > 0m
+                ? RoundCash(notional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
+                : 0m;
+            var isLast = i == dates.Length - 1;
+            var principal = leg.ExchangesPrincipal && isLast ? RoundCash(notional) : 0m;
+            entries.Add(new StructuredCashFlowScheduleEntry(
+                ToUtcDateTimeOffset(date),
+                principal,
+                interest,
+                leg.ExchangesPrincipal && isLast ? 0m : 1m));
+            accrualStart = date;
+        }
+
+        return entries;
+    }
+
+    private static decimal ResolveLegAnnualRate(StructuredCashFlowLeg leg, StructuredCashFlowScenario scenario)
+    {
+        // Fixed legs pay their contractual rate regardless of scenario; floating legs reset with
+        // rates, so the scenario shift applies to them only. Floating projects at the last fixing
+        // plus spread — a deliberate flat-forward simplification, not a curve.
+        var rate = leg.RateKind == CashFlowLegRateKind.Fixed
+            ? NormalizeAnnualRate(leg.FixedRate ?? 0m)
+            : NormalizeAnnualRate(leg.CurrentIndexRate ?? 0m) + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
+        return rate < 0m ? 0m : rate;
+    }
+
+    private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildNetSchedule(
+        IReadOnlyList<StructuredCashFlowLeg> legs,
+        IReadOnlyList<StructuredCashFlowLegSchedule> legSchedules)
+    {
+        var byDate = new SortedDictionary<DateTimeOffset, (decimal Principal, decimal Interest)>();
+        for (var i = 0; i < legSchedules.Count; i++)
+        {
+            var sign = legs[i].Direction == CashFlowLegDirection.Pay ? -1m : 1m;
+            foreach (var entry in legSchedules[i].Schedule)
+            {
+                var current = byDate.TryGetValue(entry.PeriodDate, out var existing) ? existing : (0m, 0m);
+                byDate[entry.PeriodDate] = (
+                    current.Item1 + (sign * entry.PrincipalAmount),
+                    current.Item2 + (sign * entry.InterestAmount));
+            }
+        }
+
+        if (byDate.Count == 0)
+        {
+            return [];
+        }
+
+        var lastDate = byDate.Keys.Last();
+        return byDate
+            .Select(pair => new StructuredCashFlowScheduleEntry(
+                pair.Key,
+                pair.Value.Principal,
+                pair.Value.Interest,
+                pair.Key == lastDate ? 0m : 1m))
+            .ToList();
     }
 
     private static string MapSourceKindToProviderId(StructuredCashFlowSourceKind kind) => kind switch
@@ -337,46 +475,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
             _ => 1
         };
-    }
-
-    private static decimal CalculateYearFraction(
-        string? dayCountConvention,
-        DateOnly accrualStart,
-        DateOnly accrualEnd,
-        int periodMonths)
-    {
-        if (accrualEnd <= accrualStart)
-        {
-            return 0m;
-        }
-
-        var normalized = dayCountConvention?.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
-        if (normalized is not null && normalized.Contains("30/360", StringComparison.OrdinalIgnoreCase))
-        {
-            return Days360(accrualStart, accrualEnd) / 360m;
-        }
-
-        var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
-        if (normalized is not null && (normalized.Contains("ACT/360", StringComparison.OrdinalIgnoreCase) ||
-                                       normalized.Contains("ACTUAL/360", StringComparison.OrdinalIgnoreCase)))
-        {
-            return actualDays / 360m;
-        }
-
-        if (normalized is not null && (normalized.Contains("ACT/365", StringComparison.OrdinalIgnoreCase) ||
-                                       normalized.Contains("ACTUAL/365", StringComparison.OrdinalIgnoreCase)))
-        {
-            return actualDays / 365m;
-        }
-
-        return periodMonths / 12m;
-    }
-
-    private static decimal Days360(DateOnly start, DateOnly end)
-    {
-        var startDay = Math.Min(start.Day, 30);
-        var endDay = end.Day == 31 && startDay == 30 ? 30 : Math.Min(end.Day, 30);
-        return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
     }
 
     private static decimal NormalizeAnnualRate(decimal coupon)

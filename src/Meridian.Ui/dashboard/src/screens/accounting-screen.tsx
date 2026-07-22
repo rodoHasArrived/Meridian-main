@@ -3173,11 +3173,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Journal</span>
+                    <span className="block text-muted-foreground">Expected projection</span>
                     <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
                   </div>
                   <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Ledger impact</span>
+                    <span className="block text-muted-foreground">Projected accounting effect</span>
                     <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
                   </div>
                   <div className="rounded-md border border-border/70 bg-background px-3 py-2">
@@ -3190,7 +3190,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   </div>
                 </div>
                 {reconciliation.transactionLabView.impactRows.length > 0 ? (
-                  <div className="mt-3 space-y-2" aria-label="Transaction Lab trial-balance impact">
+                  <div className="mt-3 space-y-2" aria-label="Transaction Lab projected trial-balance effect">
                     {reconciliation.transactionLabView.impactRows.map((row) => (
                       <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
                         <span className="min-w-0 truncate text-foreground">{row.label}</span>

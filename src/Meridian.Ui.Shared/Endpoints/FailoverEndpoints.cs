@@ -6,6 +6,7 @@ using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -223,26 +224,31 @@ public static class FailoverEndpoints
             .Produces(404);
 
         // Get provider health — returns live data from StreamingFailoverService when available
-        group.MapGet(UiApiRoutes.FailoverHealth, (ConfigStore store, [FromServices] StreamingFailoverRegistry? registry, [FromServices] ProviderDegradationScorer? scorer) =>
+        group.MapGet(UiApiRoutes.FailoverHealth, async (ConfigStore store, [FromServices] StreamingFailoverRegistry? registry, [FromServices] ProviderDegradationScorer? scorer, [FromServices] ILoggerFactory? loggerFactory, CancellationToken ct) =>
         {
-
-            var dataRoot = AppContext.BaseDirectory;
-            var calibrationDir = Path.Combine(dataRoot, "data", "calibration", "provider-degradation");
+            var cfg = store.Load();
+            // Calibration artifacts live under the configured data root (where the calibration
+            // command writes them), not under the install/base directory.
+            var dataRoot = Path.GetFullPath(cfg.DataRoot);
+            var calibrationDir = Path.Combine(dataRoot, "calibration", "provider-degradation");
             ProviderKernelCalibrationSnapshot? snapshot = null;
             KernelPromotionDecision? promotion = null;
             try
             {
-                var snapshotStore = new ProviderKernelCalibrationSnapshotStore(Path.Combine(dataRoot, "data"));
-                snapshot = snapshotStore.GetLatestAsync().GetAwaiter().GetResult();
+                var snapshotStore = new ProviderKernelCalibrationSnapshotStore(dataRoot);
+                snapshot = await snapshotStore.GetLatestAsync(ct);
                 var governancePath = Path.Combine(calibrationDir, "latest-governance-decision.json");
                 if (File.Exists(governancePath))
                 {
-                    promotion = JsonSerializer.Deserialize<KernelPromotionDecision>(File.ReadAllText(governancePath));
+                    promotion = JsonSerializer.Deserialize<KernelPromotionDecision>(await File.ReadAllTextAsync(governancePath, ct));
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                // best effort; health endpoint remains available without calibration artifacts
+                // Best effort: the health endpoint stays available without calibration
+                // artifacts, but a persistent read failure must be visible to operators.
+                loggerFactory?.CreateLogger(nameof(FailoverEndpoints))
+                    .LogWarning(ex, "Failed to load provider calibration artifacts from {CalibrationDir}", calibrationDir);
             }
 
             ProviderKernelProvenanceResponse? provenance = snapshot is null ? null : new ProviderKernelProvenanceResponse(
@@ -287,7 +293,6 @@ public static class FailoverEndpoints
                 return Results.Json(health, jsonOptions);
             }
 
-            var cfg = store.Load();
             var sources = cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>();
             var metricsStatus = store.TryLoadProviderMetrics();
 

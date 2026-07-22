@@ -1243,6 +1243,17 @@ export interface SystemEventRecord {
   timestamp: string;
 }
 
+/**
+ * Backend-reported degraded-mode posture: simulated market data and/or missing persistence.
+ * Rendered as a persistent workstation banner so fabricated data is never mistaken for real.
+ */
+export interface DegradedModeStatus {
+  marketDataMode: "live" | "simulated" | "unknown";
+  marketDataDetail?: string | null;
+  persistenceMode: "none" | "partial" | "configured";
+  missingPersistenceDomains: string[];
+}
+
 export interface SystemOverviewResponse {
   systemStatus: "Healthy" | "Degraded" | "Offline";
   providersOnline: number;
@@ -1255,6 +1266,7 @@ export interface SystemOverviewResponse {
   lastHeartbeatUtc: string;
   metrics: MetricSnapshot[];
   recentEvents: SystemEventRecord[];
+  degradedMode?: DegradedModeStatus | null;
 }
 
 // --- Quality monitoring types ---

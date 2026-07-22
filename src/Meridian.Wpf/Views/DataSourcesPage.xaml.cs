@@ -16,10 +16,12 @@ public partial class DataSourcesPage : Page
 {
     private readonly DataSourcesViewModel _viewModel;
 
-    public DataSourcesPage(WpfServices.ConfigService configService)
+    public DataSourcesPage(
+        WpfServices.ConfigService configService,
+        WpfServices.FirstRunService firstRunService)
     {
         InitializeComponent();
-        _viewModel = new DataSourcesViewModel(configService);
+        _viewModel = new DataSourcesViewModel(configService, firstRunService);
         DataContext = _viewModel;
     }
 

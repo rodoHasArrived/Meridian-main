@@ -1515,7 +1515,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.FundContextService fundContextService,
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
-        ISmService service)
+        ISmService service,
+        WpfServices.DesktopAuthenticationSession? authenticationSession = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
@@ -1528,6 +1529,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
+        {
+            _conflictOperatorText = sessionActor;
+        }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
@@ -2248,9 +2253,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var endpoint = $"/api/workstation/security-master/securities" +
                            $"?query={Uri.EscapeDataString(query)}&take=50&activeOnly={ActiveOnly}";
 
-            var results = await ApiClientService.Instance
-                .GetAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
-                .ConfigureAwait(false);
+            var results = (await ApiClientService.Instance
+                .GetWithResponseAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
+                .ConfigureAwait(false)).DataOrLoggedNull("Search security master securities");
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -3338,9 +3343,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null);
 
-            var result = await ApiClientService.Instance
-                .PostAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
-                .ConfigureAwait(false);
+            var result = (await ApiClientService.Instance
+                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
             {

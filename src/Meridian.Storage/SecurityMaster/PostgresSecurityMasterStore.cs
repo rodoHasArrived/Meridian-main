@@ -27,6 +27,38 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string MoneyMarketFundProjectionTable = "money_market_fund_projection";
     private const string CertificateOfDepositProjectionTable = "certificate_of_deposit_projection";
 
+    /// <summary>
+    /// A registered per-asset-class relational projection writer: the asset class it owns and the
+    /// upsert-or-delete operation the store fans out to for every persisted record.
+    /// </summary>
+    private sealed record AssetProjectionWriter(
+        string AssetClass,
+        Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
+
+    /// <summary>
+    /// The ordered registry of per-asset-class projection writers. Replaces the previous hard-coded
+    /// fan-out block so adding a projected asset class is a single additive registration here, and the
+    /// projected set is enumerable for the catalog-vs-projection coverage guard.
+    /// </summary>
+    private static readonly IReadOnlyList<AssetProjectionWriter> ProjectionWriters =
+    [
+        new("Bond", static (store, c, t, r, ct) => store.UpsertBondProjectionTablesAsync(c, t, r, ct)),
+        new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
+        new("Equity", static (store, c, t, r, ct) => store.UpsertEquityProjectionAsync(c, t, r, ct)),
+        new("Future", static (store, c, t, r, ct) => store.UpsertFutureProjectionAsync(c, t, r, ct)),
+        new("FxSpot", static (store, c, t, r, ct) => store.UpsertFxSpotProjectionAsync(c, t, r, ct)),
+        new("Swap", static (store, c, t, r, ct) => store.UpsertSwapProjectionAsync(c, t, r, ct)),
+        new("Commodity", static (store, c, t, r, ct) => store.UpsertCommodityProjectionAsync(c, t, r, ct)),
+        new("CryptoCurrency", static (store, c, t, r, ct) => store.UpsertCryptoProjectionAsync(c, t, r, ct)),
+        new("Deposit", static (store, c, t, r, ct) => store.UpsertDepositProjectionAsync(c, t, r, ct)),
+        new("MoneyMarketFund", static (store, c, t, r, ct) => store.UpsertMoneyMarketFundProjectionAsync(c, t, r, ct)),
+        new("CertificateOfDeposit", static (store, c, t, r, ct) => store.UpsertCertificateOfDepositProjectionAsync(c, t, r, ct)),
+    ];
+
+    /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>
+    internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
+        ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
+
     private readonly SecurityMasterOptions _options;
     private readonly ISchemaUpcaster<SecurityAssetSpecificTerms> _assetSpecificTermsUpcaster;
 
@@ -36,7 +68,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     {
         _options = options;
         _assetSpecificTermsUpcaster = assetSpecificTermsUpcaster
-            ?? SecurityAssetSpecificTermsV0ToCurrentUpcaster.Instance;
+            ?? SecurityAssetSpecificTermsUpcasterPipeline.Instance;
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
@@ -346,17 +378,15 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 
         await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
         await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
-        await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertOptionProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertEquityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertFutureProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertSwapProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertCommodityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertCryptoProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertMoneyMarketFundProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await UpsertCertificateOfDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+
+        // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
+        // projection when the record matches its asset class and deletes any stale row otherwise, so
+        // every writer runs for every record (class changes clean up the previous projection). Adding a
+        // projected asset class is a single additive registration in ProjectionWriters plus its writer.
+        foreach (var writer in ProjectionWriters)
+        {
+            await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
+        }
     }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -583,7 +613,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var projection = new SecurityProjectionRecord(
             reader.GetGuid(0),
             reader.GetString(1),
-            Enum.Parse<SecurityStatusDto>(reader.GetString(2), ignoreCase: true),
+            SecurityMasterEnumReads.ParseOrFallback(reader.GetString(2), SecurityStatusDto.Unknown),
             reader.GetString(3),
             reader.GetString(4),
             reader.GetString(5),
@@ -621,7 +651,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            var kind = Enum.Parse<SecurityIdentifierKind>(reader.GetString(0), ignoreCase: true);
+            // Read-tolerant: an identifier kind written by a newer node degrades to Unknown so the
+            // row (and every other identifier on the security) stays readable.
+            var kind = SecurityMasterEnumReads.ParseOrFallback(reader.GetString(0), SecurityIdentifierKind.Unknown);
             var value = reader.GetString(1);
             var provider = reader.IsDBNull(5) ? null : reader.GetString(5);
             var normalizedValue = reader.IsDBNull(6)
@@ -667,7 +699,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
-                Enum.Parse<SecurityAliasScope>(reader.GetString(4), ignoreCase: true),
+                SecurityMasterEnumReads.ParseOrFallback(reader.GetString(4), SecurityAliasScope.Unknown),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.GetString(6),
                 new DateTimeOffset(reader.GetDateTime(7), TimeSpan.Zero),
@@ -942,7 +974,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("version", projection.Version);
     }
 
-    private static bool TryBuildBondProjection(SecurityProjectionRecord record, out BondProjectionWriteModel projection)
+    internal static bool TryBuildBondProjection(SecurityProjectionRecord record, out BondProjectionWriteModel projection)
     {
         if (!TryGetOptionalDateOnly(record.AssetSpecificTerms, "maturity", out var maturityDate) || maturityDate is null)
         {
@@ -954,12 +986,23 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var issueDate = GetOptionalDateOnly(record.AssetSpecificTerms, "issueDate");
         var callDate = GetOptionalDateOnly(record.AssetSpecificTerms, "callDate");
         var isCallable = GetOptionalBool(record.AssetSpecificTerms, "isCallable") ?? false;
+
+        // The serializer (Interop.SecurityMaster.assetSpecificTermsJson) writes the coupon flat, per the
+        // Bond entry in SecurityAssetTermsSchema: couponType/couponRate/floatingIndex/spreadBps/dayCount.
+        // Reading a nested "coupon" object here previously left every coupon column null for canonically
+        // serialized bonds (silent data loss); read the flat shape first and fall back to the legacy
+        // nested object only for externally-authored payloads that still use it.
         var coupon = GetOptionalObject(record.AssetSpecificTerms, "coupon");
-        var couponKind = coupon.HasValue ? GetOptionalString(coupon.Value, "kind") : null;
-        var fixedCouponRate = coupon.HasValue ? GetOptionalDecimal(coupon.Value, "rate") : null;
-        var floatingRateIndex = coupon.HasValue ? GetOptionalString(coupon.Value, "index") : null;
-        var floatingSpreadBps = coupon.HasValue ? GetOptionalDecimal(coupon.Value, "spreadBps") : null;
-        var dayCountConvention = coupon.HasValue ? GetOptionalString(coupon.Value, "dayCountConvention") : null;
+        var couponKind = GetOptionalString(record.AssetSpecificTerms, "couponType")
+            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "kind") : null);
+        var fixedCouponRate = GetOptionalDecimal(record.AssetSpecificTerms, "couponRate")
+            ?? (coupon.HasValue ? GetOptionalDecimal(coupon.Value, "rate") : null);
+        var floatingRateIndex = GetOptionalString(record.AssetSpecificTerms, "floatingIndex")
+            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "index") : null);
+        var floatingSpreadBps = GetOptionalDecimal(record.AssetSpecificTerms, "spreadBps")
+            ?? (coupon.HasValue ? GetOptionalDecimal(coupon.Value, "spreadBps") : null);
+        var dayCountConvention = GetOptionalString(record.AssetSpecificTerms, "dayCount")
+            ?? (coupon.HasValue ? GetOptionalString(coupon.Value, "dayCountConvention") : null);
 
         var lifecycleStat =
             record.EffectiveTo.HasValue ? "Retired" :
@@ -1401,12 +1444,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        var effectiveDate = GetOptionalDateOnly(record.AssetSpecificTerms, "effectiveDate");
-        var maturityDate = GetOptionalDateOnly(record.AssetSpecificTerms, "maturityDate");
-
         if (!string.Equals(record.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase) ||
-            effectiveDate is null ||
-            maturityDate is null)
+            !TryBuildSwapProjection(record, out var projection))
         {
             await using var del = connection.CreateCommand();
             del.Transaction = transaction;
@@ -1415,8 +1454,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
             return;
         }
-
-        var swapType = GetOptionalString(record.AssetSpecificTerms, "swapType");
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -1440,16 +1477,114 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 primary_identifier_value = excluded.primary_identifier_value,
                 version = excluded.version;
             """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("swap_type", (object?)swapType ?? DBNull.Value);
-        command.Parameters.AddWithValue("effective_date", effectiveDate.Value.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("maturity_date", maturityDate.Value.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("lifecycle_stat", "Active");
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("display_name", projection.DisplayName);
+        command.Parameters.AddWithValue("currency", projection.Currency);
+        command.Parameters.AddWithValue("swap_type", (object?)projection.SwapType ?? DBNull.Value);
+        command.Parameters.AddWithValue("effective_date", projection.EffectiveDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
+        command.Parameters.AddWithValue("primary_identifier_value", projection.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", projection.Version);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    internal static bool TryBuildSwapProjection(SecurityProjectionRecord record, out SwapProjectionWriteModel projection)
+    {
+        var effectiveDate = GetOptionalDateOnly(record.AssetSpecificTerms, "effectiveDate");
+        var maturityDate = GetOptionalDateOnly(record.AssetSpecificTerms, "maturityDate");
+        if (effectiveDate is null || maturityDate is null)
+        {
+            projection = default!;
+            return false;
+        }
+
+        projection = new SwapProjectionWriteModel(
+            record.SecurityId,
+            record.DisplayName,
+            record.Currency,
+            DeriveSwapType(record.AssetSpecificTerms),
+            effectiveDate.Value,
+            maturityDate.Value,
+            "Active",
+            record.PrimaryIdentifierValue,
+            record.Version);
+        return true;
+    }
+
+    /// <summary>
+    /// Resolves the queryable <c>swap_type</c> from the swap terms. The serializer emits swap economics
+    /// as <c>legs</c> (per the Swap entry in <see cref="SecurityAssetTermsSchema"/>) and never a
+    /// <c>swapType</c> field, so reading only <c>swapType</c> left the column null for every canonically
+    /// serialized swap; derive it from the leg types instead, honouring an explicit <c>swapType</c> when a
+    /// non-canonical payload supplies one.
+    /// </summary>
+    internal static string? DeriveSwapType(JsonElement assetSpecificTerms)
+    {
+        var explicitType = GetOptionalString(assetSpecificTerms, "swapType");
+        if (!string.IsNullOrWhiteSpace(explicitType))
+        {
+            return explicitType;
+        }
+
+        if (!assetSpecificTerms.TryGetProperty("legs", out var legs) || legs.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var legTypes = new List<string>();
+        var hasFixed = false;
+        var hasFloating = false;
+        foreach (var leg in legs.EnumerateArray())
+        {
+            var legType = GetOptionalString(leg, "legType");
+            if (string.IsNullOrWhiteSpace(legType))
+            {
+                continue;
+            }
+
+            legType = legType.Trim();
+            var alreadySeen = false;
+            foreach (var seen in legTypes)
+            {
+                if (string.Equals(seen, legType, StringComparison.OrdinalIgnoreCase))
+                {
+                    alreadySeen = true;
+                    break;
+                }
+            }
+
+            if (!alreadySeen)
+            {
+                legTypes.Add(legType);
+            }
+
+            if (string.Equals(legType, "Fixed", StringComparison.OrdinalIgnoreCase))
+            {
+                hasFixed = true;
+            }
+            else if (string.Equals(legType, "Floating", StringComparison.OrdinalIgnoreCase))
+            {
+                hasFloating = true;
+            }
+        }
+
+        if (legTypes.Count == 0)
+        {
+            return null;
+        }
+
+        if (hasFixed && hasFloating)
+        {
+            return "FixedFloat";
+        }
+
+        if (hasFloating && !hasFixed && legTypes.Count == 1)
+        {
+            return "BasisFloat";
+        }
+
+        return string.Join("/", legTypes);
     }
 
     private async Task UpsertCommodityProjectionAsync(
@@ -1793,7 +1928,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         return false;
     }
 
-    private sealed record BondProjectionWriteModel(
+    internal sealed record BondProjectionWriteModel(
         Guid SecurityId,
         string? IssuerName,
         string? Seniority,
@@ -1832,5 +1967,16 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         DateOnly? LastTradingDate,
         string LifecycleStat,
         DateTimeOffset ListedAt,
+        long Version);
+
+    internal sealed record SwapProjectionWriteModel(
+        Guid SecurityId,
+        string DisplayName,
+        string Currency,
+        string? SwapType,
+        DateOnly EffectiveDate,
+        DateOnly MaturityDate,
+        string LifecycleStat,
+        string PrimaryIdentifierValue,
         long Version);
 }

@@ -41,8 +41,12 @@ public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarg
             context.OccurredAtUtc,
             context.Reason,
             context.EvidenceLinks,
+            context.LedgerBookId,
+            context.ExpectedPeriodVersion,
             projectionLedger: _projectionLedger,
             aggregateId: context.AggregateId,
+            accountingPolicyId: context.AccountingPolicyId,
+            accountingPolicyVersion: context.AccountingPolicyVersion,
             ct);
     }
 
@@ -53,8 +57,12 @@ public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarg
         DateTimeOffset occurredAtUtc,
         string reason,
         IReadOnlyList<string> evidenceLinks,
+        Guid ledgerBookId,
+        long expectedPeriodVersion,
         Meridian.Ledger.Ledger? projectionLedger = null,
         Guid? aggregateId = null,
+        string accountingPolicyId = "automated-journal",
+        string accountingPolicyVersion = "1",
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(approval);
@@ -69,16 +77,64 @@ public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarg
         }
         if (periodId == Guid.Empty)
             throw new ArgumentException("Period id is required.", nameof(periodId));
+        if (ledgerBookId == Guid.Empty)
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        if (expectedPeriodVersion < 0)
+            throw new ArgumentOutOfRangeException(nameof(expectedPeriodVersion));
         if (evidenceLinks.Count == 0)
             throw new ArgumentException("Posting evidence is required.", nameof(evidenceLinks));
 
         var entry = approval.ToJournalEntry();
+        var resolvedAggregateId = aggregateId ?? approval.ApprovalId;
+        var commandId = approval.ApprovalId;
+        var sourceEventId = approval.JournalEntryId;
+        var idempotencyKey = entry.Metadata.IdempotencyKey
+            ?? $"automated-journal:{ledgerBookId:N}:{approval.ApprovalId:N}";
+        var postingCommand = new Meridian.Contracts.Ledger.AccountingPostingCommandDto(
+            commandId,
+            resolvedAggregateId,
+            periodId,
+            DateOnly.FromDateTime(occurredAtUtc.UtcDateTime),
+            occurredAtUtc,
+            idempotencyKey,
+            Meridian.Contracts.Ledger.AccountingPostingIntentDto.Originating,
+            SourceEventId: sourceEventId,
+            CorrelationId: approval.ApprovalId,
+            CausationId: approval.ApprovalId,
+            ExpectedVersion: expectedPeriodVersion,
+            SourceEventType: "AutomatedJournalApproval",
+            ApprovalState: Meridian.Contracts.Ledger.AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: approval.ApprovalId.ToString("D"),
+            OperatorRationale: reason,
+            Evidence: evidenceLinks.Select(link => new Meridian.Contracts.Ledger.AccountingPostingEvidenceReferenceDto(
+                link,
+                link,
+                Meridian.Contracts.Ledger.AccountingPostingEvidenceKindDto.Approval,
+                "AutomatedJournalApproval",
+                occurredAtUtc,
+                actor,
+                SubjectId: approval.ApprovalId.ToString("D"))).ToArray(),
+            LedgerBookId: ledgerBookId);
 
+        // CRASH-RETRY INVARIANT: a crash between this durable append and the caller
+        // persisting the MarkPosted status re-enters here with Status=Approved. That retry
+        // is safe only because the posting target pre-flights the posting identity
+        // (journal-entry id / aggregate) and resolves an equivalent retained entry as a
+        // successful no-op append (see DurableLedgerPostingTarget.PostAsync) — the DB
+        // uniqueness constraint is the backstop, not the guard. Any replacement posting
+        // target must preserve that idempotent-retry contract.
         await _postingTarget.PostAsync(
                 new LedgerJournalEntryWrite(
                 entry,
-                aggregateId ?? approval.ApprovalId,
-                periodId),
+                resolvedAggregateId,
+                periodId,
+                CommandId: commandId,
+                CorrelationId: approval.ApprovalId,
+                AccountingPolicyId: accountingPolicyId,
+                AccountingPolicyVersion: accountingPolicyVersion,
+                SourceEventId: sourceEventId,
+                PostingCommand: postingCommand,
+                LedgerBookId: ledgerBookId),
                 ct)
             .ConfigureAwait(false);
 

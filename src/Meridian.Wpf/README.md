@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Wpf
@@ -51,6 +51,13 @@ returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
+
+Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
+configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
+when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
+configuration. The Data Sources page remains navigable, displays the recovery outcome and retained
+artifact path, and exposes a retry command after the operator corrects file access or syntax; a
+configuration failure no longer terminates the entire desktop process.
 
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
@@ -206,8 +213,9 @@ singleton. Watchlist backend synchronization now uses that seam for the optional
 probe while retaining local desktop persistence when the remote host does not provide a watchlist
 payload. Activity Log also loads `/api/logs` through that seam and keeps the local offline
 indicator path when the remote host is unavailable or returns a non-success response. Service
-Manager health checks also use the same seam for deployable desktop clients; its graceful shutdown
-path remains a local managed-process request because it uses the runtime-scoped shutdown token.
+Manager health checks also use the same seam for deployable desktop clients. Lifecycle status,
+readiness checks, latest receipts, restart, and shutdown use the typed `ILifecycleControlClient`;
+the WPF process neither stores a raw shutdown token nor infers backend process ownership.
 Setup Wizard backend readiness checks also use the remote seam, so first-run workstation setup
 validates the configured remote host instead of issuing a page-local direct HTTP health probe.
 The Symbols page Security Master bridge also resolves selected tickers through the same remote
@@ -215,10 +223,14 @@ client and shared workstation Security Master route instead of issuing page-loca
 Ticker Strip quote polling also uses the remote client for `/api/live/{symbol}/quote`, preserving
 the existing no-op offline behavior on non-success responses while keeping the service URL and HTTP
 client lifecycle centralized for deployable desktop workstations.
-After authentication and configuration initialization, WPF now starts the generic host lifecycle so
-shared `IHostedService` registrations, including database-backed projection and outbox workers from
-the shared composition graph, run under the desktop shell and stop through the existing host shutdown
-path on exit.
+Before login is enabled, the startup window queries the host lifecycle projection and requires a
+Ready or Degraded snapshot that is accepting work. Closing WPF ends only the desktop client; it does
+not implicitly stop the persistent installed host or its dedicated database. The compatibility
+`BackendServiceManager` delegates start/stop/status operations to
+`Meridian.LifecycleSupervisor.exe` and refuses direct process termination.
+After local credential validation, WPF establishes a cookie-and-CSRF session with the host using the
+same stored account; the desktop account store resolves the installed `MDC_DATA_ROOT` so the WPF and
+browser workstations authenticate against one operator identity source.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.
@@ -257,8 +269,17 @@ Fund Ledger trial-balance and journal grids project the canonical ledger dimensi
 shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
 project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
-queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints and inspect
+the returned verified outcome before displaying
+success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
+failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
+HTTP response or compatibility message. Strategy workspace composition resolves the durable
+strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
+artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
+in-memory production history.
+
+After mutation, the desktop refreshes the queue from the shared break read model after
+review/resolve/dismiss and keeps the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting

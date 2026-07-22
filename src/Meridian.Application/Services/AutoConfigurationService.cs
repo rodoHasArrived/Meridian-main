@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
+using Meridian.Application.Config;
 using Meridian.Application.Wizard.Metadata;
 using Meridian.Storage;
 using Serilog;
@@ -724,30 +725,7 @@ public sealed class AutoConfigurationService
         return null;
     }
 
-    private static bool IsIBGatewayAvailable()
-    {
-        // Check if IB Gateway/TWS is running on default ports
-        try
-        {
-            var ports = new[] { 7496, 7497, 4001, 4002 };
-            foreach (var port in ports)
-            {
-                using var client = new System.Net.Sockets.TcpClient();
-                var result = client.BeginConnect("127.0.0.1", port, null, null);
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
-                if (success && client.Connected)
-                {
-                    client.EndConnect(result);
-                    return true;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore connection errors
-        }
-        return false;
-    }
+    private static bool IsIBGatewayAvailable() => IBGatewayProbe.IsAvailable();
 
     /// <summary>
     /// Applies a role-based configuration preset, setting ~15 config values at once.

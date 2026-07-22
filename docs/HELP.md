@@ -115,8 +115,8 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production
 ```
 
 `-LaunchMode Production` builds Release host and desktop artifacts and requires
-`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` plus `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` before
-the desktop-local host starts. `-BuildOnly` verifies the Release build without starting the host.
+`MERIDIAN_DATABASE_URL` (or `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` plus
+`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`) before the desktop-local host starts. `-BuildOnly` verifies the Release build without starting the host.
 The WPF startup screen uses the same environment-backed operator credentials as the browser
 workstation: prefer `MDC_USERS` with `passwordHash` values, or use `MDC_USERNAME` /
 `MDC_PASSWORD_HASH` for a single local admin bootstrap. Production, packaged, and customer-build auth
@@ -167,6 +167,14 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Commands:
   - `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`
   - `python3 build/scripts/docs/generate-workflow-manifest.py`
+
+#### `postgresql-schema-control`
+
+- Owners: @storage-platform, @developer-experience
+- Commands:
+  - `python3 build/scripts/schema-control.py inventory --base-ref origin/main`
+  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref origin/main`
+  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot`
 
 #### `desktop-screenshot-catalog`
 

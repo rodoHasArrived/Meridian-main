@@ -61,6 +61,10 @@ public sealed class IBMarketDataClient :
 #else
         _inner = new IBSimulationClient(publisher);
         _isSimulation = true;
+        Log.ForContext<IBMarketDataClient>().Warning(
+            "Interactive Brokers market data is running in SIMULATION mode: prices are a synthetic random walk, " +
+            "historical requests return no bars, and no order reaches a broker. Build with the IBAPI compile flag " +
+            "and connect TWS/Gateway for real market data.");
 #endif
         _inner.ConnectionDiagnosticsChanged += OnInnerConnectionDiagnosticsChanged;
     }
@@ -69,6 +73,20 @@ public sealed class IBMarketDataClient :
     /// True when running without the IBAPI reference (simulation mode).
     /// </summary>
     public bool IsSimulation => _isSimulation;
+
+    /// <inheritdoc/>
+    public bool IsSimulated => _isSimulation;
+
+    /// <summary>
+    /// True when this build carries no IBAPI reference, so every IB client it creates is a
+    /// random-walk simulator. Lets hosts report simulation mode without constructing a client.
+    /// </summary>
+    public static bool IsSimulationBuild =>
+#if IBAPI
+        false;
+#else
+        true;
+#endif
 
     public bool IsEnabled => _inner.IsEnabled;
 
@@ -93,6 +111,14 @@ public sealed class IBMarketDataClient :
         maxDepthLevels: 10) with
     {
         SupportedMarkets = new[] { "US", "EU", "APAC", "Global" },
+        DeclaredMarketDataCapabilities = new[]
+        {
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Trades, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Account and exchange subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB event timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.NbboQuotes, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Account and exchange subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Level1Snapshot, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Snapshot permission required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Level2Book, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Market-depth subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB depth update timestamp", "Entitlement-dependent; maximum 10 displayed levels"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.TickByTick, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Tick-by-tick subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic")
+        },
         MaxRequestsPerWindow = 50,
         RateLimitWindow = TimeSpan.FromSeconds(1),
         MinRequestDelay = TimeSpan.FromMilliseconds(20)

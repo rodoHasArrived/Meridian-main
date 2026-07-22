@@ -35,6 +35,28 @@ public enum ProviderFailureKind
     Cancelled = 8
 }
 
+/// <summary>Asset-class stream exposed by a market-data provider.</summary>
+public enum MarketDataAssetClass
+{
+    Equities = 0,
+    Options = 1,
+    Crypto = 2,
+    News = 3
+}
+
+/// <summary>
+/// Safe, operator-facing evidence for one provider stream. Feed and entitlement are deliberately
+/// explicit: a connected stream is not necessarily real-time consolidated market data.
+/// </summary>
+public sealed record ProviderStreamDiagnostics(
+    MarketDataAssetClass AssetClass,
+    string Feed,
+    string Entitlement,
+    ProviderConnectionLifecycleState LifecycleState,
+    bool IsConnected,
+    bool IsDegraded,
+    string? DegradationReason);
+
 /// <summary>
 /// Safe provider connection diagnostics. It intentionally excludes URIs, credentials,
 /// headers, account IDs, and payload data.
@@ -62,4 +84,5 @@ public sealed record WebSocketConnectionDiagnostics(
     int ActiveSubscriptions = 0,
     int FailedSubscriptions = 0,
     int RecoveringSubscriptions = 0,
-    DateTimeOffset? LastSubscriptionMessageAt = null);
+    DateTimeOffset? LastSubscriptionMessageAt = null,
+    IReadOnlyList<ProviderStreamDiagnostics>? Streams = null);

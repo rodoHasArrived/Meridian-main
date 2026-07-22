@@ -283,13 +283,13 @@ describe("command palette view model", () => {
 
   it("exposes focused portfolio, accounting, reporting, strategy, and data route commands", () => {
     const familyOfficeModel = buildCommandPaletteViewModel("/portfolio/family-office", undefined, {}, "family office");
-    const formulaWorkbenchModel = buildCommandPaletteViewModel("/strategy/formula-workbench", undefined, {}, "formula workbench");
+    const formulaWorkbenchModel = buildCommandPaletteViewModel("/strategy/quant-lab?view=formulas", undefined, {}, "formula workbench");
     const operationsRecordModel = buildCommandPaletteViewModel("/reporting/operations-record", undefined, {}, "operations record");
     const exportsModel = buildCommandPaletteViewModel("/reporting/exports", undefined, {}, "exports");
     const coveredCallModel = buildCommandPaletteViewModel("/strategy/covered-call", undefined, {}, "covered call");
     const providerModel = buildCommandPaletteViewModel("/data/providers", undefined, {}, "provider catalog");
     const importModel = buildCommandPaletteViewModel("/data/import", undefined, {}, "import data");
-    const priceAlertsModel = buildCommandPaletteViewModel("/data/alerts", undefined, {}, "price alerts");
+    const priceAlertsModel = buildCommandPaletteViewModel("/data/quotes?view=alerts", undefined, {}, "price alerts");
     const externalGlModel = buildCommandPaletteViewModel(
       "/accounting/reconciliation/external-gl",
       undefined,
@@ -310,7 +310,7 @@ describe("command palette view model", () => {
     expect(formulaWorkbenchModel.items.find((item) => item.id === "route:strategy-formula-workbench")).toMatchObject({
       kind: "route",
       label: "Formula Workbench",
-      route: "/strategy/formula-workbench",
+      route: "/strategy/quant-lab?view=formulas",
       statusLabel: "Current",
       commandLabel: "Stay on Formula Workbench",
       active: true
@@ -376,7 +376,7 @@ describe("command palette view model", () => {
     expect(priceAlertsModel.items.find((item) => item.id === "route:data-alerts")).toMatchObject({
       kind: "route",
       label: "Price alerts",
-      route: "/data/alerts",
+      route: "/data/quotes?view=alerts",
       statusLabel: "Current",
       commandLabel: "Stay on Price alerts",
       active: true
@@ -394,9 +394,9 @@ describe("command palette view model", () => {
       description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT."
     });
     expect(model.items.find((item) => item.id === "route:data-alerts")).toMatchObject({
-      route: "/data/alerts?symbol=MSFT",
-      routeLabel: "/data/alerts?symbol=MSFT",
-      description: "Create local quote-threshold alerts and review alert trigger state. Subject: MSFT."
+      route: "/data/quotes?view=alerts&symbol=MSFT",
+      routeLabel: "/data/quotes?view=alerts&symbol=MSFT",
+      description: "Create local quote-threshold alerts from the Market Data desk alerts view. Subject: MSFT."
     });
   });
 
@@ -473,10 +473,10 @@ describe("command palette view model", () => {
       description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15."
     });
     expect(model.items.find((item) => item.id === "preset:preset-1")).toMatchObject({
-      route: "/accounting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(model.items.find((item) => item.id === "workflow:evidence-review:open-evidence")).toMatchObject({
-      route: "/accounting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
   });
 
@@ -785,8 +785,8 @@ describe("command palette view model", () => {
       kind: "workflow",
       description: "Research to Paper Review: Open the reusable evidence packet.",
       ariaLabel: "Open Evidence Packet, Research to Paper Review",
-      route: "/accounting/evidence",
-      routeLabel: "/accounting/evidence"
+      route: "/reporting/evidence",
+      routeLabel: "/reporting/evidence"
     });
   });
 

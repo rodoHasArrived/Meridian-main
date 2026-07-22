@@ -8,7 +8,9 @@ namespace Meridian.Ui.Shared.Services;
 /// Owns durable first-run, starter-workspace, sample-pack, and activation evidence.
 /// UI clients consume this governed state instead of defining onboarding policy locally.
 /// </summary>
-public sealed class FirstRunExperienceService(ConfigStore configStore)
+public sealed class FirstRunExperienceService(
+    ConfigStore configStore,
+    DemoTenantProvisioner? demoTenantProvisioner = null)
 {
     public const string SamplePackVersion = "2026.1";
     private readonly SemaphoreSlim _writeGate = new(1, 1);
@@ -50,6 +52,16 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
         var dataChoice = NormalizeDataChoice(request.DataChoice);
         var useSample = request.UseSampleData || dataChoice == "sample";
         var now = DateTimeOffset.UtcNow;
+
+        // Load the demo tenant into the real, desk-read stores before persisting state so the status
+        // reflects what actually loaded. Provisioning is best-effort and must never block the user
+        // from completing onboarding.
+        DemoTenantProvisioningReport? provisioning = null;
+        if (useSample && demoTenantProvisioner is not null)
+        {
+            provisioning = await demoTenantProvisioner.ProvisionAsync(ct).ConfigureAwait(false);
+        }
+
         var state = new FirstRunState(
             true,
             string.IsNullOrWhiteSpace(request.Goal) ? kit.Goal : request.Goal.Trim(),
@@ -62,12 +74,14 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
                 ["workspace-opened"] = now,
                 ["data-imported"] = useSample ? now : default
             }.Where(pair => pair.Value != default).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
-            now);
+            now,
+            ReconciliationLoaded: provisioning?.ReconciliationLoaded ?? true,
+            StrategyLoaded: provisioning?.StrategyRunLoaded ?? true);
 
         await WriteAsync(username, state, ct).ConfigureAwait(false);
         if (useSample)
         {
-            await ProvisionSamplePackAsync(username, ct).ConfigureAwait(false);
+            await ProvisionSamplePackAsync(username, provisioning, ct).ConfigureAwait(false);
         }
 
         return ToDto(state);
@@ -112,7 +126,10 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
             new RecommendedActionDto(sample ? "Review the sample statement" : "Add starting data", "/accounting/statement-import", "Import and validate a statement or holdings file."),
             new RecommendedActionDto("Run a report", "/reporting/run", "Produce a useful result and keep the evidence.")
         };
-        return new FirstRunStatusDto(state.IsComplete, state.Goal, state.StarterKitId, state.DataChoice, workspace, StarterKits, outcomes, recommendations);
+        var sampleWorkspace = sample
+            ? DemoTenantBlueprint.BuildSampleWorkspace(state.ReconciliationLoaded ?? true, state.StrategyLoaded ?? true)
+            : null;
+        return new FirstRunStatusDto(state.IsComplete, state.Goal, state.StarterKitId, state.DataChoice, workspace, StarterKits, outcomes, recommendations, sampleWorkspace);
     }
 
     private async Task<FirstRunState> ReadAsync(string username, CancellationToken ct)
@@ -141,20 +158,18 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
         finally { _writeGate.Release(); }
     }
 
-    private Task ProvisionSamplePackAsync(string username, CancellationToken ct)
+    private Task ProvisionSamplePackAsync(string username, DemoTenantProvisioningReport? provisioning, CancellationToken ct)
     {
+        // The manifest now records the exact populated snapshot loaded into the workspace plus what
+        // the provisioner wrote into the real desk stores, so the pack reflects live workspace state
+        // instead of a disconnected, unread blob.
         var pack = new
         {
             version = SamplePackVersion,
             label = "Sample · Paper",
             generatedAtUtc = DateTimeOffset.UtcNow,
-            portfolio = new { name = "Northstar Sample Portfolio", cash = 125000m, holdings = new[] { new { symbol = "SPY", quantity = 120 }, new { symbol = "MSFT", quantity = 80 } } },
-            watchlist = new[] { "AAPL", "NVDA", "TLT", "EURUSD" },
-            marketHistory = new { symbols = new[] { "SPY", "MSFT", "TLT" }, sessions = 90 },
-            statement = new { fileName = "sample-custodian-statement.csv", status = "Awaiting import" },
-            reconciliationBreaks = new[] { new { id = "SAMPLE-BRK-001", summary = "Cash variance", amount = 1250m }, new { id = "SAMPLE-BRK-002", summary = "Unmatched fee", amount = 42.50m } },
-            report = new { name = "Sample portfolio review", status = "Ready to run" },
-            strategy = new { name = "Sample covered call", environment = "Paper", status = "Ready" }
+            workspace = DemoTenantBlueprint.BuildSampleWorkspace(),
+            provisioning
         };
         return AtomicFileWriter.WriteAsync(SamplePath(username), JsonSerializer.Serialize(pack, _json), ct);
     }
@@ -180,7 +195,10 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
         bool IsSample,
         string WorkspaceId,
         IReadOnlyDictionary<string, DateTimeOffset> CompletedOutcomes,
-        DateTimeOffset? CompletedAtUtc)
+        DateTimeOffset? CompletedAtUtc,
+        // Null on state written before provisioning-outcome tracking existed; treated as loaded.
+        bool? ReconciliationLoaded = null,
+        bool? StrategyLoaded = null)
     {
         public static FirstRunState Empty { get; } = new(false, null, null, null, false, "primary", new Dictionary<string, DateTimeOffset>(), null);
     }

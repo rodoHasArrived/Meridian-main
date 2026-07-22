@@ -20,11 +20,43 @@ public interface IAccountingPostingCandidateWriteBuilder
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Internal-process authority handoff used only after the Asset Accounting Event Spine has
+/// resolved immutable Asset Operations, Security Master, ledger-book, period, evidence, model,
+/// and rule-pack state. Generic candidate callers cannot opt canonical asset events into this path.
+/// </summary>
+public interface IAccountingPostingCandidateAuthorityBuilder
+{
+    Task<AccountingPostingCandidateWriteResult> BuildAuthoritativeCandidateWriteAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        AssetAccountingCandidateAuthorityContext authority,
+        CancellationToken ct = default);
+}
+
+public sealed record AssetAccountingCandidateAuthorityContext(
+    Guid EventId,
+    long EventVersion,
+    long SourceSpineVersion,
+    long DraftSpineVersion,
+    string SourceProjectionFingerprint,
+    AssetAccountingEventKindDto EventKind,
+    Guid SecurityId,
+    Guid BookPositionId,
+    long ExpectedBookPositionVersion,
+    Guid LedgerBookId,
+    Guid PeriodId,
+    long ExpectedPeriodVersion,
+    string RulePackId,
+    string RulePackVersion);
+
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
     LedgerJournalEntryWrite? Write);
 
-public sealed class AccountingPostingCandidateService : IAccountingPostingCandidateService, IAccountingPostingCandidateWriteBuilder
+public sealed class AccountingPostingCandidateService :
+    IAccountingPostingCandidateService,
+    IAccountingPostingCandidateWriteBuilder,
+    IAccountingPostingCandidateAuthorityBuilder
 {
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IAccountingJournalDraftService _journalDraftService;
@@ -57,9 +89,27 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
     public async Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteAsync(
         PostingRuleJournalCandidateRequestDto request,
         CancellationToken ct = default)
+        => await BuildCandidateWriteCoreAsync(request, authority: null, ct).ConfigureAwait(false);
+
+    public async Task<AccountingPostingCandidateWriteResult> BuildAuthoritativeCandidateWriteAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        AssetAccountingCandidateAuthorityContext authority,
+        CancellationToken ct = default)
+        => await BuildCandidateWriteCoreAsync(request, authority, ct).ConfigureAwait(false);
+
+    private async Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteCoreAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        AssetAccountingCandidateAuthorityContext? authority,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+
+        var authorityIssues = ValidateAssetAccountingAuthority(request, authority);
+        if (authorityIssues.Any(static issue => issue.BlocksCandidate))
+        {
+            return BuildPreDryRunBlockedResult(request, authorityIssues);
+        }
 
         var typedProjectionIssues = new List<PostingRuleJournalCandidateIssueDto>();
         var authoritativeEventAmount = await ResolveTypedInstrumentProjectionAsync(
@@ -256,6 +306,8 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
         var postingCommand = draft.Write?.PostingCommand is { } command
             ? command with
             {
+                ExpectedVersion = authority?.ExpectedPeriodVersion ?? command.ExpectedVersion,
+                Evidence = MergeRetainedEvidence(command.Evidence, request.RetainedEvidence),
                 BookContext = request.BookContext,
                 BookPositionId = request.BookPositionId,
                 EconomicEvent = request.EconomicEvent,
@@ -609,6 +661,116 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
             RulePackReference = request.RulePackReference
         };
     }
+
+    private static AccountingPostingCandidateWriteResult BuildPreDryRunBlockedResult(
+        PostingRuleJournalCandidateRequestDto request,
+        IReadOnlyList<PostingRuleJournalCandidateIssueDto> issues)
+    {
+        var dryRun = new RuleDryRunResultDto(
+            request.FundProfileId,
+            request.LedgerBookId,
+            request.SourceEventType,
+            request.EffectiveDate,
+            request.EventAmount,
+            request.Currency,
+            IsPostingBalanced: false,
+            SelectedRuleId: null,
+            RuleMatches: [],
+            GeneratedLines: [],
+            ValidationIssues: [],
+            GeneratedPostingLines: []);
+        return new AccountingPostingCandidateWriteResult(
+            BuildBlockedResult(request, dryRun, selectedRuleVersion: null, issues),
+            Write: null);
+    }
+
+    private static IReadOnlyList<PostingRuleJournalCandidateIssueDto> ValidateAssetAccountingAuthority(
+        PostingRuleJournalCandidateRequestDto request,
+        AssetAccountingCandidateAuthorityContext? authority)
+    {
+        if (!AssetAccountingEventTypeNames.TryParse(request.SourceEventType, out var eventKind))
+        {
+            return authority is null
+                ? []
+                :
+                [
+                    Issue(
+                        "posting-candidate.asset-authority-unexpected",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        "Asset Accounting Event Spine authority may only be used for canonical AssetAccounting event types.",
+                        "sourceEventType",
+                        "Use the generic candidate builder for non-asset source events.")
+                ];
+        }
+
+        if (authority is null)
+        {
+            return
+            [
+                Issue(
+                    "posting-candidate.asset-authority-required",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "Canonical asset-accounting events must be resolved by the Asset Accounting Event Spine before Rules Studio can build a candidate.",
+                    "sourceEventType",
+                    "Use IAssetAccountingEventSpineService; direct generic candidate requests are not posting authority.")
+            ];
+        }
+
+        var issues = new List<PostingRuleJournalCandidateIssueDto>();
+        AddMismatch(issues, authority.EventKind == eventKind, "posting-candidate.asset-authority-kind-mismatch", "Resolved asset-event kind must match the canonical source-event type.", "sourceEventType");
+        AddMismatch(issues, authority.EventId != Guid.Empty && request.SourceEventId == authority.EventId && request.EconomicEvent?.EventId == authority.EventId, "posting-candidate.asset-authority-event-mismatch", "Resolved asset-event identity must match the posting request.", "sourceEventId");
+        AddMismatch(issues, authority.EventVersion > 0 && request.EconomicEvent?.EventVersion == authority.EventVersion, "posting-candidate.asset-authority-event-version-mismatch", "Resolved source-event version must match the typed economic event.", "economicEvent.eventVersion");
+        AddMismatch(issues, authority.SourceSpineVersion > 0 && authority.DraftSpineVersion == authority.SourceSpineVersion + 1, "posting-candidate.asset-authority-spine-version-mismatch", "Resolved asset-accounting authority must target the next append-only spine version.", "authority.spineVersion");
+        AddMismatch(issues, IsSha256(authority.SourceProjectionFingerprint), "posting-candidate.asset-authority-fingerprint-required", "Resolved asset-accounting authority requires the retained source projection fingerprint.", "authority.sourceProjectionFingerprint");
+        AddMismatch(issues, authority.SecurityId != Guid.Empty && request.EconomicEvent?.SecurityId == authority.SecurityId && request.Dimensions?.InstrumentId == authority.SecurityId, "posting-candidate.asset-authority-security-mismatch", "Resolved Security Master identity must match the event and candidate dimensions.", "dimensions.instrumentId");
+        AddMismatch(issues, authority.BookPositionId != Guid.Empty && request.BookPositionId == authority.BookPositionId && request.Dimensions?.PositionId == authority.BookPositionId, "posting-candidate.asset-authority-position-mismatch", "Resolved book-position identity must match the event and candidate dimensions.", "bookPositionId");
+        AddMismatch(issues, authority.ExpectedBookPositionVersion > 0, "posting-candidate.asset-authority-position-version-required", "Resolved asset-accounting authority requires a positive book-position version assertion.", "authority.expectedBookPositionVersion");
+        AddMismatch(issues, authority.LedgerBookId != Guid.Empty && request.LedgerBookId == authority.LedgerBookId && request.AggregateId == authority.LedgerBookId && request.BookContext?.LedgerBookId == authority.LedgerBookId, "posting-candidate.asset-authority-book-mismatch", "Resolved ledger-book identity must own the candidate aggregate and typed book context.", "ledgerBookId");
+        AddMismatch(issues, authority.PeriodId != Guid.Empty && request.PeriodId == authority.PeriodId && request.BookContext?.PeriodId == authority.PeriodId, "posting-candidate.asset-authority-period-mismatch", "Resolved accounting period must match the candidate and typed book context.", "periodId");
+        AddMismatch(issues, authority.ExpectedPeriodVersion > 0, "posting-candidate.asset-authority-period-version-required", "Resolved asset-accounting authority requires a positive period-version assertion.", "authority.expectedPeriodVersion");
+        AddMismatch(issues, request.EconomicEvent is not null && IsSha256(request.EconomicEvent.SourceContentHash), "posting-candidate.asset-authority-source-hash-required", "Resolved asset events require a canonical SHA-256 source-content hash.", "economicEvent.sourceContentHash");
+        AddMismatch(issues, request.ProjectionLineage is { } lineage && lineage.ProjectionRunId != Guid.Empty && !string.IsNullOrWhiteSpace(lineage.ModelKey) && !string.IsNullOrWhiteSpace(lineage.ModelVersion) && !string.IsNullOrWhiteSpace(lineage.EngineVersion), "posting-candidate.asset-authority-lineage-required", "Resolved asset events require complete projection model lineage.", "projectionLineage");
+        AddMismatch(issues, request.RetainedEvidence.Count > 0 && request.RetainedEvidence.All(static evidence => RetainedEvidenceIdentityValidator.IsComplete(evidence)), "posting-candidate.asset-authority-evidence-required", "Resolved asset events require complete typed retained evidence before Rules Studio.", "retainedEvidence");
+        AddMismatch(issues, request.RulePackReference is { } rulePack && !string.IsNullOrWhiteSpace(rulePack.SelectedRuleId) && !string.IsNullOrWhiteSpace(rulePack.SelectedRuleVersion) && string.Equals(rulePack.RulePackId, authority.RulePackId, StringComparison.Ordinal) && string.Equals(rulePack.RulePackVersion, authority.RulePackVersion, StringComparison.Ordinal), "posting-candidate.asset-authority-rule-pack-mismatch", "Resolved asset events require the authoritative rule pack and selected Rules Studio rule.", "rulePackReference");
+        return issues;
+    }
+
+    private static IReadOnlyList<AccountingPostingEvidenceReferenceDto> MergeRetainedEvidence(
+        IReadOnlyList<AccountingPostingEvidenceReferenceDto> existing,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        if (retainedEvidence.Count == 0)
+        {
+            return existing;
+        }
+
+        return existing
+            .Concat(retainedEvidence.Select(static evidence =>
+                new AccountingPostingEvidenceReferenceDto(
+                    EvidenceId: evidence.EvidenceId,
+                    Uri: evidence.EvidenceUri,
+                    Kind: AccountingPostingEvidenceKindDto.Source,
+                    SourceSystem: evidence.SourceSystem,
+                    RetainedAtUtc: evidence.RetainedAtUtc,
+                    RetainedBy: evidence.RetainedBy,
+                    SubjectId: evidence.SubjectId,
+                    ContentHash: evidence.ContentHashSha256,
+                    SourceReference: evidence.SourceReference,
+                    Reviewer: evidence.ReviewedBy,
+                    ReviewedAtUtc: evidence.ReviewedAtUtc,
+                    EffectiveDate: evidence.EffectiveDate,
+                    EvidenceVersion: evidence.EvidenceVersion,
+                    ReviewStatus: evidence.ReviewStatus,
+                    SubjectType: evidence.SubjectType)))
+            .GroupBy(static evidence => evidence.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.Last())
+            .ToArray();
+    }
+
+    private static bool IsSha256(string? value)
+        => !string.IsNullOrWhiteSpace(value) &&
+           value.Trim().Length == 64 &&
+           value.Trim().All(static character => Uri.IsHexDigit(character));
 
     private async Task ValidateBookContextAsync(
         PostingRuleJournalCandidateRequestDto request,

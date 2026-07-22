@@ -20,8 +20,8 @@ public interface ISecurityMasterAmortizationLedgerBridge
 {
     /// <summary>
     /// Projects <paramref name="securityId"/>'s cash flow schedule and posts one balanced
-    /// accrual/amortization entry per schedule period (coupon accrual plus straight-line
-    /// premium/discount amortization when a position is supplied), and a separate principal-paydown
+    /// accrual/amortization entry per schedule period (coupon accrual plus premium/discount
+    /// amortization derived from the supplied open lots), and a separate principal-paydown
     /// entry per period with a principal amount. Returns the number of journal entries posted.
     /// </summary>
     Task<int> PostProjectedCashFlowsAsync(
@@ -35,16 +35,17 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// <summary>
 /// Position-level context for posting projected cash flows. Coupon and principal amounts are
 /// taken from the projection as-is (in the projection's own par basis); the premium/discount is
-/// derived here from the position because the schedule does not carry it.
+/// derived from the actual open tax lots (bond lots record <see cref="LedgerTaxLot.UnitCost"/> as a
+/// price per 100 of par) and amortized by the projection's own day-count year fraction — the same
+/// method the cost-basis relief engine uses — so GL postings and cost-basis relief tie by
+/// construction instead of amortizing a caller-supplied purchase price on a different schedule.
 /// </summary>
-/// <param name="PositionFace">Held face/par of the position; drives premium/discount amortization. Zero disables it.</param>
-/// <param name="PurchasePricePercentOfPar">Purchase price as a percent of par (e.g. 102 = 2% premium; 98 = 2% discount).</param>
+/// <param name="OpenLots">Open tax lots of the position; lots linked to the posted security drive premium/discount amortization. Null or empty disables it.</param>
 /// <param name="FinancialAccountId">Optional account scope for the ledger accounts.</param>
 /// <param name="Scenario">Rate scenario used to request the projection.</param>
 /// <param name="MaxPeriods">Optional cap on how many schedule periods to post (null = all).</param>
 public sealed record AmortizationLedgerPostingContext(
-    decimal PositionFace = 0m,
-    decimal PurchasePricePercentOfPar = 100m,
+    IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
     StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base,
     int? MaxPeriods = null);
@@ -52,6 +53,8 @@ public sealed record AmortizationLedgerPostingContext(
 /// <inheritdoc />
 public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
 {
+    private const decimal ParPrice = 100m;
+
     private readonly ISecurityMasterCashFlowService _cashFlowService;
     private readonly ILogger<SecurityMasterAmortizationLedgerBridge> _logger;
 
@@ -107,11 +110,13 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         if (schedule.Count == 0)
             return 0;
 
-        // Straight-line premium/discount over the posted periods; positive = premium (write-down),
-        // negative = discount (write-up).
-        var premiumDiscountTotal = postingContext.PositionFace > 0m
-            ? RoundCash(postingContext.PositionFace * (postingContext.PurchasePricePercentOfPar - 100m) / 100m)
-            : 0m;
+        // Premium/discount comes from the actual open lots and amortizes by the day-count year
+        // fraction of the same terms the schedule was projected from; positive = premium
+        // (write-down), negative = discount (write-up).
+        var convention = DayCountConventions.Parse(projection.TermsUsed?.DayCountConvention);
+        var maturity = projection.TermsUsed?.MaturityDate
+            ?? DateOnly.FromDateTime(schedule[^1].PeriodDate.UtcDateTime.Date);
+        var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity);
 
         var allocatedPremiumDiscount = 0m;
         var posted = 0;
@@ -122,10 +127,11 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             var effectiveDate = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
             var timestamp = ToUtcStartOfDay(effectiveDate);
 
-            // Cumulative-target distribution: each period's share is the rounded cumulative total
-            // to date minus what has already been allocated. This keeps shares monotonic toward the
-            // target so accumulated per-period rounding can never flip the final period's sign.
-            var cumulativeTarget = RoundCash(premiumDiscountTotal * (i + 1) / schedule.Count);
+            // Cumulative-target distribution: each period's share is the rounded cumulative
+            // amortization target through that period minus what has already been allocated. Per-lot
+            // weights grow monotonically toward 1, so accumulated per-period rounding can never flip
+            // a single-direction premium (or discount) into the opposite posting.
+            var cumulativeTarget = RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, effectiveDate)));
             var premiumDiscountShare = cumulativeTarget - allocatedPremiumDiscount;
             allocatedPremiumDiscount = cumulativeTarget;
 
@@ -243,6 +249,61 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             LedgerView: LedgerViewKind.SecurityMaster,
             FinancialAccountId: financialAccountId,
             EffectiveDate: effectiveDate);
+
+    /// <summary>
+    /// One open lot's contribution to premium/discount amortization: the signed dollar total to
+    /// amortize over the lot's remaining life and the day-count weighting that spreads it.
+    /// </summary>
+    private sealed record AmortizingLot(decimal Total, DateOnly AcquiredDate, DateOnly Maturity, decimal Life)
+    {
+        /// <summary>
+        /// The fraction of <see cref="Total"/> amortized from acquisition through
+        /// <paramref name="periodDate"/> (clamped to maturity): elapsed day-count year fraction over
+        /// the lot's full-life year fraction, capped at 1.
+        /// </summary>
+        public decimal WeightThrough(DayCountConvention convention, DateOnly periodDate)
+        {
+            var through = periodDate < Maturity ? periodDate : Maturity;
+            if (through <= AcquiredDate)
+                return 0m;
+
+            var weight = DayCountConventions.Fraction(convention, AcquiredDate, through) / Life;
+            return weight >= 1m ? 1m : weight;
+        }
+    }
+
+    private static IReadOnlyList<AmortizingLot> BuildAmortizingLots(
+        IReadOnlyList<LedgerTaxLot>? openLots,
+        Guid securityId,
+        DayCountConvention convention,
+        DateOnly maturity)
+    {
+        if (openLots is null || openLots.Count == 0)
+            return Array.Empty<AmortizingLot>();
+
+        var lots = new List<AmortizingLot>();
+        foreach (var lot in openLots)
+        {
+            // Only lots explicitly linked to the posted security amortize; unlinked lots carry no
+            // reference-data linkage (mirroring the cost-basis adjustment service's lot filter).
+            if (lot.SecurityId != securityId || lot.AcquiredDate >= maturity)
+                continue;
+
+            // Bond lots record UnitCost as a price per 100 of par, so quantity × (unit cost − par)
+            // is the lot's signed premium (positive) or discount (negative) in dollars.
+            var total = lot.Quantity * (lot.UnitCost - ParPrice);
+            if (total == 0m)
+                continue;
+
+            var life = DayCountConventions.Fraction(convention, lot.AcquiredDate, maturity);
+            if (life <= 0m)
+                continue;
+
+            lots.Add(new AmortizingLot(total, lot.AcquiredDate, maturity, life));
+        }
+
+        return lots;
+    }
 
     private static DateTimeOffset ToUtcStartOfDay(DateOnly date)
         => new(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero);

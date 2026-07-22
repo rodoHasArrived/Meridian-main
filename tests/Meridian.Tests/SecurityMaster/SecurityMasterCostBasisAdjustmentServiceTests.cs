@@ -161,6 +161,53 @@ public sealed class SecurityMasterCostBasisAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task BuildAdjustmentsAsync_FactorSchedule_TakesPriorityOverScalarCurrentFactor()
+    {
+        // The dated schedule row in effect on the as-of date (0.70 from 2024-12-01) must drive the
+        // paydown — not the stale scalar currentFactor (0.95) and not the 2025-06-01 row that is
+        // still in the future — matching how the cash-flow projector seeds its outstanding factor.
+        var queryService = QueryServiceWith(security: Security("MortgageBacked", new
+        {
+            currentFactor = 0.95m,
+            factorSchedule = new[]
+            {
+                new { asOfDate = "2024-12-01", factor = 0.70m },
+                new { asOfDate = "2025-06-01", factor = 0.60m },
+            },
+        }));
+        var service = BuildService(queryService);
+
+        var adjustments = await service.BuildAdjustmentsAsync(
+            SecurityId, Lots(new LedgerTaxLot("lot-a", new DateOnly(2024, 1, 1), 100m, 100m, SecurityId)), new DateOnly(2025, 1, 1));
+
+        adjustments.Should().ContainSingle();
+        adjustments[0].Kind.Should().Be(LedgerTaxLotBasisAdjustmentKind.Factor);
+        adjustments[0].Value.Should().Be(0.70m);
+        adjustments[0].Reference.Should().Be("factor-schedule");
+    }
+
+    [Fact]
+    public async Task BuildAdjustmentsAsync_VendorAliasAssetClass_StillAmortizes()
+    {
+        // "MBS" is a vendor alias for StructuredCredit in the shared asset-class catalog, so
+        // amortization must not depend on the canonical spelling reaching this service.
+        var queryService = QueryServiceWith(security: Security("MBS", new
+        {
+            maturityDate = "2030-01-01",
+            dayCountConvention = "30/360",
+        }));
+        var service = BuildService(queryService);
+
+        var adjustments = await service.BuildAdjustmentsAsync(
+            SecurityId,
+            Lots(new LedgerTaxLot("lot-a", new DateOnly(2025, 1, 1), 10m, 110m, SecurityId)),
+            new DateOnly(2027, 1, 1));
+
+        adjustments.Should().ContainSingle(adjustment =>
+            adjustment.Kind == LedgerTaxLotBasisAdjustmentKind.Amortization);
+    }
+
+    [Fact]
     public async Task BuildAdjustmentsAsync_BondPremium_ProducesStraightLineAmortization()
     {
         var queryService = QueryServiceWith(security: Security("Bond", new

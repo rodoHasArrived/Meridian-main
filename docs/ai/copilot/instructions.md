@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-16
-**Last Updated:** 2026-06-16
+**Reviewed:** 2026-07-19
+**Last Updated:** 2026-07-19
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),
@@ -49,8 +49,9 @@ current source instead.
 
 Meridian is a .NET 10 operational-finance and trading platform where fund management is a first-class specialization. Active operator UI work spans
 [`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
-[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
-[`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
+[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/). Dashboard builds emit host-served
+browser assets under `src/Meridian.Ui/wwwroot/workstation/`; that generated directory may be absent
+in a fresh checkout.
 Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
 read models before either client composes it.
 

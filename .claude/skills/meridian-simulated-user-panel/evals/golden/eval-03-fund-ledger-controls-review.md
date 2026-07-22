@@ -1,13 +1,21 @@
+**Skill Selection**
+- Skill: `meridian-simulated-user-panel`
+- Mode: `release_gate`
+- Reason: fixture-backed accounting controls release advice
+- Required Opening: inspect approval and audit evidence
+
 ## Executive Summary
 - Mode: `release_gate`
+- Evidence status: `insufficient`
+- Disclaimer: This is simulated persona feedback, not observed user research.
 - Verdict: `hold`
 - The ledger surface has the bones of a trustworthy control workspace, but it still hides the approval state, lacks an exception queue with owner assignment, and does not produce an audit snapshot bundle that a serious reviewer would expect.
 
 ## Panel
 - Fund Accountant — tests whether balances, journals, and review states are defensible.
-- Risk / Compliance Lead — tests auditability, approvals, and ownership.
-- Fund Operations Lead — tests exception handling and operational continuity.
-- Owner-Operator — tests whether this can ship without damaging trust.
+- Compliance Officer — tests auditability, approvals, and ownership.
+- Operations Manager — tests exception handling and operational continuity.
+- Controller — tests whether this can ship without damaging trust.
 
 ## Persona Findings
 ### Fund Accountant
@@ -24,7 +32,7 @@
 - Extensibility: 4/5 - The current model could support richer controls without replacement.
 - Learning Curve: 3/5 - The accountant can read it, but cannot fully defend it.
 
-### Risk / Compliance Lead
+### Compliance Officer
 - Liked: Separate approvals and activity feeds show the right intent.
 - Didn't like: A control reviewer cannot tell from the ledger page whether a change is pending approval, approved, or rejected.
 - Missing or risky: There is no dedicated exception queue or owner assignment for issues raised in the activity feed.
@@ -38,7 +46,7 @@
 - Extensibility: 4/5 - The surface can evolve into a better control workspace.
 - Learning Curve: 3/5 - Compliance users will understand the gap quickly, but that does not make it acceptable.
 
-### Fund Operations Lead
+### Operations Manager
 - Liked: Recent journal events and the activity feed create some operational visibility.
 - Didn't like: An activity feed without an exception queue or owner assignment creates operational drift.
 - Missing or risky: There is no clear handoff from detected exception to accountable owner and follow-up.
@@ -52,7 +60,7 @@
 - Extensibility: 4/5 - Queueing and ownership can be layered onto the current structure.
 - Learning Curve: 3/5 - The page reads clearly but does not complete the job.
 
-### Owner-Operator
+### Controller
 - Liked: The direction is strategically correct because Meridian needs a trustworthy governance surface.
 - Didn't like: Shipping now would signal control ambition without actual control completeness.
 - Missing or risky: The missing approval state, exception queue, and audit snapshot would weaken Meridian's credibility with fund operators immediately.

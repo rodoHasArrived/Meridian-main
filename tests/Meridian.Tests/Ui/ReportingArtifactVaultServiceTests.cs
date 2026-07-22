@@ -42,6 +42,44 @@ public sealed class ReportingArtifactVaultServiceTests
     }
 
     [Fact]
+    public async Task Retention_snapshots_every_caller_buffer_before_the_first_store_await()
+    {
+        var blobStore = new InMemoryArtifactStore(Now) { BlockFirstStore = true };
+        var service = CreateService(blobStore, new InMemoryCatalog(), new HashChainedAuditStore());
+        var manifestBytes = new byte[] { 1, 2, 3 };
+        var scheduleBytes = new byte[] { 4, 5, 6 };
+        var expectedSchedule = scheduleBytes.ToArray();
+        var request = CreateRequest(manifestBytes) with
+        {
+            Artifacts =
+            [
+                new ReportingRenderedArtifact(
+                    "statement.pdf",
+                    "statement.pdf",
+                    "application/pdf",
+                    manifestBytes),
+                new ReportingRenderedArtifact(
+                    "schedule.csv",
+                    "schedule.csv",
+                    "text/csv",
+                    scheduleBytes)
+            ]
+        };
+
+        var retention = service.RetainPackageAsync(request, CreateAuthority());
+        await blobStore.FirstStoreEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        scheduleBytes[0] = 99;
+        blobStore.ReleaseFirstStore.TrySetResult(true);
+
+        await retention;
+        var download = await service.ReadForDownloadAsync(
+            "package-1",
+            "schedule.csv",
+            CreateAccessContext());
+        download.Content.Should().Equal(expectedSchedule);
+    }
+
+    [Fact]
     public async Task Cross_tenant_download_is_denied_before_blob_read_and_is_audited()
     {
         var blobStore = new InMemoryArtifactStore(Now);
@@ -49,6 +87,7 @@ public sealed class ReportingArtifactVaultServiceTests
         var audit = new HashChainedAuditStore();
         var service = CreateService(blobStore, catalog, audit);
         await service.RetainPackageAsync(CreateRequest([1, 2, 3]), CreateAuthority());
+        var retentionReadCalls = blobStore.ReadCalls;
         var crossTenant = CreateAccessContext() with
         {
             TenantId = "tenant-b",
@@ -59,7 +98,7 @@ public sealed class ReportingArtifactVaultServiceTests
         var action = () => service.ReadForDownloadAsync("package-1", "statement.pdf", crossTenant);
 
         await action.Should().ThrowAsync<ReportingArtifactVaultAccessDeniedException>();
-        blobStore.ReadCalls.Should().Be(0);
+        blobStore.ReadCalls.Should().Be(retentionReadCalls, "denied access must not read artifact bytes");
         audit.Events[^1].Action.Should().Be(ReportingArtifactAuditAction.AccessDenied);
         audit.Events[^1].ActorTenantId.Should().Be("tenant-b");
         audit.Events[^1].TargetTenantId.Should().Be("tenant-b");
@@ -73,6 +112,7 @@ public sealed class ReportingArtifactVaultServiceTests
         var audit = new HashChainedAuditStore();
         var service = CreateService(blobStore, catalog, audit);
         await service.RetainPackageAsync(CreateRequest([1, 2, 3]), CreateAuthority());
+        var retentionReadCalls = blobStore.ReadCalls;
 
         var action = () => service.ReadForDownloadAsync(
             "package-1",
@@ -80,7 +120,7 @@ public sealed class ReportingArtifactVaultServiceTests
             CreateAccessContext() with { FundId = "another-fund" });
 
         await action.Should().ThrowAsync<ReportingArtifactVaultAccessDeniedException>();
-        blobStore.ReadCalls.Should().Be(0);
+        blobStore.ReadCalls.Should().Be(retentionReadCalls, "denied access must not read artifact bytes");
         audit.Events[^1].Action.Should().Be(ReportingArtifactAuditAction.AccessDenied);
         audit.Events[^1].Reason.Should().Contain("operational scope");
     }
@@ -110,12 +150,13 @@ public sealed class ReportingArtifactVaultServiceTests
         var audit = new HashChainedAuditStore();
         var service = CreateService(blobStore, catalog, audit);
         await service.RetainPackageAsync(CreateRequest([1, 2, 3]), CreateAuthority());
+        var retentionReadCalls = blobStore.ReadCalls;
         audit.FailAppends = true;
 
         var action = () => service.ReadForDownloadAsync("package-1", "statement.pdf", CreateAccessContext());
 
         await action.Should().ThrowAsync<IOException>().WithMessage("audit unavailable");
-        blobStore.ReadCalls.Should().Be(1);
+        blobStore.ReadCalls.Should().Be(retentionReadCalls + 1, "the requested bytes are verified before the access audit fails closed");
         audit.Events.Should().NotContain(static item => item.Action == ReportingArtifactAuditAction.ContentAccessed);
     }
 
@@ -133,6 +174,34 @@ public sealed class ReportingArtifactVaultServiceTests
     }
 
     [Fact]
+    public async Task Retention_rejects_a_package_without_the_declared_manifest_artifact()
+    {
+        var blobStore = new InMemoryArtifactStore(Now);
+        var service = CreateService(blobStore, new InMemoryCatalog(), new HashChainedAuditStore());
+        var request = CreateRequest([1, 2, 3]) with { ManifestId = "missing-manifest.json" };
+
+        var action = () => service.RetainPackageAsync(request, CreateAuthority());
+
+        await action.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*exactly one rendered manifest artifact*");
+        blobStore.StoreCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Retention_rejects_manifest_bytes_that_do_not_match_the_declared_hash()
+    {
+        var blobStore = new InMemoryArtifactStore(Now);
+        var service = CreateService(blobStore, new InMemoryCatalog(), new HashChainedAuditStore());
+        var request = CreateRequest([1, 2, 3]) with { ManifestHash = new string('c', 64) };
+
+        var action = () => service.RetainPackageAsync(request, CreateAuthority());
+
+        await action.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*does not match the declared manifest hash*");
+        blobStore.StoreCalls.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Restricted_policy_is_evaluated_from_immutable_catalog_snapshot()
     {
         var blobStore = new InMemoryArtifactStore(Now);
@@ -140,6 +209,7 @@ public sealed class ReportingArtifactVaultServiceTests
         var audit = new HashChainedAuditStore();
         var service = CreateService(blobStore, catalog, audit);
         await service.RetainPackageAsync(CreateRequest([1, 2, 3]), CreateAuthority());
+        var retentionReadCalls = blobStore.ReadCalls;
         var unentitled = CreateAccessContext() with
         {
             ActorId = "intruder",
@@ -149,7 +219,7 @@ public sealed class ReportingArtifactVaultServiceTests
         var action = () => service.ReadForDownloadAsync("package-1", "statement.pdf", unentitled);
 
         await action.Should().ThrowAsync<ReportingArtifactVaultAccessDeniedException>();
-        blobStore.ReadCalls.Should().Be(0);
+        blobStore.ReadCalls.Should().Be(retentionReadCalls, "denied access must not read artifact bytes");
         audit.Events[^1].Reason.Should().Contain("access-policy snapshot");
     }
 
@@ -200,8 +270,8 @@ public sealed class ReportingArtifactVaultServiceTests
             scope,
             access,
             snapshot,
-            "manifest-1",
-            new string('c', 64),
+            "statement.pdf",
+            Sha256(content),
             ImmutableArray.Create(new ReportingRenderedArtifact(
                 "statement.pdf",
                 "statement.pdf",
@@ -251,20 +321,33 @@ public sealed class ReportingArtifactVaultServiceTests
 
         public bool CorruptReads { get; set; }
 
-        public Task<ReportingArtifactWriteResult> StoreAsync(
+        public bool BlockFirstStore { get; init; }
+
+        public TaskCompletionSource<bool> FirstStoreEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<bool> ReleaseFirstStore { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<ReportingArtifactWriteResult> StoreAsync(
             ReportingArtifactWriteRequest request,
             CancellationToken ct = default)
         {
             StoreCalls++;
             var bytes = request.Content.ToArray();
+            if (BlockFirstStore && StoreCalls == 1)
+            {
+                FirstStoreEntered.TrySetResult(true);
+                await ReleaseFirstStore.Task.WaitAsync(ct);
+            }
             var identity = new ReportingArtifactIdentity(request.TenantId, Sha256(bytes));
             var alreadyExisted = _content.ContainsKey(identity);
             _content.TryAdd(identity, bytes);
-            return Task.FromResult(new ReportingArtifactWriteResult(
+            return new ReportingArtifactWriteResult(
                 identity,
                 bytes.LongLength,
                 storedAtUtc,
-                alreadyExisted));
+                alreadyExisted);
         }
 
         public Task<ReportingArtifactReadResult> ReadAsync(
@@ -326,6 +409,19 @@ public sealed class ReportingArtifactVaultServiceTests
                     string.Equals(item.Scope.TenantId, tenantId, StringComparison.Ordinal)
                     && string.Equals(item.ArtifactId, artifactId, StringComparison.Ordinal))
                 : null;
+            return ValueTask.FromResult(result);
+        }
+
+        public ValueTask<ReportingRetainedArtifactPackage?> GetPackageAsync(
+            string tenantId,
+            string packageId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = _packages.TryGetValue(packageId, out var package)
+                && package.Artifacts.All(item =>
+                    string.Equals(item.Scope.TenantId, tenantId, StringComparison.Ordinal))
+                    ? package
+                    : null;
             return ValueTask.FromResult(result);
         }
     }

@@ -864,7 +864,11 @@ public sealed class StatementReconciliationService
                 row.Symbol,
                 DateOnly.FromDateTime(row.EffectiveAtUtc.UtcDateTime),
                 row.Quantity,
-                row.Amount == 0m ? null : row.Amount,
+                // Row amounts are always derived from required statement columns (explicit
+                // amount, cash amount, or price x quantity), so zero is a real market value —
+                // not absence. The previous `== 0m ? null` demoted genuinely zero-MV positions
+                // to quantity-only matching and skipped the market-value comparison.
+                row.Amount,
                 row.RowId))
             .ToArray();
 

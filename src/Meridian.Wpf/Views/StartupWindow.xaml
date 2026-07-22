@@ -68,11 +68,11 @@
                                        VerticalAlignment="Top"
                                        Margin="0,1,12,0" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Shell bootstrap"
+                                <TextBlock Text="{Binding LifecycleHeadingText}"
                                            Foreground="{StaticResource TopBarTextBrush}"
                                            FontSize="14"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="Dependency injection, routes, and workstation services are prepared before the shell opens."
+                                <TextBlock Text="{Binding LifecycleDetailText}"
                                            Margin="0,4,0,0"
                                            Foreground="{StaticResource StartupBodyTextBrush}"
                                            TextWrapping="Wrap" />
