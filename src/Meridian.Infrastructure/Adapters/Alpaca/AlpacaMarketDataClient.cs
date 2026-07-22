@@ -77,6 +77,12 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     /// <summary>The asset class served by this independent WebSocket adapter.</summary>
     public virtual MarketDataAssetClass AssetClass => MarketDataAssetClass.Equities;
 
+    /// <summary>Instrument types this stream is permitted to publish.</summary>
+    public virtual IReadOnlyList<Meridian.Contracts.Domain.Enums.InstrumentType> SupportedInstrumentTypes => [Meridian.Contracts.Domain.Enums.InstrumentType.Equity];
+
+    /// <summary>Whether this stream has a configured entitlement usable for subscription.</summary>
+    public virtual bool IsSubscriptionAvailable => IsConfiguredFeed(Options.EquitiesFeed);
+
     /// <inheritdoc/>
     public override string ProviderId => "alpaca";
 
@@ -195,9 +201,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
             if (!Connected)
                 return;
 
-            var trades = Subscriptions.GetSymbolsByKind("trades");
-            var quotes = Subscriptions.GetSymbolsByKind("quotes");
-            var json = BuildSubscriptionMessage(Options.SubscribeQuotes, trades, quotes);
+            var json = BuildSubscriptionPayload();
             await SendAsync(json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -212,6 +216,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     /// <inheritdoc/>
     public override int SubscribeTrades(SymbolConfig cfg)
     {
+        if (!IsSubscriptionAvailable)
+            return -1;
         if (cfg is null)
             throw new ArgumentNullException(nameof(cfg));
         var id = Subscriptions.Subscribe(cfg.Symbol, "trades");
@@ -237,6 +243,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     /// <inheritdoc/>
     public override int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        if (!IsSubscriptionAvailable)
+            return -1;
         // Not supported for stocks: Alpaca provides quotes, not full L2 depth updates.
         // If you later add QuoteCollector -> L2Snapshot mapping, wire it here.
         if (!Options.SubscribeQuotes)
@@ -263,6 +271,25 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
                 .ObserveException(Log, $"Alpaca unsubscribe depth for {subscription.Symbol}");
         }
     }
+
+    protected virtual string BuildSubscriptionPayload() => BuildSubscriptionMessage(
+        Options.SubscribeQuotes, Subscriptions.GetSymbolsByKind("trades"), Subscriptions.GetSymbolsByKind("quotes"));
+
+    protected int Subscribe(SymbolConfig cfg, string kind)
+    {
+        ArgumentNullException.ThrowIfNull(cfg);
+        if (!IsSubscriptionAvailable) return -1;
+        var id = Subscriptions.Subscribe(cfg.Symbol, kind);
+        if (id != -1) ResubscribeAsync(CancellationToken.None).ObserveException(Log, $"Alpaca subscribe {kind} for {cfg.Symbol}");
+        return id;
+    }
+
+    protected void Unsubscribe(int subscriptionId)
+    {
+        if (Subscriptions.Unsubscribe(subscriptionId) is not null) ResubscribeAsync(CancellationToken.None).ObserveException(Log, "Alpaca unsubscribe");
+    }
+
+    protected static bool IsConfiguredFeed(string? feed) => !string.IsNullOrWhiteSpace(feed) && !string.Equals(feed, "none", StringComparison.OrdinalIgnoreCase) && !string.Equals(feed, "disabled", StringComparison.OrdinalIgnoreCase);
 
     internal static string BuildAuthenticationMessage(AlpacaOptions options)
     {
@@ -308,6 +335,16 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         });
     }
 
+    internal static string BuildNewsSubscriptionMessage(IReadOnlyList<string> symbols)
+    {
+        ArgumentNullException.ThrowIfNull(symbols);
+        return BuildJsonMessage(writer =>
+        {
+            writer.WriteString("action", "subscribe");
+            if (symbols.Count > 0) { writer.WritePropertyName("news"); writer.WriteStartArray(); foreach (var symbol in symbols) writer.WriteStringValue(symbol); writer.WriteEndArray(); }
+        });
+    }
+
     private static string BuildJsonMessage(Action<Utf8JsonWriter> writePayload)
     {
         ArgumentNullException.ThrowIfNull(writePayload);
@@ -323,7 +360,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
 
 
 
-    private void HandleMessage(JsonElement el)
+    protected virtual void HandleMessage(JsonElement el)
     {
         // Trades: "T":"t" (per Alpaca docs)
         if (!el.TryGetProperty("T", out var tProp))
