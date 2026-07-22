@@ -64,9 +64,14 @@ public sealed record ProviderNewsItem(
     string NewsId,
     string Headline,
     DateTimeOffset PublishedAt,
-    string? Symbol = null,
-    string? Source = null,
-    string? Url = null);
+    string? Symbol,
+    string? Source,
+    string? Url,
+    ProviderDataProvenance Provenance)
+{
+    public ProviderNewsItem(string newsId, string headline, DateTimeOffset publishedAt, string? symbol = null, string? source = null, string? url = null)
+        : this(newsId, headline, publishedAt, symbol, source, url, ProviderDataProvenance.Unattributed(publishedAt)) { }
+}
 
 /// <summary>Presentation-safe trading-calendar event supplied by providers that support calendars.</summary>
 public sealed record ProviderCalendarEvent(
@@ -75,15 +80,25 @@ public sealed record ProviderCalendarEvent(
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
     string EventType,
-    string? Description = null);
+    string? Description,
+    ProviderDataProvenance Provenance)
+{
+    public ProviderCalendarEvent(string eventId, string market, DateTimeOffset startsAt, DateTimeOffset endsAt, string eventType, string? description = null)
+        : this(eventId, market, startsAt, endsAt, eventType, description, ProviderDataProvenance.Unattributed(startsAt)) { }
+}
 
 /// <summary>Presentation-safe instrument discovery result supplied by providers that support search.</summary>
 public sealed record ProviderInstrumentDiscoveryResult(
     string InstrumentId,
     string Symbol,
     string DisplayName,
-    string? Exchange = null,
-    string? AssetClass = null);
+    string? Exchange,
+    string? AssetClass,
+    ProviderDataProvenance Provenance)
+{
+    public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null)
+        : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)) { }
+}
 
 /// <summary>
 /// Provider availability and entitlement evidence. Implement this optional interface instead of
@@ -94,8 +109,13 @@ public sealed record ProviderDataAvailability(
     bool IsAvailable,
     string ConnectionState,
     DateTimeOffset ObservedAt,
-    string? Entitlement = null,
-    string? Detail = null);
+    string? Entitlement,
+    string? Detail,
+    ProviderDataProvenance Provenance)
+{
+    public ProviderDataAvailability(string providerFamily, bool isAvailable, string connectionState, DateTimeOffset observedAt, string? entitlement = null, string? detail = null)
+        : this(providerFamily, isAvailable, connectionState, observedAt, entitlement, detail, ProviderDataProvenance.Unattributed(observedAt)) { }
+}
 
 public interface IProviderDataAvailabilityReadService
 {

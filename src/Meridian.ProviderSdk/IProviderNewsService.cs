@@ -15,10 +15,11 @@ public sealed record ProviderNewsArticle(
     string Headline,
     DateTimeOffset PublishedAt,
     string Source,
-    string? Summary = null,
-    string? Url = null,
-    IReadOnlyList<string>? Symbols = null,
-    string? ProviderArticleId = null);
+    string? Summary,
+    string? Url,
+    IReadOnlyList<string>? Symbols,
+    string? ProviderArticleId,
+    ProviderDataProvenance Provenance);
 
 /// <summary>Optional provider capability for retrieving market news.</summary>
 public interface IProviderNewsService : IProviderMetadata

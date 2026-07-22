@@ -6,7 +6,7 @@ namespace Meridian.ProviderSdk;
 public sealed record MarketRuleRequest(string MarketRuleId, string? Symbol = null, string? Exchange = null);
 
 /// <summary>Provider-neutral market rule with ordered price-band increments.</summary>
-public sealed record ProviderMarketRule(string MarketRuleId, IReadOnlyList<ProviderMarketRuleIncrement> Increments);
+public sealed record ProviderMarketRule(string MarketRuleId, IReadOnlyList<ProviderMarketRuleIncrement> Increments, ProviderDataProvenance Provenance);
 
 /// <summary>Optional provider capability for market-rule and price-increment retrieval.</summary>
 public interface IMarketRuleProvider : IProviderMetadata
