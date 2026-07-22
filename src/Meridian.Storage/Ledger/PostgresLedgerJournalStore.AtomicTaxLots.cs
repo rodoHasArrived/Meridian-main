@@ -1225,13 +1225,14 @@ public sealed partial class PostgresLedgerJournalStore
         }
 
         var expectedCostBasis = mutations.Sum(static mutation => mutation.CostBasis);
-        var matchingLines = command.Journal.Entry.Lines
+        var assetLines = command.Journal.Entry.Lines
             .Where(line => line.Account == assetAccounts[0])
-            .Where(line => command.MutationKind == AtomicTaxLotMutationKind.Acquisition
-                ? line.Debit == expectedCostBasis && line.Credit == 0m
-                : line.Credit == expectedCostBasis && line.Debit == 0m)
             .ToArray();
-        if (expectedCostBasis <= 0m || matchingLines.Length != 1)
+        var hasExpectedMovement = assetLines.Length == 1 &&
+            (command.MutationKind == AtomicTaxLotMutationKind.Acquisition
+                ? assetLines[0].Debit == expectedCostBasis && assetLines[0].Credit == 0m
+                : assetLines[0].Credit == expectedCostBasis && assetLines[0].Debit == 0m);
+        if (expectedCostBasis <= 0m || !hasExpectedMovement)
         {
             var side = command.MutationKind == AtomicTaxLotMutationKind.Acquisition
                 ? "debit"

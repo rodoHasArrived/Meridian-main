@@ -885,9 +885,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         {
             var acquisition = requested?.Acquisition
                 ?? throw new InvalidOperationException("Acquisition requires a retained lot instruction.");
-            RequireAssertion(source.ProjectedEffect!.Lines.Count(line =>
-                    string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal) &&
-                    line.Debit == source.EventAmount && line.Credit == 0m) == 1,
+            var assetLines = source.ProjectedEffect!.Lines
+                .Where(line => string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal))
+                .ToArray();
+            RequireAssertion(assetLines.Length == 1 &&
+                             assetLines[0].Debit == source.EventAmount &&
+                             assetLines[0].Credit == 0m,
                 "Acquisition projected accounting must contain exactly one authorized asset-account debit for the lot cost.");
             return requested;
         }
@@ -950,9 +953,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         }
 
         var aggregateCostBasis = canonicalSelections.Sum(static selection => selection.ExpectedCostBasis);
-        RequireAssertion(source.ProjectedEffect!.Lines.Count(line =>
-                string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal) &&
-                line.Credit == aggregateCostBasis && line.Debit == 0m) == 1,
+        var assetLines = source.ProjectedEffect!.Lines
+            .Where(line => string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal))
+            .ToArray();
+        RequireAssertion(assetLines.Length == 1 &&
+                         assetLines[0].Credit == aggregateCostBasis &&
+                         assetLines[0].Debit == 0m,
             "Disposal projected accounting must contain exactly one authoritative asset-relief credit for selected-lot cost basis.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId &&
                          position.PositionId == source.Scope.BookPositionId,
