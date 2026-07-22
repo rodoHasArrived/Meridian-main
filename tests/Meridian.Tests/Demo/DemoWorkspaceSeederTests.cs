@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Meridian;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
@@ -8,6 +9,7 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Testing;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -19,6 +21,28 @@ namespace Meridian.Tests.Demo;
 /// </summary>
 public sealed class DemoWorkspaceSeederTests
 {
+    [Fact]
+    public void WriteDemoConfig_WhenRemoteUrlEnvironmentVariableIsSet_UsesLoopbackBinding()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(WriteDemoConfig_WhenRemoteUrlEnvironmentVariableIsSet_UsesLoopbackBinding));
+        var demoRoot = Path.Combine(artifacts.RootPath, "demo-workspace");
+        Directory.CreateDirectory(demoRoot);
+
+        var configPath = DemoWorkspaceCli.WriteDemoConfig(demoRoot);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ASPNETCORE_URLS"] = "http://0.0.0.0:8080",
+            })
+            .AddJsonFile(configPath)
+            .Build();
+
+        var options = ApiHostOptions.FromConfiguration(configuration, port: 8080);
+
+        options.DeploymentMode.Should().Be(MeridianApiDeploymentMode.LocalWorkstation);
+        options.Urls.Should().Equal("http://localhost:8080");
+    }
+
     [Fact]
     public async Task SeedAsync_ProducesSeededProvenanceThatSurvivesRestart()
     {
@@ -72,4 +96,5 @@ public sealed class DemoWorkspaceSeederTests
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
         (await breaks.GetAllAsync()).Should().HaveCount(DemoTenantBlueprint.BreakDefinitions.Count);
     }
+
 }
