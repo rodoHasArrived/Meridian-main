@@ -18,7 +18,7 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// </remarks>
 public static class StatementRunMatchingService
 {
-    public static StatementRunMatchResult Match(
+    public static StatementRunMatchingResult Match(
         CanonicalStatementImport import,
         IReadOnlyList<CanonicalStatementRow> rows,
         InternalReconciliationBook internalBook,
@@ -166,7 +166,7 @@ public static class StatementRunMatchingService
                 now));
         }
 
-        return new StatementRunMatchResult(breaks, outcomes);
+        return new StatementRunMatchingResult(breaks, outcomes);
     }
 
     private const string UnknownCurrency = "";
@@ -271,6 +271,6 @@ public static class StatementRunMatchingService
 /// unmatched or candidate statement row and per internal record missing from the statement) plus
 /// a per-statement-row match outcome carrying confidence and rationale for casework.
 /// </summary>
-public sealed record StatementRunMatchResult(
+public sealed record StatementRunMatchingResult(
     IReadOnlyList<ReconciliationBreakRecord> Breaks,
     IReadOnlyList<MatchOutcome> Outcomes);
