@@ -37,6 +37,9 @@ report `Disabled`, `WebSocketState` is `None`, and no live connection is inferre
 connection supervisor should override the default event and snapshot with proven runtime state.
 The retained `WebSocketConnectionDiagnostics` name is transport-compatible; polling and raw-socket
 providers use `WebSocketState.None`.
+Connection snapshots may include `ProviderStreamDiagnostics` entries for independently entitled
+asset-class feeds. Consumers must present each stream's feed, entitlement, and degradation reason
+instead of inferring that a connected provider has consolidated or real-time coverage everywhere.
 `Backfill/BackfillJob.cs` owns the shared backfill job descriptors and `DataGranularity`
 conversion helpers.
 `PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
