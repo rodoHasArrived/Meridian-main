@@ -138,4 +138,31 @@ public sealed class Camt053StatementConnectorTests
         transactions[0].CashAmount.Should().Be(50.00m);
         result.Issues.Should().Contain(issue => issue.Code == "CAMT_ENTRY_NOT_BOOKED");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_SignsReversedCreditEntriesAsDebits()
+    {
+        // An entry whose CdtDbtInd is RCRD (reversal of a credit) is a debit: the amount must be
+        // negative. Treating every non-DBIT indicator as a positive credit would flip the sign and
+        // manufacture false matches or breaks for statements containing reversals.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                  <Ntry><Amt Ccy="EUR">40.00</Amt><CdtDbtInd>RCRD</CdtDbtInd><Sts>BOOK</Sts><BookgDt><Dt>2026-05-30</Dt></BookgDt></Ntry>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("reversed-credit.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
+        transaction.CashAmount.Should().Be(-40.00m, "a reversal of a credit is a debit and must be negative");
+    }
 }

@@ -215,9 +215,27 @@ public sealed class Camt053StatementConnector : IStatementConnector
         }
 
         var indicator = Value(element, "CdtDbtInd");
-        signed = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase) ? -magnitude : magnitude;
+        // Direction from the credit/debit indicator. A debit is negative; the reversal codes some banks
+        // emit invert the base direction — a reversal of a credit (RCRD) behaves as a debit and a
+        // reversal of a debit (RDBT) as a credit. A separate reversal flag (RvslInd) flips a standard
+        // CRDT/DBIT entry. Treating every non-DBIT indicator as a positive credit would give reversals
+        // the opposite sign and manufacture false matches or breaks.
+        var negative = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(indicator, "RCRD", StringComparison.OrdinalIgnoreCase);
+        if ((string.Equals(indicator, "CRDT", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase))
+            && IsReversal(Value(element, "RvslInd")))
+        {
+            negative = !negative;
+        }
+
+        signed = negative ? -magnitude : magnitude;
         return true;
     }
+
+    private static bool IsReversal(string? reversalIndicator)
+        => string.Equals(reversalIndicator, "true", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(reversalIndicator, "1", StringComparison.Ordinal);
 
     private static string ResolveAccount(XElement? accountElement)
     {
