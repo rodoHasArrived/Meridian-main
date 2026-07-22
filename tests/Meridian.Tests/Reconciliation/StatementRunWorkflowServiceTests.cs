@@ -212,6 +212,22 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         imports.Should().BeEmpty("the import must not be persisted when the run fails before matching");
     }
 
+    [Fact]
+    public async Task CreateAsync_WithMalformedSettlementDate_FailsClosed()
+    {
+        // A nonblank but unparsable optional settlement date must be rejected, not silently dropped to
+        // null: the matcher substitutes the trade date for a null settlement date, so a bad source date
+        // could exact-match a same-day ledger transaction instead of blocking the import.
+        var path = await WriteStatementAsync(
+            "bad-settlement.csv",
+            "FUND-1,MSFT,5,20,-100,trade,2026-05-28,not-a-date,USD,,EXT-9");
+        var workflow = CreateWorkflow();
+
+        var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        await act.Should().ThrowAsync<System.IO.InvalidDataException>();
+    }
+
     private StatementRunWorkflowService CreateWorkflow(
         IInternalReconciliationPopulationProvider? populations = null,
         IReconciliationFxRateProvider? fxRateProvider = null,
