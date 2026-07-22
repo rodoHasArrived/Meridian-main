@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Operations;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -132,6 +133,7 @@ public static class StrategyLifecycleEndpoints
         .Produces<VerifiedOperationOutcome>(503)
         .Produces(404)
         .Produces(503)
+        .RequirePermission(UserPermission.ManageStrategies)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/{strategyId}/stop", async (string strategyId, HttpContext context) =>
@@ -210,6 +212,7 @@ public static class StrategyLifecycleEndpoints
         .Produces<VerifiedOperationOutcome>(503)
         .Produces(404)
         .Produces(503)
+        .RequirePermission(UserPermission.ManageStrategies)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/{strategyId}/reconcile", async (string strategyId, HttpContext context) =>
@@ -290,6 +293,7 @@ public static class StrategyLifecycleEndpoints
         .Produces<VerifiedOperationOutcome>(503)
         .Produces(404)
         .Produces(503)
+        .RequirePermission(UserPermission.ManageStrategies)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
