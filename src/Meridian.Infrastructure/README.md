@@ -104,7 +104,12 @@ corporate-action, and factor evidence without placing orders. Adapter readiness 
 any write-capable live execution path back to the shared execution governance gates.
 Interactive Brokers contract construction resolves default SecType values from the Contracts-owned
 `InstrumentTypeDescriptorCatalog`, while still honoring explicit provider SecType overrides such
-as `GOVT` for government bonds.
+as `GOVT` for government bonds. The IBKR gateway exposes its actual execution mode to the shared
+OMS, so guidance or smoke builds are simulation-only and cannot be promoted into live routing by
+configuration. It also owns account catalog, portfolio snapshot, and connected-session execution
+sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
+account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
+dividends, interest, FX conversions, corporate actions, and prior-session activity.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let
