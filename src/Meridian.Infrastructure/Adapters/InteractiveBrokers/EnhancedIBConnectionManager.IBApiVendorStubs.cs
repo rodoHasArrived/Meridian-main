@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using IBApi;
 using Pb = IBApi.protobuf;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -51,6 +52,8 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void realtimeBar(int reqId, long date, double open, double high, double low, double close, decimal volume, decimal WAP, int count)
     {
+        RecordMessageReceived();
+        RealTimeBarReceived?.Invoke(this, (reqId, new ProviderRealTimeBar(DateTimeOffset.FromUnixTimeSeconds(date), (decimal)open, (decimal)high, (decimal)low, (decimal)close, volume, WAP, count, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(date)))));
     }
 
     public void scannerParameters(string xml)
@@ -59,10 +62,15 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void scannerData(int reqId, int rank, ContractDetails contractDetails, string distance, string benchmark, string projection, string legsStr)
     {
+        RecordMessageReceived();
+        var contract = contractDetails.Contract;
+        ScannerResultReceived?.Invoke(this, (reqId, new ProviderScannerResult(rank, contract.Symbol, contract.Exchange, contract.ConId.ToString(), distance, benchmark, projection, legsStr, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
     }
 
     public void scannerDataEnd(int reqId)
     {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
     }
 
     public void receiveFA(int faDataType, string faXmlData)
@@ -107,10 +115,19 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void securityDefinitionOptionParameter(int reqId, string exchange, int underlyingConId, string tradingClass, string multiplier, HashSet<string> expirations, HashSet<double> strikes)
     {
+        RecordMessageReceived();
+        foreach (var expirationText in expirations)
+        {
+            if (!DateOnly.TryParseExact(expirationText, "yyyyMMdd", out var expiration)) continue;
+            foreach (var strike in strikes)
+                OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(string.Empty, underlyingConId.ToString(), expiration, (decimal)strike, string.Empty, exchange, tradingClass, multiplier, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        }
     }
 
     public void securityDefinitionOptionParameterEnd(int reqId)
     {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
     }
 
     public void softDollarTiers(int reqId, SoftDollarTier[] tiers)
@@ -147,18 +164,29 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
     {
+        RecordMessageReceived();
+        var requestId = _marketRuleRequests.TryRemove(marketRuleId, out var correlatedRequestId) ? correlatedRequestId : marketRuleId;
+        MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(static x => new ProviderMarketRuleIncrement((decimal)x.LowEdge, (decimal)x.Increment, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))).ToArray()));
     }
 
     public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL)
     {
+        RecordMessageReceived();
+        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
     }
 
     public void pnlSingle(int reqId, decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value)
     {
+        RecordMessageReceived();
+        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, pos, (decimal)value, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
     }
 
     public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
     {
+        RecordMessageReceived();
+        foreach (var tick in ticks)
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), done));
+        if (done) RequestCompleted?.Invoke(this, reqId);
     }
 
     public void historicalTicksBidAsk(int reqId, HistoricalTickBidAsk[] ticks, bool done)

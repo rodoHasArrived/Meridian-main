@@ -125,7 +125,14 @@ The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam fo
 contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
 live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
-materialized observation; successful request submission is not evidence of a live entitlement.
+materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
+it commits each `WatchAsync` update to `IIBDataResultStore` before making that update available to
+operator readers; successful request submission is not evidence of a live entitlement.
+Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
+option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
+rules. Each returned request and observation carries required provenance: provider and configured
+connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

@@ -81,6 +81,17 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Validate_FlexReportForAnotherAccount_Fails()
+    {
+        var path = WriteFlexFile(SampleFlexXml);
+
+        var result = await _service.ValidateAsync(MakeRequest(path) with { ExternalAccountId = "U7654321" });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("external account", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task Validate_MissingFile_Fails()
     {
         var result = await _service.ValidateAsync(MakeRequest(Path.Combine(_tempDir, "missing.xml")));
@@ -305,6 +316,29 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         var validate = async () => await service.ValidateAsync("ib-flex", path, null, CancellationToken.None);
 
         await validate.Should().ThrowAsync<InvalidDataException>().WithMessage("*not an IB Flex Query report*");
+    }
+
+    [Fact]
+    public async Task StatementReconciliationService_ImportRejectsFlexDocumentWithDtd()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile("""
+            <!DOCTYPE FlexQueryResponse [<!ENTITY symbol "AAPL">]>
+            <FlexQueryResponse>
+              <FlexStatements count="1">
+                <FlexStatement toDate="20260630">
+                  <Trades>
+                    <Trade symbol="&symbol;" tradeDate="20260615" quantity="1" tradePrice="1" />
+                  </Trades>
+                </FlexStatement>
+              </FlexStatements>
+            </FlexQueryResponse>
+            """, "dtd-flex-report.xml");
+
+        // ImportAsync can run without a prior validation stage, so it must reject DTDs itself.
+        var import = async () => await service.ImportAsync("ib-flex", path, null, CancellationToken.None);
+
+        await import.Should().ThrowAsync<System.Xml.XmlException>();
     }
 
     [Fact]

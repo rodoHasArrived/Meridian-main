@@ -38,6 +38,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Adapters.Plaid;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
@@ -80,6 +81,14 @@ public static class WorkstationServiceCollectionExtensions
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        services.TryAddSingleton<ProviderDataReadModelService>();
+        // Persisted evidence does not enable live IB access in a guidance/non-vendor build.
+        services.TryAddSingleton<IBDurableResultStore>(sp =>
+        {
+            var root = sp.GetRequiredService<StorageOptions>().RootPath;
+            return new JsonIBDurableResultStore(Path.Combine(root, "providers", "interactive-brokers", "results.json"));
+        });
+        services.TryAddSingleton<IBResultQueryService>();
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
 

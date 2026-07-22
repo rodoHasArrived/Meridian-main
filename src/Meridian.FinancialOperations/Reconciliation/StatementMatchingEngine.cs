@@ -174,7 +174,10 @@ public sealed class StatementMatchingEngine
             request.InternalLedgerTransactions,
             matchedStatements,
             matchedInternal,
-            (statement, internalTransaction) => HasSameExternalTransactionId(statement, internalTransaction),
+            (statement, internalTransaction) => HasSameExternalTransactionId(statement, internalTransaction)
+                && SameTransactionIdentity(statement, internalTransaction)
+                && statement.Quantity == internalTransaction.Quantity
+                && statement.NetAmount == internalTransaction.NetAmount,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
@@ -183,7 +186,7 @@ public sealed class StatementMatchingEngine
                 [TransactionExternalIdRuleId],
                 TransactionVariance(statement, internalTransaction),
                 TransactionTolerance(tolerance),
-                "Exact transaction match on external transaction ID."),
+                "Exact transaction match on external transaction ID and transaction details."),
             results);
 
         MatchStage(

@@ -160,6 +160,26 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
+    public void RegisterJournalTemplate_MalformedReplacement_PreservesApprovedTemplateAndAuditTrail()
+    {
+        var service = new FundAdministrationControlService();
+        var approvedTemplate = FeeTemplate();
+        service.RegisterJournalTemplate(approvedTemplate, "controller");
+        var malformedReplacement = new JournalTemplate(
+            "fee",
+            "Malformed Fee Accrual",
+            "An invalid replacement.",
+            [new JournalTemplateLine(null!, JournalTemplateSide.Debit, "fee")]);
+
+        var act = () => service.RegisterJournalTemplate(malformedReplacement, "controller");
+
+        act.Should().Throw<ArgumentNullException>();
+        service.RegisteredJournalTemplates.Should().ContainSingle().Which.Should().BeSameAs(approvedTemplate);
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.JournalTemplateRegistered).Should().ContainSingle();
+        service.EventLog.VerifyIntegrity().Should().BeTrue();
+    }
+
+    [Fact]
     public void ApplyOnboardingTemplate_ResolvesPlaceholdersAndRecords()
     {
         var service = new FundAdministrationControlService();

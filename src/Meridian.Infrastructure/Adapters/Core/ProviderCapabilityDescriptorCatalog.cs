@@ -31,14 +31,8 @@ public static class ProviderCapabilityDescriptorCatalog
             StreamingAssetClasses: [MarketDataAssetClass.Equities, MarketDataAssetClass.Options, MarketDataAssetClass.Crypto, MarketDataAssetClass.News]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
-        new("ib", Streaming: typeof(IBMarketDataClient),
-            InstrumentTypes:
-            [
-                InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
-                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
-                InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
-            ]),
-        new("ibkr", Historical: typeof(IBHistoricalDataProvider),
+        new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
+            ExecutionMode: IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable,
             InstrumentTypes:
             [
                 InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
@@ -118,4 +112,12 @@ public sealed record ProviderCapabilityDescriptor(
         if (Brokerage is not null)
             yield return Brokerage;
     }
+}
+
+/// <summary>Catalog-level readiness signal; inventory cannot promote a guidance build to live routing.</summary>
+public enum IBProviderCapabilityExecutionMode
+{
+    NotApplicable,
+    SimulationWhenVendorSdkUnavailable,
+    VendorRuntimeRequiredForLive
 }

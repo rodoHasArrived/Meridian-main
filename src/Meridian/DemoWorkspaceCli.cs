@@ -35,11 +35,13 @@ internal static class DemoWorkspaceCli
         CancellationToken ct = default)
     {
         string baseDataRoot;
+        int demoPort;
         try
         {
             var parsed = CliArguments.Parse(args);
             var configStore = new ConfigStore(parsed.ConfigPath);
             baseDataRoot = configStore.GetDataRoot(configStore.Load());
+            demoPort = parsed.HttpPort ?? 8080;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -67,7 +69,7 @@ internal static class DemoWorkspaceCli
                 return 0;
             }
 
-            var demoConfig = WriteDemoConfig(seeder.DemoRoot);
+            var demoConfig = WriteDemoConfig(seeder.DemoRoot, demoPort);
             PrepareDemoRuntimeEnvironment();
             Console.WriteLine("Starting the browser workstation on the seeded demo workspace...");
             return await SharedStartupBootstrapper.RunAsync(
@@ -77,14 +79,16 @@ internal static class DemoWorkspaceCli
         }
 
         // Bare --demo / MERIDIAN_DEMO: serve an already-seeded workspace.
-        var existingConfig = ResolveDemoConfigPath(seeder.DemoRoot);
-        if (!File.Exists(existingConfig))
+        if (!File.Exists(ResolveDemoConfigPath(seeder.DemoRoot)))
         {
             Console.Error.WriteLine(
                 $"No seeded demo workspace found at {seeder.DemoRoot}. Run 'dotnet run --project src/Meridian -- --seed-demo' first.");
             return 3;
         }
 
+        // Rewrite existing generated configs so workspaces seeded before loopback enforcement also
+        // cannot inherit a remote host binding from their environment.
+        var existingConfig = WriteDemoConfig(seeder.DemoRoot, demoPort);
         PrepareDemoRuntimeEnvironment();
         return await SharedStartupBootstrapper.RunAsync(
             BuildServeArgs(args, existingConfig),
@@ -176,12 +180,19 @@ internal static class DemoWorkspaceCli
     /// Writes a minimal demo config whose absolute <c>dataRoot</c> is the isolated demo root, so a
     /// workstation host started with <c>--config &lt;this&gt;</c> reads exactly the seeded stores.
     /// </summary>
-    private static string WriteDemoConfig(string demoRoot)
+    internal static string WriteDemoConfig(string demoRoot, int port = 8080)
     {
         var configPath = ResolveDemoConfigPath(demoRoot);
         var config = new JsonObject
         {
             ["dataRoot"] = demoRoot,
+            // Demo mode deliberately binds only to loopback. This prevents inherited host URL
+            // environment variables from exposing the optional-auth demo workstation remotely.
+            ["ApiHost"] = new JsonObject
+            {
+                ["DeploymentMode"] = "LocalWorkstation",
+                ["Urls"] = new JsonArray($"http://localhost:{port}"),
+            },
         };
 
         File.WriteAllText(configPath, config.ToJsonString());

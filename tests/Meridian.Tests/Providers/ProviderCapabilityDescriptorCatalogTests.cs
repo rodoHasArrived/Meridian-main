@@ -118,10 +118,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         robinhood.CorporateActions.Should().BeNull(
             "Robinhood has no dedicated ICorporateActionProvider implementation in the runtime catalog");
 
-        var ibkr = descriptorsById["ib"];
+        var ibkr = descriptorsById["ibkr"];
         ibkr.Streaming.Should().Be(typeof(IBMarketDataClient));
         ibkr.Historical.Should().Be(typeof(IBHistoricalDataProvider));
         ibkr.Brokerage.Should().Be(typeof(IBBrokerageGateway));
+        ibkr.ExecutionMode.Should().Be(IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable);
 
         descriptorsById.Keys.Should().Contain("edgar");
         var edgar = descriptorsById["edgar"];
@@ -133,15 +134,8 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         edgar.CorporateActions.Should().BeNull(
             "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
 
-        var ibStreaming = descriptorsById["ib"];
-        ibStreaming.Streaming.Should().Be(typeof(IBMarketDataClient));
-        ibStreaming.Historical.Should().BeNull(
-            "the IBKR historical adapter registers under its actual ibkr provider identity");
-
-        var ibHistorical = descriptorsById["ibkr"];
-        ibHistorical.Historical.Should().Be(typeof(IBHistoricalDataProvider));
-        ibHistorical.Streaming.Should().BeNull(
-            "the TWS/Gateway streaming adapter registers under its actual ib provider identity");
+        descriptorsById.Keys.Should().NotContain("ib",
+            "the IB family uses one provider identifier across streaming, historical, and brokerage capabilities");
     }
 
     [Fact]
