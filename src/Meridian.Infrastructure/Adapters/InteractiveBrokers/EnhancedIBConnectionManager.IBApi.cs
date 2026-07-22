@@ -1125,7 +1125,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             order.AuxPrice > 0 ? order.AuxPrice : null,
             orderState.Status ?? "Submitted",
             string.IsNullOrWhiteSpace(order.OrderRef) ? null : order.OrderRef,
-            null,
+            string.IsNullOrWhiteSpace(order.Account) ? null : order.Account,
             orderState.CommissionAndFees > 0 ? orderState.CommissionAndFees : null,
             string.IsNullOrWhiteSpace(orderState.RejectReason) ? null : orderState.RejectReason,
             metadata,

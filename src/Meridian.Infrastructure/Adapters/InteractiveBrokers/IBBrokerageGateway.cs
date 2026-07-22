@@ -41,6 +41,7 @@ public sealed class IBBrokerageGateway :
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
+    private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
     private readonly ConcurrentDictionary<int, AccountSummaryCollector> _accountSummaryRequests = new();
@@ -431,7 +432,12 @@ public sealed class IBBrokerageGateway :
             ProviderId,
             externalAccountId,
             DateTimeOffset.UtcNow,
-            orders.Select(order => new BrokerageOrderSnapshotDto(
+            orders
+                .Where(order =>
+                    int.TryParse(order.OrderId, out var orderId) &&
+                    _openOrderAccounts.TryGetValue(orderId, out var accountId) &&
+                    string.Equals(accountId, externalAccountId, StringComparison.OrdinalIgnoreCase))
+                .Select(order => new BrokerageOrderSnapshotDto(
                 order.OrderId, order.ClientOrderId, order.Symbol, order.Side, order.Type, order.Status,
                 order.Quantity, order.FilledQuantity, order.LimitPrice, order.StopPrice, order.CreatedAt)).ToArray(),
             fills,
@@ -663,6 +669,11 @@ public sealed class IBBrokerageGateway :
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
         var gatewayOrderId = update.OrderId;
+        if (string.IsNullOrWhiteSpace(update.Account))
+            _openOrderAccounts.TryRemove(gatewayOrderId, out _);
+        else
+            _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
         var brokerOrder = new BrokerOrder
         {
