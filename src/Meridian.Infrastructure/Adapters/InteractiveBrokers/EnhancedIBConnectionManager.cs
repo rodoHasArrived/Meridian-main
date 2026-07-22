@@ -18,7 +18,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Unlimited retry attempts by default (configurable via maxRetries parameter)
 /// - See EnhancedIBConnectionManager.IBApi.cs and Infrastructure/Performance/ConnectionWarmUp.cs for implementation
 /// </summary>
-public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource
+public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
 {
 #if !IBAPI
     private readonly IBCallbackRouter _router;
@@ -130,4 +130,6 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     {
     }
 #endif
+
+    public string ProviderConnectionId => $"ib://{Host}:{Port}/client/{ClientId}";
 }

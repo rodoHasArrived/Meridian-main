@@ -158,6 +158,7 @@ public static class UiEndpoints
         app.MapMessagingEndpoints(jsonOptions);
         app.MapOmsIntegrationEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
+        app.MapProviderDataProjectionEndpoints(jsonOptions);
         app.MapProviderModuleEndpoints(jsonOptions);
         app.MapIndexEndpoints(jsonOptions);
 
