@@ -1,7 +1,5 @@
-using System.Globalization;
 using System.Text;
 using ClosedXML.Excel;
-using Meridian.Ledger;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -9,22 +7,18 @@ using QuestPDF.Infrastructure;
 namespace Meridian.Documents;
 
 /// <summary>
-/// Client-grade renderer producing branded, tabular PDF and multi-sheet XLSX documents from a
-/// ledger financial report pack using QuestPDF and ClosedXML. Implements the ledger's
-/// <see cref="ILedgerReportBinaryRenderer"/> seam so it drops into the existing signed export
-/// pipeline in place of the dependency-free fallback. Output is made deterministic (fixed document
-/// metadata, fixed timestamps, canonical zip ordering) so re-rendering the same pack reproduces the
-/// same bytes for audit verification.
+/// Renders a presentation-neutral <see cref="ReportDocumentModel"/> into branded, client-grade PDF
+/// and multi-sheet XLSX documents using QuestPDF and ClosedXML. Output is deterministic (fixed
+/// document metadata, fixed timestamps, canonical zip ordering) so re-rendering the same model
+/// reproduces the same bytes for governed-reporting hash verification.
 /// </summary>
-public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRenderer
+public sealed class ClientGradeReportRenderer
 {
-    static FinancialReportDocumentRenderer() => DeterministicDocumentPackaging.ConfigureQuestPdf();
+    static ClientGradeReportRenderer() => DeterministicDocumentPackaging.ConfigureQuestPdf();
 
-    public byte[] RenderPdf(LedgerFinancialReportPack reportPack)
+    public byte[] RenderPdf(ReportDocumentModel model)
     {
-        ArgumentNullException.ThrowIfNull(reportPack);
-        var tables = LedgerReportPresentation.BuildTables(reportPack);
-        var request = reportPack.Request;
+        ArgumentNullException.ThrowIfNull(model);
 
         var document = Document.Create(container =>
         {
@@ -37,21 +31,26 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
                 page.Header().Column(header =>
                 {
                     header.Item().Text("Meridian Fund Operations").FontSize(16).Bold().FontColor("#0b7285");
-                    header.Item().Text($"{request.FundId} — {request.PeriodId}").FontSize(11).SemiBold();
-                    header.Item().Text($"As of {request.AsOf:yyyy-MM-dd} · {request.BaseCurrency}").FontSize(8).FontColor("#627d98");
+                    header.Item().Text(model.Title).FontSize(12).SemiBold();
+                    if (!string.IsNullOrWhiteSpace(model.Subtitle))
+                        header.Item().Text(model.Subtitle).FontSize(9).FontColor("#627d98");
+                    foreach (var field in model.HeaderFields)
+                        header.Item().Text($"{field.Label}: {field.Value}").FontSize(8).FontColor("#627d98");
                     header.Item().PaddingTop(4).LineHorizontal(1).LineColor("#0b7285");
                 });
 
                 page.Content().PaddingVertical(6).Column(column =>
                 {
                     column.Spacing(14);
-                    foreach (var table in tables)
+                    if (model.Tables.Count == 0)
+                        column.Item().Text("No certified rows for this report.").FontSize(9).FontColor("#627d98");
+                    foreach (var table in model.Tables)
                         RenderTable(column, table);
                 });
 
                 page.Footer().Row(row =>
                 {
-                    row.RelativeItem().Text($"Signature {Shorten(reportPack.Signature.PayloadChecksumSha256)}")
+                    row.RelativeItem().Text(model.FooterNote ?? string.Empty)
                         .FontSize(7).FontColor("#9aa5b1");
                     row.ConstantItem(120).AlignRight().Text(text =>
                     {
@@ -67,9 +66,9 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
 
         document.WithMetadata(new DocumentMetadata
         {
-            Title = $"{request.FundId} {request.PeriodId}",
+            Title = model.Title,
             Author = "Meridian",
-            Subject = request.ReportId,
+            Subject = model.Subtitle ?? model.Title,
             Creator = "Meridian",
             Producer = "Meridian",
             CreationDate = new DateTimeOffset(DeterministicDocumentPackaging.FixedTimestamp, TimeSpan.Zero),
@@ -79,29 +78,35 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
         return document.GeneratePdf();
     }
 
-    public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack)
+    public byte[] RenderWorkbook(ReportDocumentModel model)
     {
-        ArgumentNullException.ThrowIfNull(reportPack);
-        var tables = LedgerReportPresentation.BuildTables(reportPack);
+        ArgumentNullException.ThrowIfNull(model);
 
         byte[] rendered;
         using (var workbook = new XLWorkbook())
         {
             var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var table in tables)
+
+            if (model.HeaderFields.Count > 0)
             {
-                var sheet = workbook.Worksheets.Add(UniqueSheetName(table.Title, usedNames));
-                var headerRow = sheet.Row(1);
-                for (var column = 0; column < table.Headers.Count; column++)
+                var summary = workbook.Worksheets.Add(UniqueSheetName("Summary", usedNames));
+                WriteHeaderCells(summary, ["Field", "Value"]);
+                var summaryRow = 2;
+                foreach (var field in model.HeaderFields)
                 {
-                    var cell = sheet.Cell(1, column + 1);
-                    cell.Value = table.Headers[column];
-                    cell.Style.Font.Bold = true;
-                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#0b7285");
-                    cell.Style.Font.FontColor = XLColor.White;
+                    summary.Cell(summaryRow, 1).Value = field.Label;
+                    summary.Cell(summaryRow, 2).Value = field.Value;
+                    summaryRow++;
                 }
 
-                headerRow.Height = 18;
+                summary.Columns().AdjustToContents();
+                summary.SheetView.FreezeRows(1);
+            }
+
+            foreach (var table in model.Tables)
+            {
+                var sheet = workbook.Worksheets.Add(UniqueSheetName(table.Title, usedNames));
+                WriteHeaderCells(sheet, table.Headers);
                 var rowNumber = 2;
                 foreach (var row in table.Rows)
                 {
@@ -111,11 +116,15 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
                 }
 
                 sheet.Columns().AdjustToContents();
-                sheet.SheetView.FreezeRows(1);
+                if (table.Headers.Count > 0)
+                    sheet.SheetView.FreezeRows(1);
             }
 
+            if (!workbook.Worksheets.Any())
+                workbook.Worksheets.Add(UniqueSheetName("Report", usedNames));
+
             workbook.Properties.Author = "Meridian";
-            workbook.Properties.Title = $"{reportPack.Request.FundId} {reportPack.Request.PeriodId}";
+            workbook.Properties.Title = model.Title;
             workbook.Properties.Created = DeterministicDocumentPackaging.FixedTimestamp;
             workbook.Properties.Modified = DeterministicDocumentPackaging.FixedTimestamp;
             workbook.Properties.LastModifiedBy = "Meridian";
@@ -128,9 +137,29 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
         return DeterministicDocumentPackaging.Canonicalize(rendered);
     }
 
-    private static void RenderTable(ColumnDescriptor column, LedgerReportTable table)
+    private static void WriteHeaderCells(IXLWorksheet sheet, IReadOnlyList<string> headers)
+    {
+        if (headers.Count == 0)
+            return;
+
+        for (var column = 0; column < headers.Count; column++)
+        {
+            var cell = sheet.Cell(1, column + 1);
+            cell.Value = headers[column];
+            cell.Style.Font.Bold = true;
+            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#0b7285");
+            cell.Style.Font.FontColor = XLColor.White;
+        }
+
+        sheet.Row(1).Height = 18;
+    }
+
+    private static void RenderTable(QuestPDF.Fluent.ColumnDescriptor column, ReportDocumentTable table)
     {
         column.Item().Text(table.Title).FontSize(11).Bold().FontColor("#102a43");
+        if (table.Headers.Count == 0)
+            return;
+
         column.Item().Table(grid =>
         {
             grid.ColumnsDefinition(columns =>
@@ -189,6 +218,4 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
             cleaned = "Sheet";
         return cleaned.Length > 31 ? cleaned[..31] : cleaned;
     }
-
-    private static string Shorten(string value) => value.Length <= 16 ? value : value[..16];
 }
