@@ -78,6 +78,14 @@ public interface IIBDataLineageSource
 /// <summary>Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.</summary>
 public interface IIBDataCallbackSource
 {
+    event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
+    event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
+    event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
+    event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+    event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
+    event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
+    event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
+    event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
     event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
     event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
@@ -114,6 +122,14 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         if (transport is IIBDataCallbackSource callbacks)
         {
             _callbackSource = callbacks;
+            callbacks.ContractDetailsReceived += OnContractDetailsReceived;
+            callbacks.OptionChainDefinitionReceived += OnOptionChainDefinitionReceived;
+            callbacks.HistoricalNewsReceived += OnHistoricalNewsReceived;
+            callbacks.NewsArticleReceived += OnNewsArticleReceived;
+            callbacks.FundamentalReportReceived += OnFundamentalReportReceived;
+            callbacks.TickByTickReceived += OnTickByTickReceived;
+            callbacks.DepthExchangesReceived += OnDepthExchangesReceived;
+            callbacks.DividendEarningsReceived += OnDividendEarningsReceived;
             callbacks.OptionContractReceived += OnOptionContractReceived;
             callbacks.ScannerResultReceived += OnScannerResultReceived;
             callbacks.RealTimeBarReceived += OnRealTimeBarReceived;
@@ -261,6 +277,56 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         Update(requestId, x => x with { Status = status, ObservedAt = DateTimeOffset.UtcNow });
     }
 
+
+    public void RecordContractDetails(int requestId, ProviderContractDetails details)
+    {
+        ArgumentNullException.ThrowIfNull(details);
+        RecordContractMetadata(requestId, details.Exchange, details.MarketRuleIds);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ContractDetails = Append(current.ContractDetails, details) });
+    }
+
+    public void RecordOptionChainDefinition(int requestId, ProviderOptionChainDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, OptionChainDefinitions = Append(current.OptionChainDefinitions, definition) });
+    }
+
+    public void RecordNewsHeadline(int requestId, ProviderNewsHeadline headline)
+    {
+        ArgumentNullException.ThrowIfNull(headline);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, NewsHeadlines = Append(current.NewsHeadlines, headline) });
+    }
+
+    public void RecordNewsArticle(int requestId, ProviderNewsArticle article)
+    {
+        ArgumentNullException.ThrowIfNull(article);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, NewsArticle = article });
+    }
+
+    public void RecordFundamentalReport(int requestId, ProviderFundamentalReport report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, FundamentalReport = report });
+    }
+
+    public void RecordTickByTick(int requestId, ProviderTickByTickObservation observation)
+    {
+        ArgumentNullException.ThrowIfNull(observation);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, TickByTickObservations = Append(current.TickByTickObservations, observation) });
+    }
+
+    public void RecordDepthExchanges(int requestId, IEnumerable<ProviderDepthExchangeDescription> exchanges)
+    {
+        ArgumentNullException.ThrowIfNull(exchanges);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, DepthExchanges = exchanges.ToArray() });
+    }
+
+    public void RecordDividendEarnings(int requestId, ProviderDividendEarnings payload)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, DividendEarnings = payload });
+    }
+
     /// <summary>Correlates an option-discovery callback to its originating request.</summary>
     public void RecordOptionContract(int requestId, ProviderOptionContract contract)
     {
@@ -334,6 +400,14 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
+    private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value) => RecordContractDetails(value.RequestId, value.Details);
+    private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value) => RecordOptionChainDefinition(value.RequestId, value.Definition);
+    private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value) => RecordNewsHeadline(value.RequestId, value.Headline);
+    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticle Article) value) => RecordNewsArticle(value.RequestId, value.Article);
+    private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value) => RecordFundamentalReport(value.RequestId, value.Report);
+    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value) => RecordTickByTick(value.RequestId, value.Observation);
+    private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value) => RecordDepthExchanges(value.RequestId, value.Exchanges);
+    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value) => RecordDividendEarnings(value.RequestId, value.Payload);
     private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value) => RecordOptionContract(value.RequestId, value.Contract);
     private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value) => RecordScannerResult(value.RequestId, value.Result);
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value) => RecordRealTimeBar(value.RequestId, value.Bar);
@@ -385,6 +459,14 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             source.MarketDataTypeReceived -= OnMarketDataTypeReceived;
         if (_callbackSource is { } callbacks)
         {
+            callbacks.ContractDetailsReceived -= OnContractDetailsReceived;
+            callbacks.OptionChainDefinitionReceived -= OnOptionChainDefinitionReceived;
+            callbacks.HistoricalNewsReceived -= OnHistoricalNewsReceived;
+            callbacks.NewsArticleReceived -= OnNewsArticleReceived;
+            callbacks.FundamentalReportReceived -= OnFundamentalReportReceived;
+            callbacks.TickByTickReceived -= OnTickByTickReceived;
+            callbacks.DepthExchangesReceived -= OnDepthExchangesReceived;
+            callbacks.DividendEarningsReceived -= OnDividendEarningsReceived;
             callbacks.OptionContractReceived -= OnOptionContractReceived;
             callbacks.ScannerResultReceived -= OnScannerResultReceived;
             callbacks.RealTimeBarReceived -= OnRealTimeBarReceived;
