@@ -38,15 +38,16 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
-        // Keep the requested run account only as a fallback for source formats that do not carry an
-        // account identifier. A source statement account is evidence from the custodian, and it can
-        // legitimately differ from Meridian's configured external key (for example, BAI2 account
-        // numbers and camt.053 IBANs). Replacing it with the run key would let account B match
-        // account A's internal book. Keeping it instead makes the account difference surface as
-        // ordinary statement and internal breaks until an explicit alias-resolution seam is wired.
-        var fallbackAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
+        // A statement run reconciles a single custodian account. Preserve the identifier supplied by
+        // the statement rather than replacing it with the operator's run-level key: connectors often
+        // supply a bank-native account number or IBAN while the run uses Meridian's external key.
+        // Rewriting that identifier could make a statement for account B falsely reconcile against
+        // account A's internal book. A multi-account statement remains invalid, but a single source
+        // identifier need not equal the run-level external key.
+        var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
             ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
+        ValidateSingleStatementAccount(rows);
 
         foreach (var row in rows)
         {
@@ -58,13 +59,13 @@ internal static class StatementRunMatcher
             switch (Classify(row.ActivityType))
             {
                 case StatementRowKind.Position:
-                    statementPositions.Add(MapPosition(row, statementAccount, evidence, fxRateProvider, normalizedBase));
+                    statementPositions.Add(MapPosition(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, statementAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
                 default:
-                    statementTransactions.Add(MapTransaction(row, statementAccount, evidence, fxRateProvider, normalizedBase));
+                    statementTransactions.Add(MapTransaction(row, StatementAccount(row, canonicalAccount), evidence, fxRateProvider, normalizedBase));
                     break;
             }
         }
@@ -125,6 +126,25 @@ internal static class StatementRunMatcher
 
         return new StatementRunMatchResult(breaks, matchCount);
     }
+
+    private static void ValidateSingleStatementAccount(IReadOnlyList<CanonicalStatementRow> rows)
+    {
+        var accounts = rows
+            .Where(static row => !string.IsNullOrWhiteSpace(row.Account))
+            .Select(static row => row.Account.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(2)
+            .ToArray();
+
+        if (accounts.Length > 1)
+        {
+            throw new InvalidDataException(
+                "Statement contains rows for different accounts; a statement run reconciles a single account.");
+        }
+    }
+
+    private static string StatementAccount(CanonicalStatementRow row, string fallbackAccount) =>
+        string.IsNullOrWhiteSpace(row.Account) ? fallbackAccount : row.Account.Trim();
 
     private static NormalizedStatementPosition MapPosition(
         CanonicalStatementRow row,

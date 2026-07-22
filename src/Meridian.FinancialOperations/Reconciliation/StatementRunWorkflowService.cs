@@ -41,7 +41,14 @@ public sealed class StatementRunWorkflowService(
         // fail the run before ImportAsync persists it; otherwise the stored import would be left with no
         // breaks or cases and the duplicate-source guard would reject a corrected retry of the same file.
         var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
-        var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
+        var importRequest = ToImportRequest(normalizedRequest);
+        var importValidation = await brokerStatementService.ValidateAsync(importRequest, cancellationToken).ConfigureAwait(false);
+        if (!importValidation.IsValid)
+        {
+            throw new InvalidDataException($"Statement cannot be imported: {string.Join(" ", importValidation.Errors)}");
+        }
+
+        var imported = await brokerStatementService.ImportAsync(importRequest, cancellationToken).ConfigureAwait(false);
 
         // Reconcile the imported statement against Meridian's own book. The population provider
         // supplies the internal positions, cash, and ledger for this fund account and period; the

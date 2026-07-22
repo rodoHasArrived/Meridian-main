@@ -147,7 +147,8 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         try
         {
             var rows = await ParseFileAsync(request.SourcePath, request, importId: "validation", ct).ConfigureAwait(false);
-            return new BrokerStatementValidationResult(true, errors, rows.Count);
+            AddSingleAccountError(rows, errors);
+            return new BrokerStatementValidationResult(errors.Count == 0, errors, rows.Count);
         }
         catch (InvalidDataException ex)
         {
@@ -174,6 +175,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
         var rows = await ParseFileAsync(request.SourcePath, normalizedRequest, importId, ct).ConfigureAwait(false);
+        EnsureSingleAccount(rows);
         var import = new CanonicalStatementImport(
             importId,
             normalizedRequest.Broker,
@@ -324,6 +326,30 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
         return rows;
     }
+
+    private static void AddSingleAccountError(IReadOnlyList<CanonicalStatementRow> rows, ICollection<string> errors)
+    {
+        if (HasMultipleAccounts(rows))
+        {
+            errors.Add("Statement contains rows for different accounts; a statement run reconciles a single account.");
+        }
+    }
+
+    private static void EnsureSingleAccount(IReadOnlyList<CanonicalStatementRow> rows)
+    {
+        if (HasMultipleAccounts(rows))
+        {
+            throw new InvalidDataException(
+                "Statement contains rows for different accounts; a statement run reconciles a single account.");
+        }
+    }
+
+    private static bool HasMultipleAccounts(IReadOnlyList<CanonicalStatementRow> rows) =>
+        rows.Where(static row => !string.IsNullOrWhiteSpace(row.Account))
+            .Select(static row => row.Account.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Skip(1)
+            .Any();
 
     private static IReadOnlyList<string> ParseCsvLine(string line, int rowNumber)
     {
