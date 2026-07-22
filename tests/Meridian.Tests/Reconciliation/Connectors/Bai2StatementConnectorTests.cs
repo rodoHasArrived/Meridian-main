@@ -66,6 +66,37 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithMultipleGroupsForOneAccount_IsRejected()
+    {
+        // Two 02 group headers for the SAME account across different statement dates (30 Apr and 31 May),
+        // each a well-formed group with its own 49/98 trailers. Combining them would give the matcher two
+        // closing balances for one internal cash record under the single operator-supplied period, letting
+        // it match one and open a false break for the other, so the connector must reject the file.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260430,,USD,2/
+            03,0975312468,USD,015,1000000,,/
+            16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/
+            49,1250000,3/
+            98,1250000,1,3/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            03,0975312468,USD,015,2000000,,/
+            16,115,500000,,BANKREF02,CUSTREF02,Incoming wire/
+            49,2500000,3/
+            98,2500000,1,3/
+            99,3750000,2,10/
+            """;
+        var document = new StatementSourceDocument("multi-group.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("multiple statement groups for one account must not combine into a single run");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MULTIPLE_GROUPS");
+    }
+
+    [Fact]
     public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
     {
         // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would

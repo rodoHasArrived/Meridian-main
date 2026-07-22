@@ -180,6 +180,26 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 fingerprint));
         }
 
+        // A BAI2 file can also carry several 02 group headers for one account — typically separate
+        // statement dates. A statement run reconciles a single period against one internal cash record, so
+        // combining groups would hand the matcher one closing balance per group under the single
+        // operator-supplied period and let it match one while opening a false break for the others (or mix
+        // activity from distinct periods). Require exactly one group; split the file into one per group.
+        if (groupCount > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_MULTIPLE_GROUPS",
+                $"The BAI2 file contains {groupCount} statement groups (02) for one account, but a statement run reconciles a single statement period. Split the file into one document per group before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
+
         // Validate the file's trailer structure so a truncated or corrupt file (valid 03/16 records but
         // missing or mismatched 49/98/99 trailers) is rejected rather than reconciled as a complete
         // statement. Structural counts are used, not the trailer control totals whose composition varies
