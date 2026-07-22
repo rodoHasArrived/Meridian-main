@@ -3,6 +3,15 @@ using Meridian.Contracts.Ledger;
 namespace Meridian.Ledger;
 
 /// <summary>Period roll-forward of one partner/equity capital account.</summary>
+/// <remarks>
+/// <see cref="AllocatedResult"/> is the net income/expense allocated to this capital account for the
+/// period. It is decomposed additively into <see cref="IncomeGainAllocations"/> (revenue and gains,
+/// which increase capital), <see cref="ExpenseAllocations"/> (operating expenses other than fund
+/// fees, which reduce capital), and <see cref="FeeAllocations"/> (management, performance, and
+/// incentive fees, which reduce capital), so a partners' capital statement can present the drivers
+/// a fund accountant reports rather than a single lumped figure. The decomposition holds
+/// <c>AllocatedResult == IncomeGainAllocations - ExpenseAllocations - FeeAllocations</c>.
+/// </remarks>
 public sealed record LedgerPartnersCapitalRollForward(
     LedgerAccount CapitalAccount,
     string AccountName,
@@ -11,6 +20,9 @@ public sealed record LedgerPartnersCapitalRollForward(
     decimal Contributions,
     decimal Distributions,
     decimal AllocatedResult,
+    decimal IncomeGainAllocations,
+    decimal ExpenseAllocations,
+    decimal FeeAllocations,
     decimal OtherMovements,
     decimal EndingCapital)
 {
@@ -20,6 +32,13 @@ public sealed record LedgerPartnersCapitalRollForward(
 
     /// <summary>Difference between the rolled-forward and observed ending capital. Zero when reconciled.</summary>
     public decimal ReconciliationVariance => ComputedEndingCapital - EndingCapital;
+
+    /// <summary>
+    /// Difference between <see cref="AllocatedResult"/> and its income/expense/fee decomposition.
+    /// Zero when the breakout ties to the net allocated result.
+    /// </summary>
+    public decimal AllocationComponentsVariance =>
+        AllocatedResult - (IncomeGainAllocations - ExpenseAllocations - FeeAllocations);
 }
 
 /// <summary>
@@ -34,6 +53,9 @@ public sealed record LedgerPartnersCapitalStatement(
     decimal Contributions,
     decimal Distributions,
     decimal AllocatedResult,
+    decimal IncomeGainAllocations,
+    decimal ExpenseAllocations,
+    decimal FeeAllocations,
     decimal OtherMovements,
     decimal EndingCapital,
     IReadOnlyList<LedgerPartnersCapitalRollForward> Accounts)
@@ -44,6 +66,13 @@ public sealed record LedgerPartnersCapitalStatement(
 
     /// <summary>Difference between the rolled-forward and observed ending capital. Zero when reconciled.</summary>
     public decimal ReconciliationVariance => ComputedEndingCapital - EndingCapital;
+
+    /// <summary>
+    /// Difference between the aggregate <see cref="AllocatedResult"/> and its income/expense/fee
+    /// decomposition. Zero when the breakout ties to the net allocated result.
+    /// </summary>
+    public decimal AllocationComponentsVariance =>
+        AllocatedResult - (IncomeGainAllocations - ExpenseAllocations - FeeAllocations);
 
     /// <summary>True when the aggregate roll-forward ties to ending capital.</summary>
     public bool IsReconciled => Math.Abs(ReconciliationVariance) <= LedgerToleranceConstants.Balance;
