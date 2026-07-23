@@ -54,6 +54,25 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_ReportsMissingMaturity_WhenBondMaturityIsNotAString()
+    {
+        var (sut, store) = BuildSut();
+        var security = MakeSecurity(
+            Guid.NewGuid(),
+            "Bond",
+            currency: "USD",
+            assetSpecificTerms: new { maturity = 123 });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v =>
+            v.RuleId == "MA001"
+            && v.Category == DataQualityRuleCategory.MinimumAttribute
+            && v.SecurityId == security.SecurityId);
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_DoesNotFlagMaturity_ForEquity()
     {
         var (sut, store) = BuildSut();
