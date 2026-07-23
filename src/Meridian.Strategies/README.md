@@ -50,6 +50,9 @@ data-root-backed durable history store.
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
 not need to infer backtest acceptance from dashboard-only state.
+Completed runs may receive a subsequent append-only walk-forward evidence snapshot when the
+snapshot changes only that evidence; durable replay preserves the completed lifecycle state while
+allowing paper-to-live promotion to evaluate the newly retained out-of-sample evidence.
 `LedgerReadService` projects strategy-run trial balance and journal rows with canonical
 `LedgerDimensionSetDto` scope for fund, strategy, portfolio, book, account, entity, sleeve,
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
