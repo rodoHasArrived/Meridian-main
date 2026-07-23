@@ -20,6 +20,7 @@ public sealed class GapBackfillService
     private readonly bool _enabled;
     private readonly TimeSpan _minimumGap;
     private readonly DataGranularity _recoveryGranularity;
+    private readonly AutoGapRemediationService? _guardedRemediation;
     private int _gapBackfillsTriggered;
     private int _gapBackfillsSucceeded;
 
@@ -36,18 +37,22 @@ public sealed class GapBackfillService
     /// gaps are intraday windows, so this defaults to 1-minute bars; the backfill service rejects the
     /// request loudly when no configured historical provider supports it, rather than silently
     /// remediating an intraday gap with daily bars.</param>
+    /// <param name="guardedRemediation">When supplied, reconnection gaps are routed through the
+    /// shared auto-remediation policy instead of executing directly.</param>
     public GapBackfillService(
         Func<BackfillRequest, CancellationToken, Task<BackfillResult>> backfillExecutor,
         Func<IReadOnlyCollection<string>>? subscribedSymbols = null,
         bool enabled = true,
         TimeSpan? minimumGap = null,
-        DataGranularity recoveryGranularity = DataGranularity.Minute1)
+        DataGranularity recoveryGranularity = DataGranularity.Minute1,
+        AutoGapRemediationService? guardedRemediation = null)
     {
         _backfillExecutor = backfillExecutor;
         _subscribedSymbols = subscribedSymbols ?? (static () => Array.Empty<string>());
         _enabled = enabled;
         _minimumGap = minimumGap ?? TimeSpan.FromSeconds(10);
         _recoveryGranularity = recoveryGranularity;
+        _guardedRemediation = guardedRemediation;
     }
 
     /// <summary>
@@ -120,8 +125,24 @@ public sealed class GapBackfillService
             gap.ProviderName, symbols.Length,
             gap.DisconnectedAt, gap.ReconnectedAt, gap.Duration.TotalSeconds);
 
-        // Fire and forget - backfill runs in the background
-        _ = EnqueueGapBackfillAsync(gap, symbols);
+        // Fire and forget - all production reconnection recovery is routed through the shared
+        // remediation service, which enforces configured threshold, cooldown, idempotency, and
+        // concurrency limits. The direct executor remains available for focused standalone use.
+        _ = _guardedRemediation is null
+            ? EnqueueGapBackfillAsync(gap, symbols)
+            : EnqueueGuardedRemediationAsync(gap, symbols);
+    }
+
+    private async Task EnqueueGuardedRemediationAsync(ReconnectionGap gap, string[] symbols)
+    {
+        try
+        {
+            await _guardedRemediation!.HandleReconnectionGapAsync(gap, symbols).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Guarded gap remediation error for {Provider} after reconnection", gap.ProviderName);
+        }
     }
 
     private async Task EnqueueGapBackfillAsync(ReconnectionGap gap, string[] symbols, CancellationToken ct = default)

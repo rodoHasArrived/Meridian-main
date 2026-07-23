@@ -5,6 +5,7 @@ using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
 using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
@@ -24,7 +25,8 @@ public enum AutoRemediationTriggerSource
 {
     DataQualityGap,
     GapAnalyzerScan,
-    QualityAlert
+    QualityAlert,
+    ReconnectionGap
 }
 
 /// <summary>
@@ -427,6 +429,40 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
     }
 
     /// <summary>
+    /// Routes a streaming-provider reconnection through the same policy, cooldown, idempotency,
+    /// and concurrency controls used by all other automatic remediations.
+    /// </summary>
+    public Task HandleReconnectionGapAsync(
+        ReconnectionGap gap,
+        IReadOnlyList<string> symbols,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(symbols);
+
+        if (gap.Duration < _policy.MinimumGapDuration)
+        {
+            _log.Debug(
+                "Skipping reconnection remediation for {Provider}: gap {Duration} below minimum {Minimum}",
+                gap.ProviderName,
+                gap.Duration,
+                _policy.MinimumGapDuration);
+            return Task.CompletedTask;
+        }
+
+        return EnqueueRemediationAsync(
+            symbols,
+            DateOnly.FromDateTime(gap.DisconnectedAt.UtcDateTime),
+            DateOnly.FromDateTime(gap.ReconnectedAt.UtcDateTime),
+            provider: "composite",
+            AutoRemediationTriggerSource.ReconnectionGap,
+            $"reconnection:{gap.ProviderName}",
+            gapSize: Math.Max(symbols.Count, 1),
+            severity: null,
+            downstreamWorkflow: null,
+            ct);
+    }
+
+    /// <summary>
     /// Executes the same guarded quality-gap path used by event-driven remediation and reports the
     /// observed outcome to an interactive caller. Existing fire-and-forget integrations continue
     /// to use <see cref="HandleDataQualityGapAsync"/> unchanged.
@@ -541,6 +577,9 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         int maxExecutions = 100,
         TimeSpan? dueSoonWindow = null)
         => _slaEvaluator.Evaluate(nowUtc, maxExecutions, dueSoonWindow);
+
+    /// <summary>Configured minimum duration for all automatic gap remediation signals.</summary>
+    public TimeSpan MinimumGapDuration => _policy.MinimumGapDuration;
 
     private void OnQualityGapDetected(QualityDataGap gap)
     {
