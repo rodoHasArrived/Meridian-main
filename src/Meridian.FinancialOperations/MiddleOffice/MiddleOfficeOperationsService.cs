@@ -131,9 +131,10 @@ public sealed class MiddleOfficeOperationsService
     /// <summary>
     /// Raises an escalation for a reconciliation break. Only genuine
     /// (<see cref="BreakClassification.TrueBreak"/>) or potential breaks may be escalated; matched
-    /// rows are not exceptions and are rejected. Raising a break that already has an active escalation
-    /// is idempotent — the existing open case is returned rather than opening a duplicate case and a
-    /// second SLA timer — while a break whose prior escalation was resolved may be raised afresh.
+    /// rows are not exceptions and are rejected. An exact retry for a break that already has an active
+    /// escalation is idempotent — the existing open case is returned rather than opening a duplicate
+    /// case and a second SLA timer. A conflicting raise is rejected so its governance-relevant details
+    /// are not silently discarded, while a break whose prior escalation was resolved may be raised afresh.
     /// </summary>
     public TrueBreakEscalation RaiseTrueBreak(TrueBreakEscalationRequest request)
     {
@@ -175,14 +176,20 @@ public sealed class MiddleOfficeOperationsService
 
         lock (_gate)
         {
-            // A break can carry at most one active operator case. If an upstream retry re-raises a break
-            // that is still open, return the existing escalation idempotently rather than opening a
-            // duplicate case (with a second SLA timer and breach lane). A break whose prior escalation
-            // was resolved is free to escalate again.
+            // A break can carry at most one active operator case. Only an exact upstream retry may
+            // return that case idempotently; a conflicting raise must be explicit rather than silently
+            // hiding its severity, SLA, assignee, subject, classification, or reason.
             var active = _escalations.Values.FirstOrDefault(existing =>
                 existing.IsOpen && string.Equals(existing.BreakId, breakId, StringComparison.OrdinalIgnoreCase));
             if (active is not null)
-                return active;
+            {
+                if (IsSameEscalation(active, escalation))
+                    return active;
+
+                throw new InvalidOperationException(
+                    $"Break '{breakId}' already has an active escalation with different details; " +
+                    "resolve it before raising a new escalation.");
+            }
 
             // Record the immutable escalation event before exposing the open case. If a durable sink
             // throws, no orphaned open case is left behind — otherwise a retry would find that case and
@@ -207,6 +214,23 @@ public sealed class MiddleOfficeOperationsService
 
         return escalation;
     }
+
+    private static bool IsSameEscalation(TrueBreakEscalation existing, TrueBreakEscalation candidate)
+        => string.Equals(existing.BreakId, candidate.BreakId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(existing.SubjectId, candidate.SubjectId, StringComparison.OrdinalIgnoreCase)
+           && existing.Classification == candidate.Classification
+           && existing.Severity == candidate.Severity
+           && string.Equals(existing.AssignedTo, candidate.AssignedTo, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(existing.Reason, candidate.Reason, StringComparison.Ordinal)
+           && IsSamePolicy(existing.Timer?.Policy, candidate.Timer?.Policy);
+
+    private static bool IsSamePolicy(WorkflowSlaPolicy? existing, WorkflowSlaPolicy? candidate)
+        => existing is null
+            ? candidate is null
+            : candidate is not null
+              && string.Equals(existing.PolicyId, candidate.PolicyId, StringComparison.OrdinalIgnoreCase)
+              && existing.Duration == candidate.Duration
+              && existing.WarningFraction.Equals(candidate.WarningFraction);
 
     /// <summary>
     /// Advances every open escalation whose SLA timer has breached as of <paramref name="asOfUtc"/> to
