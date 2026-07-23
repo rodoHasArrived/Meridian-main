@@ -589,14 +589,10 @@ public sealed class ScheduledMaintenanceService
 
         var execution = response.Data;
         var status = ResolveExecutionStatus(execution.Status);
-        var completed =
-            string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(status, "CompletedWithWarnings", StringComparison.OrdinalIgnoreCase);
-
-        result.Success = completed;
+        result.Success = IsSuccessfulArchiveMaintenanceExecution(status, execution.Result?.Success ?? false);
         result.Message = !string.IsNullOrWhiteSpace(execution.Result?.Summary)
             ? execution.Result!.Summary!
-            : completed
+            : result.Success
                 ? $"Archive maintenance ({serverTaskType}) completed."
                 : $"Archive maintenance ({serverTaskType}) ended with status {status ?? "unknown"}.";
         result.Error = execution.ErrorMessage;
@@ -605,10 +601,10 @@ public sealed class ScheduledMaintenanceService
         result.FilesSuccessful = Math.Max(0, execution.FilesProcessed - result.FilesFailed);
         result.BytesSaved = execution.BytesSaved;
 
-        if (!completed)
+        if (!result.Success)
         {
             Log.Warning(
-                "Maintenance task {TaskId} ({ServerTaskType}) ended with status {Status}: {Error}",
+                "Maintenance task {TaskId} ({ServerTaskType}) did not complete successfully with status {Status}: {Error}",
                 task.Id,
                 serverTaskType,
                 status,
@@ -617,6 +613,9 @@ public sealed class ScheduledMaintenanceService
 
         return result;
     }
+
+    internal static bool IsSuccessfulArchiveMaintenanceExecution(string? status, bool maintenanceSucceeded) =>
+        maintenanceSucceeded && string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Normalizes the execution status, which the host may serialize as either an enum name or
