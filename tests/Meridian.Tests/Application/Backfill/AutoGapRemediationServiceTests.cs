@@ -19,6 +19,38 @@ namespace Meridian.Tests.Application.Backfill;
 public sealed class AutoGapRemediationServiceTests
 {
     [Fact]
+    public async Task LiveQualityGap_DefaultPolicy_DoesNotStartBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(gateway, history, quality);
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(0);
+        history.GetRecentExecutions(10).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LiveQualityGap_ExplicitlyEnabledPolicy_StartsBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            quality,
+            AutoGapRemediationPolicy.Default with { Enabled = true });
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(1);
+        history.GetRecentExecutions(10).Should().ContainSingle();
+    }
+
+    [Fact]
     public void BackfillRemediationSlaPolicy_CriticalWorkflow_RequiresSameBusinessDayOwnerAssignment()
     {
         var observedAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
@@ -483,6 +515,19 @@ public sealed class AutoGapRemediationServiceTests
                 StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
                 CompletedUtc: DateTimeOffset.UtcNow));
         }
+    }
+
+    private static DataQualityMonitoringService CreateQualityServiceWithShortGapThreshold() =>
+        new(new DataQualityMonitoringConfig
+        {
+            GapAnalyzerConfig = new GapAnalyzerConfig { GapThresholdSeconds = 1 }
+        });
+
+    private static void PublishLiveGap(DataQualityMonitoringService quality)
+    {
+        var timestamp = new DateTimeOffset(2026, 07, 10, 14, 00, 00, TimeSpan.Zero);
+        quality.ProcessTrade("AAPL", timestamp, 150m, 100m, sequence: 1, provider: "stooq");
+        quality.ProcessTrade("AAPL", timestamp.AddMinutes(5), 150m, 100m, sequence: 2, provider: "stooq");
     }
 
     private static SymbolGapInfo BuildGap(string symbol, params DateOnly[] gapDates)
