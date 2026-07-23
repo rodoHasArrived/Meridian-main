@@ -110,6 +110,28 @@ IB credentials are managed via TWS/Gateway, not environment variables. However, 
 | `NYSE__APIKEY` | `NYSE:ApiKey` | NYSE market data API key | When using NYSE | — |
 | `NASDAQ__APIKEY` | — | Nasdaq Data Link API key | When using Nasdaq | — |
 
+## Database Persistence
+
+**Without any of these variables, every money-path store (ledger, security master, fund
+accounts, fund structure, direct lending, asset operations, banking, money market, reporting,
+scoped access) runs in-memory and loses its data on restart.** Hosts log a loud
+`PERSISTENCE: NONE`/`PARTIAL` warning, report it in the `postgresql` readiness check, and the
+browser workstation shows a persistent red banner until persistence is configured.
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `MERIDIAN_DATABASE_URL` | Unified PostgreSQL connection for **all** store domains. Accepts `postgres://user:pass@host:port/db` URLs or Npgsql keyword form. Propagated at startup into every unset `MERIDIAN_*_CONNECTION_STRING`. | No | — (in-memory stores) |
+| `MERIDIAN_LEDGER_CONNECTION_STRING` | Ledger journal store (per-domain override; wins over `MERIDIAN_DATABASE_URL`). | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` | Security Master store (also inherited by Direct Lending unless its dedicated variable is set). | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` | Fund accounts governance store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` | Fund structure governance store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` | Asset operations projection store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_BANKING_CONNECTION_STRING` | Banking store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_MONEY_MARKET_CONNECTION_STRING` | Money market fund store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING` | Scoped access assignment store. | No | inherits `MERIDIAN_DATABASE_URL` |
+| `MERIDIAN_REPORTING_CONNECTION_STRING` | Reporting stores. | No | inherits the ledger connection |
+| `MERIDIAN_DIRECT_LENDING_CONNECTION_STRING` | Direct lending store (dedicated/test databases only). | No | inherits the Security Master connection |
+
 ## Storage Configuration
 
 | Variable | Config Path | Description | Required | Default |

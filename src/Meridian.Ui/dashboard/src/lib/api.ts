@@ -544,6 +544,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDegradedMode } from "@/lib/system-status";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
@@ -3559,7 +3560,8 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
       storageHealth: readStorageHealth(payload.storageHealth),
       lastHeartbeatUtc: heartbeat,
       metrics: Array.isArray(payload.metrics) ? payload.metrics as MetricSnapshot[] : [],
-      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : []
+      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : [],
+      degradedMode: readDegradedMode(payload.degradedMode)
     };
   }
 
@@ -3633,60 +3635,13 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         source: "Meridian host",
         timestamp: timestampUtc
       }
-    ]
+    ],
+    degradedMode: readDegradedMode(payload.degradedMode)
   };
 }
 
-function fallbackSystemOverview(): SystemOverviewResponse {
-  const timestampUtc = new Date().toISOString();
-  return {
-    systemStatus: "Degraded",
-    providersOnline: 0,
-    providersTotal: 0,
-    activeRuns: 0,
-    openPositions: 0,
-    activeBackfills: 0,
-    symbolsMonitored: 0,
-    storageHealth: "Warning",
-    lastHeartbeatUtc: timestampUtc,
-    metrics: [],
-    recentEvents: [
-      {
-        id: "status-unavailable",
-        type: "warning",
-        message: "The host returned an unrecognized status payload.",
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ]
-  };
-}
 
-function deriveSystemStatus(
-  isConnected: boolean,
-  isStale: boolean,
-  dropped: number,
-  dropRate: number,
-  queueUtilization: number
-): SystemOverviewResponse["systemStatus"] {
-  if (!isConnected) {
-    return "Offline";
-  }
 
-  return isStale || dropped > 0 || dropRate > 0 || queueUtilization >= 0.8 ? "Degraded" : "Healthy";
-}
-
-function deriveStorageHealth(
-  systemStatus: SystemOverviewResponse["systemStatus"],
-  dropped: number,
-  queueUtilization: number
-): SystemOverviewResponse["storageHealth"] {
-  if (systemStatus === "Offline") {
-    return "Critical";
-  }
-
-  return dropped > 0 || queueUtilization >= 0.8 ? "Warning" : "Healthy";
-}
 
 function buildLegacyStatusMessage(
   systemStatus: SystemOverviewResponse["systemStatus"],

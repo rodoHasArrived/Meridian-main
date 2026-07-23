@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Meridian.ProviderSdk;
 
 namespace Meridian;
 
@@ -36,10 +37,23 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<IBBrokerageGateway>>();
             return new IBBrokerageGateway(options, logger);
         });
+#if IBAPI
+        // Only an official-vendor build wires a transport; non-vendor builds remain fail-closed.
+        services.TryAddSingleton<EnhancedIBConnectionManager>(sp =>
+        {
+            var options = sp.GetService<Meridian.Core.Config.IBOptions>() ?? new Meridian.Core.Config.IBOptions();
+            return new EnhancedIBConnectionManager(new IBCallbackRouter(), options.Host, options.Port, options.ClientId);
+        });
+        services.TryAddSingleton<IBDataServices>(sp => new IBDataServices(
+            sp.GetRequiredService<EnhancedIBConnectionManager>(),
+            new IBDataResultMaterializer(sp.GetRequiredService<IBDurableResultStore>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderDataReadService>(sp => sp.GetRequiredService<IBDataServices>()));
+#endif
         services.AddBrokerageGateway("ib", sp => sp.GetRequiredService<IBBrokerageGateway>());
         services.AddBrokerageGateway("ibkr", sp => sp.GetRequiredService<IBBrokerageGateway>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, IbBrokerageSyncAdapter>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, IbBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
 
         RegisterOptionalStockSharpGateway(services);
 
@@ -109,62 +123,6 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             DateTimeOffset? since,
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
-    }
-
-    private sealed class IbBrokerageSyncAdapter(IBBrokerageGateway gateway) :
-        IBrokerageAccountCatalog,
-        IBrokeragePortfolioSync
-    {
-        public string ProviderId => "ibkr";
-
-        public string ProviderDisplayName => "Interactive Brokers";
-
-        public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct)
-        {
-            var account = await gateway.GetAccountInfoAsync(ct).ConfigureAwait(false);
-            return [new BrokerageExternalAccountDto(
-                ProviderId: ProviderId,
-                AccountId: account.AccountId,
-                DisplayName: string.IsNullOrWhiteSpace(account.AccountId) ? ProviderDisplayName : $"{ProviderDisplayName} {account.AccountId}",
-                Status: account.Status,
-                Currency: account.Currency,
-                RetrievedAt: account.RetrievedAt)];
-        }
-
-        public async Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct)
-        {
-            var account = await gateway.GetAccountInfoAsync(ct).ConfigureAwait(false);
-            var positions = await gateway.GetPositionsAsync(ct).ConfigureAwait(false);
-            var now = DateTimeOffset.UtcNow;
-            var accountDto = new BrokerageExternalAccountDto(
-                ProviderId: ProviderId,
-                AccountId: string.IsNullOrWhiteSpace(externalAccountId) ? account.AccountId : externalAccountId,
-                DisplayName: string.IsNullOrWhiteSpace(account.AccountId) ? ProviderDisplayName : $"{ProviderDisplayName} {account.AccountId}",
-                Status: account.Status,
-                Currency: account.Currency,
-                RetrievedAt: account.RetrievedAt);
-
-            return new BrokeragePortfolioSnapshotDto(
-                Account: accountDto,
-                Balance: new BrokerageBalanceSnapshotDto(
-                    Cash: account.Cash,
-                    Equity: account.Equity,
-                    BuyingPower: account.BuyingPower,
-                    Currency: account.Currency),
-                Positions: positions.Select(position => new BrokeragePositionSnapshotDto(
-                    Symbol: position.Symbol,
-                    Quantity: position.Quantity,
-                    AverageEntryPrice: position.AverageEntryPrice,
-                    MarketPrice: position.MarketPrice,
-                    MarketValue: position.MarketValue,
-                    UnrealizedPnl: position.UnrealizedPnl,
-                    AssetClass: position.AssetClass,
-                    Description: position.Description,
-                    PositionId: position.PositionId,
-                    Currency: account.Currency,
-                    Metadata: position.Metadata)).ToArray(),
-                RetrievedAt: now);
-        }
     }
 
     private sealed class StockSharpBrokerageGatewayAccessor(IServiceProvider services, Type gatewayType)

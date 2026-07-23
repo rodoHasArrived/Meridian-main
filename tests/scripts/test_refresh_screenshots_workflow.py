@@ -35,7 +35,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.workstation_app_shell = WORKSTATION_APP_SHELL.read_text(encoding="utf-8")
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
-        self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
+        self.assertIn("run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
         self.assertIn("cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json", self.web_workflow)
         self.assertIn("find \"$OUTPUT_DIR\" -maxdepth 1 -type f -name '*.png' -delete", self.web_workflow)
         self.assertIn("scripts/dev/validate-screenshot-captures.py", self.web_workflow)
@@ -51,7 +51,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
         self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
         self.assertIn("title: \"chore: refresh web workstation screenshot catalog\"", self.web_workflow)
-        self.assertNotIn("npm ci", self.web_workflow)
+        # The clean, lockfile-pinned install must not regress back to a mutable
+        # `npm install`, which can silently drift the dependency tree in CI.
+        self.assertNotIn("npm install --prefix", self.web_workflow)
         self.assertNotIn("git push", self.web_workflow)
         self.assertNotIn("<<<<<<<", self.web_workflow)
         self.assertNotIn(">>>>>>>", self.web_workflow)
@@ -494,6 +496,51 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("assertCaptureRouteStateIdentity(allCaptures)", self.web_screenshot_capture_script)
         self.assertIn("must use a unique route state", self.web_screenshot_capture_script)
 
+    def test_web_screenshot_capture_script_excludes_all_compatibility_redirect_routes(self) -> None:
+        # The JS coverage-exclusion lists must match the compatibility redirect
+        # routes the coverage tests exclude below; otherwise the capture run fails
+        # with "Live route(s) without a screenshot capture entry" for routes that
+        # intentionally forward to an already-captured canonical screen.
+        for compatibility_route_key in (
+            "accountingTrialBalanceLegacy",
+            "dataAlertsLegacy",
+            "dataWatchlistLegacy",
+            "strategyFormulaWorkbenchLegacy",
+        ):
+            self.assertIn(compatibility_route_key, self.web_screenshot_capture_script)
+        for compatibility_app_route in (
+            '"/accounting/trial-balance"',
+            '"/data/alerts"',
+            '"/data/watchlist"',
+            '"/strategy/formula-workbench"',
+        ):
+            self.assertIn(compatibility_app_route, self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_honors_declared_route_redirects(self) -> None:
+        # Captures that intentionally redirect to a canonical screen assert the
+        # redirect destination instead of failing the strict path-identity check.
+        self.assertIn("capture.expectedRedirectPath", self.web_screenshot_capture_script)
+        self.assertIn(
+            "new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim())).pathname",
+            self.web_screenshot_capture_script,
+        )
+
+    def test_web_screenshot_evidence_captures_declare_expected_redirect(self) -> None:
+        # The accounting/data evidence entry points are compatibility routes that
+        # redirect to the reporting evidence workbench; declaring the redirect lets
+        # each capture assert the intended destination and still produce an
+        # entry-point-specific screenshot.
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        for capture_id in ("W03I5", "W03L", "W06F"):
+            self.assertEqual(
+                "/reporting/evidence",
+                captures[capture_id].get("expectedRedirectPath"),
+                f"{capture_id} must declare its redirect to the reporting evidence workbench",
+            )
+
     def test_web_screenshot_capture_script_isolates_per_route_failures(self) -> None:
         # A screen that fails to render is recorded and skipped so the run continues
         # through the remaining screens, then exits non-zero with a consolidated
@@ -514,6 +561,43 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         )[0]
         self.assertIn("if: ${{ always() }}", upload_step)
         self.assertIn("if-no-files-found: ignore", upload_step)
+
+    def test_web_screenshot_workflow_uploads_capture_manifest_for_diagnostics(self) -> None:
+        # The run manifest (per-route status, render errors, dev-server log tail)
+        # must be uploaded on every run so a failed capture can be diagnosed
+        # without re-running the workflow.
+        manifest_step = self.web_workflow.split("- name: Upload capture manifest", 1)
+        self.assertEqual(2, len(manifest_step), "Upload capture manifest step is missing")
+        manifest_step = manifest_step[1].split("- name:", 1)[0]
+        self.assertIn("if: ${{ always() }}", manifest_step)
+        self.assertIn("artifacts/web-screenshots/manifest.json", manifest_step)
+        self.assertIn("if-no-files-found: warn", manifest_step)
+
+    def test_web_screenshot_capture_script_retries_transient_route_failures(self) -> None:
+        # A single flaky render must not fail the whole catalog: each route is
+        # retried a bounded number of times (fresh context per attempt) before
+        # it is recorded as failed.
+        self.assertIn("captureRouteWithRetries(", self.web_screenshot_capture_script)
+        self.assertIn('values.get("capture-retries")', self.web_screenshot_capture_script)
+        self.assertIn("const captureAttempts = captureRetries + 1;", self.web_screenshot_capture_script)
+        self.assertIn("maxAttemptsPerCapture", self.web_screenshot_capture_script)
+        self.assertIn("attempt ${attempt}/${maxAttempts} failed", self.web_screenshot_capture_script)
+        # The retry helper must open a fresh context per attempt.
+        self.assertIn("result.attempts = attempt;", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_fails_fast_when_dev_server_exits(self) -> None:
+        # If the Vite dev server dies during startup, fail immediately with the
+        # log tail instead of polling for the full navigation timeout.
+        self.assertIn("Dev server exited before becoming ready", self.web_screenshot_capture_script)
+        self.assertIn(
+            "await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs, server, logs);",
+            self.web_screenshot_capture_script,
+        )
+
+    def test_web_screenshot_capture_script_hardens_chromium_launch(self) -> None:
+        # Full-page screenshots of large routes can crash Chromium on a small
+        # /dev/shm; disable the shared-memory transport in CI containers.
+        self.assertIn("--disable-dev-shm-usage", self.web_screenshot_capture_script)
 
     def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
         self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)

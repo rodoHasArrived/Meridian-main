@@ -79,6 +79,7 @@ public static class UiApiRoutes
     public const string BackfillProviderConfigAudit = "/api/backfill/providers/audit";
 
     // Provider endpoints
+    public const string ProviderDataProjection = "/api/providers/data-projection";
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
@@ -144,6 +145,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";
@@ -789,6 +791,9 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
+    public const string LedgerAccountingConfigurationAssetAccountingCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting";
+    public const string LedgerAssetAccountingEventProjections = "/api/ledger/accounting-configuration/asset-accounting/events/project";
+    public const string LedgerAssetAccountingEventLifecycle = "/api/ledger/accounting-configuration/asset-accounting/events/lifecycle";
     public const string LedgerAccountingConfigurationPostingRuleCandidatePosts = "/api/ledger/accounting-configuration/posting-rules/candidates/post";
     public const string LedgerAccountingConfigurationPostingRuleProjectionSets = "/api/ledger/accounting-configuration/posting-rules/projection-sets";
     public const string LedgerAccountingConfigurationPostingRuleTests = "/api/ledger/accounting-configuration/posting-rules/tests";

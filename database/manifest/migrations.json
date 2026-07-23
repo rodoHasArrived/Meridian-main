@@ -361,6 +361,15 @@
       "sha256": "98b7801747ccb82547ba0a1304895158c488865d64f58929d42b73c91bde72e2"
     },
     {
+      "filename": "004_asset_accounting_event_spine.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/004_asset_accounting_event_spine.sql",
+      "schema": "asset_operations",
+      "sha256": "05f7cded5340a0ab36a092260853e2d457ee743833a15e103ab8304a62c1c52b"
+    },
+    {
       "filename": "V_ledger_001__journal_entries.sql",
       "immutable": true,
       "migration_set_id": "ledger",
@@ -595,6 +604,24 @@
       "sha256": "0ce4b1bd9d4221dbc89c6bea57c44247a6722872ab542936dea9bf653136e381"
     },
     {
+      "filename": "V_ledger_026__journal_leg_currency.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_026__journal_leg_currency.sql",
+      "schema": "ledger",
+      "sha256": "029b10b7501f8906cdd633ed73adae80e0a7177571a4e922b3ffdf8ec2eaf025"
+    },
+    {
+      "filename": "V_ledger_027__atomic_tax_lot_posting.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_027__atomic_tax_lot_posting.sql",
+      "schema": "ledger",
+      "sha256": "14e9c693511e29048eefb7dd4be8c07b4bd5ab6fd783edf7cc873841402d5375"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -749,7 +776,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "99500ee07b38e49eadf2831691507997d6218a1a95bf8ae60f69749ad98f04d4",
+  "fingerprint": "fc14cdfd38c40dede7bde55cdc8c9c40de41ead6e46a3d95d852aed4612fba8d",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -987,7 +1014,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 83,
+    "files": 86,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

@@ -258,14 +258,37 @@ public sealed class HistoricalBackfillService
                         ct).ConfigureAwait(false);
                 }
 
-                // Emit validation signal.
+                // Emit validation signal. Recency comes first: a provider whose dataset is
+                // frozen (e.g. Nasdaq WIKI ended March 2018) can return plenty of bars that
+                // still end years before the requested range end, and an open-ended request
+                // (To == null) implicitly expects data through today.
+                var utcToday = DateOnly.FromDateTime(DateTime.UtcNow);
+                var expectedThrough = request.To is { } requestedTo && requestedTo < utcToday ? requestedTo : utcToday;
+                var staleDays = lastBarDate.HasValue ? expectedThrough.DayNumber - lastBarDate.Value.DayNumber : 0;
+                // Only requests that expect data through (roughly) now can be "stale"; an
+                // explicitly historical range that falls short is partial coverage, not staleness.
+                var requestExpectsFreshData = request.To is null ||
+                    request.To.Value.DayNumber >= utcToday.DayNumber - BackfillBarValidation.DefaultStaleToleranceDays;
+                var isStale = requestExpectsFreshData && symbolBars > 0 && lastBarDate.HasValue &&
+                    staleDays > BackfillBarValidation.DefaultStaleToleranceDays;
+
                 var coversRequestedRange =
                     symbolBars > 0 &&
                     firstBarDate.HasValue &&
                     (effectiveFrom is null || firstBarDate.Value <= effectiveFrom.Value) &&
                     (!request.To.HasValue || (lastBarDate.HasValue && lastBarDate.Value >= request.To.Value));
 
-                if (coversRequestedRange)
+                if (isStale)
+                {
+                    var staleReason =
+                        $"Backfilled data is stale: newest bar {lastBarDate:yyyy-MM-dd} is {staleDays} calendar days " +
+                        $"short of the expected range end {expectedThrough:yyyy-MM-dd}. The provider's dataset may be frozen or paywalled.";
+                    _log.Warning(
+                        "Stale backfill for {Symbol} via {Provider}: newest bar {LastBarDate} vs expected {ExpectedThrough} ({StaleDays} days)",
+                        symbol, provider.DisplayName, lastBarDate, expectedThrough, staleDays);
+                    validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, staleReason));
+                }
+                else if (coversRequestedRange)
                     validationSignals.Add(SymbolValidationSignal.Pass(symbol, symbolBars, effectiveFrom, lastBarDate));
                 else if (symbolBars > 0)
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, request.To, "Provider returned partial bars that do not cover the requested date range"));
@@ -274,8 +297,17 @@ public sealed class HistoricalBackfillService
 
                 async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars)
                 {
+                    var futureCutoff = DateTimeOffset.UtcNow.AddDays(1);
+                    var futureDropped = 0;
                     foreach (var bar in bars)
                     {
+                        // A bar ending in the future is provider garbage, not history.
+                        if (bar.EndTime > futureCutoff)
+                        {
+                            futureDropped++;
+                            continue;
+                        }
+
                         var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
                         await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                         _metrics.IncHistoricalBars();
@@ -288,10 +320,25 @@ public sealed class HistoricalBackfillService
                         if (lastBarDate is null || barDate > lastBarDate.Value)
                             lastBarDate = barDate;
                     }
+
+                    if (futureDropped > 0)
+                    {
+                        _log.Warning(
+                            "Dropped {FutureDropped} future-dated aggregate bars for {Symbol} from {Provider}",
+                            futureDropped, symbol, provider.Name);
+                    }
                 }
 
                 async Task PublishHistoricalBarsAsync(IReadOnlyList<HistoricalBar> bars)
                 {
+                    bars = BackfillBarValidation.RemoveFutureDatedBars(bars, out var futureDropped);
+                    if (futureDropped > 0)
+                    {
+                        _log.Warning(
+                            "Dropped {FutureDropped} future-dated daily bars for {Symbol} from {Provider}",
+                            futureDropped, symbol, provider.Name);
+                    }
+
                     foreach (var bar in bars)
                     {
                         var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);

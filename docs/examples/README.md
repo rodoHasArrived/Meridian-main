@@ -1,5 +1,9 @@
 # Examples
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This directory contains code scaffolds and templates used as starting points for implementing new Meridian components.
 
 ## Contents

@@ -128,18 +128,19 @@ public sealed class StatementImportServiceTests : IDisposable
         result.RunId.Should().NotBeNullOrWhiteSpace();
         result.RecordCount.Should().Be(6);
         result.KindSummaries.Should().HaveCount(5);
-        // Legacy matcher semantics: two trades and one cash balance breach tolerance; the
-        // position, fee, and dividend rows match. Each break becomes a queue case.
-        result.BreakCount.Should().Be(3);
-        result.CaseCount.Should().Be(3);
-        result.BreakIds.Should().HaveCount(3);
-        result.CaseIds.Should().HaveCount(3);
+        // The matcher now reconciles against Meridian's own book. This test wires no internal
+        // populations, so every one of the 6 statement rows is correctly unmatched — each becomes a
+        // break and a queue case, instead of the old self-matcher fabricating position/near-zero matches.
+        result.BreakCount.Should().Be(6);
+        result.CaseCount.Should().Be(6);
+        result.BreakIds.Should().HaveCount(6);
+        result.CaseIds.Should().HaveCount(6);
         result.CaseIds.Should().OnlyContain(caseId => caseId.StartsWith("case:", StringComparison.OrdinalIgnoreCase));
-        result.ReconciliationCaseRoutes.Should().HaveCount(3);
+        result.ReconciliationCaseRoutes.Should().HaveCount(6);
         result.ReconciliationCaseRoutes.Should().OnlyContain(route =>
             route.StartsWith($"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}&caseId=", StringComparison.OrdinalIgnoreCase) &&
             route.Contains("&breakId=", StringComparison.OrdinalIgnoreCase));
-        result.ReconciliationCaseLinks.Should().HaveCount(3);
+        result.ReconciliationCaseLinks.Should().HaveCount(6);
         result.CaseIds.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.CaseId));
         result.ReconciliationCaseRoutes.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.Route));
         result.ReconciliationCaseLinks.Should().OnlyContain(link =>
@@ -156,7 +157,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.NormalizedRowCount.Should().Be(6);
-        run.Cases.Should().HaveCount(3);
+        run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
@@ -177,6 +178,66 @@ public sealed class StatementImportServiceTests : IDisposable
             "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
             "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
             "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+    }
+
+    [Fact]
+    public async Task Commit_SourceFileNamedCanonicalCsv_RetainsRawAndCanonicalSeparately()
+    {
+        // A source file literally named "canonical.csv" must not collide with the rendered canonical
+        // artifact. The raw evidence is retained under its own subdirectory, so neither file overwrites
+        // the other and the original source bytes survive intact.
+        var rawContent = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv");
+        var document = new StatementSourceDocument("canonical.csv", rawContent);
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        var rawPath = Path.Combine(_root, result.RetainedSourcePath);
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        File.Exists(rawPath).Should().BeTrue();
+        File.Exists(canonicalPath).Should().BeTrue();
+        Path.GetFullPath(rawPath).Should().NotBe(
+            Path.GetFullPath(canonicalPath),
+            "the raw source and the rendered canonical artifact must be retained at distinct paths");
+        (await File.ReadAllBytesAsync(rawPath)).Should().Equal(
+            rawContent,
+            "the retained raw evidence must be the untouched source bytes, not the canonical rendering");
+        (await File.ReadAllTextAsync(canonicalPath)).Should().StartWith(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate");
+    }
+
+    [Fact]
+    public async Task Commit_ReimportWithChangedMapping_PreservesEachCanonicalArtifact()
+    {
+        var originalDocument = FixtureDocument("csv-mixed-kinds.csv");
+        var first = await _service.CommitAsync(CommitRequest(originalDocument));
+        var firstArtifact = await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath));
+
+        var canonicalProfile = StatementBuiltInProfiles.All.Single(profile =>
+            profile.ProfileId == StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
+        var remappedProfile = canonicalProfile with
+        {
+            ProfileId = "canonical-quantity-from-price-v1",
+            DisplayName = "Canonical CSV with quantity remapped",
+            IsBuiltIn = false,
+            Fields = canonicalProfile.Fields
+                .Select(field => field.CanonicalField == "Quantity"
+                    ? field with { SourceColumn = "price" }
+                    : field)
+                .ToArray()
+        };
+        await _catalog.UpsertAsync(remappedProfile);
+
+        var remappedDocument = originalDocument with { MappingProfileId = remappedProfile.ProfileId };
+        var second = await _service.CommitAsync(CommitRequest(remappedDocument));
+        var secondArtifact = await File.ReadAllTextAsync(Path.Combine(_root, second.RetainedCanonicalPath));
+
+        first.Duplicate.Should().BeFalse();
+        second.Duplicate.Should().BeFalse("a changed canonical rendering is a distinct reconciliation run");
+        first.RetainedCanonicalPath.Should().NotBe(second.RetainedCanonicalPath);
+        firstArtifact.Should().NotBe(secondArtifact);
+        (await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath))).Should().Be(
+            firstArtifact,
+            "a later import must not replace the normalized evidence referenced by the first run");
     }
 
     [Fact]

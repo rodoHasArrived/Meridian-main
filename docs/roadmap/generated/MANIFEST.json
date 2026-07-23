@@ -6,23 +6,23 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "f2d29e6207978327652648ebd129602798ce98eb57e21e55d6cb7a5a74459c82"
+      "sha256": "c0eae81437d3fc4dc3e96b7e9c77731bfc0ff85f92b50bc8dd1f81f64fc7f597"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
-      "sha256": "a3e1fe38dad11bd7cdfc8bcdf6f41001839310cf49e57d10aa3baab7a780b3ff"
+      "sha256": "ee0d3821f5b673a940c3d335bd99bc7f518d4dbd4976ded24922e92a386be6d8"
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "35b32264e436bc46f882e9cadccc475c9e8968270989f2f485656b97f4e27383"
+      "sha256": "34039dcd60c8d612586f5a786369cd176df34acdab764e81783055cfce488658"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",
-      "sha256": "094a87a2ab04ddaa00f7d44480a08f43f42ca6d2d5d6158ac30298b7a36972eb"
+      "sha256": "3d386663fdd0e1ac18ec9b18f060f1c53cb7fdf19558900a120adba8c520f2bf"
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "c3c7dd2d96e6f352e787cb3ac1db6f34c506c4477ab7b488aead75ced5b9b13c"
+      "sha256": "753c4af016ea7d5401300655c54287e2ff178ee646598aa44139057f03bad561"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
@@ -32,15 +32,15 @@
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "810550c3e92bc30e8a4cd328e6afb33437a24cacd8b8dd7bfe4595a84358c373"
+      "sha256": "1eabe017e8802a031a0d51ddfb5faf115622f6a915698cfdad279c6914bd5c6b"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "6e781c8461611749378413d859634e5986dd508ef6661ef874f94d0b260d56e9"
+      "sha256": "4826b17fe0d3b9b6a1dabf3c755823fdb1681840b4fc23f42c52bdcaac51febc"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "810550c3e92bc30e8a4cd328e6afb33437a24cacd8b8dd7bfe4595a84358c373"
+      "sha256": "1eabe017e8802a031a0d51ddfb5faf115622f6a915698cfdad279c6914bd5c6b"
     }
   ],
   "schema": {

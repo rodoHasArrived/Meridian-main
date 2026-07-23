@@ -132,6 +132,25 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldRejectEmptyLedgerBookScope()
+    {
+        var service = CreateService(out _, out _);
+
+        var result = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "ibkr",
+            Actor: "ops-user",
+            Rationale: "Attempt to open an invalid book-scoped workflow.",
+            LedgerBookId: Guid.Empty));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_BOOK_REQUIRED");
+    }
+
+    [Fact]
     public async Task StartWorkflowAsync_ShouldRejectDuplicateOpenWorkflowForSameFundAndPeriod()
     {
         var service = CreateService(out _, out _);

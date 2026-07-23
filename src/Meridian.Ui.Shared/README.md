@@ -44,6 +44,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
+
 The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
 and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,
@@ -67,9 +69,10 @@ should use that accessor instead of reparsing `HttpContext.Items` or trusting cl
 and company fields. The `/api/workstation` route group also requires that tenant scope before any
 workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
 tenant-scoped session rather than relying on client-supplied organization fields.
-Session and CSRF cookies are marked `Secure` for HTTPS and non-loopback production requests. The
-supported local-workstation HTTP binding omits that flag only when both ends of the connection are
-loopback, allowing the packaged browser login to return its `SameSite=Strict` cookies on localhost.
+Session and CSRF cookies are marked `Secure` by default, including `ProductionApi` loopback
+reverse-proxy traffic. The supported `LocalWorkstation` HTTP binding omits that flag only when both
+ends of the connection are loopback, allowing the packaged browser login to return its
+`SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Statement connector endpoints expose file and remote
@@ -146,10 +149,13 @@ presentation code renders it.
 The existing explorer route now renders the retained `PositionId` dimension as a shared Position
 field when present. Browser and WPF clients consume the same server-built field and proof graph; no
 instrument-accounting-specific explorer route or client-side ledger query is added.
-For typed factor events the shared explorer queries `ILedgerJournalStore` with the exact ledger book,
-book aggregate, and indexed source event, then renders factor evidence -> holder role/book position
--> economic projection -> posting candidate -> independent approval -> immutable `JournalEntry` ->
-ledger/report evidence. The identities are present in shared selected-record fields and
+For canonical Asset Accounting events the shared explorer resolves the typed spine and queries
+`ILedgerJournalStore` with the exact ledger book, book aggregate, and indexed source event. It keeps
+Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct, and renders
+retained source evidence -> Security Master/book position -> projection -> posting candidate ->
+independent approval -> immutable `JournalEntry` -> reconciliation/report lineage. Journal impact is
+absent unless the durable journal identity, book, period, balanced amounts, and Posted status match
+the spine. The identities are present in shared selected-record fields and
 relationships as well as the proof graph, so the browser and WPF generic explorers remain thin and
 show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
@@ -171,6 +177,10 @@ Accounting and Reporting workstation payloads forward `fundProfileId` and `ledge
 into the shared manual-journal workbench when that service is registered, allowing the browser and
 desktop reporting surfaces to render the same private-capital fund-event ledger, capital-account
 subledger, evidence, approval, and report-output projection without a UI-local read model.
+Accounting report package build, certification, history, and export routes require the
+authenticated workstation tenant and company scope before invoking the retained package service;
+request-supplied tenant or company fields are compatibility input only and must not authorize or
+select package scope.
 Book-scoped Accounting payloads also apply `ledgerBookId` to reconciliation break queues,
 calibration summaries, open-break metrics, and the accounting control center. Queue items without
 explicit book scope are excluded from book-scoped responses instead of being inferred from fund,
@@ -205,6 +215,10 @@ desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book
 for a single source event while keeping ledger posting behind explicit approval. The generated
 candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
 the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
+The canonical Asset Accounting candidate endpoint is also separate from the generic request path.
+It stamps trusted scope, invokes `IAssetAccountingEventSpineService`, and requires the server to
+re-read the retained projected spine, authoritative position/book/period/policy/rule pack, and typed
+evidence before Drafted state can be appended.
 Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
 the promotion gate requires the full live approval checklist plus evidence-reference keys for each
 W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can
@@ -225,6 +239,10 @@ The shared workstation trading endpoint accepts the same optional GUID `fundAcco
 standalone trading-readiness and operator-inbox endpoints. When present, the embedded readiness
 payload resolves account-scoped brokerage-sync and broker-execution reconciliation evidence so
 initial browser payloads and refresh-only calls evaluate the same W7 live-readiness account.
+Execution order submission treats `OrderRequest.FundAccountId` as an account-scoped authorization
+selector rather than a trusted client assertion: when the field is present, the shared submit
+endpoint requires `ManageOrders` scoped to that account before forwarding the request to the OMS and
+live-order readiness gate.
 `TradingOperatorLiveOrderReadinessGate` adapts that service-owned W7 projection into
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a
@@ -381,8 +399,10 @@ guidance into one shared fail-closed payload for browser, WPF, and admin setup s
 Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
 lifecycle, close/reporting, close-plan configuration, external GL, reconciliation, direct-lending
 projections, and strategy ledger reads only count as complete when the selected ledger book has
-retained evidence for that workflow or an explicit full workflow certification packet. A generic
-ledger-book evidence link no longer certifies every workflow control by implication. Posting Rule
+complete typed retained evidence for that workflow. String links, legacy full-token packets,
+boolean flags, service registration, and route availability remain navigation or prerequisite
+metadata and cannot establish readiness. A generic ledger-book evidence link no longer certifies
+every workflow control by implication. Posting Rule
 Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation, direct-lending, and
 strategy-ledger readiness controls consume
 the same workflow certification state, so those lanes remain blocked even when their services or
@@ -1939,6 +1959,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

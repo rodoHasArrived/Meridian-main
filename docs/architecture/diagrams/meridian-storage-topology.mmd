@@ -1,0 +1,95 @@
+flowchart TB
+  classDef input fill:#eef2ff,stroke:#4338ca,color:#1e1b4b
+  classDef durable fill:#ecfdf5,stroke:#047857,color:#064e3b
+  classDef control fill:#fffbeb,stroke:#b45309,color:#78350f
+  classDef relational fill:#eff6ff,stroke:#1d4ed8,color:#1e3a8a
+  classDef consumer fill:#fdf2f8,stroke:#be185d,color:#831843
+  classDef boundary fill:#f8fafc,stroke:#475569,color:#0f172a
+
+  subgraph Inputs["Durable-input sources"]
+    direction LR
+    Market["Market and historical data"]:::input
+    Provider["Provider integration payloads<br/>and quarantine evidence"]:::input
+    Operations["Operational workflow,<br/>reconciliation, and audit events"]:::input
+    Accounting["Accounting, fund, banking,<br/>and lending commands"]:::input
+  end
+
+  subgraph FileStore["File-backed durable storage (DataRoot)"]
+    direction TB
+    Wal["Write-ahead log<br/>crash recovery and replay"]:::durable
+    Atomic["Atomic-file writer<br/>complete replacement before swap"]:::durable
+    Jsonl["JSONL market-data and<br/>operational evidence"]:::durable
+    Parquet["Parquet analytical/archive data"]:::durable
+    Sidecars["Backfill checkpoints, quality outcomes,<br/>runtime receipts, configuration, and sidecars"]:::durable
+    CaseHistory["Operational case history<br/>hash-chained JSONL"]:::durable
+    IntegrationEvidence["Provider manifests, raw payloads,<br/>staging, quarantine, and handoff evidence"]:::durable
+  end
+
+  subgraph Control["Storage control, lineage, and lifecycle"]
+    direction LR
+    Catalog["Catalog, search, and lineage"]:::control
+    Quality["Quality trends and<br/>confidence evidence"]:::control
+    Coordination["Shared-storage leases"]:::control
+    Tiering["Retention, tier migration,<br/>packaging, and export"]:::control
+  end
+
+  subgraph Postgres["PostgreSQL governed-record stores"]
+    direction LR
+    Security["Security Master and<br/>Direct Lending"]:::relational
+    Fund["Fund Structure, Fund Accounts,<br/>Banking, and Money Market"]:::relational
+    Ledger["Ledger journals, periods,<br/>tax lots, and continuity"]:::relational
+    Reporting["Immutable report artifacts,<br/>governance, delivery, and audit"]:::relational
+    AssetOps["Asset Operations<br/>projections and evidence"]:::relational
+  end
+
+  subgraph Consumers["Consumers and derived outputs"]
+    direction LR
+    Runtime["Meridian host and<br/>application services"]:::consumer
+    Workstations["Browser and WPF<br/>workstations"]:::consumer
+    Replay["Replay, backtesting,<br/>reconciliation, and reporting"]:::consumer
+    Exports["Portable packages and<br/>governed exports"]:::consumer
+  end
+
+  Market --> Wal
+  Provider --> Wal
+  Operations --> CaseHistory
+  Operations --> IntegrationEvidence
+  Accounting --> Ledger
+  Accounting --> Fund
+  Accounting --> AssetOps
+
+  Wal --> Jsonl
+  Wal --> Parquet
+  Atomic --> Sidecars
+  Atomic --> CaseHistory
+  Atomic --> IntegrationEvidence
+  Jsonl --> Catalog
+  Parquet --> Catalog
+  Sidecars --> Catalog
+  CaseHistory --> Catalog
+  IntegrationEvidence --> Catalog
+  Catalog --> Quality
+  Catalog --> Tiering
+  Coordination -. "lease state" .-> Atomic
+  Tiering -. "promote / retain" .-> Jsonl
+  Tiering -. "archive" .-> Parquet
+
+  Security --> Ledger
+  Fund --> Ledger
+  AssetOps --> Ledger
+  Ledger --> Reporting
+  CaseHistory -. "workflow evidence" .-> Ledger
+  CaseHistory -. "workflow evidence" .-> Reporting
+
+  Jsonl --> Replay
+  Parquet --> Replay
+  Catalog --> Replay
+  Security --> Runtime
+  Fund --> Runtime
+  Ledger --> Workstations
+  Reporting --> Workstations
+  Quality --> Workstations
+  Tiering --> Exports
+  Reporting --> Exports
+
+  class Inputs,FileStore,Control,Postgres,Consumers boundary

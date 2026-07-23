@@ -644,10 +644,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             };
         }
 
+        // The gateway report stream is not an authorization channel. Only this locally
+        // initiated modification may change the quantity cap, and it may do so only to
+        // the quantity the caller requested; never to a gateway-supplied quantity.
         var updated = _orders.AddOrUpdate(
             orderId,
-            _ => ApplyReport(state, report),
-            (_, existing) => ApplyReport(existing, report));
+            _ => ApplyReport(state, report, modification.NewQuantity),
+            (_, existing) => ApplyReport(existing, report, modification.NewQuantity));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: "OrderModified",
@@ -850,18 +853,32 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         return $"MDN-{DateTimeOffset.UtcNow:yyyyMMdd}-{seq:D6}";
     }
 
-    private static OrderState ApplyReport(OrderState current, ExecutionReport report)
+    private static OrderState ApplyReport(
+        OrderState current,
+        ExecutionReport report,
+        decimal? locallyAuthorizedModifiedQuantity = null)
     {
-        // A replayed or late non-terminal report (e.g. the submit ack racing the async
-        // report stream) must not regress an order that already reached a terminal status.
-        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
-            ? current.Status
-            : report.OrderStatus;
+        // Once the OMS has reached a terminal state, late or malicious stream reports
+        // must not reopen, resize, or otherwise mutate the completed local order.
+        if (IsTerminal(current.Status))
+        {
+            return current;
+        }
+
+        // Gateway-streamed modifications are not trusted to authorize a quantity change.
+        // A quantity may change only while applying the response to a locally initiated
+        // modification, and is capped to the local request rather than report data.
+        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
+            && report.OrderStatus is OrderStatus.Accepted
+            && locallyAuthorizedModifiedQuantity is > 0m
+            ? Math.Max(locallyAuthorizedModifiedQuantity.Value, current.FilledQuantity)
+            : current.Quantity;
 
         return current with
         {
-            Status = status,
-            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
+            Status = report.OrderStatus,
+            Quantity = authorizedQuantity,
+            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
@@ -1171,11 +1188,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
-        // A broker-accepted fill may not be abandoned because the caller or report-pump token
-        // was cancelled after dequeue. Admission to the durable accounting handoff is therefore
-        // non-cancellable; only downstream session/channel bookkeeping observes cancellation.
-        await progress.Gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-        try
+        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+        // Alpaca filled_qty) while fill consumers treat each report as a discrete
+        // trade, so only the increment since the last tracked fill may be forwarded —
+        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
+        var acceptedFilledQuantity = report.FilledQuantity;
+        if (!string.IsNullOrWhiteSpace(report.ClientOrderId ?? report.OrderId)
+            && _orders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var currentOrder))
+        {
+            acceptedFilledQuantity = currentOrder.FilledQuantity;
+        }
+
+        var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
+        if (incrementQuantity <= 0m)
         {
             if (progress.IsComplete)
                 return;

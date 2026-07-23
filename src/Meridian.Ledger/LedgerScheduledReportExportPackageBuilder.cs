@@ -12,24 +12,100 @@ public static class LedgerScheduledReportExportPackageBuilder
 {
     public static IReadOnlyList<LedgerReportPackArtifact> Build(
         LedgerFinancialReportPack reportPack,
-        LedgerReportScheduledExport scheduledExport)
+        LedgerReportScheduledExport scheduledExport,
+        ILedgerReportBinaryRenderer? binaryRenderer = null)
     {
         ArgumentNullException.ThrowIfNull(reportPack);
         ArgumentNullException.ThrowIfNull(scheduledExport);
         ValidateScheduleMatchesReport(reportPack, scheduledExport);
 
+        var renderer = binaryRenderer ?? BuiltInLedgerReportBinaryRenderer.Instance;
         var artifacts = new List<LedgerReportPackArtifact>
         {
             CreateDeliveryManifest(reportPack, scheduledExport),
         };
 
-        if (scheduledExport.Formats.Contains(LedgerReportExportFormat.RegulatoryXml))
-            artifacts.Add(CreateRegulatorySummaryXml(reportPack, scheduledExport));
+        // Honor every declared format: each requested LedgerReportExportFormat now yields a matching
+        // delivery artifact instead of being silently echoed only in the manifest header.
+        foreach (var format in scheduledExport.Formats.Distinct())
+            artifacts.Add(CreateFormatArtifact(reportPack, scheduledExport, format, renderer));
 
         return artifacts
             .OrderBy(static artifact => artifact.Name, StringComparer.Ordinal)
             .ToArray();
     }
+
+    private static LedgerReportPackArtifact CreateFormatArtifact(
+        LedgerFinancialReportPack reportPack,
+        LedgerReportScheduledExport scheduledExport,
+        LedgerReportExportFormat format,
+        ILedgerReportBinaryRenderer renderer)
+        => format switch
+        {
+            LedgerReportExportFormat.Csv => CreateStatementsCsv(reportPack),
+            LedgerReportExportFormat.Json => CreateStatementsJson(reportPack),
+            LedgerReportExportFormat.Xlsx => CreateBinaryArtifact(
+                "scheduled-export-financials.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                renderer.RenderWorkbook(reportPack)),
+            LedgerReportExportFormat.Pdf => CreateBinaryArtifact(
+                "scheduled-export-financials.pdf",
+                "application/pdf",
+                renderer.RenderPdf(reportPack)),
+            LedgerReportExportFormat.RegulatoryXml => CreateRegulatorySummaryXml(reportPack, scheduledExport),
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported scheduled-export format."),
+        };
+
+    private static LedgerReportPackArtifact CreateBinaryArtifact(string name, string contentType, byte[] bytes)
+    {
+        if (bytes.Length == 0)
+            throw new InvalidOperationException($"Scheduled-export artifact '{name}' rendered no bytes.");
+
+        var descriptor = $"{name}; {bytes.Length.ToString(CultureInfo.InvariantCulture)} bytes";
+        return new LedgerReportPackArtifact(name, contentType, descriptor, ComputeSha256(bytes), bytes);
+    }
+
+    private static LedgerReportPackArtifact CreateStatementsCsv(LedgerFinancialReportPack reportPack)
+    {
+        var builder = new StringBuilder();
+        foreach (var table in LedgerReportPresentation.BuildTables(reportPack))
+        {
+            builder.AppendLine(CultureInfo.InvariantCulture, $"# {table.Title}");
+            builder.AppendLine(string.Join(',', table.Headers.Select(EscapeCsv)));
+            foreach (var row in table.Rows)
+                builder.AppendLine(string.Join(',', row.Select(EscapeCsv)));
+            builder.AppendLine();
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("scheduled-export-financials.csv", "text/csv", content, ComputeSha256(content));
+    }
+
+    private static LedgerReportPackArtifact CreateStatementsJson(LedgerFinancialReportPack reportPack)
+    {
+        var statements = reportPack.Statements;
+        var builder = new StringBuilder();
+        builder.AppendLine("{");
+        builder.AppendLine("  \"schema\": \"ledger-scheduled-export-statements-v1\",");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"reportId\": {JsonString(reportPack.Request.ReportId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"fundId\": {JsonString(reportPack.Request.FundId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"periodId\": {JsonString(reportPack.Request.PeriodId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"baseCurrency\": {JsonString(reportPack.Request.BaseCurrency)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"totalAssets\": {FormatDecimal(statements.TotalAssets)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"totalLiabilities\": {FormatDecimal(statements.TotalLiabilities)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"endingEquity\": {FormatDecimal(statements.EndingEquity)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"netIncome\": {FormatDecimal(statements.NetIncome)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"netCashFlow\": {FormatDecimal(statements.CashFlow?.NetCashFlow ?? 0m)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"endingCash\": {FormatDecimal(statements.CashFlow?.EndingCash ?? 0m)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"endingPartnersCapital\": {FormatDecimal(statements.PartnersCapital?.EndingCapital ?? 0m)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"reportPackSignature\": {JsonString(reportPack.Signature.PayloadChecksumSha256)}");
+        builder.AppendLine("}");
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("scheduled-export-financials.json", "application/json", content, ComputeSha256(content));
+    }
+
+    private static string JsonString(string value)
+        => System.Text.Json.JsonSerializer.Serialize(value);
 
     private static void ValidateScheduleMatchesReport(
         LedgerFinancialReportPack reportPack,
@@ -120,10 +196,10 @@ public static class LedgerScheduledReportExportPackageBuilder
     }
 
     private static string ComputeSha256(string value)
-    {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-    }
+        => ComputeSha256(Encoding.UTF8.GetBytes(value));
+
+    private static string ComputeSha256(byte[] bytes)
+        => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);

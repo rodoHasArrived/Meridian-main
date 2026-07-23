@@ -528,6 +528,13 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
             family.RegisterCapability(new ProviderCapabilityDescriptor(ProviderCapabilityKind.FactorSchedule, "Factor schedule provider"), () => corporateActions);
         }
 
+        RegisterOptionalCapability<IProviderNewsService>(families, ProviderCapabilityKind.News, "Provider news service");
+        RegisterOptionalCapability<IProviderScannerService>(families, ProviderCapabilityKind.Scanner, "Provider scanner service");
+        RegisterOptionalCapability<IProviderPnlStream>(families, ProviderCapabilityKind.PnLStream, "Provider P&L stream", requiresAccountBinding: true, supportsFailover: false);
+        RegisterOptionalCapability<ITradingCalendarProvider>(families, ProviderCapabilityKind.TradingCalendar, "Trading calendar provider");
+        RegisterOptionalCapability<IMarketRuleProvider>(families, ProviderCapabilityKind.MarketRules, "Market rule provider");
+        RegisterOptionalCapability<IProviderInstrumentDiscoveryService>(families, ProviderCapabilityKind.InstrumentDiscovery, "Instrument discovery provider");
+
         return families.Values.Cast<IProviderFamilyAdapter>().ToArray();
     }
 
@@ -547,6 +554,28 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
         }
 
         return adapter;
+    }
+
+    private void RegisterOptionalCapability<TProvider>(
+        IDictionary<string, MutableProviderFamilyAdapter> families,
+        ProviderCapabilityKind capability,
+        string description,
+        bool requiresAccountBinding = false,
+        bool supportsFailover = true)
+        where TProvider : class, IProviderMetadata
+    {
+        foreach (var provider in _providerRegistry.GetProviders<TProvider>())
+        {
+            var family = GetOrCreate(
+                families,
+                provider.ProviderId,
+                provider.ProviderDisplayName,
+                provider.ProviderDescription);
+
+            family.RegisterCapability(
+                new ProviderCapabilityDescriptor(capability, description, requiresAccountBinding, supportsFailover),
+                () => provider);
+        }
     }
 
     private static IEnumerable<ProviderCapabilityDescriptor> Describe(ProviderCatalogEntry entry)

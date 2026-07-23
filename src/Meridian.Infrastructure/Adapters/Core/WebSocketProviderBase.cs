@@ -100,7 +100,7 @@ public abstract class WebSocketProviderBase :
     public abstract bool IsEnabled { get; }
 
     /// <inheritdoc/>
-    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    public virtual WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
         var connection = _connectionManager.GetDiagnosticsSnapshot();
         var subscriptions = Subscriptions.GetSnapshot();

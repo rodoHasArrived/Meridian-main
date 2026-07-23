@@ -77,6 +77,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
+        // decision below reads the per-domain variables.
+        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
@@ -308,11 +312,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
-            // Migrate-on-read upcaster for asset-specific-terms payloads, shared by the projection
-            // store (queryable schema_version column + read normalization).
+            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
+            // projection store (queryable schema_version column + read normalization). Registering the
+            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
+            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
+            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
+            // version instead of being promoted as an unsupported version the guard would reject.
             services.AddSingleton<
                 Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
-                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster>();
+                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();
 
             // Durable audit/versioning spine: the golden-record conflict store and the governed
             // revision-lifecycle store are Postgres-backed so resolutions and approval state survive
@@ -363,6 +371,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
             services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -406,6 +416,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
             services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         }
         services.TryAddSingleton<AssetObligationProjectionService>();
@@ -604,7 +616,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         throw new InvalidOperationException(
             "Production-safe startup requires persistence-backed governance domain services. " +
-            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            $"Configure {string.Join(", ", missing)} (or set {MeridianDatabaseEnvironment.UnifiedVariable} to cover all store domains at once), " +
+            "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()

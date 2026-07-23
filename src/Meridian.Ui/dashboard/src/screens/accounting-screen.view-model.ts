@@ -4211,22 +4211,22 @@ export function useAccountingReconciliationViewModel(
       const requestSummaryLabel = !hasSelection
         ? "Select run"
         : transactionLabBusy
-          ? "Requesting preview"
+          ? "Requesting projection"
           : hasError
             ? "Request failed"
             : hasPreview
-              ? "Preview ready"
+              ? "Projection ready"
               : "Ready for request";
 
       const statusText = !hasSelection
-        ? "Select a reconciliation run before previewing accounting transaction impact."
+        ? "Select a reconciliation run before projecting the expected accounting effect."
         : transactionLabBusy
-          ? "Requesting Transaction Lab preview from Meridian accounting services."
+          ? "Requesting an expected accounting projection from Meridian accounting services."
           : hasError
-            ? transactionLabError?.summary ?? "Transaction Lab preview failed."
+            ? transactionLabError?.summary ?? "Transaction Lab projection failed."
             : hasPreview
-              ? `Preview ${transactionLabPreview?.previewId ?? ""} loaded from Meridian accounting calculations.`
-              : "Ready to preview accounting impact through Transaction Lab.";
+              ? `Expected accounting projection ${transactionLabPreview?.previewId ?? ""} loaded; no journal has been posted.`
+              : "Ready to project the expected, unposted accounting effect through Transaction Lab.";
 
       const impactRows = transactionLabPreview?.trialBalanceImpact.map((row, index) => ({
         id: `${row.accountName}-${index}`,
@@ -4237,17 +4237,17 @@ export function useAccountingReconciliationViewModel(
 
       return {
         title: "Investment Accounting Transaction Lab",
-        description: "Preview accounting journal impact before committing ledger or reconciliation changes.",
+        description: "Review expected and projected accounting effects before any posting candidate or reconciliation action.",
         statusTone,
         requestSummaryLabel,
         statusRole: hasError ? "alert" as const : "status" as const,
         statusText,
         journalLineCountLabel: hasPreview && transactionLabPreview
           ? formatCount(transactionLabPreview.journalPreview.lines.length, "line")
-          : "Pending preview",
+          : "Pending projection",
         ledgerImpactLabel: hasPreview && transactionLabPreview
           ? formatSignedCurrency(transactionLabPreview.ledgerImpact.netBalanceDelta)
-          : "Pending preview",
+          : "Pending projection",
         reconciliationLabel: hasPreview && transactionLabPreview
           ? transactionLabPreview.reconciliationExpectation.expectedState
           : selectedReconciliation?.status ?? "No run selected",
@@ -4258,10 +4258,10 @@ export function useAccountingReconciliationViewModel(
         canPreview,
         disabledReason: hasSelection
           ? null
-          : "Select a reconciliation run before requesting a Transaction Lab preview.",
+          : "Select a reconciliation run before requesting a Transaction Lab accounting projection.",
         busy: transactionLabBusy,
-        previewButtonLabel: transactionLabBusy ? "Previewing accounting impact..." : "Preview accounting impact",
-        previewButtonAriaLabel: "Preview accounting transaction impact"
+        previewButtonLabel: transactionLabBusy ? "Projecting accounting effect..." : "Project accounting effect",
+        previewButtonAriaLabel: "Project expected accounting transaction effect"
       };
     },
     [selectedReconciliation, transactionLabBusy, transactionLabError, transactionLabPreview]

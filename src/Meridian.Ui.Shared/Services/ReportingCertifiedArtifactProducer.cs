@@ -57,6 +57,19 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     private const int PdfCharactersPerLine = 86;
     private const int PdfLinesPerPage = 48;
 
+    private readonly IReportingPrimaryDocumentRenderer? _primaryRenderer;
+
+    /// <summary>
+    /// Constructs the producer with an optional client-grade primary-document renderer. When null
+    /// (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX
+    /// rendering is used; production composition injects a QuestPDF/ClosedXML renderer so governed
+    /// report packs export client-grade bytes. Every other artifact (CSV, evidence vault, preview,
+    /// manifest, grids) is unaffected by this choice.
+    /// </summary>
+    public DeterministicReportingCertifiedArtifactProducer(
+        IReportingPrimaryDocumentRenderer? primaryRenderer = null)
+        => _primaryRenderer = primaryRenderer;
+
     public ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
         ReportingOutputManifest manifest,
         CancellationToken cancellationToken = default)
@@ -220,16 +233,20 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return document;
     }
 
-    private static byte[] RenderArtifact(
+    private byte[] RenderArtifact(
         ReportingOutputManifest manifest,
         ReportingDeclaredArtifact declaration) => declaration.Kind switch
         {
             ReportingDeclaredArtifactKind.PrimaryOutput => manifest.ResolvedParameters!.OutputFormat switch
             {
-                ReportingOutputFormatDto.Xlsx => RenderXlsx(manifest),
+                ReportingOutputFormatDto.Xlsx => _primaryRenderer is { } workbookRenderer
+                    ? workbookRenderer.RenderWorkbook(manifest)
+                    : RenderXlsx(manifest),
                 ReportingOutputFormatDto.Csv => RenderPrimaryCsv(manifest),
                 ReportingOutputFormatDto.EvidenceVault => RenderEvidenceVault(manifest),
-                _ => RenderPdf(manifest)
+                _ => _primaryRenderer is { } documentRenderer
+                    ? documentRenderer.RenderPdf(manifest)
+                    : RenderPdf(manifest)
             },
             ReportingDeclaredArtifactKind.Preview => RenderPreview(manifest),
             ReportingDeclaredArtifactKind.CertifiedSourceSchedule => RenderCertifiedRowsCsv(manifest),
@@ -673,7 +690,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return builder.ToString();
     }
 
-    private static string[] ResolveCertifiedColumns(
+    internal static string[] ResolveCertifiedColumns(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows) =>
         rows.IsDefaultOrEmpty
             ? []
@@ -699,7 +716,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             "Correct and recertify the authoritative dataset, then retry artifact production.");
     }
 
-    private static string ComputeCertifiedRowsHash(
+    internal static string ComputeCertifiedRowsHash(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows)
     {
         using var stream = new MemoryStream();

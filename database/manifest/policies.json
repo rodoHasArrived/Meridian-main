@@ -2,11 +2,21 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 185,
-    "warning": 185
+    "total": 193,
+    "warning": 193
   },
   "failed": false,
   "findings": [
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_accounting_event_projections"
+      },
+      "message": "Business table asset_operations.asset_accounting_event_projections does not have a table comment.",
+      "object": "asset_operations.asset_accounting_event_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
     {
       "details": {
         "schema": "asset_operations",
@@ -460,6 +470,16 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Business table ledger.atomic_tax_lot_posting_batches does not have a table comment.",
+      "object": "ledger.atomic_tax_lot_posting_batches",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "fund_profile_tenancy"
       },
       "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
@@ -524,6 +544,16 @@
       },
       "message": "Business table ledger.period_close_events does not have a table comment.",
       "object": "ledger.period_close_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "tax_lot_mutations"
+      },
+      "message": "Business table ledger.tax_lot_mutations does not have a table comment.",
+      "object": "ledger.tax_lot_mutations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1441,6 +1471,76 @@
     {
       "details": {
         "columns": [
+          "corrects_mutation_batch_id"
+        ],
+        "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "period_id"
+        ],
+        "constraint": "atomic_tax_lot_posting_batches_period_id_fkey",
+        "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "corrects_mutation_batch_id"
+        ],
+        "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lot_mutations"
+      },
+      "message": "Foreign key ledger.tax_lot_mutations.tax_lot_mutations_corrects_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lot_mutations.tax_lot_mutations_corrects_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "last_mutation_batch_id"
+        ],
+        "constraint": "tax_lots_last_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Foreign key ledger.tax_lots.tax_lots_last_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lots.tax_lots_last_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "originating_mutation_batch_id"
+        ],
+        "constraint": "tax_lots_originating_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Foreign key ledger.tax_lots.tax_lots_originating_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lots.tax_lots_originating_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_journal_entry_id"
         ],
         "constraint": "tax_lots_source_journal_entry_id_fkey",
@@ -1997,5 +2097,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "60e431a9e3c3e7b3fd8129e75af5a0c52c260bf19216f837d2213a60bb3ddee9"
+  "fingerprint": "f736697d4a1273ea781433c94cd3158a9bcd2b6f9a3cee39ed4e3b306577c85d"
 }

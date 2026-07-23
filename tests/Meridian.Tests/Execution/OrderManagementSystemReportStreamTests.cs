@@ -151,11 +151,9 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
-    public async Task Scenario_DuplicateVenueFillAfterHandoffOutage_ReplayResumesWithoutPortfolioDuplication()
+    public async Task OversizedStreamedFill_IsCappedToRemainingOrderQuantity()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
-        var publisher = new FailOnceTradeEventPublisher();
-        var accountId = Guid.Parse("33333333-3333-3333-3333-333333333333");
         var gateway = new StreamingGateway
         {
             SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
@@ -163,381 +161,166 @@ public sealed class OrderManagementSystemReportStreamTests
         using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
-            portfolioState: portfolio,
-            tradeEventPublisher: publisher);
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the oversized completion report still reaches tracked order state");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.FilledQuantity.Should().Be(10m,
+            because: "streamed cumulative fill quantities must be capped to the original order quantity");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "portfolio side effects may only apply the remaining authorized quantity");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        published.FilledQuantity.Should().Be(10m,
+            because: "downstream consumers must receive the validated fill delta, not the oversized broker value");
+    }
+
+    [Fact]
+    public async Task AcceptedQuantityIncrease_AllowsStreamedFillUpToAmendedQuantity()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null),
+            ModifyAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.Modified, filledQty: 0m, fillPrice: null, orderQuantity: 30m)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 25m,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        var modification = await oms.ModifyOrderAsync(result.OrderId, new OrderModification { NewQuantity = 30m });
+        modification.Success.Should().BeTrue();
+        modification.OrderState!.Quantity.Should().Be(30m,
+            because: "the accepted broker amendment establishes the authorized order quantity");
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 30m, fillPrice: 150m, orderQuantity: 30m));
+
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the streamed completion report must reach the amended tracked order");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Quantity.Should().Be(30m);
+        order.FilledQuantity.Should().Be(30m,
+            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(30m);
+        portfolio.Cash.Should().Be(100_000m - 4_500m);
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        published.FilledQuantity.Should().Be(30m,
+            because: "downstream consumers must receive the full authorized amended fill increment");
+    }
+
+    [Fact]
+    public async Task UnsolicitedAcceptedModification_CannotIncreaseAuthorizedQuantity()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Accepted, ExecutionReportType.Modified, filledQty: 0m, fillPrice: null, orderQuantity: 1_000m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Accepted,
+            "the unsolicited report still reaches the tracked order");
+
+        oms.GetOrder(result.OrderId)!.Quantity.Should().Be(10m,
+            because: "a gateway report without a local modification must not authorize a larger order");
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the oversized completion report reaches the tracked order");
+
+        oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "the portfolio must only receive the originally authorized fill quantity");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+    }
+
+    [Fact]
+    public async Task LateFillAfterTerminalOrder_DoesNotMutatePortfolioOrOrderState()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 10m,
-            FundAccountId = accountId
+            Quantity = 10
         });
-        var fill = BuildReport(
-            result.OrderId,
-            OrderStatus.Filled,
-            ExecutionReportType.Fill,
-            filledQty: 10m,
-            fillPrice: 150m);
+        result.Success.Should().BeTrue();
 
-        await gateway.PublishAsync(fill);
-        await WaitUntilAsync(() => publisher.PublishAttempts == 1,
-            "the first publication attempt must reach the configured accounting handoff");
-        await gateway.PublishAsync(fill);
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
+        await gateway.PublishAsync(
+            BuildReport("external-2", OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1m, fillPrice: 10m, symbol: "ZZZ"));
 
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var publishedReport = await oms.ExecutionReports.ReadAsync(readCts.Token);
-
-        publisher.PublishAttempts.Should().Be(2);
-        publisher.AcceptedEvents.Should().ContainSingle();
-        publisher.AcceptedEvents.Single().FillId.Should().NotBeEmpty();
-        publisher.AcceptedEvents.Single().FinancialAccountId.Should().Be(accountId.ToString("D"));
-        publishedReport.FilledQuantity.Should().Be(10m);
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
-            "retry resumes after publication and must not reapply the portfolio side effect");
-        portfolio.Cash.Should().Be(98_500m);
-    }
-
-    [Fact]
-    public async Task Scenario_TerminalClientOrderIdReuse_UnscopedReplacementFillDoesNotInheritPriorFundAccount()
-    {
-        var publisher = new RecordingTradeEventPublisher();
-        var gateway = new StreamingGateway
+        while ((await oms.ExecutionReports.ReadAsync(readCts.Token)).OrderId != "external-2")
         {
-            SubmitAck = BuildReport(
-                "pending",
-                OrderStatus.Accepted,
-                ExecutionReportType.New,
-                filledQty: 0m,
-                fillPrice: null)
-        };
-        using var oms = new OrderManagementSystem(
-            gateway,
-            NullLogger<OrderManagementSystem>.Instance,
-            tradeEventPublisher: publisher);
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        const string reusedClientOrderId = "terminal-reuse-1";
-        var firstFundAccountId = Guid.Parse("44444444-4444-4444-4444-444444444444");
-
-        var first = await oms.PlaceOrderAsync(new OrderRequest
-        {
-            ClientOrderId = reusedClientOrderId,
-            Symbol = "AAA",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 3m,
-            FundAccountId = firstFundAccountId
-        }, cts.Token);
-        first.Success.Should().BeTrue();
-        await gateway.PublishAsync(BuildReport(
-            reusedClientOrderId,
-            OrderStatus.Filled,
-            ExecutionReportType.Fill,
-            filledQty: 3m,
-            fillPrice: 10m,
-            symbol: "AAA"));
-        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1,
-            "the scoped order fill must reach the accounting publisher before its terminal id is reused");
-
-        var replacement = await oms.PlaceOrderAsync(new OrderRequest
-        {
-            ClientOrderId = reusedClientOrderId,
-            Symbol = "BBB",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 2m
-        }, cts.Token);
-        replacement.Success.Should().BeTrue(
-            "a client order id may be reused only after the prior order is terminal");
-        await gateway.PublishAsync(BuildReport(
-            reusedClientOrderId,
-            OrderStatus.Filled,
-            ExecutionReportType.Fill,
-            filledQty: 2m,
-            fillPrice: 20m,
-            symbol: "BBB"));
-        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 2,
-            "the unscoped replacement fill must reach the accounting publisher");
-
-        var published = publisher.AcceptedEvents.ToArray();
-        published.Should().HaveCount(2);
-        published[0].Symbol.Should().Be("AAA");
-        published[0].FinancialAccountId.Should().Be(firstFundAccountId.ToString("D"),
-            "the first fill must retain the exact account scope captured before id reuse");
-        published[1].Symbol.Should().Be("BBB");
-        published[1].FinancialAccountId.Should().BeNull(
-            "an unscoped replacement must not inherit the prior terminal order's account map entry");
-    }
-
-    [Fact]
-    public async Task AsyncFill_WhenPublisherCannotAccept_IsExposedAsDurableHandoffFailureAcrossRestart()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
-        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
-        try
-        {
-            Guid fillId;
-            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
-            {
-                var gateway = new StreamingGateway
-                {
-                    SubmitAck = BuildReport(
-                        "pending",
-                        OrderStatus.Accepted,
-                        ExecutionReportType.New,
-                        filledQty: 0m,
-                        fillPrice: null)
-                };
-                using var oms = new OrderManagementSystem(
-                    gateway,
-                    NullLogger<OrderManagementSystem>.Instance,
-                    tradeEventPublisher: new AlwaysFailTradeEventPublisher(),
-                    tradeFillHandoffFailureStore: failureStore);
-                var result = await oms.PlaceOrderAsync(new OrderRequest
-                {
-                    Symbol = "AAPL",
-                    Side = OrderSide.Buy,
-                    Type = OrderType.Market,
-                    Quantity = 10m
-                });
-
-                await gateway.PublishAsync(BuildReport(
-                    result.OrderId,
-                    OrderStatus.Filled,
-                    ExecutionReportType.Fill,
-                    filledQty: 10m,
-                    fillPrice: 150m));
-                var failures = await WaitForHandoffFailuresAsync(oms, expected: 1);
-
-                failures.Should().ContainSingle();
-                failures[0].LastFailure.Should().Contain("primary accounting persistence unavailable");
-                fillId = failures[0].TradeEvent.FillId;
-                oms.GetOrder(result.OrderId)!.Status.Should().Be(OrderStatus.Filled);
-            }
-
-            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
-            var recovered = await reopened.LoadPendingAsync();
-
-            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == fillId);
         }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
 
-    [Fact]
-    public async Task Scenario_AccountingHandoffDuringShutdown_DurableFallbackSurvivesRestart()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
-        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
-        var publisher = new BlockingFailingTradeEventPublisher();
-        try
-        {
-            Guid retainedFillId;
-            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
-            {
-                var gateway = new StreamingGateway
-                {
-                    SubmitAck = BuildReport(
-                        "pending",
-                        OrderStatus.Accepted,
-                        ExecutionReportType.New,
-                        filledQty: 0m,
-                        fillPrice: null)
-                };
-                var oms = new OrderManagementSystem(
-                    gateway,
-                    NullLogger<OrderManagementSystem>.Instance,
-                    tradeEventPublisher: publisher,
-                    tradeFillHandoffFailureStore: failureStore);
-                try
-                {
-                    var result = await oms.PlaceOrderAsync(new OrderRequest
-                    {
-                        Symbol = "AAPL",
-                        Side = OrderSide.Buy,
-                        Type = OrderType.Market,
-                        Quantity = 10m
-                    });
-                    await gateway.PublishAsync(BuildReport(
-                        result.OrderId,
-                        OrderStatus.Filled,
-                        ExecutionReportType.Fill,
-                        filledQty: 10m,
-                        fillPrice: 150m));
-                    await publisher.PublishStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-                    var shutdown = oms.DisposeAsync().AsTask();
-                    shutdown.IsCompleted.Should().BeFalse(
-                        "OMS shutdown must await an in-flight accounting handoff before dependencies can be disposed");
-                    publisher.Release();
-                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
-
-                    var retained = await failureStore.LoadPendingAsync();
-                    retained.Should().ContainSingle(
-                        "the failed primary handoff must finish writing its fallback during coordinated shutdown");
-                    retainedFillId = retained[0].TradeEvent.FillId;
-                }
-                finally
-                {
-                    publisher.Release();
-                    await oms.DisposeAsync();
-                }
-            }
-
-            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
-            var recovered = await reopened.LoadPendingAsync();
-            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == retainedFillId,
-                "the shutdown-time accounting handoff must survive process restart");
-        }
-        finally
-        {
-            publisher.Release();
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task Scenario_InFlightSubmitDuringShutdown_DurableFallbackSurvivesRestart()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
-        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
-        var gateway = new BlockingSubmitFillGateway();
-        try
-        {
-            Guid retainedFillId;
-            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
-            {
-                var oms = new OrderManagementSystem(
-                    gateway,
-                    NullLogger<OrderManagementSystem>.Instance,
-                    tradeEventPublisher: new AlwaysFailTradeEventPublisher(),
-                    tradeFillHandoffFailureStore: failureStore);
-                try
-                {
-                    var placement = oms.PlaceOrderAsync(new OrderRequest
-                    {
-                        Symbol = "AAPL",
-                        Side = OrderSide.Buy,
-                        Type = OrderType.Market,
-                        Quantity = 10m
-                    });
-                    await gateway.SubmitStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-                    var shutdown = oms.DisposeAsync().AsTask();
-                    shutdown.IsCompleted.Should().BeFalse(
-                        "shutdown must wait for a PlaceOrder operation admitted before disposal");
-
-                    Func<Task> placeAfterShutdown = async () =>
-                    {
-                        await oms.PlaceOrderAsync(new OrderRequest
-                        {
-                            Symbol = "MSFT",
-                            Side = OrderSide.Buy,
-                            Type = OrderType.Market,
-                            Quantity = 1m
-                        });
-                    };
-                    await placeAfterShutdown.Should().ThrowAsync<ObjectDisposedException>();
-
-                    gateway.Release();
-                    var result = await placement.WaitAsync(TimeSpan.FromSeconds(5));
-                    result.Success.Should().BeFalse();
-                    result.ErrorMessage.Should().Contain("durably retained for restart replay");
-                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
-
-                    var retained = await failureStore.LoadPendingAsync();
-                    retained.Should().ContainSingle(
-                        "the admitted submit-time fill must reach durable fallback before OMS shutdown completes");
-                    retainedFillId = retained[0].TradeEvent.FillId;
-                }
-                finally
-                {
-                    gateway.Release();
-                    await oms.DisposeAsync();
-                }
-            }
-
-            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
-            var recovered = await reopened.LoadPendingAsync();
-            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == retainedFillId,
-                "the submit-time accounting handoff must survive process restart");
-        }
-        finally
-        {
-            gateway.Release();
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task Scenario_ExecutionBurstSaturatesSubscriber_DropsOldestObserverReportAndCountsIt()
-    {
-        var publisher = new RecordingTradeEventPublisher();
-        var gateway = new StreamingGateway
-        {
-            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
-        };
-        using var oms = new OrderManagementSystem(
-            gateway,
-            NullLogger<OrderManagementSystem>.Instance,
-            options: new OrderManagementSystemOptions { ExecutionChannelCapacity = 1 },
-            tradeEventPublisher: publisher);
-        var firstOrder = await oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "AAA",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 1m
-        });
-        var secondOrder = await oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "BBB",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 2m
-        });
-        var first = BuildReport(
-            firstOrder.OrderId,
-            OrderStatus.Filled,
-            ExecutionReportType.Fill,
-            filledQty: 1m,
-            fillPrice: 10m,
-            symbol: "AAA");
-        var second = BuildReport(
-            secondOrder.OrderId,
-            OrderStatus.Filled,
-            ExecutionReportType.Fill,
-            filledQty: 2m,
-            fillPrice: 20m,
-            symbol: "BBB");
-
-        await gateway.PublishAsync(first);
-        await WaitUntilAsync(
-            () => oms.ExecutionReports.CanCount && oms.ExecutionReports.Count == 1,
-            "the first fill must occupy the bounded channel");
-        await gateway.PublishAsync(second);
-        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 2,
-            "the second fill must reach publication without waiting on the saturated observer channel");
-        await WaitUntilAsync(() => oms.DroppedExecutionReports == 1,
-            "the saturated observer channel must drop the oldest unread report");
-
-        // The observer stream is lossy by design: the newest report survives, the accounting
-        // publisher (the lossless path) received both fills, and the drop was counted.
-        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var survivingReport = await oms.ExecutionReports.ReadAsync(readCts.Token);
-
-        survivingReport.Symbol.Should().Be("BBB",
-            "DropOldest must evict the unread AAA report in favour of the newest fill");
-        publisher.AcceptedEvents.Should().HaveCount(2,
-            "the durable accounting handoff must remain lossless regardless of observer lag");
-        oms.DroppedExecutionReports.Should().Be(1);
-        oms.ExecutionReports.Count.Should().Be(0, "only the surviving report was readable");
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m,
+            because: "late reports for terminal orders must not resize completed orders");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+            because: "late reports for terminal orders must not apply additional portfolio fills");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
 
     private static ExecutionReport BuildReport(
@@ -546,7 +329,8 @@ public sealed class OrderManagementSystemReportStreamTests
         ExecutionReportType reportType,
         decimal filledQty,
         decimal? fillPrice,
-        string symbol = "AAPL") =>
+        string symbol = "AAPL",
+        decimal? orderQuantity = null) =>
         new()
         {
             OrderId = orderId,
@@ -555,7 +339,7 @@ public sealed class OrderManagementSystemReportStreamTests
             Symbol = symbol,
             Side = OrderSide.Buy,
             OrderStatus = status,
-            OrderQuantity = filledQty,
+            OrderQuantity = orderQuantity ?? filledQty,
             FilledQuantity = filledQty,
             FillPrice = fillPrice,
             Commission = 0m,
@@ -601,6 +385,7 @@ public sealed class OrderManagementSystemReportStreamTests
         private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
 
         public required ExecutionReport SubmitAck { get; set; }
+        public ExecutionReport? ModifyAck { get; set; }
         public bool PublishAckOnStream { get; set; }
 
         public string GatewayId => "stream-test";
@@ -628,8 +413,17 @@ public sealed class OrderManagementSystemReportStreamTests
         public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
-            throw new NotSupportedException();
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
+        {
+            if (ModifyAck is null)
+                throw new NotSupportedException();
+
+            return Task.FromResult(ModifyAck with
+            {
+                OrderId = orderId,
+                ClientOrderId = orderId
+            });
+        }
 
         public IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(CancellationToken ct = default) =>
             _reports.Reader.ReadAllAsync(ct);

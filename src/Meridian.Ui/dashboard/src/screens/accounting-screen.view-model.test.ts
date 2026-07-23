@@ -1265,7 +1265,7 @@ describe("accounting-screen view model", () => {
         { accountName: "Broker Statement Variance", accountType: "Liability", symbol: "BOOKS", balanceDelta: -100, explanation: "delta -" }
       ],
       reconciliationExpectation: {
-        expectedState: "ReadyForReconciliation",
+        expectedState: "ProjectedForReconciliation",
         expectedBreakType: "broker-statement-break",
         detail: "ready",
         evidenceIds: ["reconciliation-run:run-42", "statement-line:1"],
@@ -1334,10 +1334,12 @@ describe("accounting-screen view model", () => {
       sourceRunId: "run-42",
       previewMode: "BooksBeforeBroker"
     }));
-    expect(result.current.transactionLabView.requestSummaryLabel).toBe("Preview ready");
+    expect(result.current.transactionLabView.requestSummaryLabel).toBe("Projection ready");
+    expect(result.current.transactionLabView.statusText).toContain("Expected accounting projection");
+    expect(result.current.transactionLabView.statusText).toContain("no journal has been posted");
     expect(result.current.transactionLabView.journalLineCountLabel).toBe("2 lines");
     expect(result.current.transactionLabView.ledgerImpactLabel).toBe("$0");
-    expect(result.current.transactionLabView.reconciliationLabel).toBe("ReadyForReconciliation");
+    expect(result.current.transactionLabView.reconciliationLabel).toBe("ProjectedForReconciliation");
     expect(result.current.transactionLabView.evidenceLabel).toBe("2 evidence items");
     expect(result.current.transactionLabView.impactRows).toEqual([
       expect.objectContaining({ label: "Reconciliation Suspense", value: "+$100.00", tone: "success" }),

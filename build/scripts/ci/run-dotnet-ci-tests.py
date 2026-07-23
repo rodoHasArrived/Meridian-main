@@ -107,20 +107,10 @@ DEFAULT_TEST_PROJECTS = [
             "FullyQualifiedName~Meridian.Tests.ExponentialBackoffTests|FullyQualifiedName~Meridian.Tests.CircuitBreakerTests"
         ),
     ),
-    # QUARANTINE (tracked): ReportingSecureDistributionAuthorizationTests and
-    # ReportingGovernanceCanonicalValidationTests (37 tests, 7 currently failing) carry
-    # assertions whose expected exception messages/sequencing drifted from the hardened
-    # product behaviour while the namespace ran in no CI lane. Both classes are excluded
-    # here (not silently skipped — this comment is the record) until the governance
-    # semantics are re-adjudicated; the remaining 68 Reporting tests gate every PR.
     (
         "core-reporting",
         "tests/Meridian.Tests/Meridian.Tests.csproj",
-        (
-            "FullyQualifiedName~Meridian.Tests.Reporting"
-            "&FullyQualifiedName!~Meridian.Tests.Reporting.ReportingSecureDistributionAuthorizationTests"
-            "&FullyQualifiedName!~Meridian.Tests.Reporting.ReportingGovernanceCanonicalValidationTests"
-        ),
+        "FullyQualifiedName~Meridian.Tests.Reporting",
     ),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),

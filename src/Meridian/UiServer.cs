@@ -87,6 +87,21 @@ public sealed class UiServer : IAsyncDisposable
         _lifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger);
         _ownsLifecycle = lifecycle is null;
 
+        // Unified persistence config must resolve before service composition and the
+        // ledger/readiness gates below read the per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
+        var persistenceStatus = PersistenceConfigurationStatus.Evaluate();
+        if (persistenceStatus.Mode != PersistenceStatusSnapshot.Configured)
+        {
+            Serilog.Log.Warning(
+                "PERSISTENCE: {PersistenceMode} — store domains without a database: {MissingDomains}. " +
+                "Journal entries, reconciliations, and approvals in these domains are held in memory and will be " +
+                "lost on restart. Set MERIDIAN_DATABASE_URL (or the per-domain MERIDIAN_*_CONNECTION_STRING variables) to persist them.",
+                persistenceStatus.Mode.ToUpperInvariant(),
+                string.Join(", ", persistenceStatus.MissingDomains));
+        }
+
         var contentRootPath = Directory.GetCurrentDirectory();
         var serviceRegistrationStopwatch = Stopwatch.StartNew();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -143,7 +158,8 @@ public sealed class UiServer : IAsyncDisposable
             if (!LedgerStartup.IsConfigured())
             {
                 throw new InvalidOperationException(
-                    $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} so accepted fills have an authoritative ledger target.");
+                    $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} " +
+                    $"(or {Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable}) so accepted fills have an authoritative ledger target.");
             }
 
             var postingContext = tradeFillPostingOptions.BuildContext();
@@ -206,7 +222,8 @@ public sealed class UiServer : IAsyncDisposable
                 Metrics.GetSnapshot,
                 pipeline.GetStatistics,
                 () => depthCollector.GetRecentIntegrityEvents(),
-                () => null);
+                () => null,
+                degradedModeProvider: () => EvaluateDegradedMode(sp));
         });
 
         builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
@@ -820,19 +837,28 @@ public sealed class UiServer : IAsyncDisposable
                         "Database initialization is still running."));
                 }
 
-                var configured = HasConfiguredLocalPostgreSql();
-                if (productionPosture && !configured)
+                var persistence = PersistenceConfigurationStatus.Evaluate();
+                if (productionPosture && persistence.Mode != PersistenceStatusSnapshot.Configured)
                 {
                     return ValueTask.FromResult(new RuntimeReadinessCheckResult(
                         LifecycleCheckStatus.Failing,
-                        "A required local PostgreSQL connection is not configured."));
+                        $"PERSISTENCE: {persistence.Mode.ToUpperInvariant()} — store domains without a database: " +
+                        $"{string.Join(", ", persistence.MissingDomains)}. Set MERIDIAN_DATABASE_URL or the per-domain connection strings."));
                 }
 
-                return ValueTask.FromResult(new RuntimeReadinessCheckResult(
-                    LifecycleCheckStatus.Passing,
-                    configured
-                        ? "Configured PostgreSQL dependencies are ready."
-                        : "PostgreSQL is not required by this development posture."));
+                return ValueTask.FromResult(persistence.Mode switch
+                {
+                    PersistenceStatusSnapshot.Configured => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Configured PostgreSQL dependencies are ready."),
+                    PersistenceStatusSnapshot.Partial => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Degraded,
+                        $"PERSISTENCE: PARTIAL — store domains without a database: {string.Join(", ", persistence.MissingDomains)}."),
+                    _ => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Degraded,
+                        "PERSISTENCE: NONE — every money-path store is in-memory and loses data on restart. " +
+                        "Set MERIDIAN_DATABASE_URL to enable persistence.")
+                });
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
@@ -858,19 +884,103 @@ public sealed class UiServer : IAsyncDisposable
             }));
     }
 
-    private static bool HasConfiguredLocalPostgreSql()
+    /// <summary>
+    /// Evaluates the degraded-mode posture surfaced by /api/status: whether the configured
+    /// streaming source delivers real or simulated market data, and which store domains run
+    /// without persistence. Static build/configuration facts only — no provider is constructed.
+    /// </summary>
+    private static Meridian.Contracts.Api.DegradedModeStatus EvaluateDegradedMode(IServiceProvider sp)
     {
-        string[] variables =
-        [
-            "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
-            "MERIDIAN_LEDGER_CONNECTION_STRING",
-            "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
-            "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
-            "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING"
-        ];
-        return variables.Any(variable =>
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable)));
+        var persistence = PersistenceConfigurationStatus.Evaluate();
+        var marketDataMode = "unknown";
+        string? marketDataDetail = null;
+
+        try
+        {
+            var configStore = sp.GetService<Meridian.Application.UI.ConfigStore>();
+            if (configStore is not null)
+            {
+                var config = configStore.Load();
+
+                var simulatedSources = ResolveCandidateStreamingSources(config.DataSources, config.DataSource)
+                    .Where(IsSimulatedSource)
+                    .Select(s => s.ToString().ToLowerInvariant())
+                    .Distinct()
+                    .ToList();
+
+                if (simulatedSources.Count > 0)
+                {
+                    marketDataMode = "simulated";
+                    marketDataDetail =
+                        $"Simulated streaming source(s) configured: {string.Join(", ", simulatedSources)}. " +
+                        "'synthetic' generates deterministic synthetic data; 'ib' runs as a random-walk simulator " +
+                        "in builds without the IBAPI reference and returns no historical bars.";
+                }
+                else
+                {
+                    marketDataMode = "live";
+                    marketDataDetail = $"Streaming source '{config.DataSource.ToString().ToLowerInvariant()}'.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            marketDataDetail = $"Market data mode could not be evaluated: {ex.Message}";
+        }
+
+        return new Meridian.Contracts.Api.DegradedModeStatus
+        {
+            MarketDataMode = marketDataMode,
+            MarketDataDetail = marketDataDetail,
+            PersistenceMode = persistence.Mode,
+            MissingPersistenceDomains = persistence.MissingDomains.ToArray()
+        };
     }
+
+    /// <summary>
+    /// Resolves every <see cref="DataSourceKind"/> that <c>CollectorModeRunner</c> could feed the
+    /// streaming pipeline with for the given configuration, so the degraded-mode probe can flag
+    /// simulation fail-closed without constructing any provider.
+    ///
+    /// The top-level <paramref name="topLevelDataSource"/> is always included: without failover it
+    /// is the sole streaming client, and with failover it is the emergency fallback taken when every
+    /// rule provider fails to construct (CollectorModeRunner falls back to
+    /// <c>CreateStreamingClient(ctx.Config.DataSource)</c> once <c>providerMap.Count == 0</c>). A
+    /// provider named in a rule that has no registered streaming factory — e.g. a Yahoo failover
+    /// source — always fails to construct, so a Synthetic top-level default would silently feed the
+    /// pipeline even though the rule provider itself is not simulated.
+    ///
+    /// With failover enabled the first rule's primary + backup ids are added too (each mapped to its
+    /// source's provider, or the top-level source when an id has no matching source entry).
+    /// CollectorModeRunner does NOT consult Enabled/Type, so a disabled or historical synthetic
+    /// backup named in a rule still counts.
+    /// </summary>
+    internal static IReadOnlyList<DataSourceKind> ResolveCandidateStreamingSources(
+        DataSourcesConfig? failoverCfg, DataSourceKind topLevelDataSource)
+    {
+        var candidates = new List<DataSourceKind> { topLevelDataSource };
+        var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+        if (failoverCfg?.EnableFailover == true && failoverRules.Length > 0)
+        {
+            var rule = failoverRules[0];
+            var sources = failoverCfg.Sources ?? Array.Empty<DataSourceConfig>();
+            foreach (var providerId in new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+            {
+                var source = sources.FirstOrDefault(
+                    s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                candidates.Add(source?.Provider ?? topLevelDataSource);
+            }
+        }
+
+        return candidates;
+    }
+
+    internal static bool IsSimulatedSource(DataSourceKind source) => source switch
+    {
+        DataSourceKind.Synthetic => true,
+        DataSourceKind.IB => Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild,
+        _ => false
+    };
 
     public async Task StartAsync(CancellationToken ct = default)
     {

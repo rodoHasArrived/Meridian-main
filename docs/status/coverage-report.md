@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**3633 / 8149** items documented (**44.6%**) &mdash; Grade: **D**
+**3731 / 8345** items documented (**44.7%**) &mdash; Grade: **D**
 
 ```text
-[=========-----------] 44.6%
+[=========-----------] 44.7%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 3507 | 7680 | 45.7% | D |
+| Public Classes / Interfaces | 3605 | 7876 | 45.8% | D |
 | API Endpoints | 112 | 316 | 35.4% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4173 undocumented)
+### Public Classes / Interfaces (4271 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -60,10 +60,12 @@
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
 | `EtlInspectionMode` | `src/Meridian.Application/Commands/EtlCommands.cs:243` |
-| `MeridianDeploymentPostureDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:24` |
-| `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:25` |
+| `MeridianDeploymentPostureDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:25` |
+| `MeridianDataProvenanceDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:33` |
+| `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:34` |
+| `PersistenceStatusSnapshot` | `src/Meridian.Application/Composition/PersistenceConfigurationStatus.cs:11` |
 | `ProductionRegistrationGuardServiceCollectionExtensions` | `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs:85` |
-| `ProductionSafeImplementationAttribute` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:17` |
+| `ProductionSafeImplementationAttribute` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:18` |
 | `IRuntimeReadinessService` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:18` |
 | `DelegateRuntimeReadinessCheck` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:23` |
 | `IRuntimeShutdownSequence` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:17` |
@@ -75,9 +77,7 @@
 | `ProviderIntegrationSetupValidationIssue` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:10` |
 | `ProviderIntegrationSetupValidationException` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:21` |
 | `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523` |
-| `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543` |
-| `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
-| ... and 4123 more | |
+| ... and 4221 more | |
 
 ### API Endpoints (204 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4173 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4271 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 204 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
