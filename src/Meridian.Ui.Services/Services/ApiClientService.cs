@@ -101,6 +101,10 @@ public sealed class ApiClientService : IDisposable
 
             if (urlChanged)
             {
+                // Cookie domains do not include ports. Remove the prior endpoint's session
+                // before using the replacement URL so a localhost port change cannot reuse it.
+                ApiClientSession.Clear(oldUrl);
+
                 ServiceUrlChanged?.Invoke(this, new ServiceUrlChangedEventArgs
                 {
                     OldUrl = oldUrl,
