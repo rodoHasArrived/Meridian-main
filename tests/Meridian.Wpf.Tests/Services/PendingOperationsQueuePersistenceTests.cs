@@ -101,6 +101,21 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessAllAsync_DoesNotReplayLegacyReconciliationMutationWithoutAHandler()
+    {
+        // Reconciliation mutations must execute only while the initiating API session is active.
+        // A snapshot written by an earlier version therefore stays inert after the replay handler
+        // is removed instead of being issued under the next signed-in user's credentials.
+        var service = new PendingOperationsQueueService();
+        service.Enqueue("reconciliation.resolve-break", new ReviewPayload("break-10", "resolve"));
+
+        await service.ProcessAllAsync();
+
+        service.PendingCount.Should().Be(1);
+        service.Peek()!.OperationType.Should().Be("reconciliation.resolve-break");
+    }
+
+    [Fact]
     public async Task ProcessAllAsync_ReplaysRestoredJsonPayloadThroughHandler()
     {
         var writer = new PendingOperationsQueueService();
