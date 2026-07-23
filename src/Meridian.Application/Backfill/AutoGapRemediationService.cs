@@ -73,13 +73,18 @@ public sealed record AutoGapRemediationRequestResult(
 /// and providers. Enforced by a semaphore, independent of the cooldown windows.
 /// </param>
 /// <param name="DefaultProvider">Provider used when a signal does not specify one.</param>
+/// <param name="Enabled">
+/// Enables remediation initiated by live data-quality gap events. This is disabled by default so
+/// provider-controlled ingress remains passive monitoring unless an operator explicitly opts in.
+/// </param>
 public sealed record AutoGapRemediationPolicy(
     TimeSpan MinimumGapDuration,
     int MinimumGapSize,
     TimeSpan SymbolCooldown,
     TimeSpan ProviderCooldown,
     int MaxConcurrentRemediations,
-    string DefaultProvider)
+    string DefaultProvider,
+    bool Enabled = false)
 {
     public static AutoGapRemediationPolicy Default { get; } = new(
         MinimumGapDuration: TimeSpan.FromMinutes(2),
@@ -87,7 +92,8 @@ public sealed record AutoGapRemediationPolicy(
         SymbolCooldown: TimeSpan.FromMinutes(5),
         ProviderCooldown: TimeSpan.FromMinutes(1),
         MaxConcurrentRemediations: 2,
-        DefaultProvider: "stooq");
+        DefaultProvider: "stooq",
+        Enabled: false);
 
     /// <summary>
     /// Policy builder: constructs a policy from optional overrides, falling back to
@@ -100,14 +106,16 @@ public sealed record AutoGapRemediationPolicy(
         TimeSpan? symbolCooldown = null,
         TimeSpan? providerCooldown = null,
         int? maxConcurrentRemediations = null,
-        string? defaultProvider = null)
+        string? defaultProvider = null,
+        bool? enabled = null)
         => new(
             minimumGapDuration ?? Default.MinimumGapDuration,
             minimumGapSize ?? Default.MinimumGapSize,
             symbolCooldown ?? Default.SymbolCooldown,
             providerCooldown ?? Default.ProviderCooldown,
             maxConcurrentRemediations ?? Default.MaxConcurrentRemediations,
-            defaultProvider ?? Default.DefaultProvider);
+            defaultProvider ?? Default.DefaultProvider,
+            enabled ?? Default.Enabled);
 }
 
 public enum BackfillRemediationSlaTier
@@ -336,7 +344,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         _slaEvaluator = new BackfillRemediationSlaEvaluator(_history);
         _concurrencyGate = new SemaphoreSlim(Math.Max(1, _policy.MaxConcurrentRemediations));
 
-        if (_qualityMonitoringService is not null)
+        if (_policy.Enabled && _qualityMonitoringService is not null)
         {
             _qualityMonitoringService.OnGapDetected += OnQualityGapDetected;
         }
@@ -355,7 +363,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             _disposed = true;
         }
 
-        if (_qualityMonitoringService is not null)
+        if (_policy.Enabled && _qualityMonitoringService is not null)
         {
             _qualityMonitoringService.OnGapDetected -= OnQualityGapDetected;
         }
