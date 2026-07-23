@@ -514,10 +514,10 @@ public sealed partial class PostgresAssetOperationsProjectionStore
               and security_id = @security_id
               and role_id = @role_id
               and ledger_book_id = @ledger_book_id
-              and lower(owner_scope_id) = lower(@owner_scope_id)
+              and lower(btrim(owner_scope_id)) = lower(btrim(@owner_scope_id))
               and lower(owner_scope_kind) = lower(@owner_scope_kind)
-              and lower(position_side) = lower(@position_side)
-              and lower(position_status) not in ('closed', 'inactive', 'terminated', 'matured')
+              and lower(btrim(position_side)) = lower(btrim(@position_side))
+              and lower(btrim(position_status)) not in ('closed', 'inactive', 'terminated', 'matured')
               and effective_from <= @effective_to
               and coalesce(effective_to, 'infinity'::date) >= @effective_from
             limit 1
