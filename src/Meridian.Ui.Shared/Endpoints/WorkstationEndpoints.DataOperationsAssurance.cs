@@ -142,7 +142,7 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
                 return Results.BadRequest(new { error = "Idempotency key is required." });
-            var action = service.GetPreviewAction(request.PreviewId);
+            var action = service.GetExecuteAction(request.PreviewId, request.IdempotencyKey);
             if (action.HasValue && !CanExecuteStorageAction(context, action.Value))
                 return EndpointHelpers.Forbidden();
             try
