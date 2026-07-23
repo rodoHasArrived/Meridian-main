@@ -156,6 +156,38 @@ public sealed class LedgerPeriodStatementsTests
     }
 
     [Fact]
+    public void PartnersCapital_SameEntryRetainedEarningsAndFeeExpensesIncludesPeriodFees()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var projection = PartnershipInvestorAccountingProjector.Project(new PartnershipInvestorAllocationInput(
+            "fund-a",
+            "2026-05",
+            new DateTimeOffset(2026, 5, 31, 0, 0, 0, TimeSpan.Zero),
+            BeginningNav: 1_000m,
+            EndingNavBeforeFees: 1_200m,
+            HighWaterMark: 1_050m,
+            ManagementFeeRate: 0.02m,
+            PerformanceFeeRate: 0.20m,
+            [
+                new PartnershipInvestor("lp-1", "Limited Partner", 1m),
+            ]));
+
+        ledger.PostLines(projection.Input.AsOf, projection.Description, projection.Lines);
+
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(
+            ledger,
+            new DateTimeOffset(2025, 12, 31, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero));
+        var partnersCapital = statements.PartnersCapital!;
+        var undistributed = partnersCapital.Accounts.Single(account => account.AccountName == "Undistributed Net Income");
+
+        undistributed.AllocatedResult.Should().Be(-46m);
+        undistributed.FeeAllocations.Should().Be(46m);
+        partnersCapital.AllocatedResult.Should().Be(108m);
+        partnersCapital.IsReconciled.Should().BeTrue();
+    }
+
+    [Fact]
     public void PeriodStatements_ScopeBalancesToLineDimensions()
     {
         var ledger = new Meridian.Ledger.Ledger();
