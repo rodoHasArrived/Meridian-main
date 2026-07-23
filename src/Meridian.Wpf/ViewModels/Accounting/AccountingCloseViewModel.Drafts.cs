@@ -178,7 +178,8 @@ public sealed partial class AccountingCloseViewModel
 
     private UpsertClosePeriodPlanConfigurationRequestDto BuildClosePlanConfigurationRequest(
         Guid workflowId,
-        ClosePeriodPlanDto closePlan)
+        ClosePeriodPlanDto closePlan,
+        string actor)
     {
         var materialityPolicy = new MaterialityPolicyDto(
             closePlan.MaterialityPolicy.PolicyId,
@@ -275,7 +276,7 @@ public sealed partial class AccountingCloseViewModel
             workflowId,
             materialityPolicy,
             taskConfigurations,
-            Actor: "wpf-accounting-controller",
+            Actor: actor,
             EvidenceLinks: BuildClosePlanConfigurationEvidence(workflowId, closePlan),
             CorrelationId: $"wpf-close-plan-configuration-{workflowId:D}",
             ActionOrigin: OperationsActionOriginDto.HumanOperator,

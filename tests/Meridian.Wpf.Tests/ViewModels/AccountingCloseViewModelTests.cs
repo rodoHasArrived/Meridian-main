@@ -3,15 +3,24 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Wpf.Tests.Services;
 using Meridian.Wpf.ViewModels.Accounting;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[Collection("DesktopAuthenticationEnvironment")]
 public sealed class AccountingCloseViewModelTests
 {
     [Fact]
     public async Task ConfigureClosePlanCommand_RetainsLoadedPlanThroughSharedCloseManagementService()
     {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
         var workflowId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var configuredAtUtc = DateTimeOffset.Parse("2026-06-02T02:30:00Z");
@@ -25,7 +34,7 @@ public sealed class AccountingCloseViewModelTests
                 EvidenceLinks: ["evidence/close-plan-configuration"])
         };
         var service = new CapturingCloseManagementService(closePlan);
-        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service, session);
 
         viewModel.ApplyClosePlan(workflowId, closePlan);
 
@@ -33,10 +42,10 @@ public sealed class AccountingCloseViewModelTests
 
         await viewModel.ConfigureClosePlanCommand.ExecuteAsync(null);
 
-        service.Actor.Should().Be("wpf-accounting-controller");
+        service.Actor.Should().Be("desktop-admin");
         service.Request.Should().NotBeNull();
         service.Request!.WorkflowId.Should().Be(workflowId);
-        service.Request.Actor.Should().Be("wpf-accounting-controller");
+        service.Request.Actor.Should().Be("desktop-admin");
         service.Request.CorrelationId.Should().Be($"wpf-close-plan-configuration-{workflowId:D}");
         service.Request.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
         service.Request.ExpectedConfiguredAtUtc.Should().Be(configuredAtUtc);
@@ -60,13 +69,44 @@ public sealed class AccountingCloseViewModelTests
     }
 
     [Fact]
+    public async Task ConfigureClosePlanCommand_WhenDesktopUserLacksLedgerMutationPermission_DoesNotCallService()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+        var workflowId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+        var closePlan = BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555"));
+        var service = new CapturingCloseManagementService(closePlan);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service, session);
+
+        viewModel.ApplyClosePlan(workflowId, closePlan);
+
+        viewModel.ConfigureClosePlanCommand.CanExecute(null).Should().BeFalse();
+        await viewModel.ConfigureClosePlanCommand.ExecuteAsync(null);
+
+        service.Request.Should().BeNull();
+        viewModel.ClosePlanSetupStatusText.Should().Be("Your desktop session does not have permission to retain close-plan setup.");
+    }
+
+    [Fact]
     public async Task LoadClosePlanCommand_LoadsSharedClosePlanByWorkflowId()
     {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
         var workflowId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var closePlan = BuildClosePlan(ledgerBookId);
         var service = new CapturingCloseManagementService(closePlan);
-        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service)
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service, session)
         {
             CloseWorkflowIdText = workflowId.ToString("D")
         };
@@ -324,11 +364,18 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public async Task ConfigureClosePlanCommand_UsesDesktopEditedCloseSetupDraft()
     {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
         var workflowId = Guid.Parse("abababab-bbbb-cccc-dddd-eeeeeeeeeeee");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var closePlan = BuildClosePlan(ledgerBookId);
         var service = new CapturingCloseManagementService(closePlan);
-        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service, session);
 
         viewModel.ApplyClosePlan(workflowId, closePlan);
         viewModel.CloseSetupAmountThreshold = 5_000m;
@@ -392,11 +439,18 @@ public sealed class AccountingCloseViewModelTests
     [Fact]
     public async Task ConfigureClosePlanCommand_SelectsRetainedTaskBeforeDesktopSetupEdits()
     {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
         var workflowId = Guid.Parse("abababab-bbbb-cccc-dddd-eeeeeeeeeeee");
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
         var closePlan = BuildClosePlanWithReportTask(ledgerBookId);
         var service = new CapturingCloseManagementService(closePlan);
-        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service, session);
 
         viewModel.ApplyClosePlan(workflowId, closePlan);
 
