@@ -695,12 +695,16 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
   // pipeline runs off the main thread (with a synchronous fallback) so toggling
   // indicators or typing a compare symbol no longer recomputes it on the UI thread.
   const chronologicalCloses = useMemo(() => toChronologicalCloses(state.bars), [state.bars]);
-  const { value: candlestickIndicators } = useOffThreadCompute<number[], CandlestickIndicatorSet>({
+  const currentIndicatorKey = candlestickIndicatorKey(chronologicalCloses);
+  const { value: candlestickIndicators, valueKey: candlestickIndicatorsKey } = useOffThreadCompute<number[], CandlestickIndicatorSet>({
     input: chronologicalCloses,
-    keyOf: candlestickIndicatorKey,
+    keyOf: () => currentIndicatorKey,
     computeSync: computeCandlestickIndicators,
     createWorker: createIndicatorsWorker
   });
+  const currentCandlestickIndicators = candlestickIndicatorsKey === currentIndicatorKey
+    ? candlestickIndicators
+    : undefined;
 
   const sparklineChart = useMemo(
     () => buildHistoricalChartSparklineViewModel({ bars: state.bars, stats, symbol, timeframe: activeTimeframe.label }),
@@ -714,9 +718,9 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
         symbol,
         timeframe: activeTimeframe.label,
         indicators,
-        precomputedIndicators: candlestickIndicators
+        precomputedIndicators: currentCandlestickIndicators
       }),
-    [state.bars, stats, symbol, activeTimeframe.label, indicators, candlestickIndicators]
+    [state.bars, stats, symbol, activeTimeframe.label, indicators, currentCandlestickIndicators]
   );
 
   return {
@@ -821,9 +825,14 @@ export function buildCandlestickChartViewModel({
   const bodyWidth = Math.max(1.5, slotWidth * 0.65);
 
   const closes = chartBars.map(({ bar }) => bar.close);
+  // Ignore malformed or stale worker output. It must be indexed one-for-one with
+  // the current bars; otherwise calculate indicators for this render synchronously.
+  const compatiblePrecomputedIndicators = hasIndicatorSeriesLength(precomputedIndicators, closes.length)
+    ? precomputedIndicators
+    : undefined;
 
   const bollingerBands = visibility.bollinger
-    ? precomputedIndicators?.bollinger ?? computeBollingerBands(closes, CANDLESTICK_BOLLINGER_PERIOD, CANDLESTICK_BOLLINGER_MULTIPLIER)
+    ? compatiblePrecomputedIndicators?.bollinger ?? computeBollingerBands(closes, CANDLESTICK_BOLLINGER_PERIOD, CANDLESTICK_BOLLINGER_MULTIPLIER)
     : null;
 
   const bollingerExtremes = bollingerBands
@@ -914,7 +923,7 @@ export function buildCandlestickChartViewModel({
   const midXs = candleBars.map((b) => b.midX);
 
   const smaOverlays = visibility.sma
-    ? buildSmaOverlays({ closes, midXs, yForPrice, precomputed: precomputedIndicators })
+    ? buildSmaOverlays({ closes, midXs, yForPrice, precomputed: compatiblePrecomputedIndicators })
     : [];
 
   const bollingerOverlay = visibility.bollinger
@@ -929,7 +938,7 @@ export function buildCandlestickChartViewModel({
         areaHeight: rsiAreaHeight,
         padX,
         width,
-        precomputedRsi: precomputedIndicators?.rsi
+        precomputedRsi: compatiblePrecomputedIndicators?.rsi
       })
     : null;
 
@@ -965,6 +974,16 @@ export function buildCandlestickChartViewModel({
     bollingerOverlay,
     rsiPanel
   };
+}
+
+function hasIndicatorSeriesLength(
+  indicators: CandlestickIndicatorSet | undefined,
+  expectedLength: number
+): indicators is CandlestickIndicatorSet {
+  return indicators !== undefined
+    && indicators.sma.every(({ values }) => values.length === expectedLength)
+    && indicators.bollinger.length === expectedLength
+    && indicators.rsi.length === expectedLength;
 }
 
 interface BuildSmaOverlaysInput {
