@@ -159,6 +159,30 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessAllAsync_CancelledHandler_PreservesOrderOfDependentOperationsAcrossSessions()
+    {
+        var service = new PendingOperationsQueueService();
+        service.RegisterHandler("test.review", _ => throw new OperationCanceledException());
+        service.RegisterHandler("test.resolve", _ => Task.CompletedTask);
+        service.Enqueue("test.review", null);
+        service.Enqueue("test.resolve", null);
+
+        var act = () => service.ProcessAllAsync();
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        service.GetAll().Select(operation => operation.OperationType)
+            .Should().Equal("test.review", "test.resolve");
+        service.Peek()!.RetryCount.Should().Be(0);
+
+        var reader = new PendingOperationsQueueService();
+        await reader.InitializeAsync();
+
+        reader.GetAll().Select(operation => operation.OperationType)
+            .Should().Equal("test.review", "test.resolve",
+                "the durable rescue snapshot must retain the original replay order");
+    }
+
+    [Fact]
     public async Task PersistAsync_AfterShutdown_DoesNotOverwriteFinalSnapshot()
     {
         // An enqueue-scheduled background persist that loses the race with shutdown must not
