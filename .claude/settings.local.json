@@ -74,7 +74,8 @@
       "Bash(set -e)",
       "Bash(git checkout *)",
       "PowerShell(dotnet test tests/Meridian.Tests -c Debug -p:EnableWindowsTargeting=true --filter \"FullyQualifiedName~SecurityMasterMappingInteropTests|FullyQualifiedName~SecurityAssetClassCatalogTests\" 2>&1)",
-      "PowerShell($ErrorActionPreference='Continue')"
+      "PowerShell($ErrorActionPreference='Continue')",
+      "Bash(npx vitest *)"
     ]
   }
 }
