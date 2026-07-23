@@ -132,6 +132,29 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
             .Which.Symbol.Should().Be("AAPL");
     }
 
+    [Fact]
+    public async Task Consumer_WhenWalBackedSinkThrows_RetriesFailedBatchBeforeCommittingLaterEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 1,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("LOST"));
+        pipeline.TryPublish(CreateTradeEvent("OK"));
+
+        await WaitForConsumption(sink, expectedCount: 2);
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol).Should().Contain(new[] { "LOST", "OK" });
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
     #endregion
 
     #region Crash Recovery Tests
@@ -512,6 +535,7 @@ internal sealed class MockWalSink : IStorageSink
 {
     private readonly List<MarketEvent> _receivedEvents = new();
     private readonly object _lock = new();
+    private int _failuresRemaining;
 
     public IReadOnlyList<MarketEvent> ReceivedEvents
     {
@@ -526,8 +550,20 @@ internal sealed class MockWalSink : IStorageSink
 
     public int FlushCount { get; private set; }
 
+    public int FailuresRemaining
+    {
+        get => Volatile.Read(ref _failuresRemaining);
+        set => Volatile.Write(ref _failuresRemaining, value);
+    }
+
     public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
+        if (Volatile.Read(ref _failuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _failuresRemaining);
+            throw new InvalidOperationException("Simulated sink failure");
+        }
+
         lock (_lock)
         {
             _receivedEvents.Add(evt);

@@ -707,8 +707,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         try
         {
             var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
+            var retryPendingBatch = false;
 
-            while (await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
+            while (retryPendingBatch || await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
                 Interlocked.Increment(ref _activeConsumers);
                 var startTs = Stopwatch.GetTimestamp();
@@ -717,11 +718,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 {
                     var targetBatchSize = GetAdaptiveBatchSize();
 
-                    // Drain up to _batchSize events from the channel
-                    batchBuffer.Clear();
-                    while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
+                    // Drain up to _batchSize events from the channel. A WAL-backed batch that
+                    // failed after its records were appended is retried before reading later
+                    // events, because WAL commits are cumulative through a sequence number.
+                    if (!retryPendingBatch)
                     {
-                        batchBuffer.Add(evt);
+                        batchBuffer.Clear();
+                        while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
+                        {
+                            batchBuffer.Add(evt);
+                        }
                     }
 
                     // [3.1] E2E trace propagation: start a per-batch activity so each consume
@@ -777,6 +783,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         else if (_wal != null)
                         {
                             var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
+                            tracedEvent = tracedEvent with { WalSequence = walRecord.Sequence };
+                            batchBuffer[i] = tracedEvent;
                             maxWalSequence = Math.Max(maxWalSequence, walRecord.Sequence);
                         }
 
@@ -817,22 +825,27 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     }
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
+                    retryPendingBatch = false;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     // A persistence failure must not kill the consumer: before this catch existed,
                     // any sink/WAL/dedup exception silently faulted the consumer task (observed
                     // only at disposal) while producers kept publishing into a channel nobody
-                    // drained. The failed batch's WAL records remain uncommitted —
-                    // _lastCommittedWalSequence only advances on the success path — so they
-                    // replay on restart; the dead-letter record covers the no-WAL configuration.
+                    // drained. A WAL-backed batch that has appended records must be retried
+                    // before later batches: committing a later WAL sequence would otherwise
+                    // cumulatively acknowledge the failed records.
                     Interlocked.Increment(ref _consumerIterationFailures);
                     Interlocked.Exchange(ref _lastConsumerFaultTicks, DateTimeOffset.UtcNow.UtcTicks);
+                    retryPendingBatch = _wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0);
                     _logger.LogError(ex,
-                        "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; WAL commit withheld and consumer continuing",
-                        batchBuffer.Count);
+                        "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
+                        batchBuffer.Count,
+                        retryPendingBatch
+                            ? "the WAL-backed batch will retry before later batches are committed"
+                            : "WAL commit withheld and consumer continuing");
 
-                    if (_deadLetterSink != null)
+                    if (_deadLetterSink != null && !retryPendingBatch)
                     {
                         foreach (var traced in batchBuffer)
                         {
