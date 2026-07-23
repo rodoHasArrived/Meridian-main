@@ -139,6 +139,27 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
     }
 
     [Fact]
+    public async Task GetPopulationsAsync_ConflictingLatestInPeriodSnapshots_FailsClosedToEmpty()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+
+        var positions = Substitute.For<IPositionSnapshotStore>();
+        positions.GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(
+                Snapshot(new DateTimeOffset(2026, 5, 31, 0, 0, 0, TimeSpan.Zero), new PositionRecord("SPY", 10m, 500m, 0m, 0m)),
+                Snapshot(new DateTimeOffset(2026, 5, 31, 0, 0, 0, TimeSpan.Zero), new PositionRecord("QQQ", 99m, 900m, 0m, 0m))));
+
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        result.Should().BeSameAs(
+            InternalReconciliationPopulations.Empty,
+            "conflicting snapshots at the latest in-period timestamp must not select a file-order-dependent internal book");
+    }
+
+    [Fact]
     public async Task GetPopulationsAsync_NonGuidFundAccount_FailsClosedToEmpty()
     {
         var provider = new RetainedInternalReconciliationPopulationProvider(Substitute.For<IAccountQueryService>());
