@@ -320,6 +320,7 @@ public sealed class StatementReconciliationServiceTests
 
             Assert.Equal(1, intake.RowCount);
             Assert.Single(intake.Cases);
+            Assert.Equal(intake.ImportId, intake.Cases[0].ImportId);
         }
         finally
         {
