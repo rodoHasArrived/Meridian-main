@@ -207,7 +207,9 @@ and UI presentation concerns in their owning layers.
   invoke `Meridian.FinancialOperations.Reconciliation` services for statement intake, validation,
   matching, decision journals, and statement-run persistence. Reconciliation workflow state, match
   rules, break classification, repository implementations, and durable case materialization are
-  owned by the Financial Operations design module rather than the application layer. The
+  owned by the Financial Operations design module rather than the application layer. Statement
+  validation and import commands report missing, inaccessible, or unreadable local source files as
+  structured CLI failures before connector parsing. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
   Operations and consumes the contracts-owned Security Master query interface.
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
