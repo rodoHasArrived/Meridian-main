@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Backfill;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -187,11 +188,18 @@ public static class BackfillEndpoints
         {
             var auditReader = services.GetService<IBackfillProviderConfigAuditReader>();
             var entries = auditReader?.GetAuditLog() ?? Array.Empty<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto>();
-            return Results.Json(entries, jsonOptions);
+            return Results.Json(entries.Select(static entry => new Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto
+            {
+                Timestamp = entry.Timestamp,
+                ProviderId = entry.ProviderId,
+                Action = entry.Action,
+                Source = entry.Source
+            }), jsonOptions);
         })
         .WithName("GetBackfillProviderConfigAudit")
-        .WithDescription("Returns the audit trail of provider configuration changes.")
-        .Produces<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto[]>(200);
+        .WithDescription("Returns the sanitized audit trail of provider configuration changes.")
+        .Produces<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto[]>(200)
+        .RequirePermission(UserPermission.ManageProviders);
     }
 
     private static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] GetKnownProviderMetadata()
