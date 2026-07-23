@@ -48,7 +48,7 @@ public sealed class FixedAssetDepreciationDraftBuilderTests
     }
 
     [Fact]
-    public void BuildDraft_SkipsZeroAndNegativeCharges()
+    public void BuildDraft_SkipsZeroCharges()
     {
         var draft = FixedAssetDepreciationDraftBuilder.BuildDraft(
             PeriodEnd,
@@ -58,6 +58,18 @@ public sealed class FixedAssetDepreciationDraftBuilderTests
         draft.Should().NotBeNull();
         draft!.Lines.Should().HaveCount(2); // only AssetB projected
         draft.TotalDebits.Should().Be(150m);
+    }
+
+    [Fact]
+    public void BuildDraft_NegativeCharge_ThrowsInsteadOfSilentlyOmittingAsset()
+    {
+        var build = () => FixedAssetDepreciationDraftBuilder.BuildDraft(
+            PeriodEnd,
+            AsOf,
+            [Input(AssetA, -100m), Input(AssetB, 150m)]);
+
+        build.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("assets");
     }
 
     [Fact]
