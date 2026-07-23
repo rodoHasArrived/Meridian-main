@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Wpf.Services;
 using System.Globalization;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
@@ -11,6 +13,7 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 {
     private readonly IAccountingProjectionQueryService _queryService;
     private readonly IAccountingCloseManagementService? _closeManagementService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private ClosePeriodPlanDto? _closePlan;
     private ClosePostingGateDto? _closingEntriesGate;
     private Guid _closeWorkflowId;
@@ -61,10 +64,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 
     public AccountingCloseViewModel(
         IAccountingProjectionQueryService queryService,
-        IAccountingCloseManagementService? closeManagementService = null)
+        IAccountingCloseManagementService? closeManagementService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _closeManagementService = closeManagementService;
+        _authenticationSession = authenticationSession;
         LoadClosePlanCommand = new AsyncRelayCommand(LoadClosePlanAsync, CanLoadClosePlan);
         ConfigureClosePlanCommand = new AsyncRelayCommand(ConfigureClosePlanAsync, CanConfigureClosePlan);
         SignOffCloseTaskCommand = new AsyncRelayCommand(SignOffCloseTaskAsync, CanSignOffCloseTask);
@@ -1050,7 +1055,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
            _closePlan is { IsPeriodLocked: false } closePlan &&
+           HasLedgerMutationPermission() &&
            ValidateCloseSetupDraft(closePlan) is null;
+
+    private bool HasLedgerMutationPermission()
+        => _authenticationSession?.HasPermission(UserPermission.AdminMaintenance) == true ||
+           _authenticationSession?.HasPermission(UserPermission.ManageDirectLending) == true;
 
     private bool CanLoadClosePlan()
         => _closeManagementService is not null &&
@@ -1164,11 +1174,18 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             return;
         }
 
+        if (!HasLedgerMutationPermission())
+        {
+            ClosePlanSetupStatusText = "Your desktop session does not have permission to retain close-plan setup.";
+            return;
+        }
+
         try
         {
-            var request = BuildClosePlanConfigurationRequest(_closeWorkflowId, _closePlan);
+            var actor = _authenticationSession!.CurrentActor;
+            var request = BuildClosePlanConfigurationRequest(_closeWorkflowId, _closePlan, actor);
             var updated = await _closeManagementService
-                .ConfigurePeriodPlanAsync(request, "wpf-accounting-controller")
+                .ConfigurePeriodPlanAsync(request, actor)
                 .ConfigureAwait(true);
 
             if (updated is null)
