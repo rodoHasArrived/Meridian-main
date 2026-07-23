@@ -51,7 +51,8 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        long? expectedCanonicalVersion = null)
     {
         if (string.IsNullOrWhiteSpace(updatedBy))
         {
@@ -62,6 +63,19 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
             .ConfigureAwait(false);
+
+        if (expectedCanonicalVersion is { } expectedVersion)
+        {
+            // Coordinate with event-stream appends before reading its head. A row lock alone cannot
+            // protect an empty stream, and a separate read followed by this patch would permit a
+            // canonical amendment to slip between the stale-view check and the overlay write.
+            await LockCanonicalStreamAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
+            var currentVersion = await LoadCanonicalVersionAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
+            if (currentVersion != expectedVersion)
+            {
+                throw new OperatorOverrideCanonicalVersionConflictException(securityId, expectedVersion, currentVersion);
+            }
+        }
 
         var (current, currentAudit) = await LoadForUpdateAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
         var next = new Dictionary<string, string>(current, StringComparer.Ordinal);
@@ -239,6 +253,33 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
             ReviewedAt = reviewedAt,
             AuditTrail = auditTrail
         };
+    }
+
+    private async Task LockCanonicalStreamAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(hashtext(@security_id::text));";
+        command.Parameters.AddWithValue("security_id", securityId);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<long> LoadCanonicalVersionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"select coalesce(max(stream_version), 0) from {Qualified(\"security_events\")} where security_id = @security_id;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L);
     }
 
     private async Task<(Dictionary<string, string> Values, IReadOnlyList<SecurityOverrideAuditEntryDto> AuditTrail)> LoadForUpdateAsync(
