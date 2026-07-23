@@ -464,6 +464,26 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_DuplicateRelationshipId_ShouldRejectAmbiguousWorkbook()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var workbook = XlsxWorkbookWriter.CreateWorkbook(
+        [
+            WorkbookMetaSheet(("Entities", "entity-configuration")),
+            new XlsxWorksheet(
+                "Entities",
+                ["entity_id", "entity_name", "entity_type"],
+                [["ENT-1", "Northwind Income Fund LP", "Fund"]]),
+        ]);
+
+        using var content = BuildWorkbookUploadContent(AddDuplicateWorkbookRelationshipId(workbook));
+        var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private static XlsxWorksheet WorkbookMetaSheet(params (string SheetName, string TemplateId)[] entries)
     {
         var rows = entries
@@ -479,6 +499,35 @@ public sealed partial class WorkstationEndpointsTests
         file.Headers.ContentType = MediaTypeHeaderValue.Parse(WorkbookTestContentType);
         content.Add(file, "file", "workbook.xlsx");
         return content;
+    }
+
+    private static byte[] AddDuplicateWorkbookRelationshipId(byte[] workbook)
+    {
+        using var stream = new MemoryStream();
+        stream.Write(workbook);
+        stream.Position = 0;
+
+        using (var archive = new ZipArchive(stream, ZipArchiveMode.Update, leaveOpen: true))
+        {
+            var entry = archive.GetEntry("xl/_rels/workbook.xml.rels");
+            entry.Should().NotBeNull();
+
+            XDocument relationships;
+            using (var entryStream = entry!.Open())
+            {
+                relationships = XDocument.Load(entryStream);
+            }
+
+            var relationship = relationships.Root!.Elements().First();
+            relationships.Root.Add(new XElement(relationship));
+
+            entry.Delete();
+            var replacement = archive.CreateEntry("xl/_rels/workbook.xml.rels");
+            using var replacementStream = replacement.Open();
+            relationships.Save(replacementStream);
+        }
+
+        return stream.ToArray();
     }
 
     private static IReadOnlyList<string> ReadWorkbookSheetNames(byte[] workbook)
