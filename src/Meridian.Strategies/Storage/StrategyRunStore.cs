@@ -890,7 +890,8 @@ public sealed class StrategyRunStore : IStrategyRepository
             return "the lifecycle event timestamp moved backwards";
         }
 
-        if (!IsAllowedTransition(previous.LastLifecycleEvent, current.LastLifecycleEvent))
+        if (!IsWalkForwardEvidenceOnlyCompletedRunUpdate(previous, current) &&
+            !IsAllowedTransition(previous.LastLifecycleEvent, current.LastLifecycleEvent))
         {
             return $"transition '{previous.LastLifecycleEvent}' to '{current.LastLifecycleEvent}' is not allowed";
         }
@@ -912,6 +913,26 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         return null;
+    }
+
+    private static bool IsWalkForwardEvidenceOnlyCompletedRunUpdate(
+        StrategyRunEntry previous,
+        StrategyRunEntry current)
+    {
+        if (previous.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed ||
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed ||
+            previous.WalkForwardEvidence == current.WalkForwardEvidence)
+        {
+            return false;
+        }
+
+        var previousWithoutEvidence = JsonSerializer.Serialize(
+            previous with { WalkForwardEvidence = null },
+            StrategyRunPersistenceJson.Options);
+        var currentWithoutEvidence = JsonSerializer.Serialize(
+            current with { WalkForwardEvidence = null },
+            StrategyRunPersistenceJson.Options);
+        return string.Equals(previousWithoutEvidence, currentWithoutEvidence, StringComparison.Ordinal);
     }
 
     private static string ComputeCanonicalInputHash(StrategyRunEntry entry) =>
