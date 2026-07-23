@@ -73,8 +73,11 @@ public sealed class TierMigrationService : ITierMigrationService
         // storage root before any filesystem access: an unconstrained source path would let a
         // request read — and with DeleteSource, delete — arbitrary files the process can touch.
         var storageRoot = Path.GetFullPath(_options.RootPath);
+        var storageRootPrefix = Path.EndsInDirectorySeparator(storageRoot)
+            ? storageRoot
+            : storageRoot + Path.DirectorySeparatorChar;
         var resolvedSourcePath = Path.GetFullPath(sourcePath);
-        if (!resolvedSourcePath.StartsWith(storageRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+        if (!resolvedSourcePath.StartsWith(storageRootPrefix, StringComparison.Ordinal)
             && !string.Equals(resolvedSourcePath, storageRoot, StringComparison.Ordinal))
         {
             return new MigrationResult(
@@ -293,7 +296,11 @@ public sealed class TierMigrationService : ITierMigrationService
         // MigrateAsync already refused out-of-root sources, so files can only be inside the
         // storage root here; this local guard makes that invariant self-evident.
         sourcePath = Path.GetFullPath(sourcePath);
-        if (!sourcePath.StartsWith(Path.GetFullPath(_options.RootPath) + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        var storageRoot = Path.GetFullPath(_options.RootPath);
+        var storageRootPrefix = Path.EndsInDirectorySeparator(storageRoot)
+            ? storageRoot
+            : storageRoot + Path.DirectorySeparatorChar;
+        if (!sourcePath.StartsWith(storageRootPrefix, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Refusing to migrate '{sourcePath}': the file escapes the storage root.");
