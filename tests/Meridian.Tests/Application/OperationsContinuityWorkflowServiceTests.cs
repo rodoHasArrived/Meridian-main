@@ -1473,6 +1473,40 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldNormalizeCaseVariantExternalGlDimensionKeys()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out _, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(workflow.FundAccountId);
+        var cashLine = candidate.Lines[0] with
+        {
+            Dimensions = candidate.Lines[0].Dimensions! with
+            {
+                ExternalGlDimensions = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["Department"] = "Treasury",
+                    ["department"] = "Corporate Treasury"
+                }
+            }
+        };
+        candidate = candidate with { Lines = [cashLine, candidate.Lines[1]] };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeTrue();
+        var postedCashLine = journalStore.Appended.Single().Entry.Lines.Single(static line => line.Account.Name == "Cash");
+        postedCashLine.Dimensions!.ExternalGlDimensions.Should().ContainSingle();
+        postedCashLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("Corporate Treasury");
+    }
+
+    [Fact]
     public async Task ReviewedAutomationMaterialCommands_ShouldRejectAssistantOriginBeforeMutation()
     {
         var service = CreateService(out _, out var auditStore);
