@@ -17,7 +17,7 @@ public static partial class WorkstationEndpoints
     private const long StatementConnectorMaxFileBytes = StatementConnectorLimits.MaxFileBytes;
 
     private static readonly string[] StatementConnectorAcceptedExtensions =
-        [".csv", ".txt", ".ofx", ".qfx", ".xml", ".json"];
+        [".csv", ".txt", ".ofx", ".qfx", ".xml", ".json", ".bai", ".bai2", ".camt", ".053"];
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
