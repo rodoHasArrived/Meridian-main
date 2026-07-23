@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Operations;
 using Meridian.Ui.Services;
@@ -12,19 +11,7 @@ public sealed record WorkstationReconciliationActionResult(
     ReconciliationBreakQueueItem? Item)
 {
     public VerifiedOperationOutcome? Outcome { get; init; }
-
-    /// <summary>
-    /// True when the action failed because the workstation service was unreachable and the
-    /// operation was captured in the durable pending-operations queue for automatic replay.
-    /// </summary>
-    public bool QueuedForRetry { get; init; }
 }
-
-/// <summary>Durable payload for a queued break review.</summary>
-public sealed record PendingReviewBreakOperation(string BreakId, ReviewReconciliationBreakRequest Request);
-
-/// <summary>Durable payload for a queued break resolution.</summary>
-public sealed record PendingResolveBreakOperation(string BreakId, ResolveReconciliationBreakRequest Request);
 
 public interface IWorkstationReconciliationApiClient
 {
@@ -61,50 +48,11 @@ public interface IWorkstationReconciliationApiClient
 
 public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliationApiClient
 {
-    /// <summary>Pending-operations queue type for a break review captured while offline.</summary>
-    public const string ReviewBreakOperationType = "reconciliation.review-break";
-
-    /// <summary>Pending-operations queue type for a break resolution captured while offline.</summary>
-    public const string ResolveBreakOperationType = "reconciliation.resolve-break";
-
     private readonly Meridian.Ui.Services.ApiClientService _apiClient;
-    private readonly PendingOperationsQueueService _pendingOperations;
 
     public WorkstationReconciliationApiClient(Meridian.Ui.Services.ApiClientService apiClient)
-        : this(apiClient, PendingOperationsQueueService.Instance)
-    {
-    }
-
-    internal WorkstationReconciliationApiClient(
-        Meridian.Ui.Services.ApiClientService apiClient,
-        PendingOperationsQueueService pendingOperations)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        _pendingOperations = pendingOperations ?? throw new ArgumentNullException(nameof(pendingOperations));
-
-        // Replay handlers: re-issue queued mutations against the backend. Throwing on a
-        // still-unreachable backend lets ProcessAllAsync's retry/re-enqueue semantics keep the
-        // operation durable instead of dropping it.
-        _pendingOperations.RegisterHandler(ReviewBreakOperationType, async payload =>
-        {
-            if (DeserializePayload<PendingReviewBreakOperation>(payload) is not { } operation)
-            {
-                return;
-            }
-
-            var result = await ReviewBreakCoreAsync(operation.BreakId, operation.Request).ConfigureAwait(false);
-            ThrowIfStillUnreachable(result);
-        });
-        _pendingOperations.RegisterHandler(ResolveBreakOperationType, async payload =>
-        {
-            if (DeserializePayload<PendingResolveBreakOperation>(payload) is not { } operation)
-            {
-                return;
-            }
-
-            var result = await ResolveBreakCoreAsync(operation.BreakId, operation.Request).ConfigureAwait(false);
-            ThrowIfStillUnreachable(result);
-        });
     }
 
     public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
@@ -145,10 +93,7 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
     {
-        var result = await ReviewBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
-        return result.QueuedForRetry
-            ? EnqueueForRetry(ReviewBreakOperationType, new PendingReviewBreakOperation(breakId, request), result)
-            : result;
+        return await ReviewBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
     }
 
     public async Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
@@ -156,10 +101,7 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
     {
-        var result = await ResolveBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
-        return result.QueuedForRetry
-            ? EnqueueForRetry(ResolveBreakOperationType, new PendingResolveBreakOperation(breakId, request), result)
-            : result;
+        return await ResolveBreakCoreAsync(breakId, request, ct).ConfigureAwait(false);
     }
 
     private Task<WorkstationReconciliationActionResult> ReviewBreakCoreAsync(
@@ -174,46 +116,13 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         CancellationToken ct = default)
         => ToActionResultAsync(_apiClient.UiApi.ResolveReconciliationBreakAsync(breakId, request, ct));
 
-    private WorkstationReconciliationActionResult EnqueueForRetry(
-        string operationType,
-        object payload,
-        WorkstationReconciliationActionResult result)
-    {
-        _pendingOperations.Enqueue(operationType, payload);
-        return result with
-        {
-            ErrorMessage =
-                "The workstation service is unreachable. The action was saved and will be " +
-                "retried automatically when the connection is restored."
-        };
-    }
-
-    private static void ThrowIfStillUnreachable(WorkstationReconciliationActionResult result)
-    {
-        if (result.QueuedForRetry)
-        {
-            throw new InvalidOperationException(
-                "The workstation service is still unreachable; the queued reconciliation action will be retried.");
-        }
-    }
-
-    private static T? DeserializePayload<T>(object? payload) where T : class => payload switch
-    {
-        T typed => typed,
-        JsonElement element => element.Deserialize<T>(Meridian.Ui.Services.DesktopJsonOptions.Api),
-        _ => null
-    };
-
     private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
         Task<Meridian.Contracts.Api.ApiResponse<ReconciliationCaseworkOperationResult>> responseTask)
     {
         var response = await responseTask.ConfigureAwait(false);
         if (!response.Success || response.Data is null)
         {
-            return new WorkstationReconciliationActionResult(false, response.ErrorMessage, null)
-            {
-                QueuedForRetry = response.IsConnectionError
-            };
+            return new WorkstationReconciliationActionResult(false, response.ErrorMessage, null);
         }
 
         var operation = response.Data;
