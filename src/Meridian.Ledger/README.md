@@ -57,7 +57,8 @@ account symbols; the currency-aware `Ledger.PostLines` overload and
 
 Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
 simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
-capital → preferred return → automatic GP catch-up → carried-interest split),
+capital → preferred return → automatic GP catch-up → carried-interest split; the catch-up rate must
+exceed the carried-interest rate),
 `CarriedInterestClawbackCalculator` (end-of-life GP giveback), and the share-class/unit register
 (`ShareClass`, `ShareClassUnitRegisterProjector`, `NavPerUnitCalculator`, `EqualizationCalculator`)
 for unitized NAV-per-unit with single-NAV equalisation. `PrivateCapitalCommitments` plus

@@ -205,8 +205,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "efd3784503f32b1f6f3b8d41a74b0e1b8b33ca53804aa9ad40d9a1d86304e5aa",
-      "source_hash": "2920f6ca63ab79a9d2e2b406d9a4ee88a97fc0b1e4cca6efce34ba0e2c671dde"
+      "readme_hash": "8831906f93a12e1daf0472efa838fbbebc778fcc645c8f61d9eafc9db7a967a9",
+      "source_hash": "e64b3e83344fb5cab1cc2cbda1d5f36f95cb9759b935ec0df870f1f57e1efa1d"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",

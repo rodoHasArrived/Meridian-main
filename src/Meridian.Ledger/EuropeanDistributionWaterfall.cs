@@ -28,8 +28,8 @@ public sealed record EuropeanWaterfallInput
             throw new ArgumentOutOfRangeException(nameof(amountToDistribute), amountToDistribute, "Amount to distribute cannot be negative.");
         if (carryRate < 0m || carryRate >= 1m)
             throw new ArgumentOutOfRangeException(nameof(carryRate), carryRate, "Carry rate must be in [0, 1).");
-        if (catchUpRate <= 0m || catchUpRate > 1m)
-            throw new ArgumentOutOfRangeException(nameof(catchUpRate), catchUpRate, "Catch-up rate must be in (0, 1].");
+        if (catchUpRate <= carryRate || catchUpRate > 1m)
+            throw new ArgumentOutOfRangeException(nameof(catchUpRate), catchUpRate, "Catch-up rate must be greater than the carry rate and no more than 1.");
         if (priorReturnOfCapital < 0m || priorPreferredPaid < 0m || priorGpCatchUp < 0m)
             throw new ArgumentOutOfRangeException(nameof(priorReturnOfCapital), "Prior cumulative amounts cannot be negative.");
         if (priorCatchUpPool < 0m)
