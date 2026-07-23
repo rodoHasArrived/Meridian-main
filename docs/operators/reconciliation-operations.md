@@ -50,9 +50,9 @@ This lane is the canonical operator procedure page for reconciliation exception 
    returned reconciliation route for break or case review.
 
 Scheduled-fetch credentials remain in the existing provider credential vault. The statement screen
-never asks for, displays, or persists API keys. A transient fetch failure leaves the last successful
-watermark unchanged so the schedule remains retryable; the schedule row shows a stable failure type
-without exposing upstream exception text.
+never asks for, displays, or persists API keys. A transient fetch failure advances the schedule
+watermark, so the next automatic retry respects the configured cadence; the schedule row shows a
+stable failure type without exposing upstream exception text.
 
 ## Mandatory Checks
 
