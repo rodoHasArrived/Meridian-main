@@ -149,7 +149,7 @@ public sealed class AccountingMigrationRunExecutionService
         {
             FundProfileId = NormalizeOptional(request.FundProfileId) ?? workerPlan.FundProfileId,
             LedgerBookId = request.LedgerBookId ?? workerPlan.LedgerBookId,
-            Dimensions = request.Dimensions ?? workerPlan.Dimensions,
+            Dimensions = workerPlan.Dimensions,
             EvidenceLinks = evidenceLinks,
             TenantId = NormalizeOptional(request.TenantId) ?? workerPlan.TenantId,
             CompanyId = NormalizeOptional(request.CompanyId) ?? workerPlan.CompanyId,
