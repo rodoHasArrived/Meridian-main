@@ -107,6 +107,39 @@ public sealed class AutoGapRemediationServiceTests
     }
 
     [Fact]
+    public async Task ReconnectionGap_UsesConfiguredThresholdAndProviderCooldown()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(2),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.FromMinutes(5),
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+
+        var reconnectedAt = DateTimeOffset.UtcNow;
+        await service.HandleReconnectionGapAsync(
+            new ReconnectionGap("live-provider", reconnectedAt.AddSeconds(-30), reconnectedAt, 1),
+            ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(0, "a sub-threshold reconnection must not start a backfill");
+
+        var qualifyingGap = new ReconnectionGap("live-provider", reconnectedAt.AddMinutes(-3), reconnectedAt, 1);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(1, "the shared provider cooldown suppresses repeated reconnects");
+        gateway.Requests.Should().ContainSingle().Which.Provider.Should().Be("composite");
+        history.GetRecentExecutions(10).Should().ContainSingle()
+            .Which.AutoRemediationSla!.TriggerSource.Should().Be(AutoRemediationTriggerSource.ReconnectionGap);
+    }
+
+    [Fact]
     public async Task ProviderCooldown_NormalizesProviderNameAcrossSymbolsAndRetainedEvidence()
     {
         var gateway = new FakeGateway();
