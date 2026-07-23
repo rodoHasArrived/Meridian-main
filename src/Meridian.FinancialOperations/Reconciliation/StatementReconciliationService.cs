@@ -366,19 +366,18 @@ public sealed class StatementReconciliationService
             return new ExternalStatementCaseIntakeResult(importId, normalizedSourceKind, sourcePath, 0, 0, []);
         }
 
-        var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
-        var (matches, cases) = MatchRows(rows);
-        // Compute the import id from the resolved profile and file content, identical to the import
-        // path (and to ReadCanonicalStatementRows for non-empty files), so import and reconcile/intake
-        // refer to the same run even for a valid but empty (header-only) statement.
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var canonicalContent = File.ReadAllText(sourcePath);
-        var canonicalImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{canonicalContent}");
-        return new ExternalStatementCaseIntakeResult(
-            canonicalImportId,
+        var canonicalStatement = ReadCanonicalStatementRows(
             normalizedSourceKind,
             sourcePath,
-            rows.Count,
+            mappingProfileId,
+            canonicalContent);
+        var (matches, cases) = MatchRows(canonicalStatement.Rows);
+        return new ExternalStatementCaseIntakeResult(
+            canonicalStatement.ImportId,
+            normalizedSourceKind,
+            sourcePath,
+            canonicalStatement.Rows.Count,
             matches.Count,
             cases);
     }
@@ -550,17 +549,22 @@ public sealed class StatementReconciliationService
         }
     }
 
-    private IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
+    private CanonicalStatementReadResult ReadCanonicalStatementRows(
+        string normalizedSourceKind,
+        string sourcePath,
+        string? mappingProfileId,
+        string content)
     {
-        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
+        using var reader = new StringReader(content);
+        var headerLine = reader.ReadLine();
+        var profile = ValidateStatementHeader(normalizedSourceKind, mappingProfileId, headerLine);
 
-        var content = File.ReadAllText(sourcePath);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var rows = new List<NormalizedStatementRow>();
-        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
-        var lines = File.ReadLines(sourcePath).Skip(1);
+        var header = headerLine!.Split(',', StringSplitOptions.TrimEntries);
         var rowNumber = 1;
-        foreach (var line in lines)
+        string? line;
+        while ((line = reader.ReadLine()) is not null)
         {
             rowNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -632,14 +636,19 @@ public sealed class StatementReconciliationService
                 rawSnapshot));
         }
 
-        return rows;
+        return new CanonicalStatementReadResult(importId, rows);
     }
 
 
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var header = File.ReadLines(sourcePath).FirstOrDefault();
+        return ValidateStatementHeader(normalizedSourceKind, mappingProfileId, header);
+    }
+
+    private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string? mappingProfileId, string? header)
+    {
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         if (string.IsNullOrWhiteSpace(header))
         {
             throw new InvalidDataException("Statement source file is empty.");
@@ -665,6 +674,8 @@ public sealed class StatementReconciliationService
 
         return profile;
     }
+
+    private sealed record CanonicalStatementReadResult(string ImportId, IReadOnlyList<NormalizedStatementRow> Rows);
 
     private static void EnsureUniqueStatementHeaderColumns(string[] header, string profileId)
     {
