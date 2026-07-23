@@ -12,7 +12,7 @@ namespace Meridian.Application.SecurityMaster;
 /// <list type="bullet">
 ///   <item><c>UpdateSecurityFieldAsync</c> — justification-gated operator field edits staged as
 ///     overlay annotations in <see cref="IOperatorOverridesStore"/>. The passport-displayed security
-///     version is a read-only staleness guard (a stale <c>ExpectedVersion</c> surfaces as
+///     version is an optimistic-concurrency staleness guard (a stale <c>ExpectedVersion</c> surfaces as
 ///     <see cref="SecurityMasterConcurrencyException"/> → HTTP 409). Overlay edits are deliberately
 ///     NOT appended to the economic event stream: that stream is replayed verbatim to rebuild the
 ///     passport, so a partial field-edit payload would corrupt the economic definition.</item>
@@ -87,9 +87,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 "Operator field edits require a justification.", nameof(request));
         }
 
-        // The passport-displayed security version is a read-only staleness guard: a stale view of
-        // the canonical security (it was amended/deactivated since the operator loaded it) is
-        // rejected before any overlay write. Operator field edits are overlay annotations and must
+        // The passport-displayed security version is an optimistic-concurrency staleness guard: a
+        // stale view of the canonical security (it was amended/deactivated since the operator
+        // loaded it) is rejected before any overlay write and rechecked atomically by the store.
+        // Operator field edits are overlay annotations and must
         // NOT be appended to the economic event stream — that stream is replayed verbatim through
         // SecurityMasterMapping.FromEconomicPayload to rebuild the passport, so a partial
         // field-edit payload would clobber the economic definition on the next reload/replay.
@@ -119,7 +120,24 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             ReasonCode = request.Justification,
         };
-        await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
+        try
+        {
+            await _overrides
+                .PatchAsync(
+                    request.SecurityId,
+                    patch,
+                    request.Actor,
+                    ct,
+                    expectedCanonicalVersion: currentVersion)
+                .ConfigureAwait(false);
+        }
+        catch (OperatorOverrideCanonicalVersionConflictException ex)
+        {
+            throw new SecurityMasterConcurrencyException(
+                request.SecurityId,
+                request.ExpectedVersion,
+                ex.CurrentVersion);
+        }
 
         // Open a durable Draft revision carrying the field-edit metadata so the governed lifecycle
         // (submit → approve → publish) is anchored to a real, server-issued revision id, and publish

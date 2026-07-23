@@ -15,7 +15,8 @@ public interface IOperatorOverridesStore
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        long? expectedCanonicalVersion = null);
 
     /// <summary>
     /// Records a reviewer's Approved/Rejected decision on the current override overlay, stamping the
@@ -38,3 +39,22 @@ public sealed record OperatorOverrideDecision(
     SecurityOverrideApprovalStatusDto Decision,
     string Reviewer,
     string? Comment = null);
+
+/// <summary>
+/// Thrown when an overlay patch was submitted for a canonical Security Master version that no
+/// longer matches the stream version observed while the patch transaction held the stream lock.
+/// </summary>
+public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
+{
+    public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion)
+        : base($"Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.")
+    {
+        SecurityId = securityId;
+        ExpectedVersion = expectedVersion;
+        CurrentVersion = currentVersion;
+    }
+
+    public Guid SecurityId { get; }
+    public long ExpectedVersion { get; }
+    public long CurrentVersion { get; }
+}
