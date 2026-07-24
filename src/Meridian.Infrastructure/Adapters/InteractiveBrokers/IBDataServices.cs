@@ -393,9 +393,17 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value) => RecordNewsHeadline(value.RequestId, value.Headline);
     private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticle Article) value) => RecordNewsArticle(value.RequestId, value.Article);
     private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value) => RecordFundamentalReport(value.RequestId, value.Report);
-    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value) => RecordTickByTick(value.RequestId, value.Observation);
+    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordTickByTick(value.RequestId, value.Observation);
+    }
     private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value) => RecordDepthExchanges(value.RequestId, value.Exchanges);
-    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value) => RecordDividendEarnings(value.RequestId, value.Payload);
+    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordDividendEarnings(value.RequestId, value.Payload);
+    }
     private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value) => RecordOptionContract(value.RequestId, value.Contract);
     private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value) => RecordScannerResult(value.RequestId, value.Result);
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value) => RecordRealTimeBar(value.RequestId, value.Bar);

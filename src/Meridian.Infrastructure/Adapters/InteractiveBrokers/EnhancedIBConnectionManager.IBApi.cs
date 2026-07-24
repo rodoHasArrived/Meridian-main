@@ -394,6 +394,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 NotifyConnectionLost(ex);
                 break;
             }
+            catch (Exception ex) when (!ct.IsCancellationRequested)
+            {
+                NotifyConnectionLost(ex);
+                break;
+            }
         }
     }
 
