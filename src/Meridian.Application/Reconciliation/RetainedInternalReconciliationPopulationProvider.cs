@@ -210,9 +210,24 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         {
             // Keep the latest snapshot effective at or before the period close; the explicit ceiling
             // check stays correct even if a store streams a record outside the requested bound.
-            if (candidate.AsOf <= ceiling && (latest is null || candidate.AsOf > latest.AsOf))
+            if (candidate.AsOf > ceiling)
+            {
+                continue;
+            }
+
+            if (latest is null || candidate.AsOf.ToUniversalTime() > latest.AsOf.ToUniversalTime())
             {
                 latest = candidate;
+                continue;
+            }
+
+            if (candidate.AsOf.ToUniversalTime() == latest.AsOf.ToUniversalTime() &&
+                !PositionSnapshotEquivalence.AreEquivalent(candidate, latest))
+            {
+                throw new PositionSnapshotConflictException(
+                    candidate.RunId,
+                    candidate.AccountId,
+                    candidate.AsOf);
             }
         }
 

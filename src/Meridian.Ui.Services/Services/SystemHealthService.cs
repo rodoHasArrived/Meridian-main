@@ -96,6 +96,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<DiagnosticBundle?> GenerateDiagnosticBundleAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         return (await _apiClient.PostWithResponseAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct).ConfigureAwait(false)).DataOrLoggedNull("Generate diagnostic bundle");
     }
 

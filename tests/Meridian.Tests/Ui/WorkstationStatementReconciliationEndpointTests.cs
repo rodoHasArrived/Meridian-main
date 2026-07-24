@@ -57,6 +57,35 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
+    [Theory]
+    [InlineData("statement.bai")]
+    [InlineData("statement.bai2")]
+    [InlineData("statement.camt")]
+    [InlineData("statement.053")]
+    public async Task MapWorkstationEndpoints_StatementToReport_ShouldAcceptRegisteredConnectorExtensions(string fileName)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-statement-connector-extension", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var workflow = new StatementToReportWorkflowService(
+                new EndpointStatementImportService(),
+                new EndpointStatementEvidenceRetainer(),
+                new EndpointStatementRunWorkflowService(),
+                root);
+            await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
+            using var content = BuildStatementToReportContent(fileName);
+
+            var response = await app.GetTestClient().PostAsync(UiApiRoutes.ReconciliationStatementToReport, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_StatementRunRoutes_ShouldReturnListDetailExceptionsAndNotFound()
     {
@@ -221,14 +250,14 @@ public sealed partial class WorkstationEndpointsTests
         return accounts;
     }
 
-    private static MultipartFormDataContent BuildStatementToReportContent()
+    private static MultipartFormDataContent BuildStatementToReportContent(string fileName = "statement.csv")
     {
         var content = new MultipartFormDataContent();
         content.Add(
             new ByteArrayContent(Encoding.UTF8.GetBytes(
                 "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA,AAPL,1,100,0,position,2026-06-30")),
             "file",
-            "statement.csv");
+            fileName);
         content.Add(new StringContent("csv"), "connectorId");
         content.Add(new StringContent("broker"), "sourceKind");
         content.Add(new StringContent("Broker Alpha"), "sourceInstitution");

@@ -3390,7 +3390,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             Guid requestedSecurityId,
             OperatorOverridesPatchRequest request,
             string updatedBy,
-            CancellationToken ct = default) =>
+            CancellationToken ct = default,
+            long? expectedCanonicalVersion = null) =>
             throw new NotSupportedException();
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(

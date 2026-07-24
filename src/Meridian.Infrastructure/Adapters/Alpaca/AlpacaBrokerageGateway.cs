@@ -50,6 +50,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
     private readonly ILogger<AlpacaBrokerageGateway> _logger;
+    private readonly AlpacaTradeUpdatesClient? _tradeUpdates;
     private readonly Channel<ExecutionReport> _reportChannel;
     private volatile bool _connected;
     private bool _disposed;
@@ -57,11 +58,14 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     public AlpacaBrokerageGateway(
         IHttpClientFactory httpClientFactory,
         AlpacaOptions options,
-        ILogger<AlpacaBrokerageGateway> logger)
+        ILogger<AlpacaBrokerageGateway> logger,
+        AlpacaTradeUpdatesClient? tradeUpdates = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _tradeUpdates = tradeUpdates;
+        _tradeUpdates?.ConfigureReconciliation(ReconcileExecutionSnapshotsAsync);
 
         if (!CurrentCredentials.HasCredentials)
         {
@@ -115,6 +119,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
         var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        if (_tradeUpdates is not null)
+            await _tradeUpdates.StartAsync(ct).ConfigureAwait(false);
         _connected = true;
         _logger.LogInformation("Alpaca brokerage connected: account {AccountId}, status {Status}",
             account.AccountId, account.Status);
@@ -134,6 +140,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        EnsureExecutionStreamHealthy();
 
         _logger.LogInformation(
             "Alpaca submitting order: {Side} {Quantity} {Symbol} @ {Type}",
@@ -285,6 +292,12 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {
+        if (_tradeUpdates is not null)
+        {
+            await foreach (var report in _tradeUpdates.Reports.WithCancellation(ct).ConfigureAwait(false))
+                yield return report;
+            yield break;
+        }
         await foreach (var report in _reportChannel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
         {
             yield return report;
@@ -376,6 +389,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         {
             if (!_connected)
                 return BrokerHealthStatus.Unhealthy("Not connected");
+            if (_tradeUpdates is not null && !_tradeUpdates.IsHealthy)
+                return BrokerHealthStatus.Unhealthy(_tradeUpdates.UnhealthyReason!);
             var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
             return account.Status == "active"
                 ? BrokerHealthStatus.Healthy($"Account {account.AccountId} active")
@@ -527,7 +542,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         _disposed = true;
         _connected = false;
         _reportChannel.Writer.TryComplete();
-        return ValueTask.CompletedTask;
+        return _tradeUpdates?.DisposeAsync() ?? ValueTask.CompletedTask;
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────
@@ -536,6 +551,28 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     {
         if (!_connected)
             throw new InvalidOperationException("Alpaca brokerage gateway is not connected. Call ConnectAsync first.");
+    }
+
+    private void EnsureExecutionStreamHealthy()
+    {
+        if (_tradeUpdates is not null && !_tradeUpdates.IsHealthy)
+            throw new InvalidOperationException($"Alpaca live submission is blocked because the execution stream is unhealthy: {_tradeUpdates.UnhealthyReason}");
+    }
+
+    // Reconciliation deliberately reads the broker snapshot after every socket reconnect so orders
+    // created outside Meridian and updates missed during the disconnect become immutable reports.
+    private async Task<IReadOnlyList<ExecutionReport>> ReconcileExecutionSnapshotsAsync(CancellationToken ct)
+    {
+        var orders = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
+        return orders.Select(order => new ExecutionReport
+        {
+            OrderId = order.OrderId, GatewayOrderId = order.OrderId, ClientOrderId = order.ClientOrderId,
+            Symbol = order.Symbol, Side = order.Side, OrderQuantity = order.Quantity,
+            FilledQuantity = order.FilledQuantity, OrderStatus = order.Status,
+            ReportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New,
+            Timestamp = order.CreatedAt,
+            Diagnostics = new ExecutionDiagnostics { Category = "alpaca-rest-reconciliation", RecommendedAction = "Reconciled after execution-stream reconnect." }
+        }).ToArray();
     }
 
     private HttpClient CreateHttpClient()

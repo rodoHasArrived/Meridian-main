@@ -400,6 +400,36 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_IgnoresNullConditionalFormattingRules()
+    {
+        IReadOnlyList<ReportWriterFormatRuleDto> formatRules =
+        [
+            null!,
+            new ReportWriterFormatRuleDto("pnl", ReportWriterFilterOperatorDto.LessThan, ReportWriterCellStyleDto.Danger, "0")
+        ];
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "pnl-detail",
+                "PnL Detail",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["security"],
+                Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                FormatRules: formatRules)
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(
+            grids,
+            [Row(("security", "TLT"), ("pnl", "-3"))]).Single();
+
+        rendered.Rows.Should().ContainSingle();
+        rendered.Rows[0].StyleHints.Should().NotBeNull();
+        rendered.Rows[0].StyleHints!.Should().ContainSingle()
+            .Which.Key.Should().Be("pnl");
+        rendered.Rows[0].StyleHints!["pnl"].Should().Be(ReportWriterCellStyleDto.Danger);
+    }
+
+    [Fact]
     public void RenderGrids_BuildsInlineChartFromRenderedRows()
     {
         var rows = new[]

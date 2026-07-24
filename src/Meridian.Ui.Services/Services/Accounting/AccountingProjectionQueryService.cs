@@ -8,7 +8,7 @@ public interface IAccountingProjectionQueryService
 {
     ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId, LedgerDimensionSetDto? dimensions = null);
     ImmutableArray<RollForwardLine> GetRollForward(string ledgerId, LedgerDimensionSetDto? dimensions = null);
-    ImmutableArray<SourceLinkedAuditLine> GetAuditLines(string ledgerId);
+    ImmutableArray<SourceLinkedAuditLine> GetAuditLines(string ledgerId, LedgerDimensionSetDto? dimensions = null);
     SourceLinkedAuditLine? GetAuditLine(string ledgerId, Guid journalEntryId);
     AccountingCloseProjection GetCloseProjection(
         string ledgerId,
@@ -45,8 +45,8 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
         return _projectionService.BuildRollForward([], trial, []);
     }
 
-    public ImmutableArray<SourceLinkedAuditLine> GetAuditLines(string ledgerId)
-        => _postingService.Audit(ledgerId);
+    public ImmutableArray<SourceLinkedAuditLine> GetAuditLines(string ledgerId, LedgerDimensionSetDto? dimensions = null)
+        => _postingService.Audit(ledgerId, dimensions);
 
     public SourceLinkedAuditLine? GetAuditLine(string ledgerId, Guid journalEntryId)
         => GetAuditLines(ledgerId).FirstOrDefault(line => line.JournalEntryId == journalEntryId);
@@ -59,9 +59,9 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
     {
         var trialBalance = GetTrialBalance(ledgerId, dimensions);
         var rollForward = GetRollForward(ledgerId, dimensions);
-        var audit = GetAuditLines(ledgerId);
+        var audit = GetAuditLines(ledgerId, dimensions);
         var balanced = _projectionService.IsBalanced(trialBalance);
-        var closePeriod = new ClosePeriod(ledgerId, period, ClosePeriodState.Validating, evidence, []);
+        var closePeriod = new ClosePeriod(ledgerId, period, ClosePeriodState.Validating, evidence, [], Dimensions: dimensions);
         var state = _closeStateMachine.Transition(closePeriod, evidence, balanced);
         var evidencePackage = _evidencePackageService.Build(state, balanced, audit);
         return new AccountingCloseProjection(

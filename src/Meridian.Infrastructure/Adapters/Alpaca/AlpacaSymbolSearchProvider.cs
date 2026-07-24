@@ -81,6 +81,12 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
             };
             url += $"&asset_class={assetClass}";
         }
+        else
+        {
+            // The endpoint has no server-side query or pagination parameter. Keep the
+            // unfiltered path bounded by its standard equity asset class.
+            url += "&asset_class=us_equity";
+        }
 
         if (!string.IsNullOrEmpty(exchange))
         {

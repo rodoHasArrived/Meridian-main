@@ -663,7 +663,7 @@ internal sealed record FieldRule(
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
         var field = $"assetSpecificTerms.{FieldPath}";
-        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, out var property))
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var property))
         {
             return RequiresPresence(RuleKind)
                 ? Issue(field)
@@ -720,8 +720,8 @@ internal sealed record DateOrderRule(
 
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
-        var hasStart = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, StartFieldPath, out var start);
-        var hasEnd = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, EndFieldPath, out var end);
+        var hasStart = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, StartFieldPath, context.Record.AssetClass, out var start);
+        var hasEnd = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, EndFieldPath, context.Record.AssetClass, out var end);
         if (!hasStart || !hasEnd)
         {
             return RequiresBothFields
@@ -754,8 +754,8 @@ internal sealed record DistinctStringRule(
 
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
-        if (!JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, LeftFieldPath, out var left)
-            || !JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, RightFieldPath, out var right))
+        if (!JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, LeftFieldPath, context.Record.AssetClass, out var left)
+            || !JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, RightFieldPath, context.Record.AssetClass, out var right))
         {
             return null;
         }
@@ -807,14 +807,15 @@ internal static class JsonValidationReader
         return true;
     }
 
-    public static bool TryGetAssetTermProperty(JsonElement root, string path, out JsonElement property)
+    public static bool TryGetAssetTermProperty(JsonElement root, string path, string assetClass, out JsonElement property)
     {
         if (TryGetProperty(root, path, out property))
         {
             return true;
         }
 
-        if (TryGetProperty(root, "profileFields", out var profileFields)
+        if (SupportsProfileBackedTerms(assetClass)
+            && TryGetProperty(root, "profileFields", out var profileFields)
             && TryGetProperty(profileFields, path, out property))
         {
             return true;
@@ -823,6 +824,15 @@ internal static class JsonValidationReader
         property = default;
         return false;
     }
+
+    private static bool SupportsProfileBackedTerms(string assetClass)
+        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase);
 
     public static bool HasNonBlankString(JsonElement property)
         => property.ValueKind == JsonValueKind.String
@@ -859,10 +869,10 @@ internal static class JsonValidationReader
         return true;
     }
 
-    public static bool TryGetAssetTermString(JsonElement root, string path, out string value)
+    public static bool TryGetAssetTermString(JsonElement root, string path, string assetClass, out string value)
     {
         value = string.Empty;
-        if (!TryGetAssetTermProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
+        if (!TryGetAssetTermProperty(root, path, assetClass, out var property) || property.ValueKind != JsonValueKind.String)
         {
             return false;
         }
@@ -905,10 +915,10 @@ internal static class JsonValidationReader
         return DateOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
     }
 
-    public static bool TryGetAssetTermDate(JsonElement root, string path, out DateOnly value)
+    public static bool TryGetAssetTermDate(JsonElement root, string path, string assetClass, out DateOnly value)
     {
         value = default;
-        if (!TryGetAssetTermProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
+        if (!TryGetAssetTermProperty(root, path, assetClass, out var property) || property.ValueKind != JsonValueKind.String)
         {
             return false;
         }

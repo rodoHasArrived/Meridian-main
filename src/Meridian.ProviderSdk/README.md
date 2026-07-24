@@ -14,7 +14,7 @@ last_reviewed: 2026-07-15
 ## Purpose
 
 ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill
-job descriptors, dynamic provider plugin discovery, and accounting-system integrations.
+job descriptors, dynamic provider plugin discovery, accounting-system integrations, and provenance-complete provider trading-calendar data.
 
 ## Layer responsibility
 
@@ -45,6 +45,7 @@ conversion helpers.
 `PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
 `DataSourceRegistry` under the `Meridian.ProviderSdk` namespace; WPF and host composition consume that ProviderSdk-owned loader rather than
 keeping reflection-based provider discovery in Application.
+Provider trading-calendar output is requested through `ITradingCalendarProvider` and must include the shared `ProviderDataProvenance` envelope, including provider/connection identity, source and receipt timestamps, entitlement/feed posture, request identity, correlation, and a stable deduplication key. The former session-only contract remains available as an obsolete transition seam; new adapters must return provenance-complete `ProviderTradingCalendarResponse` values. Local `IOperationalTradingCalendar` policy remains deterministic and is not a provider adapter.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
@@ -58,7 +59,9 @@ read-oriented by default; write/posting support must be exposed explicitly by pr
 before any service or client can offer export actions.
 `IProviderDataReadService` owns vendor-neutral, request-correlated read models for option discovery,
 scanner rows, real-time bars, historical ticks, account/model-account P&L, and market-rule increments;
-operator surfaces consume this seam rather than vendor callback types.
+operator surfaces consume this seam rather than vendor callback types. `IIBDataResultStore` is the
+storage-facing companion seam: every materialized IB snapshot carries normalized payload, stable
+request/subscription identity, lifecycle state, capture time, and complete `IBDataLineage` evidence.
 
 ## Diagrams
 

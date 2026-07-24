@@ -9,7 +9,7 @@ namespace Meridian.Platform.Scheduling;
 /// - Regular, pre-market, and after-hours session times
 /// - Timezone-aware market status queries
 /// </summary>
-public sealed class TradingCalendar : ITradingCalendarProvider
+public sealed class TradingCalendar : IOperationalTradingCalendar, ITradingCalendarProvider
 {
     private readonly TimeZoneInfo _easternTimeZone;
 

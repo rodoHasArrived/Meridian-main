@@ -210,6 +210,13 @@ public sealed class FundAdministrationEventLog : IFundAdministrationEventSink
             AppendField(builder, reference.SubjectId ?? string.Empty);
             AppendField(builder, reference.ContentHash ?? string.Empty);
             AppendField(builder, reference.Description ?? string.Empty);
+            AppendField(builder, reference.SourceReference ?? string.Empty);
+            AppendField(builder, reference.ReviewStatus ?? string.Empty);
+            AppendField(builder, reference.ReviewedBy ?? string.Empty);
+            AppendField(builder, reference.ReviewedAtUtc?.ToUniversalTime().ToString("O") ?? string.Empty);
+            AppendField(builder, reference.EffectiveDate?.ToString("O", CultureInfo.InvariantCulture) ?? string.Empty);
+            AppendField(builder, reference.EvidenceVersion?.ToString(CultureInfo.InvariantCulture) ?? string.Empty);
+            AppendField(builder, reference.SubjectType ?? string.Empty);
         }
 
         AppendField(builder, evt.PreviousHash ?? string.Empty);

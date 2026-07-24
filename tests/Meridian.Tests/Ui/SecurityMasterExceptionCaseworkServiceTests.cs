@@ -705,7 +705,8 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             Guid securityId,
             OperatorOverridesPatchRequest request,
             string updatedBy,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            long? expectedCanonicalVersion = null)
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (_overrides.TryGetValue(securityId, out var existing))

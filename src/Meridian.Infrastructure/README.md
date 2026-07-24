@@ -41,14 +41,16 @@ diagnostics, `WebSocketState` is `None`. Consumers should use this contract inst
 into provider-specific transport internals.
 
 Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
-WebSocket endpoints. Its diagnostics carry a per-stream selected feed and entitlement (for
+WebSocket endpoints. Consumers resolve them through the capability-aware Alpaca asset-stream router, which
+fails closed when a requested stream has no usable entitlement rather than falling back to equities. Its diagnostics carry a per-stream selected feed and entitlement (for
 example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
 misrepresented as consolidated or OPRA-entitled data.
 
 Alpaca reference-data search preserves broker-supplied marginability, shortability,
-easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Search no
-longer silently defaults omitted asset-class filters to equities; it can discover equities, crypto,
-options, and fixed-income assets when the configured Alpaca API entitlement exposes them.
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Unfiltered
+searches default to equities to keep the non-paginated asset response bounded; callers can
+explicitly select crypto, options, or fixed-income assets when the configured Alpaca API
+entitlement exposes them.
 
 The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
 existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
@@ -124,10 +126,14 @@ The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam fo
 contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
 live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
-materialized observation; successful request submission is not evidence of a live entitlement.
+materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
+it commits each `WatchAsync` update to `IIBDataResultStore` before making that update available to
+operator readers; successful request submission is not evidence of a live entitlement.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
-rules. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
+rules. Each returned request and observation carries required provenance: provider and configured
+connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

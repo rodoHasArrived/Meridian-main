@@ -155,8 +155,8 @@ public sealed class StatementImportService(
         // canonical artifact, destroying the normalized evidence that run still references. Combining
         // both hashes gives every distinct rendering its own directory, while a same-profile re-import
         // rewrites identical bytes in place and stays idempotent.
-        var rawHash = Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
-        var canonicalHash = Convert.ToHexString(SHA256.HashData(artifactBytes))[..16].ToLowerInvariant();
+        var rawHash = ComputeSha256Hex(request.Document.Content.Span);
+        var canonicalHash = ComputeSha256Hex(artifactBytes);
         var uploadId = $"sc-{rawHash}-{canonicalHash}";
         var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
 
@@ -417,6 +417,9 @@ public sealed class StatementImportService(
     /// invariant formatting, LF endings, and delimiter-safe values, so the same source file
     /// always produces byte-identical bytes and therefore the same duplicate key.
     /// </summary>
+    private static string ComputeSha256Hex(ReadOnlySpan<byte> content)
+        => Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
         var builder = new StringBuilder();

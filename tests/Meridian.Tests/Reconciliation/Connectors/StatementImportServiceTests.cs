@@ -206,6 +206,41 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_ReimportWithChangedMapping_PreservesEachCanonicalArtifact()
+    {
+        var originalDocument = FixtureDocument("csv-mixed-kinds.csv");
+        var first = await _service.CommitAsync(CommitRequest(originalDocument));
+        var firstArtifact = await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath));
+
+        var canonicalProfile = StatementBuiltInProfiles.All.Single(profile =>
+            profile.ProfileId == StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
+        var remappedProfile = canonicalProfile with
+        {
+            ProfileId = "canonical-quantity-from-price-v1",
+            DisplayName = "Canonical CSV with quantity remapped",
+            IsBuiltIn = false,
+            Fields = canonicalProfile.Fields
+                .Select(field => field.CanonicalField == "Quantity"
+                    ? field with { SourceColumn = "price" }
+                    : field)
+                .ToArray()
+        };
+        await _catalog.UpsertAsync(remappedProfile);
+
+        var remappedDocument = originalDocument with { MappingProfileId = remappedProfile.ProfileId };
+        var second = await _service.CommitAsync(CommitRequest(remappedDocument));
+        var secondArtifact = await File.ReadAllTextAsync(Path.Combine(_root, second.RetainedCanonicalPath));
+
+        first.Duplicate.Should().BeFalse();
+        second.Duplicate.Should().BeFalse("a changed canonical rendering is a distinct reconciliation run");
+        first.RetainedCanonicalPath.Should().NotBe(second.RetainedCanonicalPath);
+        firstArtifact.Should().NotBe(secondArtifact);
+        (await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath))).Should().Be(
+            firstArtifact,
+            "a later import must not replace the normalized evidence referenced by the first run");
+    }
+
+    [Fact]
     public async Task Commit_SameStatementTwice_IsIdempotentDuplicate()
     {
         var first = await _service.CommitAsync(CommitRequest(FixtureDocument("csv-mixed-kinds.csv")));

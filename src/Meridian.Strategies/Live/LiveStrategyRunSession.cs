@@ -206,6 +206,11 @@ internal sealed class LiveStrategyRunSession
         }
         finally
         {
+            // A market feed may complete normally while no fills are pending. Complete the
+            // private inbox before awaiting its outstanding read so that teardown cannot
+            // wait indefinitely for a writer that no longer exists.
+            _fillReports.Writer.TryComplete();
+
             // The enumerator cannot be disposed while a MoveNextAsync is still pending;
             // cancellation flows into the feed subscription, so the pending advance
             // completes (or faults) promptly once the linked token fires.

@@ -20,13 +20,17 @@ public sealed class AlpacaBrokerageGatewayTests
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
-    private static AlpacaBrokerageGateway CreateSut(HttpMessageHandler handler, bool useSandbox = true)
+    private static AlpacaBrokerageGateway CreateSut(
+        HttpMessageHandler handler,
+        bool useSandbox = true,
+        AlpacaTradeUpdatesClient? tradeUpdates = null)
     {
         var options = new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: useSandbox);
         return new AlpacaBrokerageGateway(
             new StubHttpClientFactory(handler),
             options,
-            NullLogger<AlpacaBrokerageGateway>.Instance);
+            NullLogger<AlpacaBrokerageGateway>.Instance,
+            tradeUpdates: tradeUpdates);
     }
 
     private static StringContent BuildAccountResponse(string status = "active") =>
@@ -62,6 +66,11 @@ public sealed class AlpacaBrokerageGatewayTests
 
     private static StringContent BuildJson(object obj) =>
         new StringContent(JsonSerializer.Serialize(obj), Encoding.UTF8, "application/json");
+
+    private static void MarkConnected(AlpacaBrokerageGateway gateway) =>
+        typeof(AlpacaBrokerageGateway)
+            .GetField("_connected", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(gateway, true);
 
     // ── Capabilities ─────────────────────────────────────────────────────
 
@@ -274,6 +283,47 @@ public sealed class AlpacaBrokerageGatewayTests
 
         report.ReportType.Should().Be(ExecutionReportType.Rejected);
         report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_UnhealthyExecutionStream_UsesRestCancellation()
+    {
+        var stream = new AlpacaTradeUpdatesClient(
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("ord-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Cancelled);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_UnhealthyExecutionStream_UsesRestModification()
+    {
+        var stream = new AlpacaTradeUpdatesClient(
+            new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+            NullLogger<AlpacaTradeUpdatesClient>.Instance);
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.ModifyOrderAsync("ord-1", new OrderModification { NewQuantity = 2m }, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Modified);
         await sut.DisposeAsync();
     }
 

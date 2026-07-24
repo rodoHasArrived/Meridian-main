@@ -379,6 +379,30 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
     }
 
+    [Theory]
+    [InlineData("/api/status", true)]
+    [InlineData("/apiary/status", false)]
+    [InlineData("/workstation/evidence/vault/example", false)]
+    public void ApiKeyMiddleware_IsApiKeyCandidate_DefersOnlyApiRequests(
+        string path,
+        bool expectedCandidate)
+    {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        try
+        {
+            var context = new DefaultHttpContext();
+            context.Request.Path = path;
+            context.Request.Headers["X-Api-Key"] = "attacker-controlled-value";
+
+            ApiKeyMiddleware.IsApiKeyCandidate(context).Should().Be(expectedCandidate);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+        }
+    }
+
     [Fact]
     public async Task ApiKeyMiddleware_SessionAuthenticatedRequest_PassesWithoutApiKey()
     {

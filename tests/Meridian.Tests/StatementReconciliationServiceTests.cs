@@ -320,6 +320,7 @@ public sealed class StatementReconciliationServiceTests
 
             Assert.Equal(1, intake.RowCount);
             Assert.Single(intake.Cases);
+            Assert.Equal(intake.ImportId, intake.Cases[0].ImportId);
         }
         finally
         {
@@ -563,6 +564,30 @@ public sealed class StatementReconciliationServiceTests
             [
                 "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
                 "EXT-1,,10,500,0,position,2026-05-29"
+            ]);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                svc.ImportAsync("broker", filePath, CancellationToken.None));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ImportAsync_SymbolLessTradeRow_Throws()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // A trade is security-bearing and must not bypass downstream security-resolution
+            // evidence merely because it is normalized as a transaction rather than a position.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+                "EXT-1,,10,500,0,trade,2026-05-29"
             ]);
 
             await Assert.ThrowsAsync<InvalidDataException>(() =>

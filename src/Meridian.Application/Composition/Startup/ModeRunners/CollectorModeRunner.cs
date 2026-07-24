@@ -181,12 +181,14 @@ public sealed class CollectorModeRunner
         // disconnection, backfill the missed window for the currently subscribed symbols.
         GapBackfillService? gapBackfill = null;
         string[] gapBackfillSymbols = Array.Empty<string>();
-        var backfillGateway = hostStartup.GetService<IBackfillExecutionGateway>();
-        if (backfillGateway is not null && gapSources.Count > 0)
+        var autoGapRemediation = hostStartup.GetService<AutoGapRemediationService>();
+        if (autoGapRemediation is not null && gapSources.Count > 0)
         {
             gapBackfill = new GapBackfillService(
-                backfillGateway.RunAsync,
-                () => gapBackfillSymbols);
+                backfillExecutor: (_, _) => throw new InvalidOperationException("Direct gap backfill execution is not used in collector mode."),
+                subscribedSymbols: () => gapBackfillSymbols,
+                minimumGap: autoGapRemediation.MinimumGapDuration,
+                guardedRemediation: autoGapRemediation);
             foreach (var gapSource in gapSources)
                 gapBackfill.Subscribe(gapSource);
 

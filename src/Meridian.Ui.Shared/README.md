@@ -44,8 +44,7 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
-`ProviderDataReadModelService` projects `IProviderDataReadService` records for both workstation
-lanes, keeping provider option/scanner/bar/tick/P&L/market-rule data outside provider-specific UI code.
+`ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
 
 The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
 and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
@@ -178,6 +177,10 @@ Accounting and Reporting workstation payloads forward `fundProfileId` and `ledge
 into the shared manual-journal workbench when that service is registered, allowing the browser and
 desktop reporting surfaces to render the same private-capital fund-event ledger, capital-account
 subledger, evidence, approval, and report-output projection without a UI-local read model.
+Accounting report package build, certification, history, and export routes require the
+authenticated workstation tenant and company scope before invoking the retained package service;
+request-supplied tenant or company fields are compatibility input only and must not authorize or
+select package scope.
 Book-scoped Accounting payloads also apply `ledgerBookId` to reconciliation break queues,
 calibration summaries, open-break metrics, and the accounting control center. Queue items without
 explicit book scope are excluded from book-scoped responses instead of being inferred from fund,

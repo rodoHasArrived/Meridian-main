@@ -12,7 +12,8 @@ public static class FixedAssetDepreciationDraftBuilder
 {
     /// <summary>
     /// Builds one balanced depreciation draft covering every asset in <paramref name="assets"/> whose
-    /// charge is positive. Returns null when no asset has a charge to post.
+    /// charge is positive. Zero charges are skipped; negative charges are rejected. Returns null when
+    /// no asset has a charge to post.
     /// </summary>
     /// <param name="periodEnd">The accounting period the depreciation run belongs to.</param>
     /// <param name="asOf">Timestamp used for the journal event and retained evidence.</param>
@@ -27,6 +28,9 @@ public static class FixedAssetDepreciationDraftBuilder
         string? description = null)
     {
         ArgumentNullException.ThrowIfNull(assets);
+
+        if (assets.Any(static asset => asset is not null && asset.DepreciationAmount < 0m))
+            throw new ArgumentOutOfRangeException(nameof(assets), "Depreciation amount cannot be negative.");
 
         var projected = assets
             .Where(static asset => asset is not null && asset.DepreciationAmount > 0m)

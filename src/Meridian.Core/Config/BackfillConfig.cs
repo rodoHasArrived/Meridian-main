@@ -53,7 +53,8 @@ public sealed record AutoGapRemediationConfig(
     int SymbolCooldownSeconds = 300,
     int ProviderCooldownSeconds = 60,
     int MaxConcurrentRemediations = 2,
-    string DefaultProvider = "stooq");
+    string DefaultProvider = "stooq",
+    bool Enabled = false);
 
 /// <summary>
 /// Configuration for backfill job management.

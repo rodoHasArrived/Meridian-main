@@ -147,7 +147,8 @@ public static class YearEndCloseProjector
         // roll keeps its dimensional scope (a credit increases equity; a debit is a net loss).
         foreach (var line in closingEntries.JournalLines)
         {
-            if (string.Equals(line.account.Name, retainedEarningsName, StringComparison.OrdinalIgnoreCase))
+            if (line.account.AccountType == LedgerAccountType.Equity
+                && string.Equals(line.account.Name, retainedEarningsName, StringComparison.OrdinalIgnoreCase))
             {
                 AccumulateRoll(rolls, line.account.FinancialAccountId, line.dimensions, line.credit - line.debit);
             }

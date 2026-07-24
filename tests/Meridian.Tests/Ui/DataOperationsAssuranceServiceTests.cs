@@ -68,6 +68,7 @@ public sealed class DataOperationsAssuranceServiceTests : IDisposable
         File.Exists(retained).Should().BeTrue();
         result.Status.Should().Be("Completed");
         result.EvidenceVaultId.Should().NotBeNullOrWhiteSpace();
+        service.GetExecuteAction(preview.PreviewId, "cleanup-1").Should().Be(StorageMaintenanceActionDto.Cleanup);
     }
 
     public void Dispose()

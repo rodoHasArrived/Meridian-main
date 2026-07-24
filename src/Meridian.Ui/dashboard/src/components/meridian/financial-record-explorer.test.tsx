@@ -279,28 +279,25 @@ describe("FinancialRecordExplorerShell", () => {
     }));
   });
 
-  it("persists the current explorer evidence state into the browser URL", async () => {
+  it("keeps explorer evidence state out of the browser URL until it is explicitly shared", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "/accounting?period=2026-06");
     renderExplorer();
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexExplorer=ledger");
-      expect(window.location.href).toContain("frexView=system-ledger-default");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Acash");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
     await user.click(screen.getByRole("button", { name: "Close drawer" }));
     expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexSearch=aapl");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Arevenue");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
+    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+      "href",
+      "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
   });
 
   it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {

@@ -96,6 +96,8 @@ export interface UseOffThreadComputeOptions<I, O> {
 
 export interface OffThreadComputeResult<O> {
   value: O;
+  /** Key for the input that produced `value`; it can lag the current input while a worker runs. */
+  valueKey: string;
   /** True while a worker recompute is in flight (previous value still shown). */
   computing: boolean;
 }
@@ -167,5 +169,5 @@ export function useOffThreadCompute<I, O>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return { value: state.value, computing };
+  return { value: state.value, valueKey: state.key, computing };
 }

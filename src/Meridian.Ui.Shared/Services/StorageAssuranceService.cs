@@ -159,8 +159,14 @@ public sealed class StorageAssuranceService
         return result;
     }
 
-    public StorageMaintenanceActionDto? GetPreviewAction(string previewId) =>
-        _previews.TryGetValue(previewId, out var preview) ? preview.Action : null;
+    public StorageMaintenanceActionDto? GetExecuteAction(string previewId, string idempotencyKey)
+    {
+        if (_previews.TryGetValue(previewId, out var preview))
+            return preview.Action;
+
+        var key = $"{previewId}:{idempotencyKey.Trim()}";
+        return _idempotency.TryGetValue(key, out var result) ? result.Action : null;
+    }
 
     private IReadOnlyList<StorageMaintenanceCandidateDto> BuildCleanupCandidates()
     {
