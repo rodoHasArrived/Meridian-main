@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,9 @@ public static class ProviderDataProjectionEndpoints
             Results.Json(CreateProjection(service), jsonOptions))
             .WithName("GetProviderDataProjection")
             .WithTags("Providers")
-            .Produces<ProviderDataProjectionSnapshot>(StatusCodes.Status200OK);
+            .Produces<ProviderDataProjectionSnapshot>(StatusCodes.Status200OK)
+            .RequireWorkstationTenantScope()
+            .RequirePermission(UserPermission.ViewTrades);
     }
 
     public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service) =>
