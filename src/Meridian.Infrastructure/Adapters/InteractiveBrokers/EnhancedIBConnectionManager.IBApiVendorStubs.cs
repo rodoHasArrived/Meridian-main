@@ -64,7 +64,7 @@ public sealed partial class EnhancedIBConnectionManager
     {
         RecordMessageReceived();
         var contract = contractDetails.Contract;
-        ScannerResultReceived?.Invoke(this, (reqId, new ProviderScannerResult(rank, contract.Symbol, contract.Exchange, contract.ConId.ToString(), distance, benchmark, projection, legsStr, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        ScannerResultReceived?.Invoke(this, (reqId, new ProviderScannerResult(rank, contract.Symbol, contract.Exchange, contract.ConId.ToString(), distance, benchmark, projection, legsStr, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void scannerDataEnd(int reqId)
@@ -120,7 +120,7 @@ public sealed partial class EnhancedIBConnectionManager
         {
             if (!DateOnly.TryParseExact(expirationText, "yyyyMMdd", out var expiration)) continue;
             foreach (var strike in strikes)
-                OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(string.Empty, underlyingConId.ToString(), expiration, (decimal)strike, string.Empty, exchange, tradingClass, multiplier, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+                OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(string.Empty, underlyingConId.ToString(), expiration, (decimal)strike, string.Empty, exchange, tradingClass, multiplier, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
         }
     }
 
@@ -172,13 +172,13 @@ public sealed partial class EnhancedIBConnectionManager
     public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL)
     {
         RecordMessageReceived();
-        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void pnlSingle(int reqId, decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value)
     {
         RecordMessageReceived();
-        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, pos, (decimal)value, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, pos, (decimal)value, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
