@@ -8,6 +8,34 @@ namespace Meridian.Tests.Contracts;
 public sealed class AppConfigDtoRoundTripTests
 {
     [Fact]
+    public void AutoRemediationOptIn_SurvivesDeserializeSerializeRoundTrip()
+    {
+        const string json = """
+        {
+          "backfill": {
+            "autoRemediation": {
+              "enabled": true,
+              "defaultProvider": "polygon"
+            }
+          }
+        }
+        """;
+
+        var dto = JsonSerializer.Deserialize<AppConfigDto>(json);
+
+        dto.Should().NotBeNull();
+        dto!.Backfill.Should().NotBeNull();
+        dto.Backfill!.AutoRemediation.Should().NotBeNull();
+        dto.Backfill.AutoRemediation!.Enabled.Should().BeTrue();
+
+        var rewritten = JsonSerializer.Serialize(dto);
+        var reloaded = JsonSerializer.Deserialize<AppConfigDto>(rewritten);
+
+        reloaded!.Backfill!.AutoRemediation!.Enabled.Should().BeTrue();
+        reloaded.Backfill.AutoRemediation.DefaultProvider.Should().Be("polygon");
+    }
+
+    [Fact]
     public void UnmodeledTopLevelSections_SurviveDeserializeSerializeRoundTrip()
     {
         const string json = """

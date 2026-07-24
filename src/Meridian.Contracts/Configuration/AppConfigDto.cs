@@ -213,6 +213,9 @@ public sealed class BackfillConfigDto
 /// <summary>Operator-facing automatic gap-remediation configuration.</summary>
 public sealed class AutoGapRemediationConfigDto
 {
+    [JsonPropertyName("enabled")]
+    public bool Enabled { get; set; }
+
     [JsonPropertyName("minimumGapDurationSeconds")]
     public int MinimumGapDurationSeconds { get; set; } = 120;
 
