@@ -89,7 +89,7 @@ public sealed class StatementFetchScheduleRunner(
                 schedule.ScheduleId,
                 schedule.ConnectorId,
                 schedule.ExternalAccountId);
-            await scheduleStore.RecordRunAsync(
+            await scheduleStore.RecordFailureAsync(
                     schedule.ScheduleId,
                     nowUtc,
                     $"Failed: {ex.GetType().Name}",
