@@ -24,7 +24,13 @@ public enum SecurityMasterRevisionStateDto
     Submitted = 1,
     Approved = 2,
     Published = 3,
-    Rejected = 4
+    Rejected = 4,
+    /// <summary>
+    /// Read-tolerance member: a state written by a newer node that this node does not recognize.
+    /// An unknown state matches no workflow transition, so the revision is visible but inert
+    /// instead of failing every load of the revision list.
+    /// </summary>
+    Unknown = 5
 }
 
 /// <summary>

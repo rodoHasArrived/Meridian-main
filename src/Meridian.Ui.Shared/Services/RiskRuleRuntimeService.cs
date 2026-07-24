@@ -1,12 +1,26 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling).
+/// </summary>
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath)
+{
+    public static RiskRuleRuntimeOptions Default { get; } = new(
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian",
+            "workstation",
+            "risk-rules.json"));
+}
 
 public sealed record RiskRuleStatusDto(
     string RuleName,
@@ -32,6 +46,15 @@ public sealed record RiskRuleConfigUpdateRequest(
     int? MaxOrdersPerMinute = null,
     string? Reason = null);
 
+/// <summary>
+/// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
+/// risk dashboard (<see cref="GetAllStatusesAsync"/>, config get/update) and supplies the live
+/// thresholds and drawdown evaluation that the enforced pre-trade validator — Meridian.Risk's
+/// <c>CompositeRiskValidator</c>, registered as the <see cref="IRiskValidator"/> the OMS invokes —
+/// reads on every order. Position limits are additionally enforced by the operator-controls gate
+/// (<see cref="ExecutionOperatorControlService"/>) that the OMS runs earlier in the pipeline with
+/// its manual-override/bypass semantics.
+/// </summary>
 public sealed class RiskRuleRuntimeService
 {
     private const decimal DefaultDrawdownPercent = 5m;
@@ -54,6 +77,49 @@ public sealed class RiskRuleRuntimeService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? RiskRuleRuntimeOptions.Default;
         LoadSnapshot();
+    }
+
+    /// <summary>
+    /// Operator-tuned order-rate ceiling, read per evaluation by the enforced order-rate
+    /// throttle rule so hot updates take effect immediately.
+    /// </summary>
+    public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
+
+    /// <summary>
+    /// Evaluates the drawdown circuit breaker against the same live portfolio state and
+    /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
+    /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
+    /// pre-trade validator on every order.
+    /// </summary>
+    public RiskValidationResult EvaluateDrawdownGuardrail()
+    {
+        var portfolio = Resolve<IPortfolioState>();
+        if (portfolio is null)
+        {
+            // Execution state not yet wired — the drawdown circuit breaker cannot trip.
+            return RiskValidationResult.Approved();
+        }
+
+        var portfolioValue = portfolio.PortfolioValue;
+        if (portfolioValue <= 0m)
+        {
+            // No portfolio value to measure against, matching BuildDrawdownStatus's 0% baseline.
+            return RiskValidationResult.Approved();
+        }
+
+        var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
+        var drawdownPercent = (totalPnl / portfolioValue) * 100m;
+        var maxDrawdownPercent = GetMaxDrawdownPercent();
+
+        if (drawdownPercent <= -maxDrawdownPercent)
+        {
+            var reason =
+                $"Drawdown circuit breaker: {drawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}% breached max {maxDrawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}%.";
+            _logger.LogWarning("Pre-trade risk rejection (drawdown): {Reason}", reason);
+            return RiskValidationResult.Rejected(reason);
+        }
+
+        return RiskValidationResult.Approved();
     }
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)

@@ -23,6 +23,8 @@ public sealed record LedgerLineDimensionSet(
     string? VendorId = null,
     string? ProjectId = null)
 {
+    public Guid? PositionId { get; init; }
+
     public IReadOnlyDictionary<string, string> ExternalGlDimensions { get; init; } =
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }

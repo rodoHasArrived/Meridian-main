@@ -9,9 +9,8 @@ using Serilog;
 namespace Meridian.Platform.Runtime;
 
 /// <summary>
-/// Handles graceful shutdown of the application, ensuring all buffered events
-/// are flushed to storage before termination. Provides timeout handling,
-/// progress reporting, and webhook notifications.
+/// Compatibility shutdown handler for callers that have not moved to the runtime lifecycle
+/// control plane. Runtime hosts use IRuntimeLifecycleControlPlane and IRuntimeShutdownSequence.
 /// </summary>
 public sealed class GracefulShutdownHandler : IAsyncDisposable
 {

@@ -1,0 +1,81 @@
+<!-- @dsCard group="Core" viewport="900x600" name="Workstation Services" subtitle="ErrorBoundary · NotificationCenter · Hotkeys · session primitives" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Workstation services</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { ErrorBoundary, NotificationCenter, HotkeysProvider, UserMenu, RoleBadge, ReadOnlyBanner, Eyebrow, Kbd } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Crasher() {
+  const [broken, setBroken] = useState(false);
+  if (broken) throw new Error("TypeError: series[0].close is undefined (fixture gap at 2026-06-30)");
+  return (
+    <div style={{ padding: 12, fontSize: 12, color: "var(--text-secondary)", display: "flex", gap: 10, alignItems: "center" }}>
+      A healthy panel.
+      <button onClick={() => setBroken(true)} style={{ font: "12px var(--font-body)", padding: "4px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", cursor: "pointer" }}>Crash it</button>
+    </div>
+  );
+}
+
+function Box({ t, children }) {
+  return (
+    <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", padding: 14, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+      <Eyebrow>{t}</Eyebrow>
+      {children}
+    </div>
+  );
+}
+
+const NOW = Date.now();
+function App() {
+  const [items, setItems] = useState([
+    { id: "n1", tone: "error", title: "Drawdown breach", detail: "momentum.v4 · -8.4% vs -8.0% threshold", time: NOW - 372000, read: false },
+    { id: "n2", tone: "warning", title: "Feed gap", detail: "Polygon · XNAS · 42s", time: NOW - 1260000, read: false },
+    { id: "n3", tone: "success", title: "Backfill complete", detail: "Databento daily · 0 gaps remain", time: NOW - 4380000, read: true },
+  ]);
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxWidth: 860, alignItems: "start" }}>
+      <HotkeysProvider bindings={[
+        { keys: "ctrl+k", label: "Command palette", group: "General", action: () => {} },
+        { keys: "g d", label: "Go to Dashboard", group: "Navigate", action: () => {} },
+        { keys: "g a", label: "Go to Alerting", group: "Navigate", action: () => {} },
+        { keys: "a", label: "Acknowledge selected alert", group: "Alerts", action: () => {} },
+      ]} />
+      <Box t="ErrorBoundary — crash a panel, it degrades in place">
+        <ErrorBoundary label="Demo panel"><Crasher /></ErrorBoundary>
+      </Box>
+      <Box t="NotificationCenter — persistent, unlike Toast">
+        <div style={{ display: "flex", gap: 10 }}>
+          <NotificationCenter items={items} onMarkAllRead={() => setItems(items.map((n) => ({ ...n, read: true })))} />
+        </div>
+      </Box>
+      <Box t="Hotkeys — press ? for the cheat sheet">
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", display: "flex", gap: 6, alignItems: "center" }}>
+          Registered: <Kbd>Ctrl</Kbd><Kbd>K</Kbd> · <Kbd>G</Kbd><Kbd>D</Kbd> · <Kbd>A</Kbd> — press <Kbd>?</Kbd> to list them.
+        </div>
+      </Box>
+      <Box t="Session — UserMenu · RoleBadge · ReadOnlyBanner">
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <UserMenu name="R. Alvarez" role="operator" detail="desk-2 · UTC" onChrome={false}
+            items={[{ label: "Preferences", onSelect: () => {} }]} onSignOut={() => {}} />
+          <RoleBadge role="admin" /> <RoleBadge role="operator" /> <RoleBadge role="viewer" />
+        </div>
+        <ReadOnlyBanner />
+      </Box>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

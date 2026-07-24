@@ -17,11 +17,16 @@ public partial class SymbolMappingPage : Page
     private readonly SymbolMappingViewModel _viewModel;
 
     public SymbolMappingPage()
+        : this(new SymbolMappingViewModel())
+    {
+    }
+
+    public SymbolMappingPage(SymbolMappingViewModel viewModel)
     {
         InitializeComponent();
 
         _loggingService = WpfServices.LoggingService.Instance;
-        _viewModel = new SymbolMappingViewModel();
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
     }
 
@@ -33,6 +38,10 @@ public partial class SymbolMappingPage : Page
         }
         catch (System.OperationCanceledException)
         {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
         }
         catch (System.Exception ex)
         {

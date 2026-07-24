@@ -35,7 +35,7 @@ public sealed class TemplateBrokerSessionService
     public TemplateBrokerSessionService(TemplateBrokerHttpClient http) => _http = http;
 
     public Task<TemplateBrokerSession> OpenSessionAsync(CancellationToken ct = default) =>
-        _http.PostAsync<TemplateBrokerSessionRequest, TemplateBrokerSession>("/session/open", new(), ct);
+        _http.PostJsonAsync<TemplateBrokerSessionRequest, TemplateBrokerSession>("/session/open", new(), ct);
 }
 
 public sealed class TemplateBrokerHttpClient
@@ -44,7 +44,7 @@ public sealed class TemplateBrokerHttpClient
 
     public TemplateBrokerHttpClient(HttpClient httpClient) => _httpClient = httpClient;
 
-    public async Task<TResponse> PostAsync<TRequest, TResponse>(string path, TRequest payload, CancellationToken ct = default)
+    public async Task<TResponse> PostJsonAsync<TRequest, TResponse>(string path, TRequest payload, CancellationToken ct = default)
     {
         using var response = await _httpClient.PostAsJsonAsync(path, payload, ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

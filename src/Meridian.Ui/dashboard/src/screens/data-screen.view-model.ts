@@ -4,8 +4,59 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import {
+  buildProviderReadinessSummaryText,
+  credentialToneFromLabel,
+  diagnosticStatusFromReadiness,
+  findField,
+  formatLastGoodProviderResponse,
+  formatProviderReasonLabel,
+  formatProviderRoutingCapability,
+  formatProviderUtcMinute,
+  joinProviderDetailSentences,
+  normalizeProviderToken,
+  normalizeProviderTrustScore,
+  providerCredentialLabel,
+  providerCredentialSourceLabel,
+  providerGateImpactText,
+  providerReadinessStatusLabel,
+  providerRoutingEnvironmentLabel,
+  providerRoutingFallbackLabel,
+  providerRoutingRecommendedAction,
+  providerRoutingVerificationLabel,
+  providerVerificationLabel,
+  splitProviderSetupPascalCase,
+  uniqueStrings,
+  verificationToneFromLabel
+} from "@/screens/data-provider-display-view-model";
+import {
+  buildDataLoadingState,
+  buildRouteFocusCardState,
+  resolveDataWorkstream
+} from "@/screens/data-screen.route-state";
+import type {
+  DataOperationsRouteFocusCardState,
+  DataOperationsWorkstream
+} from "@/screens/data-screen.route-state";
+import type {
+  DataOperationsDetailField,
+  ProviderSetupCredentialFieldState,
+  ProviderSetupDialogState,
+  ProviderSetupFormState,
+  ProviderSetupInstitutionSearchPhase,
+  ProviderSetupInstitutionSearchState,
+  ProviderSetupNextActionState,
+  ProviderSetupPhase,
+  ProviderSetupPlaidLinkTokenPhase,
+  ProviderSetupSuccessMetadataState,
+  ProviderSetupSummaryState,
+  ProviderSetupWorkflowStepState
+} from "@/screens/data-screen.provider-setup.types";
+import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillExecutionHistoryResponse,
+  BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -16,13 +67,13 @@ import type {
   DataUploadTemplate,
   DataUploadTemplateCatalog,
   DataUploadValidationIssue,
+  DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessRow,
   ProviderReadinessStatus,
   ProviderReadinessSummary,
-  ProviderKind,
   ProviderKindMeta,
   PlaidInstitution,
   PlaidLinkTokenResponse,
@@ -33,6 +84,43 @@ import type {
   ProviderSetupRequest,
   ProviderSetupResult
 } from "@/types";
+
+export {
+  DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
+  buildDataLoadingState,
+  buildRouteFocusCardState,
+  resolveDataWorkstream
+} from "@/screens/data-screen.route-state";
+export type {
+  DataOperationsRouteFocusActionState,
+  DataOperationsRouteFocusCardState,
+  DataOperationsWorkstream,
+  DataWorkstationViewState
+} from "@/screens/data-screen.route-state";
+export type {
+  DataOperationsDetailField,
+  ProviderSetupCapabilityOptionState,
+  ProviderSetupCredentialFieldState,
+  ProviderSetupDialogState,
+  ProviderSetupEnvironmentFieldState,
+  ProviderSetupEnvironmentOptionState,
+  ProviderSetupFormState,
+  ProviderSetupInstitutionSearchPhase,
+  ProviderSetupInstitutionSearchResultState,
+  ProviderSetupInstitutionSearchState,
+  ProviderSetupKindOptionState,
+  ProviderSetupLiveAcknowledgementState,
+  ProviderSetupNextActionState,
+  ProviderSetupPhase,
+  ProviderSetupPlaidLinkTokenPhase,
+  ProviderSetupSelectFieldState,
+  ProviderSetupSuccessMetadataState,
+  ProviderSetupSummaryState,
+  ProviderSetupTextFieldState,
+  ProviderSetupWorkflowStepState
+} from "@/screens/data-screen.provider-setup.types";
+
+export { formatProviderReasonLabel, normalizeProviderTrustScore };
 
 export interface BackfillFormState {
   provider: string;
@@ -130,10 +218,69 @@ export interface BackfillResultCardState {
   errorText: string | null;
 }
 
+export interface BackfillLiveProgressSymbolState {
+  symbol: string;
+  range: string;
+  provider: string;
+  attempt: string;
+  status: string;
+  progress: string;
+  error: string | null;
+}
+
+export interface BackfillLiveProgressAttemptState {
+  id: string;
+  label: string;
+  detail: string;
+  tone: "default" | "warning" | "danger";
+}
+
+export interface BackfillLiveProgressState {
+  ariaLabel: string;
+  title: string;
+  summary: string;
+  active: boolean;
+  overallPercent: number;
+  symbols: BackfillLiveProgressSymbolState[];
+  recentAttempts: BackfillLiveProgressAttemptState[];
+  droppedNotificationWarning: string | null;
+  observedAt: string;
+}
+
+export type BackfillRemediationQueueSortColumn = "tier" | "deadline";
+
+export interface BackfillRemediationQueueSortState {
+  columnId: BackfillRemediationQueueSortColumn;
+  direction: "asc" | "desc";
+}
+
+export interface BackfillRemediationQueueRow {
+  executionId: string;
+  symbols: string;
+  provider: string;
+  tier: string;
+  tierSort: number;
+  status: string;
+  deadline: string;
+  deadlineSort: number;
+  workflow: string;
+  owner: string;
+  outcome: string;
+  evidence: string;
+}
+
+export interface BackfillRemediationQueueState {
+  rows: BackfillRemediationQueueRow[];
+  summary: string;
+  defaultProvider: string;
+  observedAt: string;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
-  getProgress: () => Promise<BackfillProgressResponse>;
+  getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
+  getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -153,23 +300,6 @@ export interface DataOperationsProviderEvidence {
 export interface DataOperationsEmptyState {
   title: string;
   description: string;
-}
-
-export interface DataOperationsRouteFocusActionState {
-  label: string;
-  href: string;
-  ariaLabel: string;
-}
-
-export interface DataOperationsRouteFocusCardState {
-  id: string;
-  role: "region" | "status";
-  ariaLabel: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  rows: DataOperationsDetailField[];
-  action: DataOperationsRouteFocusActionState | null;
 }
 
 export interface DataOperationsSectionState<T> {
@@ -263,6 +393,7 @@ export interface DataOperationsProviderRow {
   note: string;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
+  reasonLabelText: string;
   reasonCodeText: string;
   recommendedActionText: string;
   gateImpactText: string;
@@ -271,12 +402,6 @@ export interface DataOperationsProviderRow {
   ariaLabel: string;
   selectAriaLabel: string;
   detailDescription: string;
-}
-
-export interface DataOperationsDetailField {
-  id: string;
-  label: string;
-  value: string;
 }
 
 export type DataOperationsProviderTrustField = DataOperationsDetailField;
@@ -327,6 +452,7 @@ export interface DataOperationsProviderDetailState {
   tabs: DataOperationsProviderTabState[];
   verifyAction: DataOperationsProviderVerifyActionState;
   actionText: string;
+  reasonLabelText: string;
   reasonCodeText: string;
   gateImpactText: string;
 }
@@ -392,6 +518,9 @@ export interface DataOperationsExportDetailState {
   statusVariant: "success" | "warning" | "paper";
   fields: DataOperationsDetailField[];
   actionText: string;
+  actionHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
 }
 
 export interface DataOperationsPresentationState {
@@ -454,6 +583,12 @@ export interface DataUploadPanelState {
     label: string;
     ariaLabel: string;
   } | null;
+  workbookDownload: {
+    fileName: string;
+    href: string;
+    label: string;
+    ariaLabel: string;
+  } | null;
   fileInput: {
     id: string;
     label: string;
@@ -503,230 +638,6 @@ export type DataOperationsStatusRowClassName =
   | "bg-warning/5"
   | "bg-danger/5"
   | "bg-paper/5";
-
-// --- Provider setup types ---
-
-export interface ProviderSetupFormState {
-  kind: ProviderKind | string;
-  displayName: string;
-  environment?: "paper" | "live" | "sandbox" | "custom";
-  liveAcknowledged?: boolean;
-  apiKey: string;
-  apiSecret: string;
-  endpoint: string;
-  capabilities: string[];
-}
-
-export type ProviderSetupPhase = "idle" | "submitting" | "success" | "error";
-
-export interface ProviderSetupDialogState {
-  titleId: string;
-  descriptionId: string;
-  formLabel: string;
-  workflowSteps: ProviderSetupWorkflowStepState[];
-  providerKindField: ProviderSetupSelectFieldState;
-  selectedProviderSummary: ProviderSetupSummaryState;
-  displayNameField: ProviderSetupTextFieldState;
-  environmentField: ProviderSetupEnvironmentFieldState;
-  institutionSearch: ProviderSetupInstitutionSearchState | null;
-  liveAcknowledgement: ProviderSetupLiveAcknowledgementState;
-  credentialFields: ProviderSetupCredentialFieldState[];
-  capabilityOptions: ProviderSetupCapabilityOptionState[];
-  closeButtonLabel: string;
-  closeButtonDisabledReason: string | null;
-  cancelAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-  };
-  submitAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-    busyLabel: string;
-  };
-  statusLabel: string;
-  successPanel: {
-    title: string;
-    ariaLabel: string;
-  };
-  successMetadata: ProviderSetupSuccessMetadataState;
-  successActions: ProviderSetupNextActionState[];
-}
-
-export interface ProviderSetupWorkflowStepState {
-  id: "connect-source" | "acquire-data" | "validate-data" | "normalize-data" | "store-data" | "publish-data";
-  label: string;
-  description: string;
-  status: "complete" | "current" | "pending";
-  statusLabel: string;
-}
-
-export interface ProviderSetupSummaryState {
-  providerLabel: string;
-  description: string;
-  rows: DataOperationsDetailField[];
-  noCredentialMessage: string | null;
-}
-
-export interface ProviderSetupNextActionState {
-  id: "live-quotes" | "backfill" | "readiness" | "security-master" | "plaid-link" | "plaid-transfers";
-  label: string;
-  href: string;
-  ariaLabel: string;
-  variant: "default" | "outline";
-}
-
-export interface ProviderSetupSuccessMetadataState {
-  rows: DataOperationsDetailField[];
-  warnings: string[];
-  metadataAriaLabel: string;
-  warningsAriaLabel: string;
-}
-
-export interface ProviderSetupKindOptionState {
-  value: string;
-  label: string;
-}
-
-export interface ProviderSetupSelectFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  description: string;
-  options: ProviderSetupKindOptionState[];
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupTextFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  field: "displayName";
-  value: string;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupEnvironmentOptionState {
-  value: NonNullable<ProviderSetupFormState["environment"]>;
-  label: string;
-}
-
-export interface ProviderSetupEnvironmentFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  description: string;
-  value: NonNullable<ProviderSetupFormState["environment"]>;
-  options: ProviderSetupEnvironmentOptionState[];
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupLiveAcknowledgementState {
-  id: string;
-  label: string;
-  detail: string;
-  visible: boolean;
-  checked: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-  ariaLabel: string;
-}
-
-export type ProviderSetupInstitutionSearchPhase = "idle" | "searching" | "success" | "error";
-export type ProviderSetupPlaidLinkTokenPhase = "idle" | "creating" | "opening" | "exchanging" | "linked" | "ready" | "error";
-
-export interface ProviderSetupInstitutionSearchResultState {
-  institutionId: string;
-  name: string;
-  detail: string;
-  selected: boolean;
-}
-
-export interface ProviderSetupInstitutionSearchState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  placeholder: string;
-  description: string;
-  value: string;
-  disabled: boolean;
-  disabledReason: string | null;
-  phase: ProviderSetupInstitutionSearchPhase;
-  statusLabel: string;
-  searchAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-  };
-  results: ProviderSetupInstitutionSearchResultState[];
-  selectedInstitutionLabel: string | null;
-  linkTokenPhase: ProviderSetupPlaidLinkTokenPhase;
-  linkTokenStatusLabel: string;
-  linkTokenAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-  };
-  linkTokenResult: {
-    linkTokenPreview: string;
-    requestId: string | null;
-    expirationLabel: string | null;
-    institutionLabel: string | null;
-    environmentLabel: string | null;
-  } | null;
-  linkedEvidence: {
-    itemId: string;
-    institutionName: string;
-    status: string;
-    accountCountLabel: string;
-    accounts: Array<{
-      id: string;
-      name: string;
-      detail: string;
-    }>;
-    requestId: string | null;
-  } | null;
-  sandboxGuide: {
-    title: string;
-    detail: string;
-    username: string;
-    password: string;
-  } | null;
-  errorText: string | null;
-}
-
-export interface ProviderSetupCredentialFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  field: "apiKey" | "apiSecret" | "endpoint";
-  type: "password" | "url";
-  value: string;
-  autoComplete: "new-password" | "off";
-  placeholder: string | null;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupCapabilityOptionState {
-  id: string;
-  label: string;
-  description: string;
-  selected: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-}
 
 export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
   {
@@ -858,8 +769,10 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
-  getProgress: () => workstationApi.getBackfillProgress()
+  getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
+  getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
+const BACKFILL_PROGRESS_POLL_INTERVAL_MS = 500;
 const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
@@ -1040,7 +953,6 @@ const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
 };
 
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
-export const DATA_BACKFILL_ROUTE_FOCUS_CARD_ID = "data-backfill-route-focus";
 export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
@@ -1059,6 +971,15 @@ export function useDataViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
+  const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
+  const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
+  const [remediationHistoryLoading, setRemediationHistoryLoading] = useState(false);
+  const [remediationHistoryError, setRemediationHistoryError] = useState<string | null>(null);
+  const [remediationQueueSort, setRemediationQueueSort] = useState<BackfillRemediationQueueSortState>({
+    columnId: "tier",
+    direction: "asc"
+  });
+  const remediationHistoryRevisionRef = useRef(0);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1067,6 +988,10 @@ export function useDataViewModel(
   const [uploadPreviewResult, setUploadPreviewResult] = useState<DataUploadPreviewResult | null>(null);
   const [uploadError, setUploadError] = useState<ApiErrorDisplay | null>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [workbookFileName, setWorkbookFileName] = useState<string | null>(null);
+  const [workbookPreviewResult, setWorkbookPreviewResult] = useState<DataUploadWorkbookPreviewResult | null>(null);
+  const [workbookError, setWorkbookError] = useState<ApiErrorDisplay | null>(null);
+  const [workbookBusy, setWorkbookBusy] = useState(false);
   const backfillLifecycle = useRequestLifecycle({
     operation: "historical backfill command",
     runningMessage: "Submitting historical backfill command.",
@@ -1082,6 +1007,15 @@ export function useDataViewModel(
     successMessage: "Source data upload preview completed.",
     failureMessage: "Source data upload preview failed.",
     staleMessage: "Older source data upload preview discarded.",
+    maxRetries: 0
+  });
+  const workbookLifecycle = useRequestLifecycle({
+    operation: "onboarding workbook preview",
+    idleMessage: "Ready to preview the onboarding workbook.",
+    runningMessage: "Previewing onboarding workbook.",
+    successMessage: "Onboarding workbook preview completed.",
+    failureMessage: "Onboarding workbook preview failed.",
+    staleMessage: "Older onboarding workbook preview discarded.",
     maxRetries: 0
   });
 
@@ -1134,6 +1068,56 @@ export function useDataViewModel(
   }, [backfillLifecycle.invalidate, uploadLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
+  const getBackfillExecutions = services.getExecutions;
+  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
+    if (!getBackfillExecutions) {
+      return;
+    }
+
+    const revision = remediationHistoryRevisionRef.current + 1;
+    remediationHistoryRevisionRef.current = revision;
+    setRemediationHistoryLoading(true);
+    setRemediationHistoryError(null);
+
+    try {
+      const response = await getBackfillExecutions(signal);
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistory(response);
+      }
+    } catch (failure: unknown) {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryError(
+          describeApiError(failure, "Backfill remediation history is unavailable.").summary
+        );
+      }
+    } finally {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryLoading(false);
+      }
+    }
+  }, [getBackfillExecutions]);
+
+  useEffect(() => {
+    if (workstream !== "backfills") {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    void refreshRemediationHistory(controller.signal);
+
+    return () => controller.abort();
+  }, [refreshRemediationHistory, workstream]);
+
+  const remediationQueueState = useMemo(
+    () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
+    [remediationHistory, remediationQueueSort]
+  );
+  const toggleRemediationQueueSort = useCallback((columnId: string) => {
+    if (columnId !== "tier" && columnId !== "deadline") return;
+    setRemediationQueueSort((current) => current.columnId === columnId
+      ? { columnId, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { columnId, direction: "asc" });
+  }, []);
   const selectedProvider = useMemo(
     () => resolveSelectedProvider(data?.providers ?? [], selectedProviderId),
     [data, selectedProviderId]
@@ -1211,6 +1195,10 @@ export function useDataViewModel(
     () => result ? buildBackfillResultCardState(result, "result") : null,
     [result]
   );
+  const liveProgressState = useMemo(
+    () => buildBackfillLiveProgressState(liveProgress),
+    [liveProgress]
+  );
   const uploadPanelState = useMemo(
     () => buildDataUploadPanelState(
       uploadCatalog,
@@ -1231,12 +1219,21 @@ export function useDataViewModel(
       uploadPreviewResult
     ]
   );
+  const workbookReviewState = useMemo(
+    () => buildDataUploadWorkbookReviewState(workbookPreviewResult, {
+      busy: workbookBusy,
+      errorSummary: workbookError?.summary ?? null,
+      fileName: workbookFileName
+    }),
+    [workbookPreviewResult, workbookBusy, workbookError, workbookFileName]
+  );
 
   const openBackfillDialog = useCallback(() => {
     backfillLifecycle.invalidate();
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
     setBusy(false);
     setPhase("idle");
@@ -1271,6 +1268,7 @@ export function useDataViewModel(
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
   }, []);
 
@@ -1336,6 +1334,64 @@ export function useDataViewModel(
     uploadLifecycle.succeed
   ]);
 
+  const previewDataUploadWorkbook = useCallback(async (file: File | null) => {
+    const validationError = validateWorkbookUploadSelection(uploadCatalog, file);
+    if (validationError) {
+      // Invalidate any in-flight preview so an earlier request cannot later resolve and overwrite
+      // this rejection with a success state for the file the operator just replaced. The aborted
+      // request's finally block is gated on the (now stale) token, so it will not clear the busy
+      // flag; clear it here so the panel leaves the Previewing state and shows the validation error.
+      workbookLifecycle.invalidate();
+      setWorkbookBusy(false);
+      setWorkbookFileName(file?.name ?? null);
+      setWorkbookError(buildDataErrorState(validationError));
+      setWorkbookPreviewResult(null);
+      return;
+    }
+
+    const token = workbookLifecycle.start({ runningMessage: `Previewing ${file!.name}.` });
+    if (!token) return;
+    token.safeSetState(setWorkbookBusy, true);
+    token.safeSetState(setWorkbookFileName, file!.name);
+    token.safeSetState(setWorkbookError, null);
+    token.safeSetState(setWorkbookPreviewResult, null);
+
+    try {
+      const response = await workstationApi.previewDataUploadWorkbook(
+        { file: file! },
+        { signal: token.signal }
+      );
+      if (!token.isCurrent()) {
+        workbookLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setWorkbookPreviewResult, response);
+      workbookLifecycle.succeed(token, { message: "Onboarding workbook preview completed." });
+    } catch (err) {
+      if (!token.isCurrent()) {
+        workbookLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setWorkbookError, buildDataErrorState(err, "Onboarding workbook preview failed."));
+      workbookLifecycle.fail(token, err, { fallback: "Onboarding workbook preview failed." });
+    } finally {
+      if (token.isCurrent()) {
+        token.safeSetState(setWorkbookBusy, false);
+      }
+      workbookLifecycle.finish(token);
+    }
+  }, [
+    uploadCatalog,
+    workbookLifecycle.fail,
+    workbookLifecycle.finish,
+    workbookLifecycle.invalidate,
+    workbookLifecycle.markStale,
+    workbookLifecycle.start,
+    workbookLifecycle.succeed
+  ]);
+
   const previewBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
@@ -1392,15 +1448,48 @@ export function useDataViewModel(
     token.safeSetState(setBusy, true);
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
+    token.safeSetState(setLiveProgress, null);
 
+    const pollingController = new AbortController();
+    const abortPolling = () => pollingController.abort();
+    token.signal.addEventListener("abort", abortPolling, { once: true });
+    const pollProgress = async () => {
+      while (!pollingController.signal.aborted && token.isCurrent()) {
+        try {
+          const progress = await services.getProgress(pollingController.signal);
+          if (!pollingController.signal.aborted && token.isCurrent()) {
+            token.safeSetState(setLiveProgress, progress);
+          }
+        } catch {
+          if (pollingController.signal.aborted || !token.isCurrent()) {
+            break;
+          }
+          // The run remains authoritative; a later poll can recover from a transient read failure.
+        }
+
+        await waitForBackfillProgressPoll(BACKFILL_PROGRESS_POLL_INTERVAL_MS, pollingController.signal);
+      }
+    };
     try {
-      const nextResult = await services.run(buildBackfillRequest(form));
+      const runRequest = services.run(buildBackfillRequest(form));
+      const pollingTask = pollProgress();
+      const nextResult = await runRequest;
       if (!token.isCurrent()) {
         backfillLifecycle.markStale(token.version);
         return;
       }
       token.safeSetState(setResult, nextResult);
-      await services.getProgress().catch(() => null);
+      pollingController.abort();
+      await pollingTask;
+      const finalProgress = await services.getProgress(token.signal).catch(() => null);
+      if (finalProgress && token.isCurrent()) {
+        token.safeSetState(setLiveProgress, finalProgress);
+      }
+      await refreshRemediationHistory(token.signal);
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
+        return;
+      }
       backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
       if (!token.isCurrent()) {
@@ -1410,13 +1499,15 @@ export function useDataViewModel(
       token.safeSetState(setError, buildDataErrorState(err, "Backfill run failed."));
       backfillLifecycle.fail(token, err, { fallback: "Backfill run failed." });
     } finally {
+      pollingController.abort();
+      token.signal.removeEventListener("abort", abortPolling);
       if (token.isCurrent()) {
         token.safeSetState(setBusy, false);
         token.safeSetState(setPhase, "idle");
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -1799,6 +1890,12 @@ export function useDataViewModel(
     uploadError,
     uploadBusy,
     uploadRequestStatus: uploadLifecycle.status,
+    previewDataUploadWorkbook,
+    workbookReviewState,
+    workbookError,
+    workbookBusy,
+    workbookFileName,
+    workbookRequestStatus: workbookLifecycle.status,
     dialogOpen,
     openBackfillDialog,
     closeBackfillDialog,
@@ -1808,6 +1905,12 @@ export function useDataViewModel(
     previewResultCard,
     result,
     runResultCard,
+    liveProgressState,
+    remediationQueueState,
+    remediationHistoryLoading,
+    remediationHistoryError,
+    remediationQueueSort,
+    toggleRemediationQueueSort,
     error,
     busy,
     phase,
@@ -1836,56 +1939,10 @@ export function useDataViewModel(
   };
 }
 
-export function resolveDataWorkstream(pathname: string): "overview" | "backfills" {
-  return pathname.includes("/backfills") ? "backfills" : "overview";
-}
-
-export function buildDataLoadingState(
-  workstream: "overview" | "backfills" = "overview"
-): DataOperationsLoadingState {
-  const backfillFocus = workstream === "backfills";
-
-  return {
-    title: backfillFocus ? "Loading backfill queue" : "Loading Data workspace",
-    description: backfillFocus
-      ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
-      : "Waiting for provider posture, market data health, and export evidence.",
-    statusLabel: "Workspace data pending",
-    detail: backfillFocus
-      ? "Queued and review-required jobs will appear here as soon as workspace data is available."
-      : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
-    regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
-    role: "status",
-    ariaLive: "polite",
-    ariaBusy: true,
-    chips: [
-      { label: "Providers", value: "Pending" },
-      { label: "Data quality", value: "Pending" },
-      { label: backfillFocus ? "Backfills" : "Exports", value: "Pending" }
-    ],
-    actions: [
-      {
-        id: "settings",
-        label: "Check provider setup",
-        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
-        ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
-        variant: "default"
-      },
-      {
-        id: "quotes",
-        label: "Open live quotes",
-        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
-        ariaLabel: "Open live quotes while Data workspace loads",
-        variant: "outline"
-      }
-    ]
-  };
-}
-
 export function buildDataPresentationState(
   data: DataWorkspaceResponse | null,
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview",
+  workstream: DataOperationsWorkstream = "overview",
   selectedProviderId: string | null = null,
   selectedExportId: string | null = null,
   providerEvidence: DataOperationsProviderEvidence = {},
@@ -1944,6 +2001,15 @@ export function buildDataUploadPanelState(
         ariaLabel: `Download ${selectedTemplate.label} CSV template`
       }
     : null;
+  const workbookFileName = resolvedCatalog.workbookFileName?.trim();
+  const workbookDownload = workbookFileName
+    ? {
+        fileName: workbookFileName,
+        href: workstationApi.getOnboardingWorkbookDownloadUrl(),
+        label: "Download onboarding workbook (.xlsx)",
+        ariaLabel: "Download the Meridian onboarding workbook as an Excel .xlsx file"
+      }
+    : null;
   const issueRows = (preview?.issues ?? []).map(buildDataUploadIssueRow);
   const previewHeaders = preview?.headers.slice(0, 6) ?? [];
   const previewRows = (preview?.previewRows ?? []).slice(0, 3).map((row, index) => ({
@@ -1984,6 +2050,7 @@ export function buildDataUploadPanelState(
     acceptedFileTypes,
     maxFileSizeLabel: formatDataUploadFileSize(resolvedCatalog.maxFileBytes),
     templateDownload,
+    workbookDownload,
     fileInput: {
       id: "data-upload-source-file",
       label: busy ? "Previewing file" : "Upload CSV file",
@@ -2128,63 +2195,6 @@ export function resolveSelectedDataUploadTemplate(
   return catalog.templates.find((template) => template.templateId === selectedTemplateId) ?? catalog.templates[0];
 }
 
-export function buildRouteFocusCardState({
-  workstream,
-  selectedBackfillDetail,
-  backfillDetailEmptyState
-}: {
-  workstream: "overview" | "backfills";
-  selectedBackfillDetail: DataOperationsBackfillDetailState | null;
-  backfillDetailEmptyState: DataOperationsEmptyState | null;
-}): DataOperationsRouteFocusCardState {
-  if (workstream === "backfills") {
-    if (selectedBackfillDetail) {
-      return {
-        id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
-        role: "region",
-        ariaLabel: "Backfill route focus",
-        eyebrow: "Backfill Detail",
-        title: "Backfill queue focus",
-        description: selectedBackfillDetail.description,
-        rows: selectedBackfillDetail.rows,
-        action: null
-      };
-    }
-
-    const title = backfillDetailEmptyState?.title ?? "Backfill queue focus";
-    const description = backfillDetailEmptyState?.description ?? "No backfill selected.";
-    return {
-      id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
-      role: "status",
-      ariaLabel: "Backfill route focus empty state",
-      eyebrow: "Backfill Detail",
-      title,
-      description,
-      rows: [],
-      action: null
-    };
-  }
-
-  return {
-    id: "data-route-focus-overview",
-    role: "region",
-    ariaLabel: "Data workspace route focus",
-    eyebrow: "Lane Evidence",
-    title: "Provider and export readiness",
-    description: "Keep provider recovery, backfill pressure, and export handoffs visible while Data prepares inputs for Accounting and Reporting.",
-    rows: [
-      { id: "primary-checks", label: "Primary checks", value: "Providers / backfills / exports" },
-      { id: "security-coverage", label: "Security coverage", value: "Accounting lane" },
-      { id: "operator-handoff", label: "Operator handoff", value: "Reporting export evidence" }
-    ],
-    action: {
-      label: "Open Security Master",
-      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
-      ariaLabel: "Open Security Master in Accounting"
-    }
-  };
-}
-
 export function buildProviderSection(
   providers: DataProviderRecord[],
   selectedProviderId: string | null = null,
@@ -2197,9 +2207,10 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = evidence.providerReadiness?.blockedProviders ?? rows.filter((row) => row.status === "Blocked").length;
-  const degradedCount = evidence.providerReadiness?.degradedProviders ?? rows.filter((row) => row.status === "Degraded").length;
-  const reviewCount = evidence.providerReadiness?.reviewProviders ?? rows.filter((row) => row.statusTone === "warning").length;
+  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
+  const readyCount = rows.filter((row) => row.statusTone === "success").length;
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
   const statusLabel = rows.length === 0
     ? "No providers"
@@ -2221,7 +2232,13 @@ export function buildProviderSection(
   return {
     title: "Provider Management",
     subtitle: "Configure, verify, monitor, and route market-data and brokerage providers used by Meridian.",
-    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, rows.length),
+    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, {
+      rowCount: rows.length,
+      readyCount,
+      reviewCount,
+      degradedCount,
+      blockedCount
+    }),
     statusLabel,
     statusTone,
     commandActions: [
@@ -2315,7 +2332,7 @@ export function buildProviderRow(
   const bindings = record.bindings;
   const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
   const trustScoreText = trust
-    ? `${Math.round(trust.score)}% · ${trust.healthStatus}`
+    ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
       ? `${Math.round((1 - readiness.degradationScore) * 100)}% · readiness`
       : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
@@ -2327,6 +2344,7 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
   const recommendedActionText = readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
@@ -2387,6 +2405,7 @@ export function buildProviderRow(
         value: gateImpactText
       }
     ],
+    reasonLabelText,
     reasonCodeText,
     recommendedActionText,
     gateImpactText,
@@ -2437,7 +2456,7 @@ export function buildSelectedProviderDetail(
     providerId: selected.providerId,
     title: selected.displayName,
     subtitle: row.capability,
-    description: `${row.note} ${row.gateImpactText}.`,
+    description: joinProviderDetailSentences(row.note, row.gateImpactText),
     ariaLabel: `Provider detail for ${selected.displayName}: ${row.status}. ${row.capability}. ${row.recommendedActionText}`,
     status: row.status,
     statusTone: row.statusTone,
@@ -2460,6 +2479,7 @@ export function buildSelectedProviderDetail(
       ariaLabel: `Provider verification unavailable for ${selected.displayName}`
     },
     actionText: row.recommendedActionText,
+    reasonLabelText: row.reasonLabelText,
     reasonCodeText: row.reasonCodeText,
     gateImpactText: row.gateImpactText
   };
@@ -2567,7 +2587,21 @@ function buildProviderCenterRecords(
   for (const provider of providers) {
     const providerKey = normalizeProviderToken(provider.providerId ?? provider.provider);
     if (!matchedWorkspace.has(providerKey)) {
-      records.push(buildProviderCenterRecordFromWorkspace(provider));
+      const routingConnection = findRoutingConnectionForWorkspaceProvider(provider, routingConnections);
+      if (routingConnection) {
+        matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
+      }
+
+      records.push(buildProviderCenterRecord({
+        providerId: provider.providerId ?? provider.provider,
+        displayName: provider.displayName ?? provider.provider,
+        workspaceProvider: provider,
+        connection: provider.connectionSummary ?? null,
+        readiness: null,
+        routingConnection,
+        routingBindings,
+        trustSnapshots
+      }));
     }
   }
 
@@ -2701,6 +2735,24 @@ function findRoutingConnectionForReadiness(
       routingName === displayName ||
       connectionId.includes(providerId) ||
       providerId.includes(familyId);
+  }) ?? null;
+}
+
+function findRoutingConnectionForWorkspaceProvider(
+  provider: DataProviderRecord,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderToken(provider.providerId ?? provider.provider);
+  const displayName = normalizeProviderToken(provider.displayName ?? provider.provider);
+  const providerName = normalizeProviderToken(provider.provider);
+  return routingConnections.find((routingConnection) => {
+    const connectionId = normalizeProviderToken(routingConnection.connectionId);
+    const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
+    const routingName = normalizeProviderToken(routingConnection.displayName);
+    return connectionId === providerId ||
+      familyId === providerId ||
+      routingName === displayName ||
+      routingName === providerName;
   }) ?? null;
 }
 
@@ -2870,25 +2922,6 @@ function buildProviderSummaryCards(
     { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
     { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
   ];
-}
-
-function buildProviderReadinessSummaryText(
-  readiness: ProviderReadinessSummary | null | undefined,
-  rowCount: number
-): string {
-  if (!readiness) {
-    return rowCount > 0
-      ? "Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable."
-      : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
-  }
-
-  const counts = [
-    `${readiness.readyProviders} ready`,
-    `${readiness.reviewProviders} review`,
-    `${readiness.degradedProviders} degraded`,
-    `${readiness.blockedProviders} blocked`
-  ].join(" / ");
-  return `${readiness.summary} ${counts}. Next action: ${readiness.recommendedAction}`;
 }
 
 function buildProviderOverviewFields(
@@ -3125,226 +3158,10 @@ function buildProviderVerifyActionState(
   };
 }
 
-function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]): string {
-  switch (value) {
-    case "NotRequired":
-      return "Not required";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function diagnosticStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderDiagnosticRow["status"] {
-  switch (status) {
-    case "Ready":
-      return "pass";
-    case "Blocked":
-      return "fail";
-    case "Degraded":
-      return "warning";
-    default:
-      return "pending";
-  }
-}
-
-function providerReadinessStatusLabel(status: ProviderReadinessStatus): string {
-  switch (status) {
-    case "Ready":
-      return "Ready";
-    case "Review":
-      return "Review";
-    case "Degraded":
-      return "Degraded";
-    case "Blocked":
-      return "Blocked";
-    default:
-      return "Unknown";
-  }
-}
-
-function providerVerificationLabel(value: ProviderConnectionRow["verificationState"]): string {
-  switch (value) {
-    case "NotRequired":
-      return "Not required";
-    case "NotVerified":
-      return "Not verified";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialSource"]): string {
-  switch (value) {
-    case "LocalEncryptedStore":
-      return "Encrypted local store";
-    case "ExternalVaultReference":
-      return "External vault reference";
-    case "NotRequired":
-      return "Not required";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function providerRoutingVerificationLabel(
-  connection: ProviderRoutingConnection | null,
-  trust: ProviderRoutingTrustSnapshot | null
-): string {
-  if (trust?.isCertificationFresh) {
-    return "Certified";
-  }
-
-  if (connection?.productionReady) {
-    return "Production ready";
-  }
-
-  return connection ? "Certification pending" : "Not reported";
-}
-
-function providerRoutingRecommendedAction(
-  connection: ProviderRoutingConnection,
-  trust: ProviderRoutingTrustSnapshot | null,
-  bindings: ProviderRoutingBinding[],
-  enabled: boolean
-): string {
-  if (!enabled) {
-    return "Enable the routing connection before selecting it for provider workflows.";
-  }
-
-  if (bindings.length === 0) {
-    return "Add a provider-routing binding before selecting this connection.";
-  }
-
-  if (!connection.productionReady) {
-    return "Run provider certification before production routing.";
-  }
-
-  if (trust && !trust.isHealthy) {
-    return "Inspect provider health before routing new workflow traffic.";
-  }
-
-  return "Provider routing is ready for supported capabilities.";
-}
-
-function providerGateImpactText(
-  connection: ProviderRoutingConnection | null,
-  trust: ProviderRoutingTrustSnapshot | null
-): string {
-  if (!connection) {
-    return "No routing gate loaded";
-  }
-
-  if (!connection.enabled) {
-    return "Disabled for routing";
-  }
-
-  if (!connection.productionReady) {
-    return "Certification needed";
-  }
-
-  if (trust && !trust.isHealthy) {
-    return "Health gate needs review";
-  }
-
-  return "No gate impact reported";
-}
-
-function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
-  const count = bindings.reduce((total, binding) => total + binding.failoverConnectionIds.length, 0);
-  return count > 0 ? `${count} backup route${count === 1 ? "" : "s"}` : "No backup source active";
-}
-
-function providerRoutingEnvironmentLabel(connection: ProviderRoutingConnection | null): string {
-  if (!connection) {
-    return "Not set";
-  }
-
-  if (connection.connectionMode.toLowerCase().includes("paper")) {
-    return "PAPER";
-  }
-
-  if (connection.connectionMode.toLowerCase().includes("live")) {
-    return "LIVE";
-  }
-
-  return connection.connectionMode;
-}
-
-function formatProviderRoutingCapability(value: string): string {
-  switch (value) {
-    case "RealtimeMarketData":
-      return "Live quotes";
-    case "HistoricalBars":
-      return "Historical backfill";
-    case "ReferenceData":
-      return "Reference data";
-    case "BrokerageOrders":
-      return "Brokerage/order routing";
-    case "PortfolioSync":
-      return "Portfolio sync";
-    case "ReportingExport":
-      return "Reporting exports";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function formatLastGoodProviderResponse(connection: ProviderConnectionRow | null): string {
-  return formatProviderUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
-}
-
-function formatProviderUtcMinute(value: string | null | undefined): string {
-  if (!value) {
-    return "Never";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
-}
-
-function normalizeProviderToken(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function uniqueStrings(values: string[]): string[] {
-  return values.filter((value, index) => values.indexOf(value) === index);
-}
-
-function findField(fields: DataOperationsDetailField[], id: string): string | null {
-  return fields.find((field) => field.id === id)?.value ?? null;
-}
-
-function credentialToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
-  return value === "Verified" || value === "Not required"
-    ? "success"
-    : value === "Missing" || value === "Partial" || value === "Invalid"
-      ? "danger"
-      : "warning";
-}
-
-function verificationToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
-  return value === "Verified" || value === "Not required"
-    ? "success"
-    : value === "Failed"
-      ? "danger"
-      : "warning";
-}
-
 export function buildBackfillSection(
   backfills: DataBackfillRecord[],
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview"
+  workstream: DataOperationsWorkstream = "overview"
 ): DataOperationsBackfillSectionState {
   return {
     rows: backfills.map((backfill) => {
@@ -3509,7 +3326,10 @@ export function buildSelectedExportDetail(
       { id: "rows", label: "Rows", value: selected.rows },
       { id: "updated", label: "Updated", value: selected.updatedAt }
     ],
-    actionText
+    actionText,
+    actionHref: workstationRouteWithQuery("reportingExports", { exportId: selected.exportId }),
+    actionLabel: "Open Reporting exports",
+    actionAriaLabel: `Open Reporting exports for ${selected.exportId}`
   };
 }
 
@@ -4018,6 +3838,154 @@ export function buildBackfillResultCardState(
   };
 }
 
+export function buildBackfillLiveProgressState(
+  response: BackfillProgressResponse | null
+): BackfillLiveProgressState | null {
+  const snapshot = response?.providerProgress;
+  if (!snapshot) {
+    return null;
+  }
+
+  const symbols = Object.values(snapshot.symbols)
+    .sort((left, right) => left.symbol.localeCompare(right.symbol))
+    .map((symbol) => ({
+      symbol: symbol.symbol,
+      range: formatBackfillRange(symbol.rangeStart, symbol.rangeEnd),
+      provider: formatBackfillValue(symbol.currentProvider, "Waiting for provider"),
+      attempt: symbol.providerAttempt > 0
+        ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
+        : "Not started",
+      status: resolveBackfillProviderProgressStatus(symbol),
+      progress: `${clampBackfillProgress(symbol.percentComplete).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`,
+      error: symbol.error
+    }));
+  const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
+    id: [attempt.symbol, attempt.provider, attempt.providerAttempt, attempt.retryRound, attempt.observedAt].join("-"),
+    label: `${attempt.symbol} · ${attempt.provider}`,
+    detail: [
+      formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
+      `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
+      attempt.status ?? attempt.operation ?? "provider update",
+      `${attempt.barsDownloaded.toLocaleString()} bars`,
+      attempt.error
+    ].filter(Boolean).join(" · "),
+    tone: attempt.error
+      ? "danger" as const
+      : attempt.status?.toLowerCase().includes("skip")
+        ? "warning" as const
+        : "default" as const
+  }));
+  const overallPercent = clampBackfillProgress(snapshot.overallPercentComplete);
+  const active = response.isActive ?? response.active ?? false;
+  const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
+
+  return {
+    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })} percent.`,
+    title: active ? "Live provider progress" : "Final provider progress",
+    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}% overall`,
+    active,
+    overallPercent,
+    symbols,
+    recentAttempts,
+    droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
+      ? `${snapshot.droppedProviderNotifications.toLocaleString()} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
+      : null,
+    observedAt
+  };
+}
+
+export function buildBackfillRemediationQueueState(
+  response: BackfillExecutionHistoryResponse | null,
+  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
+): BackfillRemediationQueueState | null {
+  if (!response) return null;
+
+  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
+  const rows = response.executions
+    .filter((execution) => execution.autoRemediationSla !== null)
+    .map((execution): BackfillRemediationQueueRow => {
+      const sla = execution.autoRemediationSla!;
+      const dueAt = new Date(sla.dueAtUtc);
+      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
+      return {
+        executionId: execution.executionId,
+        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
+        provider: formatBackfillValue(sla.provider, defaultProvider),
+        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
+        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
+        status: formatBackfillRemediationStatus(sla.status),
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
+        deadlineSort,
+        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
+        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
+        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
+        evidence: [
+          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
+          sla.triggerSource,
+          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
+        ].filter(Boolean).join(" · ")
+      };
+    });
+
+  const direction = sort.direction === "asc" ? 1 : -1;
+  rows.sort((left, right) => {
+    const comparison = sort.columnId === "deadline"
+      ? left.deadlineSort - right.deadlineSort
+      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
+    return comparison === 0
+      ? left.executionId.localeCompare(right.executionId)
+      : comparison * direction;
+  });
+
+  return {
+    rows,
+    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
+    defaultProvider,
+    observedAt: formatBackfillProgressTimestamp(response.timestamp)
+  };
+}
+
+function formatBackfillRemediationStatus(status: string): string {
+  return status
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (value) => value.toUpperCase());
+}
+
+function resolveBackfillProviderProgressStatus(
+  symbol: BackfillProviderProgressSnapshot["symbols"][string]
+): string {
+  if (symbol.isFailed) return "Failed";
+  if (symbol.isSkipped) return "Skipped";
+  if (symbol.isCompleted) return "Completed";
+  return symbol.currentStatus ?? symbol.operation ?? "Pending";
+}
+
+function clampBackfillProgress(value: number): number {
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+}
+
+function formatBackfillProgressTimestamp(value: string | null | undefined): string {
+  if (!value) return "Time unavailable";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
+}
+
+function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const complete = () => {
+      window.clearTimeout(timer);
+      signal.removeEventListener("abort", complete);
+      resolve();
+    };
+    const timer = window.setTimeout(complete, delayMs);
+    signal.addEventListener("abort", complete, { once: true });
+  });
+}
+
 export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRequest {
   return {
     provider: form.provider.trim() || null,
@@ -4191,6 +4159,32 @@ function validateDataUploadSelection(
 
   if (Number.isFinite(file.size) && file.size > catalog.maxFileBytes) {
     return `Upload preview accepts files up to ${formatDataUploadFileSize(catalog.maxFileBytes)}.`;
+  }
+
+  return null;
+}
+
+function validateWorkbookUploadSelection(
+  catalog: DataUploadTemplateCatalog,
+  file: File | null
+): string | null {
+  if (!file) {
+    return "Choose an .xlsx workbook before previewing.";
+  }
+
+  const acceptedExtensions = (catalog.workbookAcceptedFileExtensions ?? [".xlsx"]).map((extension) =>
+    extension.toLowerCase()
+  );
+  const fileName = file.name.toLowerCase();
+  if (!acceptedExtensions.some((extension) => fileName.endsWith(extension))) {
+    return `Workbook preview accepts ${acceptedExtensions.join(", ")} files.`;
+  }
+
+  const maxBytes = catalog.workbookMaxFileBytes && catalog.workbookMaxFileBytes > 0
+    ? catalog.workbookMaxFileBytes
+    : catalog.maxFileBytes;
+  if (Number.isFinite(file.size) && file.size > maxBytes) {
+    return `Workbook preview accepts files up to ${formatDataUploadFileSize(maxBytes)}.`;
   }
 
   return null;
@@ -4476,185 +4470,6 @@ export function buildProviderSetupDialogState(
   };
 }
 
-export function buildPlaidInstitutionSearchState({
-  form,
-  query,
-  phase,
-  results,
-  selectedInstitutionId,
-  error,
-  linkTokenPhase = "idle",
-  linkTokenResult = null,
-  exchangeResult = null,
-  linkTokenError = null
-}: {
-  form: ProviderSetupFormState;
-  query: string;
-  phase: ProviderSetupInstitutionSearchPhase;
-  results: PlaidInstitution[];
-  selectedInstitutionId: string | null;
-  error: ApiErrorDisplay | null;
-  linkTokenPhase?: ProviderSetupPlaidLinkTokenPhase;
-  linkTokenResult?: PlaidLinkTokenResponse | null;
-  exchangeResult?: PlaidPublicTokenExchangeResult | null;
-  linkTokenError?: ApiErrorDisplay | null;
-}): ProviderSetupInstitutionSearchState | null {
-  if (form.kind !== "plaid") {
-    return null;
-  }
-
-  const trimmedQuery = query.trim();
-  const disabledReason = null;
-  const searchDisabledReason = trimmedQuery.length < 2
-    ? "Type at least two characters to search for a financial institution."
-    : null;
-  const selectedInstitution = results.find((institution) => institution.institutionId === selectedInstitutionId);
-  const linkTokenDisabledReason = selectedInstitution
-    ? null
-    : "Select a supported financial institution before opening the secure bank connection.";
-  const linkInstitutionName = linkTokenResult?.institutionName ?? selectedInstitution?.name ?? "the selected institution";
-  const linkTokenStatusLabel = linkTokenPhase === "creating"
-    ? "Preparing the secure bank connection."
-    : linkTokenPhase === "opening"
-      ? `Plaid Link is open for ${linkInstitutionName}. Complete the secure bank login in the modal.`
-      : linkTokenPhase === "exchanging"
-        ? "Plaid Link returned a public token. Meridian is exchanging it on the server."
-        : linkTokenPhase === "linked"
-          ? `${linkInstitutionName} account evidence was linked and stored by Meridian.`
-          : linkTokenPhase === "ready"
-            ? `Secure sandbox bank connection is ready for ${linkInstitutionName}.`
-            : linkTokenPhase === "error"
-              ? linkTokenError?.summary ?? "Secure bank connection could not be prepared."
-              : selectedInstitution
-                ? `Open Plaid Link for ${selectedInstitution.name}, then sign in with the sandbox test credentials.`
-                : "Select a supported institution to prepare the sandbox bank connection.";
-  const statusLabel = phase === "searching"
-    ? "Searching supported financial institutions."
-    : phase === "error"
-      ? error?.summary ?? "Bank search failed."
-      : phase === "success"
-        ? results.length === 0
-          ? `No supported institutions matched "${trimmedQuery}".`
-          : `${results.length} supported institution${results.length === 1 ? "" : "s"} found for "${trimmedQuery}".`
-        : "Search Plaid-supported institutions before opening the bank connection flow.";
-
-  return {
-    id: "provider-setup-plaid-institution",
-    label: "Financial institution",
-    ariaLabel: "Search supported financial institutions",
-    placeholder: "Search for your bank",
-    description: "Availability comes from Meridian's bank-connection provider. Final consent still happens in the secure bank connection flow.",
-    value: query,
-    disabled: Boolean(disabledReason),
-    disabledReason,
-    phase,
-    statusLabel,
-    searchAction: {
-      label: phase === "searching" ? "Searching..." : "Search",
-      ariaLabel: searchDisabledReason
-        ? `Search supported financial institutions unavailable: ${searchDisabledReason}`
-        : `Search supported financial institutions for ${trimmedQuery}`,
-      disabled: phase === "searching" || searchDisabledReason !== null,
-      disabledReason: phase === "searching" ? "Bank search is already running." : searchDisabledReason,
-      busy: phase === "searching"
-    },
-    results: results.map((institution) => ({
-      institutionId: institution.institutionId,
-      name: institution.name,
-      detail: [
-        institution.institutionId,
-        institution.countryCodes.join(", "),
-        institution.products.length > 0 ? institution.products.join(", ") : null
-      ].filter(Boolean).join(" | "),
-      selected: institution.institutionId === selectedInstitutionId
-    })),
-    selectedInstitutionLabel: selectedInstitution?.name ?? null,
-    linkTokenPhase,
-    linkTokenStatusLabel,
-    linkTokenAction: {
-      label: linkTokenPhase === "creating"
-        ? "Preparing..."
-        : linkTokenPhase === "opening"
-          ? "Plaid Link open"
-          : linkTokenPhase === "exchanging"
-            ? "Linking..."
-            : linkTokenPhase === "linked"
-              ? "Linked"
-              : "Open secure bank connection",
-      ariaLabel: linkTokenDisabledReason
-        ? `Open secure bank connection unavailable: ${linkTokenDisabledReason}`
-        : `Open secure bank connection for ${selectedInstitution?.name}`,
-      disabled: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging" || linkTokenPhase === "linked" || linkTokenDisabledReason !== null,
-      disabledReason: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging"
-        ? "Secure bank connection is already in progress."
-        : linkTokenPhase === "linked"
-          ? "Bank account evidence is already linked."
-          : linkTokenDisabledReason,
-      busy: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging"
-    },
-    linkTokenResult: linkTokenResult
-      ? {
-          linkTokenPreview: maskLinkToken(linkTokenResult.linkToken),
-          requestId: linkTokenResult.requestId ?? null,
-          expirationLabel: formatOptionalDateTime(linkTokenResult.expiration ?? null),
-          institutionLabel: linkTokenResult.institutionName ?? selectedInstitution?.name ?? null,
-          environmentLabel: linkTokenResult.environment ?? form.environment ?? null
-        }
-      : null,
-    linkedEvidence: exchangeResult
-      ? {
-          itemId: exchangeResult.item.itemId,
-          institutionName: exchangeResult.item.institutionName,
-          status: exchangeResult.item.status,
-          accountCountLabel: `${exchangeResult.accounts.length} account${exchangeResult.accounts.length === 1 ? "" : "s"} linked`,
-          accounts: exchangeResult.accounts.map((account) => ({
-            id: account.plaidAccountId,
-            name: account.name,
-            detail: [
-              account.mask ? `mask ${account.mask}` : null,
-              account.type,
-              account.subtype
-            ].filter(Boolean).join(" | ")
-          })),
-          requestId: exchangeResult.requestId ?? null
-        }
-      : null,
-    sandboxGuide: form.environment === "sandbox" || linkTokenResult?.environment?.toLowerCase() === "sandbox"
-      ? {
-          title: "Sandbox login",
-          detail: "Use these Plaid Sandbox credentials inside the secure bank connection after Link opens.",
-          username: "user_good",
-          password: "pass_good"
-        }
-      : null,
-    errorText: error?.summary ?? null
-  };
-}
-
-function maskLinkToken(linkToken: string): string {
-  if (linkToken.length <= 16) {
-    return "Link token ready";
-  }
-
-  return `${linkToken.slice(0, 12)}...${linkToken.slice(-4)}`;
-}
-
-function formatOptionalDateTime(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-}
-
 export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): ProviderSetupWorkflowStepState[] {
   const connected = phase === "success";
   return [
@@ -4823,13 +4638,6 @@ function formatProviderSetupCredentialSource(value: string): string {
   }
 }
 
-function splitProviderSetupPascalCase(value: string): string {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/_/g, " ")
-    .trim() || value;
-}
-
 function isValidEndpointUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
@@ -4914,7 +4722,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+      href: WORKSTATION_ROUTE_CATALOG.dataOperations,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -5015,3 +4823,5 @@ function providerSetupCredentialRequiredMessage(label: string, providerLabel: st
   const article = label.toUpperCase().startsWith("API") ? "An" : "A";
   return `${article} ${label} is required for ${providerLabel}.`;
 }
+import { buildPlaidInstitutionSearchState } from "./data-screen.plaid-institution-search";
+export { buildPlaidInstitutionSearchState } from "./data-screen.plaid-institution-search";

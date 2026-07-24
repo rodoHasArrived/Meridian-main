@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace Meridian.Tests.Infrastructure;
 
@@ -100,22 +101,41 @@ public abstract class TempDirectoryTestBase : IDisposable
 
     private static void CleanupDirectory(string path)
     {
-        try
+        // Retry with a short backoff before giving up. Transient Windows file locks (antivirus
+        // scans, lagging handle release after a write) can make the first delete throw even when
+        // the directory is about to become deletable, so a single attempt is flaky. This mirrors
+        // the retry teardown previously copy-pasted across the Storage test suite; new tests that
+        // need temp-directory cleanup should derive from this base rather than re-implement it.
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (Directory.Exists(path))
+            try
             {
-                Directory.Delete(path, recursive: true);
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
+
+                return;
             }
-        }
-        catch (IOException)
-        {
-            // Directory may be in use or locked - log but don't fail the test
-            Console.WriteLine($"[WARN] Test cleanup: Could not delete directory {path}");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Permission issue - log but don't fail the test
-            Console.WriteLine($"[WARN] Test cleanup: Access denied for directory {path}");
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(10);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(10);
+            }
+            catch (IOException)
+            {
+                // Directory may be in use or locked - log but don't fail the test
+                Console.WriteLine($"[WARN] Test cleanup: Could not delete directory {path}");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Permission issue - log but don't fail the test
+                Console.WriteLine($"[WARN] Test cleanup: Access denied for directory {path}");
+            }
         }
     }
 }

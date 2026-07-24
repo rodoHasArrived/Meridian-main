@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 using Meridian.Contracts.Workstation;
 
@@ -33,6 +34,7 @@ public static class ReportWriterGridEngine
             .ToArray();
         var metrics = NormalizeMetrics(grid.Metrics);
         var formulas = NormalizeFormulas(grid.Formulas);
+        var circularFormulas = DetectCircularFormulas(grid, formulas, warnings);
         var filters = NormalizeFilters(grid.Filters);
 
         if (rows.Count == 0)
@@ -47,14 +49,14 @@ public static class ReportWriterGridEngine
         {
             var pivotColumns = BuildPivotColumns(filteredRows, columnDimensions);
             columnList = BuildPivotRenderColumns(rowDimensions, pivotColumns, metrics, formulas);
-            renderedRows = RenderPivotRows(grid, filteredRows, rowDimensions, columnDimensions, pivotColumns, metrics, formulas, warnings);
+            renderedRows = RenderPivotRows(grid, filteredRows, rowDimensions, columnDimensions, pivotColumns, metrics, formulas, circularFormulas, warnings);
         }
         else
         {
             columnList = BuildColumns(dimensions, metrics, formulas, includeContribution: grid.Kind == ReportWriterGridKindDto.Contribution);
             renderedRows = grid.Kind == ReportWriterGridKindDto.Detail
-                ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, warnings)
-                : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, warnings);
+                ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, circularFormulas, warnings)
+                : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, circularFormulas, warnings);
         }
 
         renderedRows = ApplyFormatRules(grid, renderedRows, warnings);
@@ -175,6 +177,7 @@ public static class ReportWriterGridEngine
 
     private static ReportWriterFormatRuleDto[] NormalizeFormatRules(IReadOnlyList<ReportWriterFormatRuleDto>? rules) =>
         rules?
+            .OfType<ReportWriterFormatRuleDto>()
             .Where(static rule => !string.IsNullOrWhiteSpace(rule.Column))
             .Select(static rule => rule with
             {
@@ -190,6 +193,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<string> dimensions,
         IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlySet<string> circularFormulas,
         ISet<string> warnings)
     {
         var fieldTotals = BuildSourceTotals(rows, metrics.Select(metric => metric.SourceField), warnings);
@@ -217,7 +221,7 @@ public static class ReportWriterGridEngine
             output.Add(new WorkingRow(values, numericValues));
         }
 
-        ApplyFormulas(output, formulas, fieldTotals, warnings);
+        ApplyFormulas(output, formulas, circularFormulas, fieldTotals, warnings);
         return output
             .Select((row, index) => new ReportWriterGridRowDto(BuildRowKey(row.Values, dimensions, index), row.Values))
             .ToArray();
@@ -231,6 +235,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<PivotColumn> pivotColumns,
         IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlySet<string> circularFormulas,
         ISet<string> warnings)
     {
         var groups = new Dictionary<string, PivotAggregateGroup>(StringComparer.Ordinal);
@@ -258,7 +263,7 @@ public static class ReportWriterGridEngine
             .Select(group => group.ToWorkingRow(metrics, pivotColumns))
             .ToList();
         var metricTotals = BuildMetricTotals(workingRows);
-        ApplyFormulas(workingRows, formulas, metricTotals, warnings);
+        ApplyFormulas(workingRows, formulas, circularFormulas, metricTotals, warnings);
         var sorted = SortRows(workingRows, grid, metrics);
 
         return sorted
@@ -272,6 +277,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<string> dimensions,
         IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlySet<string> circularFormulas,
         ISet<string> warnings)
     {
         var groups = new Dictionary<string, AggregateGroup>(StringComparer.Ordinal);
@@ -302,7 +308,7 @@ public static class ReportWriterGridEngine
         }
 
         var metricTotals = BuildMetricTotals(workingRows);
-        ApplyFormulas(workingRows, formulas, metricTotals, warnings);
+        ApplyFormulas(workingRows, formulas, circularFormulas, metricTotals, warnings);
         var sorted = SortRows(workingRows, grid, metrics);
         var limited = grid.Kind == ReportWriterGridKindDto.TopN && grid.TopN is > 0
             ? sorted.Take(grid.TopN.Value)
@@ -691,13 +697,7 @@ public static class ReportWriterGridEngine
         char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
 
     private static bool IsFormulaFunctionIdentifier(string identifier) =>
-        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase);
+        FormulaEvaluator.IsFunctionName(identifier);
 
     private static void ApplyContribution(IReadOnlyList<WorkingRow> rows, string metricName)
     {
@@ -714,9 +714,75 @@ public static class ReportWriterGridEngine
         }
     }
 
+    /// <summary>
+    /// Determines which formulas participate in (or transitively depend on) a circular reference
+    /// among the grid's own formulas, so those formulas are skipped instead of resolving to
+    /// misleading empty/partial values or masking the cycle as a generic "field not found" warning.
+    /// </summary>
+    private static IReadOnlySet<string> DetectCircularFormulas(
+        ReportWriterGridDefinitionDto grid,
+        IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        ISet<string> warnings)
+    {
+        if (formulas.Count == 0)
+        {
+            return FrozenSet<string>.Empty;
+        }
+
+        var formulaNames = formulas
+            .Select(static formula => formula.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Edges point from a formula to the sibling formulas it references (self-references included).
+        // Duplicate formula names are tolerated the same way the rest of the engine tolerates them
+        // (last definition wins) rather than throwing.
+        var dependencies = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var formula in formulas)
+        {
+            dependencies[formula.Name] = ExtractFormulaSourceFields(formula.Expression)
+                .Where(formulaNames.Contains)
+                .ToArray();
+        }
+
+        // Kahn-style resolution: a formula is resolvable once every sibling formula it depends on is
+        // resolvable. Whatever never resolves is inside a cycle or downstream of one.
+        var resolved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        bool changed;
+        do
+        {
+            changed = false;
+            foreach (var name in formulaNames)
+            {
+                if (resolved.Contains(name))
+                {
+                    continue;
+                }
+
+                if (dependencies[name].All(resolved.Contains))
+                {
+                    resolved.Add(name);
+                    changed = true;
+                }
+            }
+        }
+        while (changed);
+
+        var circular = formulaNames
+            .Where(name => !resolved.Contains(name))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var name in circular.OrderBy(static name => name, StringComparer.OrdinalIgnoreCase))
+        {
+            warnings.Add($"Formula '{name}' in grid '{grid.GridId}' is part of a circular reference and was not evaluated.");
+        }
+
+        return circular;
+    }
+
     private static void ApplyFormulas(
         IReadOnlyList<WorkingRow> rows,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlySet<string> circularFormulas,
         IReadOnlyDictionary<string, decimal> totals,
         ISet<string> warnings)
     {
@@ -724,6 +790,12 @@ public static class ReportWriterGridEngine
         {
             foreach (var formula in formulas)
             {
+                if (circularFormulas.Contains(formula.Name))
+                {
+                    row.Values[formula.Name] = string.Empty;
+                    continue;
+                }
+
                 try
                 {
                     var evaluator = new FormulaEvaluator(
@@ -963,7 +1035,7 @@ public static class ReportWriterGridEngine
         string.Join("|", dimensions.Select(dimension => values.TryGetValue(dimension, out var value) ? value : string.Empty));
 
     private static string FormatDecimal(decimal value) =>
-        value.ToString("0.######", CultureInfo.InvariantCulture);
+        ReportingNumberFormat.FormatDecimal(value);
 
     private sealed class AggregateGroup
     {
@@ -1231,6 +1303,9 @@ public static class ReportWriterGridEngine
                     var divisor = ParseFactor();
                     if (divisor == 0m)
                     {
+                        // Raw '/' surfaces division by zero as a warning (see ApplyFormulas). Callers
+                        // who want a silent fallback must use safeDivide/percent/basisPoints, whose
+                        // zero handling is centralized in DivideOrFallback.
                         throw new DivideByZeroException("formula attempted division by zero.");
                     }
 
@@ -1288,62 +1363,74 @@ public static class ReportWriterGridEngine
             return ResolveValue(identifier);
         }
 
-        private decimal EvaluateFunction(string identifier)
+        // Single source of truth for formula functions. Adding a function means adding one entry
+        // here — recognition (lineage extraction), dispatch, and evaluation all read from this map.
+        private static readonly FrozenDictionary<string, Func<FormulaEvaluator, decimal>> Functions =
+            new Dictionary<string, Func<FormulaEvaluator, decimal>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["total"] = static self => self.EvaluateTotal(),
+                ["abs"] = static self => self.EvaluateAbs(),
+                ["min"] = static self => self.EvaluateMin(),
+                ["max"] = static self => self.EvaluateMax(),
+                ["safeDivide"] = static self => self.EvaluateSafeDivide(),
+                ["percent"] = static self => self.EvaluateRatio(100m),
+                ["basisPoints"] = static self => self.EvaluateRatio(10000m),
+                ["round"] = static self => self.EvaluateRound(),
+            }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+        public static bool IsFunctionName(string identifier) => Functions.ContainsKey(identifier);
+
+        private decimal EvaluateFunction(string identifier) =>
+            Functions.TryGetValue(identifier, out var evaluator)
+                ? evaluator(this)
+                : throw new InvalidOperationException($"function '{identifier}' is not supported.");
+
+        private decimal EvaluateTotal()
         {
-            if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase))
-            {
-                var field = ParseFieldArgument();
-                Expect(')');
-                return _totalResolver(field)
-                       ?? throw new InvalidOperationException($"total field '{field}' was not found.");
-            }
-
-            if (string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase))
-            {
-                var value = ParseExpression();
-                Expect(')');
-                return Math.Abs(value);
-            }
-
-            if (string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase))
-            {
-                var values = ParseExpressionArgumentList(minimumCount: 1);
-                return string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
-                    ? values.Min()
-                    : values.Max();
-            }
-
-            if (string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase))
-            {
-                var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
-                var denominator = values[1];
-                return denominator == 0m
-                    ? values.Count == 3 ? values[2] : 0m
-                    : values[0] / denominator;
-            }
-
-            if (string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase))
-            {
-                var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
-                var denominator = values[1];
-                var fallback = values.Count == 3 ? values[2] : 0m;
-                var ratio = denominator == 0m ? fallback : values[0] / denominator;
-                return string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
-                    ? ratio * 100m
-                    : ratio * 10000m;
-            }
-
-            if (string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase))
-            {
-                var values = ParseExpressionArgumentList(minimumCount: 1, maximumCount: 2);
-                var decimals = values.Count == 2 ? ToScale(values[1]) : 2;
-                return Math.Round(values[0], decimals, MidpointRounding.AwayFromZero);
-            }
-
-            throw new InvalidOperationException($"function '{identifier}' is not supported.");
+            var field = ParseFieldArgument();
+            Expect(')');
+            return _totalResolver(field)
+                   ?? throw new InvalidOperationException($"total field '{field}' was not found.");
         }
+
+        private decimal EvaluateAbs()
+        {
+            var value = ParseExpression();
+            Expect(')');
+            return Math.Abs(value);
+        }
+
+        private decimal EvaluateMin() => ParseExpressionArgumentList(minimumCount: 1).Min();
+
+        private decimal EvaluateMax() => ParseExpressionArgumentList(minimumCount: 1).Max();
+
+        private decimal EvaluateSafeDivide()
+        {
+            var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+            return DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
+        }
+
+        private decimal EvaluateRatio(decimal scale)
+        {
+            var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+            var ratio = DivideOrFallback(values[0], values[1], values.Count == 3 ? values[2] : 0m);
+            return ratio * scale;
+        }
+
+        private decimal EvaluateRound()
+        {
+            var values = ParseExpressionArgumentList(minimumCount: 1, maximumCount: 2);
+            var decimals = values.Count == 2 ? ToScale(values[1]) : 2;
+            return Math.Round(values[0], decimals, MidpointRounding.AwayFromZero);
+        }
+
+        // Centralized zero-denominator policy for the named "safe" division functions
+        // (safeDivide/percent/basisPoints): a zero denominator yields the caller-supplied fallback
+        // (defaulting to 0) rather than throwing. This is the deliberate counterpart to the raw
+        // '/' operator, which surfaces division by zero as a DivideByZeroException so the grid records
+        // a formula warning. The two paths are intentionally different and both defined in one place.
+        private static decimal DivideOrFallback(decimal numerator, decimal denominator, decimal fallbackWhenZeroDenominator) =>
+            denominator == 0m ? fallbackWhenZeroDenominator : numerator / denominator;
 
         private static int ToScale(decimal value)
         {

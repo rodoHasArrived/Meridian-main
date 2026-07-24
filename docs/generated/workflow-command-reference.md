@@ -14,6 +14,19 @@
   - `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`
   - `python3 build/scripts/docs/generate-workflow-manifest.py`
 
+## postgresql-schema-control
+
+- Owners: @storage-platform, @developer-experience
+- Expected artifacts: database/manifest/catalog.json, database/manifest/contracts.json, database/manifest/dependencies.json, database/manifest/migrations.json, database/manifest/policies.json, docs/generated/database
+- Owner lane: PostgreSQL Schema Control
+- Refresh trigger: SQL migration, public contract, schema registry, policy, or schema-control tooling change
+- Canonical output roots: database/manifest, docs/generated/database
+- Retention: replace-in-place (maxAgeDays=30, retainLatest=1)
+- Commands:
+  - `python3 build/scripts/schema-control.py inventory --base-ref origin/main`
+  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref origin/main`
+  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot`
+
 ## desktop-screenshot-catalog
 
 - Owners: @desktop-shell, @operator-experience
@@ -103,6 +116,7 @@
 - Canonical output roots: artifacts/test-results/targeted-dotnet, artifacts/targeted-browser, artifacts/targeted-docs, artifacts/wpf-validation, artifacts/publish/targeted-desktop-smoke
 - Retention: workflow-artifact-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
+  - `python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter="FullyQualifiedName~<TestClassOrMethod>" --wait`
   - `gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
   - `gh workflow run targeted-test.yml --ref <branch> -f mode=wpf-dev-loop -f runner=windows-latest -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests"`
 

@@ -1,16 +1,24 @@
+**Skill Selection**
+- Skill: `meridian-simulated-user-panel`
+- Mode: `design_partner`
+- Reason: fixture-backed research export critique
+- Required Opening: inspect the workflow evidence
+
 ## Executive Summary
 - Mode: `design_partner`
+- Evidence status: `partial`
+- Disclaimer: This is simulated persona feedback, not observed user research.
 - Verdict: `prototype`
 - Meridian's export flow is already useful because CSV and Parquet plus visible progress create a credible research path, but advanced users still hit a ceiling around presets, notebook handoff, and provenance.
 
 ## Panel
-- Quantitative Analyst — tests repeated research workflow efficiency.
-- Academic Researcher — tests reproducibility and provenance.
-- Data Engineer — tests machine-readable handoff and automation potential.
-- Hobbyist Builder — tests approachability and extension paths.
+- Quantitative Researcher — tests repeated research workflow efficiency.
+- Investment Analyst — tests reproducibility and provenance.
+- Data Operations Analyst — tests machine-readable handoff and automation potential.
+- Portfolio Manager — tests approachability and extension paths.
 
 ## Persona Findings
-### Quantitative Analyst
+### Quantitative Researcher
 - Liked: CSV and Parquet exports plus visible progress make the feature feel real instead of aspirational.
 - Didn't like: Re-entering filters each time is repeated manual work that will compound quickly.
 - Missing or risky: Saved presets are missing, so the workflow ceiling appears early for repeated research loops.
@@ -24,7 +32,7 @@
 - Extensibility: 4/5 - Presets and richer metadata would compound nicely.
 - Learning Curve: 4/5 - The surface looks approachable for skilled users.
 
-### Academic Researcher
+### Investment Analyst
 - Liked: Parquet support and visible progress are strong foundations for defensible research.
 - Didn't like: There is no provenance summary describing symbols, time ranges, or providers in the exported bundle.
 - Missing or risky: Reproducibility suffers without provenance and explicit assumptions.
@@ -38,7 +46,7 @@
 - Extensibility: 4/5 - Metadata sidecars and presets would raise the ceiling sharply.
 - Learning Curve: 4/5 - The workflow is understandable.
 
-### Data Engineer
+### Data Operations Analyst
 - Liked: CSV and Parquet are the right baseline formats.
 - Didn't like: There is no direct DuckDB or Jupyter handoff, so downstream automation still starts with manual work.
 - Missing or risky: The missing notebook-oriented bridge and provenance metadata make the output less automation-ready than it should be.
@@ -52,7 +60,7 @@
 - Extensibility: 5/5 - This flow could become a strong integration seam.
 - Learning Curve: 4/5 - The pattern is easy to understand.
 
-### Hobbyist Builder
+### Portfolio Manager
 - Liked: The current flow still gives a visible win quickly.
 - Didn't like: Re-entering filters and lacking preset reuse makes the flow feel less lovable over time.
 - Missing or risky: There is no obvious bridge from export to experimentation in a notebook.
@@ -69,7 +77,7 @@
 ## Cross-Persona Tensions
 - Shared complaint: the missing preset workflow forces repeated manual work.
 - Shared complaint: provenance needs to cover symbols, providers, filters, and time ranges more explicitly.
-- Tension: the Hobbyist Builder wants a lightweight notebook bridge quickly, while the Academic Researcher would rather prioritize provenance first.
+- Tension: the Portfolio Manager wants a lightweight notebook bridge quickly, while the Investment Analyst would rather prioritize provenance first.
 
 ## Owner Actions
 - Now: Add export presets and a provenance summary that records symbols, providers, filters, and time range.

@@ -27,7 +27,7 @@
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="2" Direction="270" Opacity="0.30" />
+                <DropShadowEffect Color="{StaticResource ShadowColor}" BlurRadius="18" ShadowDepth="2" Direction="270" Opacity="0.30" />
             </Setter.Value>
         </Setter>
     </Style>
@@ -214,19 +214,19 @@
 
     <Style x:Key="TagIBStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4D42C6D6" />
+        <Setter Property="BorderBrush" Value="{StaticResource TagIbBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="TagAlpacaStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4DE4A84B" />
+        <Setter Property="BorderBrush" Value="{StaticResource TagAlpacaBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="TagPolygonStyle" TargetType="Border" BasedOn="{StaticResource TagStyle}">
         <Setter Property="Background" Value="{StaticResource ConsoleAccentPurpleAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="#4D7AB3FF" />
+        <Setter Property="BorderBrush" Value="{StaticResource TagPolygonBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
@@ -517,15 +517,15 @@
     <!-- ========================================== -->
 
     <Style x:Key="DarkTooltipStyle" TargetType="ToolTip">
-        <Setter Property="Background" Value="#0F1B28" />
-        <Setter Property="Foreground" Value="#DCE8F4" />
-        <Setter Property="BorderBrush" Value="#1A2F42" />
+        <Setter Property="Background" Value="{StaticResource DarkTooltipSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource DarkTooltipTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DarkTooltipBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="10,7" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.32" />
+                <DropShadowEffect Color="{StaticResource ShadowColor}" BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.32" />
             </Setter.Value>
         </Setter>
         <Setter Property="Template">
@@ -549,7 +549,7 @@
     <!-- ========================================== -->
 
     <Style x:Key="LoadingOverlayStyle" TargetType="Grid">
-        <Setter Property="Background" Value="#80000000" />
+        <Setter Property="Background" Value="{StaticResource ModalScrimBrush}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
     </Style>

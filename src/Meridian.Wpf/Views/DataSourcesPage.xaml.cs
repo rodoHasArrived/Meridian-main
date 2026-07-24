@@ -16,10 +16,12 @@ public partial class DataSourcesPage : Page
 {
     private readonly DataSourcesViewModel _viewModel;
 
-    public DataSourcesPage(WpfServices.ConfigService configService)
+    public DataSourcesPage(
+        WpfServices.ConfigService configService,
+        WpfServices.FirstRunService firstRunService)
     {
         InitializeComponent();
-        _viewModel = new DataSourcesViewModel(configService);
+        _viewModel = new DataSourcesViewModel(configService, firstRunService);
         DataContext = _viewModel;
     }
 
@@ -31,6 +33,10 @@ public partial class DataSourcesPage : Page
         }
         catch (System.OperationCanceledException)
         {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
         }
         catch (System.Exception ex)
         {

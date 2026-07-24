@@ -1,7 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
-using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -50,25 +51,35 @@ public sealed class InMemoryAccountingProductionCertificationProfileStore : IAcc
         => FileAccountingProductionCertificationProfileStore.BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
 }
 
-public sealed class FileAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+public sealed class FileAccountingProductionCertificationProfileStore :
+    JsonFileSnapshotStore<FileAccountingProductionCertificationProfileStore.AccountingProductionCertificationProfileSnapshot>,
+    IAccountingProductionCertificationProfileStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingProductionCertificationProfileStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileAccountingProductionCertificationProfileStore(
         string snapshotPath,
         ILogger<FileAccountingProductionCertificationProfileStore> logger)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Accounting production certification profile snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Accounting production certification profile snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override AccountingProductionCertificationProfileSnapshot CreateEmptySnapshot() => new([]);
+
+    protected override AccountingProductionCertificationProfileSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger.LogWarning(exception, "Failed to read accounting production certification profile snapshot {SnapshotPath}", SnapshotPath);
+        return new AccountingProductionCertificationProfileSnapshot([]);
     }
 
     public async Task<AccountingProductionCertificationProfileDto?> GetAsync(
@@ -84,9 +95,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             return null;
         }
 
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Profiles.FirstOrDefault(profile =>
-            string.Equals(BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase));
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Profiles.FirstOrDefault(profile =>
+                string.Equals(BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase)),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingProductionCertificationProfileDto> UpsertAsync(
@@ -94,33 +106,21 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         CancellationToken ct = default)
     {
         var profile = NormalizeProfile(request);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var key = BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId);
-            var profiles = snapshot.Profiles
-                .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId, item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
-                .Append(profile)
-                .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var json = JsonSerializer.Serialize(new AccountingProductionCertificationProfileSnapshot(profiles), JsonOptions);
-            var directory = Path.GetDirectoryName(_snapshotPath);
-            if (!string.IsNullOrWhiteSpace(directory))
+        return await UpdateSnapshotAsync(
+            snapshot =>
             {
-                Directory.CreateDirectory(directory);
-            }
-
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-            return profile;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                var key = BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId);
+                var profiles = snapshot.Profiles
+                    .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId, item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
+                    .Append(profile)
+                    .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                return (new AccountingProductionCertificationProfileSnapshot(profiles), profile);
+            },
+            ct).ConfigureAwait(false);
     }
 
     internal static AccountingProductionCertificationProfileDto NormalizeProfile(
@@ -142,8 +142,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        EnsureCertificationArtifacts(request.Profile, tenantId, companyId, fundProfileId);
-        EnsureRolloutScopedEvidence(request.Profile, tenantId, companyId, fundProfileId, evidence);
+        var retainedEvidence = NormalizeRetainedEvidence(
+            request.Profile.RetainedEvidence.Concat(request.RetainedEvidence));
+        EnsureCertificationArtifacts(request.Profile, tenantId, companyId, fundProfileId, retainedEvidence);
+        EnsureRolloutScopedEvidence(request.Profile, tenantId, companyId, fundProfileId, retainedEvidence);
 
         return request.Profile with
         {
@@ -153,6 +155,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             UpdatedAtUtc = request.Profile.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : request.Profile.UpdatedAtUtc,
             UpdatedBy = actor,
             EvidenceReferences = evidence,
+            RetainedEvidence = retainedEvidence,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? request.Profile.CorrelationId
                 : request.CorrelationId.Trim()
@@ -163,20 +166,22 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         AccountingProductionCertificationProfileDto profile,
         string tenantId,
         string companyId,
-        string fundProfileId)
+        string fundProfileId,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
     {
         foreach (var artifact in profile.WorkflowCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
         {
             EnsureArtifactText(artifact.CertificationId, "workflow certification id");
             EnsureArtifactText(artifact.CertifiedBy, "workflow certified-by");
             EnsureArtifactText(artifact.SourceService, "workflow source service");
-            if (artifact.CertifiedAtUtc == default)
+            if (artifact.CertifiedAtUtc == default || artifact.CertifiedAtUtc.Offset != TimeSpan.Zero)
             {
-                throw new ArgumentException("Accounting workflow certification artifact certified-at timestamp is required.");
+                throw new ArgumentException("Accounting workflow certification artifact certified-at timestamp must be present and UTC.");
             }
 
             if (artifact.LedgerBookId == Guid.Empty ||
-                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value ||
+                !profile.LedgerBookId.HasValue ||
+                artifact.LedgerBookId != profile.LedgerBookId.Value ||
                 !string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
                 !ArtifactScopeMatches(artifact.TenantId, tenantId) ||
                 !ArtifactScopeMatches(artifact.CompanyId, companyId))
@@ -188,6 +193,12 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             {
                 throw new ArgumentException("Certified accounting workflow artifacts must include passed lane results.");
             }
+
+            EnsureArtifactRetainedEvidence(
+                retainedEvidence,
+                AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                artifact.CertificationId,
+                "workflow");
         }
 
         foreach (var artifact in profile.DimensionalCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
@@ -196,13 +207,14 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             EnsureArtifactText(artifact.CertifiedBy, "dimensional certified-by");
             EnsureArtifactText(artifact.SourceService, "dimensional source service");
             EnsureArtifactText(artifact.DimensionScopeEvidenceKey, "dimensional scope evidence key");
-            if (artifact.CertifiedAtUtc == default)
+            if (artifact.CertifiedAtUtc == default || artifact.CertifiedAtUtc.Offset != TimeSpan.Zero)
             {
-                throw new ArgumentException("Accounting dimensional certification artifact certified-at timestamp is required.");
+                throw new ArgumentException("Accounting dimensional certification artifact certified-at timestamp must be present and UTC.");
             }
 
             if (artifact.LedgerBookId == Guid.Empty ||
-                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value ||
+                !profile.LedgerBookId.HasValue ||
+                artifact.LedgerBookId != profile.LedgerBookId.Value ||
                 !string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
                 !ArtifactScopeMatches(artifact.TenantId, tenantId) ||
                 !ArtifactScopeMatches(artifact.CompanyId, companyId))
@@ -214,6 +226,12 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             {
                 throw new ArgumentException("Certified accounting dimensional artifacts must include passed lane results.");
             }
+
+            EnsureArtifactRetainedEvidence(
+                retainedEvidence,
+                AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                artifact.CertificationId,
+                "dimensional");
         }
 
         foreach (var artifact in profile.TenantAdminCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
@@ -221,15 +239,16 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             EnsureArtifactText(artifact.CertificationId, "tenant administration certification id");
             EnsureArtifactText(artifact.CertifiedBy, "tenant administration certified-by");
             EnsureArtifactText(artifact.SourceService, "tenant administration source service");
-            if (artifact.CertifiedAtUtc == default)
+            if (artifact.CertifiedAtUtc == default || artifact.CertifiedAtUtc.Offset != TimeSpan.Zero)
             {
-                throw new ArgumentException("Accounting tenant administration certification artifact certified-at timestamp is required.");
+                throw new ArgumentException("Accounting tenant administration certification artifact certified-at timestamp must be present and UTC.");
             }
 
             if (!string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(TrimOrNull(artifact.TenantId), tenantId, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(TrimOrNull(artifact.CompanyId), companyId, StringComparison.OrdinalIgnoreCase) ||
-                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value)
+                !profile.LedgerBookId.HasValue ||
+                artifact.LedgerBookId != profile.LedgerBookId.Value)
             {
                 throw new ArgumentException("Accounting tenant administration certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
             }
@@ -238,6 +257,28 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             {
                 throw new ArgumentException("Certified accounting tenant administration artifacts must include passed lane results.");
             }
+
+            EnsureArtifactRetainedEvidence(
+                retainedEvidence,
+                AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                artifact.CertificationId,
+                "tenant administration");
+        }
+    }
+
+    private static void EnsureArtifactRetainedEvidence(
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence,
+        string subjectType,
+        string certificationId,
+        string label)
+    {
+        if (!retainedEvidence.Any(evidence =>
+                AccountingProductionCertificationEvidenceValidator.BindsTo(
+                    evidence,
+                    subjectType,
+                    certificationId)))
+        {
+            throw new ArgumentException($"Accounting {label} certification artifact requires complete retained evidence bound to its certification id.");
         }
     }
 
@@ -250,7 +291,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     }
 
     private static bool ArtifactScopeMatches(string? artifactScope, string requiredScope)
-        => string.IsNullOrWhiteSpace(artifactScope) ||
+        => !string.IsNullOrWhiteSpace(artifactScope) &&
            string.Equals(TrimOrNull(artifactScope), requiredScope, StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeFundProfileId(string? value)
@@ -266,41 +307,6 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             : $"{tenant}|{company}|{fund}|{ledgerBookId?.ToString("D") ?? "fund"}";
     }
 
-    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new AccountingProductionCertificationProfileSnapshot([]);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            return await JsonSerializer
-                .DeserializeAsync<AccountingProductionCertificationProfileSnapshot>(stream, JsonOptions, ct)
-                .ConfigureAwait(false) ?? new AccountingProductionCertificationProfileSnapshot([]);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to read accounting production certification profile snapshot {SnapshotPath}", _snapshotPath);
-            return new AccountingProductionCertificationProfileSnapshot([]);
-        }
-    }
-
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"Accounting production certification profile {label} is required.")
@@ -309,21 +315,53 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     private static string? TrimOrNull(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private static IReadOnlyList<RetainedEvidenceIdentityDto> NormalizeRetainedEvidence(
+        IEnumerable<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        var candidates = retainedEvidence.ToArray();
+        var issues = candidates
+            .SelectMany(item => RetainedEvidenceIdentityValidator.Validate(item)
+                .Select(issue => $"{item?.EvidenceId ?? "<missing>"}: {issue}"))
+            .ToArray();
+        if (issues.Length > 0)
+        {
+            throw new ArgumentException($"Accounting production certification retained evidence is incomplete: {string.Join(" ", issues)}");
+        }
+
+        var normalized = candidates
+            .Where(static item => item is not null)
+            .Select(static item => item!)
+            .DistinctBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (normalized.Any(AccountingProductionCertificationEvidenceValidator.IsSynthesized))
+        {
+            throw new ArgumentException("Accounting production certification retained evidence cannot be synthesized from readiness or production-profile state.");
+        }
+
+        if (normalized.Any(static item =>
+                AccountingProductionCertificationEvidenceValidator.IsLegacyFullToken(item.EvidenceUri)))
+        {
+            throw new ArgumentException("Accounting production certification retained evidence cannot use a legacy full-token URI.");
+        }
+
+        return normalized;
+    }
+
     private static void EnsureRolloutScopedEvidence(
         AccountingProductionCertificationProfileDto profile,
         string tenantId,
         string companyId,
         string fundProfileId,
-        IReadOnlyList<string> evidenceReferences)
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
     {
         if (!DeclaresProductionCertification(profile))
         {
             return;
         }
 
-        if (evidenceReferences.Count == 0)
+        if (retainedEvidence.Count == 0)
         {
-            throw new ArgumentException("Accounting production certification evidence is required.");
+            throw new ArgumentException("Accounting production certification requires complete retained evidence identity, hash, source, review, effective-date, and version metadata.");
         }
 
         if (!profile.LedgerBookId.HasValue)
@@ -331,27 +369,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             throw new ArgumentException("Accounting production certification profile ledger book is required.");
         }
 
-        if (!evidenceReferences.Any(reference =>
-                ReferencesScope(reference, tenantId) &&
-                ReferencesScope(reference, companyId) &&
-                ReferencesScope(reference, fundProfileId) &&
-                ReferencesLedgerBook(reference, profile.LedgerBookId)))
-        {
-            throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, and ledger book.");
-        }
-
-        if (DeclaresDimensionalReportingCertification(profile) &&
-            !evidenceReferences.Any(reference =>
-                ReferencesScope(reference, tenantId) &&
-                ReferencesScope(reference, companyId) &&
-                ReferencesScope(reference, fundProfileId) &&
-                ReferencesLedgerBook(reference, profile.LedgerBookId) &&
-                ReferencesDimensionScope(reference)))
-        {
-            throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, ledger book, and certified dimension scope on the same retained artifact.");
-        }
-
-        EnsureDeclaredControlEvidence(profile, evidenceReferences, tenantId, companyId, fundProfileId, profile.LedgerBookId);
+        EnsureDeclaredControlEvidence(profile, retainedEvidence);
     }
 
     private static bool DeclaresProductionCertification(AccountingProductionCertificationProfileDto profile)
@@ -371,340 +389,82 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
            profile.TrialBalanceDimensionFiltersCertified ||
            profile.ReportPackageDimensionProvenanceCertified;
 
-    private static bool DeclaresDimensionalReportingCertification(AccountingProductionCertificationProfileDto profile)
-        => profile.PeriodReportDimensionQueriesCertified ||
-           profile.CrossPeriodReportDimensionQueriesCertified ||
-           profile.JournalQueryDimensionFiltersCertified ||
-           profile.ExternalExportDimensionMappingCertified ||
-           profile.LedgerLineDimensionsPersistedCertified ||
-           profile.TrialBalanceDimensionFiltersCertified ||
-           profile.ReportPackageDimensionProvenanceCertified;
-
     private static void EnsureDeclaredControlEvidence(
         AccountingProductionCertificationProfileDto profile,
-        IReadOnlyList<string> evidenceReferences,
-        string tenantId,
-        string companyId,
-        string fundProfileId,
-        Guid? ledgerBookId)
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
     {
-        EnsureControlEvidence(
-            profile.PostingRulesLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "posting-rule workflow",
-            "posting-rules",
-            "posting-rule",
-            "rules-studio",
-            "posting-candidate");
-        EnsureControlEvidence(
-            profile.JournalLifecycleLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "journal-entry lifecycle workflow",
-            "journal-lifecycle",
-            "journal-entry",
-            "je-lifecycle",
-            "manual-journal");
-        EnsureControlEvidence(
-            profile.CloseReportingLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "close and reporting workflow",
-            "close-reporting",
-            "close-management",
-            "report-package",
-            "restatement");
-        EnsureControlEvidence(
-            profile.ClosePlanConfigurationLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "close-plan configuration workflow",
-            "close-plan-configuration",
-            "close-plan",
-            "close-setup",
-            "close-checklist",
-            "materiality-policy");
-        EnsureControlEvidence(
-            profile.ExternalGlLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "external-GL workflow",
-            "external-gl",
-            "external-ledger",
-            "gl-export",
-            "gl-import");
-        EnsureControlEvidence(
-            profile.ReconciliationLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "reconciliation workflow",
-            "reconciliation",
-            "break-queue",
-            "statement-reconciliation",
-            "reconciliation-case");
-        EnsureControlEvidence(
-            profile.DirectLendingLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "direct-lending workflow",
-            "direct-lending",
-            "loan-account",
-            "borrower",
-            "direct-lending-projection");
-        EnsureControlEvidence(
-            profile.StrategyLedgerReadLedgerBookNativeCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "strategy ledger-read workflow",
-            "strategy-ledger",
-            "strategy-run",
-            "run-ledger",
-            "strategy-ledger-read");
-        EnsureDimensionControlEvidence(
-            profile.PeriodReportDimensionQueriesCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "period-report dimension query",
-            "period-report",
-            "period-reports",
-            "trial-balance",
-            "financial-statement",
-            "nav",
-            "investor-package");
-        EnsureDimensionControlEvidence(
-            profile.CrossPeriodReportDimensionQueriesCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "cross-period dimension query",
-            "cross-period",
-            "comparative",
-            "roll-forward");
-        EnsureDimensionControlEvidence(
-            profile.JournalQueryDimensionFiltersCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "journal dimension filter",
-            "journal-query",
-            "journal-filter",
-            "journal-dimension",
-            "ledger-journal");
-        EnsureDimensionControlEvidence(
-            profile.ExternalExportDimensionMappingCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "external export dimension mapping",
-            "external-export",
-            "export-dimension",
-            "external-gl-mapping",
-            "gl-export");
-        EnsureDimensionControlEvidence(
-            profile.LedgerLineDimensionsPersistedCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "ledger-line dimension persistence",
-            "ledger-line",
-            "line-dimension",
-            "posted-ledger-line",
-            "journal-line-dimension");
-        EnsureDimensionControlEvidence(
-            profile.TrialBalanceDimensionFiltersCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "trial-balance dimension filter",
-            "trial-balance-filter",
-            "trial-balance-dimension",
-            "ledger-report-filter");
-        EnsureDimensionControlEvidence(
-            profile.ReportPackageDimensionProvenanceCertified,
-            evidenceReferences,
-            tenantId,
-            companyId,
-            fundProfileId,
-            ledgerBookId,
-            "report-package dimension provenance",
-            "report-package-provenance",
-            "report-line-provenance",
-            "package-dimension",
-            "nav-package");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.PostingRulesLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.PostingRules, "posting-rule workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.JournalLifecycleLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle, "journal-entry lifecycle workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.CloseReportingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.CloseReporting, "close and reporting workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.ClosePlanConfigurationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration, "close-plan configuration workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.ExternalGlLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ExternalGl, "external-GL workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.ReconciliationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.Reconciliation, "reconciliation workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.DirectLendingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection, "direct-lending workflow");
+        EnsureWorkflowControlEvidence(profile, retainedEvidence, profile.StrategyLedgerReadLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads, "strategy ledger-read workflow");
+
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.PeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.PeriodReports, "period-report dimension query");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.CrossPeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports, "cross-period dimension query");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.JournalQueryDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.JournalFilters, "journal dimension filter");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.ExternalExportDimensionMappingCertified, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings, "external export dimension mapping");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.LedgerLineDimensionsPersistedCertified, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence, "ledger-line dimension persistence");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.TrialBalanceDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters, "trial-balance dimension filter");
+        EnsureDimensionalControlEvidence(profile, retainedEvidence, profile.ReportPackageDimensionProvenanceCertified, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance, "report-package dimension provenance");
     }
 
-    private static void EnsureControlEvidence(
+    private static void EnsureWorkflowControlEvidence(
+        AccountingProductionCertificationProfileDto profile,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence,
         bool certified,
-        IReadOnlyList<string> evidenceReferences,
-        string tenantId,
-        string companyId,
-        string fundProfileId,
-        Guid? ledgerBookId,
-        string label,
-        params string[] aliases)
+        AccountingWorkflowCertificationLaneKindDto laneKind,
+        string label)
     {
         if (!certified)
         {
             return;
         }
 
-        if (!evidenceReferences.Any(reference =>
-                ReferencesRolloutScope(reference, tenantId, companyId, fundProfileId, ledgerBookId) &&
-                (ReferencesAlias(reference, "production-certification/full") ||
-                 ReferencesAlias(reference, "workflow-certification/full") ||
-                 aliases.Any(alias => ReferencesAlias(reference, alias)))))
+        if (!profile.WorkflowCertificationArtifacts.Any(artifact =>
+                artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                artifact.Lanes.Any(lane =>
+                    lane.Kind == laneKind &&
+                    lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed) &&
+                retainedEvidence.Any(evidence =>
+                    AccountingProductionCertificationEvidenceValidator.BindsTo(
+                        evidence,
+                        AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                        artifact.CertificationId))))
         {
-            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence on the same tenant, company, fund, and ledger-book artifact.");
+            throw new ArgumentException($"Accounting production certification requires a scoped, passed {label} artifact with complete retained evidence bound to the same certification id.");
         }
     }
 
-    private static void EnsureDimensionControlEvidence(
+    private static void EnsureDimensionalControlEvidence(
+        AccountingProductionCertificationProfileDto profile,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence,
         bool certified,
-        IReadOnlyList<string> evidenceReferences,
-        string tenantId,
-        string companyId,
-        string fundProfileId,
-        Guid? ledgerBookId,
-        string label,
-        params string[] aliases)
+        AccountingDimensionalCertificationLaneKindDto laneKind,
+        string label)
     {
         if (!certified)
         {
             return;
         }
 
-        if (!evidenceReferences.Any(reference =>
-                ReferencesRolloutScope(reference, tenantId, companyId, fundProfileId, ledgerBookId) &&
-                ReferencesDimensionScope(reference) &&
-                (ReferencesAlias(reference, "production-certification/full") ||
-                 ReferencesAlias(reference, "dimensions/full") ||
-                 ReferencesAlias(reference, "dimensions/report-query-certification/full") ||
-                 aliases.Any(alias => ReferencesAlias(reference, alias)))))
+        if (!profile.DimensionalCertificationArtifacts.Any(artifact =>
+                artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+                artifact.Lanes.Any(lane =>
+                    lane.Kind == laneKind &&
+                    lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed) &&
+                retainedEvidence.Any(evidence =>
+                    AccountingProductionCertificationEvidenceValidator.BindsTo(
+                        evidence,
+                        AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                        artifact.CertificationId))))
         {
-            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence on the same tenant, company, fund, ledger-book, and dimension-scope artifact.");
+            throw new ArgumentException($"Accounting production certification requires a scoped, passed {label} artifact with complete retained evidence bound to the same certification id.");
         }
     }
-
-    private static bool ReferencesAlias(string? reference, string alias)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           reference.Contains(alias, StringComparison.OrdinalIgnoreCase);
-
-    private static bool ReferencesRolloutScope(
-        string? reference,
-        string tenantId,
-        string companyId,
-        string fundProfileId,
-        Guid? ledgerBookId)
-        => ReferencesScope(reference, tenantId) &&
-           ReferencesScope(reference, companyId) &&
-           ReferencesScope(reference, fundProfileId) &&
-           ReferencesLedgerBook(reference, ledgerBookId);
-
-    private static bool ReferencesScope(string? reference, string value)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           reference.Contains(value, StringComparison.OrdinalIgnoreCase);
-
-    private static bool ReferencesDimensionScope(string? reference)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           (reference.Contains("dimension-scope:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("dimension-scope/", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set/", StringComparison.OrdinalIgnoreCase));
-
-    private static bool ReferencesLedgerBook(string? reference, Guid? ledgerBookId)
-    {
-        if (!ledgerBookId.HasValue)
-        {
-            return true;
-        }
-
-        if (string.IsNullOrWhiteSpace(reference))
-        {
-            return false;
-        }
-
-        var ledgerBookText = ledgerBookId.Value.ToString("D");
-        var compactLedgerBookText = ledgerBookId.Value.ToString("N");
-        return ReferencesScopedValue(reference, "ledger-book:", ledgerBookText) ||
-               ReferencesScopedValue(reference, "ledger-book/", ledgerBookText) ||
-               ReferencesScopedValue(reference, "book:", ledgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId=", ledgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId:", ledgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId/", ledgerBookText) ||
-               ReferencesScopedValue(reference, "ledger-book:", compactLedgerBookText) ||
-               ReferencesScopedValue(reference, "ledger-book/", compactLedgerBookText) ||
-               ReferencesScopedValue(reference, "book:", compactLedgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId=", compactLedgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId:", compactLedgerBookText) ||
-               ReferencesScopedValue(reference, "ledgerBookId/", compactLedgerBookText);
-    }
-
-    private static bool ReferencesScopedValue(string reference, string prefix, string value)
-    {
-        var searchIndex = 0;
-        while (searchIndex < reference.Length)
-        {
-            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
-            if (prefixIndex < 0)
-            {
-                return false;
-            }
-
-            var valueIndex = prefixIndex + prefix.Length;
-            if (reference.Length >= valueIndex + value.Length &&
-                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0 &&
-                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
-            {
-                return true;
-            }
-
-            searchIndex = valueIndex;
-        }
-
-        return false;
-    }
-
-    private static bool IsEvidenceTokenBoundary(string reference, int index)
-        => index >= reference.Length ||
-           reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
@@ -714,6 +474,6 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         }
     }
 
-    private sealed record AccountingProductionCertificationProfileSnapshot(
+    public sealed record AccountingProductionCertificationProfileSnapshot(
         IReadOnlyList<AccountingProductionCertificationProfileDto> Profiles);
 }

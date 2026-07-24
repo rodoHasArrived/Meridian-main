@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -7,11 +9,15 @@ public sealed class ProviderIntegrationStagingReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationStagingReviewService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationStagingReviewService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationStagingReviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationStagingReviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationStagingReviewDto> GetReviewAsync(
@@ -21,6 +27,17 @@ public sealed class ProviderIntegrationStagingReviewService
         => await GetReviewAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationStagingReviewDto> GetReviewAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "staging-review",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            () => GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationStagingReviewDto> GetReviewCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,

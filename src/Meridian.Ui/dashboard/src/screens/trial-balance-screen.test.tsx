@@ -108,7 +108,7 @@ const journalLines: LedgerJournalLine[] = [
   }
 ];
 
-async function renderTrialBalanceScreen(initialEntry = "/accounting/trial-balance") {
+async function renderTrialBalanceScreen(initialEntry = "/accounting/ledger?view=trial-balance") {
   const result = renderWithRouter(<TrialBalanceScreen data={data} />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
@@ -116,7 +116,7 @@ async function renderTrialBalanceScreen(initialEntry = "/accounting/trial-balanc
 
 describe("TrialBalanceScreen", () => {
   it("renders a loading state while accounting workspace data is unavailable", async () => {
-    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/trial-balance"] });
+    renderWithRouter(<TrialBalanceScreen data={null} />, { initialEntries: ["/accounting/ledger?view=trial-balance"] });
     await waitForAsyncEffects();
 
     expect(screen.getByRole("status", { name: "Loading Trial Balance" })).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe("TrialBalanceScreen", () => {
 
   it("renders an empty state when there are no reconciliation runs", async () => {
     renderWithRouter(<TrialBalanceScreen data={{ ...data, reconciliationQueue: [] }} />, {
-      initialEntries: ["/accounting/trial-balance"]
+      initialEntries: ["/accounting/ledger?view=trial-balance"]
     });
     await waitForAsyncEffects();
 
@@ -135,7 +135,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
     await waitForAsyncEffects();
 
     expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42");
@@ -143,11 +143,11 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
     expect(screen.getByLabelText("Book")).toHaveValue("Primary GL");
     expect(screen.getByLabelText("Period")).toHaveValue("Current period");
-    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Jump to report preview" })).toHaveAttribute("href", "/reporting/preview");
-    expect(await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });
 
   it("switches basis and narrows rows with the account filter", async () => {
@@ -155,12 +155,12 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const filterInput = screen.getByPlaceholderText(/Account name, account id, type, symbol, or security/);
     await user.type(filterInput, "Apple");
 
-    const table = await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
     expect(table).toHaveTextContent("Apple Inc.");
     expect(table).not.toHaveTextContent("Financing payable");
   });
@@ -170,8 +170,8 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
     const user = userEvent.setup();
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
-    await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+    await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
 
     await user.click(screen.getByRole("button", { name: "Hierarchy" }));
 
@@ -186,7 +186,7 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const journalLink = await screen.findByRole("link", { name: "Cash sweep" });
     expect(journalLink).toHaveAttribute(
@@ -195,11 +195,21 @@ describe("TrialBalanceScreen", () => {
     );
   });
 
+  it("distinguishes unavailable journal lineage from an empty journal", async () => {
+    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
+    vi.mocked(api.getRunLedgerJournal).mockRejectedValueOnce(new Error("offline"));
+
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Journal lineage unavailable");
+    expect(screen.getByRole("alert")).toHaveTextContent("posting drill-through is unavailable");
+  });
+
   it("links related securities to the Asset Detail route", async () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     const securityLink = await screen.findByRole("link", { name: "Apple Inc." });
     expect(securityLink).toHaveAttribute("href", "/accounting/security-master/detail?securityId=sec-aapl");
@@ -209,9 +219,9 @@ describe("TrialBalanceScreen", () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([]);
 
-    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+    await renderTrialBalanceScreen("/accounting/ledger?view=trial-balance&runId=run-42");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
   });
 });

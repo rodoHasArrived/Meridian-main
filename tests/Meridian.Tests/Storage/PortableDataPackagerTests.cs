@@ -4,54 +4,18 @@ using System.Text.Json;
 using System.Threading;
 using FluentAssertions;
 using Meridian.Storage.Packaging;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public class PortableDataPackagerTests : IDisposable
+public class PortableDataPackagerTests : TempDirectoryTestBase
 {
-    private readonly string _testDataRoot;
-    private readonly string _testOutputDir;
     private readonly PortableDataPackager _packager;
 
     public PortableDataPackagerTests()
     {
-        _testDataRoot = Path.Combine(Path.GetTempPath(), $"mdc_packager_test_{Guid.NewGuid():N}");
-        _testOutputDir = Path.Combine(Path.GetTempPath(), $"mdc_packager_out_{Guid.NewGuid():N}");
-
-        Directory.CreateDirectory(_testDataRoot);
-        Directory.CreateDirectory(_testOutputDir);
-
-        _packager = new PortableDataPackager(_testDataRoot);
-    }
-
-    public void Dispose()
-    {
-        DeleteDirectoryWithRetry(_testDataRoot);
-        DeleteDirectoryWithRetry(_testOutputDir);
-    }
-
-    private static void DeleteDirectoryWithRetry(string path)
-    {
-        if (!Directory.Exists(path))
-            return;
-
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                Directory.Delete(path, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-            catch (UnauthorizedAccessException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-        }
+        _packager = new PortableDataPackager(TestDataRoot);
     }
 
     [Fact]
@@ -68,7 +32,7 @@ public class PortableDataPackagerTests : IDisposable
         {
             Name = "test-package",
             Description = "Test package for unit tests",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             IncludeQualityReport = false,
             VerifyChecksums = true
         };
@@ -92,7 +56,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "empty-package",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             Symbols = new[] { "NONEXISTENT" }
         };
 
@@ -121,7 +85,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "filtered-package",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             Symbols = new[] { "AAPL" }
         };
 
@@ -152,7 +116,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "date-filtered-package",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             StartDate = new DateTime(2026, 1, 1),
             EndDate = new DateTime(2026, 1, 3)
         };
@@ -177,7 +141,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "manifest-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             IncludeLoaderScripts = true,
             IncludeDataDictionary = true
         };
@@ -210,7 +174,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "scripts-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             IncludeLoaderScripts = true
         };
 
@@ -237,7 +201,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "checksum-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             VerifyChecksums = true
         };
 
@@ -262,14 +226,14 @@ public class PortableDataPackagerTests : IDisposable
         var createOptions = new PackageOptions
         {
             Name = "import-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             VerifyChecksums = true
         };
 
         var createResult = await _packager.CreatePackageAsync(createOptions);
         createResult.Success.Should().BeTrue();
 
-        var extractDir = Path.Combine(_testOutputDir, "extracted");
+        var extractDir = Path.Combine(TestOutputDir, "extracted");
         Directory.CreateDirectory(extractDir);
 
         // Act
@@ -289,9 +253,9 @@ public class PortableDataPackagerTests : IDisposable
     [Fact]
     public async Task ImportPackageAsync_WithPathTraversalEntry_ShouldRejectPackage()
     {
-        var packagePath = Path.Combine(_testOutputDir, "path-traversal.zip");
-        var extractDir = Path.Combine(_testOutputDir, "extract-safe");
-        var outsidePath = Path.Combine(_testOutputDir, "escaped.txt");
+        var packagePath = Path.Combine(TestOutputDir, "path-traversal.zip");
+        var extractDir = Path.Combine(TestOutputDir, "extract-safe");
+        var outsidePath = Path.Combine(TestOutputDir, "escaped.txt");
 
         Directory.CreateDirectory(extractDir);
         await CreateTraversalPackageAsync(packagePath);
@@ -307,8 +271,8 @@ public class PortableDataPackagerTests : IDisposable
     [Fact]
     public async Task ImportPackageAsync_WithChecksumMismatch_ShouldNotWriteFileToDestination()
     {
-        var packagePath = Path.Combine(_testOutputDir, "checksum-mismatch.zip");
-        var extractDir = Path.Combine(_testOutputDir, "extract-mismatch");
+        var packagePath = Path.Combine(TestOutputDir, "checksum-mismatch.zip");
+        var extractDir = Path.Combine(TestOutputDir, "extract-mismatch");
 
         Directory.CreateDirectory(extractDir);
         await CreateChecksumMismatchPackageAsync(packagePath);
@@ -324,10 +288,10 @@ public class PortableDataPackagerTests : IDisposable
     public async Task ImportPackageAsync_WithNonExistentFile_ShouldReturnFailure()
     {
         // Arrange
-        var nonExistentPath = Path.Combine(_testOutputDir, "nonexistent.zip");
+        var nonExistentPath = Path.Combine(TestOutputDir, "nonexistent.zip");
 
         // Act
-        var result = await _packager.ImportPackageAsync(nonExistentPath, _testOutputDir);
+        var result = await _packager.ImportPackageAsync(nonExistentPath, TestOutputDir);
 
         // Assert
         result.Success.Should().BeFalse();
@@ -346,7 +310,7 @@ public class PortableDataPackagerTests : IDisposable
         var createOptions = new PackageOptions
         {
             Name = "validate-test",
-            OutputDirectory = _testOutputDir
+            OutputDirectory = TestOutputDir
         };
 
         var createResult = await _packager.CreatePackageAsync(createOptions);
@@ -365,7 +329,7 @@ public class PortableDataPackagerTests : IDisposable
     public async Task ValidatePackageAsync_WithNonExistentFile_ShouldFail()
     {
         // Arrange
-        var nonExistentPath = Path.Combine(_testOutputDir, "nonexistent.zip");
+        var nonExistentPath = Path.Combine(TestOutputDir, "nonexistent.zip");
 
         // Act
         var result = await _packager.ValidatePackageAsync(nonExistentPath);
@@ -388,7 +352,7 @@ public class PortableDataPackagerTests : IDisposable
         {
             Name = "list-test",
             Description = "Test description",
-            OutputDirectory = _testOutputDir
+            OutputDirectory = TestOutputDir
         };
 
         var createResult = await _packager.CreatePackageAsync(createOptions);
@@ -418,12 +382,68 @@ public class PortableDataPackagerTests : IDisposable
         var zipOptions = new PackageOptions
         {
             Name = "zip-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             Format = PackageFormat.Zip
         };
         var zipResult = await _packager.CreatePackageAsync(zipOptions);
         zipResult.Success.Should().BeTrue();
         zipResult.PackagePath.Should().EndWith(".zip");
+    }
+
+    [Theory]
+    [InlineData(PackageFormat.TarGz)]
+    [InlineData(PackageFormat.SevenZip)]
+    public async Task CreatePackageAsync_WithUnimplementedFormat_FailsWithoutWritingAnything(PackageFormat format)
+    {
+        // The former TarGz writer produced a corrupting pseudo-tar text stream and SevenZip
+        // silently wrote an empty file; both must now fail before touching the filesystem.
+        await CreateTestJsonlFileAsync("SPY/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 }
+        });
+
+        var options = new PackageOptions
+        {
+            Name = "unsupported-format-test",
+            OutputDirectory = TestOutputDir,
+            Format = format
+        };
+
+        var result = await _packager.CreatePackageAsync(options);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("not implemented");
+        if (Directory.Exists(TestOutputDir))
+        {
+            Directory.GetFiles(TestOutputDir, "unsupported-format-test*", SearchOption.AllDirectories)
+                .Should().BeEmpty("a rejected format must not leave a package file behind");
+        }
+    }
+
+    [Fact]
+    public async Task ValidateAndImport_WithLegacyPseudoTarGzArtifact_FailInsteadOfReportingClean()
+    {
+        // Simulate an artifact written by the removed pseudo-tar writer. The old validation only
+        // implemented Zip, so these validated "clean"; the old import extracted zero files and
+        // still reported success.
+        var legacyPath = Path.Combine(TestDataRoot, "legacy_package_20260101.tar.gz");
+        await using (var fileStream = File.Create(legacyPath))
+        await using (var gzip = new GZipStream(fileStream, CompressionLevel.Optimal))
+        await using (var writer = new StreamWriter(gzip))
+        {
+            await writer.WriteLineAsync("__MANIFEST__:package-manifest.json");
+            await writer.WriteLineAsync("{}");
+            await writer.WriteLineAsync("__END_MANIFEST__");
+        }
+
+        var validation = await _packager.ValidatePackageAsync(legacyPath);
+        validation.IsValid.Should().BeFalse();
+        validation.Error.Should().Contain("not supported");
+
+        var import = await _packager.ImportPackageAsync(legacyPath, Path.Combine(TestDataRoot, "legacy-import-dest"));
+        import.Success.Should().BeFalse();
+        import.Error.Should().Contain("not supported");
+        import.FilesExtracted.Should().Be(0);
     }
 
     [Fact]
@@ -444,7 +464,7 @@ public class PortableDataPackagerTests : IDisposable
         var maxOptions = new PackageOptions
         {
             Name = "max-compress",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             CompressionLevel = PackageCompressionLevel.Maximum
         };
         var maxResult = await _packager.CreatePackageAsync(maxOptions);
@@ -453,7 +473,7 @@ public class PortableDataPackagerTests : IDisposable
         var noneOptions = new PackageOptions
         {
             Name = "no-compress",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             CompressionLevel = PackageCompressionLevel.None
         };
         var noneResult = await _packager.CreatePackageAsync(noneOptions);
@@ -476,7 +496,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "tags-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             Tags = new[] { "research", "equities", "2026" }
         };
 
@@ -500,7 +520,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "metadata-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             CustomMetadata = new Dictionary<string, string>
             {
                 { "project", "research-alpha" },
@@ -532,7 +552,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "progress-test",
-            OutputDirectory = _testOutputDir
+            OutputDirectory = TestOutputDir
         };
 
         // Act
@@ -557,7 +577,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "cancel-test",
-            OutputDirectory = _testOutputDir
+            OutputDirectory = TestOutputDir
         };
 
         using var cts = new CancellationTokenSource();
@@ -583,7 +603,7 @@ public class PortableDataPackagerTests : IDisposable
         var options = new PackageOptions
         {
             Name = "dictionary-test",
-            OutputDirectory = _testOutputDir,
+            OutputDirectory = TestOutputDir,
             IncludeDataDictionary = true
         };
 
@@ -599,7 +619,7 @@ public class PortableDataPackagerTests : IDisposable
 
     private async Task CreateTestJsonlFileAsync<T>(string relativePath, T[] records)
     {
-        var fullPath = Path.Combine(_testDataRoot, relativePath);
+        var fullPath = Path.Combine(TestDataRoot, relativePath);
         var directory = Path.GetDirectoryName(fullPath);
 
         if (!string.IsNullOrEmpty(directory))

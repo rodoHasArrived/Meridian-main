@@ -59,6 +59,82 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_DuplicateFigiAcrossRecords_ProducesCriticalCollisionIssue()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        const string duplicateFigi = "BBG000B9XRY4"; // Valid FIGI check digit shared by two securities.
+
+        var first = CreateProjection(
+            securityA,
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Figi, duplicateFigi, isPrimary: true)]);
+        var second = CreateProjection(
+            securityB,
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Figi, duplicateFigi, isPrimary: true)]);
+
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(first, [first, second], Now);
+
+        var issue = report.Issues.Should()
+            .ContainSingle(static item => item.Code == "SM_DUPLICATE_CANONICAL_IDENTIFIER")
+            .Which;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Critical);
+        issue.AffectedFields.Should().Contain("identifiers.Figi");
+        issue.EvidenceLinks.Should().Contain(link => link.EvidenceId == securityB.ToString());
+    }
+
+    [Fact]
+    public void Scenario_SameCanonicalValueWithDifferentProvidersOnOneRecord_IsFlaggedAsDuplicate()
+    {
+        // A canonical identifier (ISIN) is provider-independent, so repeating the same value with
+        // a different provider annotation on one record must still trip in-record duplicate
+        // detection — provider only distinguishes ProviderSymbol identities.
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: false, provider: "Bloomberg")
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_DUPLICATE_ACTIVE"
+            && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_InvalidLeiCheckDigit_ProducesStructuredIdentifierFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Lei, "HWUPKR0MPOU8FGXBT395", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_FORMAT_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("Lei", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Scenario_InvalidOptionTerms_ProducesStructuredAssetClassIssues()
     {
         var securityId = Guid.NewGuid();
@@ -90,7 +166,8 @@ public sealed class SecurityValidationServiceTests
             "SM_OPTION_PUT_CALL_INVALID",
             "SM_OPTION_STRIKE_INVALID",
             "SM_OPTION_EXPIRY_REQUIRED",
-            "SM_OPTION_MULTIPLIER_INVALID");
+            "SM_OPTION_MULTIPLIER_INVALID",
+            "__VACUITY_PROBE__");
 
         report.Issues
             .Where(static issue => issue.Code.StartsWith("SM_OPTION_", StringComparison.Ordinal))
@@ -99,6 +176,41 @@ public sealed class SecurityValidationServiceTests
                 issue.Severity == SecurityValidationSeverityDto.Error
                 && issue.AffectedFields.Count > 0
                 && !string.IsNullOrWhiteSpace(issue.SuggestedAction));
+    }
+
+    [Fact]
+    public void Scenario_OptionTermsHiddenInProfileFields_BlockValidationReadiness()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Option",
+            [CreateIdentifier(SecurityIdentifierKind.ProviderSymbol, "AAPL260620C00100000", isPrimary: true, provider: "OPRA")],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                profileFields = new
+                {
+                    underlyingId = Guid.NewGuid(),
+                    putCall = "Call",
+                    strike = 100m,
+                    expiry = "2026-06-20",
+                    multiplier = 100m
+                },
+                valuationProfile = new { pricingSource = "OPRA" },
+                accountingClassification = "DerivativeAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Select(static issue => issue.Code).Should().Contain(
+            "SM_OPTION_UNDERLYING_REQUIRED",
+            "SM_OPTION_PUT_CALL_INVALID",
+            "SM_OPTION_STRIKE_INVALID",
+            "SM_OPTION_EXPIRY_REQUIRED",
+            "SM_OPTION_MULTIPLIER_INVALID");
     }
 
     [Fact]
@@ -419,7 +531,8 @@ public sealed class SecurityValidationServiceTests
             "real-estate-holding",
             "private-fund-interest",
             "private-company-equity",
-            "co-invest-spv");
+            "co-invest-spv",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]

@@ -19,6 +19,38 @@ namespace Meridian.Tests.Application.Backfill;
 public sealed class AutoGapRemediationServiceTests
 {
     [Fact]
+    public async Task LiveQualityGap_DefaultPolicy_DoesNotStartBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(gateway, history, quality);
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(0);
+        history.GetRecentExecutions(10).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LiveQualityGap_ExplicitlyEnabledPolicy_StartsBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            quality,
+            AutoGapRemediationPolicy.Default with { Enabled = true });
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(1);
+        history.GetRecentExecutions(10).Should().ContainSingle();
+    }
+
+    [Fact]
     public void BackfillRemediationSlaPolicy_CriticalWorkflow_RequiresSameBusinessDayOwnerAssignment()
     {
         var observedAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
@@ -72,6 +104,39 @@ public sealed class AutoGapRemediationServiceTests
 
         gateway.Calls.Should().Be(1);
         history.GetRecentExecutions(10).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ReconnectionGap_UsesConfiguredThresholdAndProviderCooldown()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(2),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.FromMinutes(5),
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+
+        var reconnectedAt = DateTimeOffset.UtcNow;
+        await service.HandleReconnectionGapAsync(
+            new ReconnectionGap("live-provider", reconnectedAt.AddSeconds(-30), reconnectedAt, 1),
+            ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(0, "a sub-threshold reconnection must not start a backfill");
+
+        var qualifyingGap = new ReconnectionGap("live-provider", reconnectedAt.AddMinutes(-3), reconnectedAt, 1);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(1, "the shared provider cooldown suppresses repeated reconnects");
+        gateway.Requests.Should().ContainSingle().Which.Provider.Should().Be("composite");
+        history.GetRecentExecutions(10).Should().ContainSingle()
+            .Which.AutoRemediationSla!.TriggerSource.Should().Be(AutoRemediationTriggerSource.ReconnectionGap);
     }
 
     [Fact]
@@ -414,6 +479,49 @@ public sealed class AutoGapRemediationServiceTests
         item.ReasonCode.Should().Be("CriticalWorkflow");
     }
 
+    [Fact]
+    public async Task RequestDataQualityGapAsync_ReturnsTruthfulExactRequestOutcome()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 1,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "aapl",
+            EventType: "Trade",
+            GapStart: new DateTimeOffset(2026, 07, 10, 13, 35, 00, TimeSpan.Zero),
+            GapEnd: new DateTimeOffset(2026, 07, 10, 13, 42, 00, TimeSpan.Zero),
+            Duration: TimeSpan.FromMinutes(7),
+            MissedSequenceStart: 10,
+            MissedSequenceEnd: 20,
+            EstimatedMissedEvents: 11,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: "provider interruption");
+
+        var result = await service.RequestDataQualityGapAsync(gap, " Polygon ");
+
+        result.Outcome.Should().Be(AutoRemediationOutcome.Completed);
+        result.Provider.Should().Be("polygon");
+        result.From.Should().Be(new DateOnly(2026, 07, 10));
+        result.To.Should().Be(new DateOnly(2026, 07, 10));
+        result.IdempotencyKey.Should().Be("AAPL|polygon|2026-07-10|2026-07-10");
+        gateway.Requests.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+        {
+            Provider = "polygon",
+            Symbols = new[] { "AAPL" },
+            From = new DateOnly(2026, 07, 10),
+            To = new DateOnly(2026, 07, 10)
+        });
+    }
+
     private sealed class FakeGateway : IBackfillExecutionGateway
     {
         public int Calls { get; private set; }
@@ -440,6 +548,19 @@ public sealed class AutoGapRemediationServiceTests
                 StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
                 CompletedUtc: DateTimeOffset.UtcNow));
         }
+    }
+
+    private static DataQualityMonitoringService CreateQualityServiceWithShortGapThreshold() =>
+        new(new DataQualityMonitoringConfig
+        {
+            GapAnalyzerConfig = new GapAnalyzerConfig { GapThresholdSeconds = 1 }
+        });
+
+    private static void PublishLiveGap(DataQualityMonitoringService quality)
+    {
+        var timestamp = new DateTimeOffset(2026, 07, 10, 14, 00, 00, TimeSpan.Zero);
+        quality.ProcessTrade("AAPL", timestamp, 150m, 100m, sequence: 1, provider: "stooq");
+        quality.ProcessTrade("AAPL", timestamp.AddMinutes(5), 150m, 100m, sequence: 2, provider: "stooq");
     }
 
     private static SymbolGapInfo BuildGap(string symbol, params DateOnly[] gapDates)

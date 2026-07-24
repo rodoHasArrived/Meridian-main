@@ -12,7 +12,9 @@ describe("FamilyOfficeScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Family Office Portfolio" })).toBeInTheDocument();
     expect(screen.getByText("Family office data is not connected")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Connect entity setup" })).toHaveAttribute("href", "/accounting/entity-setup");
+    expect(screen.getByRole("link", { name: "Set up family entities" })).toHaveAttribute("href", "/accounting/entity-setup");
+    expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent("Entity setup required");
+    expect(screen.getAllByText("Set up family entities and connect portfolio, accounting, and private-asset sources to begin consolidated review.")).toHaveLength(1);
     expect(screen.queryByLabelText("Family office summary panels")).not.toBeInTheDocument();
   });
 
@@ -21,6 +23,7 @@ describe("FamilyOfficeScreen", () => {
     renderWithRouter(<FamilyOfficeScreen entityStructure={FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE} />, { initialEntries: ["/portfolio/family-office"] });
 
     expect(screen.getByRole("heading", { name: "Family Office Portfolio" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent("Meridian Family HoldCo");
     expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument();
     expect(screen.getAllByText("$128.4M").length).toBeGreaterThan(0);
 

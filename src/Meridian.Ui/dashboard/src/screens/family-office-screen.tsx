@@ -5,14 +5,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/data/empty-state";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   MetricCard,
-  type MetricCardTone,
   KeyValueGrid
 } from "@/components/data/concrete";
-import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
   selectAdjacentFamilyOfficeNode,
@@ -129,22 +131,41 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   };
 
   return (
-    <section className="space-y-6" aria-label={vm.route.ariaLabel}>
-      <header className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="eyebrow-label">{vm.route.workspaceLabel} / {vm.route.label}</div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{vm.route.title}</h1>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.route.description}</p>
-            {vm.route.disabledReason ? (
-              <p className="mt-2 text-sm text-warning">{vm.route.disabledReason}</p>
-            ) : null}
-          </div>
-          <div className="lg:justify-end">
-            <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
-          </div>
-        </div>
-      </header>
+    <ScreenLayout
+      title={vm.route.title}
+      scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
+      description={vm.route.description}
+    >
+      <OperationalTrustSummary
+        label="Family office data confidence"
+        source={{
+          value: entityStructure?.displayName ?? "Not connected",
+          detail: "Entity, portfolio, accounting, and private-asset sources",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        scope={{
+          value: entityStructure ? `${entityStructure.entities.length} entities` : "No family entities",
+          detail: entityStructure ? `${entityStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
+          tone: entityStructure?.entities.length ? "ready" : "blocked"
+        }}
+        freshness={{
+          value: entityStructure?.asOfDate ?? "Unavailable",
+          detail: "Latest consolidated family-office evidence",
+          tone: entityStructure?.asOfDate ? "ready" : "unknown"
+        }}
+        completeness={{
+          value: entityStructure
+            ? `${entityStructure.privateAssets.length} private assets · ${entityStructure.commitments.length} commitments`
+            : "No records loaded",
+          detail: "Private-asset and commitment coverage",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        blocker={vm.notConnected ? {
+          value: "Entity setup required",
+          detail: "Connect governed sources before using consolidated values for decisions",
+          tone: "blocked"
+        } : undefined}
+      />
 
       {vm.notConnected ? (
       <Card className="panel-surface border-border/80">
@@ -275,7 +296,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
-                      <SeverityBadge status={severityStatusFromTone(vm.ownershipGraph.selectedNode.tone)} />
+                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
@@ -301,29 +322,8 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
         </CardContent>
       </Card>
       ) : null}
-    </section>
+    </ScreenLayout>
   );
-}
-
-const panelMetricTone: Record<FamilyOfficeTone, MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-/** Map a family-office tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: FamilyOfficeTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
 }
 
 function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
@@ -331,7 +331,7 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={panelMetricTone[panel.tone]} />
+      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

@@ -5,13 +5,17 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Reporting;
 using Meridian.Storage;
+using Meridian.Storage.Operations;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Meridian.Storage.Store;
@@ -25,6 +29,7 @@ using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Wpf.Features.Strategy;
 
@@ -55,9 +60,9 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             sp.GetRequiredService<WpfServices.NavigationService>()));
         services.AddTransient<CashFlowViewModel>();
         services.AddSingleton<WpfServices.BacktestDataAvailabilityService>();
-        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
-            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
-            request =>
+        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
+        {
+            BacktestEngine CreateEngine(BacktestRequest request)
             {
                 var storageOptions = new StorageOptions { RootPath = request.DataRoot };
                 var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
@@ -67,7 +72,18 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
                     sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                     sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>(),
                     sp.GetService<IBacktestPreflightService>());
-            }));
+            }
+
+            return CreateEngine;
+        });
+        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
+            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
+            sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>()));
+        services.AddTransient<Meridian.Backtesting.WalkForward.IWalkForwardService>(sp =>
+            new Meridian.Backtesting.WalkForward.WalkForwardService(
+                sp.GetRequiredService<ILogger<Meridian.Backtesting.WalkForward.WalkForwardService>>(),
+                sp.GetRequiredService<IBatchBacktestService>(),
+                sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>()));
         services.AddTransient<BacktestViewModel>();
         services.AddTransient<BatchBacktestViewModel>();
         services.AddTransient<ChartingPageViewModel>();
@@ -103,6 +119,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
     {
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         var securityMasterConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
         if (!string.IsNullOrWhiteSpace(securityMasterConnectionString))
         {
@@ -134,7 +151,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
             services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
-            services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
+            services.AddSingleton<Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
         }
@@ -164,7 +181,14 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             svc.BacktestPreflightService = sp.GetService<IBacktestPreflightService>();
             return svc;
         });
-        services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
+            return new FileOperationalCaseHistoryStore(configService.ResolveDataRoot(config));
+        });
+        services.AddSingleton<IStrategyRepository>(sp =>
+            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
         services.AddSingleton<PromotionRecordStoreOptions>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();

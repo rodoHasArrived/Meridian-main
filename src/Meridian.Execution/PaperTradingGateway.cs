@@ -7,15 +7,26 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Execution;
 
 /// <summary>
-/// Simulated execution gateway for paper trading. Fills all market orders immediately
-/// at the last known price, and queues limit orders for fill on price touch.
+/// Simulated execution gateway for paper trading. Market orders fill immediately at the
+/// caller-provided simulated price (<see cref="OrderRequest.LimitPrice"/>) or the last observed
+/// live feed price when an <see cref="Interfaces.ILiveFeedAdapter"/> is wired. When neither is
+/// available the order is rejected, unless scaffold pricing is explicitly enabled via
+/// <see cref="Adapters.PaperTradingGatewayOptions.AllowScaffoldMarketFills"/>, in which case it
+/// fills at the configured scaffold notional price. Limit and stop orders are accepted and rest
+/// in memory but are never simulated to fill — this gateway performs no price-touch matching and
+/// exposes no execution-report stream. Cancel and modify act only on orders currently resting in
+/// this gateway; an unknown order id is rejected rather than acknowledged.
 /// </summary>
-public sealed class PaperTradingGateway : IExecutionGateway
+public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayModeProvider
 {
     private readonly ILogger<PaperTradingGateway> _logger;
-    private readonly ISecurityMasterQueryService? _securityMaster;
-    private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Adapters.PaperTradingGatewayTradingParameters _tradingParameters;
     private readonly decimal _scaffoldMarketFillPrice;
+    private readonly bool _allowScaffoldMarketFills;
+    private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
+    // Ids of limit/stop orders accepted and resting in this gateway, so cancel/modify can
+    // distinguish a real resting order from an unknown id instead of fabricating success.
+    private readonly ConcurrentDictionary<string, byte> _restingOrders = new(StringComparer.Ordinal);
     private int _scaffoldPriceWarningIssued;
     private bool _connected;
     private int _fillSequence;
@@ -23,17 +34,24 @@ public sealed class PaperTradingGateway : IExecutionGateway
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
         ISecurityMasterQueryService? securityMaster = null,
-        Adapters.PaperTradingGatewayOptions? options = null)
+        Adapters.PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _securityMaster = securityMaster;
-        var scaffoldPrice = (options ?? new Adapters.PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scaffoldPrice, nameof(options));
-        _scaffoldMarketFillPrice = scaffoldPrice;
+        _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
+            _logger,
+            securityMaster,
+            LogLevel.Warning);
+        _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
+        _allowScaffoldMarketFills = Adapters.PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _liveFeed = liveFeed;
     }
 
     /// <inheritdoc />
     public string GatewayId => "paper";
+
+    /// <inheritdoc />
+    public ExecutionMode ExecutionMode => ExecutionMode.Paper;
 
     /// <inheritdoc />
     public bool IsConnected => _connected;
@@ -59,7 +77,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
-        var lotSizeError = await ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
+        var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
         if (lotSizeError is not null)
         {
             throw new InvalidOperationException(lotSizeError);
@@ -74,10 +92,35 @@ public sealed class PaperTradingGateway : IExecutionGateway
         // Market-style orders fill immediately at a simulated price
         if (request.Type is OrderType.Market)
         {
-            // Callers should set a simulated price via LimitPrice; otherwise the
-            // configured scaffold notional price applies (with a one-time warning).
-            if (request.LimitPrice is null)
+            // Callers may set a simulated price via LimitPrice; otherwise the last observed
+            // live feed price applies. Without either, the order is rejected unless scaffold
+            // pricing is explicitly enabled (with a one-time warning when it is).
+            var simulatedPrice = request.LimitPrice ?? GetLiveReferencePrice(request.Symbol);
+            if (simulatedPrice is null)
             {
+                if (!_allowScaffoldMarketFills)
+                {
+                    var rejectReason = Adapters.PaperTradingGatewayScaffoldPricing
+                        .BuildNoReferencePriceRejectReason(request.Symbol);
+                    _logger.LogWarning(
+                        "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
+                        request.Symbol, request.Side, request.Quantity, rejectReason);
+
+                    return new ExecutionReport
+                    {
+                        OrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}",
+                        ReportType = ExecutionReportType.Rejected,
+                        Symbol = request.Symbol,
+                        Side = request.Side,
+                        OrderStatus = OrderStatus.Rejected,
+                        OrderQuantity = request.Quantity,
+                        FilledQuantity = 0,
+                        RejectReason = rejectReason,
+                        Timestamp = DateTimeOffset.UtcNow,
+                        GatewayOrderId = $"PAPER-{fillSeq}"
+                    };
+                }
+
                 WarnScaffoldPriceUsed();
             }
 
@@ -90,7 +133,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
                 OrderStatus = OrderStatus.Filled,
                 OrderQuantity = request.Quantity,
                 FilledQuantity = request.Quantity,
-                FillPrice = request.LimitPrice ?? _scaffoldMarketFillPrice,
+                FillPrice = simulatedPrice ?? _scaffoldMarketFillPrice,
                 Commission = 0m,
                 Timestamp = DateTimeOffset.UtcNow,
                 GatewayOrderId = $"PAPER-{fillSeq}"
@@ -102,10 +145,31 @@ public sealed class PaperTradingGateway : IExecutionGateway
             return report;
         }
 
-        // Limit/stop orders are accepted but not immediately filled
-        var accepted = new ExecutionReport
+        // Limit/stop orders are accepted but not immediately filled; track them as resting so
+        // cancel/modify can validate the order id later. Resting orders are keyed solely by id, so
+        // a duplicate id would collide in the tracking map and become impossible to cancel/modify
+        // independently — reject it instead of accepting an order the gateway cannot manage.
+        var restingOrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
+        if (!_restingOrders.TryAdd(restingOrderId, 0))
         {
-            OrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}",
+            return new ExecutionReport
+            {
+                OrderId = restingOrderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Rejected,
+                OrderQuantity = request.Quantity,
+                FilledQuantity = 0,
+                RejectReason = "An order with this client order id is already resting in the paper gateway.",
+                Timestamp = DateTimeOffset.UtcNow,
+                GatewayOrderId = $"PAPER-{fillSeq}"
+            };
+        }
+
+        return new ExecutionReport
+        {
+            OrderId = restingOrderId,
             ReportType = ExecutionReportType.New,
             Symbol = request.Symbol,
             Side = request.Side,
@@ -115,13 +179,27 @@ public sealed class PaperTradingGateway : IExecutionGateway
             Timestamp = DateTimeOffset.UtcNow,
             GatewayOrderId = $"PAPER-{fillSeq}"
         };
-
-        return accepted;
     }
 
     /// <inheritdoc />
     public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
     {
+        if (!_restingOrders.TryRemove(orderId, out _))
+        {
+            // No resting order with this id: unknown, already filled (market order), or already
+            // cancelled. Report a rejection rather than fabricating a successful cancellation.
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Rejected,
+                RejectReason = "No resting paper order with this id to cancel.",
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
         return Task.FromResult(new ExecutionReport
         {
             OrderId = orderId,
@@ -136,6 +214,22 @@ public sealed class PaperTradingGateway : IExecutionGateway
     /// <inheritdoc />
     public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
+        if (!_restingOrders.ContainsKey(orderId))
+        {
+            // Only orders still resting in this gateway can be modified; reject unknown ids
+            // rather than fabricating an acceptance.
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Rejected,
+                RejectReason = "No resting paper order with this id to modify.",
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
         return Task.FromResult(new ExecutionReport
         {
             OrderId = orderId,
@@ -157,79 +251,45 @@ public sealed class PaperTradingGateway : IExecutionGateway
     }
 
     /// <summary>
+    /// Returns the best live reference price for a symbol from the optional feed adapter:
+    /// last trade price first, then best-bid/offer midpoint; <c>null</c> when no feed is
+    /// wired or no tick has been observed yet.
+    /// </summary>
+    private decimal? GetLiveReferencePrice(string symbol)
+    {
+        if (_liveFeed is null)
+        {
+            return null;
+        }
+
+        if (_liveFeed.GetLastTrade(symbol) is { Price: > 0m } trade)
+        {
+            return trade.Price;
+        }
+
+        if (_liveFeed.GetLastQuote(symbol) is { } quote)
+        {
+            var mid = quote.MidPrice ?? (quote.BidPrice + quote.AskPrice) / 2m;
+            if (mid > 0m)
+            {
+                return mid;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Emits a one-time loud warning when a market fill is priced from the scaffold
     /// notional price instead of a caller-provided simulated price.
     /// </summary>
     private void WarnScaffoldPriceUsed()
     {
-        if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
-        {
-            return;
-        }
-
-        _logger.LogWarning(
-            "Paper execution gateway is filling market orders at the scaffold notional price {ScaffoldPrice}. " +
-            "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
-            "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
-            _scaffoldMarketFillPrice, Adapters.PaperTradingGatewayOptions.SectionKey);
-    }
-
-    private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
-    {
-        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
-        if (tradingParams?.LotSize is not { } lotSize || lotSize <= 0m)
-        {
-            return null;
-        }
-
-        var absQty = Math.Abs(request.Quantity);
-        return absQty % lotSize == 0m
-            ? null
-            : $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.";
-    }
-
-    private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
-    {
-        if (_securityMaster is null || string.IsNullOrWhiteSpace(symbol))
-        {
-            return null;
-        }
-
-        if (_tradingParamsCache.TryGetValue(symbol, out var cached))
-        {
-            return cached;
-        }
-
-        try
-        {
-            var security = await _securityMaster.GetByIdentifierAsync(
-                SecurityIdentifierKind.Ticker,
-                symbol,
-                provider: null,
-                ct).ConfigureAwait(false);
-
-            if (security is null)
-            {
-                _tradingParamsCache[symbol] = null;
-                return null;
-            }
-
-            var tradingParams = await _securityMaster.GetTradingParametersAsync(
-                security.SecurityId,
-                DateTimeOffset.UtcNow,
-                ct).ConfigureAwait(false);
-
-            _tradingParamsCache[symbol] = tradingParams;
-            return tradingParams;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "PaperTradingGateway lot-size validation skipped for {Symbol} due to Security Master lookup failure.",
-                symbol);
-            _tradingParamsCache[symbol] = null;
-            return null;
-        }
+        Adapters.PaperTradingGatewayScaffoldPricing.WarnIfFirstUse(
+            ref _scaffoldPriceWarningIssued,
+            _logger,
+            _scaffoldMarketFillPrice,
+            "Paper execution gateway");
     }
 
 }

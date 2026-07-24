@@ -1,58 +1,28 @@
-using Npgsql;
+using Meridian.Storage.Migrations;
 
 namespace Meridian.Storage.FundAccounts;
 
 public sealed class FundAccountMigrationRunner
 {
-    private readonly FundAccountStoreOptions _options;
+    private readonly PostgresMigrationRunner _runner;
 
     public FundAccountMigrationRunner(FundAccountStoreOptions options)
     {
-        _options = options;
-    }
-
-    public async Task EnsureMigratedAsync(CancellationToken ct = default)
-    {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-
-        foreach (var scriptPath in GetMigrationScripts())
+        ArgumentNullException.ThrowIfNull(options);
+        _runner = new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
         {
-            var sql = await File.ReadAllTextAsync(scriptPath, ct).ConfigureAwait(false);
-            var rendered = RenderSchema(sql, _options.Schema);
-
-            await using var command = connection.CreateCommand();
-            command.CommandText = rendered;
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
+            ConnectionString = options.ConnectionString,
+            Schema = options.Schema,
+            ScriptsSubdirectory = Path.Combine("FundAccounts", "Migrations"),
+            DisplayName = "Fund accounts",
+            LockScopeName = "fund_accounts",
+            ConnectionStringSettingName = $"{nameof(FundAccountStoreOptions)}.{nameof(options.ConnectionString)}",
+            // Feature-prefixed ledger so a shared schema can never collide with another
+            // feature's migration table layout.
+            LedgerTableName = "fund_account_schema_migrations",
+            DriftPolicy = MigrationDriftPolicy.Reapply,
+        });
     }
 
-    private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-        {
-            throw new InvalidOperationException("FundAccountStoreOptions.ConnectionString is not configured.");
-        }
-
-        var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
-    }
-
-    private static IEnumerable<string> GetMigrationScripts()
-    {
-        var baseDirectory = AppContext.BaseDirectory;
-        var migrationDirectory = Path.Combine(baseDirectory, "FundAccounts", "Migrations");
-        if (!Directory.Exists(migrationDirectory))
-        {
-            throw new DirectoryNotFoundException(
-                $"Fund accounts migration directory was not found at '{migrationDirectory}'.");
-        }
-
-        return Directory
-            .GetFiles(migrationDirectory, "*.sql", SearchOption.TopDirectoryOnly)
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static string RenderSchema(string sql, string schema)
-        => sql.Replace("__SCHEMA__", schema, StringComparison.Ordinal);
+    public Task EnsureMigratedAsync(CancellationToken ct = default) => _runner.EnsureMigratedAsync(ct);
 }

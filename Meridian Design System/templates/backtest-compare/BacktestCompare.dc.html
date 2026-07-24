@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Backtest Compare" description="Two strategy runs side by side — KPI delta table, overlaid equity curves, paired drawdown and returns panes, configuration diff with provenance" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="backtest-compare">
+<style>html,body{margin:0;padding:0;height:100%;}</style>
+</helmet>
+<div data-screen-label="Backtest compare" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
+<x-import component-from-global-scope="BacktestCompareScreen" from="./screen.jsx" environment="{{ env }}" run-a="{{ runA }}" run-b="{{ runB }}" highlight-deltas="{{ highlight }}" hint-size="100%,1100px"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;environment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;FIXTURE&quot;, &quot;tsType&quot;: &quot;\&quot;FIXTURE\&quot; | \&quot;PAPER\&quot;&quot;, &quot;options&quot;: [&quot;FIXTURE&quot;, &quot;PAPER&quot;], &quot;section&quot;: &quot;Session&quot; },
+  &quot;runA&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;1841&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;1841&quot;, &quot;1847&quot;, &quot;1852&quot;], &quot;section&quot;: &quot;Runs&quot; },
+  &quot;runB&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;1847&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;1841&quot;, &quot;1847&quot;, &quot;1852&quot;], &quot;section&quot;: &quot;Runs&quot; },
+  &quot;highlightDeltas&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Display&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      env: this.props.environment ?? "FIXTURE",
+      runA: this.props.runA ?? "1841",
+      runB: this.props.runB ?? "1847",
+      highlight: this.props.highlightDeltas ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

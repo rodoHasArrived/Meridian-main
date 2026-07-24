@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-09
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Ui
@@ -36,16 +36,20 @@ state so host-served workstation assets retain the same financial-operations flo
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
 The browser Accounting screen renders that same lane above its detailed closeout panels.
-The dashboard Reporting workspace owns schedule draft/save controls, while persistence, delivery
-targets, and due-run execution remain behind the shared schedule endpoints.
+The Accounting `Import statement` route supports file upload and provider-backed scheduled fetches,
+including canonical confidence preview, broker/custodian classification, and direct Evidence Vault
+and reconciliation-queue handoff; persistence and import policy remain server-owned.
+The dashboard Reporting workspace owns schedule draft/save, pause/resume, and single-schedule run
+controls. Persistence and release-gated delivery remain server-owned, and due schedules are leased
+only by the hosted reporting worker; the browser has no public batch due-run control.
 Reporting run cards display generated report-writer grid evidence from shared
 `generatedReportWriterGrids` payloads, so browser code does not parse retained
 `report-writer://.../grids/{gridId}` artifacts or recalculate no-code grid metadata locally.
 Reporting live portfolio cards display shared market tick telemetry, provider labels, tick age,
 tick sequence, and live-link flags from `livePortfolioViews` instead of deriving freshness in React.
-Reporting schedule and delivery panels also render shared package `accessLinks` for secure portal,
-email-link, retained-manifest, operator-route, and artifact-download access instead of deriving
-delivery actions from raw secure-link strings.
+Canonical Reporting schedule and delivery panels use the caller-specific server transport catalog,
+non-secret grant projections, and opaque fragment-bearer exchange links. Retained package
+`accessLinks` remain historical compatibility evidence, not release or transport authority.
 The dashboard Reporting workspace also reuses the shared private-capital activity projection and
 readiness state; browser panels may display fund-event ledger, capital-account subledger, ledger
 impact, retained evidence categories, approval state, published report-output posture, and
@@ -86,11 +90,13 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## Change rules
 
-Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by both active operator surfaces.
+Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.
 
 ## Related docs
 
 - `src/Meridian.Ui/dashboard/README.md`
 - `docs/product/meridian-design-document.md`
 - `docs/architecture/desktop-layers.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`

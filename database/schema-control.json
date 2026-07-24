@@ -1,0 +1,391 @@
+{
+  "audit_schemas": [
+    "public"
+  ],
+  "contract_sets": [
+    {
+      "diagram": false,
+      "directories": [
+        "src/Meridian.Contracts"
+      ],
+      "id": "all-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts"
+      ],
+      "schemas": []
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/Ledger",
+        "src/Meridian.Contracts/AccountingSystem"
+      ],
+      "id": "ledger-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.Ledger",
+        "Meridian.Contracts.AccountingSystem"
+      ],
+      "schemas": [
+        "ledger"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/SecurityMaster"
+      ],
+      "id": "security-master-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.SecurityMaster"
+      ],
+      "schemas": [
+        "security_master"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/DirectLending"
+      ],
+      "id": "direct-lending-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.DirectLending"
+      ],
+      "schemas": [
+        "security_master"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/AssetOperations"
+      ],
+      "id": "asset-operations-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.AssetOperations"
+      ],
+      "schemas": [
+        "asset_operations"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/FundStructure"
+      ],
+      "id": "fund-governance-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.FundStructure"
+      ],
+      "schemas": [
+        "fund_accounts",
+        "fund_structure"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/Banking"
+      ],
+      "id": "banking-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.Banking"
+      ],
+      "schemas": [
+        "banking"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/MoneyMarketFunds"
+      ],
+      "id": "money-market-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.MoneyMarketFunds"
+      ],
+      "schemas": [
+        "money_market"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Contracts/Reporting"
+      ],
+      "id": "reporting-contracts",
+      "namespace_prefixes": [
+        "Meridian.Contracts.Reporting"
+      ],
+      "schemas": [
+        "reporting"
+      ]
+    },
+    {
+      "diagram": true,
+      "directories": [
+        "src/Meridian.Identity"
+      ],
+      "id": "identity-access-contracts",
+      "namespace_prefixes": [
+        "Meridian.Identity"
+      ],
+      "schemas": [
+        "identity_access"
+      ]
+    }
+  ],
+  "logical_dependencies": [
+    {
+      "from": "security_master.securities",
+      "label": "security_id",
+      "to": "asset_operations.*"
+    },
+    {
+      "from": "security_master.securities",
+      "label": "security_id",
+      "to": "money_market.mmf_funds"
+    },
+    {
+      "from": "fund_structure.*",
+      "label": "governed scope ids",
+      "to": "fund_accounts.account_definition"
+    },
+    {
+      "from": "fund_structure.legal_entity",
+      "label": "entity_id",
+      "to": "banking.*"
+    },
+    {
+      "from": "fund_accounts.account_definition",
+      "label": "fund_account_id",
+      "to": "ledger.operations_continuity_workflows"
+    },
+    {
+      "from": "security_master.*",
+      "label": "default co-location",
+      "to": "direct-lending module"
+    }
+  ],
+  "manifest": {
+    "format": "meridian.schema-control.v1",
+    "postgres_image": "postgres:16.14-alpine"
+  },
+  "migration_search_roots": [
+    "src/Meridian.Storage",
+    "src/Meridian.Identity"
+  ],
+  "migration_sets": [
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+        "MERIDIAN_SECURITY_MASTER_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/SecurityMaster/Migrations",
+      "display_name": "Security Master",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "security-master",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "schema_migrations"
+      },
+      "ordinal_pattern": "^(\\d+)_",
+      "owner": "src/Meridian.Storage/SecurityMaster",
+      "quote_schema": false,
+      "schema": "security_master",
+      "track_ordinals": true
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+        "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
+        "MERIDIAN_DIRECT_LENDING_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/DirectLending/Migrations",
+      "display_name": "Direct Lending",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "direct-lending",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "direct_lending_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/DirectLending",
+      "quote_schema": false,
+      "schema": "security_master",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING",
+        "MERIDIAN_ASSET_OPERATIONS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/AssetOperations/Migrations",
+      "display_name": "Asset Operations",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "asset-operations",
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": true,
+        "key_column": "migration_id",
+        "table": "asset_operations_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/AssetOperations",
+      "quote_schema": true,
+      "schema": "asset_operations",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_LEDGER_CONNECTION_STRING",
+        "MERIDIAN_LEDGER_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/Ledger/Migrations",
+      "display_name": "Ledger and Operations Continuity",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "ledger",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "ledger_journal_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Ledger",
+      "quote_schema": false,
+      "schema": "ledger",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
+        "MERIDIAN_FUND_STRUCTURE_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/FundStructure/Migrations",
+      "display_name": "Fund Structure",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "fund-structure",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "fund_structure_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/FundStructure",
+      "quote_schema": false,
+      "schema": "fund_structure",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
+        "MERIDIAN_FUND_ACCOUNTS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/FundAccounts/Migrations",
+      "display_name": "Fund Accounts",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "fund-accounts",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "fund_account_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/FundAccounts",
+      "quote_schema": false,
+      "schema": "fund_accounts",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_BANKING_CONNECTION_STRING",
+        "MERIDIAN_BANKING_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/Banking/Migrations",
+      "display_name": "Banking",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "banking",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Banking",
+      "quote_schema": false,
+      "schema": "banking",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_MONEY_MARKET_CONNECTION_STRING",
+        "MERIDIAN_MONEY_MARKET_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/MoneyMarket/Migrations",
+      "display_name": "Money Market",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "money-market",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/MoneyMarket",
+      "quote_schema": false,
+      "schema": "money_market",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_REPORTING_CONNECTION_STRING",
+        "MERIDIAN_REPORTING_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/Reporting/Migrations",
+      "display_name": "Reporting",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "reporting",
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": true,
+        "key_column": "filename",
+        "table": "reporting_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Reporting",
+      "quote_schema": true,
+      "schema": "reporting",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Identity/Migrations",
+      "display_name": "Identity Scoped Access",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "identity-access",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "identity_access_schema_migrations"
+      },
+      "owner": "src/Meridian.Identity",
+      "quote_schema": true,
+      "schema": "identity_access",
+      "track_ordinals": false
+    }
+  ],
+  "outputs": {
+    "docs": "docs/generated/database",
+    "manifest": "database/manifest"
+  },
+  "version": 1
+}

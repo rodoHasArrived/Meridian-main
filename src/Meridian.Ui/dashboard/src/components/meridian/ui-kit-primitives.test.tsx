@@ -279,6 +279,96 @@ describe("DenseDataTable", () => {
 
     expect(screen.getByRole("row", { name: "NVDA Watched" })).toBeInTheDocument();
   });
+
+  it("guards the DOM with a default row cap when no explicit limit is given", async () => {
+    const user = userEvent.setup();
+    const manyRows = Array.from({ length: 150 }, (_, index) => ({
+      id: `row-${index}`,
+      symbol: `SYM${index}`,
+      status: "Watched"
+    }));
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={manyRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Unbounded table"
+      />
+    );
+
+    // Only the first 100 rows are mounted by default; the rest stay behind the
+    // progressive-disclosure control so a large set never floods the DOM.
+    expect(screen.getByRole("row", { name: "SYM0 Watched" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "SYM99 Watched" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "SYM100 Watched" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show all 150 rows" }));
+    expect(screen.getByRole("row", { name: "SYM149 Watched" })).toBeInTheDocument();
+  });
+
+  it("renders every row when the cap is explicitly disabled with null", () => {
+    const manyRows = Array.from({ length: 130 }, (_, index) => ({
+      id: `row-${index}`,
+      symbol: `SYM${index}`,
+      status: "Watched"
+    }));
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={manyRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Uncapped table"
+        maxVisibleRows={null}
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "SYM129 Watched" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Show all/ })).not.toBeInTheDocument();
+  });
+
+  it("invokes onRowContextMenu with the row for a right-click gesture", () => {
+    const onRowContextMenu = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        onRowContextMenu={onRowContextMenu}
+        emptyText="No rows"
+        ariaLabel="Context table"
+      />
+    );
+
+    fireEvent.contextMenu(screen.getByRole("row", { name: "MSFT Monitored" }));
+
+    expect(onRowContextMenu).toHaveBeenCalledTimes(1);
+    expect(onRowContextMenu.mock.calls[0][0]).toEqual({ id: "msft", symbol: "MSFT", status: "Monitored" });
+  });
+
+  it("leaves rows without a context-menu handler when onRowContextMenu is omitted", () => {
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="No context table"
+      />
+    );
+
+    // A right-click with no handler must not throw and must not select the row.
+    fireEvent.contextMenu(screen.getByRole("row", { name: "AAPL Active" }));
+    expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveAttribute("aria-selected");
+  });
 });
 
 function getTestRowId(row: TestRow) {

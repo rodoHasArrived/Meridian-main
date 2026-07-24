@@ -3,14 +3,19 @@ using System.Text;
 using System.Text.Json;
 using System.Runtime.Versioning;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
+using Serilog;
 
 namespace Meridian.DataIntegration.Credentials;
 
 public sealed class FileProviderCredentialStore : IProviderCredentialStore
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
+
     private const int VaultVersion = 1;
     private const string VaultFileName = "provider-credentials.vault";
+    private const string VaultBackupFileName = "provider-credentials.vault.bak";
     private const string KeyFileName = "provider-credentials.key";
     private const string AuditFileName = "provider-credentials.audit.jsonl";
     private const string EnvironmentFallbackOverride = "MDC_PROVIDER_ALLOW_ENV_FALLBACK";
@@ -27,6 +32,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly string _directoryPath;
+    private readonly string _vaultBackupPath;
     private readonly string _keyPath;
     private readonly string _auditPath;
 
@@ -36,6 +42,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         _directoryPath = Path.Combine(Path.GetFullPath(dataRoot), ".mdc");
         VaultPath = Path.Combine(_directoryPath, VaultFileName);
+        _vaultBackupPath = Path.Combine(_directoryPath, VaultBackupFileName);
         _keyPath = Path.Combine(_directoryPath, KeyFileName);
         _auditPath = Path.Combine(_directoryPath, AuditFileName);
     }
@@ -535,12 +542,53 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private async Task<ProviderCredentialVault> LoadVaultAsync(CancellationToken ct)
     {
-        if (!File.Exists(VaultPath))
+        try
+        {
+            return await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
+        }
+        catch (Exception primaryFailure) when (IsVaultCorruption(primaryFailure))
+        {
+            // A single corrupt write must not lock operators out of every provider
+            // credential. Fall back to the rolling last-known-good backup — loudly, and
+            // leaving the corrupt primary on disk for inspection.
+            Log.Error(
+                primaryFailure,
+                "Provider credential vault at {VaultPath} is unreadable; attempting last-known-good backup at {BackupPath}",
+                VaultPath, _vaultBackupPath);
+
+            if (!File.Exists(_vaultBackupPath))
+            {
+                Log.Error("No provider credential vault backup exists at {BackupPath}; giving up", _vaultBackupPath);
+                throw;
+            }
+
+            try
+            {
+                var vault = await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+                Log.Warning(
+                    "Recovered provider credentials from backup {BackupPath}; changes made after the backup was taken are lost and the corrupt vault is preserved at {VaultPath}",
+                    _vaultBackupPath, VaultPath);
+                return vault;
+            }
+            catch (Exception backupFailure) when (IsVaultCorruption(backupFailure))
+            {
+                Log.Error(backupFailure, "Provider credential vault backup at {BackupPath} is also unreadable", _vaultBackupPath);
+                throw primaryFailure;
+            }
+        }
+    }
+
+    private static bool IsVaultCorruption(Exception ex)
+        => ex is JsonException or FormatException or InvalidOperationException or CryptographicException;
+
+    private async Task<ProviderCredentialVault> LoadVaultFromFileAsync(string path, CancellationToken ct)
+    {
+        if (!File.Exists(path))
         {
             return new ProviderCredentialVault();
         }
 
-        var envelopeJson = await File.ReadAllTextAsync(VaultPath, ct).ConfigureAwait(false);
+        var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
             return new ProviderCredentialVault();
@@ -566,6 +614,22 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
         var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
         var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
+
+        // Roll the current (readable) vault to the last-known-good backup before replacing
+        // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
+        // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
+        if (File.Exists(VaultPath))
+        {
+            try
+            {
+                File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Warning(ex, "Could not refresh provider credential vault backup at {BackupPath}", _vaultBackupPath);
+            }
+        }
+
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
     }
 

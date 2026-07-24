@@ -32,4 +32,23 @@ describe("ReadinessPanel", () => {
     expect(screen.getByRole("button", { name: "Approve" })).toBeInTheDocument();
     expect(screen.getByText("lane body")).toBeInTheDocument();
   });
+
+  it("accepts route-level accessibility and layout wiring", () => {
+    render(
+      <ReadinessPanel
+        state="Blocked"
+        title="Ledger gate"
+        detail="Ledger evidence is incomplete."
+        detailId="ledger-gate-detail"
+        role="group"
+        ariaLabel="Ledger gate: Blocked"
+        className="h-full"
+      />,
+    );
+
+    const panel = screen.getByRole("group", { name: "Ledger gate: Blocked" });
+    expect(panel).toHaveClass("mds-rpanel", "mds-rpanel--blocked", "h-full");
+    expect(panel).toHaveAttribute("aria-describedby", "ledger-gate-detail");
+    expect(screen.getByText("Ledger evidence is incomplete.")).toHaveAttribute("id", "ledger-gate-detail");
+  });
 });

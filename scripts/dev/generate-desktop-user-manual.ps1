@@ -94,7 +94,6 @@ $checkpoint = Initialize-MeridianCheckpoint `
     -AllowInputMismatch:$AllowCheckpointInputMismatch
 
 $runSummaries = @()
-$buildSkipped = $SkipBuild
 
 foreach ($definition in $selectedWorkflows) {
     $checkpointStepId = "capture-$($definition.name)"
@@ -113,7 +112,10 @@ foreach ($definition in $selectedWorkflows) {
         PassThru = $true
     }
 
-    if ($buildSkipped) {
+    # Each runner invocation creates its own isolated build output. A later
+    # workflow cannot safely reuse that executable because its isolation key
+    # is local to the invocation, so only skip builds when the caller asked to.
+    if ($SkipBuild) {
         $runnerArguments.SkipBuild = $true
     }
 
@@ -134,8 +136,6 @@ foreach ($definition in $selectedWorkflows) {
     if ([string]::IsNullOrWhiteSpace($manifestPath)) {
         throw "Workflow '$($definition.name)' returned a PassThru result object without a manifest path."
     }
-
-    $buildSkipped = $true
 
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
     $workflowScreenshotDirectory = Join-Path $resolvedScreenshotRoot $definition.name

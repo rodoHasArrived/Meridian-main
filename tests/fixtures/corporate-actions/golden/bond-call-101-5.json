@@ -1,6 +1,6 @@
 {
   "scenarioId": "bond-call-101-5",
-  "description": "Issuer call at 101.5% of par. RedemptionPricePercentOfPar is a per-100-par proxy, not money: the bridge currently posts 101.5 as literal cash (CA-DEF-005, the code comment admits the proxy). Target: cash = price% x par x face quantity, position close-out at call price.",
+  "description": "Issuer call at 101.5% of par. The bridge calculates cash from the per-100-par price and the held face quantity.",
   "ticker": "XYZC29",
   "securityId": "a4000000-aaaa-4000-8000-000000000001",
   "actions": [
@@ -27,6 +27,5 @@
   ],
   "bars": [],
   "postingContext": { "positionQuantity": 50000, "withholdingTaxRate": 0, "financialAccountId": null },
-  "invariantTags": [ "journal-balanced" ],
-  "knownDefectIds": [ "CA-DEF-005" ]
+  "invariantTags": [ "journal-balanced" ]
 }

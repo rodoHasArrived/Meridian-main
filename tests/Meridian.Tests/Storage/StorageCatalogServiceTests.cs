@@ -358,4 +358,43 @@ public sealed class StorageCatalogServiceTests : IDisposable
         savedCatalog.Should().NotBeNull();
         savedCatalog!.Symbols.Should().ContainKey("AAPL");
     }
+
+    [Fact]
+    public async Task RebuildCatalogAsync_WhenCandidateScanFails_PreservesLastKnownGoodCatalogAndManifest()
+    {
+        await _service.InitializeAsync();
+        await _service.UpdateFileEntryAsync(new IndexedFileEntry
+        {
+            RelativePath = "AAPL/Trade/retained.jsonl",
+            Symbol = "AAPL",
+            EventType = "Trade",
+            EventCount = 4
+        });
+        await _service.SaveCatalogAsync();
+
+        var retainedCatalogId = _service.GetCatalog().CatalogId;
+        var manifestPath = Path.Combine(_testDirectory, "_catalog", "manifest.json");
+        var retainedManifest = await File.ReadAllTextAsync(manifestPath);
+        var blockedPath = Path.Combine(_testDirectory, "blocked.jsonl");
+        await File.WriteAllTextAsync(blockedPath, "{\"Symbol\":\"BLOCKED\"}\n");
+
+        await using var exclusiveLock = new FileStream(
+            blockedPath,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.None);
+        var result = await _service.RebuildCatalogAsync(new CatalogRebuildOptions
+        {
+            IncludePatterns = ["*.jsonl"],
+            Recursive = true,
+            ComputeChecksums = true,
+            CountEvents = false
+        });
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
+        _service.GetCatalog().CatalogId.Should().Be(retainedCatalogId);
+        _service.GetFilesForSymbol("AAPL").Should().ContainSingle();
+        (await File.ReadAllTextAsync(manifestPath)).Should().Be(retainedManifest);
+    }
 }

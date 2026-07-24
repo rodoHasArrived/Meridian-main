@@ -4,6 +4,9 @@ open System
 open Meridian.FSharp.Domain
 
 /// Day-count fraction calculations per ISDA and market conventions.
+/// These functions delegate to the single canonical engine
+/// (<c>Meridian.Contracts.SecurityMaster.DayCountConventions</c>) so the C# and F# lanes share one
+/// 30/360 and Actual/Actual implementation and can never silently diverge for the same bond.
 /// Reference: Clearwater Security Types and Calculation Reference Guide (May/June 2026), Section 2.2.
 [<RequireQualifiedAccess>]
 module DayCount =
@@ -11,41 +14,26 @@ module DayCount =
     /// Actual/360: actual calendar days divided by 360.
     /// Common for money-market instruments (CP, CD, repo, T-bills).
     let actual360 (startDate: DateOnly) (endDate: DateOnly) : decimal =
-        let days = (endDate.ToDateTime(TimeOnly.MinValue) - startDate.ToDateTime(TimeOnly.MinValue)).TotalDays
-        decimal days / 360m
+        Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(
+            Meridian.Contracts.SecurityMaster.DayCountConvention.Actual360, startDate, endDate)
 
     /// Actual/365 Fixed: actual calendar days divided by 365.
     /// Common for UK gilts, Australian bonds, and some money-market instruments.
     let actual365 (startDate: DateOnly) (endDate: DateOnly) : decimal =
-        let days = (endDate.ToDateTime(TimeOnly.MinValue) - startDate.ToDateTime(TimeOnly.MinValue)).TotalDays
-        decimal days / 365m
+        Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(
+            Meridian.Contracts.SecurityMaster.DayCountConvention.Actual365, startDate, endDate)
 
     /// 30/360 (Bond Basis / US): months treated as 30 days, year as 360.
     /// Default for most US corporate and municipal bonds.
     let thirty360 (startDate: DateOnly) (endDate: DateOnly) : decimal =
-        let d1 = min startDate.Day 30
-        let d2 = if startDate.Day >= 30 then min endDate.Day 30 else endDate.Day
-        let months = (endDate.Year - startDate.Year) * 12 + (endDate.Month - startDate.Month)
-        let days = d2 - d1
-        decimal (months * 30 + days) / 360m
+        Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(
+            Meridian.Contracts.SecurityMaster.DayCountConvention.Thirty360, startDate, endDate)
 
     /// Actual/Actual (ISDA): actual days in each calendar year, weighted by year length.
     /// Default for US Treasury notes and bonds.
     let actualActualIsda (startDate: DateOnly) (endDate: DateOnly) : decimal =
-        if startDate >= endDate then 0m
-        else
-            let start = startDate.ToDateTime(TimeOnly.MinValue)
-            let finish = endDate.ToDateTime(TimeOnly.MinValue)
-            if start.Year = finish.Year then
-                let daysInYear = if DateTime.IsLeapYear start.Year then 366.0 else 365.0
-                decimal (finish - start).Days / decimal daysInYear
-            else
-                let daysInFirstYear = if DateTime.IsLeapYear start.Year then 366.0 else 365.0
-                let daysInLastYear = if DateTime.IsLeapYear finish.Year then 366.0 else 365.0
-                let firstFrac = double (DateTime(start.Year + 1, 1, 1) - start).Days / daysInFirstYear
-                let lastFrac  = double (finish - DateTime(finish.Year, 1, 1)).Days / daysInLastYear
-                let fullYears = finish.Year - start.Year - 1
-                decimal firstFrac + decimal fullYears + decimal lastFrac
+        Meridian.Contracts.SecurityMaster.DayCountConventions.Fraction(
+            Meridian.Contracts.SecurityMaster.DayCountConvention.ActualActualIsda, startDate, endDate)
 
     /// Dispatch to the appropriate day-count fraction for the given convention.
     let fractionFor (convention: DayCountConvention) (startDate: DateOnly) (endDate: DateOnly) : decimal =

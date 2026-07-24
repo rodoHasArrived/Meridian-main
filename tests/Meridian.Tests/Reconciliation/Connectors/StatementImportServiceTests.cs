@@ -128,16 +128,36 @@ public sealed class StatementImportServiceTests : IDisposable
         result.RunId.Should().NotBeNullOrWhiteSpace();
         result.RecordCount.Should().Be(6);
         result.KindSummaries.Should().HaveCount(5);
-        // Legacy matcher semantics: two trades and one cash balance breach tolerance; the
-        // position, fee, and dividend rows match. Each break becomes a queue case.
-        result.BreakCount.Should().Be(3);
-        result.CaseCount.Should().Be(3);
+        // The matcher now reconciles against Meridian's own book. This test wires no internal
+        // populations, so every one of the 6 statement rows is correctly unmatched — each becomes a
+        // break and a queue case, instead of the old self-matcher fabricating position/near-zero matches.
+        result.BreakCount.Should().Be(6);
+        result.CaseCount.Should().Be(6);
+        result.BreakIds.Should().HaveCount(6);
+        result.CaseIds.Should().HaveCount(6);
+        result.CaseIds.Should().OnlyContain(caseId => caseId.StartsWith("case:", StringComparison.OrdinalIgnoreCase));
+        result.ReconciliationCaseRoutes.Should().HaveCount(6);
+        result.ReconciliationCaseRoutes.Should().OnlyContain(route =>
+            route.StartsWith($"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}&caseId=", StringComparison.OrdinalIgnoreCase) &&
+            route.Contains("&breakId=", StringComparison.OrdinalIgnoreCase));
+        result.ReconciliationCaseLinks.Should().HaveCount(6);
+        result.CaseIds.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.CaseId));
+        result.ReconciliationCaseRoutes.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.Route));
+        result.ReconciliationCaseLinks.Should().OnlyContain(link =>
+            link.CaseId.StartsWith("case:", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(link.BreakId) &&
+            link.Route.Contains($"caseId={Uri.EscapeDataString(link.CaseId)}", StringComparison.OrdinalIgnoreCase) &&
+            link.Route.Contains($"breakId={Uri.EscapeDataString(link.BreakId!)}", StringComparison.OrdinalIgnoreCase) &&
+            link.Status == "Open" &&
+            !string.IsNullOrWhiteSpace(link.Priority) &&
+            !string.IsNullOrWhiteSpace(link.Reason) &&
+            !string.IsNullOrWhiteSpace(link.SuggestedNextAction));
         result.Status.Should().Be("Imported");
 
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.NormalizedRowCount.Should().Be(6);
-        run.Cases.Should().HaveCount(3);
+        run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
@@ -158,6 +178,66 @@ public sealed class StatementImportServiceTests : IDisposable
             "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
             "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
             "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+    }
+
+    [Fact]
+    public async Task Commit_SourceFileNamedCanonicalCsv_RetainsRawAndCanonicalSeparately()
+    {
+        // A source file literally named "canonical.csv" must not collide with the rendered canonical
+        // artifact. The raw evidence is retained under its own subdirectory, so neither file overwrites
+        // the other and the original source bytes survive intact.
+        var rawContent = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv");
+        var document = new StatementSourceDocument("canonical.csv", rawContent);
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        var rawPath = Path.Combine(_root, result.RetainedSourcePath);
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        File.Exists(rawPath).Should().BeTrue();
+        File.Exists(canonicalPath).Should().BeTrue();
+        Path.GetFullPath(rawPath).Should().NotBe(
+            Path.GetFullPath(canonicalPath),
+            "the raw source and the rendered canonical artifact must be retained at distinct paths");
+        (await File.ReadAllBytesAsync(rawPath)).Should().Equal(
+            rawContent,
+            "the retained raw evidence must be the untouched source bytes, not the canonical rendering");
+        (await File.ReadAllTextAsync(canonicalPath)).Should().StartWith(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate");
+    }
+
+    [Fact]
+    public async Task Commit_ReimportWithChangedMapping_PreservesEachCanonicalArtifact()
+    {
+        var originalDocument = FixtureDocument("csv-mixed-kinds.csv");
+        var first = await _service.CommitAsync(CommitRequest(originalDocument));
+        var firstArtifact = await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath));
+
+        var canonicalProfile = StatementBuiltInProfiles.All.Single(profile =>
+            profile.ProfileId == StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
+        var remappedProfile = canonicalProfile with
+        {
+            ProfileId = "canonical-quantity-from-price-v1",
+            DisplayName = "Canonical CSV with quantity remapped",
+            IsBuiltIn = false,
+            Fields = canonicalProfile.Fields
+                .Select(field => field.CanonicalField == "Quantity"
+                    ? field with { SourceColumn = "price" }
+                    : field)
+                .ToArray()
+        };
+        await _catalog.UpsertAsync(remappedProfile);
+
+        var remappedDocument = originalDocument with { MappingProfileId = remappedProfile.ProfileId };
+        var second = await _service.CommitAsync(CommitRequest(remappedDocument));
+        var secondArtifact = await File.ReadAllTextAsync(Path.Combine(_root, second.RetainedCanonicalPath));
+
+        first.Duplicate.Should().BeFalse();
+        second.Duplicate.Should().BeFalse("a changed canonical rendering is a distinct reconciliation run");
+        first.RetainedCanonicalPath.Should().NotBe(second.RetainedCanonicalPath);
+        firstArtifact.Should().NotBe(secondArtifact);
+        (await File.ReadAllTextAsync(Path.Combine(_root, first.RetainedCanonicalPath))).Should().Be(
+            firstArtifact,
+            "a later import must not replace the normalized evidence referenced by the first run");
     }
 
     [Fact]
@@ -214,6 +294,39 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ScheduleStore_LegacySnapshot_DefaultsSourceKindToBroker()
+    {
+        var schedulePath = Path.Combine(_root, "reconciliation", "statement-fetch-schedules.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(schedulePath)!);
+        await File.WriteAllTextAsync(
+            schedulePath,
+            """
+            {
+              "version": 1,
+              "schedules": [
+                {
+                  "scheduleId": "legacy-schedule",
+                  "connectorId": "fake-fetch",
+                  "externalAccountId": "EXT-LEGACY",
+                  "fundAccountId": "FUND-LEGACY",
+                  "sourceInstitution": "Legacy Broker",
+                  "mappingProfileId": null,
+                  "toleranceProfileId": "statement-default",
+                  "cadenceHours": 24,
+                  "enabled": true,
+                  "lastRunAtUtc": null,
+                  "lastRunStatus": null
+                }
+              ]
+            }
+            """);
+
+        var schedule = (await new FileStatementFetchScheduleStore(_root).ListAsync()).Single();
+
+        schedule.SourceKind.Should().Be("broker");
+    }
+
+    [Fact]
     public async Task ScheduleRunner_RunsDueSchedules_AndRecordsOutcome()
     {
         var scheduleStore = new FileStatementFetchScheduleStore(_root);
@@ -227,7 +340,8 @@ public sealed class StatementImportServiceTests : IDisposable
             MappingProfileId: null,
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
-            Enabled: true));
+            Enabled: true,
+            SourceKind: "custodian"));
 
         var now = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
         var ran = await runner.RunDueSchedulesAsync(now);
@@ -236,6 +350,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var updated = (await scheduleStore.ListAsync()).Single();
         updated.LastRunAtUtc.Should().Be(now);
         updated.LastRunStatus.Should().StartWith("Imported");
+        (await _workflow.ListImportsAsync()).Single().Broker.Should().Be("custodian");
 
         // Just ran: not due again until the cadence elapses.
         (await runner.RunDueSchedulesAsync(now.AddHours(1))).Should().Be(0);
@@ -257,12 +372,17 @@ public sealed class StatementImportServiceTests : IDisposable
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
             Enabled: true));
+        var lastSuccessfulRun = new DateTimeOffset(2026, 7, 17, 6, 0, 0, TimeSpan.Zero);
+        await scheduleStore.RecordRunAsync("sched-bad", lastSuccessfulRun, "Imported prior run");
 
-        var ran = await runner.RunDueSchedulesAsync(DateTimeOffset.UtcNow);
+        var ran = await runner.RunDueSchedulesAsync(lastSuccessfulRun.AddHours(25));
 
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
-        updated.LastRunStatus.Should().StartWith("Failed:");
+        updated.LastRunAtUtc.Should().Be(
+            lastSuccessfulRun,
+            "a transient fetch failure must preserve the last successful schedule watermark");
+        updated.LastRunStatus.Should().Be("Failed: NotSupportedException");
     }
 
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>

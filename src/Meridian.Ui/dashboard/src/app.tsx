@@ -2,18 +2,15 @@ import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, 
 import {
   ArrowRight,
   AlertTriangle,
-  LoaderCircle,
-  Menu,
-  Search
+  LoaderCircle
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import "@/styles/app-shell.css";
-import meridianMarkUrl from "@/assets/brand/meridian-mark-light.svg";
+import { meridianBrandAssets } from "@/design-system/assets";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
   resolveAppShellCommandPaletteShortcut,
-  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import {
@@ -27,14 +24,26 @@ import {
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
+import {
+  compactOperatingScope,
+  hasOperatingScopeValues,
+  mergeOperatingScopes,
+  operatingScopesEqual,
+  readStoredOperatingScope,
+  writeStoredOperatingScope
+} from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
-import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
+import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
+import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
+import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
+import { applyDensity, writeStoredDensity } from "@/lib/density";
+import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
-import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -58,26 +67,53 @@ import {
 import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
+import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
+import { DesignSystemMasthead } from "@/design-system/primitives";
+import {
+  WorkstationStatusBar,
+  buildWorkstationStatusItems
+} from "@/components/meridian/workstation-status-bar";
+import { ActivityLogProvider } from "@/lib/activity-log/store";
+import {
+  OnboardingCoachMark,
+  useOnboardingTour
+} from "@/components/meridian/onboarding-tour";
+import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
+import {
+  reportWorkstationRouteError,
+  type WorkstationRouteErrorContext
+} from "@/lib/route-error-telemetry";
 import { cn } from "@/lib/utils";
-import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
+import { legacyWorkspaceRedirect, resolveWorkstationRouteBreadcrumbLabel, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import { FirstRunScreen } from "@/features/first-run/first-run-screen";
+import type { FirstRunStatus } from "@/features/first-run/types";
+import { apiGetJson } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+
+// Lazy route modules and data-backed panels often mount hash targets after the
+// shell route change. Wait briefly before falling back to the workbench landmark,
+// then always disconnect the MutationObserver on a longer watchdog.
+const ROUTE_FOCUS_FALLBACK_DELAY_MS = 4_000;
+const ROUTE_FOCUS_WATCHDOG_DELAY_MS = 15_000;
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
 const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
-const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
+const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
+const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
-const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
 const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
 const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
 const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
-const EvidenceDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.EvidenceDetailScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
@@ -89,21 +125,20 @@ const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-re
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
-const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
-const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
-const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
 
 export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <AppRoot />
+        <ActivityLogProvider>
+          <AppRoot />
+        </ActivityLogProvider>
       </ToastProvider>
     </PriceAlertsProvider>
   );
@@ -116,18 +151,37 @@ export function App() {
  */
 function AppRoot() {
   const { pathname } = useLocation();
+  const [firstRun, setFirstRun] = useState<FirstRunStatus | null>(null);
+  const [firstRunChecked, setFirstRunChecked] = useState(false);
+  useEffect(() => {
+    let active = true;
+    apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus)
+      .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
+      .catch(() => { if (active) setFirstRunChecked(true); });
+    return () => { active = false; };
+  }, []);
+
   if (isCompanionPaneRoute(pathname)) {
     return <CompanionPaneWindow />;
   }
-  return <AppShell />;
+  if (firstRunChecked && firstRun && !firstRun.isComplete && pathname !== "/setup") {
+    return <Navigate to="/setup" replace />;
+  }
+  if (pathname === "/setup") {
+    // onStatusChange lifts completion back into this component's state so the
+    // redirect guard above releases the user instead of bouncing them to /setup.
+    return <FirstRunScreen initialStatus={firstRun} onStatusChange={setFirstRun} />;
+  }
+  return <AppShell firstRunStatus={firstRun} />;
 }
 
-function AppShell() {
+function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
   const suppressScopePersistRef = useRef(false);
@@ -271,6 +325,25 @@ function AppShell() {
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
   };
 
+  // Replay a saved layout: apply density and operating scope, re-open the recorded
+  // companion panes, then navigate the captured route. Window placement across
+  // monitors is browser-permission-limited, so a restored pop-out may open where the
+  // browser chooses and be dragged once — the arrangement otherwise restores whole.
+  const handleRestoreLayout = (plan: LayoutRestorePlan) => {
+    writeStoredDensity(plan.density);
+    applyDensity(plan.density);
+
+    const compacted = compactOperatingScope(plan.operatingScope);
+    suppressScopePersistRef.current = false;
+    writeStoredOperatingScope(compacted);
+    setStoredOperatingScope(compacted);
+
+    setOpenCompanionPaneIds(plan.panes);
+    plan.panes.forEach((paneId) => openCompanionPane(paneId));
+
+    navigate(plan.route);
+  };
+
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
   const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
@@ -358,6 +431,14 @@ function AppShell() {
     () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
     [pathname, shell.activeWorkspace]
   );
+  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => ({
+    routeKey: `${pathname}${search}${hash}`,
+    pathname,
+    search,
+    hash,
+    workspaceLabel: shell.activeWorkspace.label,
+    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
+  }), [hash, pathname, search, shell.activeWorkspace]);
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -408,63 +489,27 @@ function AppShell() {
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {routeAnnouncement}
       </div>
-      <header className="workstation-masthead">
-        <div className="workstation-brand-group">
-          <button
-            type="button"
-            className="workstation-nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            aria-label="Open workspace navigation"
-            aria-expanded={navOpen}
-            aria-haspopup="dialog"
-            onClick={() => setNavOpen(true)}
-          >
-            <Menu className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <div className="workstation-brand">
-            <img src={meridianMarkUrl} alt="" aria-hidden="true" />
-            <div className="workstation-brand-copy min-w-0">
-              <div className="name">Meridian</div>
-              <div className="sub" aria-hidden="true">
-                <span className="workstation-brand-sep">/</span>
-                {headerWorkspace.label}
-              </div>
-            </div>
-          </div>
-        </div>
+      <DesignSystemMasthead
+        brandMarkSrc={meridianBrandAssets.markLight}
+        workspaceLabel={headerWorkspace.label}
+        navOpen={navOpen}
+        onOpenNavigation={() => setNavOpen(true)}
+        commandTrigger={shell.commandPaletteTrigger}
+        onOpenCommandPalette={() => setCommandOpen(true)}
+        trustStrip={shell.trustStrip}
+        session={session}
+        actions={(
+          <>
+            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
+            <ActivationHeaderProgress status={firstRunStatus} />
+            <ActivityCenter />
+            <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
+          </>
+        )}
+      />
 
-        <button
-          type="button"
-          className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          onClick={() => setCommandOpen(true)}
-          aria-label={shell.commandPaletteTrigger.label}
-          aria-controls={shell.commandPaletteTrigger.controlsId}
-          aria-expanded={shell.commandPaletteTrigger.expanded}
-          aria-haspopup={shell.commandPaletteTrigger.hasPopup}
-        >
-          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="workstation-search-placeholder">{shell.commandPaletteTrigger.placeholder}</span>
-          <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
-        </button>
-
-        <WorkstationTrustStrip viewModel={shell.trustStrip} />
-
-        <div className="workstation-actions">
-          <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
-          {session ? (
-            <div
-              className="workstation-session-card"
-              role="group"
-              aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
-            >
-              <Badge variant={session.environment} dot>{session.environment}</Badge>
-              <span className="workstation-session-name">{session.displayName}</span>
-              <span className="workstation-session-role text-muted-foreground">{session.role}</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">Loading session…</span>
-          )}
-        </div>
-      </header>
+      <DegradedModeBanner degradedMode={overview?.degradedMode} />
+      <DataProvenanceBanner provenance={usingDevelopmentFixtures ? "seeded" : "real"} />
 
       <div className="workstation-shell">
         <WorkspaceNav
@@ -484,6 +529,11 @@ function AppShell() {
           <WorkspaceHeader
             actions={(
               <>
+                <LayoutSwitcher
+                  route={`${pathname}${search}`}
+                  operatingScope={operatingScopeInput}
+                  onRestore={handleRestoreLayout}
+                />
                 <CopyLinkButton />
                 <SaveViewButton
                   workflowLibrary={workflowLibrary}
@@ -508,7 +558,7 @@ function AppShell() {
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
+              <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
                   <Route path="/" element={(
@@ -529,6 +579,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
@@ -545,7 +596,7 @@ function AppShell() {
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
-                  <Route path="/accounting/trial-balance" element={<TrialBalanceScreen data={accounting} />} />
+                  <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
@@ -553,8 +604,8 @@ function AppShell() {
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
-                  <Route path="/accounting/evidence/detail" element={<EvidenceDetailScreen />} />
-                  <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
@@ -565,13 +616,13 @@ function AppShell() {
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
-                  <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
+                  <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
-                  <Route path="/data/quotes" element={<LiveQuotesScreen />} />
-                  <Route path="/data/watchlist" element={<WatchlistScreen />} />
-                  <Route path="/data/alerts" element={<PriceAlertsScreen />} />
-                  <Route path="/data/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/data/quotes" element={<MarketDataScreen />} />
+                  <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(
@@ -631,11 +682,9 @@ function AppShell() {
         </main>
       </div>
 
-      <StatusBar
-        items={buildShellStatusItems({
-          session,
+      <WorkstationStatusBar
+        items={buildWorkstationStatusItems({
           workspaceLabel: headerWorkspace.label,
-          usingDevelopmentFixtures,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error)
         })}
@@ -653,6 +702,7 @@ function AppShell() {
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}
       />
+      <OnboardingCoachMark controller={onboardingTour} />
       <ScopePicker
         open={scopePickerOpen}
         onOpenChange={setScopePickerOpen}
@@ -768,9 +818,9 @@ function focusRouteTargetWhenReady(
 
     focusElementById(fallbackElementId, root);
     fallbackTimeout = null;
-  }, 4000);
+  }, ROUTE_FOCUS_FALLBACK_DELAY_MS);
 
-  targetTimeout = window.setTimeout(cleanup, 15000);
+  targetTimeout = window.setTimeout(cleanup, ROUTE_FOCUS_WATCHDOG_DELAY_MS);
 
   return cleanup;
 }
@@ -784,7 +834,7 @@ function buildWorkspaceBreadcrumbItems(
     return [{ label: "Workstation", current: true }];
   }
 
-  const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
+  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
@@ -801,59 +851,11 @@ function buildWorkspaceBreadcrumbItems(
   ];
 }
 
-function resolveRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
-  const segments = pathname.split("/").filter(Boolean);
-  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
-  if (routeSegments.length === 0) {
-    return workspace.label;
-  }
-
-  return routeSegments.map(formatRouteSegmentLabel).join(" / ");
-}
-
-function formatRouteSegmentLabel(segment: string): string {
-  const knownLabels: Record<string, string> = {
-    alerts: "Alerts",
-    approvals: "Close Cockpit",
-    "asset-detail": "Asset Detail",
-    "capital-accounts": "Capital Accounts",
-    configure: "Governance",
-    "covered-call": "Covered Call",
-    designer: "Designer",
-    "entity-setup": "Entity Setup",
-    evidence: "Evidence",
-    exceptions: "Reconciliation Casework",
-    "family-office": "Family Office",
-    "formula-workbench": "Formula Workbench",
-    "journal-entries": "Journal Entry",
-    ledger: "Ledger Explorer",
-    "operations-continuity": "Operations Continuity",
-    "operations-record": "Operations Record",
-    exports: "Exports",
-    providers: "Providers",
-    "quant-lab": "Quant Lab",
-    quotes: "Quotes",
-    readiness: "Readiness",
-    reconciliation: "Reconciliation Casework",
-    "report-packs": "Delivery Evidence",
-    run: "Run Report",
-    "run-status": "Run Status",
-    scheduled: "Scheduled Reports",
-    "security-master": "Security Master",
-    "statement-import": "Import Statement",
-    watchlist: "Watchlist"
-  };
-
-  return knownLabels[segment] ?? segment.split("-").map((part) => (
-    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
-  )).join(" ");
-}
-
 class RouteErrorBoundary extends Component<
-  { children: ReactNode; routeKey: string },
+  { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext },
   { hasError: boolean; routeKey: string }
 > {
-  constructor(props: { children: ReactNode; routeKey: string }) {
+  constructor(props: { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext }) {
     super(props);
     this.state = { hasError: false, routeKey: props.routeKey };
   }
@@ -874,7 +876,7 @@ class RouteErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Meridian workstation route failed to render.", error, info.componentStack);
+    reportWorkstationRouteError(this.props.context, error, info);
   }
 
   render() {
@@ -882,7 +884,7 @@ class RouteErrorBoundary extends Component<
       return (
         <RouteRecoveryPanel
           title="Workbench route failed"
-          detail="Meridian could not render this route. Return to the Daily Control Tower or retry after refreshing live data."
+          detail={`Meridian could not render ${this.props.context.routeLabel} in ${this.props.context.workspaceLabel}. Return to the Daily Control Tower or retry after refreshing live data.`}
           actionLabel="Open Daily Control Tower"
           actionHref="/"
         />
@@ -936,232 +938,6 @@ function RouteRecoveryPanel({
       </Button>
     </PanelSurface>
   );
-}
-
-const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
-
-function readStoredOperatingScope(): AppShellOperatingScopeInput {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed: unknown = raw.trim().startsWith("{") ? JSON.parse(raw) : raw;
-    if (typeof parsed === "string") {
-      return { symbol: parsed };
-    }
-
-    if (parsed && typeof parsed === "object") {
-      const record = parsed as Record<string, unknown>;
-      return {
-        symbol: readStoredScopeString(record.symbol),
-        fundAccountId: readStoredScopeString(record.fundAccountId),
-        runId: readStoredScopeString(record.runId),
-        provider: readStoredScopeString(record.provider),
-        from: readStoredScopeString(record.from),
-        to: readStoredScopeString(record.to),
-        date: readStoredScopeString(record.date),
-        asOf: readStoredScopeString(record.asOf)
-      };
-    }
-  } catch {
-    return {};
-  }
-
-  return {};
-}
-
-function writeStoredOperatingScope(scope: AppShellOperatingScopeInput) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    const nextScope = compactOperatingScope(scope);
-    if (!hasOperatingScopeValues(nextScope)) {
-      window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
-      return;
-    }
-
-    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify(nextScope));
-  } catch {
-    // Browser storage can be unavailable in private or locked-down contexts.
-  }
-}
-
-function readStoredScopeString(value: unknown): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value : null;
-}
-
-function mergeOperatingScopes(
-  storedScope: AppShellOperatingScopeInput,
-  routeScope: AppShellOperatingScopeInput
-): AppShellOperatingScopeInput {
-  return compactOperatingScope({
-    symbol: routeScope.symbol ?? storedScope.symbol ?? null,
-    fundAccountId: routeScope.fundAccountId ?? storedScope.fundAccountId ?? null,
-    runId: routeScope.runId ?? storedScope.runId ?? null,
-    provider: routeScope.provider ?? storedScope.provider ?? null,
-    from: routeScope.from ?? storedScope.from ?? null,
-    to: routeScope.to ?? storedScope.to ?? null,
-    date: routeScope.date ?? storedScope.date ?? null,
-    asOf: routeScope.asOf ?? storedScope.asOf ?? null
-  });
-}
-
-function compactOperatingScope(scope: AppShellOperatingScopeInput): AppShellOperatingScopeInput {
-  return {
-    ...(scope.symbol ? { symbol: scope.symbol } : {}),
-    ...(scope.fundAccountId ? { fundAccountId: scope.fundAccountId } : {}),
-    ...(scope.runId ? { runId: scope.runId } : {}),
-    ...(scope.provider ? { provider: scope.provider } : {}),
-    ...(scope.from ? { from: scope.from } : {}),
-    ...(scope.to ? { to: scope.to } : {}),
-    ...(scope.date ? { date: scope.date } : {}),
-    ...(scope.asOf ? { asOf: scope.asOf } : {})
-  };
-}
-
-function hasOperatingScopeValues(scope: AppShellOperatingScopeInput): boolean {
-  return Boolean(
-    scope.symbol
-    || scope.fundAccountId
-    || scope.runId
-    || scope.provider
-    || scope.from
-    || scope.to
-    || scope.date
-    || scope.asOf
-  );
-}
-
-function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShellOperatingScopeInput): boolean {
-  const compactLeft = compactOperatingScope(left);
-  const compactRight = compactOperatingScope(right);
-  return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
-}
-
-function WorkstationTrustStrip({
-  viewModel
-}: {
-  viewModel: AppShellTrustStripState;
-}) {
-  return (
-    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
-      {viewModel.items.map((item) => {
-        const content = (
-          <>
-            <span className="workstation-trust-label">{item.label}</span>
-            <span className="workstation-trust-value">{item.value}</span>
-            <span className="sr-only">
-              {item.detail}
-              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
-            </span>
-          </>
-        );
-
-        return item.href ? (
-          <Link
-            key={item.id}
-            to={item.href}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
-          >
-            {content}
-          </Link>
-        ) : (
-          <span
-            key={item.id}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={item.ariaLabel}
-          >
-            {content}
-          </span>
-        );
-      })}
-    </section>
-  );
-}
-
-interface ShellStatusBarItem {
-  key: string;
-  label?: string;
-  value: string;
-  status?: "ok" | "warn" | "err";
-  push?: boolean;
-}
-
-/**
- * Concrete workstation status bar — the near-black 28px telemetry footer that mirrors the
- * WPF StatusBar palette. Renders a row of label/value fields; items flagged `push` float to
- * the right edge. Purely presentational; all copy is derived by the caller.
- */
-function StatusBar({ items }: { items: ShellStatusBarItem[] }) {
-  return (
-    <footer className="workstation-statusbar" aria-label="Workstation status">
-      {items.map((item) => (
-        <span
-          key={item.key}
-          className={cn("workstation-statusbar-item", item.push && "workstation-statusbar-item-push")}
-        >
-          {item.status ? (
-            <span className={`workstation-statusbar-dot workstation-statusbar-dot-${item.status}`} aria-hidden="true" />
-          ) : null}
-          {item.label ? <span className="workstation-statusbar-label">{item.label}</span> : null}
-          <span className="workstation-statusbar-value">{item.value}</span>
-        </span>
-      ))}
-    </footer>
-  );
-}
-
-function buildShellStatusItems({
-  session,
-  workspaceLabel,
-  usingDevelopmentFixtures,
-  refreshing,
-  hasError
-}: {
-  session: { environment?: string } | null;
-  workspaceLabel: string;
-  usingDevelopmentFixtures: boolean;
-  refreshing: boolean;
-  hasError: boolean;
-}): ShellStatusBarItem[] {
-  const environment = session?.environment ?? "loading";
-  const connectionStatus: ShellStatusBarItem["status"] = hasError ? "err" : session ? "ok" : "warn";
-  const dataStatus: ShellStatusBarItem["status"] = usingDevelopmentFixtures ? "warn" : "ok";
-
-  return [
-    {
-      key: "session",
-      status: connectionStatus,
-      label: "Session",
-      value: session ? environment : "connecting"
-    },
-    {
-      key: "data",
-      status: dataStatus,
-      label: "Data",
-      value: usingDevelopmentFixtures ? "demo fixtures" : "live source"
-    },
-    {
-      key: "sync",
-      label: "Sync",
-      value: refreshing ? "refreshing…" : "up to date"
-    },
-    {
-      key: "workspace",
-      label: "Workspace",
-      value: workspaceLabel,
-      push: true
-    }
-  ];
 }
 
 function LegacyWorkspaceRedirect() {

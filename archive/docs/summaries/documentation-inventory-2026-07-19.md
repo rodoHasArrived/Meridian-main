@@ -1,0 +1,135 @@
+# Documentation Inventory Snapshot — 2026-07-19
+
+**Status:** archived
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
+This snapshot preserves the detailed migration ledger that accumulated during the documentation
+rebuild. It is retained for traceability and does not define the current documentation structure.
+
+Use the active [Documentation Inventory](../../../docs/documentation-inventory.md) for the current
+folder model and the [Documentation Ownership Contract](../../../docs/documentation-ownership.md)
+for placement rules.
+
+## Classification Key
+
+- `canonical`: active source to rewrite or preserve in the new model.
+- `source-material`: useful facts should be extracted into canonical docs, then the old doc can be archived.
+- `generated`: preserve; update source registry or generator instead of hand-editing output.
+- `archive`: move to `archive/docs/` when replacement links are in place.
+- `delete-candidate`: only untracked/generated junk or explicitly approved removals.
+
+## Folder-Level Inventory
+
+| Current folder | Initial class | Target owner | Notes |
+| --- | --- | --- | --- |
+| `docs/ai/` | canonical | `docs/ai/` | Keep as controlled assistant workflow system; update indexes for new docs model. |
+| `docs/roadmap/` | canonical/generated | `docs/roadmap/` | Keep registry truth in `data/*.yml` and generated views. |
+| `docs/source/` | canonical/generated | `docs/source/` | Keep source-module registry and generated source docs. |
+| `docs/generated/` | generated | `docs/generated/` | Preserve; update generator inventory and do-not-edit policy. |
+| `docs/start/` | canonical | `docs/start/` | Canonical first-run lane for project orientation, prerequisites, setup, launch paths, first validation, and audience routing. |
+| `docs/product/` | canonical | `docs/product/` | Canonical stakeholder lane for product promise, operator lifecycle, capability posture, roadmap interpretation, and conservative completion-claim language. |
+| `docs/engineering/` | canonical | `docs/engineering/` | Canonical developer and coding-agent lane for solution map, build/test/run commands, validation lanes, WPF/browser rules, source registry workflow, and known local blockers. |
+| `docs/operators/` | canonical | `docs/operators/` | Canonical operator procedure lane for setup, provider workflows, workstation usage, runbooks, deployment, troubleshooting, support evidence, and operational guardrails. |
+| `docs/reference/` | canonical | `docs/reference/` | Canonical lookup lane for APIs, env/config, CLI/schema shapes, provider capability matrices, UFL/asset profiles, glossary-style definitions, and stable contract tables. |
+| `docs/architecture/` | source-material | `docs/engineering/` | Keep high-value architecture docs; route through engineering index. |
+| `docs/developer/` | archived | `docs/start/`, `docs/engineering/`, `archive/docs/developer/` | Active folder removed; setup/build guidance routes to current audience lanes and historical copies remain archived. |
+| `docs/development/` | source-material | `docs/engineering/` | Merge developer guides and validation lanes into engineering. |
+| `docs/operations/` | source-material | `docs/operators/` | Operator-facing runbooks, deployment, reliability, packaging, maintenance, and support docs now route through the operator lane. |
+| `docs/providers/` | archived | `docs/operators/`, `docs/reference/`, `archive/docs/providers/` | Active folder removed; provider setup/recovery belongs to operators, capability/comparison lookup belongs to reference, and historical copies remain archived. |
+| `docs/plans/` | source-material/archive | `docs/product/`, `docs/engineering/`, `docs/roadmap/`, `archive/docs/plans/` | Index demoted to migration source material; extract current direction and archive superseded plans. |
+| `docs/status/` | controlled-migration/generated/archive | `docs/product/`, `docs/roadmap/`, `docs/generated/`, `archive/docs/status/` | Index demoted to controlled status/reporting migration; generated reports stay automation-owned. |
+| `docs/evaluations/` | archived | `docs/product/`, `docs/engineering/`, `docs/operators/`, `docs/reference/`, `docs/roadmap/`, `archive/docs/assessments/` | Active folder removed; historical evaluations live in the assessment archive. |
+| `docs/audits/` | archived | `docs/engineering/`, `archive/docs/assessments/` | Active folder removed; historical audit snapshots live in the assessment archive. |
+| `docs/security/` | source-material | `docs/operators/`, `docs/engineering/`, `docs/reference/` | Split procedure, engineering, and lookup content later. |
+| `docs/design/` | archived | `archive/docs/design/` | Active folder removed; use product docs for current design framing and archive docs for historical notes. |
+| `docs/diagrams/` | source-material/generated | `docs/engineering/`, `docs/source/` | Keep diagrams linked from canonical owners or registries. |
+| `docs/integrations/` | source-material | `docs/engineering/` and `docs/reference/` | Keep only verified integration guidance active. |
+| `docs/prompts/` | canonical/source-material | `docs/ai/` | Provider-agnostic prompt docs should be discoverable from AI. |
+| `docs/api/` | archived | `docs/reference/`, `archive/docs/reference/` | Active folder removed; API lookup belongs to reference and historical API stubs remain archived. |
+| `docs/getting-started/` | archived | `docs/start/`, `docs/operators/`, `archive/docs/getting-started/` | Active folder removed; first-run and pilot setup content now routes through start/operator lanes and historical copies remain archived. |
+| `docs/examples/` | source-material | `docs/start/` or `docs/reference/` | Keep examples only when current. |
+| `docs/testing/` | source-material | `docs/engineering/` | Merge validation guidance into engineering. |
+| `docs/ui/` | archived | `archive/docs/ui/` | Active folder removed; use engineering/reference docs for current UI guidance and archive docs for historical notes. |
+| `docs/screenshots/` | source-material/generated | `docs/operators/` or generated evidence docs | Keep only current evidence workflow links. |
+| `docs/docfx/` | source-material | `docs/reference/` | Keep if API-doc generation remains active. |
+
+## Known Drift Flags
+
+- Active docs should use `D:\Meridian-main`, not `C:\Dev\Meridian-main`, as the canonical local path.
+- Roadmap truth should not be duplicated outside `docs/roadmap/data/*.yml`, generated roadmap views, and explicitly current stakeholder summaries.
+- Source-module ownership should not be duplicated outside `docs/source/data/*.yml`, registered source READMEs, and generated source views.
+- Existing dirty worktree changes outside this documentation rebuild are user-owned and must not be folded into archive or rewrite batches by accident.
+
+## Next Migration Batch
+
+1. Continue collapsing `docs/plans/` completed, speculative, or point-in-time plans into redirect stubs after checking whether any durable rule needs extraction.
+2. Add targeted archive entries as files move into `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, or `archive/docs/workflows/`.
+3. Leave redirect stubs only for high-traffic paths linked from root, AI, roadmap, command docs, or current folder indexes.
+4. Do not recreate per-document redirect stubs in `docs/evaluations/` or `docs/audits/`; link current guidance to the owning canonical lane and historical rationale directly to `archive/docs/assessments/`.
+5. Run link repair and structure validation after each batch.
+
+## Completed Migration Notes
+
+| Date | Source path | Archive path | Action |
+| --- | --- | --- | --- |
+| 2026-05-30 | `build/scripts/docs/validate-docs-structure.py` | n/a | Added migration-aware top-level docs folder enforcement: canonical folders pass, known legacy folders warn, and unexpected new docs folders fail validation. |
+| 2026-05-30 | `docs/audits/CODE_REVIEW_2026-03-16.md` | `archive/docs/assessments/CODE_REVIEW_2026-03-16.md` | Active duplicate replaced with redirect stub after the archive copy was confirmed byte-identical. |
+| 2026-05-30 | `docs/audits/AUDIT_REPORT.md` | `archive/docs/assessments/AUDIT_REPORT.md` | March 2026 repo-wide audit preserved in the assessment archive and replaced with a high-traffic redirect stub. |
+| 2026-05-30 | `docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | `archive/docs/assessments/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | Backtesting subsystem review preserved in the assessment archive after durable backtesting engineering rules were summarized in `docs/engineering/README.md`. |
+| 2026-05-30 | `docs/audits/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | `archive/docs/assessments/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | March 2026 simplification backlog preserved in the assessment archive after engineering docs were updated to require current-source revalidation before acting on archived cleanup findings. |
+| 2026-05-30 | `docs/audits/workspace-visual-audit-checklist-2026-04-22.md` | `archive/docs/assessments/workspace-visual-audit-checklist-2026-04-22.md` | Workstation visual audit preserved in the assessment archive after durable visual consistency rules were summarized in `docs/engineering/README.md`. |
+| 2026-05-30 | `docs/audits/audit-architecture-results.txt`, `docs/audits/audit-code-results.json`, `docs/audits/audit-results-full.json`, `docs/audits/prompt-generation-results.json` | `archive/docs/assessments/` | Point-in-time machine-readable audit outputs moved out of active docs; archive index now requires rerunning the owning audit before treating findings as current. |
+| 2026-05-30 | `docs/evaluations/2026-03-brainstorm-next-frontier.md` | `archive/docs/assessments/2026-03-brainstorm-next-frontier.md` | March 2026 product/analytics brainstorm archived with a redirect stub; current product direction must come from product docs and roadmap registry. |
+| 2026-05-30 | `docs/evaluations/assembly-performance-opportunities.md` | `archive/docs/assessments/assembly-performance-opportunities.md` | March 2026 performance-opportunity assessment archived with a redirect stub after engineering docs were updated to require current source and benchmark evidence before performance work. |
+| 2026-05-30 | `docs/evaluations/competitive-analysis-2026-03.md` | `archive/docs/assessments/competitive-analysis-2026-03.md` | March/April 2026 competitive analysis archived with a redirect stub after adding a product rule that historical market comparisons are source material, not current positioning. |
+| 2026-05-30 | `docs/evaluations/data-quality-monitoring-evaluation.md` | `archive/docs/assessments/data-quality-monitoring-evaluation.md` | February 2026 data-quality assessment archived with a redirect stub after product docs were updated to require current provider validation evidence and generated status artifacts for quality claims. |
+| 2026-05-30 | `docs/evaluations/desktop-platform-improvements-implementation-guide.md` | `archive/docs/assessments/desktop-platform-improvements-implementation-guide.md` | Historical desktop improvement program guide archived with a redirect stub after engineering docs were updated to use current desktop source, WPF tests, shared UI service tests, and active guidance. |
+| 2026-05-30 | `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | `archive/docs/assessments/high-value-low-cost-improvements-brainstorm.md` | February/March 2026 improvement-priority snapshot archived with a redirect stub; current priorities must be revalidated through engineering/product docs and roadmap registry. |
+| 2026-05-30 | `docs/evaluations/historical-data-providers-evaluation.md` | `archive/docs/assessments/historical-data-providers-evaluation.md` | February 2026 backfill-provider assessment archived with a redirect stub after reference docs were updated to route provider-selection claims through current matrices and validation evidence. |
+| 2026-05-30 | `docs/evaluations/ingestion-orchestration-evaluation.md` | `archive/docs/assessments/ingestion-orchestration-evaluation.md` | February/March 2026 scheduler/backfill-control assessment archived with a redirect stub after engineering/operator docs were updated to preserve job state, checkpoint, idempotency, backpressure, audit, and SLO guidance. |
+| 2026-05-30 | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | `archive/docs/assessments/nautilus-inspired-restructuring-proposal.md` | March 2026 structural proposal archived with a redirect stub after adding an engineering rule that old restructuring advice must be revalidated against current source ownership and registry evidence. |
+| 2026-05-30 | `docs/evaluations/operational-readiness-evaluation.md` | `archive/docs/assessments/operational-readiness-evaluation.md` | February 2026 readiness assessment archived with a redirect stub after operator docs were updated to require current SLO, runbook, release-gate, and validation evidence for readiness claims. |
+| 2026-05-30 | `docs/evaluations/quant-script-blueprint-brainstorm.md` | `archive/docs/assessments/quant-script-blueprint-brainstorm.md` | Historical QuantScript critique and backlog archived with a redirect stub after the document itself identified newer implementation evidence as authoritative. |
+| 2026-05-30 | `docs/evaluations/realtime-streaming-architecture-evaluation.md` | `archive/docs/assessments/realtime-streaming-architecture-evaluation.md` | March 2026 streaming architecture assessment archived with a redirect stub after engineering/operator/reference docs were updated to preserve streaming pipeline, evidence, and lookup rules. |
+| 2026-05-30 | `docs/evaluations/storage-architecture-evaluation.md` | `archive/docs/assessments/storage-architecture-evaluation.md` | March 2026 storage architecture assessment archived with a redirect stub after engineering/reference docs were updated to preserve persistence, catalog, retention, and validation rules. |
+| 2026-05-30 | `docs/evaluations/windows-desktop-provider-configurability-assessment.md` | `archive/docs/assessments/windows-desktop-provider-configurability-assessment.md` | February/March 2026 desktop provider-config assessment archived with a redirect stub after operator and engineering docs were updated to keep provider settings on shared typed configuration and credential seams. |
+| 2026-05-30 | `docs/plans/performance-todo-2026-05-21.md` | `archive/docs/plans/performance-todo-2026-05-21.md` | Environment-specific benchmark blocker/TODO snapshot archived with a redirect stub; active performance work now routes through engineering guidance plus fresh benchmark evidence. |
+| 2026-05-30 | `docs/plans/paper-trading-cockpit-reliability-sprint.md` | `archive/docs/plans/paper-trading-cockpit-reliability-sprint.md` | Completed Wave 2 cockpit reliability detail contract archived with a redirect stub; current Wave 2 status belongs in product docs, roadmap registry, and retained evidence packets. |
+| 2026-05-30 | `docs/plans/assembly-performance-roadmap.md` | `archive/docs/plans/assembly-performance-roadmap.md` | Optional advanced-performance roadmap archived with a redirect stub; active performance work requires current source and benchmark evidence through engineering guidance. |
+| 2026-05-30 | `docs/plans/portfolio-level-backtesting-composer-blueprint.md` | `archive/docs/plans/portfolio-level-backtesting-composer-blueprint.md` | Proposed future portfolio-composer blueprint archived with a redirect stub; current Backtest Studio work should remain aligned to W5 roadmap registry evidence. |
+| 2026-05-30 | `docs/plans/runbook-template-registry-modernization-plan.md` | `archive/docs/plans/runbook-template-registry-modernization-plan.md` | Draft runbook/template registry plan archived with a redirect stub; active platform scope must be proven through operator, engineering, and roadmap evidence. |
+| 2026-05-30 | `docs/plans/options-roadmap.md` | `archive/docs/plans/options-roadmap.md` | Options implementation roadmap archived with redirect stub; active options priorities and evidence now routed through status/risk evidence and status docs. |
+| 2026-05-30 | `docs/plans/meridian-database-blueprint.md` | `archive/docs/plans/meridian-database-blueprint.md` | Database blueprint archived as historical architecture planning; active source of truth remains engineering docs and status/risk evidence. |
+| 2026-05-30 | `docs/plans/l3-inference-implementation-plan.md` | `archive/docs/plans/l3-inference-implementation-plan.md` | L3 inference and queue-aware execution planning archived as a historical plan; active priorities and completion status should be evidence-tracked in status/risk artifacts. |
+| 2026-05-30 | `docs/plans/kernel-parity-migration-blueprint.md` | `archive/docs/plans/kernel-parity-migration-blueprint.md` | Technical parity roadmap archived with redirect stub after active parity status is tracked through current status/regression artifacts and CI evidence. |
+| 2026-05-30 | `docs/plans/desktop-shell-modularity-roadmap.md` | `archive/docs/plans/desktop-shell-modularity-roadmap.md` | Historical WPF modularity roadmap archived as source material; active shell architecture guidance now in canonical engineering docs. |
+| 2026-05-30 | `docs/plans/trading-workstation-migration-blueprint.md` | `archive/docs/plans/trading-workstation-migration-blueprint.md` | Trading workstation migration blueprint archived with historical implementation context; active evidence posture is now maintained in canonical docs and status/risk artifacts. |
+| 2026-05-30 | `docs/plans/fund-management-pr-sequenced-roadmap.md` | `archive/docs/plans/fund-management-pr-sequenced-roadmap.md` | Fund-management PR sequencing roadmap archived as planning history; active fund-management priorities and sequencing now live in canonical product/roadmap evidence. |
+| 2026-05-30 | `docs/plans/meridian-pilot-workflow.md` | `archive/docs/plans/meridian-pilot-workflow.md` | Meridian pilot workflow archived as historical sequencing context; active pilot-path status and acceptance now maintained in product/roadmap status artifacts. |
+| 2026-05-30 | `docs/plans/sfo-mvp-implementation-design.md` | `archive/docs/plans/sfo-mvp-implementation-design.md` | SFO MVP implementation design archived as historical planning context; active SFO scope guidance now maintained in canonical product/engineering status surfaces. |
+| 2026-06-20 | `docs/audits/README.md`, `docs/evaluations/README.md`, `docs/evaluations/evaluation-archive-migration-2026-06-16.md` | `archive/docs/assessments/` | Removed active-folder audit/evaluation stubs; use the assessment archive and canonical lanes directly. |
+| 2026-05-30 | `docs/plans/README.md` | n/a | Reframed as a plan source-material migration index under product, engineering, roadmap, and archive ownership. |
+| 2026-05-30 | `docs/status/README.md` | n/a | Reframed as a controlled status/reporting migration index with generated reports kept automation-owned. |
+| 2026-05-30 | `docs/reference/README.md` | n/a | Rebuilt as the canonical lookup lane and linked migration sources for provider matrices, schemas, contracts, and UFL material. |
+| 2026-05-30 | `docs/operators/README.md` | n/a | Rebuilt as the canonical operator procedure lane and mapped setup, provider, workstation, governance, reconciliation, reliability, packaging, and support source material. |
+| 2026-05-30 | `docs/start/README.md` | n/a | Expanded into the canonical first-run lane using verified setup, launch, validation, and audience-routing source material from legacy getting-started and developer guides. |
+| 2026-05-30 | `docs/engineering/README.md` | n/a | Expanded into the canonical developer/agent lane with solution ownership, build/test/run commands, WPF/browser rules, source registry workflow, documentation proof lanes, and local blocker guidance. |
+| 2026-05-30 | `docs/product/README.md` | n/a | Expanded into the canonical stakeholder lane with product promise, operator lifecycle, roadmap posture, capability map, source-of-truth order, and conservative claim language. |
+| 2026-05-30 | `docs/development/documentation-contribution-guide.md` | n/a | Demoted legacy placement taxonomy behind the new documentation ownership contract and inserted the rebuilt target model for future docs. |
+| 2026-05-31 | `docs/product/meridian-design-document.md` | n/a | Added as the canonical product design charter and referenced from `docs/product/README.md` as the primary stakeholder design source. |
+| 2026-05-31 | Design import from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt` | `docs/product/meridian-design-document.md` | Verified and imported verbatim into the canonical design charter for Phase 3 (product stakeholder lane). |
+| 2026-05-31 | `docs/plans/backtest-studio-unification-blueprint.md` | `archive/docs/plans/backtest-studio-unification-blueprint.md` | Archived as a historical Backtest Studio planning blueprint; active W5 posture now routes through roadmap registry and canonical status sources. |
+| 2026-05-31 | `docs/plans/approach-b-plus-v2-implementation-plan.md`, `docs/plans/covered-call-writing-slice-1-blueprint.md` | `archive/docs/plans/approach-b-plus-v2-implementation-plan.md`, `archive/docs/plans/covered-call-writing-slice-1-blueprint.md` | Legacy plans archived in a reviewable batch with redirect stubs at former paths. |
+| 2026-05-31 | `docs/status/broker-phase-promotion-checklist-template.md`, `docs/status/dead-code-inventory.md`, `docs/status/ibkr-provider-inventory.md`, `docs/status/provider-adapters-closure-summary.md`, `docs/status/provider-capability-inventory.md`, `docs/status/provider-core-hardening-notes.md`, `docs/status/provider-failover-hardening.md`, `docs/status/provider-test-gap-baseline.md`, `docs/status/provider-test-minimums.md` | `archive/docs/status/broker-phase-promotion-checklist-template.md`, `archive/docs/status/dead-code-inventory.md`, `archive/docs/status/ibkr-provider-inventory.md`, `archive/docs/status/provider-adapters-closure-summary.md`, `archive/docs/status/provider-capability-inventory.md`, `archive/docs/status/provider-core-hardening-notes.md`, `archive/docs/status/provider-failover-hardening.md`, `archive/docs/status/provider-test-gap-baseline.md`, `archive/docs/status/provider-test-minimums.md` | Status snapshots demoted to archive migration stubs; active status index retained in canonical roadmap/product ownership lanes. |
+| 2026-06-20 | `docs/design/README.md`, `docs/design/design-system-usage.md`, `docs/design/meridian-design-document.md` | `archive/docs/design/` | Removed active design stubs; current design framing is `docs/product/meridian-design-document.md`. |
+| 2026-06-20 | `docs/ui/README.md`, `docs/ui/components.md` | `archive/docs/ui/` | Removed active UI stubs; current UI guidance belongs in engineering and reference docs. |
+| 2026-05-31 | `docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md` | `archive/docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md` | Archived as historical sequencing planning input; active sequencing posture for W5 remains registry-driven. |
+| 2026-05-31 | `docs/operations/*` | `archive/docs/operations/*` + active canonical rewrites in `docs/operators/README.md` | Completed operator high-traffic migration batch: legacy operation pages now route to canonical operator lane with archival source copies. |
+| 2026-05-31 | All `docs/plans/*.md` files (except `README.md`) | Same-named files in `archive/docs/plans/` plus on-path stubs | Completed bulk plan-folder migration batch: all remaining plan documents now classify as source-material/archive stubs with replacement links to historical copies. |
+| 2026-05-31 | `docs/status/broker-phase-promotion-checklist-template.md`, `docs/status/` + related hand-authored status snapshots now stubbing to `archive/docs/status/*` | Same-named files in `archive/docs/status/` plus on-path stubs | Completed a second status migration batch to demote non-generated status and planning snapshots (including roadmap/provider/status matrices) while preserving generated report ownership. |
+| 2026-05-31 | `docs/operators/browser-workstation-installer.md`, `docs/operators/deployment-packaging.md`, `docs/operators/failover-and-recovery.md`, `docs/operators/fund-ops-persistence-cutover.md`, `docs/operators/preflight-checklist.md`, `docs/operators/provider-backfill-operations.md`, `docs/operators/provider-credentials.md`, `docs/operators/provider-onboarding-alpaca.md`, `docs/operators/provider-onboarding-interactive-brokers.md`, `docs/operators/reconciliation-operations.md` | n/a | Canonical operator runbook lane expanded with active procedure files; legacy `docs/operations/*.md` and `docs/providers/*.md` routes now map to these canonical replacements. |
+| 2026-06-20 | `docs/providers/*` | `archive/docs/providers/*` | Removed active provider migration stubs after replacing docs links with canonical operator/reference targets and archive links. |
+| 2026-06-20 | `docs/api/README.md`, `docs/api/oms-ems-integration.md` | `archive/docs/reference/api-readme-legacy.md`, `archive/docs/reference/oms-ems-integration-v1-legacy.md` | Removed active API migration stubs; current API lookup belongs in `docs/reference/`, including the OMS/EMS integration contract. |
+| 2026-06-20 | `docs/getting-started/*` | `archive/docs/getting-started/*` | Confirmed active getting-started folder is retired; current first-run guidance belongs in `docs/start/` and operator-specific pilot setup belongs in `docs/operators/`. |
+| 2026-05-31 | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, `docs/ai/codex/quickstart.md` | n/a | AI rebuild lane upgraded with explicit contract-source routing, canonical ownership references, rebuild classification, and startup indexing alignment. |

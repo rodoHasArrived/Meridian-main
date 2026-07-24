@@ -292,13 +292,19 @@ public sealed class ResponseSchemaSnapshotTests : IDisposable
     #region /api/backfill/progress
 
     [Fact]
-    public async Task BackfillProgress_Schema_ContainsMessageField()
+    public async Task BackfillProgress_Schema_ContainsTypedProviderProgress()
     {
         var json = await GetJsonObjectAsync("/api/backfill/progress");
 
-        // When no backfill is active, the response should contain a message field
-        json.Should().ContainKey("message");
-        json["message"].ValueKind.Should().Be(JsonValueKind.String);
+        json.Should().ContainKey("lastRun");
+        json.Should().ContainKey("isActive");
+        json["isActive"].ValueKind.Should().BeOneOf(JsonValueKind.True, JsonValueKind.False);
+        json.Should().ContainKey("providerProgress");
+        var providerProgress = json["providerProgress"];
+        providerProgress.GetProperty("symbols").ValueKind.Should().Be(JsonValueKind.Object);
+        providerProgress.GetProperty("recentProviderAttempts").ValueKind.Should().Be(JsonValueKind.Array);
+        providerProgress.GetProperty("droppedProviderNotifications").ValueKind.Should().Be(JsonValueKind.Number);
+        json.Should().ContainKey("timestamp");
     }
 
     #endregion

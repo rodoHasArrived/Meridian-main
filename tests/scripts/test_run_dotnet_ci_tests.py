@@ -28,16 +28,64 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-execution-strategy",
                 "core-market-instruments",
                 "core-platform-domain-root",
+                "core-reporting",
                 "fsharp",
                 "ui",
                 "backtesting",
                 "directlending",
                 "fundstructure",
                 "quantscript",
+                "designmodules",
+                "lifecycle",
+                "core-remainder",
             ],
         )
         self.assertTrue(projects[0].filter_expression)
-        self.assertIsNone(projects[-1].filter_expression)
+        self.assertTrue(projects[-1].filter_expression, "core-remainder must carry the catch-all filter")
+
+    def test_core_reporting_shard_includes_all_reporting_governance_tests(self):
+        projects = MODULE.parse_project_entries([])
+        reporting = next(project for project in projects if project.name == "core-reporting")
+
+        self.assertEqual(reporting.filter_expression, "FullyQualifiedName~Meridian.Tests.Reporting")
+
+    def test_core_remainder_filter_excludes_every_explicit_core_prefix(self):
+        remainder = MODULE.build_core_remainder_filter(MODULE.DEFAULT_TEST_PROJECTS[:-1])
+
+        self.assertTrue(remainder.startswith("FullyQualifiedName~Meridian.Tests&"))
+        self.assertIn("FullyQualifiedName!~Meridian.Tests.Application", remainder)
+        self.assertIn("FullyQualifiedName!~Meridian.Tests.Reporting", remainder)
+        self.assertIn("FullyQualifiedName!~Meridian.Tests.Storage", remainder)
+        # The core-ui-other shard's own negation term must not leak in as a positive prefix.
+        self.assertNotIn("FullyQualifiedName!~FullyQualifiedName", remainder)
+        # Prefixes from non-core projects (paths other than Meridian.Tests) are irrelevant.
+        self.assertNotIn("Meridian.Ui.Tests", remainder)
+
+    def test_verify_test_project_coverage_flags_unwired_projects(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            wired = repo_root / "tests" / "Meridian.Wired.Tests"
+            unwired = repo_root / "tests" / "Meridian.Orphan.Tests"
+            wired.mkdir(parents=True)
+            unwired.mkdir(parents=True)
+            (wired / "Meridian.Wired.Tests.csproj").write_text("<Project />", encoding="utf-8")
+            (unwired / "Meridian.Orphan.Tests.csproj").write_text("<Project />", encoding="utf-8")
+
+            projects = [MODULE.TestProject("wired", "tests/Meridian.Wired.Tests/Meridian.Wired.Tests.csproj")]
+
+            missing = MODULE.verify_test_project_coverage(repo_root, projects)
+
+            self.assertEqual(missing, ["tests/Meridian.Orphan.Tests/Meridian.Orphan.Tests.csproj"])
+
+    def test_verify_test_project_coverage_accepts_current_repository_roster(self):
+        repo_root = Path(__file__).resolve().parents[2]
+        projects = MODULE.parse_project_entries([])
+
+        missing = MODULE.verify_test_project_coverage(repo_root, projects)
+
+        self.assertEqual(missing, [], "every tests/ project must be wired to the ubuntu or windows lane")
 
     def test_build_dotnet_test_command_uses_ci_filter_and_trx_prefix(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
@@ -56,6 +104,22 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertIn("Category!=Integration&Category!=Performance", command)
         self.assertIn("trx;LogFilePrefix=core", command)
         self.assertIn("/p:EnableWindowsTargeting=true", command)
+
+    def test_build_dotnet_test_command_enables_blame_hang_timeout(self):
+        project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
+        results_dir = Path("artifacts/test-results/dotnet")
+
+        command = MODULE.build_dotnet_test_command(
+            project,
+            configuration="Release",
+            test_filter="Category!=Integration&Category!=Performance",
+            results_dir=results_dir,
+        )
+
+        self.assertIn("--blame-hang", command)
+        self.assertIn("--blame-hang-timeout", command)
+        timeout_value = command[command.index("--blame-hang-timeout") + 1]
+        self.assertEqual(timeout_value, "10m")
 
     def test_build_dotnet_build_command_uses_no_restore_and_windows_targeting(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")

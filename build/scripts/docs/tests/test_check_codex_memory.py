@@ -191,6 +191,51 @@ invalidates_when:
 """
 
 
+def archive_memory_entry(with_active_selectors: bool = False) -> str:
+    entry = valid_entry().replace("id: repo:validation", "id: archive:validation", 1)
+    entry = entry.replace("tier: repo", "tier: archive", 1)
+    entry = entry.replace("scope: repo", "scope: archive", 1)
+    entry = entry.replace(
+        "file: .codex/memory/repo/validation.md",
+        "file: .codex/memory/archive/validation.md",
+        1,
+    )
+    if not with_active_selectors:
+        entry = entry.replace(
+            """load_when:
+  skills:
+    - meridian-docs
+  paths:
+    - docs/**
+  intents:
+    - validation
+  branches: []
+  tags:
+    - validation
+  task:
+    ids: []
+    work_modes: []
+    intents: []
+    paths: []""",
+            """load_when:
+  skills: []
+  paths: []
+  intents: []
+  branches: []
+  tags: []
+  task:
+    ids: []
+    work_modes: []
+    intents: []
+    paths: []""",
+            1,
+        )
+    return entry.rstrip() + """
+retired_because: Superseded by current validation memory.
+replaced_by:
+  - .codex/memory/repo/validation.md
+"""
+
 def memory_file_from_entry(entry: str, title: str = "Memory") -> str:
     return f"---\n{entry.rstrip()}\n---\n\n# {title}\n"
 
@@ -637,15 +682,7 @@ entries:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_memory_tree(root)
-            archive_entry = valid_entry().replace("id: repo:validation", "id: archive:validation", 1)
-            archive_entry = archive_entry.replace("tier: repo", "tier: archive", 1)
-            archive_entry = archive_entry.replace("scope: repo", "scope: archive", 1)
-            archive_entry = archive_entry.replace("file: .codex/memory/repo/validation.md", "file: .codex/memory/archive/validation.md", 1)
-            archive_entry = archive_entry.replace("  skills:\n    - meridian-docs", "  skills: []", 1)
-            archive_entry = archive_entry.replace("  paths:\n    - docs/**", "  paths: []", 1)
-            archive_entry = archive_entry.replace("  intents:\n    - validation", "  intents: []", 1)
-            archive_entry = archive_entry.replace("  tags:\n    - validation", "  tags: []", 1)
-            archive_entry = archive_entry.rstrip() + "\nretired_because: Superseded by active validation memory.\nreplaced_by:\n  - repo-validation\n"
+            archive_entry = archive_memory_entry()
             write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(archive_entry))
             write(root / ".codex" / "memory" / "archive" / "validation.md", memory_file_from_entry(archive_entry, "Archived"))
 
@@ -654,6 +691,23 @@ entries:
 
             self.assertEqual([], findings)
             self.assertNotIn("archive:validation", [entry["id"] for entry in selected])
+
+    def test_archive_entries_with_active_selectors_are_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            archive_entry = archive_memory_entry(with_active_selectors=True)
+            write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(archive_entry))
+            write(root / ".codex" / "memory" / "archive" / "validation.md", memory_file_from_entry(archive_entry, "Archived"))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(
+                any(
+                    "archive-tier memory must not load as active guidance" in finding.message
+                    for finding in findings
+                )
+            )
 
     def test_goal_inventory_yaml_is_not_reported_as_unindexed_memory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -126,6 +126,10 @@ public static class ServiceCompositionRoot
 
         ProductionServiceRegistrationPolicy.Validate(services);
 
+        // ADR-019: composition-time validation alone cannot see registrations added after this
+        // call, so the guard re-validates the final graph as the first hosted service at startup.
+        services.AddProductionRegistrationGuard();
+
         // Backtesting services are registered by the host project (Meridian.Backtesting references
         // Meridian.Application, so registration here would create a circular dependency).
 
@@ -272,7 +276,10 @@ public sealed record CompositionOptions
     /// </summary>
     public static CompositionOptions BackfillOnly => new()
     {
-        EnableSymbolManagement = false,
+        // Backfill is a provider-scoped identity workflow. Keep the canonical symbol spine
+        // enabled so the worker/coordinator/factory paths cannot silently fall back to raw
+        // input symbols when provider aliases are required.
+        EnableSymbolManagement = true,
         EnableBackfillServices = true,
         EnableEtlServices = true,
         EnableMaintenanceServices = false,

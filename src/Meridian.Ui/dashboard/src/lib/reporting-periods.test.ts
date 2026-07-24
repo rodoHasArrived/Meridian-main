@@ -3,8 +3,10 @@ import {
   buildReportingPeriodOptions,
   compareIsoDate,
   formatReportingPeriodLabel,
+  hasRetainedReportingAsOfDateValue,
   isIsoDate,
   parseIsoDate,
+  reportingRunRequiresPeriodConfirmation,
   shiftIsoDate,
   todayIsoDate
 } from "@/lib/reporting-periods";
@@ -40,6 +42,15 @@ describe("reporting period math", () => {
   it("formats period labels in UTC", () => {
     expect(formatReportingPeriodLabel("2026-05-31")).toBe("May 31, 2026");
     expect(formatReportingPeriodLabel("invalid")).toBe("invalid");
+  });
+
+  it("fails terminal run presentation closed when the reporting period is missing", () => {
+    expect(hasRetainedReportingAsOfDateValue("2026-06-30")).toBe(true);
+    expect(hasRetainedReportingAsOfDateValue("As-of date unavailable")).toBe(false);
+    expect(reportingRunRequiresPeriodConfirmation("Published", "As-of date unavailable")).toBe(true);
+    expect(reportingRunRequiresPeriodConfirmation("Released", null)).toBe(true);
+    expect(reportingRunRequiresPeriodConfirmation("AwaitingApproval", null)).toBe(false);
+    expect(reportingRunRequiresPeriodConfirmation("Published", "2026-06-30")).toBe(false);
   });
 
   it("compares ISO dates without timezone effects", () => {

@@ -14,17 +14,20 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IBondReferenceService? _bondReferenceService;
     private readonly AssetObligationProjectionService _obligationProjectionService;
+    private readonly IInstrumentPositionProjectionStore? _positionProjectionStore;
 
     public AssetOperationsReadService(
         IAssetOperationsProjectionStore? projectionStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IBondReferenceService? bondReferenceService = null,
-        AssetObligationProjectionService? obligationProjectionService = null)
+        AssetObligationProjectionService? obligationProjectionService = null,
+        IInstrumentPositionProjectionStore? positionProjectionStore = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
         _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService();
+        _positionProjectionStore = positionProjectionStore;
     }
 
     public async Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
@@ -34,22 +37,50 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         var published = _projectionStore is null
             ? null
             : await _projectionStore.GetAsync(securityId, ct).ConfigureAwait(false);
+        AssetOperationsDetailDto detail;
         if (published is not null)
         {
-            return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
+            detail = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
         }
-
-        var security = _securityMasterQueryService is null
-            ? null
-            : await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null)
+        else
         {
-            return null;
+            var security = _securityMasterQueryService is null
+                ? null
+                : await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return null;
+            }
+
+            detail = string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+                ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
+                : _obligationProjectionService.ProjectFromSecurityMaster(security);
         }
 
-        return string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
-            ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
-            : _obligationProjectionService.ProjectFromSecurityMaster(security);
+        if (_positionProjectionStore is null)
+        {
+            return AssetOperationsProjectionBuilder.WithFailClosedEvidenceReadiness(detail);
+        }
+
+        var positions = await _positionProjectionStore
+            .GetSecurityAsync(securityId, ct)
+            .ConfigureAwait(false);
+        if (positions.InstrumentRoles.Count == 0 &&
+            positions.BookPositions.Count == 0 &&
+            positions.PositionEconomicStates.Count == 0 &&
+            positions.ProjectionLineages.Count == 0)
+        {
+            return AssetOperationsProjectionBuilder.WithFailClosedEvidenceReadiness(detail);
+        }
+
+        var merged = detail with
+        {
+            InstrumentRoles = positions.InstrumentRoles,
+            BookPositions = positions.BookPositions,
+            PositionEconomicStates = positions.PositionEconomicStates,
+            ProjectionLineages = positions.ProjectionLineages
+        };
+        return AssetOperationsProjectionBuilder.WithFailClosedEvidenceReadiness(merged);
     }
 
     public async Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
@@ -78,9 +109,9 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             subject.SecurityId,
             "ReviewRequired",
             subject.OperationalProfile,
-            ["Identity", "TermsHistory"],
-            subject.OperationalProfile.Except(["Identity", "TermsHistory"], StringComparer.OrdinalIgnoreCase).ToArray(),
-            ["No asset-operation domain projection has been published for this Security Master subject."],
+            ["Identity"],
+            subject.OperationalProfile.Except(["Identity"], StringComparer.OrdinalIgnoreCase).ToArray(),
+            ["Publish a reviewed Asset Operations projection and attach accepted retained evidence before treating this Security Master subject as ready."],
             DateTimeOffset.UtcNow,
             "SecurityMaster",
             subject.SecurityId.ToString("D"));
@@ -343,7 +374,16 @@ public static class AssetOperationsProjectionBuilder
                 $"security-master:{subject.SecurityId:D}")
         };
         var readyCapabilities = ReadyCapabilities(subject.OperationalProfile, terms, lifecycle, flows, [], [], [], ledger);
-        var readiness = BuildReadiness(subject, readyCapabilities, "SecurityMaster", subject.SecurityId.ToString("D"));
+        var readiness = BuildReadiness(
+            subject,
+            readyCapabilities,
+            "SecurityMaster",
+            subject.SecurityId.ToString("D"),
+            additionalWarnings:
+            [
+                "Bond terms, cash flows, and ledger support are Expected/Projected until reviewed retained evidence is attached and an Asset Operations projection is published."
+            ],
+            allowReady: false);
 
         var detail = new AssetOperationsDetailDto(
             subject,
@@ -378,7 +418,7 @@ public static class AssetOperationsProjectionBuilder
         var periodMonths = Math.Max(1, 12 / paymentFrequency);
         var principalBasis = ResolveBondPrincipalBasis(bond);
         var outstandingPrincipal = principalBasis;
-        var normalizedDayCountConvention = NormalizeDayCountConvention(bond.AccrualConvention?.DayCountConvention);
+        var dayCountConvention = bond.AccrualConvention?.DayCountConvention;
         var sinkingFundEntries = bond.SinkingFund?.Schedule
             .Where(static entry => entry.Amount > 0m)
             .OrderBy(static entry => entry.SinkDate)
@@ -400,7 +440,7 @@ public static class AssetOperationsProjectionBuilder
                 var couponAmount = CalculateBondCouponAmount(
                     outstandingPrincipal,
                     coupon,
-                    normalizedDayCountConvention,
+                    dayCountConvention,
                     accrualStart,
                     accrualEnd,
                     paymentFrequency);
@@ -535,6 +575,73 @@ public static class AssetOperationsProjectionBuilder
         };
     }
 
+    public static AssetOperationsDetailDto WithFailClosedEvidenceReadiness(AssetOperationsDetailDto detail)
+    {
+        ArgumentNullException.ThrowIfNull(detail);
+
+        var evidenceIsRequired = detail.Subject.OperationalProfile.Contains(
+            "Evidence",
+            StringComparer.OrdinalIgnoreCase);
+        var evidenceWasClaimed = detail.Readiness.ReadyCapabilities.Contains(
+            "Evidence",
+            StringComparer.OrdinalIgnoreCase);
+        var evidenceWasReportedMissing = detail.Readiness.MissingCapabilities.Contains(
+            "Evidence",
+            StringComparer.OrdinalIgnoreCase);
+        if (!evidenceIsRequired && !evidenceWasClaimed && !evidenceWasReportedMissing)
+        {
+            return detail;
+        }
+
+        var suppliedEvidence = CollectRetainedEvidence(detail);
+        var completeEvidence = CompleteEvidenceForSubject(detail.Subject.SecurityId, suppliedEvidence);
+        var ready = detail.Readiness.ReadyCapabilities
+            .Where(static capability =>
+                !string.Equals(capability, "Evidence", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(capability, "Readiness", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (completeEvidence.Count > 0 && evidenceIsRequired)
+        {
+            ready.Add("Evidence");
+        }
+
+        var missingPrerequisites = detail.Subject.OperationalProfile
+            .Where(static capability => !string.Equals(capability, "Readiness", StringComparison.OrdinalIgnoreCase))
+            .Except(ready, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingPrerequisites.Length == 0 &&
+            detail.Subject.OperationalProfile.Contains("Readiness", StringComparer.OrdinalIgnoreCase))
+        {
+            ready.Add("Readiness");
+        }
+
+        var missing = detail.Subject.OperationalProfile
+            .Except(ready, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var warnings = detail.Readiness.Warnings
+            .Where(static warning =>
+                !warning.Contains("Evidence projection has not been published", StringComparison.OrdinalIgnoreCase) &&
+                !warning.Contains("Attach complete accepted retained evidence", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (evidenceIsRequired && completeEvidence.Count == 0)
+        {
+            warnings.Add(suppliedEvidence.Count == 0
+                ? MissingRetainedEvidenceWarning
+                : "Retained evidence is incomplete or outside this Security Master subject scope. Attach accepted evidence with a SHA-256 content hash, source reference, reviewer, retention metadata, and the matching SecurityId.");
+        }
+
+        var readiness = detail.Readiness with
+        {
+            Status = missing.Length == 0 ? "Ready" : "ReviewRequired",
+            ReadyCapabilities = ready,
+            MissingCapabilities = missing,
+            Warnings = warnings.Distinct(StringComparer.Ordinal).ToArray(),
+            RetainedEvidence = completeEvidence
+        };
+        return detail with { Readiness = readiness };
+    }
+
     private static AssetOperationsProjectionDto WithTermsObligationsTimeline(AssetOperationsProjectionDto projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
@@ -609,7 +716,13 @@ public static class AssetOperationsProjectionBuilder
             {
                 FormulaTrace = BuildCashFlowFormulaTrace(flow),
                 LedgerReference = ledgerProjection?.LedgerReferenceId,
-                NextAction = ResolveTimelineNextAction(status, ledgerProjection)
+                NextAction = ResolveTimelineNextAction(status, ledgerProjection),
+                RetainedEvidence = flow.RetainedEvidence
+                    .Concat(reconciliation?.RetainedEvidence ?? [])
+                    .Concat(activity?.RetainedEvidence ?? [])
+                    .Concat(ledgerProjection?.RetainedEvidence ?? [])
+                    .DistinctBy(static evidence => evidence.EvidenceId, StringComparer.Ordinal)
+                    .ToArray()
             });
         }
 
@@ -645,7 +758,8 @@ public static class AssetOperationsProjectionBuilder
                 FormulaTrace = "Lifecycle event retained from source domain.",
                 NextAction = lifecycle.LifecycleState.Contains("Inactive", StringComparison.OrdinalIgnoreCase)
                     ? "Review inactive subject before downstream support consumes it."
-                    : "No action required unless source evidence changes."
+                    : "No action required unless source evidence changes.",
+                RetainedEvidence = lifecycle.RetainedEvidence
             });
         }
 
@@ -666,6 +780,22 @@ public static class AssetOperationsProjectionBuilder
             actualActivity,
             reconciliationResults,
             projectionAsOf);
+        var retainedEvidence = terms.SelectMany(static row => row.RetainedEvidence)
+            .Concat(lifecycleEvents.SelectMany(static row => row.RetainedEvidence))
+            .Concat(projectionRuns.SelectMany(static row => row.RetainedEvidence))
+            .Concat(projectedCashFlows.SelectMany(static row => row.RetainedEvidence))
+            .Concat(actualActivity.SelectMany(static row => row.RetainedEvidence))
+            .Concat(reconciliationResults.SelectMany(static row => row.RetainedEvidence))
+            .Concat(ledgerProjections.SelectMany(static row => row.RetainedEvidence))
+            .Concat(events.SelectMany(static row => row.RetainedEvidence))
+            .Concat(variances.SelectMany(static row => row.RetainedEvidence))
+            .DistinctBy(static evidence => evidence.EvidenceId, StringComparer.Ordinal)
+            .ToArray();
+        var completeEvidence = CompleteEvidenceForSubject(subject.SecurityId, retainedEvidence);
+        if (completeEvidence.Count == 0)
+        {
+            warnings.Add("Timeline rows are Expected/Projected support only. Attach complete accepted retained evidence before treating the timeline as ready.");
+        }
 
         return new AssetTermsObligationsTimelineDto(
             subject.SecurityId,
@@ -679,7 +809,8 @@ public static class AssetOperationsProjectionBuilder
             latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"))
         {
             AssetClass = subject.AssetClass,
-            Variances = variances
+            Variances = variances,
+            RetainedEvidence = completeEvidence
         };
     }
 
@@ -725,74 +856,19 @@ public static class AssetOperationsProjectionBuilder
     private static decimal CalculateBondCouponAmount(
         decimal principalBasis,
         decimal couponRatePercent,
-        string? normalizedDayCountConvention,
+        string? dayCountConvention,
         DateOnly accrualStart,
         DateOnly accrualEnd,
         int paymentFrequency)
     {
-        var yearFraction = CalculateYearFraction(normalizedDayCountConvention, accrualStart, accrualEnd, paymentFrequency);
+        var convention = DayCountConventions.Parse(dayCountConvention);
+        // An absent/unrecognized convention keeps the historical "one coupon period" assumption for the
+        // read-model preview; recognized conventions route through the canonical day-count engine so this
+        // preview ties with the GL accrual and cost-basis-relief paths.
+        var yearFraction = convention == DayCountConvention.Unknown
+            ? 1m / Math.Max(1, paymentFrequency)
+            : DayCountConventions.Fraction(convention, accrualStart, accrualEnd);
         return RoundCash(principalBasis * (couponRatePercent / 100m) * yearFraction);
-    }
-
-    private static string? NormalizeDayCountConvention(string? dayCountConvention)
-        => string.IsNullOrWhiteSpace(dayCountConvention)
-            ? null
-            : dayCountConvention
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("-", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToUpperInvariant();
-
-    private static decimal CalculateYearFraction(
-        string? normalizedDayCountConvention,
-        DateOnly accrualStart,
-        DateOnly accrualEnd,
-        int paymentFrequency)
-    {
-        if (accrualEnd <= accrualStart)
-        {
-            return 0m;
-        }
-
-        if (normalizedDayCountConvention is not null &&
-            normalizedDayCountConvention.Contains("30/360", StringComparison.Ordinal))
-        {
-            return Days360(accrualStart, accrualEnd) / 360m;
-        }
-
-        var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
-        if (IsActual360(normalizedDayCountConvention))
-        {
-            return actualDays / 360m;
-        }
-
-        if (IsActual365(normalizedDayCountConvention))
-        {
-            return actualDays / 365m;
-        }
-
-        return 1m / Math.Max(1, paymentFrequency);
-    }
-
-    private static bool IsActual360(string? normalizedDayCountConvention)
-        => normalizedDayCountConvention is not null &&
-           (normalizedDayCountConvention.Contains("ACT/360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACT360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL/360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL360", StringComparison.Ordinal));
-
-    private static bool IsActual365(string? normalizedDayCountConvention)
-        => normalizedDayCountConvention is not null &&
-           (normalizedDayCountConvention.Contains("ACT/365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACT365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL/365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL365", StringComparison.Ordinal));
-
-    private static decimal Days360(DateOnly start, DateOnly end)
-    {
-        var startDay = start.Day == 31 ? 30 : start.Day;
-        var endDay = end.Day == 31 && startDay >= 30 ? 30 : end.Day;
-        return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
     }
 
     private static decimal RoundCash(decimal amount)
@@ -1082,7 +1158,9 @@ public static class AssetOperationsProjectionBuilder
         IReadOnlyList<AssetActualActivityDto> actualActivity,
         IReadOnlyList<AssetReconciliationRunDto> reconciliationRuns,
         IReadOnlyList<AssetReconciliationResultDto> reconciliationResults,
-        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
+        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections,
+        IReadOnlyList<RetainedEvidenceIdentityDto>? retainedEvidence = null,
+        Guid? evidenceSubjectId = null)
     {
         var ready = new List<string> { "Identity" };
         if (terms.Count > 0)
@@ -1110,7 +1188,11 @@ public static class AssetOperationsProjectionBuilder
         {
             ready.Add("LedgerProjection");
         }
-        ready.Add("Evidence");
+        if (evidenceSubjectId is Guid subjectId &&
+            CompleteEvidenceForSubject(subjectId, retainedEvidence ?? []).Count > 0)
+        {
+            ready.Add("Evidence");
+        }
 
         return ready
             .Where(capability => capabilities.Contains(capability, StringComparer.OrdinalIgnoreCase))
@@ -1122,20 +1204,138 @@ public static class AssetOperationsProjectionBuilder
         AssetOperationSubjectDto subject,
         IReadOnlyList<string> readyCapabilities,
         string sourceDomain,
-        string? sourceEntityId)
+        string? sourceEntityId,
+        IReadOnlyList<RetainedEvidenceIdentityDto>? retainedEvidence = null,
+        IReadOnlyList<string>? additionalWarnings = null,
+        bool allowReady = true)
     {
-        var missing = subject.OperationalProfile
-            .Except(readyCapabilities, StringComparer.OrdinalIgnoreCase)
+        var ready = readyCapabilities
+            .Where(capability =>
+                subject.OperationalProfile.Contains(capability, StringComparer.OrdinalIgnoreCase) &&
+                !string.Equals(capability, "Readiness", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var missingPrerequisites = subject.OperationalProfile
+            .Where(static capability => !string.Equals(capability, "Readiness", StringComparison.OrdinalIgnoreCase))
+            .Except(ready, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        if (allowReady &&
+            missingPrerequisites.Length == 0 &&
+            subject.OperationalProfile.Contains("Readiness", StringComparer.OrdinalIgnoreCase))
+        {
+            ready.Add("Readiness");
+        }
+
+        var missing = subject.OperationalProfile
+            .Except(ready, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var warnings = missing
+            .Select(BuildMissingCapabilityWarning)
+            .Concat(additionalWarnings ?? [])
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var completeEvidence = CompleteEvidenceForSubject(subject.SecurityId, retainedEvidence ?? []);
         return new AssetOperationsReadinessDto(
             subject.SecurityId,
-            missing.Length == 0 ? "Ready" : "ReviewRequired",
+            allowReady && missing.Length == 0 ? "Ready" : "ReviewRequired",
             subject.OperationalProfile,
-            readyCapabilities,
+            ready,
             missing,
-            missing.Length == 0 ? [] : missing.Select(capability => $"{capability} projection has not been published.").ToArray(),
+            warnings,
             DateTimeOffset.UtcNow,
             sourceDomain,
-            sourceEntityId);
+            sourceEntityId)
+        {
+            RetainedEvidence = completeEvidence
+        };
+    }
+
+    private const string MissingRetainedEvidenceWarning =
+        "Attach complete accepted retained evidence with a SHA-256 content hash, source reference, reviewer, retention metadata, and the matching SecurityId before treating this asset as ready.";
+
+    private static string BuildMissingCapabilityWarning(string capability)
+        => capability switch
+        {
+            "Evidence" => MissingRetainedEvidenceWarning,
+            "ActualActivity" => "Retain actual activity or an approved no-activity assertion for the readiness period.",
+            "Reconciliation" => "Publish reconciliation results or an approved no-activity reconciliation for this asset.",
+            "Readiness" => "Resolve the listed readiness prerequisites before treating this asset as ready.",
+            _ => $"Publish reviewed {capability} support for this asset."
+        };
+
+    private static IReadOnlyList<RetainedEvidenceIdentityDto> CompleteEvidenceForSubject(
+        Guid securityId,
+        IEnumerable<RetainedEvidenceIdentityDto> evidence)
+        => evidence
+            .Where(RetainedEvidenceIdentityValidator.IsComplete)
+            .Where(item => Guid.TryParse(item.SubjectId, out var subjectId) && subjectId == securityId)
+            .DistinctBy(static item => item.EvidenceId, StringComparer.Ordinal)
+            .ToArray();
+
+    private static IReadOnlyList<RetainedEvidenceIdentityDto> CollectRetainedEvidence(AssetOperationsDetailDto detail)
+    {
+        var evidence = new List<RetainedEvidenceIdentityDto>();
+        Add(evidence, detail.RetainedEvidence);
+        Add(evidence, detail.Readiness.RetainedEvidence);
+        foreach (var row in detail.TermsHistory)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.LifecycleEvents)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.CashFlowProjectionRuns)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.ProjectedCashFlows)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.ActualActivity)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.ReconciliationRuns)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.ReconciliationResults)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.LedgerProjections)
+            Add(evidence, row.RetainedEvidence);
+        foreach (var row in detail.InstrumentRoles)
+        {
+            Add(evidence, row.RetainedEvidence);
+            Add(evidence, row.OriginEvent?.RetainedEvidence);
+        }
+        foreach (var row in detail.BookPositions)
+        {
+            Add(evidence, row.RetainedEvidence);
+            Add(evidence, row.CurrentEconomicState?.RetainedEvidence);
+            Add(evidence, row.OriginEvent?.RetainedEvidence);
+            Add(evidence, row.ProjectionLineage?.RetainedEvidence);
+        }
+        foreach (var row in detail.PositionEconomicStates)
+        {
+            Add(evidence, row.RetainedEvidence);
+            Add(evidence, row.SourceEvent?.RetainedEvidence);
+            Add(evidence, row.ProjectionLineage?.RetainedEvidence);
+        }
+        foreach (var row in detail.ProjectionLineages)
+        {
+            Add(evidence, row.RetainedEvidence);
+            Add(evidence, row.TriggerEvent.RetainedEvidence);
+        }
+        if (detail.TermsObligationsTimeline is { } timeline)
+        {
+            Add(evidence, timeline.RetainedEvidence);
+            foreach (var row in timeline.Events)
+                Add(evidence, row.RetainedEvidence);
+            foreach (var row in timeline.Variances)
+                Add(evidence, row.RetainedEvidence);
+        }
+
+        return evidence;
+
+        static void Add(
+            ICollection<RetainedEvidenceIdentityDto> target,
+            IEnumerable<RetainedEvidenceIdentityDto>? source)
+        {
+            foreach (var item in source ?? [])
+            {
+                if (item is not null)
+                    target.Add(item);
+            }
+        }
     }
 }

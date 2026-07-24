@@ -34,26 +34,6 @@ public sealed class CorporateActionKnownDefectTests
             "CURRENT defective behavior: no prior close -> factor silently skipped");
     }
 
-    [Fact]
-    public async Task FactorPaydown_PositionAdjustment_CurrentBehavior_RatioSubtractedFromBasis_CA_DEF_004()
-    {
-        // TARGET (Idea #3): a pool-factor delta reduces basis proportionally to
-        // factor x face value; it is a dimensionless ratio, not an absolute money amount.
-        var scenario = GoldenCorporateActionScenarioLoader.Load("mbs-factor-paydown");
-        var service = CreateService(scenario);
-
-        var adjustment = await service.AdjustPositionAsync(
-            scenario.Ticker,
-            quantity: 100_000m,
-            costBasis: 99.5m,
-            positionOpenedAt: new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero));
-
-        adjustment.ActionCount.Should().Be(1);
-        adjustment.AdjustedQuantity.Should().Be(100_000m);
-        adjustment.AdjustedCostBasis.Should().Be(99.5m - 0.007125m,
-            "CURRENT defective behavior: DistributionRatio subtracted from cost basis as an absolute amount");
-    }
-
     private static CorporateActionAdjustmentService CreateService(GoldenCorporateActionScenario scenario)
         => new(
             new StubQueryService(scenario.Actions),

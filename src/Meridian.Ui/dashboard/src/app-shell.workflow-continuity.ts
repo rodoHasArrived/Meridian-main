@@ -45,7 +45,7 @@ export const primaryOperatorWorkflowStepDefinitions: PrimaryOperatorWorkflowStep
     id: "validate",
     label: "Validate",
     description: "Check data quality, provider health, and backfill evidence before downstream use.",
-    href: WORKSTATION_ROUTE_CATALOG.dataBackfills
+    href: WORKSTATION_ROUTE_CATALOG.dataOperations
   },
   {
     id: "reconcile",
@@ -77,29 +77,14 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
     id: "market-data-to-paper",
     title: "Market Data To Paper",
-    summary: "Move from symbol selection through quote validation, alert monitoring, paper readiness, and provider repair without memorizing route order.",
+    summary: "Move from the Market Data desk through paper readiness and provider repair without memorizing route order.",
     steps: [
       {
-        id: "watchlist",
-        label: "Watchlist",
-        description: "Choose the monitored universe and starter packs before market-data validation.",
-        href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
-        matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist
-      },
-      {
-        id: "quotes",
-        label: "Live quotes",
-        description: "Inspect quote, tape, depth, and historical trend evidence for the active symbol.",
+        id: "market-data",
+        label: "Market data",
+        description: "Manage the watchlist, validate live quotes, and track price alerts from one desk.",
         href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
-        preserveSymbol: true
-      },
-      {
-        id: "alerts",
-        label: "Price alerts",
-        description: "Track threshold triggers and validate the quote feed behind watched symbols.",
-        href: WORKSTATION_ROUTE_CATALOG.dataAlerts,
-        matchPath: WORKSTATION_ROUTE_CATALOG.dataAlerts,
         preserveSymbol: true
       },
       {
@@ -345,9 +330,9 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
     return "reconcile";
   }
 
-  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataBackfills)
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataOperations)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataQuotes)
-    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlerts)) {
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlertsLegacy)) {
     return "validate";
   }
 

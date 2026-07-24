@@ -110,8 +110,9 @@ public sealed class StorageCatalogService : IStorageCatalogService
         {
             _log.Information("Starting catalog rebuild for {RootPath}", _rootPath);
 
-            // Clear existing catalog data
-            _catalog = new StorageCatalog
+            // Build completely off-side. A failed scan must not replace the last-known-good
+            // in-memory catalog, file index, directory cache, or durable manifest.
+            var candidateCatalog = new StorageCatalog
             {
                 CatalogId = Guid.NewGuid().ToString("N"),
                 CreatedAt = DateTime.UtcNow,
@@ -123,8 +124,8 @@ public sealed class StorageCatalogService : IStorageCatalogService
                     RootPath = _rootPath
                 }
             };
-            _fileIndex.Clear();
-            _directoryIndexCache.Clear();
+            var candidateFileIndex = new ConcurrentDictionary<string, IndexedFileEntry>();
+            var candidateDirectoryIndexes = new ConcurrentDictionary<string, DirectoryIndex>();
 
             // Find all data files
             var files = new List<string>();
@@ -150,7 +151,6 @@ public sealed class StorageCatalogService : IStorageCatalogService
             var filesProcessed = 0;
             var totalEvents = 0L;
             var totalBytes = 0L;
-            var directoryIndexes = new ConcurrentDictionary<string, DirectoryIndex>();
 
             // Process files in parallel
             await Parallel.ForEachAsync(
@@ -163,11 +163,11 @@ public sealed class StorageCatalogService : IStorageCatalogService
                         var entry = await ScanFileAsync(filePath, options, token);
                         if (entry != null)
                         {
-                            _fileIndex[entry.RelativePath] = entry;
+                            candidateFileIndex[entry.RelativePath] = entry;
 
                             // Update directory index
                             var dirPath = Path.GetDirectoryName(entry.RelativePath) ?? string.Empty;
-                            var dirIndex = directoryIndexes.GetOrAdd(dirPath, _ => new DirectoryIndex
+                            var dirIndex = candidateDirectoryIndexes.GetOrAdd(dirPath, _ => new DirectoryIndex
                             {
                                 RelativePath = dirPath,
                                 CreatedAt = DateTime.UtcNow
@@ -201,30 +201,58 @@ public sealed class StorageCatalogService : IStorageCatalogService
                     }
                 });
 
-            // Finalize directory indexes
-            foreach (var (dirPath, dirIndex) in directoryIndexes)
+            stopwatch.Stop();
+            if (!errors.IsEmpty)
+            {
+                result = new CatalogRebuildResult
+                {
+                    Success = false,
+                    FilesIndexed = candidateFileIndex.Count,
+                    DirectoriesIndexed = candidateDirectoryIndexes.Count,
+                    TotalEvents = totalEvents,
+                    TotalBytes = totalBytes,
+                    Duration = stopwatch.Elapsed,
+                    Errors = errors.ToList(),
+                    Warnings = warnings.ToList()
+                };
+                _log.Warning(
+                    "Catalog rebuild rejected {ErrorCount} scan errors; retained catalog {CatalogId}",
+                    errors.Count,
+                    _catalog.CatalogId);
+                return result;
+            }
+
+            // Only after every scan succeeds do candidate indexes and the candidate manifest
+            // become eligible for atomic file replacement.
+            foreach (var (dirPath, dirIndex) in candidateDirectoryIndexes)
             {
                 FinalizeDirectoryIndex(dirIndex);
-                _directoryIndexCache[dirPath] = dirIndex;
-
-                // Save directory index
                 var indexPath = Path.Combine(_rootPath, dirPath, DirectoryIndexFileName);
                 await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
             }
 
-            // Build catalog
-            BuildCatalogFromFileIndex();
+            BuildCatalogFromFileIndex(candidateCatalog, candidateFileIndex, candidateDirectoryIndexes.Keys);
 
-            // Save catalog
-            await SaveCatalogAsync(ct);
+            await SaveCatalogSnapshotAsync(candidateCatalog, ct);
 
-            stopwatch.Stop();
+            _catalog = candidateCatalog;
+            _fileIndex.Clear();
+            foreach (var pair in candidateFileIndex)
+            {
+                _fileIndex[pair.Key] = pair.Value;
+            }
+
+            _directoryIndexCache.Clear();
+            foreach (var pair in candidateDirectoryIndexes)
+            {
+                _directoryIndexCache[pair.Key] = pair.Value;
+            }
 
             result = new CatalogRebuildResult
             {
-                Success = !errors.Any(),
+                Success = true,
                 FilesIndexed = _fileIndex.Count,
-                DirectoriesIndexed = directoryIndexes.Count,
+                DirectoriesIndexed = candidateDirectoryIndexes.Count,
                 TotalEvents = totalEvents,
                 TotalBytes = totalBytes,
                 Duration = stopwatch.Elapsed,
@@ -634,17 +662,20 @@ public sealed class StorageCatalogService : IStorageCatalogService
     }
 
     public async Task SaveCatalogAsync(CancellationToken ct = default)
+        => await SaveCatalogSnapshotAsync(_catalog, ct).ConfigureAwait(false);
+
+    private async Task SaveCatalogSnapshotAsync(StorageCatalog catalog, CancellationToken ct)
     {
         var manifestPath = Path.Combine(_catalogPath, ManifestFileName);
-        var json = JsonSerializer.Serialize(_catalog, MarketDataJsonContext.PrettyPrintOptions);
+        var json = JsonSerializer.Serialize(catalog, MarketDataJsonContext.PrettyPrintOptions);
 
         // Compute checksum
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json));
-        _catalog.Integrity.CatalogChecksum = Convert.ToHexString(hash).ToLowerInvariant();
+        catalog.Integrity.CatalogChecksum = Convert.ToHexString(hash).ToLowerInvariant();
 
         // Update the JSON with checksum
-        json = JsonSerializer.Serialize(_catalog, MarketDataJsonContext.PrettyPrintOptions);
+        json = JsonSerializer.Serialize(catalog, MarketDataJsonContext.PrettyPrintOptions);
 
         await AtomicFileWriter.WriteAsync(manifestPath, json, ct);
         _log.Debug("Saved catalog manifest to {Path}", manifestPath);
@@ -994,16 +1025,19 @@ public sealed class StorageCatalogService : IStorageCatalogService
         await AtomicFileWriter.WriteAsync(path, json, ct);
     }
 
-    private void BuildCatalogFromFileIndex()
+    private static void BuildCatalogFromFileIndex(
+        StorageCatalog catalog,
+        IReadOnlyDictionary<string, IndexedFileEntry> fileIndex,
+        IEnumerable<string> directoryIndexKeys)
     {
-        _catalog.LastUpdatedAt = DateTime.UtcNow;
+        catalog.LastUpdatedAt = DateTime.UtcNow;
 
         var stats = new CatalogStatistics
         {
-            TotalFiles = _fileIndex.Count,
-            TotalEvents = _fileIndex.Values.Sum(f => f.EventCount),
-            TotalBytesCompressed = _fileIndex.Values.Sum(f => f.SizeBytes),
-            TotalBytesRaw = _fileIndex.Values.Sum(f => f.UncompressedSizeBytes)
+            TotalFiles = fileIndex.Count,
+            TotalEvents = fileIndex.Values.Sum(f => f.EventCount),
+            TotalBytesCompressed = fileIndex.Values.Sum(f => f.SizeBytes),
+            TotalBytesRaw = fileIndex.Values.Sum(f => f.UncompressedSizeBytes)
         };
 
         if (stats.TotalBytesCompressed > 0)
@@ -1012,7 +1046,7 @@ public sealed class StorageCatalogService : IStorageCatalogService
         }
 
         // Build symbol entries
-        var symbolGroups = _fileIndex.Values
+        var symbolGroups = fileIndex.Values
             .Where(f => !string.IsNullOrEmpty(f.Symbol))
             .GroupBy(f => f.Symbol!, StringComparer.OrdinalIgnoreCase);
 
@@ -1060,13 +1094,13 @@ public sealed class StorageCatalogService : IStorageCatalogService
                     symbolEntry.SequenceRange.LastSequence - symbolEntry.SequenceRange.FirstSequence + 1;
             }
 
-            _catalog.Symbols[group.Key] = symbolEntry;
+            catalog.Symbols[group.Key] = symbolEntry;
         }
 
-        stats.UniqueSymbols = _catalog.Symbols.Count;
+        stats.UniqueSymbols = catalog.Symbols.Count;
 
         // Event type counts
-        foreach (var group in _fileIndex.Values
+        foreach (var group in fileIndex.Values
             .Where(f => !string.IsNullOrEmpty(f.EventType))
             .GroupBy(f => f.EventType!))
         {
@@ -1074,25 +1108,25 @@ public sealed class StorageCatalogService : IStorageCatalogService
         }
 
         // Sources
-        _catalog.Sources = _fileIndex.Values
+        catalog.Sources = fileIndex.Values
             .Where(f => !string.IsNullOrEmpty(f.Source))
             .Select(f => f.Source!)
             .Distinct()
             .ToArray();
-        stats.UniqueSources = _catalog.Sources.Length;
+        stats.UniqueSources = catalog.Sources.Length;
 
         // Directory indexes
-        _catalog.DirectoryIndexes = _directoryIndexCache.Keys.ToArray();
+        catalog.DirectoryIndexes = directoryIndexKeys.OrderBy(static key => key, StringComparer.Ordinal).ToArray();
 
         // Global date range
-        var allFilesWithDates = _fileIndex.Values
+        var allFilesWithDates = fileIndex.Values
             .Where(f => f.FirstTimestamp.HasValue || f.Date.HasValue)
             .ToList();
         if (allFilesWithDates.Any())
         {
             var earliest = allFilesWithDates.Min(f => f.FirstTimestamp ?? f.Date!.Value);
             var latest = allFilesWithDates.Max(f => f.LastTimestamp ?? f.Date!.Value);
-            _catalog.DateRange = new CatalogDateRange
+            catalog.DateRange = new CatalogDateRange
             {
                 Earliest = earliest,
                 Latest = latest,
@@ -1100,7 +1134,7 @@ public sealed class StorageCatalogService : IStorageCatalogService
             };
         }
 
-        _catalog.Statistics = stats;
+        catalog.Statistics = stats;
     }
 
     private void UpdateSymbolEntry(IndexedFileEntry entry)

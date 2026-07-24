@@ -80,7 +80,14 @@ public sealed class TooltipService
                     _dismissedTips.Add(tip);
             }
         }
-        catch { /* Ignore settings errors */ }
+        catch (Exception ex)
+        {
+            // Ignore settings errors
+            LoggingService.Instance.LogDebug(
+                "Failed to load dismissed tooltip state.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 
     private void SaveDismissedTips()
@@ -89,6 +96,13 @@ public sealed class TooltipService
         {
             File.WriteAllText(GetSettingsFilePath(), string.Join(",", _dismissedTips));
         }
-        catch { /* Ignore settings errors */ }
+        catch (Exception ex)
+        {
+            // Ignore settings errors
+            LoggingService.Instance.LogDebug(
+                "Failed to persist dismissed tooltip state.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 }

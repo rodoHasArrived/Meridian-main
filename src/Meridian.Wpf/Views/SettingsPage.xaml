@@ -599,7 +599,25 @@
                                                         </Grid>
                                                         <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                                                  Style="{StaticResource FormTextBoxStyle}"
+                                                                 Visibility="{Binding IsTextEntryField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                 AutomationProperties.Name="{Binding Label}"
                                                                  Margin="0,7,0,0" />
+                                                        <ComboBox ItemsSource="{Binding AllowedValues}"
+                                                                  SelectedItem="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Style="{StaticResource FormComboBoxStyle}"
+                                                                  Visibility="{Binding IsEnumField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                  AutomationProperties.Name="{Binding Label}"
+                                                                  Margin="0,7,0,0" />
+                                                        <CheckBox IsChecked="{Binding BoolValue, Mode=TwoWay}"
+                                                                  Content="{Binding InputHint}"
+                                                                  Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                  Visibility="{Binding IsBooleanField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                  AutomationProperties.Name="{Binding Label}"
+                                                                  Margin="0,7,0,0" />
+                                                        <DatePicker SelectedDate="{Binding DateValue, Mode=TwoWay}"
+                                                                    Visibility="{Binding IsDateField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                    AutomationProperties.Name="{Binding Label}"
+                                                                    Margin="0,7,0,0" />
                                                         <TextBlock Text="{Binding AllowedValuesLabel}"
                                                                    Visibility="{Binding AllowedValuesLabel, Converter={StaticResource StringToVisibilityConverter}}"
                                                                    Foreground="{StaticResource ConsoleTextMutedBrush}"

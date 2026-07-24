@@ -1,0 +1,65 @@
+/* Meridian — print. Report and statement surfaces print as documents: chrome hidden,
+   white paper, semantic washes preserved where they carry meaning (badges, totals).
+   Scroll regions unroll so the browser paginates the full table. */
+@media print {
+  body { background: #fff !important; }
+
+  /* Chrome is screen furniture — masthead, status bar, nav rail, bulk bars, toasts. */
+  .ws-masthead, .ws-statusbar, .op-rail, .mds-bulk-bar { display: none !important; }
+
+  /* Unroll scroll regions so content paginates instead of clipping. */
+  main, .dds-wrap, .fdt-table-scroll, .mds-ws__scroll { overflow: visible !important; max-height: none !important; }
+
+  /* Flat on paper too. */
+  * { box-shadow: none !important; }
+
+  /* Keep rows intact across page breaks; repeat table headers. */
+  tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+
+  /* Semantic washes and badge fills carry meaning — ask the browser to keep them. */
+  .mds-badge, .mds-sev, .mds-rpanel, .mds-diff__before, .mds-diff__after,
+  .mds-pnlcal__cell, .jnl__status {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ── Report-pack sheet model ──────────────────────────────────────────────
+   Opt-in page primitives for printable deliverables (report packs, statements,
+   one-pagers) — see templates/report-pack/. On screen each .mds-sheet renders
+   as a Letter-width page card on the canvas; in print each sheet becomes a
+   real page (Letter, 0.6in margins). Keep print surfaces on data-theme="light"
+   — paper is light. */
+.mds-sheet {
+  width: 816px;                 /* Letter @ 96dpi */
+  min-height: 1056px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 60px 68px;
+  background: var(--bg-light, #fff);
+  border: 1px solid var(--border, #CBD3DC);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.mds-sheet + .mds-sheet { margin-top: 24px; }
+.mds-sheet__footer { margin-top: auto; }   /* pins the page footer to the sheet bottom */
+
+@media print {
+  @page { size: letter; margin: 0.6in; }
+  .mds-no-print { display: none !important; }
+  .mds-sheet {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    break-after: page;
+  }
+  .mds-sheet:last-of-type { break-after: auto; }
+  .mds-sheet__footer { margin-top: 28px; }  /* auto-margin has no page height to push against */
+  .mds-avoid-break { break-inside: avoid; }
+  .mds-sheet, .mds-sheet * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

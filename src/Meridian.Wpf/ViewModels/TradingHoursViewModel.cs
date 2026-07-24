@@ -140,7 +140,7 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         try
         {
-            var response = await _apiClient.GetAsync<CalendarStatusResponse>(UiApiRoutes.CalendarStatus);
+            var response = (await _apiClient.GetWithResponseAsync<CalendarStatusResponse>(UiApiRoutes.CalendarStatus)).DataOrLoggedNull("Load market calendar status");
             if (response?.Market is not null)
             {
                 UpdateStatusBanner(
@@ -151,9 +151,13 @@ public sealed class TradingHoursViewModel : BindableBase
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Backend offline – fall through to local calculation
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Trading hours backend unavailable; using local calculation.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         ApplyLocalMarketStatus();
@@ -248,8 +252,8 @@ public sealed class TradingHoursViewModel : BindableBase
 
         try
         {
-            var response = await _apiClient.GetAsync<CalendarHolidaysResponse>(
-                $"{UiApiRoutes.CalendarHolidays}?year={year}");
+            var response = (await _apiClient.GetWithResponseAsync<CalendarHolidaysResponse>(
+                $"{UiApiRoutes.CalendarHolidays}?year={year}")).DataOrLoggedNull("Load market holiday calendar");
             if (response?.Holidays is not null)
             {
                 Holidays.Clear();
@@ -270,9 +274,13 @@ public sealed class TradingHoursViewModel : BindableBase
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Fall through – show empty list
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Market holiday load failed; showing empty list.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         Holidays.Clear();

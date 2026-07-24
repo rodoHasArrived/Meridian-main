@@ -61,12 +61,12 @@ public sealed class BackfillService
     /// <summary>
     /// Gets whether a backfill is currently running.
     /// </summary>
-    public bool IsRunning => _currentProgress?.Status == "Running";
+    public bool IsRunning => _currentProgress?.Status == BackfillJobStatus.Running;
 
     /// <summary>
     /// Gets whether a backfill is paused.
     /// </summary>
-    public bool IsPaused => _currentProgress?.Status == "Paused";
+    public bool IsPaused => _currentProgress?.Status == BackfillJobStatus.Paused;
 
     /// <summary>
     /// Gets the download speed in bars per second.
@@ -125,14 +125,14 @@ public sealed class BackfillService
         _currentProgress = new BackfillProgress
         {
             JobId = Guid.NewGuid().ToString(),
-            Status = "Running",
+            Status = BackfillJobStatus.Running,
             TotalSymbols = symbols.Length,
             StartedAt = DateTime.UtcNow,
             CurrentProvider = provider,
             SymbolProgress = symbols.Select(s => new SymbolBackfillProgress
             {
                 Symbol = s,
-                Status = "Pending"
+                Status = SymbolBackfillStatus.Pending
             }).ToArray()
         };
 
@@ -151,7 +151,7 @@ public sealed class BackfillService
         {
             await RunBackfillAsync(symbols, provider, fromDate, toDate, granularity, progressCallback, _cancellationTokenSource.Token);
 
-            _currentProgress.Status = "Completed";
+            _currentProgress.Status = BackfillJobStatus.Completed;
             _currentProgress.CompletedAt = DateTime.UtcNow;
 
             // Update checkpoint: mark all symbols completed
@@ -177,7 +177,7 @@ public sealed class BackfillService
         }
         catch (OperationCanceledException)
         {
-            _currentProgress.Status = "Cancelled";
+            _currentProgress.Status = BackfillJobStatus.Cancelled;
             _currentProgress.CompletedAt = DateTime.UtcNow;
 
             if (_currentCheckpointJobId != null)
@@ -195,7 +195,7 @@ public sealed class BackfillService
         }
         catch (Exception ex)
         {
-            _currentProgress.Status = "Failed";
+            _currentProgress.Status = BackfillJobStatus.Failed;
             _currentProgress.ErrorMessage = ex.Message;
             _currentProgress.CompletedAt = DateTime.UtcNow;
 
@@ -276,7 +276,7 @@ public sealed class BackfillService
                 {
                     if (completedSymbols.Contains(symbolProgress.Symbol))
                     {
-                        symbolProgress.Status = "Completed";
+                        symbolProgress.Status = SymbolBackfillStatus.Completed;
                         symbolProgress.Progress = 100;
                         symbolProgress.CompletedAt = result.CompletedUtc?.DateTime;
                         symbolProgress.BarsDownloaded = result.BarsWritten / Math.Max(1, completedSymbols.Length);
@@ -310,14 +310,14 @@ public sealed class BackfillService
         _currentProgress = new BackfillProgress
         {
             JobId = Guid.NewGuid().ToString(),
-            Status = "Running",
+            Status = BackfillJobStatus.Running,
             TotalSymbols = symbols.Length,
             StartedAt = DateTime.UtcNow,
             CurrentProvider = "composite",
             SymbolProgress = symbols.Select(s => new SymbolBackfillProgress
             {
                 Symbol = s,
-                Status = "Pending"
+                Status = SymbolBackfillStatus.Pending
             }).ToArray()
         };
 
@@ -336,7 +336,7 @@ public sealed class BackfillService
                 throw new InvalidOperationException("Gap-fill request failed - service may be unavailable");
             }
 
-            _currentProgress.Status = "Completed";
+            _currentProgress.Status = BackfillJobStatus.Completed;
             _currentProgress.CompletedAt = DateTime.UtcNow;
             _currentProgress.CompletedSymbols = symbols.Length;
 
@@ -354,7 +354,7 @@ public sealed class BackfillService
         }
         catch (OperationCanceledException)
         {
-            _currentProgress.Status = "Cancelled";
+            _currentProgress.Status = BackfillJobStatus.Cancelled;
             _currentProgress.CompletedAt = DateTime.UtcNow;
 
             BackfillCompleted?.Invoke(this, new BackfillCompletedEventArgs
@@ -366,7 +366,7 @@ public sealed class BackfillService
         }
         catch (Exception ex)
         {
-            _currentProgress.Status = "Failed";
+            _currentProgress.Status = BackfillJobStatus.Failed;
             _currentProgress.ErrorMessage = ex.Message;
             _currentProgress.CompletedAt = DateTime.UtcNow;
 
@@ -429,9 +429,9 @@ public sealed class BackfillService
     /// </summary>
     public void Pause()
     {
-        if (_currentProgress != null && _currentProgress.Status == "Running")
+        if (_currentProgress != null && _currentProgress.Status == BackfillJobStatus.Running)
         {
-            _currentProgress.Status = "Paused";
+            _currentProgress.Status = BackfillJobStatus.Paused;
             ProgressUpdated?.Invoke(this, new BackfillProgressEventArgs { Progress = _currentProgress });
         }
     }
@@ -441,9 +441,9 @@ public sealed class BackfillService
     /// </summary>
     public void Resume()
     {
-        if (_currentProgress != null && _currentProgress.Status == "Paused")
+        if (_currentProgress != null && _currentProgress.Status == BackfillJobStatus.Paused)
         {
-            _currentProgress.Status = "Running";
+            _currentProgress.Status = BackfillJobStatus.Running;
             ProgressUpdated?.Invoke(this, new BackfillProgressEventArgs { Progress = _currentProgress });
         }
     }
@@ -469,7 +469,7 @@ public sealed class BackfillService
             return;
 
         // Only reorder pending symbols
-        if (symbols[oldIndex].Status != "Pending")
+        if (symbols[oldIndex].Status != SymbolBackfillStatus.Pending)
             return;
 
         var item = symbols[oldIndex];
@@ -764,7 +764,7 @@ public sealed class BackfillService
                 return null;
 
             // Sync backend status with local progress if a job is running
-            if (_currentProgress != null && _currentProgress.Status == "Running")
+            if (_currentProgress != null && _currentProgress.Status == BackfillJobStatus.Running)
             {
                 lock (_progressLock)
                 {
@@ -777,7 +777,7 @@ public sealed class BackfillService
 
                     if (backendStatus.Success && backendStatus.CompletedUtc.HasValue)
                     {
-                        _currentProgress.Status = "Completed";
+                        _currentProgress.Status = BackfillJobStatus.Completed;
                         _currentProgress.CompletedAt = backendStatus.CompletedUtc?.DateTime;
                         _currentProgress.CompletedSymbols = backendStatus.Symbols?.Length ?? _currentProgress.TotalSymbols;
                     }

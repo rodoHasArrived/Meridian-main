@@ -25,7 +25,11 @@ public sealed class OrderManagementSystemTests : IDisposable
 
     public OrderManagementSystemTests()
     {
-        _gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+        // These tests exercise OMS behavior over a gateway that fills feed-less market
+        // orders, so scaffold pricing is explicitly opted in.
+        _gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
         _oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
     }
 
@@ -763,6 +767,68 @@ public sealed class OrderManagementSystemTests : IDisposable
         submittedRequest.Metadata["asset_class"].Should().Be("treasury");
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_WithTypedPaperGatewayIdNotNamedPaper_DoesNotRequireLiveReadinessGate()
+    {
+        var gateway = new TypedPaperExecutionGateway("sandbox-paper");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Rejected("should not be evaluated for typed paper gateways"));
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = 100m
+        });
+
+        result.Success.Should().BeTrue();
+        liveReadinessGate.Request.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenManyOpenOrders_RespectsConfiguredConcurrencyCap()
+    {
+        var gateway = new ConcurrencyObservingCancelGateway();
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            options: new OrderManagementSystemOptions
+            {
+                CancelAllMaxConcurrency = 2
+            });
+
+        for (var i = 0; i < 6; i++)
+        {
+            await oms.PlaceOrderAsync(new OrderRequest
+            {
+                Symbol = $"SYM{i}",
+                Side = OrderSide.Buy,
+                Type = OrderType.Limit,
+                Quantity = 1m,
+                LimitPrice = 10m
+            });
+        }
+
+        var cancelAllTask = oms.CancelAllAsync();
+        try
+        {
+            await gateway.WaitForSecondCancelStartedAsync();
+
+            gateway.MaxObservedConcurrency.Should().BeLessThanOrEqualTo(2);
+        }
+        finally
+        {
+            gateway.ReleaseCancels();
+            await cancelAllTask;
+        }
+    }
+
     private static BrokerageConfiguration CreateEnabledBrokerageConfiguration(string gatewayId) =>
         new()
         {
@@ -800,6 +866,231 @@ public sealed class OrderManagementSystemTests : IDisposable
             return Task.FromResult(decision);
         }
     }
+
+    private sealed class TypedPaperExecutionGateway(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        public string GatewayId => gatewayId;
+
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = request.ClientOrderId ?? "paper-1",
+                ClientOrderId = request.ClientOrderId,
+                ReportType = ExecutionReportType.Fill,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Filled,
+                OrderQuantity = request.Quantity,
+                FilledQuantity = request.Quantity,
+                FillPrice = request.LimitPrice,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Cancelled,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Cancelled,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Modified,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    private sealed class ConcurrencyObservingCancelGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        private readonly TaskCompletionSource _secondCancelStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _releaseCancels = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _currentConcurrency;
+        private int _startedCancels;
+        private int _maxObservedConcurrency;
+
+        public string GatewayId => "paper";
+
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public int MaxObservedConcurrency => Volatile.Read(ref _maxObservedConcurrency);
+
+        public Task WaitForSecondCancelStartedAsync() =>
+            _secondCancelStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        public void ReleaseCancels() =>
+            _releaseCancels.TrySetResult();
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+                ClientOrderId = request.ClientOrderId,
+                ReportType = ExecutionReportType.New,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = request.Quantity,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
+        {
+            var current = Interlocked.Increment(ref _currentConcurrency);
+            RecordMaxObservedConcurrency(current);
+            if (Interlocked.Increment(ref _startedCancels) == 2)
+            {
+                _secondCancelStarted.TrySetResult();
+            }
+
+            try
+            {
+                await _releaseCancels.Task.WaitAsync(ct);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _currentConcurrency);
+            }
+
+            return new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Cancelled,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Cancelled,
+                Timestamp = DateTimeOffset.UtcNow
+            };
+        }
+
+        private void RecordMaxObservedConcurrency(int current)
+        {
+            while (true)
+            {
+                var observed = Volatile.Read(ref _maxObservedConcurrency);
+                if (current <= observed)
+                {
+                    return;
+                }
+
+                if (Interlocked.CompareExchange(ref _maxObservedConcurrency, current, observed) == observed)
+                {
+                    return;
+                }
+            }
+        }
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Modified,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    // ---- Duplicate client order id guard ----
+
+    [Fact]
+    public async Task PlaceOrderAsync_DuplicateClientOrderIdForActiveOrder_RejectsWithoutTouchingOriginal()
+    {
+        // Limit orders stay accepted (active) in the paper gateway.
+        var originalResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m,
+            ClientOrderId = "CLIENT-1"
+        });
+        originalResult.Success.Should().BeTrue();
+        var originalState = _oms.GetOrder("CLIENT-1");
+        originalState.Should().NotBeNull();
+
+        var duplicateResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 99,
+            ClientOrderId = "CLIENT-1"
+        });
+
+        duplicateResult.Success.Should().BeFalse();
+        duplicateResult.ErrorMessage.Should().Contain("Duplicate client order id");
+        _oms.GetOrder("CLIENT-1").Should().Be(originalState,
+            "a duplicate submission must not overwrite the tracked state of the active order");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_ClientOrderIdReuseAfterTerminalOrder_Succeeds()
+    {
+        // Market orders fill immediately in the paper gateway, so the first order is terminal.
+        var firstResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5,
+            ClientOrderId = "CLIENT-2"
+        });
+        firstResult.Success.Should().BeTrue();
+        _oms.GetOrder("CLIENT-2")!.Status.Should().Be(OrderStatus.Filled);
+
+        var secondResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "GOOG",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 3,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-2"
+        });
+
+        secondResult.Success.Should().BeTrue(
+            "a terminal order's client order id may be reclaimed, consistent with retention trimming");
+        _oms.GetOrder("CLIENT-2")!.Symbol.Should().Be("GOOG");
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -812,7 +1103,9 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
     public OrderManagementSystemGateTests()
     {
-        _gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+        _gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
     }
 
     public void Dispose() { }
@@ -871,6 +1164,71 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         // Gateway fills market orders immediately, so no rejection from missing gate
         result.Success.Should().BeTrue("no gate means any symbol is accepted");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_GateRejectedReuseOfTerminalOrderId_PreservesTerminalState()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var firstResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5,
+            ClientOrderId = "CLIENT-3"
+        });
+        firstResult.Success.Should().BeTrue();
+        var filledState = oms.GetOrder("CLIENT-3");
+        filledState!.Status.Should().Be(OrderStatus.Filled);
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach"));
+
+        var rejectedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 99,
+            ClientOrderId = "CLIENT-3"
+        });
+
+        rejectedResult.Success.Should().BeFalse();
+        oms.GetOrder("CLIENT-3").Should().Be(filledState,
+            "a gate-rejected submission reusing a terminal order's id must not overwrite the filled order's state");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_GateRejectionWithFreshId_StillRecordsRejectedState()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach"));
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-4"
+        });
+
+        result.Success.Should().BeFalse();
+        oms.GetOrder("CLIENT-4")!.Status.Should().Be(OrderStatus.Rejected,
+            "a gate rejection under a previously unused id must still be visible in the order table");
     }
 
     // ---- Stubs ----

@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using Meridian.Ui.Services.DataQuality;
 
 namespace Meridian.Wpf.Models;
 
@@ -26,6 +27,13 @@ public sealed class SymbolQualityModel
     public string Issues { get; set; } = string.Empty;
     public DateTimeOffset LastUpdate { get; set; }
     public string LastUpdateFormatted { get; set; } = string.Empty;
+    public string ExpectedEventsText { get; set; } = "--";
+    public string StoredCompletenessText { get; set; } = "--";
+    public string StreamingFreshnessText { get; set; } = "--";
+    public string AdapterIntegrityText { get; set; } = "--";
+    public int GapCount { get; set; }
+    public int AnomalyCount { get; set; }
+    public DataQualitySymbolPresentation Presentation { get; set; } = new();
 }
 
 /// <summary>Model for gap display.</summary>
@@ -35,6 +43,10 @@ public sealed class GapModel
     public string Symbol { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Duration { get; set; } = string.Empty;
+    public string DashboardVersion { get; set; } = string.Empty;
+    public string? Provider { get; set; }
+    public bool CanRepair { get; set; }
+    public string? DisabledReason { get; set; }
 }
 
 /// <summary>Model for alert display.</summary>

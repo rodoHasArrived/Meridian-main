@@ -1,0 +1,278 @@
+name: Production Certification
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 0"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-certification-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  deterministic-integrations:
+    name: deterministic PostgreSQL integration and coverage evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: meridian-certification
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d meridian"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MERIDIAN_DISABLE_DOCKER_TESTS: "false"
+      MERIDIAN_LEDGER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_REPORTING_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Restore deterministic integration projects
+        run: |
+          dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj
+          dotnet restore tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj
+
+      - name: Run service-backed deterministic integration tests
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-restore \
+            --collect:"XPlat Code Coverage" \
+            --settings tests/coverlet.runsettings \
+            --results-directory artifacts/test-results/production-certification \
+            --logger "trx;LogFilePrefix=meridian-integrations" \
+            --filter "Category=Integration&Category!=LiveProvider"
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj \
+            -c Release \
+            --no-restore \
+            --collect:"XPlat Code Coverage" \
+            --settings tests/coverlet.runsettings \
+            --results-directory artifacts/test-results/production-certification \
+            --logger "trx;LogFilePrefix=direct-lending-integrations" \
+            --filter "Category=Integration"
+
+      - name: Reject failed or skipped deterministic tests
+        run: >-
+          python build/scripts/ci/validate-test-results.py
+          --results-dir artifacts/test-results/production-certification
+          --output artifacts/test-results/production-certification/skip-evidence.json
+          --require-trx-prefix meridian-integrations
+          --require-trx-prefix direct-lending-integrations
+
+      - name: Capture migrated database schema and ledger evidence
+        if: always()
+        env:
+          PGPASSWORD: meridian-certification
+        run: |
+          mkdir -p artifacts/test-results/production-certification
+          pg_dump --host localhost --username postgres --dbname meridian --schema-only --no-owner --no-privileges > artifacts/test-results/production-certification/database-schema.sql
+          psql --host localhost --username postgres --dbname meridian --csv \
+            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name" \
+            --output artifacts/test-results/production-certification/database-table-inventory.csv
+          psql --host localhost --username postgres --dbname meridian --csv \
+            --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
+            --output artifacts/test-results/production-certification/migration-ledger-inventory.csv
+
+      - name: Upload deterministic integration evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: production-certification-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/test-results/production-certification/
+          if-no-files-found: error
+          retention-days: 90
+
+  dependency-evidence:
+    name: NuGet and npm dependency evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Restore packages
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Fail on vulnerable NuGet dependencies
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts/security -Force | Out-Null
+          dotnet list Meridian.sln package --vulnerable --include-transitive 2>&1 |
+            Tee-Object -FilePath artifacts/security/nuget-vulnerabilities.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Select-String -Path artifacts/security/nuget-vulnerabilities.txt -Pattern '^\s*>\s') {
+            throw "Vulnerable NuGet packages were reported."
+          }
+
+      - name: Fail on high-severity npm dependencies
+        working-directory: src/Meridian.Ui/dashboard
+        run: |
+          npm ci
+          mkdir -p ../../../artifacts/security
+          npm audit --audit-level=high --json > ../../../artifacts/security/npm-audit.json
+
+      - name: Upload dependency evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: production-dependency-evidence-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/security/
+          if-no-files-found: error
+          retention-days: 90
+
+  recovery-drill:
+    name: encrypted backup and clean restore drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: meridian-recovery
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d meridian"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MDC_RECOVERY_ENCRYPTION_KEY_BASE64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      PGPASSWORD: meridian-recovery
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Seed source and clean recovery targets
+        run: |
+          psql --host localhost --username postgres --dbname meridian --command "CREATE TABLE recovery_probe(id integer PRIMARY KEY, value text NOT NULL); INSERT INTO recovery_probe VALUES (1, 'expected');"
+          createdb --host localhost --username postgres meridian_restore
+          mkdir -p artifacts/recovery/source-data/credentials artifacts/recovery/restore-data
+          printf 'encrypted-vault-probe' > artifacts/recovery/source-data/credentials/provider-vault.dat
+
+      - name: Execute encrypted backup and restore drill
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
+            -Mode Drill `
+            -ConnectionString 'Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-recovery' `
+            -DataRoot artifacts/recovery/source-data `
+            -BackupRoot artifacts/recovery/backups `
+            -RestoreConnectionString 'Host=localhost;Port=5432;Database=meridian_restore;Username=postgres;Password=meridian-recovery' `
+            -RestoreDataRoot artifacts/recovery/restore-data `
+            -AllowDatabaseOverwrite `
+            -MaximumRpoSeconds 600 `
+            -MaximumRtoSeconds 600 `
+            -ReceiptPath artifacts/recovery/recovery-drill-receipt.json
+
+      - name: Verify restored business and file state
+        run: |
+          test "$(psql --host localhost --username postgres --dbname meridian_restore --tuples-only --no-align --command "SELECT value FROM recovery_probe WHERE id = 1")" = "expected"
+          test "$(cat artifacts/recovery/restore-data/credentials/provider-vault.dat)" = "encrypted-vault-probe"
+
+      - name: Upload dated recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: production-recovery-drill-${{ github.run_id }}
+          path: artifacts/recovery/
+          if-no-files-found: error
+          retention-days: 90
+
+  documentation-evidence:
+    name: same-commit documentation evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Run deterministic documentation automation
+        run: >-
+          python build/scripts/docs/run-docs-automation.py
+          --profile core
+          --json-output artifacts/docs/production-certification.json
+          --summary-output artifacts/docs/production-certification.md
+
+      - name: Reject generated documentation drift
+        run: git diff --exit-code
+
+      - name: Upload documentation evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: production-documentation-evidence-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/docs/
+          if-no-files-found: error
+          retention-days: 90

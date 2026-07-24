@@ -2,6 +2,11 @@
 // All helpers pin the en-US locale so operator machines render identical values
 // regardless of host locale, and all accept null/undefined/non-finite input,
 // rendering the configurable `fallback` instead.
+//
+// SCOPE: this is the default formatting convention for the workstation. Accounting
+// surfaces (ledger, statements, journal grids) intentionally use the statement
+// convention in `components/accounting/money.ts` (parenthesized negatives, zero-dash);
+// the two conventions differ by design — see the note in that file.
 
 const FORMAT_LOCALE = "en-US";
 const DEFAULT_FALLBACK = "—";
@@ -113,6 +118,27 @@ export function formatCompactCurrency(value: NullableNumber, options: Pick<Numbe
   }
 
   return `${sign}$${absoluteValue.toFixed(0)}`;
+}
+
+export interface PluralizeCountOptions {
+  /** Explicit plural noun for irregular words, e.g. "entries", "anomalies". Defaults to `${singular}s`. */
+  plural?: string;
+  /** Group the count with the en-US locale separator, e.g. "1,234 rows". Defaults to `false`. */
+  localizeCount?: boolean;
+}
+
+/**
+ * Count followed by a singular/plural noun, e.g. "1 item" / "3 items".
+ *
+ * This is the single home for the `count === 1 ? …` decision that view-models and
+ * screens previously reimplemented under a dozen different local helper names. Pass
+ * `plural` for irregular nouns ("1 entry" / "2 entries") and `localizeCount` when the
+ * count should carry thousands separators.
+ */
+export function pluralizeCount(count: number, singular: string, options: PluralizeCountOptions = {}): string {
+  const { plural = `${singular}s`, localizeCount = false } = options;
+  const renderedCount = localizeCount ? count.toLocaleString(FORMAT_LOCALE) : String(count);
+  return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
 /** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD". */

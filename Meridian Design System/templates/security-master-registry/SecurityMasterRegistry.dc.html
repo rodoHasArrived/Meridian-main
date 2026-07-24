@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./securities-data.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Security Master Registry" description="Dense multi-asset symbol registry + entity inspector" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="security-master-registry">
+</helmet>
+<x-import component-from-global-scope="SecurityMasterRegistryScreen" from="./screen.jsx" hint-size="100%,900px"></x-import>
+</x-dc>
+</body>
+</html>

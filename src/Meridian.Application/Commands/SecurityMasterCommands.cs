@@ -49,10 +49,9 @@ internal sealed class SecurityMasterCommands : ICliCommand
         _securityMasterEventStore = securityMasterEventStore;
     }
 
-    public bool CanHandle(string[] args)
-        => args.Any(a =>
-            a.Equals("--security-master-ingest", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--security-master-normalize-corporate-actions", StringComparison.OrdinalIgnoreCase));
+    public IReadOnlyList<string> Triggers { get; } = ["--security-master-ingest", "--security-master-normalize-corporate-actions"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

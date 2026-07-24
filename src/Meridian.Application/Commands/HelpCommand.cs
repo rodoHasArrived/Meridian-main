@@ -21,14 +21,12 @@ internal sealed class HelpCommand : ICliCommand
         ["runbooks"] = ShowRunbooksHelp,
         ["statements"] = ShowStatementsHelp,
         ["ledger"] = ShowLedgerHelp,
+        ["demo"] = ShowDemoHelp,
     };
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a =>
-            a.Equals("--help", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("-h", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--help", "-h"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
@@ -67,8 +65,52 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
         Console.WriteLine("  --help statements       Statement import/validation/reconciliation");
         Console.WriteLine("  --help ledger           Ledger-compatible text journal reports");
+        Console.WriteLine("  --help demo             One-command seeded demo workspace");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
+    }
+
+    private static void ShowDemoHelp()
+    {
+        Console.WriteLine(@"
+DEMO WORKSPACE
+══════════════
+
+Provision a durable, clearly-labelled ""Seeded"" demo workspace and open the browser
+workstation on it with a single command — no empty screens, no fabricated defaults, and
+no evaporation on restart. All seeded data is isolated to a dedicated demo root
+({dataRoot}/demo-workspace) that the teardown guard can never confuse with a real root.
+
+COMMANDS:
+    --seed-demo             Seed the demo workspace (idempotent) and serve it
+    --seed-demo --seed-only Seed without starting the workstation (CI / scripted use)
+    --demo                  Serve an already-seeded demo workspace
+    --reset-demo            Delete the demo workspace only (guarded)
+
+WHAT IS SEEDED:
+    - Reconciliation casework (open breaks) into the reconciliation control tower
+    - A completed paper strategy run into the Strategy desk
+    Every record carries ""Seeded"" provenance (source system ""Meridian Seeded Demo"")
+    and survives restart because it is written to durable, file-backed desk stores.
+
+DURABILITY:
+    The reconciliation and strategy desks persist to the data root and survive restart
+    with zero configuration. Money-path stores such as the ledger persist only when a
+    PostgreSQL connection is configured (see MERIDIAN_DATABASE_URL in docs/start).
+
+EXAMPLES:
+    # Seed and immediately open the populated workstation
+    Meridian --seed-demo
+
+    # Seed for a headless check, then exit
+    Meridian --seed-demo --seed-only
+
+    # Re-open the seeded demo later
+    Meridian --demo
+
+    # Tear the demo workspace down (only the demo root is ever touched)
+    Meridian --reset-demo
+");
     }
 
     private static void ShowLedgerHelp()
@@ -472,9 +514,12 @@ HELP TOPICS:
     --help diagnostics    Diagnostics and troubleshooting
     --help providers      Data provider information
     --help ledger         Ledger-compatible text journal reports
+    --help demo           One-command seeded demo workspace
 
 MODES:
     --mode <desktop|headless> Unified deployment mode selector
+    --seed-demo             Seed a durable ""Seeded"" demo workspace and open the workstation
+    --reset-demo            Delete the isolated demo workspace only (guarded)
     --backfill              Run historical data backfill
     --replay <path>         Replay events from JSONL file
     --package               Create a portable data package

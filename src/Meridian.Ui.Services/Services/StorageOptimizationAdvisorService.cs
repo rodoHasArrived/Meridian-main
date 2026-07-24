@@ -177,6 +177,8 @@ public sealed class StorageOptimizationAdvisorService
         return analyzed;
     }
 
+    private const int PrefixHashLength = 1024 * 1024;
+
     private static async Task<string> ComputeFileHashAsync(string path, CancellationToken ct)
     {
         try
@@ -184,11 +186,31 @@ public sealed class StorageOptimizationAdvisorService
             using var sha256 = SHA256.Create();
             await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
 
-            // Only hash first 1MB for performance
-            var buffer = new byte[Math.Min(1024 * 1024, stream.Length)];
+            // Only hash first 1MB for performance. This is a candidate filter, NOT proof of
+            // identity — FindDuplicatesAsync must full-hash before recommending deletion.
+            var buffer = new byte[Math.Min(PrefixHashLength, stream.Length)];
             var bytesRead = await stream.ReadAsync(buffer, ct);
             var hash = sha256.ComputeHash(buffer, 0, bytesRead);
             return Convert.ToHexString(hash).ToLowerInvariant();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static async Task<string> ComputeFullFileHashAsync(string path, CancellationToken ct)
+    {
+        try
+        {
+            using var sha256 = SHA256.Create();
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, true);
+            var hash = await sha256.ComputeHashAsync(stream, ct);
+            return Convert.ToHexString(hash).ToLowerInvariant();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {
@@ -235,35 +257,59 @@ public sealed class StorageOptimizationAdvisorService
 
     private async Task FindDuplicatesAsync(StorageOptimizationReport report, List<AnalyzedFile> files, CancellationToken ct)
     {
-        // Group by hash
-        var byHash = files
+        // The per-file hash covers only the first 1MB, so identical headers with different
+        // tails would collide. Treat prefix-hash groups (same hash AND size) purely as
+        // candidates and verify with a full-content hash before recommending deletion.
+        var candidateGroups = files
             .Where(f => !string.IsNullOrEmpty(f.Hash))
-            .GroupBy(f => f.Hash)
+            .GroupBy(f => (f.Hash, f.Size))
             .Where(g => g.Count() > 1)
             .ToList();
 
-        foreach (var group in byHash)
+        foreach (var candidates in candidateGroups)
         {
             ct.ThrowIfCancellationRequested();
 
-            var duplicates = group.ToList();
-            var original = duplicates.OrderBy(f => f.LastModified).First();
-            var dupes = duplicates.Skip(1).ToList();
-
-            var recommendation = new OptimizationRecommendation
+            var byFullHash = new Dictionary<string, List<AnalyzedFile>>(StringComparer.Ordinal);
+            foreach (var file in candidates)
             {
-                Type = OptimizationType.RemoveDuplicates,
-                Priority = RecommendationPriority.High,
-                Title = $"Remove {dupes.Count} duplicate file(s)",
-                Description = $"Found {dupes.Count} duplicate(s) of '{original.FileName}'",
-                PotentialSavingsBytes = dupes.Sum(f => f.Size),
-                AffectedFiles = dupes.Select(f => f.Path).ToList(),
-                OriginalFile = original.Path
-            };
+                // For files within the prefix window the prefix hash already covers the
+                // full content; larger files need a full re-hash to prove identity.
+                var fullHash = file.Size <= PrefixHashLength
+                    ? file.Hash
+                    : await ComputeFullFileHashAsync(file.Path, ct);
+                if (string.IsNullOrEmpty(fullHash))
+                    continue;
 
-            report.Recommendations.Add(recommendation);
-            report.DuplicateFilesCount += dupes.Count;
-            report.DuplicateBytesTotal += recommendation.PotentialSavingsBytes;
+                if (!byFullHash.TryGetValue(fullHash, out var bucket))
+                {
+                    bucket = new List<AnalyzedFile>();
+                    byFullHash[fullHash] = bucket;
+                }
+
+                bucket.Add(file);
+            }
+
+            foreach (var duplicates in byFullHash.Values.Where(v => v.Count > 1))
+            {
+                var original = duplicates.OrderBy(f => f.LastModified).First();
+                var dupes = duplicates.Skip(1).ToList();
+
+                var recommendation = new OptimizationRecommendation
+                {
+                    Type = OptimizationType.RemoveDuplicates,
+                    Priority = RecommendationPriority.High,
+                    Title = $"Remove {dupes.Count} duplicate file(s)",
+                    Description = $"Found {dupes.Count} duplicate(s) of '{original.FileName}'",
+                    PotentialSavingsBytes = dupes.Sum(f => f.Size),
+                    AffectedFiles = dupes.Select(f => f.Path).ToList(),
+                    OriginalFile = original.Path
+                };
+
+                report.Recommendations.Add(recommendation);
+                report.DuplicateFilesCount += dupes.Count;
+                report.DuplicateBytesTotal += recommendation.PotentialSavingsBytes;
+            }
         }
 
         // Also check for files with same size and name (potential duplicates without hashing)

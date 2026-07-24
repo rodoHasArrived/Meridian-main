@@ -1,5 +1,9 @@
 # DocFX API Documentation
 
+**Status:** supporting-generated
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 DocFX generates browsable API documentation from XML doc comments in the C# source code, combined with the markdown guides in `docs/`.
 
 ## Prerequisites
@@ -51,8 +55,8 @@ The root `docfx.json` configuration pulls from:
 Metadata scratch files such as `docfx-log.json`, `temp-metadata-only.json`,
 `docs/docfx/api/.manifest`, and `docs/docfx/api/*.yml` are local generated
 output and should not be committed. If API metadata contains absolute paths from
-an older checkout, delete the generated metadata and regenerate it from
-`D:\Meridian-main` before publishing documentation.
+an older checkout, delete the generated metadata and regenerate it from the
+current repository root before publishing documentation.
 
 ### Projects included in API reference
 

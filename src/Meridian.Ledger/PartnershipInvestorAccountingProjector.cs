@@ -1,3 +1,6 @@
+using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -5,7 +8,7 @@ namespace Meridian.Ledger;
 /// </summary>
 public static class PartnershipInvestorAccountingProjector
 {
-    private const decimal AllocationTolerance = 0.000001m;
+    private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
     public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input)
     {
@@ -114,7 +117,4 @@ public static class PartnershipInvestorAccountingProjector
         if (Math.Abs(total - 1m) > AllocationTolerance)
             throw new ArgumentException($"Investor allocation percentages must sum to 1.000000; actual total was {total}.", nameof(investors));
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

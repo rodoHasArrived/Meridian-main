@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Backfill;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -111,14 +112,24 @@ public static class BackfillEndpoints
         // Backfill progress endpoint
         group.MapGet(UiApiRoutes.BackfillProgress, (BackfillCoordinator backfill) =>
         {
-            var progress = backfill.GetProgress();
-            return progress is not null
-                ? Results.Json(progress, jsonOptions)
-                : Results.Json(new { message = "No active backfill operation", symbols = Array.Empty<object>() }, jsonOptions);
+            var progress = backfill.GetProgress() ?? new BackfillRunProgressResponse(
+                LastRun: null,
+                IsActive: false,
+                ProviderProgress: new BackfillProviderProgressSnapshotDto(
+                    Symbols: new Dictionary<string, BackfillProviderSymbolProgressDto>(StringComparer.OrdinalIgnoreCase),
+                    RecentProviderAttempts: Array.Empty<BackfillProviderAttemptProgressDto>(),
+                    OverallPercentComplete: 0,
+                    TotalSymbols: 0,
+                    CompletedSymbols: 0,
+                    FailedSymbols: 0,
+                    DroppedProviderNotifications: 0,
+                    Timestamp: DateTimeOffset.UtcNow),
+                Timestamp: DateTimeOffset.UtcNow);
+            return Results.Json(progress, jsonOptions);
         })
         .WithName("GetBackfillProgress")
-        .WithDescription("Returns progress of the currently active backfill operation, if any.")
-        .Produces(200);
+        .WithDescription("Returns the latest run plus bounded, live provider-attempt progress for the current symbol and range.")
+        .Produces<BackfillRunProgressResponse>(200);
 
         // Get provider metadata descriptors
         group.MapGet(UiApiRoutes.BackfillProviderMetadata, () =>
@@ -177,11 +188,18 @@ public static class BackfillEndpoints
         {
             var auditReader = services.GetService<IBackfillProviderConfigAuditReader>();
             var entries = auditReader?.GetAuditLog() ?? Array.Empty<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto>();
-            return Results.Json(entries, jsonOptions);
+            return Results.Json(entries.Select(static entry => new Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto
+            {
+                Timestamp = entry.Timestamp,
+                ProviderId = entry.ProviderId,
+                Action = entry.Action,
+                Source = entry.Source
+            }), jsonOptions);
         })
         .WithName("GetBackfillProviderConfigAudit")
-        .WithDescription("Returns the audit trail of provider configuration changes.")
-        .Produces<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto[]>(200);
+        .WithDescription("Returns the sanitized audit trail of provider configuration changes.")
+        .Produces<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto[]>(200)
+        .RequirePermission(UserPermission.ManageProviders);
     }
 
     private static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] GetKnownProviderMetadata()

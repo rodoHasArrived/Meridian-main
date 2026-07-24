@@ -399,7 +399,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
-        // IB Client Portal client (uses custom SSL handler for self-signed certificates)
+        // IB Client Portal client (accepts self-signed certificates from loopback hosts only)
         services.AddHttpClient(HttpClientNames.IBClientPortal)
             .ConfigureHttpClient(client =>
             {
@@ -407,7 +407,7 @@ public static class HttpClientConfiguration
             })
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                ServerCertificateCustomValidationCallback = ValidateIbClientPortalCertificate
             })
             .AddSharedResiliencePolicy();
 
@@ -754,7 +754,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.PortfolioImport, onStateChanged);
 
-        // IB Client Portal client (uses custom SSL handler for self-signed certificates)
+        // IB Client Portal client (accepts self-signed certificates from loopback hosts only)
         services.AddHttpClient(HttpClientNames.IBClientPortal)
             .ConfigureHttpClient(client =>
             {
@@ -762,7 +762,7 @@ public static class HttpClientConfiguration
             })
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                ServerCertificateCustomValidationCallback = ValidateIbClientPortalCertificate
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.IBClientPortal, onStateChanged);
 
@@ -783,6 +783,25 @@ public static class HttpClientConfiguration
             .AddSharedResiliencePolicyTracked(HttpClientNames.PreflightChecker, onStateChanged);
 
         return services;
+    }
+
+    /// <summary>
+    /// Certificate validation for the IB Client Portal named client. IB Gateway serves a
+    /// self-signed certificate on localhost, so certificate errors are tolerated for loopback
+    /// hosts only. The previous <c>DangerousAcceptAnyServerCertificateValidator</c> accepted any
+    /// certificate from any host, leaving a brokerage-credential path with no MITM protection
+    /// when the configured base URL was not local.
+    /// </summary>
+    internal static bool ValidateIbClientPortalCertificate(
+        HttpRequestMessage request,
+        System.Security.Cryptography.X509Certificates.X509Certificate2? certificate,
+        System.Security.Cryptography.X509Certificates.X509Chain? chain,
+        System.Net.Security.SslPolicyErrors sslPolicyErrors)
+    {
+        if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.None)
+            return true;
+
+        return request.RequestUri is { IsLoopback: true };
     }
 }
 

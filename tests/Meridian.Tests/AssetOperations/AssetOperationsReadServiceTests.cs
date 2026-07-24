@@ -6,6 +6,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.AssetOperations;
 using NSubstitute;
 
 namespace Meridian.Tests.AssetOperations;
@@ -546,6 +547,276 @@ public sealed class AssetOperationsReadServiceTests
             timelineEvent.EventKind == "ObligationCloseEvidence" &&
             timelineEvent.EventLane == "Handoff" &&
             timelineEvent.NextAction!.Contains("close", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ForGenericSecurityMasterFallback_ShouldRemainProjectedAndReviewRequired()
+    {
+        var securityId = Guid.Parse("f1111111-1111-1111-1111-111111111111");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, "UnsupportedSpecialAsset", "Unsupported Special Asset"));
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.Readiness.Status.Should().Be("ReviewRequired");
+        detail.Readiness.ReadyCapabilities.Should().NotContain(["Evidence", "Readiness"]);
+        detail.Readiness.MissingCapabilities.Should().Contain(["Evidence", "Readiness"]);
+        detail.Readiness.Warnings.Should().Contain(warning =>
+            warning.Contains("Publish a reviewed Asset Operations projection", StringComparison.Ordinal));
+        detail.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.Status.Should().Be("ReviewRequired");
+        detail.TermsObligationsTimeline.Warnings.Should().Contain(warning =>
+            warning.Contains("Expected/Projected", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_PublishedReadyClaimWithoutTypedEvidence_ShouldFailClosed()
+    {
+        var securityId = Guid.Parse("f2222222-2222-2222-2222-222222222222");
+        var published = BuildEvidenceReadinessDetail(
+            securityId,
+            status: "Ready",
+            readyCapabilities: ["Identity", "Evidence", "Readiness"],
+            missingCapabilities: [],
+            retainedEvidence: []);
+        var store = Substitute.For<IAssetOperationsProjectionStore>();
+        store.GetAsync(securityId, Arg.Any<CancellationToken>()).Returns(published);
+        var service = new AssetOperationsReadService(projectionStore: store);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.Readiness.Status.Should().Be("ReviewRequired");
+        detail.Readiness.ReadyCapabilities.Should().NotContain(["Evidence", "Readiness"]);
+        detail.Readiness.MissingCapabilities.Should().Contain(["Evidence", "Readiness"]);
+        detail.Readiness.Warnings.Should().Contain(warning =>
+            warning.Contains("SHA-256 content hash", StringComparison.Ordinal));
+        detail.Readiness.RetainedEvidence.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_PublishedCompleteTypedEvidence_ShouldSatisfyEvidenceAndReadiness()
+    {
+        var securityId = Guid.Parse("f3333333-3333-3333-3333-333333333333");
+        var evidence = RetainedEvidenceIdentityValidatorTests.CompleteEvidence(securityId);
+        var published = BuildEvidenceReadinessDetail(
+            securityId,
+            status: "ReviewRequired",
+            readyCapabilities: ["Identity"],
+            missingCapabilities: ["Evidence", "Readiness"],
+            retainedEvidence: [evidence]);
+        var store = Substitute.For<IAssetOperationsProjectionStore>();
+        store.GetAsync(securityId, Arg.Any<CancellationToken>()).Returns(published);
+        var service = new AssetOperationsReadService(projectionStore: store);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.Readiness.Status.Should().Be("Ready");
+        detail.Readiness.ReadyCapabilities.Should().Contain(["Evidence", "Readiness"]);
+        detail.Readiness.MissingCapabilities.Should().BeEmpty();
+        detail.Readiness.RetainedEvidence.Should().ContainSingle().Which.Should().BeEquivalentTo(evidence);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_PublishedEvidenceForDifferentSubject_ShouldFailClosed()
+    {
+        var securityId = Guid.Parse("f4444444-4444-4444-4444-444444444444");
+        var wrongSubjectEvidence = RetainedEvidenceIdentityValidatorTests.CompleteEvidence(
+            Guid.Parse("f5555555-5555-5555-5555-555555555555"));
+        var published = BuildEvidenceReadinessDetail(
+            securityId,
+            status: "Ready",
+            readyCapabilities: ["Identity", "Evidence", "Readiness"],
+            missingCapabilities: [],
+            retainedEvidence: [wrongSubjectEvidence]);
+        var store = Substitute.For<IAssetOperationsProjectionStore>();
+        store.GetAsync(securityId, Arg.Any<CancellationToken>()).Returns(published);
+        var service = new AssetOperationsReadService(projectionStore: store);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.Readiness.Status.Should().Be("ReviewRequired");
+        detail.Readiness.ReadyCapabilities.Should().NotContain("Evidence");
+        detail.Readiness.Warnings.Should().Contain(warning =>
+            warning.Contains("outside this Security Master subject scope", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldMergeDurablePositionsWithoutChangingPublishedSecurityProjection()
+    {
+        var publishedProjection = InstrumentPositionProjectionFixture.Create();
+        var published = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(
+            BuildDetail(publishedProjection));
+        var expectedPublished = published;
+        var durableProjection = InstrumentPositionProjectionFixture.Advance(publishedProjection);
+        var snapshot = new InstrumentPositionProjectionSnapshot(
+            durableProjection.Subject.SecurityId,
+            durableProjection.InstrumentRoles,
+            durableProjection.BookPositions,
+            durableProjection.PositionEconomicStates,
+            durableProjection.ProjectionLineages);
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(snapshot);
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.Subject.Should().BeEquivalentTo(expectedPublished.Subject);
+        detail.TermsHistory.Should().BeEquivalentTo(expectedPublished.TermsHistory);
+        detail.LifecycleEvents.Should().BeEquivalentTo(expectedPublished.LifecycleEvents);
+        detail.CashFlowProjectionRuns.Should().BeEquivalentTo(expectedPublished.CashFlowProjectionRuns);
+        detail.ProjectedCashFlows.Should().BeEquivalentTo(expectedPublished.ProjectedCashFlows);
+        detail.ActualActivity.Should().BeEquivalentTo(expectedPublished.ActualActivity);
+        detail.ReconciliationRuns.Should().BeEquivalentTo(expectedPublished.ReconciliationRuns);
+        detail.ReconciliationResults.Should().BeEquivalentTo(expectedPublished.ReconciliationResults);
+        detail.LedgerProjections.Should().BeEquivalentTo(expectedPublished.LedgerProjections);
+        detail.Readiness.Should().BeEquivalentTo(expectedPublished.Readiness);
+        detail.WorkflowAudit.Should().BeEquivalentTo(expectedPublished.WorkflowAudit);
+        detail.TermsObligationsTimeline.Should().BeEquivalentTo(expectedPublished.TermsObligationsTimeline);
+        detail.InstrumentRoles.Should().BeEquivalentTo(snapshot.InstrumentRoles);
+        detail.BookPositions.Should().BeEquivalentTo(snapshot.BookPositions);
+        detail.PositionEconomicStates.Should().BeEquivalentTo(snapshot.PositionEconomicStates);
+        detail.ProjectionLineages.Should().BeEquivalentTo(snapshot.ProjectionLineages);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldPreservePublishedTypedCollectionsWhenDedicatedStoreIsEmpty()
+    {
+        var published = BuildDetail(InstrumentPositionProjectionFixture.Create());
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(published.Subject.SecurityId, [], [], [], []));
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.InstrumentRoles.Should().BeEquivalentTo(published.InstrumentRoles);
+        detail.BookPositions.Should().BeEquivalentTo(published.BookPositions);
+        detail.PositionEconomicStates.Should().BeEquivalentTo(published.PositionEconomicStates);
+        detail.ProjectionLineages.Should().BeEquivalentTo(published.ProjectionLineages);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldTreatAnyDurableTypedStateAsAnAtomicProjectionReplacement()
+    {
+        var published = BuildDetail(InstrumentPositionProjectionFixture.Create());
+        var durableRole = published.InstrumentRoles.Single() with { Version = 9 };
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(
+                published.Subject.SecurityId,
+                [durableRole],
+                [],
+                [],
+                []));
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.InstrumentRoles.Should().ContainSingle().Which.Should().BeEquivalentTo(durableRole);
+        detail.BookPositions.Should().BeEmpty();
+        detail.PositionEconomicStates.Should().BeEmpty();
+        detail.ProjectionLineages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldNotCreateDetailFromOrphanPositionProjection()
+    {
+        var projection = InstrumentPositionProjectionFixture.Create();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns((SecurityDetailDto?)null);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(
+                projection.Subject.SecurityId,
+                projection.InstrumentRoles,
+                projection.BookPositions,
+                projection.PositionEconomicStates,
+                projection.ProjectionLineages));
+        var service = new AssetOperationsReadService(
+            securityMasterQueryService: securityMaster,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(projection.Subject.SecurityId);
+
+        detail.Should().BeNull();
+        await positionStore.DidNotReceive()
+            .GetSecurityAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>());
+    }
+
+    private static AssetOperationsDetailDto BuildDetail(AssetOperationsProjectionDto projection)
+        => new(
+            projection.Subject,
+            projection.TermsHistory,
+            projection.LifecycleEvents,
+            projection.CashFlowProjectionRuns,
+            projection.ProjectedCashFlows,
+            projection.ActualActivity,
+            projection.ReconciliationRuns,
+            projection.ReconciliationResults,
+            projection.LedgerProjections,
+            projection.Readiness,
+            projection.WorkflowAudit)
+        {
+            TermsObligationsTimeline = projection.TermsObligationsTimeline,
+            InstrumentRoles = projection.InstrumentRoles,
+            BookPositions = projection.BookPositions,
+            PositionEconomicStates = projection.PositionEconomicStates,
+            ProjectionLineages = projection.ProjectionLineages
+        };
+
+    private static AssetOperationsDetailDto BuildEvidenceReadinessDetail(
+        Guid securityId,
+        string status,
+        IReadOnlyList<string> readyCapabilities,
+        IReadOnlyList<string> missingCapabilities,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        var subject = new AssetOperationSubjectDto(
+            securityId,
+            "CustomAsset",
+            "Evidence Readiness Asset",
+            $"INTERNAL:{securityId:D}",
+            ["Identity", "Evidence", "Readiness"]);
+        var readiness = new AssetOperationsReadinessDto(
+            securityId,
+            status,
+            subject.OperationalProfile,
+            readyCapabilities,
+            missingCapabilities,
+            [],
+            DateTimeOffset.Parse("2026-07-01T18:30:00Z"),
+            "AssetOperations",
+            securityId.ToString("D"));
+        return new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
+        {
+            RetainedEvidence = retainedEvidence
+        };
     }
 
     private static SecurityDetailDto BuildSecurity(

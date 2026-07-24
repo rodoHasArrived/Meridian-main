@@ -1,6 +1,8 @@
 # Process Lifecycle Diagnostics
 
-Meridian hosts should shut down through cooperative cancellation before any owned process is terminated. This applies to the CLI host, WPF desktop shell, and installed Web Workstation host.
+Meridian hosts shut down through cooperative cancellation before any owned process can be
+terminated. Installed releases use the persistent per-user lifecycle supervisor; development
+launchers retain their narrower run-scoped ownership.
 
 ## Desktop Development Launcher
 
@@ -14,19 +16,26 @@ For `-StartupSmoke` and interrupted launches, the runner also closes the owned W
 before exiting so a failed smoke pass does not leave a hidden or orphaned `Meridian.Desktop`
 instance behind.
 
-## Web Workstation Sessions
+## Installed Workstation Sessions
 
-The installed Web Workstation launcher tracks the host it starts in `%LOCALAPPDATA%\Meridian\service\web-workstation-runtime.json`. The state file records the PID, port, executable path, config path, start time, and local shutdown token.
+The installed `Meridian.LifecycleSupervisor.exe` is the single owner of the host and dedicated
+PostgreSQL process. The public launcher delegates to it. The current-user named-pipe command channel
+does not expose the host shutdown capability, and runtime identity JSON contains no secret.
 
-Use the launcher for managed session control:
+Use the supervisor for managed session control from the install directory:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Meridian Web Workstation\Launch-MeridianWebWorkstation.ps1"
-& "$env:LOCALAPPDATA\Programs\Meridian Web Workstation\Launch-MeridianWebWorkstation.ps1" -Status
-& "$env:LOCALAPPDATA\Programs\Meridian Web Workstation\Launch-MeridianWebWorkstation.ps1" -Stop
+$meridianInstall = Join-Path $env:LOCALAPPDATA "Programs\Meridian"
+& (Join-Path $meridianInstall "Meridian.LifecycleSupervisor.exe") preflight
+& (Join-Path $meridianInstall "Meridian.LifecycleSupervisor.exe") status
+& (Join-Path $meridianInstall "Meridian.LifecycleSupervisor.exe") restart
+& (Join-Path $meridianInstall "Meridian.LifecycleSupervisor.exe") stop
 ```
 
-`-Stop` posts to `POST /api/system/shutdown` with the local shutdown token, waits for process exit, and only terminates the tracked process if the stored metadata still matches the running Meridian process.
+`stop` asks the host to stop accepting work, drain, flush, and persist its receipt before the
+supervisor stops the dedicated database and writes the session receipt. Forced termination is a
+deadline fallback and is allowed only when exact process identity still matches. External database
+mode is non-owning and never permits database termination.
 
 ## Safe Process Checks
 
@@ -42,7 +51,9 @@ The script is report-only by default. Cleanup mode is intentionally narrow:
 pwsh ./scripts/dev/check-meridian-process-lifecycle.ps1 -CleanupOwned
 ```
 
-`-CleanupOwned` uses the stored shutdown token first and only terminates a process when the PID, start time, executable, and Meridian process name still match the runtime state. It never performs broad `dotnet` cleanup.
+`-CleanupOwned` remains a development-run recovery path. Installed-release recovery must use the
+supervisor so host-plus-database ordering and receipt evidence are preserved. Neither path performs
+broad `dotnet` cleanup.
 
 ## Manual Verification
 
@@ -54,3 +65,6 @@ Get-Process dotnet
 ```
 
 Do not run broad `Stop-Process dotnet`. If a process remains, verify the command line and runtime state before stopping anything manually.
+
+See the [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md) for state,
+manifest, endpoint, receipt, and database-ownership contracts.

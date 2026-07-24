@@ -28,8 +28,8 @@ public sealed class StorageService : StorageServiceBase
     /// </summary>
     public async Task<List<DataFileInfo>> GetSymbolFilesAsync(string symbol, CancellationToken ct = default)
     {
-        var response = await ApiClientService.Instance.GetAsync<List<SymbolFileDto>>(
-            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolFiles, "symbol", symbol), ct);
+        var response = (await ApiClientService.Instance.GetWithResponseAsync<List<SymbolFileDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolFiles, "symbol", symbol), ct)).DataOrLoggedNull("Get symbol data files");
 
         if (response == null)
             return new List<DataFileInfo>();

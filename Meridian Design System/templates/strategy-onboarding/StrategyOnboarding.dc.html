@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Strategy Setup Wizard" description="Guided new-strategy onboarding — name, universe, first cell, review & run, with stepper and progress" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="strategy-onboarding">
+</helmet>
+<x-import component-from-global-scope="StrategyOnboardingScreen" from="./screen.jsx" hint-size="100%,820px"></x-import>
+</x-dc>
+</body>
+</html>

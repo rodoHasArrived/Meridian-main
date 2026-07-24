@@ -10,6 +10,16 @@ public sealed class DirectLendingServicerStatementService : IDirectLendingServic
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IDirectLendingService _directLendingService;
+
+    // Lock-ordering invariant for _gate:
+    //   * _gate is the single monitor guarding the two in-memory stores below (_batches and
+    //     _importedRowHashes). Because there is exactly one lock, no lock-acquisition order exists
+    //     to violate — deadlock would require a second lock or lock reentrancy across threads.
+    //   * Critical sections under _gate must stay purely in-memory and synchronous: never await,
+    //     and never call _directLendingService or any other collaborator while holding _gate.
+    //     All such I/O (portfolio/loan loads, batch creation, payment application) is performed
+    //     BEFORE or AFTER the lock, never inside it. Honouring this keeps the lock uncontended and
+    //     free of any deadlock/reentrancy risk.
     private readonly object _gate = new();
     private readonly Dictionary<Guid, ServicerStatementPreviewDto> _batches = new();
     private readonly HashSet<string> _importedRowHashes = new(StringComparer.Ordinal);

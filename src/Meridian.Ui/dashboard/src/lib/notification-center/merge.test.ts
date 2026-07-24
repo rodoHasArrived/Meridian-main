@@ -72,7 +72,7 @@ describe("buildNotificationCenterModel", () => {
 
     const price = model.notifications.find((entry) => entry.source === "price-alert")!;
     expect(price.severity).toBe("warning");
-    expect(price.route).toBe("/data/alerts");
+    expect(price.route).toBe("/data/quotes?view=alerts");
     expect(price.dismissible).toBe(false);
   });
 

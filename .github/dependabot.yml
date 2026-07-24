@@ -35,6 +35,61 @@ updates:
           - "minor"
           - "patch"
 
+  # Browser workstation dashboard (active operator UI lane)
+  - package-ecosystem: "npm"
+    directory: "/src/Meridian.Ui/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(dashboard)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "dashboard"
+    reviewers:
+      - "rodoHasArrived"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router-dom"
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - "minor"
+          - "patch"
+      build-tooling:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "typescript"
+          - "typescript-eslint"
+          - "eslint"
+          - "@eslint/*"
+          - "eslint-plugin-*"
+          - "tailwindcss"
+          - "autoprefixer"
+          - "postcss"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "vitest"
+          - "@testing-library/*"
+          - "jsdom"
+          - "jest-axe"
+          - "playwright"
+        update-types:
+          - "minor"
+          - "patch"
+
   # NuGet packages (main project)
   - package-ecosystem: "nuget"
     directory: "/"

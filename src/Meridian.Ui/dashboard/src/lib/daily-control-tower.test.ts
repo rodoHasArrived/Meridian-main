@@ -97,7 +97,7 @@ describe("daily control tower model", () => {
     const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
 
     expect(shell.workflowContinuity.title).toBe("Daily Control Tower");
-    expect(model.decision.title).toBe("Resolve Report pack approval waiting");
+    expect(model.decision.title).toBe("Report pack approval waiting");
     expect(model.statusLabel).toBe("Review");
     expect(model.ownerLabel).toBe("Reporting");
     expect(model.outputLabel).toBe("Reporting package or evidence");

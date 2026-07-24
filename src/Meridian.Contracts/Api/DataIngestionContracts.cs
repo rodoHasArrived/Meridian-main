@@ -1,16 +1,26 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Contracts.Api;
 
 /// <summary>
-/// Demo mode configuration and seeded market data support.
+/// Demo mode configuration and seeded market data support. Demo output is always seeded, never real,
+/// so the config carries the <see cref="DataProvenance"/> signal and a persistent badge that both
+/// clients render — the label can never be silently dropped from a demo response.
 /// </summary>
 public sealed record DemoModeConfig(
     bool Enabled = false,
     string[] DemoSymbols = null!,
-    DateTime LastUpdated = default
-);
+    DateTime LastUpdated = default,
+    DataProvenance Provenance = DataProvenance.Seeded
+)
+{
+    /// <summary>Persistent, non-dismissable badge for the seeded demo posture.</summary>
+    public DataProvenanceBadge? ProvenanceBadge { get; init; } = DataProvenanceBadge.TryCreate(Provenance);
+}
 
 /// <summary>
-/// Seeded market data for demo mode.
+/// Seeded market data for demo mode. Every snapshot carries <see cref="DataProvenance.Seeded"/> so a
+/// demo quote can never be mistaken for a real one, even when handled in isolation.
 /// </summary>
 public sealed record DemoMarketSnapshot(
     string Symbol,
@@ -24,7 +34,8 @@ public sealed record DemoMarketSnapshot(
     decimal Open,
     decimal High,
     decimal Low,
-    decimal Close
+    decimal Close,
+    DataProvenance Provenance = DataProvenance.Seeded
 );
 
 /// <summary>

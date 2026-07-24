@@ -394,8 +394,8 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
     {
         try
         {
-            var remoteWatchlists = await _remoteClient.GetAsync<List<Watchlist>>("/api/watchlists", ct)
-                .ConfigureAwait(false);
+            var remoteWatchlists = (await _remoteClient.GetWithResponseAsync<List<Watchlist>>("/api/watchlists", ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Sync watchlists from backend");
 
             if (remoteWatchlists is null)
             {
@@ -415,9 +415,13 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
             // Sync failed - continue with local data
+            LoggingService.Instance.LogDebug(
+                "Watchlist remote sync failed; continuing with local data.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         return false;

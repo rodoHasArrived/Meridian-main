@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.FinancialOperations
@@ -54,14 +54,22 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
+- `Ledger/AccountingPostingCandidateService.cs` - non-posting Rules Studio candidate construction,
+  authoritative ledger-book and accounting-policy resolution, and fail-closed typed book,
+  economic-event, book-position, projection-lineage, and rule-pack assertion validation.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
-- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
-- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection.
+- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
+- `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
+- `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
+  boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
+  before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
+- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
-- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/CanonicalReconciliationEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation.
+- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/ReconciliationMatchingEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation. The canonical daily pipeline is split across `ReconciliationIngestionContracts.cs`, `ReconciliationNormalizationService.cs`, `MatchingTolerances.cs`, `ReconciliationMatchingEngine.cs`, `DefaultReconciliationIngestionScheduler.cs`, and `ReconciliationRunOrchestrator.cs` (one type per file).
 - `Reconciliation/StatementBreakClassifier.cs`, `StatementMappingProfiles.cs`, and `StatementToleranceProfiles.cs` - canonical break taxonomy, broker mapping profiles, and tolerance governance.
 - `Reconciliation/ReconciliationEngineService.cs` - Security Master-enriched portfolio-vs-ledger
   reconciliation engine that joins positions, ledger balances, and the F# ledger reconciliation
@@ -70,11 +78,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/Connectors/` - custodian/broker statement connector library (ADR-018):
   declarative versioned CSV/OFX mapping-profile documents with a file-backed store, live catalog,
   and format-drift detection; per-column mapping-confidence scoring; connectors for
-  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML, and
-  fetch-capable Alpaca activity + portfolio snapshots; `StatementImportService` preview/commit
+  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML,
+  fetch-capable Alpaca activity + portfolio snapshots, and profile-less ISO 20022 camt.053 and
+  BAI2 institutional bank cash statements (content-sniffed, mapped directly to canonical records);
+  `StatementImportService` preview/commit
   orchestration that renders deterministic canonical-CSV artifacts into the existing
   statement-run workflow (positions, transactions, cash balances, fees, and dividends all
-  classify per kind); and persisted fetch schedules with an idempotent schedule runner.
+  classify per kind), returning retained break ids plus structured reconciliation case links for
+  the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
+  persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
+  transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
+  watermark.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 
@@ -84,7 +98,13 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store.
+The statement-run workflow reconciles each imported statement against Meridian's own book rather than against itself: `StatementRunWorkflowService` resolves internal positions, cash, and ledger transactions through `IInternalReconciliationPopulationProvider` (default: an empty book, so every row is a genuine unmatched break) and runs the shared `StatementMatchingEngine` across positions, cash, and transactions in exact / tolerance / candidate / unmatched tiers. Foreign-currency amounts normalize to the reporting base currency through a fail-closed `IReconciliationFxRateProvider` (identity-only by default, so cross-currency lines break unless a rate is configured); cash matching retains its original currency identity after conversion so distinct per-currency balances cannot cross-match. Both statement-only and internal-only records surface as breaks with a truthful tolerance-breached flag and engine-sourced confidence. A real `IFxRateProvider` implementation (`InMemoryFxRateProvider`, identity/inverse/triangulation with as-of selection) is available to the execution and ledger layers.
+
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is shared and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type, preserves the prior success watermark, and remains due for safe retry.
+The commit result also carries the specific break ids and structured reconciliation case links
+created by the Financial Operations workflow, including each case route, status, priority, reason,
+and suggested next action, allowing Evidence Vault and browser clients to point operators directly
+at the retained casework instead of only showing aggregate break/case counts.
 
 Operations Continuity reconciliation runs retain the canonical Financial Operations lane coverage
 for cash, position, trade, income, MBS factor, bank, and GL support. The workflow aggregate derives
@@ -106,6 +126,18 @@ publishes period state, period-lock/reopen posture, NAV/report dependencies, unr
 approvals, and retained evidence gaps as one server-owned readiness posture so browser and WPF
 surfaces cannot show synthetic completion while required evidence, approvals, lock state, or NAV
 support remain blocked.
+Operations Continuity transition commands compose the shared four-state
+`VerifiedOperationOutcome`; the compatibility `Success` property is derived from that receipt and
+cannot contradict it. Accepted aggregate changes and their outcome-bearing audit event use one
+authoritative transition commit: PostgreSQL uses a serializable database transaction, the local
+file store atomically replaces a workflow-plus-timeline commit envelope, and the in-memory store
+coordinates both structures under one admitted commit. Precondition and policy blocks retain an
+unchanged-state `workflow-transition-blocked` audit event with structured issues, source references,
+and recovery actions. A commit exception returns `Failed`, retains no succeeded workflow snapshot
+or succeeded audit receipt, and attempts a separate truthful failure receipt without upgrading the
+result when that secondary retention is unavailable. Workflow snapshots remain rebuildable current
+state; the append-only, hash-chained audit and embedded terminal receipts are the durable decision
+evidence.
 It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
 guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
 summaries, drafts, flags, and retained review evidence, but Security Master override approval,
@@ -117,7 +149,11 @@ exception and advance approval posture. When report-pack evidence is ready but n
 approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
 work so publication remains behind human approval. Already closed reconciliation breaks reject
 duplicate resolution or reassignment commands so retained case evidence and audit history cannot be
-mutated after closure. Break assignment, escalation, and resolution commands also refresh the
+mutated after closure. Terminal casework distinguishes resolved, waived, and
+superseded dispositions; material waivers and supersessions require independent approval evidence,
+and supersessions retain the successor break identifier. Value, quantity, and cost-basis measures
+remain attached to the case and its terminal evidence hash rather than collapsing into one amount.
+Break assignment, escalation, and resolution commands also refresh the
 derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
 show stale break counts, required actions, or retained assignment/resolution evidence after
 exception work. Lane required actions are derived from retained open break casework, including
@@ -252,6 +288,17 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+The final close-plan control is the shared `Post closing entries` gate. After the existing task,
+sign-off, evidence, and version checks pass, the management service projects the current scoped
+revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,
+and waits for independent submit, approval, and posting. It rechecks that gate at the hard-close
+mutation boundary and finalizes the actual ledger period before publishing the workflow close
+package; an unavailable workbench, an unapproved current draft, a pending reversal, or any residual
+temporary-account balance fails closed. The projection fingerprint makes retries reuse the same
+draft while a late approved adjustment queues only its new closing delta. Governed reopen requires
+human Controller authority plus retained restatement approval evidence, creates or reuses every
+source-linked closing-batch reversal draft before moving the ledger period back to soft close, and
+supports deterministic retry if the first reopen attempt stopped after draft creation.
 Close blocker/evidence reviews are retained in the same close-management snapshot as explicit
 operator review records; they require human origin, notes, scoped close-review/blocker evidence
 that identifies the active issue, target, workflow or period, and selected ledger book, and they do
@@ -420,6 +467,33 @@ The generated candidate path also preserves the neutral operational dimensions c
 `LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
 through generated posting lines, governed draft lines, and approved append writes so reporting and
 external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger boundary.
+Typed instrument-to-journal fields are additive assertions on that same candidate path.
+`AccountingBookContextDto` is re-resolved through `ILedgerBookService`, including book owner,
+period, basis, policy/version, currency, fund, and dimension scope; the client snapshot never grants
+posting authority. Economic-event and projection references must agree with retained source-event
+identity, evidence, effective date, instrument identity, and `BookPositionId`, while candidate and
+generated-line `PositionId` dimensions must match. `AccountingRulePackReferenceDto` is validated
+against the existing accounting policy rule pack and selected Rules Studio rule/version rather than
+creating another rule authority. Any mismatch remains a blocking candidate issue before draft/write
+creation.
+Security Master remains the canonical source of instrument identity, Instruments/Asset Operations
+own economic projections, and this module owns the governed candidate/approval handoff. These
+optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
+posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+`AssetAccountingEventSpineService` generalizes that authority boundary across Acquisition,
+Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and
+Disposal. It re-reads the immutable Projected spine version, authoritative book position, ledger
+book, period version, accounting policy, and promoted rule pack, rejects any client assertion drift,
+and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
+`AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
+authority path.
+For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
+position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
+the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
+drift, event/lineage drift, a missing or mismatched authoritative rule-pack reference, or a
+client-supplied amount mismatch blocks the candidate before approval. Factor detection is anchored
+to the canonical event type as well as projection lineage, so omitting or relabeling a client field
+cannot bypass server recalculation.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target
@@ -429,6 +503,17 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
+tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
+explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
+mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
+idempotent replay result. The event spine records Approved and Posted only from the durable journal
+identity and balanced posted amounts returned by that boundary.
+For this spine, a same-source journal is a replay only when its deterministic journal identity,
+complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
+lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
+disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
+line under the same serializable transaction. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,
@@ -439,9 +524,10 @@ preparer before the append gate can move a generated candidate into the Meridian
 Production certification profiles also fail closed before persistence when a retained profile marks
 posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
 strategy ledger reads, or dimensional reporting controls as certified without evidence that names
-the selected tenant, company, fund, ledger book, and the specific certified control family. A full
-production-certification evidence artifact can certify the full profile, but category-specific
-evidence cannot be reused to bless unrelated controls.
+the selected tenant, company, fund, ledger book, and the specific certified control family. Each
+positive control requires a complete typed retained-evidence identity; boolean flags, service or
+endpoint availability, legacy full-token links, and synthesized profile/report references cannot
+certify the profile.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
@@ -474,6 +560,7 @@ evidence deletion.
 | `W5X-FINOPS-001` | Financial operations control center |
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -501,7 +588,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 ### API and contract notes
 
-`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
+`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityTransitionCommitStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and atomic transition/audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
 `IAccountingPostingCandidateService` consumes `PostingRuleJournalCandidateRequestDto` and returns
 `PostingRuleJournalCandidateResultDto` from the shared ledger contract surface so browser and WPF
 can call the same source-event-to-draft candidate path without owning posting-rule execution or

@@ -179,6 +179,11 @@ public static class IBApiLimits
     /// </summary>
     public const int ErrorPacingViolation = 162;
 
+    /// <summary>
+    /// Maximum message rate exceeded (50 client messages per second).
+    /// </summary>
+    public const int ErrorMaxMessageRateExceeded = 100;
+
 }
 
 /// <summary>
@@ -454,7 +459,10 @@ public sealed record IBApiError(
 {
     public bool IsPacingViolation =>
         ErrorCode == IBApiLimits.ErrorPacingViolation ||
-        ErrorMessage.Contains("pacing", StringComparison.OrdinalIgnoreCase);
+        ErrorCode == IBApiLimits.ErrorMaxMessageRateExceeded ||
+        ErrorMessage.Contains("pacing", StringComparison.OrdinalIgnoreCase) ||
+        ErrorMessage.Contains("max rate", StringComparison.OrdinalIgnoreCase) ||
+        ErrorMessage.Contains("maximum rate", StringComparison.OrdinalIgnoreCase);
 
     public bool IsMarketDataError =>
         ErrorCode == IBApiLimits.ErrorMarketDataNotSubscribed ||

@@ -73,7 +73,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
             .Should().ThrowAsync<InvalidOperationException>();
         harness.Overrides.Verify(
-            o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()),
             Times.Never);
     }
 
@@ -118,8 +118,39 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 SecurityId,
                 It.Is<OperatorOverridesPatchRequest>(p => p.SetValues != null && p.SetValues.ContainsKey("EconomicDefinition.Coupon")),
                 "ops.analyst",
-                It.IsAny<CancellationToken>()),
+                It.IsAny<CancellationToken>(),
+                7),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_CanonicalVersionAdvancesDuringOverlayPatch_ThrowsConcurrency()
+    {
+        var harness = new Harness(currentVersion: 7);
+        harness.Overrides
+            .Setup(o => o.PatchAsync(
+                SecurityId,
+                It.IsAny<OperatorOverridesPatchRequest>(),
+                "ops.analyst",
+                It.IsAny<CancellationToken>(),
+                7))
+            .ThrowsAsync(new OperatorOverrideCanonicalVersionConflictException(SecurityId, 7, 8));
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId,
+            ExpectedVersion: 7,
+            FieldPath: "EconomicDefinition.Coupon",
+            NewValue: "4.250",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Corrected coupon per agent term sheet.");
+
+        var exception = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<SecurityMasterConcurrencyException>();
+
+        exception.Which.ExpectedVersion.Should().Be(7);
+        exception.Which.CurrentVersion.Should().Be(8);
+        harness.EventStore.Appends.Should().BeEmpty("the retry-safe overlay remains outside the economic stream");
     }
 
     // ---- ResolveSourceConflict (validation guards) --------------------------------------------
@@ -662,8 +693,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             EventStore = new FakeEventStore(currentVersion);
 
             Overrides
-                .Setup(o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, OperatorOverridesPatchRequest _, string actor, CancellationToken _) =>
+                .Setup(o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<long?>()))
+                .ReturnsAsync((Guid id, OperatorOverridesPatchRequest _, string actor, CancellationToken _, long? _) =>
                     new OperatorOverridesDto(id, new Dictionary<string, string>(), actor, DateTimeOffset.UtcNow));
 
             QueryService

@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
@@ -48,20 +49,25 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
                                                  ShellContext="{Binding ShellContext}" />
 
+        <controls:WorkspaceAttentionRibbon Grid.Row="1"
+                                           DataContext="{Binding AttentionRibbon}"
+                                           Margin="0,16,0,0" />
+
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                           Grid.Row="1"
+                                           Grid.Row="2"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
                                            Margin="0,16,0,0"
                                            AutomationProperties.AutomationId="WorkspaceCommandSurfaceSettings" />
 
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Style="{StaticResource SectionCardStyle}"
                 Margin="0,16,0,16"
                 AutomationProperties.AutomationId="WorkspaceEvidenceStripSettings">
@@ -151,13 +157,18 @@
                                     Click="OnHeroActionClick"
                                     Style="{StaticResource GhostButtonStyle}"
                                     Margin="0,0,8,8" />
+                            <Button Content="Lifecycle"
+                                    Tag="LifecycleControl"
+                                    Click="OnHeroActionClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
                         </WrapPanel>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.05*" />
                 <ColumnDefinition Width="16" />

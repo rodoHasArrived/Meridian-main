@@ -2,6 +2,9 @@ using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
 using Meridian.Storage.Integrations;
+using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace Meridian.Tests.Application.Integrations;
 
@@ -57,6 +60,115 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveDraftAsync_AggregatesAllValidationIssuesInOneFailure()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest() with { SavedBy = " " };
+        request = request with
+        {
+            Connection = request.Connection with
+            {
+                CredentialSecretRef = "",
+                ProviderId = "provider-other",
+                Environment = "sandbox",
+                EnabledCapabilities =
+                [
+                    ProviderCapabilityKindDto.Positions,
+                    ProviderCapabilityKindDto.Transactions
+                ]
+            }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Select(issue => issue.Code).Should().BeEquivalentTo(
+        [
+            "provider-setup.saved-by-required",
+            "provider-setup.credential-secret-ref-required",
+            "provider-setup.connection-provider-mismatch",
+            "provider-setup.connection-environment-mismatch",
+            "provider-setup.connection-capability-not-declared"
+        ]);
+        assertion.Which.Issues.Should().OnlyContain(issue =>
+            !string.IsNullOrWhiteSpace(issue.Field) && !string.IsNullOrWhiteSpace(issue.Message));
+        (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_ReportsEachUndeclaredCapabilityOnce()
+    {
+        var service = new ProviderIntegrationSetupService(new FileProviderIntegrationManifestStore(testRoot));
+        var request = CreateRequest();
+        request = request with
+        {
+            Connection = request.Connection with
+            {
+                EnabledCapabilities =
+                [
+                    ProviderCapabilityKindDto.Transactions,
+                    ProviderCapabilityKindDto.Transactions,
+                    ProviderCapabilityKindDto.Transactions
+                ]
+            }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Should().ContainSingle(issue =>
+            issue.Code == "provider-setup.connection-capability-not-declared" &&
+            issue.Message.Contains("Transactions", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_ReportsNullCapabilityCollectionsAsValidationIssues()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        request = request with
+        {
+            Manifest = request.Manifest with { Capabilities = null! },
+            Connection = request.Connection with { EnabledCapabilities = null! }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Select(issue => issue.Code).Should().BeEquivalentTo(
+        [
+            "provider-setup.manifest-capabilities-required",
+            "provider-setup.connection-capabilities-required"
+        ]);
+        (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_NormalizesActiveAndRetiredStatesToDraft()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        request = request with
+        {
+            Manifest = request.Manifest with { State = ProviderIntegrationActivationStateDto.Active },
+            Connection = request.Connection with { State = ProviderIntegrationActivationStateDto.Retired }
+        };
+
+        var result = await service.SaveDraftAsync(request);
+
+        result.ManifestState.Should().Be(ProviderIntegrationActivationStateDto.Draft);
+        result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Draft);
+        result.Message.Should().Contain("reset to Draft");
+        (await store.GetManifestAsync(request.Manifest.ManifestId))!.State.Should()
+            .Be(ProviderIntegrationActivationStateDto.Draft);
+        (await store.GetConnectionAsync(request.Connection.ConnectionId))!.State.Should()
+            .Be(ProviderIntegrationActivationStateDto.Draft);
+    }
+
+    [Fact]
     public async Task SaveDraftAsync_ObservesCancellationBeforePersisting()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
@@ -69,6 +181,29 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
 
         await act.Should().ThrowAsync<OperationCanceledException>();
         (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_WhenStoreFails_LogsBoundaryContextAndRethrows()
+    {
+        var store = Substitute.For<IProviderIntegrationManifestStore>();
+        var logger = new RecordingLogger<ProviderIntegrationSetupService>();
+        var service = new ProviderIntegrationSetupService(store, logger);
+        var request = CreateRequest();
+        store.SaveManifestAsync(Arg.Any<ProviderIntegrationManifestDto>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new InvalidOperationException("storage unavailable")));
+
+        var act = () => service.SaveDraftAsync("tenant-alpha", request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("storage unavailable");
+        logger.Entries.Should().Contain(entry =>
+            entry.LogLevel == LogLevel.Warning &&
+            entry.Exception is InvalidOperationException &&
+            entry.Message.Contains("setup-save-draft", StringComparison.Ordinal) &&
+            entry.Message.Contains("tenant-alpha", StringComparison.Ordinal) &&
+            entry.Message.Contains(request.Manifest.ManifestId, StringComparison.Ordinal) &&
+            entry.Message.Contains(request.Connection.ConnectionId, StringComparison.Ordinal));
     }
 
     private static ProviderIntegrationSetupSaveRequestDto CreateRequest(

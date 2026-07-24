@@ -75,6 +75,7 @@ namespace Meridian.Core.Serialization;
 // Configuration types
 [JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(AppConfig))]
+[JsonSerializable(typeof(PipelineRuntimeConfig))]
 [JsonSerializable(typeof(FeatureCapabilityOptions))]
 [JsonSerializable(typeof(Dictionary<string, bool>))]
 [JsonSerializable(typeof(StorageConfig))]
@@ -92,6 +93,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SymbolRegistry))]
 [JsonSerializable(typeof(SymbolRegistryEntry))]
 [JsonSerializable(typeof(List<SymbolRegistryEntry>))]
+[JsonSerializable(typeof(ProviderSymbolMetadata))]
 [JsonSerializable(typeof(SymbolAlias))]
 [JsonSerializable(typeof(List<SymbolAlias>))]
 [JsonSerializable(typeof(SymbolIdentifiers))]
@@ -106,6 +108,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SymbolMappingConfig[]))]
 [JsonSerializable(typeof(List<SymbolMappingConfig>))]
 [JsonSerializable(typeof(BackfillConfig))]
+[JsonSerializable(typeof(AutoGapRemediationConfig))]
 [JsonSerializable(typeof(BackfillJobsConfig))]
 [JsonSerializable(typeof(ScheduledBackfillConfig))]
 [JsonSerializable(typeof(DefaultScheduleConfig))]

@@ -37,6 +37,10 @@ RUBRIC_ALIASES = {
     "learning curve": ["learning curve"],
 }
 
+SIMULATION_DISCLAIMER = "this is simulated persona feedback, not observed user research."
+EVIDENCE_STATUSES = {"sufficient", "partial", "insufficient"}
+FUNCTIONAL_EVIDENCE_KINDS = {"workflow-manifest", "smoke-result", "test-result"}
+
 DISAGREEMENT_TERMS = (
     "disagree",
     "disagreement",
@@ -323,6 +327,27 @@ def score_eval(
         )
 
     all_text = response_text.lower()
+    disclaimer_present = SIMULATION_DISCLAIMER in all_text
+    checks.append(
+        {
+            "name": "Simulation disclaimer present",
+            "passed": disclaimer_present,
+            "evidence": SIMULATION_DISCLAIMER if disclaimer_present else "missing",
+        }
+    )
+
+    evidence_match = re.search(
+        r"evidence status\s*:\s*`?(sufficient|partial|insufficient)`?",
+        all_text,
+    )
+    evidence_status = evidence_match.group(1) if evidence_match else None
+    checks.append(
+        {
+            "name": "Evidence sufficiency classified",
+            "passed": evidence_status in EVIDENCE_STATUSES,
+            "evidence": evidence_status or "missing",
+        }
+    )
     for phrase_check in check_spec.get("required_phrases", []):
         matched = extract_first_match(all_text, phrase_check.get("any_of", []))
         checks.append(
@@ -404,6 +429,37 @@ def score_eval(
             }
         )
 
+    if eval_item.get("mode") == "release_gate":
+        release_section = sections.get("release_recommendation", "").lower()
+        recommendation_match = re.search(
+            r"(?:recommendation|verdict)\s*:\s*`?(ship_with_caveats|ship|hold)`?",
+            release_section,
+        )
+        recommendation = recommendation_match.group(1) if recommendation_match else None
+        manifest = eval_item.get("artifact_manifest", {})
+        functional_evidence_verified = any(
+            item.get("kind") in FUNCTIONAL_EVIDENCE_KINDS and item.get("status") == "verified"
+            for item in manifest.get("artifact_evidence", [])
+        )
+        release_gate_safe = recommendation is not None
+        if evidence_status != "sufficient" and recommendation in {"ship", "ship_with_caveats"}:
+            release_gate_safe = False
+        if recommendation == "ship" and (
+            manifest.get("artifact_freshness") != "current" or not functional_evidence_verified
+        ):
+            release_gate_safe = False
+        checks.append(
+            {
+                "name": "Release gate fails closed",
+                "passed": release_gate_safe,
+                "evidence": (
+                    f"recommendation={recommendation or 'missing'}; "
+                    f"evidence_status={evidence_status or 'missing'}; "
+                    f"functional_evidence_verified={functional_evidence_verified}"
+                ),
+            }
+        )
+
     rubric_check_passed = bool(persona_scores) and all(
         all(score["rubric_dimensions"].values()) for score in persona_scores
     )
@@ -426,7 +482,7 @@ def score_eval(
     delta_pp = round((pass_rate - accepted) * 100.0, 2)
 
     result = {
-        "schema_version": eval_payload.get("schema_version", "2026-04-14"),
+        "schema_version": eval_payload.get("schema_version", "2026-07-19"),
         "generated_at": datetime.now(UTC).isoformat(),
         "eval_id": int(eval_item["id"]),
         "title": eval_item["title"],
@@ -524,7 +580,7 @@ def aggregate_scores(
     overall_minimum_pass_rate = baseline_payload.get("overall_minimum_pass_rate", 0.0)
 
     return {
-        "schema_version": eval_payload.get("schema_version", "2026-04-14"),
+        "schema_version": eval_payload.get("schema_version", "2026-07-19"),
         "generated_at": datetime.now(UTC).isoformat(),
         "evaluated_count": len(results),
         "overall": {

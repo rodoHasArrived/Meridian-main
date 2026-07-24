@@ -161,6 +161,15 @@ public sealed class BackfillViewModelTests
     }
 
     [Fact]
+    public void BackfillPageSource_BindsReadOnlyOverallProgressOneWay()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml"));
+
+        xaml.Should().Contain("Value=\"{Binding OverallProgressPercent, Mode=OneWay}\"");
+        xaml.Should().NotContain("Value=\"{Binding OverallProgressPercent}\"");
+    }
+
+    [Fact]
     public void BackfillWorkbenchSection_ShouldOwnProgressJobsAndGapPresentationWithAdapterBindings()
     {
         var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.Sections.cs"));
@@ -171,6 +180,7 @@ public sealed class BackfillViewModelTests
         sectionSource.Should().Contain("public ObservableCollection<ScheduledJobInfo> ScheduledJobs");
         sectionSource.Should().Contain("public ObservableCollection<ResumableJobInfo> ResumableJobs");
         sectionSource.Should().Contain("public ObservableCollection<GapAnalysisItem> GapItems");
+        sectionSource.Should().Contain("public ObservableCollection<BackfillRemediationQueuePresentation> RemediationQueue");
         sectionSource.Should().Contain("public WorkstationTableModel<GapAnalysisItem> GapItemsTable");
         sectionSource.Should().Contain("public string BackfillStatusText");
         sectionSource.Should().Contain("public string GapAnalysisSummaryText");
@@ -195,10 +205,15 @@ public sealed class BackfillViewModelTests
         section.SymbolProgressTable.Rows.Should().BeSameAs(section.SymbolProgress);
         section.SymbolProgressTable.Columns.Select(static column => column.Header).Should().ContainInOrder(
             "Symbol",
+            "Range",
+            "Provider",
+            "Fallback Attempt",
+            "Retry",
             "Progress",
             "Bars",
-            "Status",
-            "Elapsed");
+            "Live State",
+            "Updated",
+            "Error");
 
         section.GapItemsTable.Title.Should().Be("Backfill gap analysis");
         section.GapItemsTable.Rows.Should().BeSameAs(section.GapItems);
@@ -221,6 +236,10 @@ public sealed class BackfillViewModelTests
         xaml.Should().Contain("Table=\"{Binding SymbolProgressTable}\"");
         xaml.Should().Contain("GridAutomationId=\"BackfillSymbolProgressGrid\"");
         xaml.Should().Contain("EmptyAutomationId=\"BackfillSymbolProgressSharedEmptyState\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding RemediationQueue}\"");
+        xaml.Should().Contain("SortMemberPath=\"SlaTierSort\"");
+        xaml.Should().Contain("SortMemberPath=\"DueAtUtc\"");
+        xaml.Should().Contain("Text=\"{Binding RemediationDefaultProviderText}\"");
     }
 
     [Fact]

@@ -58,7 +58,7 @@ public sealed class AccountingPostingService
             {
                 var debit = currencyGroup.Where(static line => line.IsDebit).Sum(static line => line.Amount);
                 var credit = currencyGroup.Where(static line => !line.IsDebit).Sum(static line => line.Amount);
-                if (decimal.Round(debit - credit, 2, MidpointRounding.AwayFromZero) != 0m)
+                if (Math.Abs(debit - credit) > LedgerToleranceConstants.Balance)
                 {
                     rejected.Add($"Journal entry {entry.JournalEntryId:D} is out of balance for {currencyGroup.Key}: debits {debit:0.00}, credits {credit:0.00}.");
                 }
@@ -86,7 +86,15 @@ public sealed class AccountingPostingService
     public ImmutableArray<JournalEntry> Replay(string ledgerId)
         => _journals.TryGetValue(ledgerId, out var entries) ? entries : ImmutableArray<JournalEntry>.Empty;
 
-    public ImmutableArray<SourceLinkedAuditLine> Audit(string ledgerId) => BuildAudit(Replay(ledgerId));
+    public ImmutableArray<SourceLinkedAuditLine> Audit(
+        string ledgerId,
+        LedgerDimensionSetDto? dimensions = null)
+        => BuildAudit(Replay(ledgerId).Where(entry => EntryMatchesDimensions(entry, dimensions)));
+
+    private static bool EntryMatchesDimensions(JournalEntry entry, LedgerDimensionSetDto? dimensions)
+        => dimensions is null ||
+           (!entry.Lines.IsDefaultOrEmpty &&
+            entry.Lines.All(line => TrialBalanceProjectionService.MatchesDimensions(dimensions, line.Dimensions)));
 
     private static JournalEntry NormalizeEntry(string ledgerId, JournalEntry entry)
         => entry with
@@ -476,7 +484,7 @@ public sealed class TrialBalanceProjectionService
         var materialized = lines.ToArray();
         var totalDebit = materialized.Sum(static line => line.Debit);
         var totalCredit = materialized.Sum(static line => line.Credit);
-        return decimal.Round(totalDebit - totalCredit, 2, MidpointRounding.AwayFromZero) == 0m;
+        return Math.Abs(totalDebit - totalCredit) <= LedgerToleranceConstants.Balance;
     }
 
     public ImmutableArray<RollForwardLine> BuildRollForward(
@@ -552,7 +560,7 @@ public sealed class TrialBalanceProjectionService
         => string.Equals(leftAccountCode, rightAccountCode, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(BuildDimensionSignature(leftDimensions), BuildDimensionSignature(rightDimensions), StringComparison.OrdinalIgnoreCase);
 
-    private static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
+    internal static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
     {
         if (expected is null)
         {
@@ -571,6 +579,7 @@ public sealed class TrialBalanceProjectionService
             Matches(expected.InvestorId, actual.InvestorId) &&
             Matches(expected.CapitalAccountId, actual.CapitalAccountId) &&
             Matches(expected.InstrumentId?.ToString("D"), actual.InstrumentId?.ToString("D")) &&
+            Matches(expected.PositionId?.ToString("D"), actual.PositionId?.ToString("D")) &&
             Matches(expected.TaxLotId, actual.TaxLotId) &&
             Matches(expected.CostCenterId, actual.CostCenterId) &&
             Matches(expected.CounterpartyId, actual.CounterpartyId) &&
@@ -632,7 +641,7 @@ public sealed class TrialBalanceProjectionService
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{NormalizeToken(pair.Key)}={NormalizeToken(pair.Value)}");
-        return string.Join(
+        var signature = string.Join(
             "|",
             NormalizeToken(dimensions.FundId),
             NormalizeToken(dimensions.EntityId),
@@ -652,6 +661,10 @@ public sealed class TrialBalanceProjectionService
             NormalizeToken(dimensions.VendorId),
             NormalizeToken(dimensions.ProjectId),
             string.Join(",", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
 
     private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
@@ -662,6 +675,7 @@ public sealed class TrialBalanceProjectionService
             !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
             !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
             dimensions.InstrumentId.HasValue ||
+            dimensions.PositionId.HasValue ||
             !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
             !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
             !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

@@ -384,13 +384,13 @@ public sealed class DirectLendingViewModel : BindableBase
 
         try
         {
-            var portfolioTask = _apiClient.GetAsync<LoanPortfolioSummaryDto>("/api/loans/portfolio", ct);
-            var operationsTask = _apiClient.GetAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations", ct);
+            var portfolioTask = _apiClient.GetWithResponseAsync<LoanPortfolioSummaryDto>("/api/loans/portfolio", ct);
+            var operationsTask = _apiClient.GetWithResponseAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations", ct);
 
             await Task.WhenAll(portfolioTask, operationsTask).ConfigureAwait(false);
 
-            var portfolio = await portfolioTask.ConfigureAwait(false);
-            var operations = await operationsTask.ConfigureAwait(false);
+            var portfolio = (await portfolioTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan portfolio summary");
+            var operations = (await operationsTask.ConfigureAwait(false)).DataOrLoggedNull("Load direct-lending operations read model");
 
             _allLoans.Clear();
             if (portfolio?.Loans is not null)
@@ -494,13 +494,13 @@ public sealed class DirectLendingViewModel : BindableBase
 
         try
         {
-            var contractTask = _apiClient.GetAsync<LoanContractDetailDto>(
+            var contractTask = _apiClient.GetWithResponseAsync<LoanContractDetailDto>(
                 $"/api/loans/{summary.LoanId}");
-            var servicingTask = _apiClient.GetAsync<LoanServicingStateDto>(
+            var servicingTask = _apiClient.GetWithResponseAsync<LoanServicingStateDto>(
                 $"/api/loans/{summary.LoanId}/servicing-state");
-            var accrualsTask = _apiClient.GetAsync<List<DailyAccrualEntryDto>>(
+            var accrualsTask = _apiClient.GetWithResponseAsync<List<DailyAccrualEntryDto>>(
                 $"/api/loans/{summary.LoanId}/projections/accruals");
-            var cashTask = _apiClient.GetAsync<List<CashTransactionDto>>(
+            var cashTask = _apiClient.GetWithResponseAsync<List<CashTransactionDto>>(
                 $"/api/loans/{summary.LoanId}/cash-transactions");
 
             await Task.WhenAll(contractTask, servicingTask, accrualsTask, cashTask)
@@ -511,10 +511,10 @@ public sealed class DirectLendingViewModel : BindableBase
                 return;
             }
 
-            var contract = await contractTask.ConfigureAwait(false);
-            var servicing = await servicingTask.ConfigureAwait(false);
-            var accruals = await accrualsTask.ConfigureAwait(false);
-            var cash = await cashTask.ConfigureAwait(false);
+            var contract = (await contractTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan contract detail");
+            var servicing = (await servicingTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan servicing state");
+            var accruals = (await accrualsTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan accrual projections");
+            var cash = (await cashTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan cash transactions");
 
             SelectedContract = contract;
             SelectedServicing = servicing;
@@ -572,14 +572,26 @@ public sealed class DirectLendingViewModel : BindableBase
 
         try
         {
-            var result = await _apiClient.PostAsync<DailyAccrualEntryDto>(
+            var response = await _apiClient.PostWithResponseAsync<DailyAccrualEntryDto>(
                 $"/api/loans/{SelectedLoan.LoanId}/accruals/daily", body, ct)
                 .ConfigureAwait(false);
 
-            AccrualResultText = result is not null
-                ? $"Accrual posted for {result.AccrualDate}: interest ${result.InterestAmount:N2}, " +
-                  $"commitment fee ${result.CommitmentFeeAmount:N2}"
-                : "Accrual posted.";
+            if (response.Success)
+            {
+                // A success with no payload (empty body) is still a posted accrual; only a
+                // failed response may show the failure text.
+                AccrualResultText = response.Data is { } result
+                    ? $"Accrual posted for {result.AccrualDate}: interest ${result.InterestAmount:N2}, " +
+                      $"commitment fee ${result.CommitmentFeeAmount:N2}"
+                    : "Accrual posted.";
+            }
+            else
+            {
+                AccrualResultText = string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? "Accrual failed — the workstation service rejected the request."
+                    : $"Accrual failed: {response.ErrorMessage}";
+            }
+
             AccrualResultVisibility = Visibility.Visible;
 
             await LoadLoanDetailAsync(SelectedLoan).ConfigureAwait(false);

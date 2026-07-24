@@ -1,6 +1,5 @@
 import {
   CheckCircle2,
-  ClipboardCopy,
   DatabaseZap,
   Download,
   FileSpreadsheet,
@@ -10,23 +9,18 @@ import {
   Plus,
   RadioTower,
   RefreshCcw,
-  Save,
   ShieldCheck,
-  TimerReset,
-  Trash2
+  TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
-import { Pagination } from "@/components/data/pagination";
 import {
-  WorkspaceFilterBar,
-  WorkspaceInspectorHost
+  WorkspaceInspectorHost,
+  WorkspaceTabStrip
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,12 +30,18 @@ import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHead
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
-import { workspaceForPath } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import {
+  buildDataAnalyticsDegradedViewModel,
+  DataAnalyticsDegradedRegion
+} from "@/screens/data-screen.analytics-status";
+import type { CellActionApi } from "@/screens/data-screen.cell-actions";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
 import {
   useDataQualityPanel,
-  type DataQualityPanelViewModel
+  type QualityDashboardFetcher
 } from "@/screens/data-screen.data-quality.view-model";
 import {
   CAPABILITY_LEGEND,
@@ -52,35 +52,35 @@ import {
   useCorporateActionInboxPanel,
   type CorporateActionInboxViewModel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
+import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
+import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
+import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
+import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
+import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
+import { DATA_ROUTE_TABS, DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
+import { resultToneClass } from "@/screens/data-screen.tone-styles";
+import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
-  useCoverageGapsPanel,
-  type CoverageGapsViewModel
-} from "@/screens/data-screen.coverage-gaps.view-model";
-import {
-  DATA_BACKFILL_DETAIL_PANEL_ID,
-  DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
 } from "@/screens/data-screen.view-model";
 import type { DataWorkspaceResponse } from "@/types";
 import type {
+  BackfillLiveProgressState,
   BackfillResultCardState,
-  DataOperationsBackfillDetailState,
-  DataOperationsBackfillRow,
   DataOperationsEmptyState,
-  DataOperationsExportDetailState,
-  DataOperationsExportRow,
   DataUploadPanelState,
   DataOperationsLoadingState,
   DataOperationsProviderDiagnosticRow,
   DataOperationsProviderDetailState,
   DataOperationsProviderRow,
-  DataOperationsRouteFocusCardState,
   DataOperationsProviderSummaryCardState,
   ProviderSetupInstitutionSearchState,
   ProviderSetupWorkflowStepState,
   ProviderSetupNextActionState
 } from "@/screens/data-screen.view-model";
+import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   ProviderConnectionRow,
   ProviderReadinessSummary,
@@ -97,6 +97,8 @@ interface DataScreenProps {
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
   providerRoutingRefreshing?: boolean;
+  dataQualityFetcher?: QualityDashboardFetcher;
+  dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
 }
@@ -125,27 +127,23 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     )
   },
   {
-    id: "credential",
-    label: "Credential",
-    render: (provider) => <span className="text-xs text-muted-foreground">{provider.credentialText}</span>
-  },
-  {
-    id: "verification",
-    label: "Verification",
-    render: (provider) => <span className="text-xs text-muted-foreground">{provider.verificationText}</span>
-  },
-  {
-    id: "latency",
-    label: "Last good",
-    render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
-  },
-  {
-    id: "trust",
-    label: "Trust",
+    id: "credential-posture",
+    label: "Credential posture",
     render: (provider) => (
       <span className="block min-w-0">
+        <span className="block text-xs text-foreground">{provider.credentialText}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{provider.verificationText}</span>
+      </span>
+    )
+  },
+  {
+    id: "trust-latency",
+    label: "Trust / last good",
+    render: (provider) => (
+      <span className="block min-w-[8rem]">
         <span className="block font-mono text-xs text-foreground">{provider.trustScoreText}</span>
-        <span className="mt-1 block truncate text-xs text-muted-foreground">{provider.signalSourceText}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{provider.signalSourceText}</span>
       </span>
     )
   },
@@ -158,90 +156,10 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     id: "action",
     label: "Next Action",
     render: (provider) => (
-      <span className="block max-w-[15rem] truncate text-xs font-medium text-foreground" title={provider.recommendedActionText}>
+      <span className="block min-w-[7rem] whitespace-nowrap text-xs font-medium text-foreground" title={provider.recommendedActionText}>
         {provider.actionLabel}
       </span>
     )
-  }
-];
-
-const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
-  {
-    id: "job",
-    label: "Job",
-    render: (backfill) => (
-      <span className="block min-w-0">
-        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
-      </span>
-    )
-  },
-  {
-    id: "scope",
-    label: "Scope",
-    render: (backfill) => <span className="text-muted-foreground">{backfill.scope}</span>
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (backfill) => (
-      <Badge
-        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
-      >
-        {backfill.status}
-      </Badge>
-    )
-  },
-  {
-    id: "progress",
-    label: "Progress",
-    render: (backfill) => (
-      <span className="block min-w-[8rem]">
-        <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
-        <span className="block h-1 rounded-full bg-border/70">
-          <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
-        </span>
-      </span>
-    )
-  },
-  {
-    id: "updated",
-    label: "Updated",
-    render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
-  }
-];
-
-const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
-  {
-    id: "profile",
-    label: "Profile",
-    render: (item) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{item.profile}</span>
-        <span className="mt-1 block font-mono text-xs text-muted-foreground">{item.exportId}</span>
-      </span>
-    )
-  },
-  {
-    id: "target",
-    label: "Target",
-    render: (item) => <span className="text-muted-foreground">{item.target}</span>
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (item) => <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
-  },
-  {
-    id: "rows",
-    label: "Rows",
-    align: "right",
-    render: (item) => <span className="font-mono text-xs text-foreground">{item.rows}</span>
-  },
-  {
-    id: "updated",
-    label: "Updated",
-    render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.updatedAt}</span>
   }
 ];
 
@@ -253,11 +171,13 @@ export function DataScreen({
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
   providerRoutingRefreshing = false,
+  dataQualityFetcher,
+  dataQualityActionApi,
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
-  const { pathname } = useLocation();
-  const workspace = workspaceForPath(pathname);
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -281,125 +201,145 @@ export function DataScreen({
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
-  const qualityPanel = useDataQualityPanel();
+  const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
+  const activeWorkstream = vm.workstream;
+  const showHealthMonitoring = activeWorkstream === "overview";
+  const showProviderWorkstream = activeWorkstream === "providers";
+  const showImportWorkstream = activeWorkstream === "import";
+  const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showOperationsWorkstream = activeWorkstream === "operations";
+  const showAssuranceWorkstream = activeWorkstream === "assurance";
+  const showExportWorkstream = activeWorkstream === "exports";
+  const showQueryWorkstream = activeWorkstream === "query";
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
   }
 
+  const routeCopy = DATA_ROUTE_VIEW_COPY[activeWorkstream];
+  const routeTabs = DATA_ROUTE_TABS.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.workstream === activeWorkstream
+  }));
+  const analyticsDegraded = buildDataAnalyticsDegradedViewModel([
+    { id: "data-quality", label: "Data quality", error: qualityPanel.error, loading: qualityPanel.loading, refresh: qualityPanel.refresh },
+    { id: "capability-matrix", label: "Provider capability matrix", error: capabilityMatrixPanel.error, loading: capabilityMatrixPanel.loading, refresh: capabilityMatrixPanel.refresh },
+    { id: "corporate-actions", label: "Corporate action inbox", error: corporateActionInboxPanel.error, loading: corporateActionInboxPanel.loading, refresh: corporateActionInboxPanel.refresh },
+    { id: "coverage-gaps", label: "Security-master coverage", error: coverageGapsPanel.error, loading: coverageGapsPanel.loading, refresh: coverageGapsPanel.refresh }
+  ]);
+  const analyticsUnavailable = analyticsDegraded?.affectedIds ?? new Set<string>();
+
   return (
     <div className="workspace-screen data-workspace-screen">
-      <WorkspaceFilterBar
-        label="Data workspace filters"
-        searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
-        options={[
-          { id: "uploads", label: "Uploads", count: String(vm.uploadPanelState.templateOptions.length) },
-          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: true },
-          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length) },
-          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length) }
-        ]}
-        fields={[
-          { id: "sync", label: "Sync", value: vm.providerSection.statusLabel },
-          { id: "route", label: "Route", value: workspace.label }
-        ]}
-        actions={(
-          <>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/data/quotes" aria-label="Open live quotes and order book viewer">
-              <RadioTower className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Live quotes</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/data/watchlist" aria-label="Open symbol watchlist">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Watchlist</span>
-            </Link>
-          </Button>
-          <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Import a data source">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">Import source</span>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href="#data-upload-intake-title" aria-label="Open data upload templates">
-              <FileUp className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Upload file</span>
-            </a>
-          </Button>
-          </>
-        )}
-      />
+      <StatStrip metrics={data.metrics} label="Data headline metrics" />
 
-      <section className="workspace-metric-strip">
-        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
+      <section
+        role="region"
+        aria-label="Data workspace context"
+        className="flex flex-wrap items-end justify-between gap-3"
+      >
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
+          </h2>
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <WorkspaceTabStrip
+            label="Data routes"
+            tabs={routeTabs}
+            onSelect={(id) => {
+              const tab = DATA_ROUTE_TABS.find((candidate) => candidate.id === id);
+              if (tab) {
+                // Preserve the querystring: the operating scope is threaded
+                // through search params across the shell.
+                navigate({ pathname: tab.route, search });
+              }
+            }}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              if (showProviderWorkstream) {
+                vm.openProviderSetup();
+                return;
+              }
+
+              navigate({
+                pathname: showImportWorkstream ? WORKSTATION_ROUTE_CATALOG.dataProviders : WORKSTATION_ROUTE_CATALOG.dataImport,
+                search
+              });
+            }}
+            aria-label={showProviderWorkstream ? "Add a provider connection" : showImportWorkstream ? "Review provider connections" : "Import a retained data file"}
+          >
+            {showProviderWorkstream ? <Plus className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
+            <span className="ml-1.5">
+              {showProviderWorkstream ? "Add provider" : showImportWorkstream ? "Review providers" : "Import file"}
+            </span>
+          </Button>
+        </div>
       </section>
 
-      <DataQualityRegion panel={qualityPanel} />
+      {showHealthMonitoring ? (
+        <div className="space-y-4">
+          <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} />
+          <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+            <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              Review data diagnostics
+            </summary>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Open detailed quality, capability, corporate-action, and coverage evidence after choosing the next Data task.
+            </p>
+            <div className="mt-4 space-y-4">
+              {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
 
-      <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
+              {!analyticsUnavailable.has("data-quality") ? (
+                <DataQualityRegion
+                  panel={qualityPanel}
+                  {...(dataQualityActionApi ? { actionApi: dataQualityActionApi } : {})}
+                />
+              ) : null}
 
-      <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
+              {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
 
-      <CoverageGapsRegion panel={coverageGapsPanel} />
+              {!analyticsUnavailable.has("corporate-actions") ? <CorporateActionInboxRegion panel={corporateActionInboxPanel} /> : null}
 
-      <section className="data-management-frame">
-        <nav className="workspace-directory-rail" aria-label="Data folders">
-          <div className="operator-rail-section">Data folders</div>
-          <a href="#data-upload-intake-title">Upload templates</a>
-          <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
-          <a href="#data-backfill-queue-title">Backfill queue</a>
-          <a href="#data-recent-exports-title">Export packages</a>
-          <a href="#data-query-title">SQL query</a>
-          <Link to="/data/watchlist">Watchlist</Link>
-          <Link to="/data/quotes">Live quotes</Link>
-        </nav>
+              {!analyticsUnavailable.has("coverage-gaps") ? <CoverageGapsRegion panel={coverageGapsPanel} /> : null}
+            </div>
+          </details>
+        </div>
+      ) : null}
 
-        <div className="data-management-main">
-        <section className="workspace-region workspace-region-compact">
-          <CardHeader>
-            <div className="eyebrow-label">{workspace.label} Lane</div>
-            <CardTitle className="flex items-center gap-2">
-              <DatabaseZap className="h-5 w-5 text-primary" />
-              Data command deck
-            </CardTitle>
-            <CardDescription>
-              Monitor provider posture, historical repairs, and export readiness from the Data workspace.
-              Security Master coverage now routes through Accounting where reconciliation and reporting evidence are reviewed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <DataHighlight
-              icon={FileSpreadsheet}
-              title="Upload intake"
-              description="Start trade, transaction, asset, and entity source files from governed templates before validation."
-            />
-            <DataHighlight
-              icon={RadioTower}
-              title="Provider posture"
-              description="Track source health, trust evidence, and recovery actions before downstream workflows depend on the feed."
-            />
-            <DataHighlight
-              icon={TimerReset}
-              title="Backfill repair"
-              description="Preview and run historical repair jobs with operator-visible status, ranges, and result evidence."
-            />
-          </CardContent>
-        </section>
+      <section className="data-management-main" aria-label="Data workstreams">
+        {activeWorkstream !== "overview" && !showBackfillWorkstream && !showOperationsWorkstream && !showAssuranceWorkstream ? (
+          <RouteFocusCard
+            state={vm.routeFocusCard}
+          />
+        ) : null}
 
-        <RouteFocusCard
-          state={vm.routeFocusCard}
-        />
+        {showImportWorkstream ? (
+          <DataUploadIntakePanel
+            state={vm.uploadPanelState}
+            workbookReview={vm.workbookReviewState}
+            onTemplateSelect={vm.selectUploadTemplate}
+            onFileSelect={vm.previewDataUpload}
+            onWorkbookSelect={vm.previewDataUploadWorkbook}
+          />
+        ) : null}
 
-        <DataUploadIntakePanel
-          state={vm.uploadPanelState}
-          onTemplateSelect={vm.selectUploadTemplate}
-          onFileSelect={vm.previewDataUpload}
-        />
+        {showProviderWorkstream ? <ProviderAccountingRegion /> : null}
 
+        {showProviderWorkstream ? <CanonicalSymbolRegistryRegion /> : null}
+
+        {showProviderWorkstream ? (
         <section aria-labelledby="data-provider-health-title" className="workspace-region data-provider-region">
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -466,7 +406,7 @@ export function DataScreen({
                     <ProviderSummaryCard key={card.id} card={card} />
                   ))}
                 </div>
-              <div className="workspace-table-inspector-layout">
+              <div className="data-provider-table-detail-layout workspace-table-stack">
                 <div className="workspace-table-stack">
                   <label htmlFor="configured-provider-selector" className="workspace-inline-select">
                     <span>Configured Provider</span>
@@ -514,261 +454,23 @@ export function DataScreen({
             )}
           </CardContent>
         </section>
+        ) : null}
 
-        <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <CardTitle id="data-backfill-queue-title">Backfill queue</CardTitle>
-                <CardDescription>Run or inspect historical repairs that support market-data quality and export readiness.</CardDescription>
-              </div>
-              <Button size="sm" onClick={vm.openBackfillDialog}>
-                Trigger backfill
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
-              {vm.backfillSection.hasRows ? (
-                <DenseDataTable
-                  columns={backfillQueueColumns}
-                  rows={vm.backfillSection.rows}
-                  getRowId={(backfill) => backfill.rowId}
-                  getRowAriaLabel={(backfill) => backfill.ariaLabel}
-                  getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
-                  getRowAriaControls={(backfill) => backfill.detailPanelId}
-                  getRowAriaExpanded={(backfill) => backfill.expanded}
-                  getRowClassName={(backfill) => backfill.rowClassName}
-                  selectedRowId={vm.selectedBackfillRowId}
-                  onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
-                  emptyText={vm.backfillSection.emptyState.description}
-                  ariaLabel={vm.backfillSection.tableLabel}
-                  caption={vm.backfillSection.description}
-                  maxVisibleRows={100}
-                />
-              ) : (
-                <EmptyState state={vm.backfillSection.emptyState} />
-              )}
-              <BackfillDetailPanel
-                detail={vm.selectedBackfillDetail}
-                emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
-              />
-            </div>
-          </CardContent>
-        </section>
+        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
 
-        <section aria-labelledby="data-recent-exports-title" className="workspace-region">
-          <CardHeader>
-            <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
-            <CardDescription>Latest package and reporting outputs tied to Data workspace evidence.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
-              {vm.exportSection.hasRows ? (
-                <DenseDataTable
-                  columns={exportColumns}
-                  rows={vm.exportSection.rows}
-                  getRowId={(item) => item.rowId}
-                  getRowAriaLabel={(item) => item.ariaLabel}
-                  getRowSelectAriaLabel={(item) => item.selectAriaLabel}
-                  getRowAriaControls={(item) => item.detailPanelId}
-                  getRowAriaExpanded={(item) => item.expanded}
-                  getRowClassName={(item) => item.rowClassName}
-                  selectedRowId={vm.exportSection.selectedRowId}
-                  onRowSelect={(item) => vm.selectExport(item.exportId)}
-                  emptyText={vm.exportSection.emptyState.description}
-                  ariaLabel={vm.exportSection.tableLabel}
-                  caption={vm.exportSection.description}
-                  maxVisibleRows={100}
-                />
-              ) : (
-                <EmptyState state={vm.exportSection.emptyState} />
-              )}
-              <ExportDetailPanel
-                detail={vm.exportSection.selectedDetail}
-                emptyState={vm.exportSection.detailEmptyState ?? vm.exportSection.emptyState}
-              />
-            </div>
-          </CardContent>
-        </section>
+        {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
-        <section aria-labelledby="data-query-title" className="workspace-region">
-          <CardHeader>
-            <CardTitle id="data-query-title">SQL query</CardTitle>
-            <CardDescription>
-              Read-only DuckDB analytics over the local store. Start from the <code>meridian_files</code> catalog
-              view, then feed paths into <code>read_parquet</code> or <code>read_json_auto</code>.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              <textarea
-                value={queryPanel.sql}
-                onChange={(event) => queryPanel.setSql(event.target.value)}
-                rows={5}
-                spellCheck={false}
-                aria-label="SQL statement"
-                className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
-              />
-              <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Recent queries
-                  <select
-                    className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
-                    aria-label="Recent SQL query history"
-                    defaultValue=""
-                    onChange={(event) => {
-                      if (event.currentTarget.value) {
-                        queryPanel.loadQuery(event.currentTarget.value);
-                        event.currentTarget.value = "";
-                      }
-                    }}
-                  >
-                    <option value="">Select a recent query</option>
-                    {queryPanel.history.map((entry) => (
-                      <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
-                        {entry.sql}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="data-query-save-name"
-                    className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                  >
-                    Save query
-                  </label>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <input
-                      id="data-query-save-name"
-                      type="text"
-                      value={savedQueryName}
-                      onChange={(event) => setSavedQueryName(event.currentTarget.value)}
-                      placeholder="Query name"
-                      aria-label="Saved SQL query name"
-                      className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        queryPanel.saveCurrentQuery(savedQueryName);
-                        setSavedQueryName("");
-                      }}
-                      disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
-                    >
-                      <Save className="h-3.5 w-3.5" aria-hidden="true" />
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              {queryPanel.savedQueries.length > 0 ? (
-                <div className="flex flex-wrap gap-2" aria-label="Saved SQL queries">
-                  {queryPanel.savedQueries.map((savedQuery) => (
-                    <span
-                      key={savedQuery.id}
-                      className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2 py-1"
-                    >
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => queryPanel.loadQuery(savedQuery.sql)}
-                        aria-label={`Load saved SQL query ${savedQuery.name}`}
-                      >
-                        {savedQuery.name}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
-                        aria-label={`Delete saved SQL query ${savedQuery.name}`}
-                        title={`Delete ${savedQuery.name}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      </Button>
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              <div className="flex flex-wrap items-center gap-3">
-                <Button type="button" onClick={() => void queryPanel.run()} disabled={queryPanel.busy}>
-                  {queryPanel.busy ? "Running…" : "Run query"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => void queryPanel.copyResults()}
-                  disabled={!queryPanel.canCopyOrExport}
-                >
-                  <ClipboardCopy className="h-3.5 w-3.5" aria-hidden="true" />
-                  Copy CSV
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => queryPanel.exportCsv()}
-                  disabled={!queryPanel.canCopyOrExport}
-                >
-                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
-                  Download CSV
-                </Button>
-                {queryPanel.result ? (
-                  <span className="text-sm text-muted-foreground" role="status">
-                    {queryPanel.resultStatus}
-                  </span>
-                ) : null}
-              </div>
-              {queryPanel.copyStatus ? (
-                <p className="text-sm text-muted-foreground" role="status">{queryPanel.copyStatus}</p>
-              ) : null}
-              {queryPanel.truncationMessage ? (
-                <StatusBanner tone="warning" title="Result window" detail={queryPanel.truncationMessage} />
-              ) : null}
-              {queryPanel.error ? (
-                <StatusBanner tone="danger" title="Query failed" detail={queryPanel.error} />
-              ) : null}
-              {queryPanel.result && queryPanel.result.columns.length > 0 ? (
-                <div className="overflow-x-auto rounded-md border border-border/70" aria-label="Query results">
-                  <table className="dense-data-table min-w-full">
-                    <thead>
-                      <tr>
-                        {queryPanel.result.columns.map((column) => (
-                          <th key={column} scope="col">{column}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {queryPanel.visibleRows.map((row, rowIndex) => (
-                        <tr key={rowIndex}>
-                          {row.map((value, columnIndex) => (
-                            <td key={`${rowIndex}-${queryPanel.result?.columns[columnIndex] ?? columnIndex}`}>
-                              {value ?? "∅"}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : null}
-              {queryPanel.result && queryPanel.resultRowCount > queryPanel.rowsPerPage ? (
-                <Pagination
-                  currentPage={queryPanel.currentPage}
-                  totalPages={queryPanel.totalPages}
-                  totalItems={queryPanel.resultRowCount}
-                  itemsPerPage={queryPanel.rowsPerPage}
-                  onPageChange={queryPanel.setPage}
-                />
-              ) : null}
-            </div>
-          </CardContent>
-        </section>
-        </div>
+        {showAssuranceWorkstream ? <StorageAssuranceWorkstream /> : null}
+
+        {showExportWorkstream ? <DataExportWorkstream vm={vm} /> : null}
+
+        {showQueryWorkstream ? (
+          <DataQueryWorkstream
+            queryPanel={queryPanel}
+            savedQueryName={savedQueryName}
+            setSavedQueryName={setSavedQueryName}
+          />
+        ) : null}
       </section>
 
       <ProviderSetupDialog vm={vm} />
@@ -804,8 +506,8 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
       <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
-      <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
-      <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+      <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
+      <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{card.detail}</p>
     </div>
   );
 }
@@ -860,12 +562,16 @@ function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingSta
 
 function DataUploadIntakePanel({
   state,
+  workbookReview,
   onTemplateSelect,
-  onFileSelect
+  onFileSelect,
+  onWorkbookSelect
 }: {
   state: DataUploadPanelState;
+  workbookReview: DataUploadWorkbookReviewState;
   onTemplateSelect: (templateId: string) => void;
   onFileSelect: (file: File | null) => void;
+  onWorkbookSelect: (file: File | null) => void;
 }) {
   const statusId = "data-upload-status";
   const disabledReasonId = `${state.fileInput.id}-disabled-reason`;
@@ -913,6 +619,18 @@ function DataUploadIntakePanel({
                 >
                   <Download className="h-4 w-4" aria-hidden="true" />
                   {state.templateDownload.label}
+                </a>
+              </Button>
+            ) : null}
+            {state.workbookDownload ? (
+              <Button asChild variant="default" size="sm">
+                <a
+                  href={state.workbookDownload.href}
+                  download={state.workbookDownload.fileName}
+                  aria-label={state.workbookDownload.ariaLabel}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  {state.workbookDownload.label}
                 </a>
               </Button>
             ) : null}
@@ -1050,6 +768,130 @@ function DataUploadIntakePanel({
             </div>
           ) : null}
         </div>
+
+        <div
+          className="grid gap-3 rounded-lg border border-border/70 bg-secondary/10 px-3 py-3 xl:col-span-2"
+          role="region"
+          aria-labelledby="data-upload-workbook-title"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Onboarding workbook</div>
+              <h3 id="data-upload-workbook-title" className="mt-2 text-sm font-semibold text-foreground">
+                Upload the multi-sheet workbook
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{workbookReview.summary}</p>
+            </div>
+            <Badge variant={workbookReview.statusTone}>{workbookReview.statusLabel}</Badge>
+          </div>
+
+          <label htmlFor="data-upload-workbook-file" className="grid gap-1 text-sm">
+            Upload .xlsx workbook
+            <input
+              id="data-upload-workbook-file"
+              type="file"
+              accept=".xlsx"
+              aria-label="Upload the Meridian onboarding workbook for multi-sheet preview"
+              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0] ?? null;
+                void onWorkbookSelect(file);
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+
+          {workbookReview.errorSummary ? (
+            <StatusBanner
+              tone="danger"
+              title="Workbook preview failed"
+              detail={workbookReview.errorSummary}
+            />
+          ) : null}
+
+          {workbookReview.hasResult ? (
+            <>
+              <p className="text-xs leading-6 text-muted-foreground">{workbookReview.nextAction}</p>
+              {workbookReview.commitDisabledReason ? (
+                <StatusBanner
+                  tone={workbookReview.errorCount > 0 ? "danger" : "warning"}
+                  title="Review required before commit"
+                  detail={workbookReview.commitDisabledReason}
+                />
+              ) : null}
+              {workbookReview.crossSheetIssues.length > 0 ? (
+                <div className="grid gap-2" role="alert" aria-label="Cross-sheet validation issues">
+                  {workbookReview.crossSheetIssues.map((issue) => (
+                    <StatusBanner
+                      key={issue.id}
+                      tone={issue.tone === "danger" ? "danger" : "warning"}
+                      title={`${issue.severity} · ${issue.location}`}
+                      detail={issue.message}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                {workbookReview.sheetTabs.map((sheet) => (
+                  <div
+                    key={sheet.id}
+                    className="grid gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-foreground" title={sheet.sheetName}>
+                          {sheet.sheetName}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground" title={sheet.templateLabel}>
+                          {sheet.templateLabel}
+                        </div>
+                      </div>
+                      <Badge variant={sheet.statusTone}>{sheet.statusLabel}</Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{sheet.parsedRowCountLabel}</div>
+                    {sheet.issues.length > 0 ? (
+                      <div className="grid gap-1.5" role="alert" aria-label={`${sheet.sheetName} validation issues`}>
+                        {sheet.issues.map((issue) => (
+                          <StatusBanner
+                            key={issue.id}
+                            tone={issue.tone === "danger" ? "danger" : "warning"}
+                            title={`${issue.severity} · ${issue.location}`}
+                            detail={issue.message}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                    {sheet.previewRows.length > 0 ? (
+                      <div
+                        className="overflow-x-auto rounded-md border border-border/70"
+                        aria-label={`${sheet.sheetName} preview rows`}
+                      >
+                        <table className="dense-data-table min-w-full">
+                          <thead>
+                            <tr>
+                              {sheet.previewHeaders.map((header) => (
+                                <th key={header} scope="col">{header}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sheet.previewRows.map((row) => (
+                              <tr key={row.id}>
+                                {row.values.map((value) => (
+                                  <td key={value.id}>{value.value || "-"}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
       </CardContent>
     </section>
   );
@@ -1160,7 +1002,7 @@ function ProviderDetailTabPanel({
   if (activeTab === "credentials") {
     return (
       <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {detail.credentialFields.map((field) => (
             <FieldTile key={field.id} field={field} />
           ))}
@@ -1223,7 +1065,7 @@ function ProviderDetailTabPanel({
 
   return (
     <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
@@ -1231,8 +1073,20 @@ function ProviderDetailTabPanel({
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Recommended action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
-        <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
-        <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">Reason: {detail.reasonLabelText}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">Gate: {detail.gateImpactText}</p>
+        {detail.reasonLabelText !== detail.reasonCodeText ? (
+          <TechnicalDetails
+            label="System details"
+            description="Raw provider status retained for diagnostics and support handoff."
+            className="mt-3"
+          >
+            <div className="grid gap-1 text-xs">
+              <span className="text-muted-foreground">Reason code</span>
+              <code className="break-all text-foreground">{detail.reasonCodeText}</code>
+            </div>
+          </TechnicalDetails>
+        ) : null}
       </div>
     </div>
   );
@@ -1270,128 +1124,6 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
     default:
       return "info";
   }
-}
-
-function BackfillDetailPanel({
-  detail,
-  emptyState
-}: {
-  detail: DataOperationsBackfillDetailState | null;
-  emptyState: DataOperationsEmptyState | null;
-}) {
-  if (!detail) {
-    return (
-      <DenseRowDetailPanel
-        id={DATA_BACKFILL_DETAIL_PANEL_ID}
-        role="status"
-        ariaLabel="Backfill detail empty state"
-        className="row-detail-panel h-fit min-w-0"
-      >
-        <div className="eyebrow-label">Selected Backfill</div>
-        <h3 className="mt-2 text-sm font-semibold text-foreground">
-          {emptyState?.title ?? "No backfill selected"}
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select a backfill row to inspect repair scope, provider, progress, and update evidence."}
-        </p>
-      </DenseRowDetailPanel>
-    );
-  }
-
-  return (
-    <DenseRowDetailPanel
-      id={detail.id}
-      ariaLabel={detail.ariaLabel}
-      className="row-detail-panel h-fit min-w-0"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Selected Backfill</div>
-          <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-        </div>
-        <Badge variant={detail.statusVariant} dot>
-          {detail.statusLabel}
-        </Badge>
-      </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.rows.map((field) => (
-          <FieldTile key={field.id} field={field} />
-        ))}
-      </div>
-    </DenseRowDetailPanel>
-  );
-}
-
-function ExportDetailPanel({
-  detail,
-  emptyState
-}: {
-  detail: DataOperationsExportDetailState | null;
-  emptyState: DataOperationsEmptyState | null;
-}) {
-  if (!detail) {
-    return (
-      <aside
-        id={DATA_EXPORT_DETAIL_PANEL_ID}
-        role="status"
-        aria-label="Export detail empty state"
-        className="row-detail-panel h-fit min-w-0"
-      >
-        <div className="eyebrow-label">Selected Export</div>
-        <h3 className="mt-2 text-sm font-semibold text-foreground">
-          {emptyState?.title ?? "No export selected"}
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
-        </p>
-      </aside>
-    );
-  }
-
-  return (
-    <aside
-      id={detail.id}
-      role="region"
-      aria-label={detail.ariaLabel}
-      aria-live="polite"
-      className="row-detail-panel h-fit min-w-0"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Selected Export</div>
-          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
-        </div>
-        <Badge variant={detail.statusVariant} dot>
-          {detail.statusLabel}
-        </Badge>
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.fields.map((field) => (
-          <FieldTile key={field.id} field={field} />
-        ))}
-      </div>
-      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
-        <div className="eyebrow-label">Next action</div>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
-      </div>
-    </aside>
-  );
-}
-
-function EmptyState({ state }: { state: DataOperationsEmptyState }) {
-  return (
-    <ConcreteEmptyState
-      role="status"
-      icon="table"
-      title={state.title}
-      detail={state.description}
-      compact
-      className="rounded-sm border border-dashed border-border/80 bg-secondary/20"
-    />
-  );
 }
 
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
@@ -2125,6 +1857,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -2157,62 +1890,6 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
   );
 }
 
-function RouteFocusCard({
-  state
-}: {
-  state: DataOperationsRouteFocusCardState;
-}) {
-  return (
-    <Card id={state.id} role={state.role} aria-label={state.ariaLabel} className="panel-surface-strong">
-      <CardHeader>
-        <div className="eyebrow-label">{state.eyebrow}</div>
-        <CardTitle>{state.title}</CardTitle>
-        <CardDescription>{state.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        {state.rows.length > 0 ? (
-          <dl className="space-y-2">
-            {state.rows.map((row) => (
-              <DetailRow key={row.id} label={row.label} value={row.value} />
-            ))}
-          </dl>
-        ) : (
-          <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning">
-            {state.description}
-          </p>
-        )}
-        {state.action ? (
-          <Button asChild variant="outline" className="w-full justify-center">
-            <Link to={state.action.href} aria-label={state.action.ariaLabel}>
-              {state.action.label}
-            </Link>
-          </Button>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
-}
-
-
-function DataHighlight({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/30 p-4">
-      <Icon className="mb-3 h-5 w-5 text-primary" />
-      <div className="font-semibold">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-mono text-foreground">{value}</dd>
-    </div>
-  );
-}
-
 function FieldTile({ field }: { field: { id: string; label: string; value: string } }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
@@ -2221,12 +1898,6 @@ function FieldTile({ field }: { field: { id: string; label: string; value: strin
     </div>
   );
 }
-
-const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
-  warning: "border-warning/35 bg-warning/10 text-warning",
-  success: "border-success/35 bg-success/10 text-success",
-  danger: "border-danger/35 bg-danger/10 text-danger"
-};
 
 function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   return (
@@ -2249,11 +1920,93 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   );
 }
 
-const qualityToneBadgeVariant = {
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-} as const;
+function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      aria-label={state.ariaLabel}
+      className="mt-4 space-y-3 rounded-md border border-primary/25 bg-primary/5 p-3 text-sm"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="font-semibold text-foreground">{state.title}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{state.summary}</div>
+        </div>
+        <span className="rounded-full border border-border/70 bg-background px-2 py-1 text-xs font-medium text-foreground">
+          {state.active ? "Running" : "Settled"}
+        </span>
+      </div>
+
+      <div
+        role="progressbar"
+        aria-label="Overall backfill progress"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(state.overallPercent)}
+        className="h-2 overflow-hidden rounded-full bg-secondary"
+      >
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-300"
+          style={{ width: `${state.overallPercent}%` }}
+        />
+      </div>
+
+      {state.symbols.length > 0 ? (
+        <div className="grid gap-2" aria-label="Backfill symbol provider progress">
+          {state.symbols.map((symbol) => (
+            <article key={symbol.symbol} className="rounded-md border border-border/70 bg-background/70 p-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono font-semibold text-foreground">{symbol.symbol}</span>
+                <span className="text-xs font-medium text-foreground">{symbol.progress}</span>
+              </div>
+              <dl className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                <div><dt className="inline font-medium text-foreground">Range:</dt> <dd className="inline">{symbol.range}</dd></div>
+                <div><dt className="inline font-medium text-foreground">Provider:</dt> <dd className="inline">{symbol.provider}</dd></div>
+                <div><dt className="inline font-medium text-foreground">Fallback:</dt> <dd className="inline">{symbol.attempt}</dd></div>
+                <div><dt className="inline font-medium text-foreground">State:</dt> <dd className="inline">{symbol.status}</dd></div>
+              </dl>
+              {symbol.error ? <p className="mt-2 text-xs text-danger">{symbol.error}</p> : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">Waiting for the first provider attempt.</p>
+      )}
+
+      {state.recentAttempts.length > 0 ? (
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent fallback attempts</div>
+          <ul className="mt-2 space-y-1.5">
+            {state.recentAttempts.map((attempt) => (
+              <li
+                key={attempt.id}
+                className={cn(
+                  "rounded-md border px-2.5 py-2 text-xs",
+                  attempt.tone === "danger"
+                    ? "border-danger/30 bg-danger/10 text-danger"
+                    : attempt.tone === "warning"
+                      ? "border-warning/30 bg-warning/10 text-warning"
+                      : "border-border/70 bg-background/60 text-muted-foreground"
+                )}
+              >
+                <span className="font-semibold text-foreground">{attempt.label}</span>
+                <span> · {attempt.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {state.droppedNotificationWarning ? (
+        <p role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+          {state.droppedNotificationWarning}
+        </p>
+      ) : null}
+      <p className="text-right text-[11px] text-muted-foreground">Observed {state.observedAt}</p>
+    </section>
+  );
+}
 
 function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel }) {
   return (
@@ -2418,187 +2171,6 @@ function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxView
                   <li key={message} className="text-sm text-muted-foreground font-mono">{message}</li>
                 ))}
               </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
-  return (
-    <section aria-labelledby="coverage-gaps-title" className="workspace-region coverage-gaps-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="coverage-gaps-title">Security master coverage</CardTitle>
-            <CardDescription>
-              Active symbols without a validated security-master record (rule RC001).
-              {panel.model ? ` ${panel.model.summary} Last quality run: ${panel.model.runAtLabel}.` : null}
-            </CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh security master coverage"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Coverage report unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading coverage report…</p>
-          ) : panel.model.rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground" role="status">{panel.model.summary}</p>
-          ) : (
-            <ul className="grid gap-2" aria-label="Unmastered active symbols">
-              {panel.model.rows.map((row) => {
-                const draft = panel.drafts[row.symbol];
-                return (
-                  <li key={row.symbol} className="grid gap-1.5 text-sm">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-semibold">{row.symbol}</span>
-                      <span className="text-muted-foreground">active in {row.sourcesLabel}</span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void panel.requestDraft(row.symbol)}
-                        disabled={panel.draftingSymbol !== null}
-                        aria-label={`Build a security-master draft for ${row.symbol}`}
-                      >
-                        {panel.draftingSymbol === row.symbol ? "Drafting…" : "Master this"}
-                      </Button>
-                      {panel.draftErrors[row.symbol] ? (
-                        <span className="text-sm text-destructive" role="alert">{panel.draftErrors[row.symbol]}</span>
-                      ) : null}
-                    </div>
-                    {draft ? (
-                      <div className="rounded-md border p-2 text-sm">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={draft.resolved ? "success" : "warning"}>
-                            {draft.resolved ? "Resolved" : "Manual completion required"}
-                          </Badge>
-                          <span className="font-semibold">{draft.displayName ?? draft.symbol}</span>
-                          <span className="text-muted-foreground">
-                            {draft.assetClass}
-                            {draft.exchange ? ` · ${draft.exchange}` : ""}
-                            {draft.currency ? ` · ${draft.currency}` : ""}
-                            {" · "}{draft.provenance}
-                          </span>
-                        </div>
-                        <ul className="mt-1.5 grid gap-0.5" aria-label={`Draft identifiers for ${row.symbol}`}>
-                          {draft.identifiers.map((identifier) => (
-                            <li key={`${identifier.kind}:${identifier.value}`} className="font-mono text-xs text-muted-foreground">
-                              {identifier.kind}: {identifier.value}
-                              {identifier.isPrimary ? " (primary)" : ""}
-                            </li>
-                          ))}
-                        </ul>
-                        {draft.notes ? (
-                          <p className="mt-1.5 text-xs text-muted-foreground">{draft.notes}</p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
-  return (
-    <section aria-labelledby="data-quality-title" className="workspace-region data-quality-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="data-quality-title">Data quality</CardTitle>
-            <CardDescription>
-              Unified completeness, freshness, gap, and anomaly posture across tracked symbols.
-              {panel.model ? ` ${panel.model.summary}` : null}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            {panel.model && (
-              <Badge variant={qualityToneBadgeVariant[panel.model.overallTone]} dot={panel.model.overallTone === "success"}>
-                {panel.model.overallLabel}
-              </Badge>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void panel.refresh()}
-              disabled={panel.loading}
-              aria-label="Refresh data quality dashboard"
-            >
-              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Data quality unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading data quality…</p>
-          ) : (
-            <div className="grid gap-4">
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" role="list" aria-label="Data quality scores">
-                {panel.model.scoreCards.map((card) => (
-                  <div
-                    key={card.id}
-                    role="listitem"
-                    className={cn("rounded-md border p-3 text-sm", resultToneClass[card.tone])}
-                  >
-                    <div className="text-xs uppercase tracking-wide">{card.label}</div>
-                    <div className="mt-1 font-mono text-lg font-semibold">{card.value}</div>
-                  </div>
-                ))}
-              </div>
-              {panel.model.attentionSymbols.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold">Symbols needing attention</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.attentionSymbols.map((row) => (
-                      <li key={row.symbol} className="flex flex-wrap items-center gap-2 text-sm">
-                        <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.health}</Badge>
-                        <span className="font-mono font-semibold">{row.symbol}</span>
-                        <span className="text-muted-foreground">
-                          completeness {row.completenessLabel} · freshness {row.freshnessLabel} ·{" "}
-                          {row.gapCount} gap{row.gapCount === 1 ? "" : "s"} · {row.anomalyCount} anomal
-                          {row.anomalyCount === 1 ? "y" : "ies"}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {panel.model.unacknowledgedAnomalies.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold">Unacknowledged anomalies</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.unacknowledgedAnomalies.map((anomaly) => (
-                      <li key={anomaly.anomalyId} className="text-sm text-muted-foreground">
-                        <span className="font-mono font-semibold text-foreground">{anomaly.symbol}</span>{" "}
-                        {anomaly.anomalyType}: {anomaly.message}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
         </CardContent>

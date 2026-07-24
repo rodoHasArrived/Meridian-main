@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Http;
 using Meridian.Tests.TestHelpers;
@@ -113,14 +114,37 @@ public sealed class AlphaVantageCorporateActionProviderTests
     }
 
     [Fact]
-    public async Task FetchAsync_WhenBodyIsRateLimited_ReturnsEmpty()
+    public async Task FetchAsync_WhenBodyIsRateLimited_ThrowsTypedRateLimitMetadata()
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         var provider = CreateSut(handler);
 
-        var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+        var act = () => provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
 
-        results.Should().BeEmpty();
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("alphavantage");
+        exception.Which.Symbol.Should().Be("AAPL");
+        exception.Which.RetryAfter.Should().Be(TimeSpan.FromMinutes(1));
+        handler.CallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WhenHttp429_ThrowsTypedRateLimitAndPreservesRetryAfter()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(19));
+            return response;
+        });
+        var provider = CreateSut(handler);
+
+        var act = () => provider.FetchAsync("aapl", Guid.NewGuid(), CancellationToken.None);
+
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("alphavantage");
+        exception.Which.Symbol.Should().Be("AAPL");
+        exception.Which.RetryAfter.Should().Be(TimeSpan.FromSeconds(19));
         handler.CallCount.Should().Be(1);
     }
 

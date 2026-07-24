@@ -578,7 +578,7 @@
                                 <TextBlock x:Name="DrilldownCompletenessText" Text="{Binding DrilldownCompletenessText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center"
                                            FontFamily="Consolas" />
-                                <TextBlock Text="COMPLETENESS" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                <TextBlock Text="STORED COMPLETENESS" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
@@ -602,7 +602,7 @@
                                 <TextBlock x:Name="DrilldownErrorsText" Text="{Binding DrilldownErrorsText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource ErrorColorBrush}" HorizontalAlignment="Center"
                                            FontFamily="Consolas" />
-                                <TextBlock Text="ERRORS" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                <TextBlock Text="ANOMALIES" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
@@ -614,7 +614,7 @@
                                 <TextBlock x:Name="DrilldownLatencyText" Text="{Binding DrilldownLatencyText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center"
                                            FontFamily="Consolas" />
-                                <TextBlock Text="AVG LATENCY" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                <TextBlock Text="STREAMING SCORE" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
@@ -762,6 +762,8 @@
 
                                         <Button Grid.Column="3" Content="Repair" Tag="{Binding GapId}"
                                                 Click="RepairGap_Click"
+                                                IsEnabled="{Binding CanRepair}"
+                                                ToolTip="{Binding DisabledReason}"
                                                 Style="{StaticResource SecondaryButtonStyle}"
                                                 FontSize="12" Padding="12,4"/>
                                     </Grid>

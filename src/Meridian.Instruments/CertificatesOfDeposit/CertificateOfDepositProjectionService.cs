@@ -3,49 +3,35 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.CertificatesOfDeposit;
 
-public sealed class CertificateOfDepositProjectionService : ICertificateOfDepositReferenceService
+public sealed class CertificateOfDepositProjectionService
+    : InstrumentProjectionServiceBase<CertificateOfDepositProjectionRow, CertificateOfDepositReferenceDto>,
+      ICertificateOfDepositReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly ICertificateOfDepositReferenceProjectionStore _projectionStore;
 
     public CertificateOfDepositProjectionService(
         ISecurityMasterStore securityMasterStore,
         ICertificateOfDepositReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<CertificateOfDepositReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "CertificateOfDeposit";
 
-        var row = await _projectionStore.GetCertificateOfDepositAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<CertificateOfDepositProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetCertificateOfDepositAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<CertificateOfDepositReferenceDto>> GetByIssuerAsync(string issuerName, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(issuerName))
-        {
-            return Array.Empty<CertificateOfDepositReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByIssuerAsync(issuerName.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<CertificateOfDepositReferenceDto>> GetByIssuerAsync(string issuerName, CancellationToken ct = default)
+        => QueryByTermAsync(issuerName, _projectionStore.GetByIssuerAsync, ct);
 
     public async Task<IReadOnlyList<CertificateOfDepositReferenceDto>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
     {
         var rows = await _projectionStore.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
+        return MapRows(rows);
     }
 
-    private static CertificateOfDepositReferenceDto MapRow(CertificateOfDepositProjectionRow row)
+    protected override CertificateOfDepositReferenceDto MapRow(CertificateOfDepositProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

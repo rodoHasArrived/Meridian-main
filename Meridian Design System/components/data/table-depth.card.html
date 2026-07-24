@@ -1,0 +1,81 @@
+<!-- @dsCard group="Data" viewport="960x680" name="Table Depth" subtitle="Column resize/reorder/pin (mouse + keyboard via ColumnManager) · multi-sort · shift-range select" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Table depth</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const DS = window.MeridianDesignSystem_4f61be;
+const { DenseDataTable, ColumnManager, SeverityBadge, Timestamp, Eyebrow, Button, SelectionToolbar } = DS;
+const { useTableColumns, useTableState, useRowSelection, useAsyncTableData } = DS.TableHooks;
+const { useState } = React;
+
+const NOW = Date.UTC(2026, 6, 2, 14, 0, 0);
+const SYMS = ["AAPL","MSFT","NVDA","SPY","TLT","AMZN","GOOGL","META","TSLA","QQQ","IWM","GLD"];
+const STATUSES = ["Filled","Working","Partially filled","Rejected"];
+const ALL = Array.from({ length: 240 }, (_, i) => ({
+  id: "ORD-" + (2000 + i),
+  time: NOW - i * 63000,
+  symbol: SYMS[i % SYMS.length],
+  side: i % 3 === 0 ? "Sell" : "Buy",
+  qty: (((i * 37) % 900) + 100).toString(),
+  px: (100 + ((i * 13) % 400) + 0.25).toFixed(4),
+  status: STATUSES[i % STATUSES.length],
+}));
+
+const BASE_COLS = [
+  { key: "id", label: "Order", width: 110, pinned: true },
+  { key: "time", label: "Time", width: 96, render: (r) => <Timestamp value={r.time} format="time" /> },
+  { key: "symbol", label: "Symbol", width: 90 },
+  { key: "side", label: "Side", width: 70, render: (r) => <span style={{ color: r.side === "Buy" ? "var(--green-dim)" : "var(--red-dim)", fontWeight: 600, fontVariant: "all-small-caps" }}>{r.side}</span> },
+  { key: "qty", label: "Qty", width: 90, align: "right" },
+  { key: "px", label: "Price", width: 110, align: "right" },
+  { key: "status", label: "Status", width: 150, render: (r) => <SeverityBadge status={{ "Filled": "Complete", "Working": "Running", "Partially filled": "InProgress", "Rejected": "Rejected" }[r.status]} label={r.status} /> },
+];
+
+function App() {
+  const ts = useTableState(ALL);
+  const cols = useTableColumns(BASE_COLS, { persistKey: "table-depth-demo.cols" });
+  const sel = useRowSelection(ts.data, (r) => r.id);
+  return (
+    <div style={{ maxWidth: 920, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <Eyebrow>Drag headers to reorder · drag right edge to resize · double-click to pin · shift-click a header for multi-sort · shift-click rows for range select</Eyebrow>
+        <span style={{ flex: 1 }}></span>
+        <ColumnManager cols={cols} />
+        <Button variant="ghost" size="sm" onClick={cols.reset}>Reset columns</Button>
+      </div>
+      {sel.count !== 0 && (
+        <SelectionToolbar count={sel.count === "all" ? ts.data.length : sel.count} onClear={sel.clear}
+          actions={[{ label: "Cancel orders", onClick: () => {} }, { label: "Export", onClick: () => ts.exportCSV("orders.csv") }]} />
+      )}
+      <DenseDataTable
+        columns={cols.visibleColumns}
+        rows={ts.data}
+        sortInfo={ts.sortInfo}
+        onSort={ts.toggleSort}
+        onColumnResize={cols.resize}
+        onColumnReorder={cols.reorder}
+        onColumnPin={cols.togglePin}
+        onRowClick={(row, i, e) => sel.onRowClick(row, i, e)}
+        isRowSelected={(row) => sel.isSelected(row)}
+        maxHeight={420}
+      />
+      <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>
+        {ts.data.length} rows · sort stack: {ts.sortStack.map((s) => `${s.column} ${s.direction}`).join(" → ") || "none"} · {sel.count === "all" ? "all" : sel.count} selected
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

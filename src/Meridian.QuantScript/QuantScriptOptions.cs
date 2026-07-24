@@ -18,10 +18,25 @@ public sealed class QuantScriptOptions
     public int CompilationTimeoutSeconds { get; init; } = 15;
 
     /// <summary>
-    /// When false (default), scripts are denied File/Network/Process access via
-    /// Roslyn's MetadataReferenceResolver restriction list.
+    /// When false (default), the compiler applies a best-effort advisory guard that rejects
+    /// scripts referencing File/Network/Process/Reflection APIs (by source inspection) and
+    /// disables <c>#r</c>/<c>#load</c> directives.
+    /// <para>
+    /// This is NOT a security sandbox: the guard is a source-level denylist that a determined
+    /// author can bypass (for example via reflection or runtime type resolution). Do not run
+    /// untrusted scripts on the strength of this flag alone; isolate them at the process or OS
+    /// level. Set to <see langword="true"/> only for trusted authors who need those APIs.
+    /// </para>
     /// </summary>
     public bool EnableUnsafeScripts { get; init; } = false;
+
+    /// <summary>
+    /// Maximum number of compiled scripts retained in the in-memory compilation cache. Each
+    /// cached entry holds a Roslyn script/compilation graph, so an unbounded cache grows without
+    /// limit on a long-running host. When the count exceeds this bound the oldest entries are
+    /// evicted first (FIFO). Set to 0 or less to disable caching entirely.
+    /// </summary>
+    public int MaxCachedCompilations { get; init; } = 256;
 
     /// <summary>Soft limit on plot requests per run. Excess plots are silently dropped.</summary>
     public int MaxPlotsPerRun { get; init; } = 100;

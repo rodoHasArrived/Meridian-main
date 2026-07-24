@@ -13,11 +13,16 @@ For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox
 - What still needs review, approval, reconciliation, evidence, or reporting?
 - Which report, ledger entry, close blocker, or operational decision depends on it?
 
-Current local project path for this workspace: `D:\Meridian-main`.
-
 ## Current Product Status
 
-Meridian's current baseline is the closed W1-W5 operational record plus completed W5X shared explorer, Financial Operations, statement connector, and bounded W7 live-readiness governance milestones.
+Meridian's current baseline is the closed W1-W5 operational record plus completed W5X shared
+explorer, Financial Operations, statement connector, and bounded W7 live-readiness governance
+milestones. Evidence Vault productization, statement reconciliation onboarding, and WPF workstation
+parity are active delivery work.
+
+These are bounded roadmap acceptance claims, not blanket production certification. A completed row
+means its named scope closed with linked evidence; release and support decisions still require fresh
+operator preflight, packaging, deployment, and required GitHub Actions evidence.
 
 That means the repository contains accepted evidence for:
 
@@ -27,11 +32,12 @@ That means the repository contains accepted evidence for:
 | Paper trading and research continuity | Complete baseline. Research-to-paper handoff, paper-session readiness, promotion evidence, and operator acceptance are supported before live promotion is allowed. |
 | Portfolio, accounting, and reconciliation workflows | Complete baseline. Portfolio ledger reconciliation, accounting record summaries, retained source evidence, reconciliation cases, ledger evidence, approvals, and report-pack lineage are connected through shared contracts and read models. |
 | Governed reporting | Complete baseline. Report-pack lifecycle, approval evidence, export provenance, restatement posture, report-line provenance, and evidence retention are represented in shared services and workstation surfaces. |
-| Multi-asset operational coverage | Complete baseline. Security Master and asset operations cover public and private/structured asset classes through provider evidence, identifier confidence, terms, obligations, ledger classification, reconciliation signals, and close blockers. |
+| Multi-asset operational coverage | Complete bounded proof lane. Security Master and asset operations cover the accepted public and private/structured asset-class baseline through provider evidence, identifier confidence, terms, obligations, ledger classification, reconciliation signals, and close blockers. Broader provider and lifecycle depth remains separate work. |
 | Shared Financial Record Explorers | Complete W5X milestone. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, dense grids, proof ribbons, record drawers, evidence links, approval state, reconciliation state, report usage, and audit timelines. |
 | Financial Operations control center | Complete W5X milestone. Operations Continuity and Fund Ledger surfaces expose reconciliation queues, exception casework, close readiness, workflow controls, approval policy, audit evidence, checklist state, and governed reopen posture. |
 | Statement connector library | Complete W5X milestone. Declarative CSV and OFX mapping profiles, IB Flex XML, OFX bank/investment files, and Alpaca activity/portfolio statements normalize into canonical statement records with preview, confidence, drift warning, and reconciliation handoff support. |
 | Evidence Vault and statement onboarding | In progress. Evidence Vault primitives exist for retained source documents, manifests, review state, object links, and audit trails; the first acceptance path is browser-first statement reconciliation onboarding. |
+| Browser and WPF workstation delivery | In progress. Both operator clients are active, co-equal product lanes over shared contracts and read models. `W8-WPF-PARITY-001` tracks browser-first screens that still need a WPF equivalent or an explicit parity decision. |
 | Live-readiness governance | Complete bounded W7 milestone. Paper-to-live promotion requires trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback/kill-switch evidence, audit retention, live brokerage enablement, and an active manual override. This is governance, not full live execution productization. |
 
 Active operator UI work spans both:
@@ -74,11 +80,12 @@ Near-term work:
 | --- | --- |
 | Evidence Vault productization | Turn retained documents, source manifests, request lists, extracted-field review, object links, and audit primitives into a reusable evidence layer for Accounting, Reporting, and Data workflows. |
 | Statement reconciliation onboarding | Make statement import the first browser-first onboarding path: import, preview, commit, retain Evidence Vault proof, route reconciliation breaks, and guide the operator to next actions. |
-| Backtesting Studio evidence loop | Keep W6 focused on linking backtest and strategy evidence to lineage, acceptance criteria, approvals, paper validation, accounting records, or governed reporting before broad research-workbench expansion. |
+| WPF workstation parity | Close tracked browser-first screen gaps through shared DTOs, endpoints, and read models while preserving desktop MVVM, validation, and release workflows. |
 
 Longer-term or explicitly deferred lanes:
 
 - broader live execution productization and live portfolio operations beyond bounded W7 governance;
+- Backtesting Studio (`W6-BTSTUDIO-001`) remains planned, with broader research-workbench expansion deferred;
 - full treasury payment execution and bank-release automation;
 - full alternative asset operations beyond the current multi-asset proof lane;
 - forecasting and scenario engines;
@@ -96,7 +103,7 @@ Use the documentation front door and audience paths for current guidance:
 - [Start Here](docs/start/README.md)
 - [Product Direction](docs/product/README.md)
 - [Design Charter](docs/product/meridian-design-document.md)
-- [Implementation TODO List](docs/product/implementation-todo-list.md)
+- [Implementation and Readiness Tracker](docs/product/implementation-todo-list.md)
 - [Engineering Guide](docs/engineering/README.md)
 - [Operator Guide](docs/operators/README.md)
 - [Reference Lookup](docs/reference/README.md)
@@ -138,7 +145,7 @@ Direct commands:
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 dotnet run --project src/Meridian/Meridian.csproj -- --setup
-dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 python build/python/cli/buildctl.py --help
 ```
 
@@ -164,7 +171,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbo
 dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
 ```
 
-When launched from the repository root, the desktop-local API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` -> `MDC_CONFIG_PATH` -> `config/appsettings.json`.
+When launched from the repository root, the local workstation/API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` -> `MDC_CONFIG_PATH` -> `config/appsettings.json`.
 
 ### Browser workstation - `src/Meridian.Ui/dashboard`
 
@@ -191,16 +198,15 @@ dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 
 ### Windows WPF desktop app - `src/Meridian.Wpf`
 
-The WPF desktop shell is an active Windows operator workstation. It shares contracts, read models, and API seams with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility unless the full WPF build flag is enabled on Windows.
+The WPF desktop shell is an active, co-equal product/UI lane. Its immediate focus is closing
+browser-first parity gaps under `W8-WPF-PARITY-001`. It shares contracts, read models, and API seams
+with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility
+unless the full WPF build flag is enabled on Windows.
 
 ```bash
-pwsh ./scripts/dev/run-desktop.ps1
-```
-
-Manual fallback:
-
-```bash
-dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 ```
 
 ## Validation Lanes
@@ -228,7 +234,7 @@ Use these documents together when planning or implementing new work:
 - [Roadmap Registry](docs/roadmap/README.md) and `docs/roadmap/data/*.yml` for active wave and gate records.
 - [Generated Roadmap Summary](docs/roadmap/generated/ROADMAP_SUMMARY.md) for rendered roadmap state.
 - [Design Charter](docs/product/meridian-design-document.md) for the canonical product framing and evidence-backed operations model.
-- [Implementation TODO List](docs/product/implementation-todo-list.md) for current complete, in-progress, and deferred product slices.
+- [Implementation and Readiness Tracker](docs/product/implementation-todo-list.md) for current implementation, evidence, and readiness follow-up.
 - [Provider Capability Matrix](docs/reference/provider-capability-matrix.md) and [Provider Validation Matrix](docs/reference/provider-validation-matrix.md) for provider-confidence scope.
 - [Engineering Guide](docs/engineering/README.md) for execution architecture and shared-model guidance.
 - [Operator Guide](docs/operators/README.md) for governance and support posture.

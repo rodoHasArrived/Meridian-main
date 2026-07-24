@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -11,12 +13,14 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -1002,10 +1006,11 @@ public sealed class EvidenceWorkflowFabricTests
         var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var deliveryAttempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, reportId.ToString("D"));
-        using var provider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(BuildReportPackSnapshot(reportId)))
-            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]))
-            .BuildServiceProvider();
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]));
+        AddBoundReportingDeliveryReadScope(services, reportId);
+        using var provider = services.BuildServiceProvider();
         var contributor = new ReportPackEvidenceContributor(provider);
 
         var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
@@ -1048,9 +1053,10 @@ public sealed class EvidenceWorkflowFabricTests
         var attempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
         var subjectId = $"{reportId:D}:{attemptId:D}";
         var subject = Subject(EvidenceSubjectResolver.ReportPackDeliveryKind, subjectId);
-        using var provider = new ServiceCollection()
-            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([attempt]))
-            .BuildServiceProvider();
+        var services = new ServiceCollection()
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([attempt]));
+        AddBoundReportingDeliveryReadScope(services, reportId);
+        using var provider = services.BuildServiceProvider();
         var contributor = new ReportPackDeliveryEvidenceContributor(provider);
 
         var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
@@ -1078,8 +1084,13 @@ public sealed class EvidenceWorkflowFabricTests
             node.ArtifactRefs.Any(artifact =>
                 artifact.CanonicalSubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
                 artifact.CanonicalSubjectId == subjectId &&
-                artifact.Route!.Contains("/artifacts/board-pack.pdf", StringComparison.OrdinalIgnoreCase) &&
-                artifact.Retained));
+                artifact.Route == null &&
+                artifact.Path != null &&
+                artifact.Path.EndsWith("board-pack.pdf", StringComparison.OrdinalIgnoreCase) &&
+                !artifact.Retained));
+        JsonSerializer.Serialize(contribution)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
         contribution.Nodes.Should().Contain(node =>
             node.Kind == "audit-history" &&
             node.Status == EvidenceStatusDto.Ready &&
@@ -1235,6 +1246,9 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Nodes.Should().Contain(node => node.Kind == "report-line-provenance");
         packet.Nodes.Should().Contain(node => node.Kind == "branding-theme");
         packet.Nodes.Should().Contain(node => node.Kind == "restatement-lineage");
+        JsonSerializer.Serialize(packet)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
         packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
         packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
             .EvidenceKinds.Should().Contain("delivery-evidence-packet");
@@ -2588,6 +2602,51 @@ public sealed class EvidenceWorkflowFabricTests
         fundDocuments.Should().ContainSingle(entry =>
             entry.VaultId == response.VaultIdentity.VaultId &&
             entry.Document.ObjectLinks.Any(link => link.LinkKind == EvidenceDocumentLinkKindDto.Fund));
+
+        var mismatchedLinkDocuments = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            LinkKind: EvidenceDocumentLinkKindDto.Period,
+            ObjectId: "close-task:cash-support"));
+        mismatchedLinkDocuments.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RequiresReviewWhenExtractionFindsNoFields()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-empty-extraction-{Guid.NewGuid():N}");
+        var bytes = Encoding.UTF8.GetBytes("unstructured document text");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var response = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            SubjectKind: "account",
+            SubjectId: "fund-alpha-cash",
+            IntakeChannel: "api",
+            FileName: "unclassified-support.txt",
+            ContentBase64: Convert.ToBase64String(bytes),
+            ReceivedBy: "fund-controller"), cts.Token);
+
+        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId, cts.Token);
+        identity.Should().NotBeNull();
+        identity!.SupportRequests.Should().ContainSingle(request =>
+            request.RequestKind == "ValidationIssue" &&
+            request.EvidenceId == response.IntakeId &&
+            request.Severity == EvidenceValidationSeverityDto.Warning);
+        identity.ManifestSnapshot.Should().NotBeNull();
+        identity.ManifestSnapshot!.Requests.Should().ContainSingle(request =>
+            request.RequestKind == "ValidationIssue" &&
+            request.Severity == EvidenceValidationSeverityDto.Warning);
+
+        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId, cts.Token))!.Content;
+        using var manifestDocument = await JsonDocument.ParseAsync(manifest, cancellationToken: cts.Token);
+        var completeness = manifestDocument.RootElement.GetProperty("completeness");
+        completeness.GetProperty("status").GetString().Should().Be("ReviewRequired");
+        completeness.GetProperty("score").GetInt32().Should().Be(75);
+        completeness.GetProperty("readyIds").GetArrayLength().Should().Be(0);
+        completeness
+            .GetProperty("validationIssues")
+            .EnumerateArray()
+            .Should()
+            .Contain(issue => issue.GetProperty("code").GetString() == "intake-extraction-required");
     }
 
     [Fact]
@@ -2609,6 +2668,7 @@ public sealed class EvidenceWorkflowFabricTests
             ExtractionStatus = EvidenceExtractionStatusDto.NeedsReview,
             ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
         }, cts.Token);
+        var originalContentHash = intake.VaultIdentity.ContentHashSha256;
 
         var review = await store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,
@@ -2677,6 +2737,8 @@ public sealed class EvidenceWorkflowFabricTests
             !document.Authority.CanPost &&
             !document.Authority.CanCertify &&
             !document.Authority.CanRelease);
+        identity.ContentHashSha256.Should().NotBe(originalContentHash);
+        identity.ManifestSnapshot.ContentHashSha256.Should().Be(identity.ContentHashSha256);
 
         await using var manifest = (await store.TryOpenManifestByVaultIdAsync(intake.VaultIdentity.VaultId, cts.Token))!.Content;
         using var reader = new StreamReader(manifest);
@@ -2684,6 +2746,7 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().Contain("\"action\": \"DocumentReviewRecorded\"");
         manifestJson.Should().Contain("\"status\": \"Accepted\"");
         manifestJson.Should().Contain("\"fieldName\": \"endingCash\"");
+        manifestJson.Should().Contain(identity.ContentHashSha256);
 
         var unconfirmedReview = () => store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,
@@ -2692,6 +2755,30 @@ public sealed class EvidenceWorkflowFabricTests
             cts.Token);
         await unconfirmedReview.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*require at least one human-confirmed field*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringMissingVaultDocumentReviews_DoesNotRetainVaultLocks()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-missing-review-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        for (var index = 0; index < 32; index++)
+        {
+            var result = await store.ReviewDocumentAsync(
+                $"ev-{index:x24}",
+                "missing-document",
+                new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Rejected, "controller"),
+                cts.Token);
+
+            result.Should().BeNull();
+        }
+
+        var locks = (ConcurrentDictionary<string, SemaphoreSlim>)typeof(FileEvidenceArtifactStore)
+            .GetField("_vaultWriteLocks", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(store)!;
+        locks.Should().BeEmpty();
     }
 
     [Fact]
@@ -3491,7 +3578,14 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)
     {
-        var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        // Anchor evidence timestamps and effective dates to the current time so the seven-day
+        // freshness window in EvidenceContributors.Node keeps the projected required evidence
+        // "Ready" regardless of the run date. Required-node freshness derives from both the
+        // as-of timestamp (now) and the expected-cash/bank EffectiveDate (via DateFrom), so both
+        // must stay recent. The 20260630 subject identifiers below are stable string literals and
+        // are intentionally left fixed.
+        var now = DateTimeOffset.UtcNow.AddHours(-1);
+        var effectiveDate = DateOnly.FromDateTime(now.UtcDateTime);
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var fundEvent = new PrivateCapitalFundEventDto(
             "fund-event:fund-alpha:capital-call:20260630",
@@ -3499,7 +3593,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManualJournalEntryTypeDto.CapitalCall,
             ManualJournalEntryStatusDto.Submitted,
             journalEntryId,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "capital-account:fund-alpha:lp-1",
             "investor:lp-1",
             "USD",
@@ -3522,7 +3616,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManualJournalEntryTypeDto.CapitalCall,
             ManualJournalEntryStatusDto.Submitted,
             journalEntryId,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             100m,
             100m,
             100m,
@@ -3538,7 +3632,7 @@ public sealed class EvidenceWorkflowFabricTests
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,
             ManualJournalEntryStatusDto.Submitted,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "USD",
             100m,
             100m,
@@ -3562,7 +3656,7 @@ public sealed class EvidenceWorkflowFabricTests
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,
             ManualJournalEntryStatusDto.Submitted,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "USD",
             100m,
             1,
@@ -3581,7 +3675,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManagementFees: 0m,
             NetActivity: 100m,
             FundEventCount: 1,
-            LastEffectiveDate: new DateOnly(2026, 6, 30),
+            LastEffectiveDate: effectiveDate,
             LastFundEventType: fundEvent.FundEventType,
             FundEventIds: [fundEvent.FundEventId]);
         var records = PrivateCapitalFundEventLedgerRecordBuilder.Build(
@@ -3619,7 +3713,7 @@ public sealed class EvidenceWorkflowFabricTests
                 PaymentIntentCashDirectionDto.Inflow,
                 100m,
                 "USD",
-                new DateOnly(2026, 6, 30),
+                effectiveDate,
                 fundEvent.SettlementReference,
                 fundEvent.FundEventId,
                 fundEvent.FundEventType,
@@ -3659,7 +3753,7 @@ public sealed class EvidenceWorkflowFabricTests
                     "Retained cash evidence confirms the expected capital-call inflow.",
                     Amount: 100m,
                     Currency: "USD",
-                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    EffectiveDate: effectiveDate,
                     RecordedAtUtc: now,
                     ExternalRef: fundEvent.SettlementReference,
                     EvidenceRoute: "/evidence/fund-alpha/bank-cash-capital-call.pdf")
@@ -3802,6 +3896,7 @@ public sealed class EvidenceWorkflowFabricTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
         builder.Services.AddWorkflowLibrary();
+        builder.Services.AddHttpContextAccessor();
         if (operationsWorkflowService is not null)
         {
             builder.Services.AddSingleton(operationsWorkflowService);
@@ -3810,6 +3905,11 @@ public sealed class EvidenceWorkflowFabricTests
         if (deliveryRecordStore is not null)
         {
             builder.Services.AddSingleton(deliveryRecordStore);
+            var reportIds = deliveryRecordStore.Load()
+                .Select(static attempt => attempt.ReportId)
+                .Distinct()
+                .ToArray();
+            builder.Services.AddSingleton(BuildBoundReportPackWorkflowService(reportIds));
         }
 
         if (manualJournalService is not null)
@@ -3820,9 +3920,73 @@ public sealed class EvidenceWorkflowFabricTests
         builder.Services.AddEvidenceWorkflowFabric();
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            BindReportingRequestContext(context);
+            await next();
+        });
         app.MapEvidenceEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private static void AddBoundReportingDeliveryReadScope(
+        IServiceCollection services,
+        params Guid[] reportIds)
+    {
+        var httpContext = new DefaultHttpContext();
+        BindReportingRequestContext(httpContext);
+        services.AddSingleton<IHttpContextAccessor>(new HttpContextAccessor { HttpContext = httpContext });
+        services.AddSingleton(BuildBoundReportPackWorkflowService(reportIds));
+    }
+
+    private static void BindReportingRequestContext(HttpContext context)
+    {
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = "evidence-controller";
+        context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Controller;
+        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+    }
+
+    private static ReportPackWorkflowService BuildBoundReportPackWorkflowService(
+        IReadOnlyList<Guid> reportIds)
+    {
+        var policy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.CompanyWide,
+            OwnerPrincipalId: "evidence-controller",
+            CompanyId: "company-test");
+        var policyHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(policy)))).ToLowerInvariant();
+        var timestamp = new DateTimeOffset(2026, 6, 30, 8, 0, 0, TimeSpan.Zero);
+        var records = reportIds
+            .Distinct()
+            .Select(reportId => new ReportPackWorkflowRecordDto(
+                ReportId: reportId,
+                FundProfileId: "fund-evidence",
+                FundAccountId: "account-evidence",
+                Period: "2026-06",
+                TemplateId: new VersionedReportTemplateIdDto("board-pack", 1),
+                State: ReportPackWorkflowStateDto.Published,
+                Version: 1,
+                CreatedAt: timestamp,
+                CreatedBy: "evidence-controller",
+                UpdatedAt: timestamp,
+                AuditTrail:
+                [
+                    new ReportPackAuditEventDto(
+                        timestamp,
+                        "evidence-controller",
+                        "published",
+                        ReportPackWorkflowStateDto.Approved,
+                        ReportPackWorkflowStateDto.Published)
+                ],
+                Restatement: null,
+                AccessPolicy: policy,
+                TenantId: "tenant-test",
+                CompanyId: "company-test",
+                AccessPolicySnapshotHash: policyHash))
+            .ToArray();
+        return new ReportPackWorkflowService(new InMemoryReportPackWorkflowRecordStore(records));
     }
 
     private static EvidenceSubjectDto Subject(string kind, string id)
@@ -4239,6 +4403,16 @@ public sealed class EvidenceWorkflowFabricTests
         }
     }
 
+    private sealed class InMemoryReportPackWorkflowRecordStore(IReadOnlyList<ReportPackWorkflowRecordDto> records)
+        : IReportPackWorkflowRecordStore
+    {
+        public IReadOnlyList<ReportPackWorkflowRecordDto> Load() => records;
+
+        public void Save(IReadOnlyList<ReportPackWorkflowRecordDto> updatedRecords)
+        {
+        }
+    }
+
     private sealed class StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)
         : ISecurityMasterConflictService
     {
@@ -4266,6 +4440,12 @@ public sealed class EvidenceWorkflowFabricTests
         }
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;

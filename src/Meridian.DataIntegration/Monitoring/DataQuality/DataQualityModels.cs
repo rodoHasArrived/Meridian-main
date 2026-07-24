@@ -49,7 +49,8 @@ public sealed record DataGap(
     long MissedSequenceEnd,
     long EstimatedMissedEvents,
     GapSeverity Severity,
-    string? PossibleCause
+    string? PossibleCause,
+    string? Provider = null
 );
 
 /// <summary>

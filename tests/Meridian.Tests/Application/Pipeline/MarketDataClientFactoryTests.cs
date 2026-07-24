@@ -72,16 +72,19 @@ public sealed class MarketDataClientFactoryTests
     }
 
     [Fact]
-    public void CreateStreamingClient_UnknownProviderId_FallsBackToIB()
+    public void CreateStreamingClient_UnknownProviderId_ThrowsWithRegisteredProviders()
     {
         // Arrange
         var registry = CreateRegistryWithFactories();
 
-        // Act - use a provider ID with no registered factory; falls back to IB
-        var client = registry.CreateStreamingClient("custom-feed");
+        // Act - a provider ID with no registered factory must fail closed, not
+        // silently substitute another provider's data feed
+        var act = () => registry.CreateStreamingClient("custom-feed");
 
         // Assert
-        client.Should().BeOfType<IBMarketDataClient>();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*custom-feed*")
+            .WithMessage("*alpaca*");
     }
 
     [Fact]
@@ -170,12 +173,7 @@ public sealed class MarketDataClientFactoryTests
     public void Register_AllowsMultipleAdapterContractsForSameProviderIdentifier()
     {
         var registry = new ProviderRegistry();
-        var backfill = ProviderBehaviorBuilder.Create()
-            .WithName("alpaca")
-            .WithDisplayName("Alpaca Historical")
-            .WithCapabilities(HistoricalDataCapabilities.BarsOnly)
-            .WithDailyBars((_, _, _, _) => Task.FromResult<IReadOnlyList<HistoricalBar>>(Array.Empty<HistoricalBar>()))
-            .Build();
+        var backfill = new FakeHistoricalDataProvider("alpaca");
         var search = new FakeSymbolSearchProvider("alpaca");
 
         registry.Register(backfill);
@@ -266,5 +264,20 @@ public sealed class MarketDataClientFactoryTests
 
         public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
             => Task.FromResult<SymbolDetails?>(null);
+    }
+
+    private sealed class FakeHistoricalDataProvider(string name) : IHistoricalDataProvider
+    {
+        public string Name => name;
+        public string DisplayName => "Alpaca Historical";
+        public string Description => name;
+        public HistoricalDataCapabilities Capabilities => HistoricalDataCapabilities.BarsOnly;
+
+        public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
+            string symbol,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<HistoricalBar>>(Array.Empty<HistoricalBar>());
     }
 }

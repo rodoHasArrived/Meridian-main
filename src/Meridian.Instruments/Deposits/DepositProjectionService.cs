@@ -3,49 +3,34 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.Deposits;
 
-public sealed class DepositProjectionService : IDepositReferenceService
+public sealed class DepositProjectionService
+    : InstrumentProjectionServiceBase<DepositProjectionRow, DepositReferenceDto>, IDepositReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly IDepositReferenceProjectionStore _projectionStore;
 
     public DepositProjectionService(
         ISecurityMasterStore securityMasterStore,
         IDepositReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<DepositReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Deposit", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "Deposit";
 
-        var row = await _projectionStore.GetDepositAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<DepositProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetDepositAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<DepositReferenceDto>> GetByInstitutionAsync(string institutionName, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(institutionName))
-        {
-            return Array.Empty<DepositReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByInstitutionAsync(institutionName.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<DepositReferenceDto>> GetByInstitutionAsync(string institutionName, CancellationToken ct = default)
+        => QueryByTermAsync(institutionName, _projectionStore.GetByInstitutionAsync, ct);
 
     public async Task<IReadOnlyList<DepositReferenceDto>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
     {
         var rows = await _projectionStore.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
+        return MapRows(rows);
     }
 
-    private static DepositReferenceDto MapRow(DepositProjectionRow row)
+    protected override DepositReferenceDto MapRow(DepositProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

@@ -66,6 +66,10 @@ public partial class SymbolsPage : Page
         }
         catch (System.OperationCanceledException)
         {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
         }
         catch (System.Exception ex)
         {

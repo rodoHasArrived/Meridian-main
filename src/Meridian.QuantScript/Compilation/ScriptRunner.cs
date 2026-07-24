@@ -81,6 +81,10 @@ public sealed class ScriptRunner : IScriptRunner
             }
 
             compileTime = compilationResult.CompilationTime;
+            if (ct.IsCancellationRequested)
+            {
+                return CreateCancelledResult(wallClock, checkpoint);
+            }
 
             if (!compilationResult.Success)
             {

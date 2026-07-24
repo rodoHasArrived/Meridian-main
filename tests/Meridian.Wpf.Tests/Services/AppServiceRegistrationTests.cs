@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
@@ -43,6 +44,7 @@ public sealed class AppServiceRegistrationTests
             using var serviceProvider = services.BuildServiceProvider();
 
             serviceProvider.GetRequiredService<ConfigService>().Should().BeSameAs(ConfigService.Instance);
+            serviceProvider.GetRequiredService<ICanonicalSymbolRegistry>().Should().NotBeNull();
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);

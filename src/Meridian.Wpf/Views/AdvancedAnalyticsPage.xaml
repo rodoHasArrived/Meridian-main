@@ -88,7 +88,7 @@
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="{Binding CompletenessText}" FontSize="32" FontWeight="Bold"
-                                   Foreground="#48BB78" HorizontalAlignment="Center" />
+                                   Foreground="{StaticResource SignalPositiveBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Completeness" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
@@ -96,7 +96,7 @@
                 <Border Grid.Column="4" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="{Binding TotalGapsText}" FontSize="32" FontWeight="Bold"
-                                   Foreground="#ED8936" HorizontalAlignment="Center" />
+                                   Foreground="{StaticResource SignalWarningBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Data Gaps" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
@@ -104,7 +104,7 @@
                 <Border Grid.Column="6" Style="{StaticResource CardStyle}">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="--" FontSize="32" FontWeight="Bold"
-                                   Foreground="#F56565" HorizontalAlignment="Center" />
+                                   Foreground="{StaticResource SignalNegativeBrush}" HorizontalAlignment="Center" />
                         <TextBlock Text="Anomalies" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
@@ -367,8 +367,8 @@
                                         <TextBlock Text="{Binding Provider}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextBrush}" VerticalAlignment="Center" />
                                         <ProgressBar Grid.Column="1" Value="{Binding LatencyPercent}" Maximum="100" Height="8" VerticalAlignment="Center" />
                                         <TextBlock Grid.Column="2" Text="{Binding P50Text}" Foreground="{StaticResource ConsoleTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="3" Text="{Binding P95Text}" Foreground="#ED8936" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="4" Text="{Binding P99Text}" Foreground="#F56565" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding P95Text}" Foreground="{StaticResource SignalWarningBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="4" Text="{Binding P99Text}" Foreground="{StaticResource SignalNegativeBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -479,7 +479,7 @@
                                         <ProgressBar Grid.Column="2" Value="{Binding OverallScore}" Maximum="100" Height="6" Margin="12,0" VerticalAlignment="Center" />
                                         <TextBlock Grid.Column="3" Text="{Binding CompletenessText}" Foreground="{StaticResource ConsoleTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                         <TextBlock Grid.Column="4" Text="{Binding IntegrityText}" Foreground="{StaticResource ConsoleTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="5" Text="{Binding IssueCount}" Foreground="#F56565" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="5" Text="{Binding IssueCount}" Foreground="{StaticResource SignalNegativeBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -511,7 +511,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <TextBlock Text="&#xE946;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   Foreground="#ED8936" FontSize="20" VerticalAlignment="Center" />
+                                   Foreground="{StaticResource SignalWarningBrush}" FontSize="20" VerticalAlignment="Center" />
                         <TextBlock Text="Recommendations" Style="{StaticResource CardHeaderStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
 
@@ -531,7 +531,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="&#xE946;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="14" Foreground="#ED8936" Margin="0,0,12,0" VerticalAlignment="Top" />
+                                               FontSize="14" Foreground="{StaticResource SignalWarningBrush}" Margin="0,0,12,0" VerticalAlignment="Top" />
                                     <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextBrush}" />
                                 </Grid>
                             </DataTemplate>

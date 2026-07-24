@@ -1,0 +1,340 @@
+erDiagram
+    ledger_accounting_action_audit_events {
+        uuid audit_event_id PK
+        timestamp_with_time_zone recorded_at_utc
+        text actor
+        text action
+        text fund_profile_id
+        uuid ledger_book_id
+        text correlation_id
+        text before_hash
+        text after_hash
+        jsonb validation_issues
+        jsonb evidence_links
+        text company_id
+        jsonb report_group_principal_ids
+        text tenant_id
+    }
+    ledger_accounting_configuration_chart_nodes {
+        text fund_profile_id PK,FK
+        text node_id PK
+        text path
+        text account_name
+        text account_type
+        text parent_path
+        text symbol
+        text financial_account_id
+        boolean is_archived
+        text configuration_scope_id PK,FK
+        text tenant_id PK,FK
+        text company_id PK,FK
+    }
+    ledger_accounting_configuration_journal_templates {
+        text fund_profile_id PK,FK
+        text template_id PK
+        text display_name
+        text description
+        jsonb lines
+        boolean is_archived
+        text version
+        text configuration_scope_id PK,FK
+        text tenant_id PK,FK
+        text company_id PK,FK
+    }
+    ledger_accounting_configuration_posting_rules {
+        text fund_profile_id PK,FK
+        text rule_id PK
+        text display_name
+        text source_event_type
+        text template_id
+        text rule_version
+        boolean is_archived
+        text description
+        jsonb rule_payload
+        text configuration_scope_id PK,FK
+        text tenant_id PK,FK
+        text company_id PK,FK
+    }
+    ledger_accounting_configuration_rule_test_cases {
+        text fund_profile_id PK,FK
+        text test_case_id PK
+        text display_name
+        jsonb test_case_payload
+        text configuration_scope_id PK,FK
+        text tenant_id PK,FK
+        text company_id PK,FK
+    }
+    ledger_accounting_configuration_workspaces {
+        text fund_profile_id PK
+        uuid ledger_book_id
+        text status
+        text configuration_version
+        timestamp_with_time_zone updated_at_utc
+        jsonb validation_issues
+        text configuration_scope_id PK
+        text tenant_id PK
+        text company_id PK
+    }
+    ledger_accounting_periods {
+        uuid period_id PK
+        integer fiscal_year
+        integer period_no
+        text label
+        date start_date
+        date end_date
+        text status
+        timestamp_with_time_zone opened_at
+        timestamp_with_time_zone closed_at
+        bigint optimistic_version
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        uuid ledger_book_id FK
+        text tenant_id
+    }
+    ledger_accounting_policies {
+        text accounting_policy_key PK
+        text accounting_basis
+        text policy_id
+        text policy_version
+        text display_name
+        text fund_profile_id
+        uuid fund_structure_node_id
+        text instrument_id
+        uuid source_event_id
+        date effective_from
+        date effective_to
+        boolean is_default
+        jsonb rules_json
+        timestamp_with_time_zone created_at
+    }
+    ledger_atomic_tax_lot_posting_batches {
+        uuid mutation_batch_id PK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        uuid journal_entry_id FK
+        uuid source_event_id
+        text idempotency_key
+        text canonical_fingerprint
+        bigint expected_period_version
+        text mutation_kind
+        jsonb retained_evidence
+        uuid corrects_mutation_batch_id FK
+        text relief_method
+        text policy_revision
+        timestamp_with_time_zone created_at
+        uuid security_id
+        uuid book_position_id
+    }
+    ledger_fund_profile_tenancy {
+        text fund_profile_id PK
+        text tenant_id
+        text company_id
+        timestamp_with_time_zone registered_at_utc
+    }
+    ledger_journal_entries {
+        bigint global_sequence PK
+        uuid journal_entry_id
+        uuid aggregate_id
+        uuid period_id
+        uuid command_id
+        uuid correlation_id
+        timestamp_with_time_zone occurred_at
+        text description
+        jsonb metadata
+        timestamp_with_time_zone created_at
+        text accounting_basis
+        text accounting_policy_id
+        text accounting_policy_version
+        text rule_id
+        text rule_version
+        uuid source_event_id
+        uuid source_journal_entry_id
+        text posting_kind
+        jsonb adjustment_approval_metadata
+    }
+    ledger_journal_entries_global_sequence_seq {
+        text catalogued_object
+    }
+    ledger_journal_legs {
+        uuid entry_id PK
+        uuid journal_entry_id FK
+        integer line_no
+        uuid aggregate_id
+        uuid period_id
+        uuid command_id
+        uuid correlation_id
+        timestamp_with_time_zone occurred_at
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        numeric_38_10_ debit
+        numeric_38_10_ credit
+        text description
+        text accounting_basis
+        text accounting_policy_id
+        text accounting_policy_version
+        text rule_id
+        text rule_version
+        uuid source_event_id
+        uuid source_journal_entry_id
+        text posting_kind
+        jsonb adjustment_approval_metadata
+        jsonb dimensions
+        text transaction_currency
+        text functional_currency
+        numeric_38_10_ transaction_debit
+        numeric_38_10_ transaction_credit
+        numeric_38_10_ fx_rate_to_functional
+    }
+    ledger_ledger_books {
+        uuid ledger_book_id PK
+        text fund_profile_id
+        uuid fund_structure_node_id
+        text fund_structure_node_kind
+        text display_name
+        text base_currency
+        text description
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text accounting_basis
+        text accounting_policy_id
+        text accounting_policy_version
+        text tenant_id
+    }
+    ledger_ledger_journal_schema_migrations {
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }
+    ledger_operations_continuity_audit {
+        uuid audit_id PK
+        timestamp_with_time_zone occurred_at_utc
+        uuid workflow_id FK
+        uuid fund_account_id
+        text period_id
+        text event_type
+        text from_state
+        text to_state
+        text gate
+        text from_gate_status
+        text to_gate_status
+        text actor
+        text rationale
+        text correlation_id
+        jsonb references_json
+        text previous_hash
+        text current_hash
+        jsonb audit_json
+        timestamp_with_time_zone created_at
+    }
+    ledger_operations_continuity_workflows {
+        uuid workflow_id PK
+        uuid fund_account_id
+        text period_id
+        uuid security_master_snapshot_id
+        text broker_source
+        text derived_status
+        bigint version
+        timestamp_with_time_zone created_at_utc
+        timestamp_with_time_zone updated_at_utc
+        jsonb workflow_json
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text tenant_id
+    }
+    ledger_period_close_events {
+        uuid event_id PK
+        uuid period_id FK
+        text prior_status
+        text new_status
+        text closed_by
+        text notes
+        timestamp_with_time_zone recorded_at
+        bigint period_version
+    }
+    ledger_tax_lot_mutations {
+        uuid mutation_record_id PK
+        uuid mutation_batch_id FK
+        text mutation_kind
+        uuid tax_lot_record_id FK
+        text lot_id
+        integer selection_ordinal
+        numeric_38_12_ quantity_before
+        numeric_38_12_ quantity_delta
+        numeric_38_12_ quantity_after
+        numeric_38_12_ unit_cost
+        numeric_38_12_ cost_basis
+        bigint expected_version
+        bigint result_version
+        text selection_evidence_id
+        jsonb retained_evidence
+        uuid journal_entry_id FK
+        uuid source_event_id
+        uuid corrects_mutation_batch_id FK
+        text relief_method
+        text policy_revision
+        jsonb lot_snapshot_before
+        jsonb lot_snapshot_after
+        timestamp_with_time_zone recorded_at
+        uuid security_id
+        uuid book_position_id
+    }
+    ledger_tax_lot_policies {
+        uuid policy_record_id PK
+        uuid ledger_book_id FK
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        text relief_method
+        text policy_id
+        date effective_date
+        text rationale
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+    }
+    ledger_tax_lots {
+        uuid tax_lot_record_id PK
+        uuid ledger_book_id FK
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        text lot_id
+        date acquired_date
+        numeric_38_12_ original_quantity
+        numeric_38_12_ open_quantity
+        numeric_38_12_ unit_cost
+        text currency
+        uuid source_journal_entry_id FK
+        text evidence_ref
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        bigint version
+        uuid security_id
+        uuid book_position_id
+        uuid originating_mutation_batch_id FK
+        uuid last_mutation_batch_id FK
+    }
+    ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
+    ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"
+    ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
+    ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
+    ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
+    ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
+    ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
+    ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_tax_lots ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_tax_lot_record_id_fkey"

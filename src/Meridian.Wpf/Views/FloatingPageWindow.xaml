@@ -6,15 +6,15 @@
         MinWidth="640" MinHeight="480"
         Width="1024" Height="700"
         ShowInTaskbar="True"
-        Background="#0A0A12">
-    <Grid Background="#0A0A12">
+        Background="{StaticResource FloatWindowBackgroundBrush}">
+    <Grid Background="{StaticResource FloatWindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Title bar: drag to move, shows page title and close button -->
-        <Border Grid.Row="0" Background="#1A2A4A" Padding="12,6"
+        <Border Grid.Row="0" Background="{StaticResource FloatWindowChromeBrush}" Padding="12,6"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
                 Cursor="SizeAll">
             <Grid>
@@ -29,7 +29,7 @@
                            VerticalAlignment="Center"/>
                 <Button Grid.Column="1"
                         Content="✕"
-                        Foreground="#888888" Background="Transparent"
+                        Foreground="{StaticResource DarkSurfaceMutedTextBrush}" Background="Transparent"
                         BorderThickness="0" Padding="8,2"
                         Cursor="Arrow"
                         FontSize="12"

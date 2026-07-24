@@ -5,17 +5,19 @@
  * Smart positioning: auto-adjusts to avoid overflow off-screen.
  *
  * @example
- * const [onContextMenu, isOpen, closeMenu] = useContextMenu();
- * <div onContextMenu={onContextMenu}>Right-click me</div>
- * {isOpen && (
+ * const [menu, setMenu] = React.useState(null);
+ * <div onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}>Right-click me</div>
+ * {menu && (
  *   <ContextMenu
+ *     x={menu.x}
+ *     y={menu.y}
  *     items={[
  *       { label: 'Edit', icon: '✎', onClick: handleEdit },
  *       { label: 'Copy', icon: '⎘', onClick: handleCopy },
  *       { type: 'divider' },
- *       { label: 'Delete', icon: '🗑️', dangerous: true, onClick: handleDelete }
+ *       { label: 'Delete', icon: '⌫', dangerous: true, onClick: handleDelete }
  *     ]}
- *     onClose={closeMenu}
+ *     onClose={() => setMenu(null)}
  *   />
  * )}
  */
@@ -48,19 +50,30 @@ export interface ContextMenuProps {
   /** Menu items and dividers */
   items: (ContextMenuItem | ContextMenuDivider)[];
 
-  /** Fired when the menu is closed (click overlay or item selected) */
+  /** Anchor x (viewport px) — pass `position.x` from useContextMenu. @default 0 */
+  x?: number;
+
+  /** Anchor y (viewport px) — pass `position.y` from useContextMenu. @default 0 */
+  y?: number;
+
+  /** Fired when the menu is closed (click overlay, press Escape, or select an item) */
   onClose?: () => void;
 }
 
 export declare function ContextMenu(props: ContextMenuProps): JSX.Element | null;
 
 /**
- * useContextMenu — hook to attach context menu to an element.
+ * useContextMenu — convenience hook that wires the right-click handler + open/position state.
+ *
+ * NOTE: bundle-internal — like `useToast` / `useTableState`, this lowercase helper is NOT on the
+ * `window.<Namespace>` export map, so consumers cannot import it. Manage the anchor point with your
+ * own `useState` and pass it as `x`/`y` (see the ContextMenu example above). This declaration
+ * documents the in-bundle helper for design-system authoring only.
  *
  * @example
- * const [onContextMenu, isOpen, closeMenu] = useContextMenu();
+ * const [onContextMenu, isOpen, closeMenu, position] = useContextMenu();
  * <div onContextMenu={onContextMenu}>Right-click me</div>
- * {isOpen && <ContextMenu items={[...]} onClose={closeMenu} />}
+ * {isOpen && position && <ContextMenu items={[...]} x={position.x} y={position.y} onClose={closeMenu} />}
  *
  * @returns Tuple: [onContextMenu handler, isOpen boolean, closeMenu function, position object]
  */

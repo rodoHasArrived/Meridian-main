@@ -508,7 +508,7 @@ const fixtureExecutionAudit: ExecutionAuditEntry[] = [
     runId: "run-dev-1",
     symbol: null,
     correlationId: "fixture-readiness",
-    message: "Replay matched the fixture paper session state.",
+    message: "Replay matched the recorded paper session state.",
     metadata: { sessionId: "paper-dev-42" }
   }
 ];
@@ -6163,7 +6163,7 @@ function buildFixtureFinancialRecordExplorer(explorerId: string): FinancialRecor
         source: "Security Master instruments",
         savedViewLabel: "Instrument proof",
         summaryItems: [
-          { label: "Coverage", value: "Ready", detail: "Instrument identity is retained.", tone: "Success" },
+          { label: "Coverage", value: "Verification pending", detail: "Confirm conflicts, reference routes, and passport evidence before relying on coverage.", tone: "Warning" },
           { label: "Conflicts", value: "0", detail: "No open identity conflict for AAPL.", tone: "Success" }
         ],
         filters: [

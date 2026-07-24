@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Storage.Archival;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Session;
@@ -63,14 +64,10 @@ public sealed class WindowStateStore : IWindowStateStore
 
         try
         {
-            var dir = Path.GetDirectoryName(_stateFilePath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
             var json = JsonSerializer.Serialize(state, JsonOptions);
-            await File.WriteAllTextAsync(_stateFilePath, json, ct).ConfigureAwait(false);
+            // Atomic write (temp + rename): a crash mid-save must not corrupt the window
+            // state file, which would otherwise silently reset the operator's layout.
+            await AtomicFileWriter.WriteAsync(_stateFilePath, json, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

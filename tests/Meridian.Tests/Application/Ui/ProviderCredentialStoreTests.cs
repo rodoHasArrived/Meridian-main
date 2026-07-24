@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Ui.Shared.Services;
+using System.Text.Json;
 
 namespace Meridian.Tests.Application.UI;
 
@@ -40,27 +41,27 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     public async Task SaveCredentials_IsolatesModules()
     {
         var store = new ProviderCredentialStore(_dataRoot);
-        await store.SaveCredentialsAsync("mod-a", new Dictionary<string, string> { ["key"] = "val-a" });
-        await store.SaveCredentialsAsync("mod-b", new Dictionary<string, string> { ["key"] = "val-b" });
+        await store.SaveCredentialsAsync("polygon", new Dictionary<string, string> { ["apiKey"] = "val-a" });
+        await store.SaveCredentialsAsync("finnhub", new Dictionary<string, string> { ["apiKey"] = "val-b" });
 
-        var a = await store.GetCredentialsAsync("mod-a");
-        var b = await store.GetCredentialsAsync("mod-b");
+        var a = await store.GetCredentialsAsync("polygon");
+        var b = await store.GetCredentialsAsync("finnhub");
 
-        a["key"].Should().Be("val-a");
-        b["key"].Should().Be("val-b");
+        a["apiKey"].Should().Be("val-a");
+        b["apiKey"].Should().Be("val-b");
     }
 
     [Fact]
     public async Task GetStoredKeyNames_ReturnsNonEmptyKeys()
     {
         var store = new ProviderCredentialStore(_dataRoot);
-        await store.SaveCredentialsAsync("mod", new Dictionary<string, string>
+        await store.SaveCredentialsAsync("alpaca", new Dictionary<string, string>
         {
             ["keyId"] = "value",
             ["secretKey"] = ""
         });
 
-        var keys = await store.GetStoredKeyNamesAsync("mod");
+        var keys = await store.GetStoredKeyNamesAsync("alpaca");
 
         keys.Should().Contain("keyId");
         keys.Should().NotContain("secretKey");
@@ -70,10 +71,10 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     public async Task DeleteCredentials_RemovesModuleEntry()
     {
         var store = new ProviderCredentialStore(_dataRoot);
-        await store.SaveCredentialsAsync("mod", new Dictionary<string, string> { ["k"] = "v" });
-        await store.DeleteCredentialsAsync("mod");
+        await store.SaveCredentialsAsync("polygon", new Dictionary<string, string> { ["apiKey"] = "v" });
+        await store.DeleteCredentialsAsync("polygon");
 
-        var result = await store.GetCredentialsAsync("mod");
+        var result = await store.GetCredentialsAsync("polygon");
         result.Should().BeEmpty();
     }
 
@@ -81,12 +82,50 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     public async Task SaveCredentials_MergesWithExisting()
     {
         var store = new ProviderCredentialStore(_dataRoot);
-        await store.SaveCredentialsAsync("mod", new Dictionary<string, string> { ["k1"] = "v1" });
-        await store.SaveCredentialsAsync("mod", new Dictionary<string, string> { ["k2"] = "v2" });
+        await store.SaveCredentialsAsync("alpaca", new Dictionary<string, string> { ["keyId"] = "v1" });
+        await store.SaveCredentialsAsync("alpaca", new Dictionary<string, string> { ["secretKey"] = "v2" });
 
-        var result = await store.GetCredentialsAsync("mod");
+        var result = await store.GetCredentialsAsync("alpaca");
 
-        result.Should().ContainKey("k2");
+        result.Should().ContainKey("keyId");
+        result.Should().ContainKey("secretKey");
+    }
+
+    [Fact]
+    public async Task FirstRead_MigratesAndRemovesLegacyPlaintextSidecar()
+    {
+        var legacyPath = Path.Combine(_dataRoot, "provider-credentials.json");
+        const string rawSecret = "legacy-secret-value";
+        await File.WriteAllTextAsync(
+            legacyPath,
+            JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>
+            {
+                ["alpaca"] = new()
+                {
+                    ["keyId"] = "legacy-key",
+                    ["secretKey"] = rawSecret
+                }
+            }));
+        var store = new ProviderCredentialStore(_dataRoot);
+
+        var result = await store.GetCredentialsAsync("alpaca");
+
+        result["secretKey"].Should().Be(rawSecret);
+        File.Exists(legacyPath).Should().BeFalse();
+        File.ReadAllText(Path.Combine(_dataRoot, ".mdc", "provider-credentials.vault"))
+            .Should().NotContain(rawSecret);
+    }
+
+    [Fact]
+    public async Task SaveCredentials_NeverCreatesLegacyPlaintextSidecar()
+    {
+        var store = new ProviderCredentialStore(_dataRoot);
+
+        await store.SaveCredentialsAsync(
+            "alpaca",
+            new Dictionary<string, string> { ["keyId"] = "key", ["secretKey"] = "secret" });
+
+        File.Exists(Path.Combine(_dataRoot, "provider-credentials.json")).Should().BeFalse();
     }
 
     public void Dispose()

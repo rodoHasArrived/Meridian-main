@@ -53,7 +53,7 @@
 | `src\Meridian.Infrastructure\Adapters\Alpaca\AlpacaHistoricalDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Alpaca\AlpacaOptionsChainProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Alpaca\AlpacaProviderModule.cs` |
-| `src\Meridian.Infrastructure\Adapters\Alpaca\AlpacaSymbolSearchProviderRefactored.cs` |
+| `src\Meridian.Infrastructure\Adapters\Alpaca\AlpacaSymbolSearchProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\AlphaVantage\AlphaVantageHistoricalDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Core\BaseHistoricalDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Core\BaseSymbolSearchProvider.cs` |
@@ -79,7 +79,7 @@
 | `src\Meridian.Infrastructure\Adapters\Edgar\EdgarSymbolSearchProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Edgar\IEdgarReferenceDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Finnhub\FinnhubHistoricalDataProvider.cs` |
-| `src\Meridian.Infrastructure\Adapters\Finnhub\FinnhubSymbolSearchProviderRefactored.cs` |
+| `src\Meridian.Infrastructure\Adapters\Finnhub\FinnhubSymbolSearchProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\Fred\FredHistoricalDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\InteractiveBrokers\IBHistoricalDataProvider.cs` |
 | `src\Meridian.Infrastructure\Adapters\NasdaqDataLink\NasdaqDataLinkHistoricalDataProvider.cs` |

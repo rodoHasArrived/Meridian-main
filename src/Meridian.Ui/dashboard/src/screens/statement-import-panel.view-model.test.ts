@@ -375,6 +375,8 @@ describe("useStatementImportPanelViewModel", () => {
     await waitFor(() => expect(result.current.preview).not.toBeNull());
 
     act(() => result.current.selectProfile("custom-ibkr"));
+    await waitFor(() => expect(services.previewImport).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.canCommit).toBe(true));
     fillCommitForm(result);
 
     await act(async () => {
@@ -394,6 +396,37 @@ describe("useStatementImportPanelViewModel", () => {
     expect(result.current.commitResult?.runId).toBe("stmt-run-77");
     expect(result.current.commitOutcome).toBe("committed");
     expect(result.current.commitError).toBeNull();
+  });
+
+  it("blocks commit when preview errors remain", async () => {
+    const blockedPreview: StatementImportPreview = {
+      ...fixturePreview,
+      status: "NeedsAttention",
+      issues: [
+        { code: "MISSING_ACCOUNT", severity: "Error", rowNumber: 2, field: "account", message: "Account is required." }
+      ]
+    };
+    const services = makeServices({
+      previewImport: vi.fn(async () => blockedPreview)
+    });
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      result.current.selectFile(makeFile());
+    });
+    await waitFor(() => expect(result.current.preview?.status).toBe("NeedsAttention"));
+    fillCommitForm(result);
+
+    expect(result.current.canCommit).toBe(false);
+    expect(result.current.commitDisabledReason).toContain("Resolve preview errors");
+
+    await act(async () => {
+      await result.current.commit();
+    });
+
+    expect(services.commitImport).not.toHaveBeenCalled();
+    expect(result.current.commitError?.summary).toContain("Resolve preview errors");
   });
 
   it("reports duplicate commits distinctly", async () => {

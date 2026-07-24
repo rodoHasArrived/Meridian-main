@@ -147,16 +147,9 @@ public sealed class StatementReconciliationService
     /// </summary>
     private static void ValidateFlexDocument(string sourcePath)
     {
-        var settings = new System.Xml.XmlReaderSettings
-        {
-            DtdProcessing = System.Xml.DtdProcessing.Prohibit,
-            XmlResolver = null,
-            CloseInput = true
-        };
-
         try
         {
-            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), settings);
+            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), CreateFlexReaderSettings());
             reader.MoveToContent();
             if (!string.Equals(reader.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
             {
@@ -170,6 +163,21 @@ public sealed class StatementReconciliationService
         }
     }
 
+    private static System.Xml.Linq.XDocument LoadFlexDocument(string content)
+    {
+        using var textReader = new StringReader(content);
+        using var reader = System.Xml.XmlReader.Create(textReader, CreateFlexReaderSettings());
+        return System.Xml.Linq.XDocument.Load(reader);
+    }
+
+    private static System.Xml.XmlReaderSettings CreateFlexReaderSettings() => new()
+    {
+        DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+        XmlResolver = null,
+        CloseInput = true,
+        MaxCharactersFromEntities = 0
+    };
+
     /// <summary>
     /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
     /// and CashTransaction element) so case intake matches Flex statements with the same
@@ -182,7 +190,7 @@ public sealed class StatementReconciliationService
         string sourcePath,
         string content)
     {
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        var document = LoadFlexDocument(content);
         var rows = new List<NormalizedStatementRow>();
         var rowNumber = 0;
 
@@ -297,7 +305,9 @@ public sealed class StatementReconciliationService
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
 
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        // Import can be invoked without validation (for example, when resuming from a checkpoint),
+        // so parse with the same DTD-prohibiting settings as ValidateFlexDocument.
+        var document = LoadFlexDocument(content);
         var sourceRows = new List<StatementSourceRowReference>();
         var rowNumber = 0;
         foreach (var element in document.Descendants()
@@ -366,19 +376,18 @@ public sealed class StatementReconciliationService
             return new ExternalStatementCaseIntakeResult(importId, normalizedSourceKind, sourcePath, 0, 0, []);
         }
 
-        var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
-        var (matches, cases) = MatchRows(rows);
-        // Compute the import id from the resolved profile and file content, identical to the import
-        // path (and to ReadCanonicalStatementRows for non-empty files), so import and reconcile/intake
-        // refer to the same run even for a valid but empty (header-only) statement.
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var canonicalContent = File.ReadAllText(sourcePath);
-        var canonicalImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{canonicalContent}");
-        return new ExternalStatementCaseIntakeResult(
-            canonicalImportId,
+        var canonicalStatement = ReadCanonicalStatementRows(
             normalizedSourceKind,
             sourcePath,
-            rows.Count,
+            mappingProfileId,
+            canonicalContent);
+        var (matches, cases) = MatchRows(canonicalStatement.Rows);
+        return new ExternalStatementCaseIntakeResult(
+            canonicalStatement.ImportId,
+            normalizedSourceKind,
+            sourcePath,
+            canonicalStatement.Rows.Count,
             matches.Count,
             cases);
     }
@@ -492,11 +501,10 @@ public sealed class StatementReconciliationService
             var sourceActivityType = mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber);
             var activityType = profile.MapActivityType(sourceActivityType);
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier (MatchRows auto-matches positions
-            // without re-checking the symbol, so a blank one would become a false high-confidence
-            // match instead of a security-mapping break). Account-level cash/fee/dividend and other
-            // activity rows may omit it, matching the prior positional importer.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier so downstream
+            // matching and resolution retain a security reference. Only account-level cash, fee,
+            // and dividend rows may omit it, matching the prior positional importer.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
@@ -550,17 +558,22 @@ public sealed class StatementReconciliationService
         }
     }
 
-    private IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
+    private CanonicalStatementReadResult ReadCanonicalStatementRows(
+        string normalizedSourceKind,
+        string sourcePath,
+        string? mappingProfileId,
+        string content)
     {
-        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
+        using var reader = new StringReader(content);
+        var headerLine = reader.ReadLine();
+        var profile = ValidateStatementHeader(normalizedSourceKind, mappingProfileId, headerLine);
 
-        var content = File.ReadAllText(sourcePath);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var rows = new List<NormalizedStatementRow>();
-        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
-        var lines = File.ReadLines(sourcePath).Skip(1);
+        var header = headerLine!.Split(',', StringSplitOptions.TrimEntries);
         var rowNumber = 1;
-        foreach (var line in lines)
+        string? line;
+        while ((line = reader.ReadLine()) is not null)
         {
             rowNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -579,9 +592,10 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier (see import path); account-level
-            // cash/fee/dividend and other activity rows may omit it. Kept consistent across both paths.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier (see import
+            // path); only account-level cash, fee, and dividend rows may omit it. Kept consistent
+            // across both paths.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
@@ -632,14 +646,19 @@ public sealed class StatementReconciliationService
                 rawSnapshot));
         }
 
-        return rows;
+        return new CanonicalStatementReadResult(importId, rows);
     }
 
 
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var header = File.ReadLines(sourcePath).FirstOrDefault();
+        return ValidateStatementHeader(normalizedSourceKind, mappingProfileId, header);
+    }
+
+    private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string? mappingProfileId, string? header)
+    {
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         if (string.IsNullOrWhiteSpace(header))
         {
             throw new InvalidDataException("Statement source file is empty.");
@@ -665,6 +684,8 @@ public sealed class StatementReconciliationService
 
         return profile;
     }
+
+    private sealed record CanonicalStatementReadResult(string ImportId, IReadOnlyList<NormalizedStatementRow> Rows);
 
     private static void EnsureUniqueStatementHeaderColumns(string[] header, string profileId)
     {
@@ -767,22 +788,27 @@ public sealed class StatementReconciliationService
         return StatementRowKind.Transaction;
     }
 
+    /// <summary>
+    /// Matches normalized statement rows into match links and reconciliation cases. Position rows
+    /// are matched by the shared <see cref="StatementMatchingEngine"/> against the supplied
+    /// internal portfolio positions (none by default for file-only intake); rows the engine cannot
+    /// match at exact or tolerance tier fall through to break classification and casework, the
+    /// same as every other row kind.
+    /// </summary>
     public (IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<ReconciliationCase> Cases) MatchRows(
-        IReadOnlyList<NormalizedStatementRow> rows)
+        IReadOnlyList<NormalizedStatementRow> rows,
+        IReadOnlyList<InternalPortfolioPosition>? internalPositions = null)
     {
         var matches = new List<ReconciliationMatchLink>();
         var cases = new List<ReconciliationCase>();
+        var positionMatchLinks = MatchPositionRows(rows, internalPositions ?? []);
 
         foreach (var row in rows)
         {
-            if (row.Kind == StatementRowKind.Position && Math.Abs(row.Quantity) > 0)
+            if (row.Kind == StatementRowKind.Position &&
+                positionMatchLinks.TryGetValue(row.RowId, out var positionMatch))
             {
-                matches.Add(new ReconciliationMatchLink(row.RowId, "position:auto", null, null, null, null, null, "high", "Symbol and quantity aligned within tolerance rule position-default-v1.")
-                {
-                    ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
-                    ToleranceProfileVersion = StatementToleranceProfile.DefaultProfileVersion,
-                    ToleranceRuleId = "position-default-v1"
-                });
+                matches.Add(positionMatch);
                 continue;
             }
 
@@ -842,6 +868,88 @@ public sealed class StatementReconciliationService
         return (matches, cases);
     }
 
+    /// <summary>
+    /// Runs statement position rows through <see cref="StatementMatchingEngine"/> and returns a
+    /// match link per row that matched at exact or tolerance tier, keyed by row id. Candidate and
+    /// unmatched engine results intentionally produce no link so those rows become break cases.
+    /// </summary>
+    private static Dictionary<string, ReconciliationMatchLink> MatchPositionRows(
+        IReadOnlyList<NormalizedStatementRow> rows,
+        IReadOnlyList<InternalPortfolioPosition> internalPositions)
+    {
+        var statementPositions = rows
+            .Where(static row => row.Kind == StatementRowKind.Position)
+            .Select(static row => new NormalizedStatementPosition(
+                row.RowId,
+                row.RawSnapshot.GetValueOrDefault("account", "unknown-account"),
+                row.Symbol,
+                DateOnly.FromDateTime(row.EffectiveAtUtc.UtcDateTime),
+                row.Quantity,
+                // Row amounts are always derived from required statement columns (explicit
+                // amount, cash amount, or price x quantity), so zero is a real market value —
+                // not absence. The previous `== 0m ? null` demoted genuinely zero-MV positions
+                // to quantity-only matching and skipped the market-value comparison.
+                row.Amount,
+                row.RowId))
+            .ToArray();
+
+        var links = new Dictionary<string, ReconciliationMatchLink>(StringComparer.OrdinalIgnoreCase);
+        if (statementPositions.Length == 0)
+        {
+            return links;
+        }
+
+        // Fail closed if the default profile ever ships without a position rule: no rule means no
+        // engine matches, so every position row surfaces as a break case for operator review.
+        var positionRule = StatementToleranceProfile.Default.PositionRules.FirstOrDefault();
+        if (positionRule is null)
+        {
+            return links;
+        }
+
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            statementPositions,
+            StatementCashBalances: [],
+            StatementTransactions: [],
+            InternalPositions: internalPositions,
+            InternalCashBalances: [],
+            InternalLedgerTransactions: [],
+            new StatementMatchingToleranceProfile(
+                PositionQuantity: positionRule.QuantityTolerance,
+                PositionMarketValue: positionRule.MarketValueTolerance,
+                CashBalance: 0m,
+                TransactionQuantity: 0m,
+                TransactionNetAmount: 0m)));
+
+        foreach (var match in result.Results)
+        {
+            if (match.Kind != StatementMatchKind.Position ||
+                match.MatchTier is not (StatementMatchTier.Exact or StatementMatchTier.Tolerance) ||
+                match.BrokerEvidenceReference is null)
+            {
+                continue;
+            }
+
+            links[match.BrokerEvidenceReference] = new ReconciliationMatchLink(
+                match.BrokerEvidenceReference,
+                match.InternalEvidenceReference,
+                null,
+                null,
+                null,
+                null,
+                null,
+                match.MatchTier == StatementMatchTier.Exact ? "high" : "medium",
+                match.Explanation)
+            {
+                ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
+                ToleranceProfileVersion = StatementToleranceProfile.DefaultProfileVersion,
+                ToleranceRuleId = match.RuleIds.FirstOrDefault()
+            };
+        }
+
+        return links;
+    }
+
     private static ReconciliationCaseAttachment BuildStatementAttachment(
         NormalizedStatementRow row,
         string? evidenceRoute)
@@ -870,6 +978,11 @@ public sealed class StatementReconciliationService
 
         var (probableCause, ledgerImpact, suggestedNextAction, signoffRole) = row.Kind switch
         {
+            StatementRowKind.Position => (
+                "External position could not be matched to a retained internal portfolio position within tolerance.",
+                $"Position and market-value balances may be misstated by {FormatAmount(row.Amount, row.Currency)} for {DisplaySymbol(row)}.",
+                "Compare the statement position with the retained internal position snapshot and attach the position-reconciliation evidence before resolving.",
+                "Fund operations"),
             StatementRowKind.CashBalance => (
                 "External cash balance could not be matched to a retained internal cash snapshot within tolerance.",
                 $"Cash ledger may need a balance adjustment or missing bank/custodian sync review for account {account}.",

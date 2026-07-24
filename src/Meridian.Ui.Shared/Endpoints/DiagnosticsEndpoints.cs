@@ -301,13 +301,30 @@ public static class DiagnosticsEndpoints
 
             var provider = registry.GetAllProviders()
                 .FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+            var diagnostics = provider is null
+                ? null
+                : ProviderConnectionDiagnosticsProjection.Find(
+                    ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
+                    provider.Name,
+                    provider.DisplayName);
 
             return Results.Json(new
             {
                 provider = providerName,
                 found = provider is not null,
                 isEnabled = provider?.IsEnabled ?? false,
-                reachable = provider?.IsEnabled ?? false,
+                reachable = provider is null
+                    ? (bool?)null
+                    : ProviderExtendedEndpoints.ResolveIsConnected(
+                        provider.IsEnabled,
+                        diagnostics?.IsConnected),
+                connectionState = provider is null
+                    ? "not-found"
+                    : ProviderExtendedEndpoints.ResolveConnectionState(
+                        provider.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected),
+                diagnosticsAvailable = diagnostics is not null,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
@@ -411,11 +428,26 @@ public static class DiagnosticsEndpoints
             if (registry is null)
                 return Results.Json(new { error = "Provider registry not available" }, jsonOptions, statusCode: 503);
 
-            var providers = registry.GetAllProviders().Select(p => new
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+            var providers = registry.GetAllProviders().Select(p =>
             {
-                name = p.Name,
-                isEnabled = p.IsEnabled,
-                reachable = p.IsEnabled
+                var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                    diagnosticsByProviderId,
+                    p.Name,
+                    p.DisplayName);
+                return new
+                {
+                    name = p.Name,
+                    isEnabled = p.IsEnabled,
+                    reachable = ProviderExtendedEndpoints.ResolveIsConnected(
+                        p.IsEnabled,
+                        diagnostics?.IsConnected),
+                    connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                        p.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected),
+                    diagnosticsAvailable = diagnostics is not null
+                };
             });
 
             return Results.Json(new

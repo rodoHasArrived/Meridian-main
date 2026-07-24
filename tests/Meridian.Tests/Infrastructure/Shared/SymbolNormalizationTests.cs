@@ -305,5 +305,16 @@ public sealed class SymbolNormalizationTests
         SymbolNormalization.NormalizeForOpenFigi(mixedCase).Should().Be("BRK");
     }
 
+    [Theory]
+    [InlineData("AAPL", "aapl.us")]
+    [InlineData("aapl.us", "aapl.us")]
+    [InlineData("BRK.B", "brk-b.us")]
+    [InlineData("brk-b.us", "brk-b.us")]
+    public void NormalizeForProvider_Stooq_IsIdempotent(string input, string expected)
+    {
+        SymbolNormalization.NormalizeForProvider(input, "Stooq").Should().Be(expected);
+        SymbolNormalization.NormalizeForProvider(expected, "stooq").Should().Be(expected);
+    }
+
     #endregion
 }

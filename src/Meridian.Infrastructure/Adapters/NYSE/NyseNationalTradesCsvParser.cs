@@ -183,10 +183,81 @@ public static class NyseNationalTradesCsvParser
     // Time parsing
     // -------------------------------------------------------------------------
 
+    // NYSE TAQ timestamps are Eastern Time wall-clock values; resolve the zone once so each
+    // parsed trade carries the session's real EST/EDT offset instead of a fake UTC label.
+    private static readonly TimeZoneInfo EasternTimeZone = ResolveEasternTimeZone();
+
+    private static TimeZoneInfo ResolveEasternTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+        }
+        catch (InvalidTimeZoneException)
+        {
+        }
+
+        try
+        {
+            // Windows hosts without ICU-based IANA mapping expose the zone under its legacy id.
+            return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+        }
+        catch (InvalidTimeZoneException)
+        {
+        }
+
+        // Hosts without any time-zone database (e.g. minimal containers missing tzdata) would
+        // otherwise fail type initialization.
+        return CreateEasternFallbackZone();
+    }
+
+    /// <summary>
+    /// Builds a US Eastern zone from the statutory DST rules, so hosts without a time-zone
+    /// database still resolve EDT sessions to -04:00 instead of silently applying fixed EST.
+    /// Two eras are modeled: 1987-2006 (first Sunday in April 02:00 to last Sunday in October
+    /// 02:00) and 2007 onward (second Sunday in March 02:00 to first Sunday in November 02:00).
+    /// That covers every year TAQ data exists; earlier dates fall back to the pre-2007 rule.
+    /// </summary>
+    internal static TimeZoneInfo CreateEasternFallbackZone()
+    {
+        var twoAm = new DateTime(1, 1, 1, 2, 0, 0);
+
+        var pre2007 = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            DateTime.MinValue.Date,
+            new DateTime(2006, 12, 31),
+            TimeSpan.FromHours(1),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 4, week: 1, DayOfWeek.Sunday),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 10, week: 5, DayOfWeek.Sunday));
+
+        var post2007 = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            new DateTime(2007, 1, 1),
+            DateTime.MaxValue.Date,
+            TimeSpan.FromHours(1),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 3, week: 2, DayOfWeek.Sunday),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 11, week: 1, DayOfWeek.Sunday));
+
+        return TimeZoneInfo.CreateCustomTimeZone(
+            "Meridian US Eastern Fallback",
+            TimeSpan.FromHours(-5),
+            "US Eastern (built-in DST fallback)",
+            "US Eastern Standard Time",
+            "US Eastern Daylight Time",
+            new[] { pre2007, post2007 });
+    }
+
     /// <summary>
     /// Parses a NYSE TAQ time string with nanosecond precision.
     /// Format: HH:MM:SS.nnnnnnnnn
     /// Clips nanoseconds to .NET's 100-nanosecond tick resolution.
+    /// The time is interpreted as Eastern Time (per the TAQ specification), so the returned
+    /// <see cref="DateTimeOffset"/> keeps the exchange wall-clock time with the correct
+    /// EST/EDT offset for <paramref name="sessionDate"/>.
     /// </summary>
     public static bool TryParseNanosecondTime(string timeStr, DateOnly sessionDate, out DateTimeOffset result)
     {
@@ -220,14 +291,12 @@ public static class NyseNationalTradesCsvParser
 
         try
         {
-            // NYSE TAQ timestamps are Eastern Time (ET); use UTC offset of -5 (EST) or -4 (EDT)
-            // For simplicity, record as unspecified local time. Callers must apply timezone.
             var dt = new DateTime(
                 sessionDate.Year, sessionDate.Month, sessionDate.Day,
                 hours, minutes, seconds,
                 DateTimeKind.Unspecified).AddTicks(ticks);
 
-            result = new DateTimeOffset(dt, TimeSpan.Zero);
+            result = new DateTimeOffset(dt, EasternTimeZone.GetUtcOffset(dt));
             return true;
         }
         catch (ArgumentOutOfRangeException)

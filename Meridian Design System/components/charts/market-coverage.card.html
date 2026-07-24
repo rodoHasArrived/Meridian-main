@@ -1,0 +1,89 @@
+<!-- @dsCard group="Charts" viewport="1100x640" name="CoverageMatrix · TimeframeSwitcher · AsOfControl" subtitle="Data-availability heat grid + the chart-toolbar time controls" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Market coverage & time basis</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { CoverageMatrix, TimeframeSwitcher, AsOfControl } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const DAYS = ["2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-19",
+              "2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26"];
+const COLS = DAYS.map((d) => ({ id: d, label: d.slice(5) }));
+const SYMS = ["AAPL","MSFT","NVDA","SPY","ESU6","EURUSD","BTC-PERP"];
+
+// Deterministic fixture: Juneteenth half-session on 06-19; one provider outage on 06-23.
+const DATA = {};
+for (const s of SYMS) {
+  DATA[s] = {};
+  for (const d of DAYS) DATA[s][d] = "full";
+  DATA[s]["2026-06-19"] = s === "BTC-PERP" || s === "EURUSD"
+    ? "full"
+    : { status: "partial", detail: "210/390 bars · half session" };
+}
+DATA["NVDA"]["2026-06-23"] = { status: "gap", detail: "0/390 bars · provider outage" };
+DATA["ESU6"]["2026-06-23"] = { status: "gap", detail: "112/460 bars · provider outage" };
+DATA["AAPL"]["2026-06-26"] = { status: "pending", detail: "backfill-7742 queued" };
+DATA["MSFT"]["2026-06-26"] = { status: "pending", detail: "backfill-7742 queued" };
+DATA["EURUSD"]["2026-06-15"] = { status: "none" };
+
+function Demo() {
+  const [tf, setTf] = useState("1m");
+  const [basis, setBasis] = useState({ mode: "live", asOf: null });
+  const [picked, setPicked] = useState(null);
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:16, maxWidth:1040 }}>
+
+      <Section title="Chart toolbar · resolution + time basis">
+        <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
+          <TimeframeSwitcher value={tf} onChange={setTf} />
+          <AsOfControl onChange={setBasis} />
+          <span style={{ marginLeft:"auto", fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)" }}>
+            querying <strong style={{ color:"var(--text-primary)" }}>{tf}</strong> bars ·{" "}
+            {basis.mode === "live" ? "live basis" : "frozen as-of"}
+          </span>
+        </div>
+      </Section>
+
+      <Section title="CoverageMatrix · bars on disk, June window">
+        <CoverageMatrix
+          rows={SYMS}
+          cols={COLS}
+          data={DATA}
+          cellSize={18}
+          onCellClick={(row, col, cell) => setPicked({ row, col, cell })}
+        />
+        <div style={{ marginTop:10, fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-secondary)" }}>
+          {picked
+            ? <span>opened scan: <strong style={{ color:"var(--text-primary)" }}>{picked.row.id} · {picked.col.id}</strong> — {picked.cell.detail || picked.cell.status}</span>
+            : <span style={{ color:"var(--text-muted)" }}>click a cell to open its gap-scan</span>}
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

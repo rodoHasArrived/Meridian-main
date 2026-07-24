@@ -26,7 +26,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Compliance/ComplianceModels.cs` - sensitive-action, actor, compliance request, audit-event,
   access-review, and audit-hash records.
 - `Compliance/ComplianceServices.cs` - compliance policy engine, immutable audit-log service, and
-  access-review service.
+  access-review service. The policy engine gates sensitive actions on `Meridian.Identity`
+  role/permission mappings (`UserRole` + `RolePermissions`) — the same mapping used by
+  `Meridian.FSharp.Operations.SensitiveActionPolicy` — rather than a module-private role table.
 
 ## Important workflows
 

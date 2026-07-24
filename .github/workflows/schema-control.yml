@@ -1,0 +1,117 @@
+name: PostgreSQL Schema Control
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - "src/Meridian.Storage/**/Migrations/**"
+      - "src/Meridian.Storage/Migrations/**"
+      - "src/Meridian.Storage/**/*MigrationRunner.cs"
+      - "src/Meridian.Identity/**/Migrations/**"
+      - "src/Meridian.Identity/**/*.cs"
+      - "src/Meridian.Contracts/**"
+      - "tools/schema_control/**"
+      - "build/scripts/schema-control.py"
+      - "tests/scripts/test_schema_control_*.py"
+      - "database/**"
+      - "docs/reference/database-schema.md"
+      - "docs/generated/database/**"
+      - ".github/workflows/schema-control.yml"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Validate drift or refresh the tracked schema snapshot"
+        required: true
+        default: check
+        type: choice
+        options:
+          - check
+          - snapshot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schema-control-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: postgresql://meridian:meridian@localhost:5432/meridian_schema_control
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  schema-control:
+    name: schema-control
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16.14-alpine
+        env:
+          POSTGRES_USER: meridian
+          POSTGRES_PASSWORD: meridian
+          POSTGRES_DB: meridian_schema_control
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meridian -d meridian_schema_control"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install schema-control dependencies
+        run: python -m pip install --requirement tools/schema_control/requirements.txt
+
+      - name: Test schema-control tooling
+        run: python -m unittest discover -s tests/scripts -p "test_schema_control*.py" -v
+
+      - name: Verify schema control artifacts
+        if: ${{ github.event_name == 'pull_request' || inputs.mode == 'check' }}
+        run: >-
+          python build/scripts/schema-control.py verify
+          --database-url "$DATABASE_URL"
+          --base-ref "origin/main"
+          --candidate-root build/schema-control/candidate
+
+      - name: Refresh schema control snapshot
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'snapshot' }}
+        run: >-
+          python build/scripts/schema-control.py snapshot
+          --database-url "$DATABASE_URL"
+          --base-ref "origin/main"
+          --candidate-root build/schema-control/candidate
+
+      - name: Append schema control summary
+        if: always()
+        shell: bash
+        run: |
+          summary_path="build/schema-control/candidate/reports/summary.md"
+          if [[ -f "$summary_path" ]]; then
+            cat "$summary_path" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Schema-control summary was not produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload schema control artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: schema-control-${{ github.run_number }}-${{ github.run_attempt }}
+          path: build/schema-control/
+          if-no-files-found: ignore
+          retention-days: 14

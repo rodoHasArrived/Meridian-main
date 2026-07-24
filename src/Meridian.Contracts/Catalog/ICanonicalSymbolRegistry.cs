@@ -80,6 +80,30 @@ public interface ICanonicalSymbolRegistry
     string? TryResolveWithProvider(string symbol, string provider);
 
     /// <summary>
+    /// Gets the outbound provider symbol for a canonical symbol or any known identifier.
+    /// Returns <see langword="null"/> when the security is unknown or no explicit provider
+    /// mapping has been registered.
+    /// </summary>
+    string? GetProviderSymbol(string symbolOrIdentifier, string provider);
+
+    /// <summary>
+    /// Adds or replaces one provider-scoped symbol mapping without replacing the security
+    /// definition or mappings owned by other providers.
+    /// </summary>
+    Task SetProviderSymbolAsync(
+        string canonical,
+        string provider,
+        string providerSymbol,
+        string source = SymbolMappingSources.Operator,
+        bool isOverride = true,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes one provider-scoped mapping while retaining the canonical security definition.
+    /// </summary>
+    Task<bool> RemoveProviderSymbolAsync(string canonical, string provider, CancellationToken ct = default);
+
+    /// <summary>
     /// Checks if a given identifier (canonical, alias, ISIN, FIGI, etc.) is known.
     /// </summary>
     bool IsKnown(string identifier);
@@ -102,11 +126,17 @@ public interface ICanonicalSymbolRegistry
 public sealed class CanonicalSymbolDefinition
 {
     /// <summary>
-    /// Internal canonical symbol name (e.g., "AAPL").
-    /// This is the primary key for the symbol across the system.
+    /// Current canonical ticker used for lookup and display (e.g., "AAPL").
+    /// The durable domain identity is <see cref="SecurityId"/>; tickers may change.
     /// </summary>
     [JsonPropertyName("canonical")]
     public required string Canonical { get; init; }
+
+    /// <summary>
+    /// Durable Security Master identity when the symbol has been matched to a security.
+    /// </summary>
+    [JsonPropertyName("securityId")]
+    public Guid? SecurityId { get; init; }
 
     /// <summary>
     /// Human-readable display name (e.g., "Apple Inc.").
@@ -120,6 +150,19 @@ public sealed class CanonicalSymbolDefinition
     /// </summary>
     [JsonPropertyName("aliases")]
     public IReadOnlyList<string> Aliases { get; init; } = [];
+
+    /// <summary>
+    /// Rich alias history when source, provider, or validity windows are known.
+    /// </summary>
+    [JsonPropertyName("aliasDefinitions")]
+    public IReadOnlyList<CanonicalSymbolAliasDefinition> AliasDefinitions { get; init; } = [];
+
+    /// <summary>
+    /// Provider-scoped outbound symbols keyed by normalized provider identifier.
+    /// </summary>
+    [JsonPropertyName("providerSymbols")]
+    public IReadOnlyDictionary<string, ProviderSymbolDefinition> ProviderSymbols { get; init; }
+        = new Dictionary<string, ProviderSymbolDefinition>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Asset class: equity, etf, option, future, forex, crypto, index.
@@ -174,4 +217,76 @@ public sealed class CanonicalSymbolDefinition
     /// </summary>
     [JsonPropertyName("country")]
     public string? Country { get; init; }
+}
+
+/// <summary>
+/// A provider-scoped symbol together with provenance used to merge learned and curated values safely.
+/// </summary>
+public sealed record ProviderSymbolDefinition(
+    [property: JsonPropertyName("symbol")] string Symbol,
+    [property: JsonPropertyName("source")] string Source = SymbolMappingSources.Registry,
+    [property: JsonPropertyName("isOverride")] bool IsOverride = false,
+    [property: JsonPropertyName("updatedAt")] DateTimeOffset? UpdatedAt = null);
+
+/// <summary>
+/// Provider-aware, validity-dated alias retained from Security Master.
+/// </summary>
+public sealed record CanonicalSymbolAliasDefinition(
+    [property: JsonPropertyName("alias")] string Alias,
+    [property: JsonPropertyName("source")] string? Source = null,
+    [property: JsonPropertyName("provider")] string? Provider = null,
+    [property: JsonPropertyName("validFrom")] DateTimeOffset? ValidFrom = null,
+    [property: JsonPropertyName("validTo")] DateTimeOffset? ValidTo = null,
+    [property: JsonPropertyName("isActive")] bool IsActive = true);
+
+/// <summary>
+/// Stable provenance values and precedence used by the canonical symbol registry.
+/// </summary>
+public static class SymbolMappingSources
+{
+    public const string Operator = "operator";
+    public const string SecurityMaster = "security-master";
+    public const string LegacyConfig = "legacy-config";
+    public const string OpenFigi = "openfigi";
+    public const string Registry = "registry";
+    public const string FormattingFallback = "formatting-fallback";
+}
+
+/// <summary>
+/// Controls migration from legacy symbol translation to the canonical registry.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SymbolResolutionMode>))]
+public enum SymbolResolutionMode
+{
+    /// <summary>Return the legacy resolver result.</summary>
+    Legacy,
+    /// <summary>Return the legacy result and report disagreements with the registry.</summary>
+    Compare,
+    /// <summary>Return the canonical-registry result, falling back only when unknown.</summary>
+    Canonical
+}
+
+/// <summary>
+/// Structured evidence emitted when comparison mode observes different legacy and canonical results.
+/// </summary>
+public sealed record SymbolResolutionMismatch(
+    string Input,
+    string FromProvider,
+    string ToProvider,
+    string? LegacyResult,
+    string? CanonicalResult,
+    Guid? SecurityId,
+    DateTimeOffset ObservedAt);
+
+/// <summary>
+/// Read-only comparison evidence emitted while symbol resolution runs in
+/// <see cref="SymbolResolutionMode.Compare"/> mode.
+/// </summary>
+public interface ISymbolResolutionMismatchReader
+{
+    /// <summary>Total mismatches observed since this process started.</summary>
+    long TotalCount { get; }
+
+    /// <summary>The most recent bounded set of mismatches, newest first.</summary>
+    IReadOnlyList<SymbolResolutionMismatch> GetRecent();
 }

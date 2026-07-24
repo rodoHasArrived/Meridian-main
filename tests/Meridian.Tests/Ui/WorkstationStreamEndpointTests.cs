@@ -77,20 +77,27 @@ public sealed class WorkstationStreamEndpointTests
         var client = app.GetTestClient();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        // Hold the first stream open (its subscription keeps the session's single slot reserved).
-        // Read past the first frame WITHOUT disposing the stream — disposing it would abort the
-        // server request and release the slot, letting the second request succeed spuriously.
-        using var first = await client.GetAsync(
-            "/api/workstation/stream?symbols=SPY", HttpCompletionOption.ResponseHeadersRead, cts.Token);
-        first.StatusCode.Should().Be(HttpStatusCode.OK);
-        await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
-        await ReadPastFirstFrameAsync(firstStream, cts.Token);
+        try
+        {
+            // Hold the first stream open (its subscription keeps the session's single slot reserved).
+            // Read past the first frame WITHOUT disposing the stream — disposing it would abort the
+            // server request and release the slot, letting the second request succeed spuriously.
+            using var first = await client.GetAsync(
+                "/api/workstation/stream?symbols=SPY", HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            first.StatusCode.Should().Be(HttpStatusCode.OK);
+            await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
+            await ReadPastFirstFrameAsync(firstStream, cts.Token);
 
-        using var second = await client.GetAsync(
-            "/api/workstation/stream?symbols=MSFT", HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            using var second = await client.GetAsync(
+                "/api/workstation/stream?symbols=MSFT", HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
-        second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        second.Headers.RetryAfter.Should().NotBeNull();
+            second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+            second.Headers.RetryAfter.Should().NotBeNull();
+        }
+        finally
+        {
+            await cts.CancelAsync();
+        }
     }
 
     private static async Task<string> ReadFirstEventFrameAsync(HttpResponseMessage response, CancellationToken ct)

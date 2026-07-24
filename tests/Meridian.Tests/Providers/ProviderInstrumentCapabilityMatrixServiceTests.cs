@@ -3,6 +3,7 @@ using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Providers;
@@ -89,5 +90,21 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
 
         new ProviderInstrumentCapabilityMatrixService(new DataSourceRegistry()).GetMatrix()
             .DiscoveryFailures.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetMatrix_WithActivationFailure_ProjectsTypedRegistryFailure()
+    {
+        var registry = new DataSourceRegistry();
+        registry.RegisterModules(
+            new ServiceCollection(),
+            typeof(Meridian.Tests.ProviderSdk.ThrowingConstructorProviderModule).Assembly);
+
+        var matrix = new ProviderInstrumentCapabilityMatrixService(registry).GetMatrix();
+
+        matrix.DiscoveryFailures.Should().Contain(failure =>
+            failure.Stage == "activate" &&
+            failure.Subject.Contains(nameof(Meridian.Tests.ProviderSdk.ThrowingConstructorProviderModule), StringComparison.Ordinal) &&
+            failure.ErrorType == nameof(InvalidOperationException));
     }
 }
