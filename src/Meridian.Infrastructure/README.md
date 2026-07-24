@@ -46,6 +46,13 @@ fails closed when a requested stream has no usable entitlement rather than falli
 example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
 misrepresented as consolidated or OPRA-entitled data.
 
+Alpaca brokerage execution consumes the broker-authenticated `trade_updates` stream and only
+allows live order mutations after Alpaca has confirmed its subscription. It deduplicates execution
+updates using Alpaca `execution_id` or lifecycle `event`/order/timestamp identity, persists a
+watermark, and reconciles a bounded `status=all` REST order history after reconnect so missed
+terminal events become immutable execution reports. REST and WebSocket transports share one
+resolved paper/live credential environment for the lifetime of the gateway.
+
 Alpaca reference-data search preserves broker-supplied marginability, shortability,
 easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Search no
 longer silently defaults omitted asset-class filters to equities; it can discover equities, crypto,

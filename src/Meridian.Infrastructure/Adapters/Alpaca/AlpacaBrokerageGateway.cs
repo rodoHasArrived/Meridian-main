@@ -49,6 +49,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
+    private readonly AlpacaCredentialSnapshot _credentials;
     private readonly ILogger<AlpacaBrokerageGateway> _logger;
     private readonly AlpacaTradeUpdatesClient? _tradeUpdates;
     private readonly Channel<ExecutionReport> _reportChannel;
@@ -59,11 +60,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         IHttpClientFactory httpClientFactory,
         AlpacaOptions options,
         ILogger<AlpacaBrokerageGateway> logger,
-        AlpacaTradeUpdatesClient? tradeUpdates = null)
+        AlpacaTradeUpdatesClient? tradeUpdates = null,
+        AlpacaCredentialSnapshot? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _credentials = credentials ?? AlpacaCredentialEnvironment.Resolve(_options);
         _tradeUpdates = tradeUpdates;
         _tradeUpdates?.ConfigureReconciliation(ReconcileExecutionSnapshotsAsync);
 
@@ -103,9 +106,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     string IBrokerageActivitySync.ProviderId => GatewayId;
 
-    private AlpacaCredentialSnapshot CurrentCredentials => AlpacaCredentialEnvironment.Resolve(_options);
+    private AlpacaCredentialSnapshot CurrentCredentials => _credentials;
 
-    private string BaseUrl => CurrentCredentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
+    private string BaseUrl => _credentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken ct = default)
@@ -563,17 +566,31 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     // Reconciliation deliberately reads the broker snapshot after every socket reconnect so orders
     // created outside Meridian and updates missed during the disconnect become immutable reports.
-    private async Task<IReadOnlyList<ExecutionReport>> ReconcileExecutionSnapshotsAsync(CancellationToken ct)
+    internal async Task<IReadOnlyList<ExecutionReport>> ReconcileExecutionSnapshotsAsync(CancellationToken ct)
     {
-        var orders = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
-        return orders.Select(order => new ExecutionReport
+        var after = (_tradeUpdates?.Watermark ?? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(7))).UtcDateTime;
+        using var client = CreateHttpClient();
+        var path = $"{BaseUrl}/v2/orders?status=all&direction=asc&limit=500&after={Uri.EscapeDataString(after.ToString("O", CultureInfo.InvariantCulture))}";
+        var response = await client.GetAsync(path, ct).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var orders = await response.Content.ReadFromJsonAsync(
+            AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false)
+            ?? Array.Empty<AlpacaOrderResponse>();
+
+        return orders.Select(order =>
         {
-            OrderId = order.OrderId, GatewayOrderId = order.OrderId, ClientOrderId = order.ClientOrderId,
-            Symbol = order.Symbol, Side = order.Side, OrderQuantity = order.Quantity,
-            FilledQuantity = order.FilledQuantity, OrderStatus = order.Status,
-            ReportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New,
-            Timestamp = order.CreatedAt,
-            Diagnostics = new ExecutionDiagnostics { Category = "alpaca-rest-reconciliation", RecommendedAction = "Reconciled after execution-stream reconnect." }
+            var status = MapAlpacaStatus(order.Status);
+            return new ExecutionReport
+            {
+                OrderId = order.Id ?? throw new JsonException("Alpaca reconciliation response lacks order id."),
+                GatewayOrderId = order.Id, ClientOrderId = order.ClientOrderId,
+                Symbol = order.Symbol ?? string.Empty,
+                Side = order.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+                OrderQuantity = ParseDecimal(order.Qty), FilledQuantity = ParseDecimal(order.FilledQty),
+                FillPrice = ParseNullableDecimal(order.FilledAvgPrice), OrderStatus = status,
+                ReportType = MapReconciledReportType(status), Timestamp = order.UpdatedAt ?? order.CreatedAt ?? DateTimeOffset.UtcNow,
+                Diagnostics = new ExecutionDiagnostics { Category = "alpaca-rest-reconciliation", RecommendedAction = "Reconciled after execution-stream reconnect." }
+            };
         }).ToArray();
     }
 
@@ -985,6 +1002,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private static string? FormatDecimal(decimal? value) =>
         value?.ToString("G", CultureInfo.InvariantCulture);
 
+    private static ExecutionReportType MapReconciledReportType(OrderStatus status) => status switch
+    {
+        OrderStatus.Filled => ExecutionReportType.Fill,
+        OrderStatus.PartiallyFilled => ExecutionReportType.PartialFill,
+        OrderStatus.Cancelled => ExecutionReportType.Cancelled,
+        OrderStatus.Rejected => ExecutionReportType.Rejected,
+        OrderStatus.Expired => ExecutionReportType.Expired,
+        _ => ExecutionReportType.New
+    };
+
     private static OrderStatus MapAlpacaStatus(string? status) => status switch
     {
         "new" => OrderStatus.Accepted,
@@ -1158,6 +1185,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
+        [JsonPropertyName("updated_at")] public DateTimeOffset? UpdatedAt { get; set; }
+        [JsonPropertyName("filled_avg_price")] public string? FilledAvgPrice { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse
