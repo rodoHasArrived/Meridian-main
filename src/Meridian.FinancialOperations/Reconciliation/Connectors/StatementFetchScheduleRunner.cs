@@ -91,6 +91,7 @@ public sealed class StatementFetchScheduleRunner(
                 schedule.ExternalAccountId);
             await scheduleStore.RecordFailureAsync(
                     schedule.ScheduleId,
+                    nowUtc,
                     $"Failed: {ex.GetType().Name}",
                     ct)
                 .ConfigureAwait(false);

@@ -379,10 +379,16 @@ public sealed class StatementImportServiceTests : IDisposable
 
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
+        var failedAt = lastSuccessfulRun.AddHours(25);
         updated.LastRunAtUtc.Should().Be(
             lastSuccessfulRun,
-            "a transient fetch failure must preserve the last successful schedule watermark");
+            "a failed fetch must not skip activity after the last successful fetch cursor");
+        updated.LastAttemptAtUtc.Should().Be(
+            failedAt,
+            "failed attempts must advance a separate cadence watermark to avoid minute-by-minute retries");
         updated.LastRunStatus.Should().Be("Failed: NotSupportedException");
+        (await runner.RunDueSchedulesAsync(failedAt.AddMinutes(1))).Should().Be(0);
+        (await runner.RunDueSchedulesAsync(failedAt.AddHours(24))).Should().Be(1);
     }
 
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>
