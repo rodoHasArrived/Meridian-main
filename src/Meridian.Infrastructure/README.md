@@ -47,9 +47,10 @@ example, IEX versus SIP and indicative versus OPRA), so a connected price socket
 misrepresented as consolidated or OPRA-entitled data.
 
 Alpaca reference-data search preserves broker-supplied marginability, shortability,
-easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Search no
-longer silently defaults omitted asset-class filters to equities; it can discover equities, crypto,
-options, and fixed-income assets when the configured Alpaca API entitlement exposes them.
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Unfiltered
+searches default to equities to keep the non-paginated asset response bounded; callers can
+explicitly select crypto, options, or fixed-income assets when the configured Alpaca API
+entitlement exposes them.
 
 The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
 existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
