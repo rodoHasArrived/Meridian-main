@@ -155,6 +155,38 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
         pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
     }
 
+    [Fact]
+    public async Task Consumer_WhenWalBackedBatchFlushThrows_DoesNotReappendPersistedEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FlushFailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 3,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("FIRST"));
+        pipeline.TryPublish(CreateTradeEvent("SECOND"));
+        pipeline.TryPublish(CreateTradeEvent("THIRD"));
+
+        await WaitForConsumption(sink, expectedCount: 3);
+        var timeout = DateTime.UtcNow.AddSeconds(5);
+        while (pipeline.GetStatistics().ConsumerIterationFailures == 0 && DateTime.UtcNow < timeout)
+        {
+            await Task.Delay(1);
+        }
+        await pipeline.FlushAsync();
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol)
+            .Should().BeEquivalentTo(new[] { "FIRST", "SECOND", "THIRD" });
+        sink.ReceivedEvents.Should().HaveCount(3);
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
     #endregion
 
     #region Crash Recovery Tests
@@ -536,6 +568,7 @@ internal sealed class MockWalSink : IStorageSink
     private readonly List<MarketEvent> _receivedEvents = new();
     private readonly object _lock = new();
     private int _failuresRemaining;
+    private int _flushFailuresRemaining;
 
     public IReadOnlyList<MarketEvent> ReceivedEvents
     {
@@ -556,6 +589,12 @@ internal sealed class MockWalSink : IStorageSink
         set => Volatile.Write(ref _failuresRemaining, value);
     }
 
+    public int FlushFailuresRemaining
+    {
+        get => Volatile.Read(ref _flushFailuresRemaining);
+        set => Volatile.Write(ref _flushFailuresRemaining, value);
+    }
+
     public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
         if (Volatile.Read(ref _failuresRemaining) > 0)
@@ -574,6 +613,12 @@ internal sealed class MockWalSink : IStorageSink
     public Task FlushAsync(CancellationToken ct = default)
     {
         FlushCount++;
+        if (Volatile.Read(ref _flushFailuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _flushFailuresRemaining);
+            throw new InvalidOperationException("Simulated sink flush failure");
+        }
+
         return Task.CompletedTask;
     }
 

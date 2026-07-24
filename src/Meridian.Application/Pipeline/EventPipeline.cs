@@ -708,6 +708,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         {
             var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
             var retryPendingBatch = false;
+            var nextPendingEventIndex = 0;
 
             while (retryPendingBatch || await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
@@ -724,6 +725,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     if (!retryPendingBatch)
                     {
                         batchBuffer.Clear();
+                        nextPendingEventIndex = 0;
                         while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
                         {
                             batchBuffer.Add(evt);
@@ -737,7 +739,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     long maxWalSequence = _lastCommittedWalSequence;
 
                     // Write each event: dedup → validate → WAL (if enabled) → sink
-                    for (var i = 0; i < batchBuffer.Count; i++)
+                    for (var i = nextPendingEventIndex; i < batchBuffer.Count; i++)
                     {
                         var tracedEvent = batchBuffer[i];
                         var evt = tracedEvent.Event;
@@ -757,6 +759,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             if (await _dedupLedger.IsDuplicateAsync(evt, _cts.Token).ConfigureAwait(false))
                             {
                                 Interlocked.Increment(ref _deduplicatedCount);
+                                nextPendingEventIndex = i + 1;
                                 continue; // Skip duplicate events
                             }
                         }
@@ -772,6 +775,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 {
                                     await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
                                 }
+                                nextPendingEventIndex = i + 1;
                                 continue; // Skip persisting invalid events
                             }
                         }
@@ -796,6 +800,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         storageActivity?.SetTag("event.source", evt.Source);
 
                         await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
+                        // AppendAsync returning successfully is the sink acknowledgement boundary.
+                        // If a later append or the batch flush fails, retry only the suffix that has
+                        // not crossed that boundary; arbitrary sinks are not necessarily idempotent.
+                        nextPendingEventIndex = i + 1;
                     }
 
                     // [1.2] WAL-sink transaction: flush the sink first, then update local sequence
@@ -826,6 +834,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
                     retryPendingBatch = false;
+                    nextPendingEventIndex = 0;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
