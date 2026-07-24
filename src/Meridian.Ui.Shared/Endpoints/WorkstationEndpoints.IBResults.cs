@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -26,6 +27,10 @@ public static partial class WorkstationEndpoints
                     requestErrors = new { x.Request.ErrorCode, x.Request.ErrorMessage }
                 });
             return Results.Json(new { provider = "interactive-brokers", results = items }, jsonOptions);
-        }).WithName("GetWorkstationIBResults").Produces(200).Produces(403);
+        })
+        .WithName("GetWorkstationIBResults")
+        .Produces(200)
+        .Produces(403)
+        .RequirePermission(UserPermission.ViewTrades);
     }
 }
