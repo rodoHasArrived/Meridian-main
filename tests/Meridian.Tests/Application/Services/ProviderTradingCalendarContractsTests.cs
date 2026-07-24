@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Operations;
 using Meridian.ProviderSdk;
 using Xunit;
 
@@ -32,7 +33,10 @@ public sealed class ProviderTradingCalendarContractsTests
                 RequestOrSubscriptionDescriptor: "US:2026-07-02",
                 ProviderNativeId: "NYSE-2026-07-02",
                 CorrelationId: "calendar-request-42",
-                StableDeduplicationKey: "calendar-vendor:US:2026-07-02"));
+                StableDeduplicationKey: "calendar-vendor:US:2026-07-02")
+            {
+                DataProvenance = DataProvenance.Real
+            });
 
         response.EnsureProvenanceComplete();
         response.Provenance.ProviderConnectionId.Should().Be("primary-feed");
@@ -57,6 +61,46 @@ public sealed class ProviderTradingCalendarContractsTests
                 ProviderNativeId: "",
                 CorrelationId: "",
                 StableDeduplicationKey: ""));
+
+        var action = response.EnsureProvenanceComplete;
+
+        action.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ProviderCalendarResponse_RejectsUnrecognizedDataProvenance()
+    {
+        var response = new ProviderTradingCalendarResponse(
+            Sessions: [],
+            Closures: [],
+            Provenance: new ProviderDataProvenance(
+                ProviderId: "calendar-vendor",
+                ProviderConnectionId: "primary-feed",
+                SourceTimestamp: DateTimeOffset.UtcNow,
+                ReceiptTimestamp: DateTimeOffset.UtcNow,
+                Entitlement: "us-equities-calendar",
+                Feed: "calendar-v2",
+                MarketDataAvailability: "live",
+                RequestOrSubscriptionDescriptor: "US:2026-07-02",
+                ProviderNativeId: "NYSE-2026-07-02",
+                CorrelationId: "calendar-request-42",
+                StableDeduplicationKey: "calendar-vendor:US:2026-07-02")
+            {
+                DataProvenance = (DataProvenance)255
+            });
+
+        var action = response.EnsureProvenanceComplete;
+
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ProviderCalendarResponse_RejectsUnattributedPlaceholderProvenance()
+    {
+        var response = new ProviderTradingCalendarResponse(
+            Sessions: [],
+            Closures: [],
+            Provenance: ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
 
         var action = response.EnsureProvenanceComplete;
 

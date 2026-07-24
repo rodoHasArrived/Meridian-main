@@ -418,12 +418,21 @@ public sealed class ProviderRoutingServiceTests : IDisposable
             => Task.FromResult(new ProviderTradingCalendarResponse(
                 Sessions: [],
                 Closures: [],
-                Provenance: new ProviderCalendarProvenance(
+                Provenance: new ProviderDataProvenance(
                     ProviderId,
-                    SourceReference: "test/calendar",
-                    RetrievedAtUtc: DateTimeOffset.UtcNow,
-                    SourceAsOfUtc: null,
-                    DataProvenance: DataProvenance.Simulated)));
+                    ProviderConnectionId: "test-connection",
+                    SourceTimestamp: DateTimeOffset.UtcNow,
+                    ReceiptTimestamp: DateTimeOffset.UtcNow,
+                    Entitlement: "test-entitlement",
+                    Feed: "test-feed",
+                    MarketDataAvailability: "simulated",
+                    RequestOrSubscriptionDescriptor: "test/calendar",
+                    ProviderNativeId: "test-calendar",
+                    CorrelationId: "test-correlation",
+                    StableDeduplicationKey: "test-calendar-key")
+                {
+                    DataProvenance = DataProvenance.Simulated
+                }));
 
         public Task<ProviderMarketRule?> GetMarketRuleAsync(MarketRuleRequest request, CancellationToken ct = default)
             => Task.FromResult<ProviderMarketRule?>(null);
