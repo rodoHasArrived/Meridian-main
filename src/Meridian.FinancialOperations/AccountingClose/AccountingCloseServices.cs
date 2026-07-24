@@ -86,7 +86,15 @@ public sealed class AccountingPostingService
     public ImmutableArray<JournalEntry> Replay(string ledgerId)
         => _journals.TryGetValue(ledgerId, out var entries) ? entries : ImmutableArray<JournalEntry>.Empty;
 
-    public ImmutableArray<SourceLinkedAuditLine> Audit(string ledgerId) => BuildAudit(Replay(ledgerId));
+    public ImmutableArray<SourceLinkedAuditLine> Audit(
+        string ledgerId,
+        LedgerDimensionSetDto? dimensions = null)
+        => BuildAudit(Replay(ledgerId).Where(entry => EntryMatchesDimensions(entry, dimensions)));
+
+    private static bool EntryMatchesDimensions(JournalEntry entry, LedgerDimensionSetDto? dimensions)
+        => dimensions is null ||
+           (!entry.Lines.IsDefaultOrEmpty &&
+            entry.Lines.All(line => TrialBalanceProjectionService.MatchesDimensions(dimensions, line.Dimensions)));
 
     private static JournalEntry NormalizeEntry(string ledgerId, JournalEntry entry)
         => entry with
@@ -552,7 +560,7 @@ public sealed class TrialBalanceProjectionService
         => string.Equals(leftAccountCode, rightAccountCode, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(BuildDimensionSignature(leftDimensions), BuildDimensionSignature(rightDimensions), StringComparison.OrdinalIgnoreCase);
 
-    private static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
+    internal static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
     {
         if (expected is null)
         {

@@ -132,7 +132,8 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
             Guid securityId,
             OperatorOverridesPatchRequest request,
             string updatedBy,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            long? expectedCanonicalVersion = null)
             => throw new NotSupportedException();
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(

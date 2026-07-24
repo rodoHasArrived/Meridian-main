@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Execution.Sdk;
+using Meridian.Storage.Operations;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -191,6 +192,44 @@ public sealed class PromotionWalkForwardGateTests
     }
 
     [Fact]
+    public async Task RecordWalkForwardEvidenceAsync_CompletedPaperRunInDurableStore_PersistsAndRemovesWalkForwardBlocker()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-walk-forward-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var service = BuildService(store, dataRoot);
+            var run = StrategyRunEntry.Start("s-wf-durable", "Strategy WF Durable", RunType.Paper)
+                .Complete(BuildPassingResult());
+            await store.RecordRunAsync(run);
+
+            var evidence = new StrategyRunWalkForwardEvidence(
+                OutOfSampleSharpeRatio: 1.0,
+                OutOfSampleMaxDrawdownPercent: 0.09m,
+                DegradationRatio: 0.8,
+                WindowCount: 8,
+                RecordedAt: DateTimeOffset.UtcNow,
+                SourceReference: "reports/wf-durable-run.json");
+
+            var updated = await service.RecordWalkForwardEvidenceAsync(run.RunId, evidence);
+
+            updated.Should().NotBeNull();
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var replayed = await restarted.GetRunByIdAsync(run.RunId);
+            replayed!.WalkForwardEvidence.Should().Be(evidence);
+
+            var after = await service.EvaluateAsync(run.RunId);
+            after.BlockingReasons?.Should().NotContain(reason =>
+                reason.Contains("walk-forward", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task EvaluateAsync_WithEvidenceRequirementDisabledInCriteria_SkipsWalkForwardGate()
     {
         var service = BuildService(out var store);
@@ -257,8 +296,13 @@ public sealed class PromotionWalkForwardGateTests
     private static PromotionService BuildService(out StrategyRunStore store)
     {
         store = new StrategyRunStore();
+        return BuildService(store, Path.Combine(Path.GetTempPath(), $"mdc-wf-gate-{Guid.NewGuid():N}"));
+    }
+
+    private static PromotionService BuildService(StrategyRunStore store, string dataRoot)
+    {
         var promotionStore = new JsonlPromotionRecordStore(
-            Path.Combine(Path.Combine(Path.GetTempPath(), $"mdc-wf-gate-{Guid.NewGuid():N}"), "promotion-history"),
+            Path.Combine(dataRoot, "promotion-history"),
             NullLogger<JsonlPromotionRecordStore>.Instance);
         return new PromotionService(
             store,

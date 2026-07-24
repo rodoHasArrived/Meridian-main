@@ -38,6 +38,25 @@ function entry(overrides: Partial<ActivityEntry> = {}): ActivityEntry {
 }
 
 describe("activity-log storage", () => {
+  it("uses session storage by default so history does not outlive the browser session", () => {
+    window.localStorage.removeItem(ACTIVITY_LOG_STORAGE_KEY);
+    window.sessionStorage.removeItem(ACTIVITY_LOG_STORAGE_KEY);
+
+    window.localStorage.setItem(
+      ACTIVITY_LOG_STORAGE_KEY,
+      JSON.stringify({ version: 1, entries: [entry({ id: "legacy-local" })] })
+    );
+    expect(loadActivityLog()).toEqual([]);
+
+    saveActivityLog([entry({ id: "session-only" })]);
+
+    expect(loadActivityLog()).toMatchObject([{ id: "session-only", title: "Added SPY" }]);
+    expect(window.localStorage.getItem(ACTIVITY_LOG_STORAGE_KEY)).toContain("legacy-local");
+
+    window.localStorage.removeItem(ACTIVITY_LOG_STORAGE_KEY);
+    window.sessionStorage.removeItem(ACTIVITY_LOG_STORAGE_KEY);
+  });
+
   it("round-trips entries through save/load", () => {
     const storage = memoryStorage();
     saveActivityLog([entry({ id: "a", undoStatus: "undone" })], storage);

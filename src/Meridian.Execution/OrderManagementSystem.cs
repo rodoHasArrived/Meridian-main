@@ -644,10 +644,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             };
         }
 
+        // The gateway report stream is not an authorization channel. Only this locally
+        // initiated modification may change the quantity cap, and it may do so only to
+        // the quantity the caller requested; never to a gateway-supplied quantity.
         var updated = _orders.AddOrUpdate(
             orderId,
-            _ => ApplyReport(state, report),
-            (_, existing) => ApplyReport(existing, report));
+            _ => ApplyReport(state, report, modification.NewQuantity),
+            (_, existing) => ApplyReport(existing, report, modification.NewQuantity));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: "OrderModified",
@@ -850,7 +853,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         return $"MDN-{DateTimeOffset.UtcNow:yyyyMMdd}-{seq:D6}";
     }
 
-    private static OrderState ApplyReport(OrderState current, ExecutionReport report)
+    private static OrderState ApplyReport(
+        OrderState current,
+        ExecutionReport report,
+        decimal? locallyAuthorizedModifiedQuantity = null)
     {
         // Once the OMS has reached a terminal state, late or malicious stream reports
         // must not reopen, resize, or otherwise mutate the completed local order.
@@ -859,13 +865,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             return current;
         }
 
-        // A broker-accepted modification establishes the new authorized order
-        // quantity. Preserve the current quantity for report types that do not
-        // carry a reliable order quantity (for example, fills from some brokers).
+        // Gateway-streamed modifications are not trusted to authorize a quantity change.
+        // A quantity may change only while applying the response to a locally initiated
+        // modification, and is capped to the local request rather than report data.
         var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
             && report.OrderStatus is OrderStatus.Accepted
-            && report.OrderQuantity > 0m
-            ? Math.Max(report.OrderQuantity, current.FilledQuantity)
+            && locallyAuthorizedModifiedQuantity is > 0m
+            ? Math.Max(locallyAuthorizedModifiedQuantity.Value, current.FilledQuantity)
             : current.Quantity;
 
         return current with

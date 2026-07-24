@@ -1208,6 +1208,14 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var durable = entry.Lines[indexes[0]];
         if (durable.Debit != eventAmount || durable.Credit != 0m)
             throw new InvalidOperationException("Acquisition asset-account journal line does not match the retained acquisition amount.");
+        if (retainedCandidate.GeneratedPostingLines.Count(line =>
+                string.Equals(line.AccountPath, accountId, StringComparison.Ordinal)) != 1 ||
+            entry.Lines.Count(line => line.Account == durable.Account) != 1)
+        {
+            throw new InvalidOperationException(
+                "Acquisition asset-account journal movement must be limited to the retained lot-cost debit.");
+        }
+
         return durable.Account;
     }
 
@@ -1233,6 +1241,10 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var durableRelief = durableEntry.Lines[assetReliefIndexes[0]];
         RequireAssetAssertion(durableRelief.Credit == expectedCostBasis && durableRelief.Debit == 0m,
             "Durable disposal asset-relief line does not equal selected-lot cost basis.");
+        RequireAssetAssertion(retainedCandidate.GeneratedPostingLines.Count(line =>
+                                  string.Equals(line.AccountPath, assetAccountId, StringComparison.Ordinal)) == 1 &&
+                              durableEntry.Lines.Count(line => line.Account == durableRelief.Account) == 1,
+            "Disposal asset-account journal movement must be limited to the selected-lot cost-basis relief.");
 
         var totalDebits = durableEntry.Lines.Sum(static line => line.Debit);
         var totalCredits = durableEntry.Lines.Sum(static line => line.Credit);

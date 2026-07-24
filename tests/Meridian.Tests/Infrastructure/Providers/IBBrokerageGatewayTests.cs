@@ -22,7 +22,7 @@ public sealed class IBBrokerageGatewayTests
     {
         var sut = CreateSut(new FakeIbBrokerageClient());
 
-        sut.GatewayId.Should().Be("ib");
+        sut.GatewayId.Should().Be("ibkr");
         sut.BrokerDisplayName.Should().Contain("Interactive Brokers");
         sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain(["equity", "bond"]);
         sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
@@ -361,6 +361,33 @@ public sealed class IBBrokerageGatewayTests
         openOrders[0].ClientOrderId.Should().Be("open-1");
         openOrders[0].Side.Should().Be(OrderSide.Sell);
         openOrders[0].LimitPrice.Should().Be(205.50m);
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_OnlyReturnsOpenOrdersForRequestedAccount()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(7101),
+            OnRequestOpenOrders = c =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    7101, "AAPL", "STK", "BUY", "LMT", 10m, 0m,
+                    200d, null, "Submitted", "account-a-order", "DU111111", null, null, null, DateTimeOffset.UtcNow));
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    7102, "TSLA", "STK", "SELL", "LMT", 5m, 0m,
+                    250d, null, "Submitted", "account-b-order", "DU222222", null, null, null, DateTimeOffset.UtcNow));
+                c.RaiseOpenOrdersCompleted();
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("DU111111");
+
+        activity.Orders.Should().ContainSingle(order => order.OrderId == "7101");
+        activity.Orders.Should().NotContain(order => order.OrderId == "7102");
     }
 
     [Fact]

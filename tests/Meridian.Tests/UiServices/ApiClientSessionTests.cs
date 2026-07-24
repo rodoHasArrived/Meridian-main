@@ -13,8 +13,14 @@ namespace Meridian.Tests.UiServices;
 public sealed class ApiClientSessionTests : IDisposable
 {
     private const string BaseUrl = "http://localhost:8080";
+    private const string AlternateBaseUrl = "http://localhost:9090";
 
-    public void Dispose() => ApiClientSession.Clear(BaseUrl);
+    public void Dispose()
+    {
+        ApiClientSession.Clear(BaseUrl);
+        ApiClientSession.Clear(AlternateBaseUrl);
+        ApiClientService.Instance.Configure(BaseUrl);
+    }
 
     [Fact]
     public void GetCsrfToken_ReturnsServerIssuedCookieForBaseUrl()
@@ -37,6 +43,18 @@ public sealed class ApiClientSessionTests : IDisposable
 
         ApiClientSession.GetCsrfToken(BaseUrl).Should().BeNull(
             "desktop sign-out must expire the stored session cookies");
+    }
+
+    [Fact]
+    public void Configure_RemovesSessionCookiesFromPreviousEndpoint()
+    {
+        ApiClientService.Instance.Configure(BaseUrl);
+        ApiClientSession.Cookies.Add(new Uri(BaseUrl), new Cookie(ApiClientSession.CsrfCookieName, "csrf-token-4"));
+
+        ApiClientService.Instance.Configure(AlternateBaseUrl);
+
+        ApiClientSession.GetCsrfToken(AlternateBaseUrl).Should().BeNull(
+            "cookies are scoped to hosts rather than ports and must not survive an endpoint switch");
     }
 
     [Fact]

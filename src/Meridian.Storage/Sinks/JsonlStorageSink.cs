@@ -40,9 +40,10 @@ public sealed class JsonlBatchOptions
 
     /// <summary>
     /// How appends reach the day file. <see cref="JsonlWriteMode.AppendStream"/> (default)
-    /// keeps a persistent append-only handle per file and fsyncs on the sink's flush barrier;
+    /// keeps a persistent append-only handle per uncompressed file and fsyncs on the sink's flush barrier;
     /// <see cref="JsonlWriteMode.CopyOnWrite"/> preserves the previous whole-file
-    /// copy-per-batch behaviour as a rollback path.
+    /// copy-per-batch behaviour as a rollback path. Compressed files always use copy-on-write
+    /// because a torn gzip member cannot be safely repaired in place.
     /// </summary>
     public JsonlWriteMode WriteMode { get; init; } = JsonlWriteMode.AppendStream;
 
@@ -199,7 +200,10 @@ public sealed class JsonlStorageSink : IStorageSink
         // at most once per unique path, preventing file handle leaks under concurrent access.
         var compress = _options.Compress;
         var batchSize = _batchOptions.BatchSize;
-        var copyOnWrite = _batchOptions.WriteMode == JsonlWriteMode.CopyOnWrite;
+        // A gzip member has no cheap, reliable in-place recovery point after a torn write.
+        // Keep compressed day files behind the atomic replacement boundary so a crash cannot
+        // strand later WAL replay members behind an unreadable member.
+        var copyOnWrite = _batchOptions.WriteMode == JsonlWriteMode.CopyOnWrite || compress;
         _writerFactory = p => new Lazy<WriterState>(() => WriterState.Create(p, compress, copyOnWrite), LazyThreadSafetyMode.ExecutionAndPublication);
         _bufferFactory = _ => new MarketEventBuffer(batchSize);
 
@@ -508,6 +512,7 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly bool _copyOnWrite;
         private FileStream? _stream;
         private bool _dirtySinceFsync;
+        private bool _compressedFileValidated;
         private long _fsyncCount;
         private DateTimeOffset _lastWriteUtc;
 
@@ -536,15 +541,34 @@ public sealed class JsonlStorageSink : IStorageSink
         // FlushToDiskAsync, which the sink invokes from IStorageSink.FlushAsync — the barrier
         // EventPipeline awaits before committing the WAL. A crash between batch write and
         // sink flush can tear the file tail; those events are uncommitted in the WAL and
-        // replay on startup, and both JSONL readers tolerate a torn trailing line.
+        // replay on startup. Plain JSONL tails are repaired before reopening; compressed
+        // files use copy-on-write so an incomplete gzip member is never published.
         private FileStream EnsureStream()
-            => _stream ??= new FileStream(
+        {
+            if (_stream is not null)
+                return _stream;
+
+            var stream = new FileStream(
                 _path,
-                FileMode.Append,
-                FileAccess.Write,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
                 FileShare.Read | FileShare.Delete,
                 bufferSize: 64 * 1024,
                 FileOptions.Asynchronous);
+
+            try
+            {
+                RepairTornJsonlTail(stream);
+                stream.Position = stream.Length;
+                _stream = stream;
+                return stream;
+            }
+            catch
+            {
+                stream.Dispose();
+                throw;
+            }
+        }
 
         public async ValueTask WriteEventAsync(MarketEvent evt, CancellationToken ct)
         {
@@ -553,6 +577,7 @@ public sealed class JsonlStorageSink : IStorageSink
             {
                 if (_copyOnWrite)
                 {
+                    EnsureCompressedFileIsReadable();
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteSingleEventAsync(stream, evt, ct),
@@ -560,11 +585,9 @@ public sealed class JsonlStorageSink : IStorageSink
                     return;
                 }
 
-                var stream = EnsureStream();
-                await WriteSingleEventAsync(stream, evt, ct).ConfigureAwait(false);
-                await stream.FlushAsync(ct).ConfigureAwait(false);
-                _dirtySinceFsync = true;
-                _lastWriteUtc = DateTimeOffset.UtcNow;
+                await WriteAppendStreamAsync(
+                    stream => WriteSingleEventAsync(stream, evt, ct),
+                    ct).ConfigureAwait(false);
             }
             finally
             {
@@ -586,6 +609,7 @@ public sealed class JsonlStorageSink : IStorageSink
             {
                 if (_copyOnWrite)
                 {
+                    EnsureCompressedFileIsReadable();
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteEventsAsync(stream, events, ct),
@@ -593,11 +617,9 @@ public sealed class JsonlStorageSink : IStorageSink
                     return;
                 }
 
-                var stream = EnsureStream();
-                await WriteEventsAsync(stream, events, ct).ConfigureAwait(false);
-                await stream.FlushAsync(ct).ConfigureAwait(false);
-                _dirtySinceFsync = true;
-                _lastWriteUtc = DateTimeOffset.UtcNow;
+                await WriteAppendStreamAsync(
+                    stream => WriteEventsAsync(stream, events, ct),
+                    ct).ConfigureAwait(false);
             }
             finally
             {
@@ -644,6 +666,78 @@ public sealed class JsonlStorageSink : IStorageSink
 
             await _stream.DisposeAsync().ConfigureAwait(false);
             _stream = null;
+        }
+
+        // Caller holds _gate. If a cancellable write fails after reaching the OS, restore the
+        // file to its last complete JSONL boundary. The buffer/WAL retry can then append the
+        // original events without joining valid JSON to a torn prefix.
+        private async Task WriteAppendStreamAsync(Func<FileStream, Task> write, CancellationToken ct)
+        {
+            var stream = EnsureStream();
+            var startPosition = stream.Position;
+            try
+            {
+                await write(stream).ConfigureAwait(false);
+                await stream.FlushAsync(ct).ConfigureAwait(false);
+                _dirtySinceFsync = true;
+                _lastWriteUtc = DateTimeOffset.UtcNow;
+            }
+            catch
+            {
+                stream.SetLength(startPosition);
+                stream.Position = startPosition;
+                throw;
+            }
+        }
+
+        private static void RepairTornJsonlTail(FileStream stream)
+        {
+            if (stream.Length == 0)
+                return;
+
+            stream.Position = stream.Length - 1;
+            if (stream.ReadByte() == '\n')
+                return;
+
+            const int bufferSize = 4096;
+            var buffer = new byte[bufferSize];
+            var position = stream.Length;
+            while (position > 0)
+            {
+                var readLength = (int)Math.Min(bufferSize, position);
+                position -= readLength;
+                stream.Position = position;
+                stream.ReadExactly(buffer, 0, readLength);
+
+                for (var index = readLength - 1; index >= 0; index--)
+                {
+                    if (buffer[index] != '\n')
+                        continue;
+
+                    stream.SetLength(position + index + 1);
+                    return;
+                }
+            }
+
+            stream.SetLength(0);
+        }
+
+        // Compressed files are always written copy-on-write. Refuse to append to a legacy torn
+        // gzip file rather than publishing replayed members after the unreadable member and
+        // allowing the WAL to commit data that readers cannot reach.
+        private void EnsureCompressedFileIsReadable()
+        {
+            if (!_compressed || _compressedFileValidated || !File.Exists(_path))
+                return;
+
+            using var file = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var gzip = new GZipStream(file, CompressionMode.Decompress);
+            var buffer = new byte[64 * 1024];
+            while (gzip.Read(buffer, 0, buffer.Length) > 0)
+            {
+            }
+
+            _compressedFileValidated = true;
         }
 
         private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)

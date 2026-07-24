@@ -459,9 +459,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 {
                     // Name-derived bound: every record in this segment has a sequence at or
                     // below the successor segment's embedded base, so committed-ness is a
-                    // metadata comparison. A corrupt record cannot raise a sequence above the
-                    // bound, so no header/content inspection is required before removal (and
-                    // ArchiveAfterTruncate preserves the raw bytes regardless).
+                    // metadata comparison. Record scanning is not required, but deletion still
+                    // requires a valid header so corrupt segments remain available for recovery.
                     fullyCommitted = upperBound <= throughSequence;
                 }
                 else
@@ -474,17 +473,17 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     }
 
                     fullyCommitted = maxSequence <= throughSequence;
+                }
 
-                    // A corrupt header makes the enumeration above yield zero records, which is
-                    // indistinguishable from "fully committed". Never delete such a file — it may
-                    // still hold the only copy of unreplayed records.
-                    if (fullyCommitted && !await HasValidHeaderAsync(walFile, ct))
-                    {
-                        _log.Error(
-                            "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
-                            walFile);
-                        continue;
-                    }
+                // A corrupt header can make the scan fallback enumerate zero records, and segment
+                // metadata cannot prove that a corrupt file is safe to remove. Never delete such
+                // a file — it may still hold the only copy of unreplayed records.
+                if (fullyCommitted && !await HasValidHeaderAsync(walFile, ct))
+                {
+                    _log.Error(
+                        "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
+                        walFile);
+                    continue;
                 }
 
                 if (fullyCommitted)

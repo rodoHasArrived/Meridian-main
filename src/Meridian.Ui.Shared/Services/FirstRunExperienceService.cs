@@ -168,7 +168,9 @@ public sealed class FirstRunExperienceService(
             version = SamplePackVersion,
             label = "Sample · Paper",
             generatedAtUtc = DateTimeOffset.UtcNow,
-            workspace = DemoTenantBlueprint.BuildSampleWorkspace(),
+            workspace = DemoTenantBlueprint.BuildSampleWorkspace(
+                provisioning?.ReconciliationLoaded ?? true,
+                provisioning?.StrategyRunLoaded ?? true),
             provisioning
         };
         return AtomicFileWriter.WriteAsync(SamplePath(username), JsonSerializer.Serialize(pack, _json), ct);

@@ -60,6 +60,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference. |
 | [Contract Compatibility Matrix](contract-compatibility-matrix.md) | Shared contract/versioning baseline for workstation routes, DTOs, services, and migration behavior. |
 | [Provider Capability Matrix](provider-capability-matrix.md) | Adapter coverage and readiness states by capability surface. |
+| [Interactive Brokers and Alpaca Capability Expansion Review](broker-provider-capability-expansion-review.md) | Evidence-based provider expansion opportunities, priorities, and safety boundaries. |
 | [Provider Integration Status](provider-integration-status.md) | Per-provider phase, DI/factory posture, blockers, and evidence refresh cadence. |
 | [Provider Validation Matrix](provider-validation-matrix.md) | Wave 1 provider gate matrix and promotion evidence criteria. |
 | [Provider Validation Evidence Schema](provider-validation-evidence-schema.md) | Required validation packet artifacts and schema fields for provider trust decisions. |

@@ -354,7 +354,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         if (element.ValueKind == JsonValueKind.Object
             && element.TryGetProperty(fieldName, out var prop)
-            && prop.ValueKind != JsonValueKind.Null
+            && prop.ValueKind == JsonValueKind.String
             && prop.TryGetDateTimeOffset(out var result))
             return result;
 

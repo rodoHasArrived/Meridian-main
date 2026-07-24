@@ -383,6 +383,47 @@ public sealed class AtomicTaxLotJournalStoreTests
             ledgerBookId,
             periodId,
             expectedPeriodVersion: period.Version);
+        var acquisitionAssetLine = acquisition.Journal.Entry.Lines[0];
+        var offsettingAcquisition = (acquisition with
+        {
+            Journal = acquisition.Journal with
+            {
+                Entry = new JournalEntry(
+                    acquisition.Journal.Entry.JournalEntryId,
+                    acquisition.Journal.Entry.Timestamp,
+                    acquisition.Journal.Entry.Description,
+                    [
+                        .. acquisition.Journal.Entry.Lines,
+                        new LedgerEntry(
+                            Guid.NewGuid(),
+                            acquisitionAssetLine.JournalEntryId,
+                            acquisitionAssetLine.Timestamp,
+                            acquisitionAssetLine.Account,
+                            debit: 0m,
+                            credit: acquisitionAssetLine.Debit,
+                            description: acquisitionAssetLine.Description,
+                            dimensions: acquisitionAssetLine.Dimensions,
+                            currency: new LedgerEntryCurrency(
+                                "USD", "USD", 0m, acquisitionAssetLine.Debit, 1m)),
+                        new LedgerEntry(
+                            Guid.NewGuid(),
+                            acquisition.Journal.Entry.Lines[1].JournalEntryId,
+                            acquisition.Journal.Entry.Lines[1].Timestamp,
+                            acquisition.Journal.Entry.Lines[1].Account,
+                            debit: acquisitionAssetLine.Debit,
+                            credit: 0m,
+                            description: acquisition.Journal.Entry.Lines[1].Description,
+                            dimensions: acquisition.Journal.Entry.Lines[1].Dimensions,
+                            currency: new LedgerEntryCurrency(
+                                "USD", "USD", acquisitionAssetLine.Debit, 0m, 1m))
+                    ],
+                    acquisition.Journal.Entry.Metadata)
+            }
+        }).WithComputedFingerprint();
+        var offsettingAcquisitionAct = () => database.JournalStore.AppendAssetPostingAsync(offsettingAcquisition);
+        await offsettingAcquisitionAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*one exact asset-account debit*");
+
         var acquired = await database.JournalStore.AppendAssetPostingAsync(acquisition);
 
         acquired.IsExactReplay.Should().BeFalse();

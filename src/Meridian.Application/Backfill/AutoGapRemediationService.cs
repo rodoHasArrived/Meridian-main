@@ -5,6 +5,7 @@ using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
 using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
@@ -24,7 +25,8 @@ public enum AutoRemediationTriggerSource
 {
     DataQualityGap,
     GapAnalyzerScan,
-    QualityAlert
+    QualityAlert,
+    ReconnectionGap
 }
 
 /// <summary>
@@ -73,13 +75,18 @@ public sealed record AutoGapRemediationRequestResult(
 /// and providers. Enforced by a semaphore, independent of the cooldown windows.
 /// </param>
 /// <param name="DefaultProvider">Provider used when a signal does not specify one.</param>
+/// <param name="Enabled">
+/// Enables remediation initiated by live data-quality gap events. This is disabled by default so
+/// provider-controlled ingress remains passive monitoring unless an operator explicitly opts in.
+/// </param>
 public sealed record AutoGapRemediationPolicy(
     TimeSpan MinimumGapDuration,
     int MinimumGapSize,
     TimeSpan SymbolCooldown,
     TimeSpan ProviderCooldown,
     int MaxConcurrentRemediations,
-    string DefaultProvider)
+    string DefaultProvider,
+    bool Enabled = false)
 {
     public static AutoGapRemediationPolicy Default { get; } = new(
         MinimumGapDuration: TimeSpan.FromMinutes(2),
@@ -87,7 +94,8 @@ public sealed record AutoGapRemediationPolicy(
         SymbolCooldown: TimeSpan.FromMinutes(5),
         ProviderCooldown: TimeSpan.FromMinutes(1),
         MaxConcurrentRemediations: 2,
-        DefaultProvider: "stooq");
+        DefaultProvider: "stooq",
+        Enabled: false);
 
     /// <summary>
     /// Policy builder: constructs a policy from optional overrides, falling back to
@@ -100,14 +108,16 @@ public sealed record AutoGapRemediationPolicy(
         TimeSpan? symbolCooldown = null,
         TimeSpan? providerCooldown = null,
         int? maxConcurrentRemediations = null,
-        string? defaultProvider = null)
+        string? defaultProvider = null,
+        bool? enabled = null)
         => new(
             minimumGapDuration ?? Default.MinimumGapDuration,
             minimumGapSize ?? Default.MinimumGapSize,
             symbolCooldown ?? Default.SymbolCooldown,
             providerCooldown ?? Default.ProviderCooldown,
             maxConcurrentRemediations ?? Default.MaxConcurrentRemediations,
-            defaultProvider ?? Default.DefaultProvider);
+            defaultProvider ?? Default.DefaultProvider,
+            enabled ?? Default.Enabled);
 }
 
 public enum BackfillRemediationSlaTier
@@ -336,7 +346,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         _slaEvaluator = new BackfillRemediationSlaEvaluator(_history);
         _concurrencyGate = new SemaphoreSlim(Math.Max(1, _policy.MaxConcurrentRemediations));
 
-        if (_qualityMonitoringService is not null)
+        if (_policy.Enabled && _qualityMonitoringService is not null)
         {
             _qualityMonitoringService.OnGapDetected += OnQualityGapDetected;
         }
@@ -355,7 +365,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             _disposed = true;
         }
 
-        if (_qualityMonitoringService is not null)
+        if (_policy.Enabled && _qualityMonitoringService is not null)
         {
             _qualityMonitoringService.OnGapDetected -= OnQualityGapDetected;
         }
@@ -424,6 +434,40 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             gap.Severity.ToString(),
             downstreamWorkflow: null,
             ct: ct);
+    }
+
+    /// <summary>
+    /// Routes a streaming-provider reconnection through the same policy, cooldown, idempotency,
+    /// and concurrency controls used by all other automatic remediations.
+    /// </summary>
+    public Task HandleReconnectionGapAsync(
+        ReconnectionGap gap,
+        IReadOnlyList<string> symbols,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(symbols);
+
+        if (gap.Duration < _policy.MinimumGapDuration)
+        {
+            _log.Debug(
+                "Skipping reconnection remediation for {Provider}: gap {Duration} below minimum {Minimum}",
+                gap.ProviderName,
+                gap.Duration,
+                _policy.MinimumGapDuration);
+            return Task.CompletedTask;
+        }
+
+        return EnqueueRemediationAsync(
+            symbols,
+            DateOnly.FromDateTime(gap.DisconnectedAt.UtcDateTime),
+            DateOnly.FromDateTime(gap.ReconnectedAt.UtcDateTime),
+            provider: "composite",
+            AutoRemediationTriggerSource.ReconnectionGap,
+            $"reconnection:{gap.ProviderName}",
+            gapSize: Math.Max(symbols.Count, 1),
+            severity: null,
+            downstreamWorkflow: null,
+            ct);
     }
 
     /// <summary>
@@ -541,6 +585,9 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         int maxExecutions = 100,
         TimeSpan? dueSoonWindow = null)
         => _slaEvaluator.Evaluate(nowUtc, maxExecutions, dueSoonWindow);
+
+    /// <summary>Configured minimum duration for all automatic gap remediation signals.</summary>
+    public TimeSpan MinimumGapDuration => _policy.MinimumGapDuration;
 
     private void OnQualityGapDetected(QualityDataGap gap)
     {

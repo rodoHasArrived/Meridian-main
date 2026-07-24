@@ -3420,6 +3420,24 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task MappingProfiles_CertifiesProfileWithLeadingProfileEvidenceToken()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProfileId = "qbo-default-fund-leading-profile-evidence-certified"
+        };
+
+        var upserted = await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: [$"{profile.ProfileId}:mapping-approval"]));
+
+        upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+    }
+
+    [Fact]
     public async Task MappingProfiles_DowngradesCertifiedProfileWithExtendedProfileEvidenceToken()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());

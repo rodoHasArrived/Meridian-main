@@ -91,13 +91,14 @@ public sealed class ApiKeyMiddleware
     }
 
     /// <summary>
-    /// True when API-key authentication is configured and the request presents an
+    /// True when API-key authentication is configured and an API request presents an
     /// <c>X-Api-Key</c> header. <see cref="LoginSessionMiddleware"/> uses this to defer
     /// judgment on such requests to this middleware instead of rejecting them for
-    /// lacking a session.
+    /// lacking a session. Non-API routes remain protected by session authentication.
     /// </summary>
     internal static bool IsApiKeyCandidate(HttpContext context) =>
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ApiKeyEnvVar)) &&
+        context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) &&
         context.Request.Headers.ContainsKey(ApiKeyHeaderName);
 
     /// <summary>

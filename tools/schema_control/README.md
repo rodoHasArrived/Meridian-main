@@ -69,6 +69,8 @@ database.
 
 The candidate workspace is `build/schema-control/candidate/`. Only `promote` writes to the tracked
 manifest and documentation roots, and it must be followed by `verify` in GitHub Actions.
+Configured output roots must resolve to a non-root path within the repository; schema control
+rejects absolute paths, repository escapes, and symlinks that resolve outside the checkout.
 
 ## Policy behavior
 

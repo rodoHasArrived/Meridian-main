@@ -114,7 +114,8 @@ public sealed record ClosePeriod(
     CloseEvidence Evidence,
     ImmutableArray<string> Blockers,
     DateTimeOffset? LockedAt = null,
-    string? ClosedBy = null)
+    string? ClosedBy = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public bool IsLocked => State == ClosePeriodState.Closed || LockedAt is not null;
 }

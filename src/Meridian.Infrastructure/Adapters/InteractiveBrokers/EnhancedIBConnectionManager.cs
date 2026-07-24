@@ -18,7 +18,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Unlimited retry attempts by default (configurable via maxRetries parameter)
 /// - See EnhancedIBConnectionManager.IBApi.cs and Infrastructure/Performance/ConnectionWarmUp.cs for implementation
 /// </summary>
-public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource
+public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
 {
 #if !IBAPI
     private readonly IBCallbackRouter _router;
@@ -59,6 +59,14 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
     public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionContract Contract)>? OptionContractReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderRealTimeBar Bar)>? RealTimeBarReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderAccountPnl Pnl)>? PnlReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<Meridian.ProviderSdk.ProviderMarketRuleIncrement> Increments)>? MarketRuleReceived;
+    public event EventHandler<int>? RequestCompleted;
+    public event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 #pragma warning restore CS0067
 
     /// <summary>
@@ -114,9 +122,14 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public void RequestPnl(int requestId, string account, string? modelCode) => throw ThrowPlatformNotSupported();
     public void RequestMarketRule(int requestId, int marketRuleId) => throw ThrowPlatformNotSupported();
     public void RequestDepthExchanges(int requestId) => throw ThrowPlatformNotSupported();
+    public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) => throw ThrowPlatformNotSupported();
+    public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) => throw ThrowPlatformNotSupported();
+    public void CancelDataRequest(int requestId, string capability) => throw ThrowPlatformNotSupported();
 
     public void Dispose()
     {
     }
 #endif
+
+    public string ProviderConnectionId => $"ib://{Host}:{Port}/client/{ClientId}";
 }

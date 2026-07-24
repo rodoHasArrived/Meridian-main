@@ -177,6 +177,7 @@ public static class ReportWriterGridEngine
 
     private static ReportWriterFormatRuleDto[] NormalizeFormatRules(IReadOnlyList<ReportWriterFormatRuleDto>? rules) =>
         rules?
+            .OfType<ReportWriterFormatRuleDto>()
             .Where(static rule => !string.IsNullOrWhiteSpace(rule.Column))
             .Select(static rule => rule with
             {

@@ -29,6 +29,10 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        // Overlay edits acquire the same transaction-scoped lock before checking the stream head.
+        // This makes their expected-version guard atomic with canonical appends without placing
+        // partial operator annotations in the replayed economic event stream.
+        await LockStreamAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
         var currentVersion = await LoadCurrentVersionAsync(connection, transaction, securityId, ct).ConfigureAwait(false);
         if (currentVersion != expectedVersion)
         {
@@ -161,6 +165,19 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L);
+    }
+
+    private static async Task LockStreamAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(hashtext(@security_id::text));";
+        command.Parameters.AddWithValue("security_id", securityId);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<SecurityMasterEventEnvelope>> ReadEventsAsync(NpgsqlCommand command, CancellationToken ct)

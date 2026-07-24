@@ -23,7 +23,8 @@ namespace Meridian.Tests.Strategies;
 /// <summary>
 /// Closed-circuit coverage for the live trading engine: promoted runs must actually execute —
 /// live events drive strategy callbacks, strategy orders reach the order manager, and fills
-/// flow back into the strategy and the run's recorded metrics.
+/// flow back into the strategy and the run's recorded metrics. It also protects the terminal
+/// cleanup path when a market-data feed completes without an operator stop request.
 /// </summary>
 public sealed class LiveTradingEngineTests
 {
@@ -92,6 +93,30 @@ public sealed class LiveTradingEngineTests
 
         var recorded = await ((IStrategyRepository)repository).GetRunByIdAsync(run.RunId);
         recorded!.EndedAt.Should().BeNull("host shutdown must leave the run open so a restarted engine resumes it");
+    }
+
+    [Fact]
+    public async Task Scenario_MarketFeedTermination_CompletesRunAndRemovesItFromEngine()
+    {
+        var repository = new InMemoryRunRepository();
+        await using var engine = CreateEngine(
+            repository,
+            new CompletedMarketEventFeed(),
+            new LiveMarketDataCache(),
+            new RecordingOrderManager(50m));
+        var run = CreatePaperRun(
+            BuyAndHoldLiveStrategy.CatalogId,
+            new Dictionary<string, string> { ["symbols"] = "MSFT" });
+        await repository.RecordRunAsync(run);
+
+        var launch = await engine.TryLaunchAsync(run);
+        var completed = await repository.CompletedRun.Task.WaitAsync(WaitBudget);
+
+        launch.Launched.Should().BeTrue(launch.Reason);
+        completed.RunId.Should().Be(run.RunId);
+        completed.EndedAt.Should().NotBeNull("a completed market feed must finalize the live run");
+        completed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+        await WaitUntilAsync(() => !engine.ActiveRunIds.Contains(run.RunId));
     }
 
     // ---- Launch gating ----
@@ -256,7 +281,7 @@ public sealed class LiveTradingEngineTests
 
     private static LiveTradingEngine CreateEngine(
         InMemoryRunRepository repository,
-        LiveMarketEventHub hub,
+        ILiveMarketEventFeed feed,
         LiveMarketDataCache cache,
         RecordingOrderManager orderManager)
     {
@@ -267,7 +292,7 @@ public sealed class LiveTradingEngineTests
             liveFeed: cache);
         return new LiveTradingEngine(
             LiveStrategyCatalog.CreateDefault(),
-            hub,
+            feed,
             cache,
             gateway,
             orderManager,
@@ -275,6 +300,19 @@ public sealed class LiveTradingEngineTests
             repository,
             options: new LiveTradingEngineOptions(),
             loggerFactory: NullLoggerFactory.Instance);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        // The engine removes its completed background task after session finalization, so
+        // poll the externally observable registry rather than synchronizing on internals.
+        var stopwatch = Stopwatch.StartNew();
+        while (!condition() && stopwatch.Elapsed < WaitBudget)
+        {
+            await Task.Delay(25);
+        }
+
+        condition().Should().BeTrue("the completed session must be removed from the active-run registry");
     }
 
     private static StrategyRunEntry CreatePaperRun(
@@ -316,9 +354,26 @@ public sealed class LiveTradingEngineTests
     {
         private readonly ConcurrentDictionary<string, StrategyRunEntry> _runs = new(StringComparer.Ordinal);
 
+        public TaskCompletionSource<StrategyRunEntry> CompletedRun { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
         {
             _runs[entry.RunId] = entry;
+            return Task.CompletedTask;
+        }
+
+        public Task RecordLifecycleEventAsync(
+            StrategyRunEntry entry,
+            StrategyRunLifecycleEventType eventType,
+            CancellationToken ct = default)
+        {
+            var recorded = entry with { LastLifecycleEvent = eventType };
+            _runs[recorded.RunId] = recorded;
+            if (eventType == StrategyRunLifecycleEventType.Completed)
+            {
+                CompletedRun.TrySetResult(recorded);
+            }
+
             return Task.CompletedTask;
         }
 
@@ -396,6 +451,17 @@ public sealed class LiveTradingEngineTests
         public Task CancelAllAsync(CancellationToken ct = default) => Task.CompletedTask;
 
         public IReadOnlyList<ExecutionSdk.OrderState> GetCompletedOrders(int take = 20) => [];
+    }
+
+    private sealed class CompletedMarketEventFeed : ILiveMarketEventFeed
+    {
+        public async IAsyncEnumerable<LiveMarketEvent> SubscribeAsync(
+            IReadOnlyCollection<string> symbols,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
     }
 
     private sealed class RecordingRunLauncher : IPromotedRunLauncher

@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-07-11",
+  "snapshotDate": "2026-07-21",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -19,7 +19,8 @@
       "Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence",
       "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records",
       "Evidence Vault productization and statement reconciliation onboarding over governed connector evidence",
-      "Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention"
+      "Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention",
+      "Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion"
     ],
     "activeUiLane": "browser_workstation_and_wpf_desktop",
     "retainedSupportLane": "",
@@ -140,8 +141,8 @@
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "complete",
-      "Evidence": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; docs/adr/018-declarative-statement-mapping-profiles.md; tests/Meridian.Tests/Reconciliation/Connectors/StatementImportServiceTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/IbFlexStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/OfxStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/AlpacaActivityStatementConnectorTests.cs",
-      "Last Reviewed": "2026-07-02"
+      "Evidence": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; docs/adr/018-declarative-statement-mapping-profiles.md; tests/Meridian.Tests/Reconciliation/Connectors/StatementImportServiceTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/IbFlexStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/OfxStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/AlpacaActivityStatementConnectorTests.cs; src/Meridian.Ui/dashboard/src/screens/statement-fetch-panel.tsx; src/Meridian.Ui/dashboard/src/screens/statement-fetch-panel.test.tsx",
+      "Last Reviewed": "2026-07-18"
     },
     {
       "ID": "W5X-EVIDENCE-001",
@@ -222,6 +223,19 @@
       "Last Reviewed": "2026-07-05"
     },
     {
+      "ID": "W8-UX-CONSOL-001",
+      "Wave": "W8",
+      "Title": "Browser workstation screen consolidation",
+      "Workspaces": "Accounting; Reporting; Strategy; Data",
+      "Status": "in_progress",
+      "Health": "on_track",
+      "Priority": "medium",
+      "Owner Lane": "Workstation Shell and UX",
+      "Evidence Posture": "in_progress",
+      "Evidence": "docs/development/web-ui-structural-improvement-proposal.md; docs/development/wpf-web-ui-alignment-plan.md",
+      "Last Reviewed": "2026-07-19"
+    },
+    {
       "ID": "W8-WPF-PARITY-001",
       "Wave": "W8",
       "Title": "WPF desktop workstation reactivation and web-UI parity",
@@ -233,6 +247,136 @@
       "Evidence Posture": "in_progress",
       "Evidence": "docs/development/wpf-web-ui-alignment-plan.md; docs/development/wpf-implementation-notes.md",
       "Last Reviewed": "2026-07-06"
+    },
+    {
+      "ID": "W9-ALPACA-004",
+      "Wave": "W9",
+      "Title": "Alpaca fill streaming into order and ledger state",
+      "Workspaces": "Trading",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Execution and Fund Accounts",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-ASSET-010",
+      "Wave": "W9",
+      "Title": "Asset Accounting Event Spine and atomic lot posting",
+      "Workspaces": "Accounting; Portfolio; Reporting",
+      "Status": "in_progress",
+      "Health": "on_track",
+      "Priority": "critical",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "in_progress",
+      "Evidence": "docs/architecture/event-accounting-architecture.md; src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs; src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs; tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs; tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-DEMO-002",
+      "Wave": "W9",
+      "Title": "One-command seeded demo with durable storage",
+      "Workspaces": "Data; Settings",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "critical",
+      "Owner Lane": "Workstation Shell and UX",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-GOV-008",
+      "Wave": "W9",
+      "Title": "Route-level authorization, fail-closed tenancy, and hash-chained accounting audit",
+      "Workspaces": "Settings; Accounting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Platform Security and Governance",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-INGEST-009",
+      "Wave": "W9",
+      "Title": "Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher",
+      "Workspaces": "Accounting; Data",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-NAV-006",
+      "Wave": "W9",
+      "Title": "Unitized NAV and real fee, waterfall, and capital-call economics",
+      "Workspaces": "Accounting; Portfolio",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-PAPER-003",
+      "Wave": "W9",
+      "Title": "Paper-trading realism with limit/stop matching and costs",
+      "Workspaces": "Trading; Strategy",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "critical",
+      "Owner Lane": "Execution and Fund Accounts",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-REPORT-005",
+      "Wave": "W9",
+      "Title": "Client-grade PDF/XLSX exports and partners-capital statement",
+      "Workspaces": "Reporting; Accounting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-SAFETY-007",
+      "Wave": "W9",
+      "Title": "Kill-switch cancel-all and fat-finger, notional, and collar rules",
+      "Workspaces": "Trading; Settings",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Execution and Fund Accounts",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
+    },
+    {
+      "ID": "W9-TRUTH-001",
+      "Wave": "W9",
+      "Title": "Loud fail-closed handling of simulated data and in-memory persistence",
+      "Workspaces": "Trading; Portfolio; Accounting; Reporting; Data",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "critical",
+      "Owner Lane": "Data Confidence and Validation",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-07-21"
     }
   ]
 }

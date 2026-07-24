@@ -1036,10 +1036,10 @@ public static partial class WorkstationEndpoints
                 continue;
             }
 
-            // Tolerate malformed packages with duplicate relationship ids (first mapping wins)
-            // instead of letting ToDictionary throw ArgumentException, which the preview handler does
-            // not translate and would surface as a 500 rather than a bad-request workbook error.
-            relationshipTargets.TryAdd(relationshipId, relationship.Attribute("Target")?.Value ?? string.Empty);
+            if (!relationshipTargets.TryAdd(relationshipId, relationship.Attribute("Target")?.Value ?? string.Empty))
+            {
+                throw new InvalidDataException("Workbook contains duplicate relationship ids.");
+            }
         }
 
         var workbook = LoadWorkbookXml(workbookEntry);
