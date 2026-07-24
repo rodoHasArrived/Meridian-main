@@ -228,7 +228,8 @@ public sealed record ProviderSafetyPolicy(
             ProviderCapabilityKind.AccountBalances or
             ProviderCapabilityKind.AccountPositions or
             ProviderCapabilityKind.CashTransactions or
-            ProviderCapabilityKind.BankStatements
+            ProviderCapabilityKind.BankStatements or
+            ProviderCapabilityKind.PnLStream
                 => new ProviderSafetyPolicy(
                     capability,
                     ProviderSafetyMode.NoAutomaticFailover,

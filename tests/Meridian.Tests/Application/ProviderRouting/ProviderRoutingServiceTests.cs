@@ -151,6 +151,59 @@ public sealed class ProviderRoutingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RouteAsync_BlocksPnLStreamWithoutAccountScopedBinding()
+    {
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("broker-1", "broker", "Broker", ConnectionType: ProviderConnectionType.Brokerage)
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig("pnl-binding", ProviderCapabilityKind.PnLStream, "broker-1", Target: new ProviderBindingTarget())
+                ])));
+
+        var service = CreateService();
+        var result = await service.RouteAsync(new ProviderRouteContext(
+            Capability: ProviderCapabilityKind.PnLStream,
+            AccountId: Guid.NewGuid()));
+
+        result.IsSuccess.Should().BeFalse();
+        result.SelectedDecision.Should().BeNull();
+        result.PolicyGate.Should().Contain("account-scoped");
+    }
+
+    [Fact]
+    public async Task RouteAsync_PnLStreamDoesNotSelectHealthyBackup()
+    {
+        var accountId = Guid.NewGuid();
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("primary", "alpha", "Primary", ConnectionType: ProviderConnectionType.Brokerage),
+                    new ProviderConnectionConfig("backup", "beta", "Backup", ConnectionType: ProviderConnectionType.Brokerage)
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig(
+                        "pnl-binding",
+                        ProviderCapabilityKind.PnLStream,
+                        "primary",
+                        Target: new ProviderBindingTarget(AccountId: accountId),
+                        FailoverConnectionIds: ["backup"])
+                ])));
+
+        var service = CreateService(new FakeHealthSource(("primary", false), ("backup", true)));
+        var result = await service.RouteAsync(new ProviderRouteContext(ProviderCapabilityKind.PnLStream, AccountId: accountId));
+
+        result.IsSuccess.Should().BeFalse();
+        result.SelectedDecision.Should().BeNull();
+        result.PolicyGate.Should().Contain("automatic failover is blocked");
+    }
+
+    [Fact]
     public async Task RouteAsync_RequestRequiresProductionReady_BlocksDraftConnection()
     {
         await SaveConfigAsync(new AppConfig(
@@ -461,11 +514,12 @@ public sealed class ProviderRoutingServiceTests : IDisposable
         public IReadOnlyList<ProviderCapabilityDescriptor> CapabilityDescriptors =>
         [
             new(ProviderCapabilityKind.HistoricalBars, "bars"),
-            new(ProviderCapabilityKind.OrderExecution, "execution", RequiresAccountBinding: true, SupportsFailover: false)
+            new(ProviderCapabilityKind.OrderExecution, "execution", RequiresAccountBinding: true, SupportsFailover: false),
+            new(ProviderCapabilityKind.PnLStream, "P&L stream", RequiresAccountBinding: true, SupportsFailover: false)
         ];
 
         public bool SupportsCapability(ProviderCapabilityKind capability)
-            => capability is ProviderCapabilityKind.HistoricalBars or ProviderCapabilityKind.OrderExecution;
+            => capability is ProviderCapabilityKind.HistoricalBars or ProviderCapabilityKind.OrderExecution or ProviderCapabilityKind.PnLStream;
 
         public Task InitializeConnectionAsync(string connectionId, ProviderConnectionScope scope, CancellationToken ct = default)
             => Task.CompletedTask;

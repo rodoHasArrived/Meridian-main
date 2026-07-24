@@ -318,7 +318,8 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             ProviderCapabilityKind.AccountBalances or
             ProviderCapabilityKind.AccountPositions or
             ProviderCapabilityKind.CashTransactions or
-            ProviderCapabilityKind.BankStatements;
+            ProviderCapabilityKind.BankStatements or
+            ProviderCapabilityKind.PnLStream;
 
         if (policy.RequireExplicitBinding && strictAccountCapability && context.AccountId is not null && binding.Target?.AccountId is null)
             return $"Capability '{policy.Capability}' requires an account-scoped binding.";
