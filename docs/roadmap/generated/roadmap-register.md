@@ -375,6 +375,37 @@ Completed shared Ledger, Portfolio, Security & Instrument, and Report-Line Prove
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W5X-OEG-001 - Operational evidence graph product surface
+| Field | Value |
+| --- | --- |
+| Wave | W5X |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-06-15 |
+
+### Current Summary
+
+Planned productization candidate for a shared Operational Evidence Graph surface spanning source, normalization, validation, reconciliation, ledger, capital accounts, close, reporting, delivery, and audit layers. Status must remain planned until implementation evidence links concrete shared read models, service APIs, browser and WPF entry points, manifest export behavior, and tests.
+
+### Exit Criteria
+
+- Shared read models in SRC-UI-SHARED and service APIs in SRC-UI-SERVICES define stable subject identifiers, node identifiers, layer values, status values, warning codes, and typed evidence links for browser and WPF consumers without UI-local business rules.
+- Compact proof ribbon, side proof drawer, full proof graph page, and exportable evidence manifest patterns are implemented from the same contracts with parity across browser and WPF or an explicit WPF parity plan recorded in implementation evidence.
+- Ledger Explorer, Portfolio Explorer, Report-Line Provenance Explorer, Fund Event Command Center, and Evidence Vault can open graph context for their material records through stable deep links or routed actions.
+- Evidence manifests include source hashes or vault references, graph schema version, generated timestamp, completeness state, validation warnings, reviewer or export attestation, and typed links from source through audit.
+- Tests prove that missing required source, validation, reconciliation, ledger, close, reporting, delivery, or audit evidence remains review-required or blocked rather than being represented as complete.
+- Roadmap status remains planned until this item links implementation paths and concrete evidence entries for the shared contracts, service endpoints, browser surface, WPF surface or parity plan, manifest export, and missing-evidence tests.
+
+### Source Modules
+
+- `SRC-UI-SERVICES`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
 ## W5X-STMT-ONBOARD-001 - Statement reconciliation onboarding wedge
 | Field | Value |
 | --- | --- |

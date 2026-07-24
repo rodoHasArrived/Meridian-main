@@ -34,6 +34,7 @@ Snapshot date: 2026-07-05
 | W5X-EVIDENCE-001 | Evidence Vault productization | in_progress | green | high | Accounting and Ledger |
 | W5X-FINOPS-001 | Financial operations control center | done | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
+| W5X-OEG-001 | Operational evidence graph product surface | planned | green | high | Workstation Shell and UX |
 | W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | in_progress | green | high | Accounting and Ledger |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
