@@ -19,13 +19,11 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     private readonly Queue<string> _seenOrder = new();
     private Func<CancellationToken, Task<IReadOnlyList<ExecutionReport>>> _reconcile;
     private readonly TimeProvider _clock;
-    private readonly TimeSpan _staleAfter;
     private readonly IAlpacaTradeUpdateCursorStore _cursorStore;
     private ClientWebSocket? _socket;
     private CancellationTokenSource? _runCts;
     private Task? _runTask;
     private DateTimeOffset? _watermark;
-    private DateTimeOffset? _lastUpdateAt;
     private string? _failure;
 
     public AlpacaTradeUpdatesClient(AlpacaOptions options, ILogger<AlpacaTradeUpdatesClient> logger,
@@ -36,13 +34,15 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         _logger = logger;
         _reconcile = reconcile ?? (_ => Task.FromResult<IReadOnlyList<ExecutionReport>>([]));
         _clock = clock ?? TimeProvider.System;
-        _staleAfter = staleAfter ?? TimeSpan.FromSeconds(30);
+        _ = staleAfter; // Kept for source compatibility; event silence is not a stream-health signal.
         _cursorStore = cursorStore ?? new FileAlpacaTradeUpdateCursorStore();
     }
 
-    public bool IsHealthy => _socket?.State == WebSocketState.Open && _lastUpdateAt is { } at && _clock.GetUtcNow() - at <= _staleAfter && _failure is null;
+    // Trade updates are event-driven, so an idle but open authenticated socket is healthy.
+    // The receive loop records socket closures and transport failures in _failure.
+    public bool IsHealthy => _socket?.State == WebSocketState.Open && _failure is null;
     public DateTimeOffset? Watermark => _watermark;
-    public string? UnhealthyReason => IsHealthy ? null : _failure ?? "Trade-update stream is delayed, disconnected, or has not produced an update.";
+    public string? UnhealthyReason => IsHealthy ? null : _failure ?? "Trade-update stream is disconnected or has not connected.";
     public IAsyncEnumerable<ExecutionReport> Reports => _reports.Reader.ReadAllAsync();
 
     public Task StartAsync(CancellationToken ct = default)
@@ -73,7 +73,6 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         var timestamp = ReadTime(data, "timestamp") ?? ReadTime(order, "updated_at") ?? _clock.GetUtcNow();
         _watermark = _watermark is null || timestamp > _watermark ? timestamp : _watermark;
         _cursorStore.Save(_watermark.Value, _seenOrder);
-        _lastUpdateAt = _clock.GetUtcNow();
         _failure = null;
         var status = order.TryGetProperty("status", out var statusElement) ? statusElement.GetString() : null;
         var mapped = Map(status);
