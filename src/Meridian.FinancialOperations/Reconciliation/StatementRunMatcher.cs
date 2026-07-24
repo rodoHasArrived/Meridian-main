@@ -184,7 +184,8 @@ internal static class StatementRunMatcher
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
-        var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
+        var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
         // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
         // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
         // prevents a stale cash row from reconciling if a faulty internal source happens to return the
@@ -192,7 +193,7 @@ internal static class StatementRunMatcher
         return new NormalizedStatementCashBalance(
             evidence,
             account,
-            currency,
+            sourceCurrency,
             amount,
             evidence,
             row.TradeDate,

@@ -179,6 +179,10 @@ after evidence reload.
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
 readiness, and provider setup, while keeping retry-to-live behavior available.
+The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
+fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
+or malformed mode response fails closed to simulated/unverified rather than being presented as real
+provider data.
 
 Refresh-capable browser modules use the shared `useRequestLifecycle` hook for request versioning,
 stale response discard, unmount-safe state updates, AbortController handoff, and retry/backoff status

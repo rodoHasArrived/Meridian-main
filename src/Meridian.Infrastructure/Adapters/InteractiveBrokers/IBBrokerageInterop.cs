@@ -30,7 +30,8 @@ public interface IIBBrokerageClient : IDisposable
     void RequestNextValidId();
     Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default);
     Task CancelOrderAsync(int orderId, CancellationToken ct = default);
-    int RequestAccountSummary();
+    int ReserveAccountSummaryRequestId();
+    void RequestAccountSummary(int requestId);
     void CancelAccountSummary(int requestId);
     void RequestPositions();
     void CancelPositions();

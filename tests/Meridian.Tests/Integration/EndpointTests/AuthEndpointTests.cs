@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -140,7 +142,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public async Task LoginJson_WithValidCredentials_IssuesSessionAndCsrfCookies_WithDevCookiePolicy()
+    public async Task LoginJson_WithValidCredentials_UsesSecureCookiesWhenLocalTransportIsUnproven()
     {
         var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
         var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
@@ -159,10 +161,16 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
                 .SelectMany(h => h.Value)
                 .ToList();
 
-            setCookies.Should().Contain(cookie => cookie.Contains("mdc-session=", StringComparison.OrdinalIgnoreCase));
-            setCookies.Should().Contain(cookie => cookie.Contains("mdc-csrf=", StringComparison.OrdinalIgnoreCase));
+            var sessionCookie = setCookies.Single(
+                cookie => cookie.Contains("mdc-session=", StringComparison.OrdinalIgnoreCase));
+            var csrfCookie = setCookies.Single(
+                cookie => cookie.Contains("mdc-csrf=", StringComparison.OrdinalIgnoreCase));
+
+            sessionCookie.Split(';').Should().Contain(
+                attribute => attribute.Trim().Equals("Secure", StringComparison.OrdinalIgnoreCase));
+            csrfCookie.Split(';').Should().Contain(
+                attribute => attribute.Trim().Equals("Secure", StringComparison.OrdinalIgnoreCase));
             setCookies.Should().Contain(cookie => cookie.Contains("SameSite=Strict", StringComparison.OrdinalIgnoreCase));
-            setCookies.Should().NotContain(cookie => cookie.Contains("Secure", StringComparison.OrdinalIgnoreCase));
         }
         finally
         {

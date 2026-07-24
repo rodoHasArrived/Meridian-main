@@ -13,6 +13,13 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class LedgerEndpoints
 {
+    private static async Task<bool> IsAccountingPackageBuildScopeAccessibleAsync(
+        HttpContext context,
+        WorkstationTenantContext tenantContext,
+        string fundProfileId)
+        => HasAccountingPackageTenantScope(tenantContext)
+           && await IsBodyFundScopeAccessibleAsync(context, tenantContext, fundProfileId).ConfigureAwait(false);
+
     private static PrivateCapitalActivityProjectionDto FilterPrivateCapitalActivity(
         PrivateCapitalActivityProjectionDto activity,
         string? fundEventId,

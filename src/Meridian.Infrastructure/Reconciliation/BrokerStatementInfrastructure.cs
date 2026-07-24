@@ -332,10 +332,15 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         string externalAccountId)
     {
         var expectedAccount = externalAccountId.Trim();
-        if (rows.Any(row => !string.Equals(row.Account.Trim(), expectedAccount, StringComparison.OrdinalIgnoreCase)))
+        foreach (var row in rows)
         {
-            throw new InvalidDataException(
-                "Statement rows must all identify the statement run's external account.");
+            var sourceAccount = row.Account.Trim();
+            if (!string.Equals(sourceAccount, expectedAccount, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
+                    $"which does not match the requested external account '{expectedAccount}'.");
+            }
         }
     }
 

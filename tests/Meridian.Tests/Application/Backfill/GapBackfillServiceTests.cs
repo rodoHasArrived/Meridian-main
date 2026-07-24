@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Backfill;
+using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 using Xunit;
@@ -41,6 +42,14 @@ public sealed class GapBackfillServiceTests
         public event Action<ReconnectionGap>? ReconnectionGapDetected;
 
         public void Raise(ReconnectionGap gap) => ReconnectionGapDetected?.Invoke(gap);
+    }
+
+    private sealed class DelegateBackfillGateway(
+        Func<BackfillRequest, CancellationToken, Task<BackfillResult>> execute)
+        : IBackfillExecutionGateway
+    {
+        public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
+            => execute(request, ct);
     }
 
     private static ReconnectionGap MakeGap(TimeSpan gap, string provider = "test-provider")
@@ -181,6 +190,42 @@ public sealed class GapBackfillServiceTests
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await WaitUntilAsync(() => svc.GapBackfillsSucceeded == 1);
 
+        svc.GapBackfillsSucceeded.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task OnReconnectionGap_SuccessfulGuardedRemediation_IncrementsSucceededCounter()
+    {
+        var completed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var gateway = new DelegateBackfillGateway((request, _) =>
+        {
+            completed.TrySetResult(true);
+            return Task.FromResult(SuccessResult(request));
+        });
+        using var guardedRemediation = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromSeconds(5),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 1,
+                DefaultProvider: "composite"));
+        var svc = new GapBackfillService(
+            static (_, _) => throw new InvalidOperationException("direct executor should not be used"),
+            subscribedSymbols: () => ["SPY"],
+            minimumGap: TimeSpan.FromSeconds(5),
+            guardedRemediation: guardedRemediation);
+
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
+
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitUntilAsync(() => svc.GapBackfillsSucceeded == 1);
+
+        svc.GapBackfillsTriggered.Should().Be(1);
         svc.GapBackfillsSucceeded.Should().Be(1);
     }
 

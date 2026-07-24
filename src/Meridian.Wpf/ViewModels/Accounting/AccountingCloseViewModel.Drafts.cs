@@ -157,7 +157,8 @@ public sealed partial class AccountingCloseViewModel
 
     private CreateLateAdjustmentRequestDto BuildCreateLateAdjustmentRequest(
         Guid workflowId,
-        ClosePeriodPlanDto closePlan)
+        ClosePeriodPlanDto closePlan,
+        string actor)
     {
         var journalEntryId = Guid.Parse(LateAdjustmentJournalEntryIdText.Trim());
         var amount = ParseLateAdjustmentAmount();
@@ -170,7 +171,7 @@ public sealed partial class AccountingCloseViewModel
             amount,
             currency,
             reason,
-            "wpf-accounting-controller",
+            actor,
             BuildLateAdjustmentRequestEvidence(workflowId, closePlan, journalEntryId),
             $"wpf-late-adjustment-request-{workflowId:D}-{journalEntryId:D}",
             OperationsActionOriginDto.HumanOperator);

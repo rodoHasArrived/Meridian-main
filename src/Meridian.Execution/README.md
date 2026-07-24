@@ -75,6 +75,10 @@ P&amp;L, or publish an enriched `TradeExecutedEvent` through the abstraction ins
 the OMS fallback value.
 The OMS sends only fills for its own tracked orders to the accounting publisher; untracked broker
 stream reports remain observable through `ExecutionReports` but cannot contaminate the configured book.
+For tracked orders, each streamed fill delta is capped to the remaining broker-authorized quantity,
+including an accepted quantity amendment, before portfolio state, public reports, and the accounting
+publisher observe it. An oversized or repeated callback therefore cannot overstate positions or
+post more than the accepted order quantity.
 After a broker acknowledges a fill, the OMS admits it to the accounting publisher before attempting
 cancelable paper-session history or audit bookkeeping. Report-pump shutdown likewise cannot cancel a
 dequeued fill before durable accounting admission; downstream session/channel work may be cancelled

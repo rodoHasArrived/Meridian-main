@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Core.Config;
 
 /// <summary>
@@ -26,5 +28,6 @@ public sealed record AlpacaOptions(
 )
 {
     /// <summary>Equity feed retained under its original configuration name for compatibility.</summary>
+    [JsonIgnore]
     public string EquitiesFeed => Feed;
 }

@@ -5897,7 +5897,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("complete retained evidence identity", StringComparison.OrdinalIgnoreCase));
+            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -5940,7 +5940,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("complete retained evidence identity", StringComparison.OrdinalIgnoreCase));
+            error.Contains("ledger book is required", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -5984,7 +5984,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("complete retained evidence identity", StringComparison.OrdinalIgnoreCase));
+            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

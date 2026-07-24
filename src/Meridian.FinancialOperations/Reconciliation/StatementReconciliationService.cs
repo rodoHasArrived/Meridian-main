@@ -566,7 +566,7 @@ public sealed class StatementReconciliationService
     {
         using var reader = new StringReader(content);
         var headerLine = reader.ReadLine();
-        var profile = ValidateStatementHeader(normalizedSourceKind, mappingProfileId, headerLine);
+        var profile = ValidateStatementHeaderLine(normalizedSourceKind, mappingProfileId, headerLine);
 
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var rows = new List<NormalizedStatementRow>();
@@ -653,10 +653,10 @@ public sealed class StatementReconciliationService
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         var header = File.ReadLines(sourcePath).FirstOrDefault();
-        return ValidateStatementHeader(normalizedSourceKind, mappingProfileId, header);
+        return ValidateStatementHeaderLine(normalizedSourceKind, mappingProfileId, header);
     }
 
-    private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string? mappingProfileId, string? header)
+    private StatementMappingProfile ValidateStatementHeaderLine(string normalizedSourceKind, string? mappingProfileId, string? header)
     {
         var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         if (string.IsNullOrWhiteSpace(header))

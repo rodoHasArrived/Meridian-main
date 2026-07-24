@@ -14,7 +14,10 @@ public sealed class StatementImportAndMatchingTests
         var path = Path.Combine(root, "statement.csv");
         await File.WriteAllTextAsync(path, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,5000,BUY,2026-01-02\n");
         var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
-        var req = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31));
+        var req = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
+        {
+            ExternalAccountId = "A1"
+        };
 
         await service.ImportAsync(req);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ImportAsync(req));
@@ -47,7 +50,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             firstPath,
@@ -58,7 +61,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             secondPath,
@@ -87,7 +90,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             firstPath,
@@ -98,7 +101,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             secondPath,
@@ -125,7 +128,11 @@ public sealed class StatementImportAndMatchingTests
             + "A1,SPY,10,500,-5000,BUY,2026-01-02,2026-01-04,EUR,1.5,EXT-42\n");
         var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
 
-        var imported = await service.ImportAsync(new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)));
+        var imported = await service.ImportAsync(
+            new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
+            {
+                ExternalAccountId = "A1"
+            });
 
         var row = Assert.Single(imported.Rows);
         Assert.Equal("EUR", row.Currency);

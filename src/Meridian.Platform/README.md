@@ -67,7 +67,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Scheduling/OperationalScheduler.cs` - trading-hours-aware runtime scheduling policy for
   maintenance, backfill, reporting, health, credential refresh, and other operational work.
 - `Scheduling/TradingCalendar.cs` - US-market trading-day, holiday, half-day, session-status, and
-  deterministic `IOperationalTradingCalendar` implementation used by runtime scheduling and calendar endpoints; provider-supplied calendar data uses the ProviderSdk contract.
+  deterministic `IOperationalTradingCalendar` implementation used by runtime scheduling and calendar
+  endpoints. Historical and future holiday/half-day years are populated lazily under synchronized
+  access; provider-supplied calendar data uses the ProviderSdk contract.
 - `Tracing/EventTraceContext.cs` - cross-thread activity context capture used by the Application
   event pipeline to preserve trace parent/correlation IDs across queued market events.
 - `Tracing/OpenTelemetrySetup.cs` - host OpenTelemetry setup, exporter configuration, and

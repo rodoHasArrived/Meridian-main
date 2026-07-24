@@ -566,9 +566,14 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         var orders = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
         return orders.Select(order => new ExecutionReport
         {
-            OrderId = order.OrderId, GatewayOrderId = order.OrderId, ClientOrderId = order.ClientOrderId,
-            Symbol = order.Symbol, Side = order.Side, OrderQuantity = order.Quantity,
-            FilledQuantity = order.FilledQuantity, OrderStatus = order.Status,
+            OrderId = order.OrderId,
+            GatewayOrderId = order.OrderId,
+            ClientOrderId = order.ClientOrderId,
+            Symbol = order.Symbol,
+            Side = order.Side,
+            OrderQuantity = order.Quantity,
+            FilledQuantity = order.FilledQuantity,
+            OrderStatus = order.Status,
             ReportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New,
             Timestamp = order.CreatedAt,
             Diagnostics = new ExecutionDiagnostics { Category = "alpaca-rest-reconciliation", RecommendedAction = "Reconciled after execution-stream reconnect." }

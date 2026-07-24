@@ -3,6 +3,42 @@ using Meridian.Contracts.Operations;
 
 namespace Meridian.ProviderSdk;
 
+/// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>
+public enum ProviderDataRequestStatus
+{
+    Requested,
+    Streaming,
+    Completed,
+    Cancelled,
+    TimedOut,
+    Rejected,
+    Failed
+}
+
+/// <summary>IB's reported market-data availability; unknown is never treated as live data.</summary>
+public enum IBMarketDataAvailability
+{
+    Unknown = 0,
+    Live = 1,
+    Frozen = 2,
+    Delayed = 3,
+    DelayedFrozen = 4
+}
+
+/// <summary>Complete, entitlement-aware lineage for an Interactive Brokers request or subscription.</summary>
+public sealed record IBDataLineage(
+    int RequestId,
+    string Service,
+    string Symbol,
+    string? Exchange,
+    string? MarketRuleIds,
+    string? MinimumIncrements,
+    string? Subscription,
+    IBMarketDataAvailability Availability,
+    bool IsDelayed,
+    string Status,
+    DateTimeOffset ObservedAt);
+
 /// <summary>Immutable evidence describing the origin and availability posture of provider data.</summary>
 public sealed record ProviderDataProvenance(
     string ProviderId,
@@ -49,8 +85,8 @@ public sealed record ProviderOptionChainDefinition(
 /// <summary>Provider-neutral historical-news headline.</summary>
 public sealed record ProviderNewsHeadline(DateTimeOffset Timestamp, string ProviderCode, string ArticleId, string Headline);
 
-/// <summary>Provider-neutral news-article payload.</summary>
-public sealed record ProviderNewsArticle(int ArticleType, string Content);
+/// <summary>Provider-neutral payload returned by a raw news-article callback.</summary>
+public sealed record ProviderNewsArticlePayload(int ArticleType, string Content);
 
 /// <summary>Provider-neutral fundamental report payload.</summary>
 public sealed record ProviderFundamentalReport(string Content);
@@ -94,6 +130,7 @@ public sealed record ProviderDataRequestReadModel(
     string Capability,
     ProviderDataRequestStatus Status,
     DateTimeOffset UpdatedAt,
+    ProviderDataProvenance Provenance,
     string? AccountId = null,
     string? ModelAccountId = null,
     string? ErrorCode = null,
@@ -107,11 +144,47 @@ public sealed record ProviderDataRequestReadModel(
     IReadOnlyList<ProviderContractDetails>? ContractDetails = null,
     IReadOnlyList<ProviderOptionChainDefinition>? OptionChainDefinitions = null,
     IReadOnlyList<ProviderNewsHeadline>? NewsHeadlines = null,
-    ProviderNewsArticle? NewsArticle = null,
+    ProviderNewsArticlePayload? NewsArticle = null,
     ProviderFundamentalReport? FundamentalReport = null,
     IReadOnlyList<ProviderTickByTickObservation>? TickByTickObservations = null,
     IReadOnlyList<ProviderDepthExchangeDescription>? DepthExchanges = null,
-    ProviderDividendEarnings? DividendEarnings = null);
+    ProviderDividendEarnings? DividendEarnings = null,
+    IBDataLineage? Lineage = null);
+
+/// <summary>
+/// Storage-facing, normalized provider result. Snapshot identities are stable across retries and
+/// restarts; <see cref="NormalizedPayload"/> is the portable serialized read model and lineage is
+/// retained separately so consumers need not recover it from an opaque payload.
+/// </summary>
+public sealed record IBDataResult(
+    string ResultIdentity,
+    string ProviderFamily,
+    string Capability,
+    string RequestIdentity,
+    string? SubscriptionIdentity,
+    string? Symbol,
+    string? AccountId,
+    DateTimeOffset CapturedAt,
+    ProviderDataRequestStatus LifecycleStatus,
+    string NormalizedPayload,
+    IBDataLineage Lineage);
+
+/// <summary>Bounded filter for durable IB materialized results.</summary>
+public sealed record IBDataResultQuery(
+    string? Capability = null,
+    string? RequestIdentity = null,
+    string? Symbol = null,
+    string? AccountId = null,
+    DateTimeOffset? CapturedFrom = null,
+    DateTimeOffset? CapturedTo = null,
+    int Limit = 500);
+
+/// <summary>Durable read/write seam for materialized IB observations and snapshots.</summary>
+public interface IIBDataResultStore
+{
+    ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);
+    ValueTask<IReadOnlyList<IBDataResult>> QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);
+}
 
 /// <summary>Shared read-model seam for rich provider data requested by an operator workflow.</summary>
 public interface IProviderDataReadService

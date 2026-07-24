@@ -25,7 +25,7 @@ internal sealed record HostedBrokerageGatewayRuntimeSurface(
 
 internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
 {
-    private static readonly string[] ExpectedGatewayIds = ["alpaca", "ib", "ibkr", "robinhood", "stocksharp"];
+    private static readonly string[] ExpectedGatewayIds = ["alpaca", "ibkr", "ib", "robinhood", "stocksharp"];
 
     internal static IReadOnlyList<HostedBrokerageGatewayRuntimeSurface> Build(IServiceProvider services)
     {
@@ -85,9 +85,13 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
             supportsActivitySync,
             gateway.BrokerageCapabilities);
         var notes = new List<string>();
+        if (gatewayId.Equals("ibkr", StringComparison.OrdinalIgnoreCase))
+        {
+            notes.Add("Interactive Brokers canonical runtime key; ib remains registered as a compatibility alias.");
+        }
         if (gatewayId.Equals("ib", StringComparison.OrdinalIgnoreCase))
         {
-            notes.Add("Interactive Brokers primary runtime key; ibkr is registered as an alias to the same gateway instance.");
+            notes.Add("Interactive Brokers compatibility alias; ibkr is the canonical runtime and declared gateway id.");
         }
         if (gatewayId.Equals("stocksharp", StringComparison.OrdinalIgnoreCase))
         {
@@ -123,8 +127,8 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
 
     private static bool GatewayIdMatches(string declaredGatewayId, string runtimeKey)
         => declaredGatewayId.Equals(runtimeKey, StringComparison.OrdinalIgnoreCase) ||
-           (runtimeKey.Equals("ibkr", StringComparison.OrdinalIgnoreCase) &&
-            declaredGatewayId.Equals("ib", StringComparison.OrdinalIgnoreCase));
+           (runtimeKey.Equals("ib", StringComparison.OrdinalIgnoreCase) &&
+            declaredGatewayId.Equals("ibkr", StringComparison.OrdinalIgnoreCase));
 
     private static IReadOnlyList<string> BuildValidationIssues(
         string gatewayId,

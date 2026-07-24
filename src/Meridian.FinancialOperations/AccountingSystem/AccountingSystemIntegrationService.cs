@@ -1961,7 +1961,6 @@ public sealed class AccountingSystemIntegrationService
               ReferencesEvidenceToken(link, compactPeriodEnd))));
     }
 
-
     private static bool HasExportPackageControlEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
             link.Contains("export", StringComparison.OrdinalIgnoreCase) ||

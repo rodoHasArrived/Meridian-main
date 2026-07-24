@@ -127,7 +127,7 @@ public sealed class IBBrokerageGatewayTests
 
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*EnableIbApiVendor=true*")
-            .WithMessage("*interactive-brokers-setup.md*");
+            .WithMessage("*docs/operators/provider-onboarding-interactive-brokers.md*");
     }
 #endif
 
@@ -391,21 +391,17 @@ public sealed class IBBrokerageGatewayTests
     }
 
     [Fact]
-    public async Task GetAccountInfoAsync_MapsAccountSummaryCallbacks()
+    public async Task GetAccountInfoAsync_MapsSynchronousAccountSummaryCallbacks()
     {
         var client = new FakeIbBrokerageClient
         {
             OnRequestNextValidId = c => c.RaiseNextValidId(8001),
             OnRequestAccountSummary = (c, requestId) =>
             {
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(25);
-                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "NetLiquidation", "125000.50", "USD", DateTimeOffset.UtcNow));
-                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "TotalCashValue", "25000.25", "USD", DateTimeOffset.UtcNow));
-                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "BuyingPower", "50000.75", "USD", DateTimeOffset.UtcNow));
-                    c.RaiseAccountSummaryCompleted(requestId);
-                });
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "NetLiquidation", "125000.50", "USD", DateTimeOffset.UtcNow));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "TotalCashValue", "25000.25", "USD", DateTimeOffset.UtcNow));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "BuyingPower", "50000.75", "USD", DateTimeOffset.UtcNow));
+                c.RaiseAccountSummaryCompleted(requestId);
             }
         };
 
@@ -422,6 +418,93 @@ public sealed class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task GetAccountInfoAsync_PreCanceledToken_DoesNotDispatchAccountSummaryRequest()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(8251)
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = () => sut.GetAccountInfoAsync(cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        client.AccountSummaryRequestIdsReserved.Should().Be(0);
+        client.AccountSummaryRequestsDispatched.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ReadSideSync_IsolatesBalancesAndSameSymbolPositionsByAccount()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(8501),
+            OnRequestAccountSummary = (c, requestId) =>
+            {
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU111", "NetLiquidation", "111000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU111", "TotalCashValue", "11000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU111", "BuyingPower", "22000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU222", "NetLiquidation", "222000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU222", "TotalCashValue", "22000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU222", "BuyingPower", "44000", "USD", now));
+                c.RaiseAccountSummaryCompleted(requestId);
+            },
+            OnRequestPositions = c =>
+            {
+                c.RaisePosition(new IBPositionUpdate(
+                    "DU111", "SPY", "STK", 10m, 501d, "USD", "SMART", null, now));
+                c.RaisePosition(new IBPositionUpdate(
+                    "DU222", "SPY", "STK", 20m, 502d, "USD", "SMART", null, now));
+                c.RaisePositionsCompleted();
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var accountCatalog = (IBrokerageAccountCatalog)sut;
+        var portfolioSync = (IBrokeragePortfolioSync)sut;
+        var accounts = await accountCatalog.GetAccountsAsync();
+        var firstPortfolio = await portfolioSync.GetPortfolioSnapshotAsync("DU111");
+        var secondPortfolio = await portfolioSync.GetPortfolioSnapshotAsync("DU222");
+
+        accounts.Select(account => account.AccountId).Should().Equal("DU111", "DU222");
+
+        firstPortfolio.Account.AccountId.Should().Be("DU111");
+        firstPortfolio.Balance.Equity.Should().Be(111000m);
+        firstPortfolio.Balance.Cash.Should().Be(11000m);
+        firstPortfolio.Balance.BuyingPower.Should().Be(22000m);
+        firstPortfolio.Positions.Should().ContainSingle();
+        firstPortfolio.Positions[0].PositionId.Should().Be("DU111:SPY");
+        firstPortfolio.Positions[0].Symbol.Should().Be("SPY");
+        firstPortfolio.Positions[0].Quantity.Should().Be(10m);
+
+        secondPortfolio.Account.AccountId.Should().Be("DU222");
+        secondPortfolio.Balance.Equity.Should().Be(222000m);
+        secondPortfolio.Balance.Cash.Should().Be(22000m);
+        secondPortfolio.Balance.BuyingPower.Should().Be(44000m);
+        secondPortfolio.Positions.Should().ContainSingle();
+        secondPortfolio.Positions[0].PositionId.Should().Be("DU222:SPY");
+        secondPortfolio.Positions[0].Symbol.Should().Be("SPY");
+        secondPortfolio.Positions[0].Quantity.Should().Be(20m);
+
+        var missingAccount = () => portfolioSync.GetPortfolioSnapshotAsync("DU333");
+        await missingAccount.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*DU333*");
+    }
+
+    [Fact]
     public async Task ReadSideSync_MapsAccountPortfolioAndSessionExecutionEvidence()
     {
         var now = DateTimeOffset.UtcNow;
@@ -430,9 +513,12 @@ public sealed class IBBrokerageGatewayTests
             OnRequestNextValidId = c => c.RaiseNextValidId(9001),
             OnRequestAccountSummary = (c, requestId) =>
             {
-                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "NetLiquidation", "125000", "USD", now));
-                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "TotalCashValue", "25000", "USD", now));
-                c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "BuyingPower", "50000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU123456", "NetLiquidation", "125000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU123456", "TotalCashValue", "25000", "USD", now));
+                c.RaiseAccountSummary(new IBAccountSummaryUpdate(
+                    requestId, "DU123456", "BuyingPower", "50000", "USD", now));
                 c.RaiseAccountSummaryCompleted(requestId);
             },
             OnRequestPositions = c =>
@@ -477,11 +563,14 @@ public sealed class IBBrokerageGatewayTests
     private sealed class FakeIbBrokerageClient : IIBBrokerageClient
     {
         private int _nextRequestId = 100;
+        private int _accountSummaryRequestsDispatched;
 
         public string Host { get; init; } = "127.0.0.1";
         public int Port { get; init; } = 7497;
         public int ClientId { get; init; } = 1;
         public bool IsConnected { get; private set; }
+        public int AccountSummaryRequestIdsReserved => Volatile.Read(ref _nextRequestId) - 100;
+        public int AccountSummaryRequestsDispatched => Volatile.Read(ref _accountSummaryRequestsDispatched);
 
         public Action<FakeIbBrokerageClient>? OnRequestNextValidId { get; set; }
         public Action<FakeIbBrokerageClient, int, OrderRequest>? OnPlaceOrder { get; set; }
@@ -527,11 +616,13 @@ public sealed class IBBrokerageGatewayTests
             return Task.CompletedTask;
         }
 
-        public int RequestAccountSummary()
+        public int ReserveAccountSummaryRequestId()
+            => Interlocked.Increment(ref _nextRequestId);
+
+        public void RequestAccountSummary(int requestId)
         {
-            var requestId = Interlocked.Increment(ref _nextRequestId);
+            Interlocked.Increment(ref _accountSummaryRequestsDispatched);
             OnRequestAccountSummary?.Invoke(this, requestId);
-            return requestId;
         }
 
         public void CancelAccountSummary(int requestId)

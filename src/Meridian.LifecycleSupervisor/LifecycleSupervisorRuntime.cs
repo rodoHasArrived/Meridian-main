@@ -1161,8 +1161,11 @@ internal static class LifecycleProtectedSecretStore
 {
     private static readonly byte[] Entropy = "Meridian.LifecycleSupervisor.v1"u8.ToArray();
 
+    public static bool IsSupported => OperatingSystem.IsWindows();
+
     public static void Write(string path, string secret)
     {
+        EnsureSupported();
         var protectedBytes = ProtectedData.Protect(
             System.Text.Encoding.UTF8.GetBytes(secret),
             Entropy,
@@ -1172,6 +1175,7 @@ internal static class LifecycleProtectedSecretStore
 
     public static string? Read(string path)
     {
+        EnsureSupported();
         if (!File.Exists(path))
             return null;
         try
@@ -1192,5 +1196,14 @@ internal static class LifecycleProtectedSecretStore
     {
         if (File.Exists(path))
             File.Delete(path);
+    }
+
+    private static void EnsureSupported()
+    {
+        if (!IsSupported)
+        {
+            throw new PlatformNotSupportedException(
+                "Lifecycle protected secrets require Windows current-user DPAPI.");
+        }
     }
 }

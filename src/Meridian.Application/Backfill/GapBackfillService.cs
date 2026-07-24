@@ -137,7 +137,30 @@ public sealed class GapBackfillService
     {
         try
         {
-            await _guardedRemediation!.HandleReconnectionGapAsync(gap, symbols).ConfigureAwait(false);
+            var outcome = await _guardedRemediation!
+                .RequestReconnectionGapAsync(gap, symbols)
+                .ConfigureAwait(false);
+            if (outcome == AutoRemediationOutcome.Completed)
+            {
+                Interlocked.Increment(ref _gapBackfillsSucceeded);
+                _log.Information(
+                    "Guarded gap remediation completed for {Provider} and {SymbolCount} symbols",
+                    gap.ProviderName,
+                    symbols.Length);
+            }
+            else if (outcome == AutoRemediationOutcome.Skipped)
+            {
+                _log.Debug(
+                    "Guarded gap remediation for {Provider} was skipped by policy",
+                    gap.ProviderName);
+            }
+            else
+            {
+                _log.Warning(
+                    "Guarded gap remediation for {Provider} did not complete successfully: {Outcome}",
+                    gap.ProviderName,
+                    outcome);
+            }
         }
         catch (Exception ex)
         {

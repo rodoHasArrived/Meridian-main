@@ -122,6 +122,10 @@ configuration. It also owns account catalog, portfolio snapshot, and connected-s
 sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
 account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
 dividends, interest, FX conversions, corporate actions, and prior-session activity.
+TWS account summaries and positions remain keyed by provider account, including identical symbols
+held in multiple accounts; an unknown requested account fails closed instead of inheriting another
+account's balances or positions. Account-summary request correlation is registered before dispatch
+so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
 contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB

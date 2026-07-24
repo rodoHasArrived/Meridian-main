@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildDataProvenanceBadgeViewModel,
-  normalizeDataProvenance
+  normalizeDataProvenance,
+  resolveWorkstationDataProvenance
 } from "@/app-shell.data-provenance-badge";
 
 describe("buildDataProvenanceBadgeViewModel", () => {
@@ -42,8 +43,6 @@ describe("buildDataProvenanceBadgeViewModel", () => {
 
 describe("normalizeDataProvenance", () => {
   it.each([
-    [null, "real"],
-    ["", "real"],
     ["live", "real"],
     ["real", "real"],
     ["simulated", "simulated"],
@@ -58,5 +57,50 @@ describe("normalizeDataProvenance", () => {
 
   it("never upgrades an unknown token to real", () => {
     expect(normalizeDataProvenance("mystery-source")).toBe("simulated");
+  });
+
+  it.each([null, undefined, "", "   ", 0, {}, []])(
+    "fails closed for missing or malformed wire value %p",
+    (token) => {
+      expect(normalizeDataProvenance(token)).toBe("simulated");
+    }
+  );
+});
+
+describe("resolveWorkstationDataProvenance", () => {
+  it("uses successful demo-mode provenance even when no development fixture header was observed", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: true, provenance: "seeded" }
+    })).toBe("seeded");
+  });
+
+  it("never accepts a real or missing provenance claim from enabled demo mode", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: true, provenance: "real" }
+    })).toBe("simulated");
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: true }
+    })).toBe("simulated");
+  });
+
+  it("lets development fixture evidence override a disabled demo-mode real posture", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: true,
+      demoMode: { enabled: false, provenance: "real" }
+    })).toBe("seeded");
+  });
+
+  it("claims real data only after the server explicitly reports demo mode disabled", () => {
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: null
+    })).toBe("simulated");
+    expect(resolveWorkstationDataProvenance({
+      usingDevelopmentFixtures: false,
+      demoMode: { enabled: false, provenance: "seeded" }
+    })).toBe("real");
   });
 });

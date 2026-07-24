@@ -1168,12 +1168,21 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         CancellationToken postHandoffCt)
     {
         var orderId = report.ClientOrderId ?? report.OrderId;
+        var acceptedFilledQuantity = report.FilledQuantity;
+        if (!string.IsNullOrWhiteSpace(orderId)
+            && _orders.TryGetValue(orderId, out var currentOrder))
+        {
+            acceptedFilledQuantity = currentOrder.FilledQuantity;
+        }
+
         if (!_fillProcessing.TryGetValue(report, out var progress))
         {
             // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
             // Alpaca filled_qty) while fill consumers treat each report as a discrete
-            // trade, so only the increment since the last tracked fill may be forwarded.
-            var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+            // trade, so only the validated increment since the last tracked fill may be
+            // forwarded. Tracked order state has already capped the broker's cumulative
+            // quantity to the locally authorized order quantity.
+            var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
             if (incrementQuantity <= 0m)
                 return;
 
@@ -1184,23 +1193,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 report,
                 _ => new FillProcessingProgress(
                     fillIncrement,
-                    report.FilledQuantity,
+                    acceptedFilledQuantity,
                     !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
-        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
-        // Alpaca filled_qty) while fill consumers treat each report as a discrete
-        // trade, so only the increment since the last tracked fill may be forwarded —
-        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
-        var acceptedFilledQuantity = report.FilledQuantity;
-        if (!string.IsNullOrWhiteSpace(report.ClientOrderId ?? report.OrderId)
-            && _orders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var currentOrder))
-        {
-            acceptedFilledQuantity = currentOrder.FilledQuantity;
-        }
-
-        var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
-        if (incrementQuantity <= 0m)
+        // A broker-accepted fill may not be abandoned because the caller or report-pump token
+        // was cancelled after dequeue. Admission to the durable accounting handoff is therefore
+        // non-cancellable; only downstream session/channel bookkeeping observes cancellation.
+        await progress.Gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        try
         {
             if (progress.IsComplete)
                 return;

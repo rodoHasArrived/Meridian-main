@@ -18,7 +18,8 @@ public enum AutoRemediationOutcome
     Completed,
     FailedTransient,
     FailedPermanent,
-    Skipped
+    Skipped,
+    Cancelled
 }
 
 public enum AutoRemediationTriggerSource
@@ -444,6 +445,16 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         ReconnectionGap gap,
         IReadOnlyList<string> symbols,
         CancellationToken ct = default)
+        => RequestReconnectionGapAsync(gap, symbols, ct);
+
+    /// <summary>
+    /// Executes a reconnection-gap remediation through the shared guardrails and reports whether
+    /// this invocation completed, failed, or was skipped.
+    /// </summary>
+    public Task<AutoRemediationOutcome> RequestReconnectionGapAsync(
+        ReconnectionGap gap,
+        IReadOnlyList<string> symbols,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(symbols);
 
@@ -454,7 +465,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                 gap.ProviderName,
                 gap.Duration,
                 _policy.MinimumGapDuration);
-            return Task.CompletedTask;
+            return Task.FromResult(AutoRemediationOutcome.Skipped);
         }
 
         return EnqueueRemediationAsync(
@@ -501,10 +512,18 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                 idempotencyKey);
         }
 
-        await HandleDataQualityGapAsync(gap, normalizedProvider, ct).ConfigureAwait(false);
-        var outcome = _idempotency.TryGetValue(idempotencyKey, out var state)
-            ? ReadOutcome(state)
-            : AutoRemediationOutcome.Skipped;
+        var outcome = await EnqueueRemediationAsync(
+                [gap.Symbol],
+                from,
+                to,
+                normalizedProvider,
+                AutoRemediationTriggerSource.DataQualityGap,
+                $"gap:{gap.Severity}:{gap.Duration}",
+                (int)Math.Max(gap.EstimatedMissedEvents, 1),
+                gap.Severity.ToString(),
+                downstreamWorkflow: null,
+                ct)
+            .ConfigureAwait(false);
 
         return new AutoGapRemediationRequestResult(outcome, normalizedProvider, from, to, idempotencyKey);
     }
@@ -630,7 +649,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             TaskScheduler.Default);
     }
 
-    private async Task EnqueueRemediationAsync(
+    private async Task<AutoRemediationOutcome> EnqueueRemediationAsync(
         IReadOnlyList<string> symbols,
         DateOnly from,
         DateOnly to,
@@ -644,7 +663,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
     {
         if (gapSize < _policy.MinimumGapSize)
         {
-            return;
+            return AutoRemediationOutcome.Skipped;
         }
 
         var normalizedSymbols = symbols
@@ -656,7 +675,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
 
         if (normalizedSymbols.Length == 0)
         {
-            return;
+            return AutoRemediationOutcome.Skipped;
         }
 
         var normalizedProvider = NormalizeProvider(provider);
@@ -666,7 +685,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         if (_cooldowns.IsProviderCoolingDown(normalizedProvider, now))
         {
             _log.Debug("Auto-remediation provider cooldown active for {Provider}", normalizedProvider);
-            return;
+            return AutoRemediationOutcome.Skipped;
         }
 
         var eligibleSymbols = normalizedSymbols
@@ -676,7 +695,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         if (eligibleSymbols.Length == 0)
         {
             _log.Debug("Auto-remediation symbol cooldown active for {Provider}", provider);
-            return;
+            return AutoRemediationOutcome.Skipped;
         }
 
         var idempotencyKey = BuildIdempotencyKey(eligibleSymbols, normalizedProvider, from, to);
@@ -690,10 +709,18 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
         var state = _idempotency.GetOrAdd(idempotencyKey, _ => new AutoRemediationState());
         lock (state)
         {
+            // Attempts > 0 with no terminal outcome means another caller owns this exact key.
+            // Do not let a second caller pass through to the global concurrency gate while the
+            // first execution is still in flight.
+            if (state.Attempts > 0 && state.LastOutcome == AutoRemediationOutcome.None)
+            {
+                return AutoRemediationOutcome.Skipped;
+            }
+
             if (state.LastOutcome is AutoRemediationOutcome.Completed or AutoRemediationOutcome.Skipped &&
                 now - state.LastAttemptAt < _policy.SymbolCooldown)
             {
-                return;
+                return AutoRemediationOutcome.Skipped;
             }
 
             state.Attempts++;
@@ -701,12 +728,27 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             state.LastOutcome = AutoRemediationOutcome.None;
         }
 
-        if (!await _concurrencyGate.WaitAsync(TimeSpan.Zero, ct).ConfigureAwait(false))
+        bool acquiredConcurrencySlot;
+        try
         {
-            UpdateOutcome(state, AutoRemediationOutcome.Skipped);
-            return;
+            acquiredConcurrencySlot = await _concurrencyGate
+                .WaitAsync(TimeSpan.Zero, ct)
+                .ConfigureAwait(false);
+        }
+        catch
+        {
+            RemoveIdempotencyStateIfOwned(idempotencyKey, state);
+            throw;
         }
 
+        if (!acquiredConcurrencySlot)
+        {
+            UpdateOutcome(state, AutoRemediationOutcome.Skipped);
+            return AutoRemediationOutcome.Skipped;
+        }
+
+        var finalOutcome = AutoRemediationOutcome.None;
+        var removeClaimAfterRelease = false;
         try
         {
             var execution = CreateExecutionLog(
@@ -738,7 +780,19 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                     : AutoRemediationOutcome.FailedPermanent.ToString();
 
                 _cooldowns.Record(eligibleSymbols, normalizedProvider, now);
-                UpdateOutcome(state, result.Success ? AutoRemediationOutcome.Completed : AutoRemediationOutcome.FailedPermanent);
+                finalOutcome = result.Success
+                    ? AutoRemediationOutcome.Completed
+                    : AutoRemediationOutcome.FailedPermanent;
+                return finalOutcome;
+            }
+            catch (OperationCanceledException ex) when (ct.IsCancellationRequested)
+            {
+                execution.CompletedAt = DateTimeOffset.UtcNow;
+                execution.Status = ExecutionStatus.Cancelled;
+                execution.ErrorMessage = ex.Message;
+                execution.AutoRemediationLastOutcome = AutoRemediationOutcome.Cancelled.ToString();
+                removeClaimAfterRelease = true;
+                throw;
             }
             catch (Exception ex)
             {
@@ -749,16 +803,12 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                     ? AutoRemediationOutcome.FailedTransient.ToString()
                     : AutoRemediationOutcome.FailedPermanent.ToString();
 
-                var outcome = IsTransientFailure(ex)
+                finalOutcome = IsTransientFailure(ex)
                     ? AutoRemediationOutcome.FailedTransient
                     : AutoRemediationOutcome.FailedPermanent;
 
-                UpdateOutcome(state, outcome);
-
-                if (outcome == AutoRemediationOutcome.FailedTransient)
-                {
-                    _idempotency.TryRemove(idempotencyKey, out _);
-                }
+                removeClaimAfterRelease = finalOutcome == AutoRemediationOutcome.FailedTransient;
+                return finalOutcome;
             }
             finally
             {
@@ -767,9 +817,22 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
                 _history.UpdateExecution(execution);
             }
         }
+        catch
+        {
+            removeClaimAfterRelease = true;
+            throw;
+        }
         finally
         {
             _concurrencyGate.Release();
+            if (removeClaimAfterRelease)
+            {
+                RemoveIdempotencyStateIfOwned(idempotencyKey, state);
+            }
+            else if (finalOutcome != AutoRemediationOutcome.None)
+            {
+                UpdateOutcome(state, finalOutcome);
+            }
         }
     }
 
@@ -809,19 +872,17 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
     private static bool IsTransientFailure(Exception ex)
         => ex is HttpRequestException or TimeoutException or OperationCanceledException;
 
+    private void RemoveIdempotencyStateIfOwned(string idempotencyKey, AutoRemediationState state)
+    {
+        _ = _idempotency.TryRemove(
+            new KeyValuePair<string, AutoRemediationState>(idempotencyKey, state));
+    }
+
     private static void UpdateOutcome(AutoRemediationState state, AutoRemediationOutcome outcome)
     {
         lock (state)
         {
             state.LastOutcome = outcome;
-        }
-    }
-
-    private static AutoRemediationOutcome ReadOutcome(AutoRemediationState state)
-    {
-        lock (state)
-        {
-            return state.LastOutcome;
         }
     }
 

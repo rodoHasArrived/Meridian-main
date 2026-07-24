@@ -51,9 +51,13 @@ const KNOWN_PROVENANCE: readonly DataProvenanceKind[] = ["real", "simulated", "s
  * Normalizes a loose provenance token from the wire. Unknown tokens resolve to `simulated` — never
  * `real` — so an unrecognized value can never be silently upgraded into "real".
  */
-export function normalizeDataProvenance(token: string | null | undefined): DataProvenanceKind {
-  const normalized = (token ?? "").trim().toLowerCase();
-  if (normalized === "" || normalized === "live") {
+export function normalizeDataProvenance(token: unknown): DataProvenanceKind {
+  if (typeof token !== "string") {
+    return "simulated";
+  }
+
+  const normalized = token.trim().toLowerCase();
+  if (normalized === "real" || normalized === "live") {
     return "real";
   }
   if ((KNOWN_PROVENANCE as readonly string[]).includes(normalized)) {
@@ -66,6 +70,35 @@ export function normalizeDataProvenance(token: string | null | undefined): DataP
     return "sample";
   }
   return "simulated";
+}
+
+export interface WorkstationDataProvenanceInput {
+  usingDevelopmentFixtures: boolean;
+  demoMode: {
+    enabled?: boolean;
+    provenance?: unknown;
+  } | null;
+}
+
+/**
+ * Resolves the shell-wide trust label. A positive demo-mode response and any development-fixture
+ * usage take precedence over a real-data claim. Until the server has explicitly reported that demo
+ * mode is disabled, the shell stays fail-closed as simulated instead of silently claiming real data.
+ */
+export function resolveWorkstationDataProvenance({
+  usingDevelopmentFixtures,
+  demoMode
+}: WorkstationDataProvenanceInput): DataProvenanceKind {
+  if (demoMode?.enabled) {
+    const reported = normalizeDataProvenance(demoMode.provenance);
+    return reported === "real" ? "simulated" : reported;
+  }
+
+  if (usingDevelopmentFixtures) {
+    return "seeded";
+  }
+
+  return demoMode ? "real" : "simulated";
 }
 
 export function buildDataProvenanceBadgeViewModel({

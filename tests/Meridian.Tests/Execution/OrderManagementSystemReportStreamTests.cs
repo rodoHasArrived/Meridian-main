@@ -154,6 +154,7 @@ public sealed class OrderManagementSystemReportStreamTests
     public async Task OversizedStreamedFill_IsCappedToRemainingOrderQuantity()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
         var gateway = new StreamingGateway
         {
             SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
@@ -161,7 +162,8 @@ public sealed class OrderManagementSystemReportStreamTests
         using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
-            portfolioState: portfolio);
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -182,7 +184,7 @@ public sealed class OrderManagementSystemReportStreamTests
         var order = oms.GetOrder(result.OrderId)!;
         order.FilledQuantity.Should().Be(10m,
             because: "streamed cumulative fill quantities must be capped to the original order quantity");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "portfolio side effects may only apply the remaining authorized quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
 
@@ -190,6 +192,9 @@ public sealed class OrderManagementSystemReportStreamTests
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(10m,
             because: "downstream consumers must receive the validated fill delta, not the oversized broker value");
+        publisher.AcceptedEvents.Should().ContainSingle()
+            .Which.FilledQuantity.Should().Be(10m,
+                because: "the accounting handoff must retain the validated accepted fill quantity, not the oversized broker value");
     }
 
     [Fact]
@@ -224,20 +229,18 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 30m, fillPrice: 150m, orderQuantity: 30m));
 
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the streamed completion report must reach the amended tracked order");
-
-        var order = oms.GetOrder(result.OrderId)!;
-        order.Quantity.Should().Be(30m);
-        order.FilledQuantity.Should().Be(30m,
-            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(30m);
-        portfolio.Cash.Should().Be(100_000m - 4_500m);
-
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(30m,
             because: "downstream consumers must receive the full authorized amended fill increment");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.Quantity.Should().Be(30m);
+        order.FilledQuantity.Should().Be(30m,
+            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(30L);
+        portfolio.Cash.Should().Be(100_000m - 4_500m);
     }
 
     [Fact]
@@ -277,7 +280,7 @@ public sealed class OrderManagementSystemReportStreamTests
             "the oversized completion report reaches the tracked order");
 
         oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "the portfolio must only receive the originally authorized fill quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
@@ -318,7 +321,7 @@ public sealed class OrderManagementSystemReportStreamTests
         order.Status.Should().Be(OrderStatus.Filled);
         order.FilledQuantity.Should().Be(10m,
             because: "late reports for terminal orders must not resize completed orders");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "late reports for terminal orders must not apply additional portfolio fills");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }

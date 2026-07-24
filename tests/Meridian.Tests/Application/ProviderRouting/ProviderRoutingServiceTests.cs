@@ -8,6 +8,7 @@ using Meridian.ProviderSdk;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using ProviderCapabilityDescriptor = Meridian.ProviderSdk.ProviderCapabilityDescriptor;
 
 namespace Meridian.Tests.Application.ProviderRouting;
 
