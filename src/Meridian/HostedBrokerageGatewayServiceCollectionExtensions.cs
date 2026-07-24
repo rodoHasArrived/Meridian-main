@@ -22,8 +22,11 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
                 ?? new Meridian.Core.Config.AlpacaOptions();
+            var credentials = Meridian.Core.Config.AlpacaCredentialEnvironment.Resolve(options);
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
-            return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
+            var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
+            var stream = new AlpacaTradeUpdatesClient(options, streamLogger, credentials: credentials);
+            return new AlpacaBrokerageGateway(httpClientFactory, options, logger, stream, credentials);
         });
         services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, AlpacaBrokerageSyncAdapter>());

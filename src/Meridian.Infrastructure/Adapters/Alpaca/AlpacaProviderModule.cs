@@ -134,10 +134,11 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
                 ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
                 : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
+            var credentials = AlpacaCredentialEnvironment.Resolve(brokerageOptions);
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
-            var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger);
-            return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream);
+            var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger, credentials: credentials);
+            return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream, credentials);
         });
         services.AddSingleton<IBrokerageAccountCatalog>(sp =>
             sp.GetRequiredService<AlpacaBrokerageGateway>());
