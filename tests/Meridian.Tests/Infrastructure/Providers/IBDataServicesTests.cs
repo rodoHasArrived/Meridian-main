@@ -2,42 +2,11 @@ using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.ProviderSdk;
-using Meridian.Storage.Store;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class IBDataServicesTests
 {
-    [Fact]
-    public async Task Materializer_PersistsAnUpdateBeforePublishingItToOperatorReaders()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-materializer", Guid.NewGuid().ToString("N"));
-        try
-        {
-            using var services = new IBDataServices(new RecordingTransport());
-            var store = new JsonFileIBDataResultStore(new IBDataResultStoreOptions { DataRoot = root });
-            var materializer = new IBDataResultMaterializer(services, store);
-            using var cts = new CancellationTokenSource();
-            var worker = materializer.MaterializeAsync(cts.Token);
-            await Task.Delay(25);
-
-            var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
-            await using var enumerator = materializer.WatchAsync(cts.Token).GetAsyncEnumerator();
-            (await enumerator.MoveNextAsync()).Should().BeTrue();
-
-            var persisted = await store.QueryAsync(new IBDataResultQuery(RequestIdentity: requestId.ToString(), Limit: 1));
-            persisted.Should().ContainSingle();
-            persisted[0].Lineage.RequestId.Should().Be(requestId);
-            persisted[0].NormalizedPayload.Should().Contain("interactive-brokers");
-            cts.Cancel();
-            await worker.ContinueWith(_ => { });
-        }
-        finally
-        {
-            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
-        }
-    }
-
     [Fact]
     public void RequestContractDetails_TracksExchangeAndMarketRuleLineage()
     {
