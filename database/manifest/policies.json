@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 193,
-    "warning": 193
+    "total": 196,
+    "warning": 196
   },
   "failed": false,
   "findings": [
@@ -279,6 +279,16 @@
     },
     {
       "details": {
+        "schema": "fund_accounts",
+        "table": "fund_account_legacy_import_receipt"
+      },
+      "message": "Business table fund_accounts.fund_account_legacy_import_receipt does not have a table comment.",
+      "object": "fund_accounts.fund_account_legacy_import_receipt",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
         "schema": "fund_structure",
         "table": "business"
       },
@@ -314,6 +324,26 @@
       },
       "message": "Business table fund_structure.fund_structure_assignment does not have a table comment.",
       "object": "fund_structure.fund_structure_assignment",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_legacy_import_receipt"
+      },
+      "message": "Business table fund_structure.fund_structure_legacy_import_receipt does not have a table comment.",
+      "object": "fund_structure.fund_structure_legacy_import_receipt",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_linked_account"
+      },
+      "message": "Business table fund_structure.fund_structure_linked_account does not have a table comment.",
+      "object": "fund_structure.fund_structure_linked_account",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2097,5 +2127,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "f736697d4a1273ea781433c94cd3158a9bcd2b6f9a3cee39ed4e3b306577c85d"
+  "fingerprint": "a7c091fa3ee636b523989fe3d510e8f02e6a363ad55afcd87aee8b312b1764fc"
 }

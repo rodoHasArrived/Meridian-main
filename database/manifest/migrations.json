@@ -556,7 +556,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_020__fund_scope_tenant_columns.sql",
       "schema": "ledger",
-      "sha256": "1b46d0d6f11c381c2ad7f475dc60af3bc2ba5294e4fbf6cfa65cd0edd3171b71"
+      "sha256": "86ebafeaecbc2b7f3543068958db27f3c12c6565ebdefa02ac0db5c5ea7a9ece"
     },
     {
       "filename": "V_ledger_021__operations_continuity_tenant_column.sql",
@@ -565,7 +565,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_021__operations_continuity_tenant_column.sql",
       "schema": "ledger",
-      "sha256": "8874cf56eead1a203d602d28a5aca2eab6e917b2eb175303cfe9dd2ef05575ab"
+      "sha256": "22e8142bc9c1344507b940304edb1abb7aea7ad2069e7a795c0958e231cf8f2d"
     },
     {
       "filename": "V_ledger_022__tenant_lower_indexes.sql",
@@ -631,6 +631,24 @@
       "sha256": "b32453b0d8ae1b531316ec7017ef5ea928d787e2e9edb52a12febbbde45d5ae8"
     },
     {
+      "filename": "002_legacy_import_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/002_legacy_import_receipts.sql",
+      "schema": "fund_structure",
+      "sha256": "7e1dd827b49a37e594ebea46ab64a8af7a7fc5df8f0478247b3ede483d54d0ba"
+    },
+    {
+      "filename": "003_linked_accounts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/003_linked_accounts.sql",
+      "schema": "fund_structure",
+      "sha256": "4bac18f0162775127d8aed914e96bf6b44e9ab9bc9312d1b006dcaa859859b98"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -656,6 +674,15 @@
       "path": "src/Meridian.Storage/FundAccounts/Migrations/003_fund_account_tenant_column.sql",
       "schema": "fund_accounts",
       "sha256": "f13ef8f319673b5e26a6891c91c74bd65d2499e58249820d9408146b2026b50d"
+    },
+    {
+      "filename": "004_legacy_import_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/004_legacy_import_receipts.sql",
+      "schema": "fund_accounts",
+      "sha256": "34411f0d35fdf449138b18fd32906cc0d99cce27d0a6840e2ebdca9eff49deab"
     },
     {
       "filename": "001_banking.sql",
@@ -776,7 +803,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "fc14cdfd38c40dede7bde55cdc8c9c40de41ead6e46a3d95d852aed4612fba8d",
+  "fingerprint": "db8ca7b6b496f9f97f45702a69bdd6151b2be49949c8808757d858a14ebcbcb1",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1014,7 +1041,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 86,
+    "files": 89,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

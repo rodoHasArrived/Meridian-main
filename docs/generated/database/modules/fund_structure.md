@@ -2,7 +2,7 @@
 
 # `fund_structure` schema
 
-- Relations: 11
+- Relations: 13
 - Functions/procedures: 0
 - Triggers: 0
 - Row-level security policies: 0
@@ -66,6 +66,15 @@ erDiagram
         timestamp_with_time_zone effective_from
         timestamp_with_time_zone effective_to
         boolean is_primary
+        timestamp_with_time_zone updated_at
+    }
+    fund_structure_fund_structure_legacy_import_receipt {
+        text source_hash PK
+        timestamp_with_time_zone imported_at
+        integer entity_count
+    }
+    fund_structure_fund_structure_linked_account {
+        uuid account_id PK
         timestamp_with_time_zone updated_at
     }
     fund_structure_fund_structure_schema_migrations {
@@ -170,6 +179,8 @@ erDiagram
 | `client` | table | 12 | `client_id` | 0 | 1 | - |
 | `fund` | table | 15 | `fund_id` | 0 | 1 | - |
 | `fund_structure_assignment` | table | 8 | `assignment_id` | 0 | 2 | - |
+| `fund_structure_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
+| `fund_structure_linked_account` | table | 2 | `account_id` | 0 | 1 | - |
 | `fund_structure_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `investment_portfolio` | table | 16 | `investment_portfolio_id` | 0 | 1 | - |
 | `legal_entity` | table | 16 | `entity_id` | 0 | 1 | - |

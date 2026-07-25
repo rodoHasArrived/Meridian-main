@@ -65,11 +65,15 @@ classDiagram
         +DateTimeOffset AsOf
         +decimal? CircuitBreakerThresholdPct
         +decimal? ContractMultiplier
+        +bool? IsEasyToBorrow
+        +bool? IsFractionable
+        +bool? IsMarginable
+        +bool? IsShortable
         +decimal? LotSize
         +decimal? MarginRequirementPct
-        +Guid SecurityId
-        +decimal? TickSize
-        +string? TradingHoursUtc
+        +decimal? MinimumOrderSize
+        +decimal? MinimumTradeIncrement
+        +decimal? PriceIncrement
     }
     class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
         +string Actor

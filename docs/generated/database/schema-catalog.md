@@ -8,8 +8,8 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `78161959c33a` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `f2356c67a593` |
-| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 11 | 0 | 0 | 0 | `8a59bdf0b477` |
-| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 11 | 0 | 0 | 0 | `0271886ae666` |
+| [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `c11c69e353f5` |
+| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 13 | 0 | 0 | 0 | `83ea628e2319` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
 | [`ledger`](modules/ledger.md) | `ledger` | 21 | 1 | 2 | 0 | `72748467f9d0` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
