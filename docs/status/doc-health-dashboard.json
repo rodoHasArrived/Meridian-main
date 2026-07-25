@@ -1,6 +1,6 @@
 {
   "total_files": 634,
-  "total_lines": 115826,
+  "total_lines": 115847,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2381,7 +2381,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 126,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2421,7 +2421,7 @@
     },
     {
       "path": "docs/generated/database/modules/fund_accounts.md",
-      "line_count": 214,
+      "line_count": 220,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2429,7 +2429,7 @@
     },
     {
       "path": "docs/generated/database/modules/fund_structure.md",
-      "line_count": 179,
+      "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
