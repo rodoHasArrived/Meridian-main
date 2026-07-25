@@ -53,6 +53,7 @@ public sealed class StatementImportServiceTests : IDisposable
     private StatementImportCommitRequest CommitRequest(
         StatementSourceDocument document,
         string fundAccountId = "FUND-A",
+        string externalAccountId = "FUND-A",
         string? connectorId = null)
         => new(
             document,
@@ -60,7 +61,7 @@ public sealed class StatementImportServiceTests : IDisposable
             SourceKind: "broker",
             SourceInstitution: "Sample Broker",
             FundAccountId: fundAccountId,
-            ExternalAccountId: "EXT-001",
+            ExternalAccountId: externalAccountId,
             PeriodStart: new DateOnly(2026, 6, 1),
             PeriodEnd: new DateOnly(2026, 6, 30),
             ToleranceProfileId: null,
@@ -216,13 +217,16 @@ public sealed class StatementImportServiceTests : IDisposable
             profile.ProfileId == StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
         var remappedProfile = canonicalProfile with
         {
-            ProfileId = "canonical-quantity-from-price-v1",
-            DisplayName = "Canonical CSV with quantity remapped",
+            ProfileId = "canonical-price-quantity-swapped-v1",
+            DisplayName = "Canonical CSV with price and quantity swapped",
             IsBuiltIn = false,
             Fields = canonicalProfile.Fields
-                .Select(field => field.CanonicalField == "Quantity"
-                    ? field with { SourceColumn = "price" }
-                    : field)
+                .Select(field => field.CanonicalField switch
+                {
+                    "Quantity" => field with { SourceColumn = "price" },
+                    "Price" => field with { SourceColumn = "quantity" },
+                    _ => field
+                })
                 .ToArray()
         };
         await _catalog.UpsertAsync(remappedProfile);
@@ -254,8 +258,14 @@ public sealed class StatementImportServiceTests : IDisposable
     [Fact]
     public async Task Commit_OfxAndFlexStatements_LandInTheSameQueue()
     {
-        var ofxResult = await _service.CommitAsync(CommitRequest(FixtureDocument("ofx-102-bank.ofx"), "FUND-OFX"));
-        var flexResult = await _service.CommitAsync(CommitRequest(FixtureDocument("ib-flex-sample.xml"), "FUND-FLEX"));
+        var ofxResult = await _service.CommitAsync(CommitRequest(
+            FixtureDocument("ofx-102-bank.ofx"),
+            "FUND-OFX",
+            "FUND-A-CASH"));
+        var flexResult = await _service.CommitAsync(CommitRequest(
+            FixtureDocument("ib-flex-sample.xml"),
+            "FUND-FLEX",
+            "U1234567"));
 
         ofxResult.RecordCount.Should().Be(4);
         flexResult.RecordCount.Should().Be(7);
@@ -379,10 +389,16 @@ public sealed class StatementImportServiceTests : IDisposable
 
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
+        var failedAt = lastSuccessfulRun.AddHours(25);
         updated.LastRunAtUtc.Should().Be(
             lastSuccessfulRun,
-            "a transient fetch failure must preserve the last successful schedule watermark");
+            "a failed fetch must not skip activity after the last successful fetch cursor");
+        updated.LastAttemptAtUtc.Should().Be(
+            failedAt,
+            "failed attempts must advance a separate cadence watermark to avoid minute-by-minute retries");
         updated.LastRunStatus.Should().Be("Failed: NotSupportedException");
+        (await runner.RunDueSchedulesAsync(failedAt.AddMinutes(1))).Should().Be(0);
+        (await runner.RunDueSchedulesAsync(failedAt.AddHours(24))).Should().Be(1);
     }
 
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>

@@ -953,12 +953,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         }
 
         var aggregateCostBasis = canonicalSelections.Sum(static selection => selection.ExpectedCostBasis);
-        var assetLines = source.ProjectedEffect!.Lines
+        var disposalAssetLines = source.ProjectedEffect!.Lines
             .Where(line => string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal))
             .ToArray();
-        RequireAssertion(assetLines.Length == 1 &&
-                         assetLines[0].Credit == aggregateCostBasis &&
-                         assetLines[0].Debit == 0m,
+        RequireAssertion(disposalAssetLines.Length == 1 &&
+                         disposalAssetLines[0].Credit == aggregateCostBasis &&
+                         disposalAssetLines[0].Debit == 0m,
             "Disposal projected accounting must contain exactly one authoritative asset-relief credit for selected-lot cost basis.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId &&
                          position.PositionId == source.Scope.BookPositionId,

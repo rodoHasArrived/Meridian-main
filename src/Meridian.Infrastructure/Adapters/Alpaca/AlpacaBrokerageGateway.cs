@@ -207,7 +207,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
-        EnsureExecutionStreamHealthy();
 
         using var client = CreateHttpClient();
 
@@ -257,7 +256,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         ArgumentNullException.ThrowIfNull(modification);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
-        EnsureExecutionStreamHealthy();
 
         var payload = new AlpacaOrderModifyPayload
         {

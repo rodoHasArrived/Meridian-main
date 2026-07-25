@@ -1049,9 +1049,9 @@ Total items: **1208**
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 752 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 827 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1282 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 221 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 386 | `NOTE` | ❌ | note: "Credential check failed" |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 642 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 223 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 411 | `NOTE` | ❌ | note: "Credential check failed" |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | 667 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/components/data/skeleton.tsx` | 5 | `NOTE` | ❌ | // NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx` |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 23 | `NOTE` | ❌ | note: "Opening sleeve" |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.test.tsx` | 151 | `NOTE` | ❌ | note: "operator note" |
@@ -1194,11 +1194,11 @@ Total items: **1208**
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1496 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1509 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1522 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 227 | `NOTE` | ❌ | Note: "Ready for review."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 253 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 282 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 307 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 331 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 258 | `NOTE` | ❌ | Note: "Ready for review."); |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 284 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 313 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 338 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 362 | `NOTE` | ❌ | Note: "Submit through gate.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 686 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 4262 | `NOTE` | ❌ | Note: "Delivered after approval.", |

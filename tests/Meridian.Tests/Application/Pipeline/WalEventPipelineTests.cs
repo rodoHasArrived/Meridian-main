@@ -132,6 +132,61 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
             .Which.Symbol.Should().Be("AAPL");
     }
 
+    [Fact]
+    public async Task Consumer_WhenWalBackedSinkThrows_RetriesFailedBatchBeforeCommittingLaterEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 1,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("LOST"));
+        pipeline.TryPublish(CreateTradeEvent("OK"));
+
+        await WaitForConsumption(sink, expectedCount: 2);
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol).Should().Contain(new[] { "LOST", "OK" });
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task Consumer_WhenWalBackedBatchFlushThrows_DoesNotReappendPersistedEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FlushFailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 3,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("FIRST"));
+        pipeline.TryPublish(CreateTradeEvent("SECOND"));
+        pipeline.TryPublish(CreateTradeEvent("THIRD"));
+
+        await WaitForConsumption(sink, expectedCount: 3);
+        var timeout = DateTime.UtcNow.AddSeconds(5);
+        while (pipeline.GetStatistics().ConsumerIterationFailures == 0 && DateTime.UtcNow < timeout)
+        {
+            await Task.Delay(1);
+        }
+        await pipeline.FlushAsync();
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol)
+            .Should().BeEquivalentTo(new[] { "FIRST", "SECOND", "THIRD" });
+        sink.ReceivedEvents.Should().HaveCount(3);
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
     #endregion
 
     #region Crash Recovery Tests
@@ -512,6 +567,8 @@ internal sealed class MockWalSink : IStorageSink
 {
     private readonly List<MarketEvent> _receivedEvents = new();
     private readonly object _lock = new();
+    private int _failuresRemaining;
+    private int _flushFailuresRemaining;
 
     public IReadOnlyList<MarketEvent> ReceivedEvents
     {
@@ -526,8 +583,26 @@ internal sealed class MockWalSink : IStorageSink
 
     public int FlushCount { get; private set; }
 
+    public int FailuresRemaining
+    {
+        get => Volatile.Read(ref _failuresRemaining);
+        set => Volatile.Write(ref _failuresRemaining, value);
+    }
+
+    public int FlushFailuresRemaining
+    {
+        get => Volatile.Read(ref _flushFailuresRemaining);
+        set => Volatile.Write(ref _flushFailuresRemaining, value);
+    }
+
     public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
+        if (Volatile.Read(ref _failuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _failuresRemaining);
+            throw new InvalidOperationException("Simulated sink failure");
+        }
+
         lock (_lock)
         {
             _receivedEvents.Add(evt);
@@ -538,6 +613,12 @@ internal sealed class MockWalSink : IStorageSink
     public Task FlushAsync(CancellationToken ct = default)
     {
         FlushCount++;
+        if (Volatile.Read(ref _flushFailuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _flushFailuresRemaining);
+            throw new InvalidOperationException("Simulated sink flush failure");
+        }
+
         return Task.CompletedTask;
     }
 

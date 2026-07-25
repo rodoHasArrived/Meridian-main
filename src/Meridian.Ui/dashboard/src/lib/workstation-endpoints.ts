@@ -2,6 +2,7 @@ import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 export const WORKSTATION_API_ENDPOINTS = {
   systemStatus: UI_API_ROUTES.Status,
+  demoMode: UI_API_ROUTES.DemoMode,
   runtimeLifecycle: "/api/system/lifecycle",
   runtimeShutdown: "/api/system/shutdown",
   runtimeShutdownReceiptsLatest: "/api/system/shutdown/receipts/latest",

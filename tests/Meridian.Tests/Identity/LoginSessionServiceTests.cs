@@ -176,7 +176,7 @@ public sealed class LoginSessionServiceTests
                 .Status.Should().Be(LoginAttemptStatus.InvalidCredentials);
         }
 
-        GetTrackedFailedAttemptWindowCount(service).Should().BeLessOrEqualTo(1_024);
+        GetTrackedFailedAttemptWindowCount(service).Should().BeLessThanOrEqualTo(1_024);
     }
 
     [Fact]

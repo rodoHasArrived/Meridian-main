@@ -82,7 +82,12 @@ Operations. The golden-path `POST /api/workstation/reconciliation/statement-to-r
 persists the source before import, checkpoints every completed stage, pauses while reconciliation
 cases remain open, and resumes without repeating a committed import. Status, resume, and
 artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
-artifacts before serving them. `SecurityMasterWorkbenchQueryService` is published under
+artifacts before serving them. The lower-level
+`POST /api/workstation/reconciliation/statement-runs` mutation derives `ImportedBy` from the
+authenticated session and fails closed unless `FundAccountId` resolves to an active account whose
+institution and external-account evidence match the statement source. `AdminMaintenance` may
+override account scope; other callers require account-scoped `ManageDirectLending` authorization.
+`SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read

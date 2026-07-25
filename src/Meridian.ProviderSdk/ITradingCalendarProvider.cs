@@ -109,16 +109,25 @@ public sealed record ProviderTradingCalendarResponse(
     public void EnsureProvenanceComplete()
     {
         ArgumentNullException.ThrowIfNull(Provenance);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderConnectionId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.Entitlement);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.Feed);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.MarketDataAvailability);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.RequestOrSubscriptionDescriptor);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.ProviderNativeId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.CorrelationId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(Provenance.StableDeduplicationKey);
+        EnsureTraceable(Provenance.ProviderId, nameof(Provenance.ProviderId));
+        EnsureTraceable(Provenance.ProviderConnectionId, nameof(Provenance.ProviderConnectionId));
+        EnsureTraceable(Provenance.Entitlement, nameof(Provenance.Entitlement));
+        EnsureTraceable(Provenance.Feed, nameof(Provenance.Feed));
+        EnsureTraceable(Provenance.MarketDataAvailability, nameof(Provenance.MarketDataAvailability));
+        EnsureTraceable(Provenance.RequestOrSubscriptionDescriptor, nameof(Provenance.RequestOrSubscriptionDescriptor));
+        EnsureTraceable(Provenance.ProviderNativeId, nameof(Provenance.ProviderNativeId));
+        EnsureTraceable(Provenance.CorrelationId, nameof(Provenance.CorrelationId));
+        EnsureTraceable(Provenance.StableDeduplicationKey, nameof(Provenance.StableDeduplicationKey));
         if (Provenance.SourceTimestamp == default || Provenance.ReceiptTimestamp == default)
             throw new ArgumentOutOfRangeException(nameof(Provenance), "Provider output must include source and receipt timestamps.");
+        if (Provenance.DataProvenance is not { } dataProvenance || !Enum.IsDefined(dataProvenance))
+            throw new ArgumentOutOfRangeException(nameof(Provenance), "Provider output must include a recognized data provenance.");
+    }
+
+    private static void EnsureTraceable(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        if (string.Equals(value, "unknown", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Provider output must include traceable provenance values.", parameterName);
     }
 }

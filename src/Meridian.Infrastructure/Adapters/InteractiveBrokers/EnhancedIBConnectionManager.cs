@@ -109,7 +109,9 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
         => Task.FromException(ThrowPlatformNotSupported());
 
-    public int RequestAccountSummary() => throw ThrowPlatformNotSupported();
+    public int ReserveAccountSummaryRequestId() => throw ThrowPlatformNotSupported();
+
+    public void RequestAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 
     public void CancelAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 

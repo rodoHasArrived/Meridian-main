@@ -133,35 +133,8 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service,
-            [FromServices] IAccountQueryService? accounts) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var accountGuard = await RequireStatementRunAccountAccessAsync(request, accounts, context).ConfigureAwait(false);
-            if (accountGuard is not null)
-            {
-                return accountGuard;
-            }
-
-            var trustedRequest = request with { ImportedBy = currentUser };
-            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
-        })
+            HttpContext context) =>
+            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
         .Produces(401)
@@ -582,6 +555,43 @@ public static partial class WorkstationEndpoints
             accountId,
             context.RequestAborted).ConfigureAwait(false);
         return allowed ? null : EndpointHelpers.Forbidden();
+    }
+
+    private static async Task<IResult> CreateStatementRunAsync(
+        StatementRunCreateDto request,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (!HasReconciliationMutationPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveCurrentUser(context, out var currentUser))
+        {
+            return Results.Unauthorized();
+        }
+
+        var service = context.RequestServices.GetService<IReconciliationApiService>();
+        if (service is null)
+        {
+            return Results.Problem(
+                "Reconciliation API service is not registered.",
+                statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        var accounts = context.RequestServices.GetService<IAccountQueryService>();
+        var accountGuard = await RequireStatementRunAccountAccessAsync(request, accounts, context).ConfigureAwait(false);
+        if (accountGuard is not null)
+        {
+            return accountGuard;
+        }
+
+        var trustedRequest = request with { ImportedBy = currentUser };
+        var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+        return detail is null
+            ? Results.NotFound()
+            : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
     }
 
     private static bool IsStatementSourceBoundToAccount(StatementRunCreateDto request, AccountSummaryDto account)

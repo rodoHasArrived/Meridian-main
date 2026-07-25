@@ -273,10 +273,17 @@ Fund Ledger reconciliation actions call the shared workstation reconciliation en
 the returned verified outcome before displaying
 success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
 failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
-HTTP response or compatibility message. Strategy workspace composition resolves the durable
+HTTP response or compatibility message. `CompletedWithWarnings` retains the successful mutation,
+refreshes the shared queue, and keeps its issues and recovery guidance visible; only `Blocked` or
+`Failed` suppresses the success path. Strategy workspace composition resolves the durable
 strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
 artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
 in-memory production history.
+
+The desktop pending-operations store persists a versioned queue envelope. Unknown operation types
+remain durable for a later handler, while the retired authentication-sensitive
+`reconciliation.review-break` and `reconciliation.resolve-break` replay types move once into
+payload-free quarantine so operator notes and evidence are not retained in an unsafe replay record.
 
 After mutation, the desktop refreshes the queue from the shared break read model after
 review/resolve/dismiss and keeps the selected decision

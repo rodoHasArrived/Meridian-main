@@ -11,6 +11,16 @@ public sealed record WorkstationReconciliationActionResult(
     ReconciliationBreakQueueItem? Item)
 {
     public VerifiedOperationOutcome? Outcome { get; init; }
+
+    /// <summary>
+    /// Operator-facing terminal status that supplements a successful result when the verified
+    /// outcome contains warnings. This is separate from <see cref="ErrorMessage"/> because a
+    /// completed-with-warnings action still satisfied enough postconditions to refresh its item.
+    /// </summary>
+    public string? OperatorMessage { get; init; }
+
+    public bool CompletedWithWarnings =>
+        Outcome?.State == OperationTerminalState.CompletedWithWarnings;
 }
 
 public interface IWorkstationReconciliationApiClient
@@ -118,8 +128,11 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
 
     private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
         Task<Meridian.Contracts.Api.ApiResponse<ReconciliationCaseworkOperationResult>> responseTask)
+        => ToActionResult(await responseTask.ConfigureAwait(false));
+
+    internal static WorkstationReconciliationActionResult ToActionResult(
+        Meridian.Contracts.Api.ApiResponse<ReconciliationCaseworkOperationResult> response)
     {
-        var response = await responseTask.ConfigureAwait(false);
         if (!response.Success || response.Data is null)
         {
             return new WorkstationReconciliationActionResult(false, response.ErrorMessage, null);
@@ -128,16 +141,58 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         var operation = response.Data;
         var succeeded = operation.Outcome.State is
             OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;
+        var failureMessage = operation.Error
+            ?? operation.Outcome.Issues.FirstOrDefault()?.Message
+            ?? $"Reconciliation operation ended in {operation.Outcome.State}.";
         return new WorkstationReconciliationActionResult(
             succeeded,
-            succeeded
-                ? null
-                : operation.Error
-                    ?? operation.Outcome.Issues.FirstOrDefault()?.Message
-                    ?? $"Reconciliation operation ended in {operation.Outcome.State}.",
+            succeeded ? null : failureMessage,
             operation.Item)
         {
-            Outcome = operation.Outcome
+            Outcome = operation.Outcome,
+            OperatorMessage = succeeded
+                ? BuildOutcomeOperatorMessage(operation.Outcome)
+                : failureMessage
         };
     }
+
+    internal static string? BuildOutcomeOperatorMessage(VerifiedOperationOutcome outcome)
+    {
+        if (outcome.State != OperationTerminalState.CompletedWithWarnings)
+        {
+            return null;
+        }
+
+        var parts = new List<string>
+        {
+            "Reconciliation action completed with warnings."
+        };
+        var issues = (outcome.Issues ?? [])
+            .Where(static issue => !string.IsNullOrWhiteSpace(issue.Message))
+            .Select(static issue => $"{issue.Code}: {TrimSentence(issue.Message)}")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (issues.Length > 0)
+        {
+            parts.Add($"Issues: {string.Join("; ", issues)}.");
+        }
+
+        var recovery = (outcome.Recovery ?? [])
+            .Where(static action =>
+                !string.IsNullOrWhiteSpace(action.Label) ||
+                !string.IsNullOrWhiteSpace(action.Guidance))
+            .Select(static action =>
+                $"{TrimSentence(action.Label)}: {TrimSentence(action.Guidance)}")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (recovery.Length > 0)
+        {
+            parts.Add($"Recovery: {string.Join("; ", recovery)}.");
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    private static string TrimSentence(string? value)
+        => value?.Trim().TrimEnd('.') ?? string.Empty;
 }

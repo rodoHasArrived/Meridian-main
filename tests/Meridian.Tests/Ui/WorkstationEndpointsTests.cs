@@ -3649,10 +3649,13 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_ReconciliationStatementRoutes_ShouldUseCanonicalSharedRoutes()
     {
         var service = new StubReconciliationApiService();
+        var accountId = Guid.NewGuid();
+        var accounts = CreateStatementAccount(accountId);
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationApiService>(service);
-        });
+            services.AddSingleton<Meridian.PortfolioRecords.Accounts.IAccountQueryService>(accounts);
+        }, currentUserPermissions: UserPermission.AdminMaintenance);
 
         var client = app.GetTestClient();
 
@@ -3698,8 +3701,8 @@ public sealed partial class WorkstationEndpointsTests
             new StatementRunCreateDto(
                 Broker: "samplebroker",
                 SourceInstitution: "Sample Custodian",
-                FundAccountId: "fund-1",
-                ExternalAccountId: "ext-1",
+                FundAccountId: accountId.ToString("D"),
+                ExternalAccountId: "external-allowed",
                 StatementPeriodStart: new DateOnly(2026, 5, 1),
                 StatementPeriodEnd: new DateOnly(2026, 5, 27),
                 SourcePath: "/tmp/statement.csv",
@@ -3710,7 +3713,7 @@ public sealed partial class WorkstationEndpointsTests
                 SourceFileHash: "ABC123"),
             ServerJsonOptions);
         createdResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        service.CreatedRequests.Should().ContainSingle(request => request.FundAccountId == "fund-1");
+        service.CreatedRequests.Should().ContainSingle(request => request.FundAccountId == accountId.ToString("D"));
 
         var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
             UiApiRoutes.ReconciliationStatementExceptions,

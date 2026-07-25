@@ -126,7 +126,7 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
-    public async Task CancelOrder_WhenLiveProductionRoutingDisabled_Returns403AndDoesNotCancel()
+    public async Task CancelOrder_WhenLiveProductionRoutingDisabled_CancelsOpenOrder()
     {
         var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m));
         await using var app = await CreateAppAsync(services =>
@@ -149,11 +149,11 @@ public sealed class ExecutionWriteEndpointsTests
         var client = app.GetTestClient();
         var response = await client.PostAsync("/api/execution/orders/ord-live-001/cancel", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await ReadActionResultAsync(response);
-        result.Status.Should().Be("Rejected");
-        result.Message.Should().Contain("production routing is disabled");
-        orderManager.CancelledOrderIds.Should().BeEmpty();
+        result.Status.Should().Be("Completed");
+        result.Message.Should().Contain("cancelled");
+        orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
     }
 
     // ------------------------------------------------------------------ //
@@ -208,7 +208,7 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
-    public async Task CancelAllOrders_WhenLiveProductionRoutingDisabled_Returns403AndDoesNotCancel()
+    public async Task CancelAllOrders_WhenLiveProductionRoutingDisabled_CancelsOpenOrders()
     {
         var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m));
         await using var app = await CreateAppAsync(services =>
@@ -231,12 +231,12 @@ public sealed class ExecutionWriteEndpointsTests
         var client = app.GetTestClient();
         var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await ReadActionResultAsync(response);
-        result.Status.Should().Be("Rejected");
-        result.Message.Should().Contain("production routing is disabled");
-        orderManager.CancelAllCallCount.Should().Be(0);
-        orderManager.CancelledOrderIds.Should().BeEmpty();
+        result.Status.Should().Be("Completed");
+        result.Message.Should().Contain("1");
+        orderManager.CancelAllCallCount.Should().Be(1);
+        orderManager.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("ord-live-001");
     }
 
     // ------------------------------------------------------------------ //
@@ -477,7 +477,9 @@ public sealed class ExecutionWriteEndpointsTests
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: []);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -749,7 +751,9 @@ public sealed class ExecutionWriteEndpointsTests
     {
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: []);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(

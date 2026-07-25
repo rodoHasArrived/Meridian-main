@@ -1545,7 +1545,6 @@ public static partial class WorkstationEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("AcknowledgeOperationsContinuityChecklistTask");
 
-
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
@@ -1648,28 +1647,8 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var trustedRequest = request with { ImportedBy = currentUser };
-            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
-        })
+            HttpContext context) =>
+            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
         .Produces(401)

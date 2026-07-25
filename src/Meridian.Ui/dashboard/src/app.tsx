@@ -70,6 +70,7 @@ import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
+import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
@@ -153,12 +154,36 @@ function AppRoot() {
   const { pathname } = useLocation();
   const [firstRun, setFirstRun] = useState<FirstRunStatus | null>(null);
   const [firstRunChecked, setFirstRunChecked] = useState(false);
+  const [demoMode, setDemoMode] = useState<{
+    enabled?: boolean;
+    provenance?: unknown;
+  } | null>(null);
   useEffect(() => {
     let active = true;
     apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus)
       .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
       .catch(() => { if (active) setFirstRunChecked(true); });
     return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    apiGetJson<{ enabled?: boolean; provenance?: unknown }>(
+      WORKSTATION_API_ENDPOINTS.demoMode,
+      { signal: controller.signal, allowDevelopmentFallback: false }
+    )
+      .then((value) => {
+        if (active) {
+          setDemoMode(value);
+        }
+      })
+      .catch(() => {
+        // Missing provenance remains null so the shell renders a fail-closed simulated badge.
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
 
   if (isCompanionPaneRoute(pathname)) {
@@ -172,10 +197,16 @@ function AppRoot() {
     // redirect guard above releases the user instead of bouncing them to /setup.
     return <FirstRunScreen initialStatus={firstRun} onStatusChange={setFirstRun} />;
   }
-  return <AppShell firstRunStatus={firstRun} />;
+  return <AppShell firstRunStatus={firstRun} demoMode={demoMode} />;
 }
 
-function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }) {
+function AppShell({
+  firstRunStatus,
+  demoMode
+}: {
+  firstRunStatus?: FirstRunStatus | null;
+  demoMode: { enabled?: boolean; provenance?: unknown } | null;
+}) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
@@ -240,6 +271,10 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
       hasOperatingContext: hasOperatingScopeValues(operatingScopeInput),
       fundAccountId: operatingScopeInput.fundAccountId
     }
+  });
+  const dataProvenance = resolveWorkstationDataProvenance({
+    usingDevelopmentFixtures,
+    demoMode
   });
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
@@ -509,7 +544,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
       />
 
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
-      <DataProvenanceBanner provenance={usingDevelopmentFixtures ? "seeded" : "real"} />
+      <DataProvenanceBanner provenance={dataProvenance} />
 
       <div className="workstation-shell">
         <WorkspaceNav

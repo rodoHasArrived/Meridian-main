@@ -18,13 +18,14 @@ public sealed record StatementFetchSchedule(
     bool Enabled,
     DateTimeOffset? LastRunAtUtc = null,
     string? LastRunStatus = null,
-    string SourceKind = "broker")
+    string SourceKind = "broker",
+    DateTimeOffset? LastAttemptAtUtc = null)
 {
     public DateTimeOffset? NextDueAtUtc =>
-        !Enabled ? null : LastRunAtUtc?.AddHours(Math.Max(1, CadenceHours));
+        !Enabled ? null : (LastAttemptAtUtc ?? LastRunAtUtc)?.AddHours(Math.Max(1, CadenceHours));
 
     public bool IsDue(DateTimeOffset nowUtc) =>
-        Enabled && (LastRunAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
+        Enabled && (NextDueAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
 }
 
 public sealed record StatementFetchScheduleSnapshot(
@@ -41,7 +42,11 @@ public interface IStatementFetchScheduleStore
     Task<StatementFetchSchedule> UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);
     Task<bool> DeleteAsync(string scheduleId, CancellationToken ct = default);
     Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);
-    Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default);
+    Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default);
 }
 
 /// <summary>
@@ -89,7 +94,8 @@ public sealed class FileStatementFetchScheduleStore
                 normalized = normalized with
                 {
                     LastRunAtUtc = existing.LastRunAtUtc,
-                    LastRunStatus = existing.LastRunStatus
+                    LastRunStatus = existing.LastRunStatus,
+                    LastAttemptAtUtc = existing.LastAttemptAtUtc
                 };
             }
 
@@ -128,7 +134,12 @@ public sealed class FileStatementFetchScheduleStore
                 return snapshot;
             }
 
-            var updated = existing with { LastRunAtUtc = ranAtUtc, LastRunStatus = status };
+            var updated = existing with
+            {
+                LastRunAtUtc = ranAtUtc,
+                LastAttemptAtUtc = ranAtUtc,
+                LastRunStatus = status
+            };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated
@@ -138,7 +149,11 @@ public sealed class FileStatementFetchScheduleStore
         }, ct).ConfigureAwait(false);
     }
 
-    public async Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default)
+    public async Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         await UpdateSnapshotAsync(snapshot =>
@@ -150,7 +165,11 @@ public sealed class FileStatementFetchScheduleStore
                 return snapshot;
             }
 
-            var updated = existing with { LastRunStatus = status };
+            var updated = existing with
+            {
+                LastAttemptAtUtc = attemptedAtUtc,
+                LastRunStatus = status
+            };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated
