@@ -83,8 +83,12 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ConnectAsync_OnFailure_TriesBackup()
+    public async Task ConnectAsync_OnFailure_CommitsBackupThroughCoordinator()
     {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
         _primaryClient.ShouldFailConnect = true;
 
         await _sut.ConnectAsync();
@@ -92,6 +96,38 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         _primaryClient.ConnectCallCount.Should().Be(1);
         _backupClient.ConnectCallCount.Should().Be(1);
         _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+    }
+
+    [Fact]
+    public async Task ConnectAsync_WhenPrimaryCouldNotBeConstructed_StartsOnBackupWithoutCoordinatorDivergence()
+    {
+        await _sut.DisposeAsync();
+        var availableBackup = new FakeMarketDataClient("backup");
+        _sut = new FailoverAwareMarketDataClient(
+            new Dictionary<string, IMarketDataClient>
+            {
+                ["backup"] = availableBackup
+            },
+            _failoverService,
+            _rule.Id,
+            "backup");
+        _failoverService.Start(
+            new DataSourcesConfig(
+                EnableFailover: true,
+                HealthCheckIntervalSeconds: 3600,
+                FailoverRules: [_rule]),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [_rule.Id] = "backup"
+            });
+
+        await _sut.ConnectAsync();
+
+        availableBackup.ConnectCallCount.Should().Be(1);
+        _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId(_rule.Id).Should().Be("backup");
+        _failoverService.GetRuleSnapshots().Single().IsInFailoverState.Should().BeTrue();
     }
 
     [Fact]
@@ -158,12 +194,68 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     [Fact]
     public async Task ConnectAsync_AllProvidersFail_Throws()
     {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
         _primaryClient.ShouldFailConnect = true;
         _backupClient.ShouldFailConnect = true;
 
         var act = () => _sut.ConnectAsync();
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*All streaming providers failed*");
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("primary");
+    }
+
+    [Fact]
+    public async Task Scenario_StartupFeedFailure_CancelledRetryCannotCommitALaterBackup()
+    {
+        await _sut.DisposeAsync();
+
+        var primary = new FakeMarketDataClient("primary") { ShouldFailConnect = true };
+        var rejectedBackup = new FakeMarketDataClient("backup1") { ShouldFailConnect = true };
+        var cancelledBackup = new FakeMarketDataClient("backup2") { BlockConnectUntilCancelled = true };
+        var rule = new FailoverRuleConfig(
+            Id: "connect-cancel-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: ["backup1", "backup2"],
+            FailoverThreshold: 1,
+            RecoveryThreshold: 2);
+        _failoverService.RegisterProvider("backup1");
+        _failoverService.RegisterProvider("backup2");
+        _sut = new FailoverAwareMarketDataClient(
+            new Dictionary<string, IMarketDataClient>
+            {
+                ["primary"] = primary,
+                ["backup1"] = rejectedBackup,
+                ["backup2"] = cancelledBackup
+            },
+            _failoverService,
+            rule.Id,
+            "primary");
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [rule]));
+        using var cts = new CancellationTokenSource();
+
+        var connectTask = _sut.ConnectAsync(cts.Token);
+        await cancelledBackup.ConnectEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        cts.Cancel();
+
+        Func<Task> act = async () => await connectTask;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        await WaitUntilAsync(() =>
+            cancelledBackup.ConnectCancellationObserved &&
+            cancelledBackup.DisconnectCallCount == 1);
+        rejectedBackup.ConnectCallCount.Should().Be(1);
+        cancelledBackup.ConnectCallCount.Should().Be(1);
+        cancelledBackup.DisconnectCallCount.Should().Be(1);
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId(rule.Id).Should().Be("primary");
+        _failoverService.GetRuleSnapshots().Single(x => x.RuleId == rule.Id)
+            .FailoverCount.Should().Be(0);
     }
 
     [Fact]
@@ -344,6 +436,288 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         _sut.ProviderDisplayName.Should().Contain("primary");
     }
 
+    [Fact]
+    public async Task Scenario_ProviderFeedInterruption_SelectedBackupConnectFails_TriesNextHealthyProviderWithoutStateDivergence()
+    {
+        await _sut.DisposeAsync();
+
+        var primary = new FakeMarketDataClient("primary");
+        var rejectedBackup = new FakeMarketDataClient("backup1") { ShouldFailConnect = true };
+        var healthyBackup = new FakeMarketDataClient("backup2");
+        _failoverService.RegisterProvider("backup1");
+        _failoverService.RegisterProvider("backup2");
+        var rule = new FailoverRuleConfig(
+            Id: "fallback-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: ["backup1", "backup2"],
+            FailoverThreshold: 1,
+            RecoveryThreshold: 2);
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [rule]));
+        _sut = new FailoverAwareMarketDataClient(
+            new Dictionary<string, IMarketDataClient>
+            {
+                ["primary"] = primary,
+                ["backup1"] = rejectedBackup,
+                ["backup2"] = healthyBackup
+            },
+            _failoverService,
+            rule.Id,
+            "primary");
+        await _sut.ConnectAsync();
+
+        _failoverService.RecordFailure("primary", "injected feed interruption");
+
+        await WaitUntilAsync(
+            () => _sut.ActiveProviderId == "backup2" &&
+                  _failoverService.GetActiveProviderId(rule.Id) == "backup2");
+
+        rejectedBackup.ConnectCallCount.Should().Be(1);
+        healthyBackup.ConnectCallCount.Should().Be(1);
+        primary.DisconnectCallCount.Should().Be(1);
+        _sut.ActiveProviderId.Should().Be(_failoverService.GetActiveProviderId(rule.Id));
+    }
+
+    [Fact]
+    public async Task Scenario_Failover_RequiredResubscribeFails_DoesNotClaimConnectedSwitch()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _sut.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true)).Should().BePositive();
+        _backupClient.ShouldFailTradeSubscribe = true;
+
+        var switched = await _failoverService.ForceFailoverAsync("test-rule", "backup");
+
+        switched.Should().BeFalse();
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("primary");
+        _primaryClient.DisconnectCallCount.Should().Be(0);
+        _backupClient.DisconnectCallCount.Should().Be(1);
+        _sut.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Scenario_Failover_SubscriptionAddedDuringHandoff_IsAppliedExactlyOnceToNewProvider()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _sut.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true)).Should().BePositive();
+        _backupClient.BlockTradeSubscribeSymbol = "AAPL";
+
+        var transitionTask = Task.Run(
+            async () => await _failoverService.ForceFailoverAsync("test-rule", "backup"));
+        await _backupClient.TradeSubscribeBlocked.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        using var addStarted = new ManualResetEventSlim(initialState: false);
+        using var addFinished = new ManualResetEventSlim(initialState: false);
+        Exception? addException = null;
+        var addedHandle = -1;
+        var addThread = new Thread(() =>
+        {
+            addStarted.Set();
+            try
+            {
+                addedHandle = _sut.SubscribeTrades(new SymbolConfig("MSFT", SubscribeTrades: true));
+            }
+            catch (Exception ex)
+            {
+                addException = ex;
+            }
+            finally
+            {
+                addFinished.Set();
+            }
+        })
+        {
+            IsBackground = true
+        };
+        addThread.Start();
+        addStarted.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        try
+        {
+            WaitUntilBlockedOnMonitor(addThread);
+            addFinished.IsSet.Should().BeFalse(
+                "subscription mutation must wait until the provider hand-off commits");
+        }
+        finally
+        {
+            _backupClient.ReleaseBlockedTradeSubscribe();
+        }
+
+        (await transitionTask).Should().BeTrue();
+        addThread.Join(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        addException.Should().BeNull();
+        addedHandle.Should().BePositive();
+        _backupClient.TradeSubscriptions.Keys.Should().BeEquivalentTo(["AAPL", "MSFT"]);
+        _backupClient.TradeSubscribeCallsBySymbol["AAPL"].Should().Be(1);
+        _backupClient.TradeSubscribeCallsBySymbol["MSFT"].Should().Be(1);
+        _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+    }
+
+    [Fact]
+    public async Task Scenario_Failover_SubscriptionRemovedDuringHandoff_IsNotResurrected()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        var subscriptionHandle = _sut.SubscribeTrades(
+            new SymbolConfig("AAPL", SubscribeTrades: true));
+        _backupClient.SubscribeTrades(
+            new SymbolConfig("PREEXISTING", SubscribeTrades: true)).Should().BePositive();
+        _backupClient.BlockTradeSubscribeSymbol = "AAPL";
+
+        var transitionTask = Task.Run(
+            async () => await _failoverService.ForceFailoverAsync("test-rule", "backup"));
+        await _backupClient.TradeSubscribeBlocked.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        using var removeStarted = new ManualResetEventSlim(initialState: false);
+        using var removeFinished = new ManualResetEventSlim(initialState: false);
+        Exception? removeException = null;
+        var removeThread = new Thread(() =>
+        {
+            removeStarted.Set();
+            try
+            {
+                _sut.UnsubscribeTrades(subscriptionHandle);
+            }
+            catch (Exception ex)
+            {
+                removeException = ex;
+            }
+            finally
+            {
+                removeFinished.Set();
+            }
+        })
+        {
+            IsBackground = true
+        };
+        removeThread.Start();
+        removeStarted.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        try
+        {
+            WaitUntilBlockedOnMonitor(removeThread);
+            removeFinished.IsSet.Should().BeFalse(
+                "subscription removal must wait until replacement subscription IDs are committed");
+        }
+        finally
+        {
+            _backupClient.ReleaseBlockedTradeSubscribe();
+        }
+
+        (await transitionTask).Should().BeTrue();
+        removeThread.Join(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        removeException.Should().BeNull();
+        _backupClient.TradeSubscriptions.Should().NotContainKey("AAPL");
+        _backupClient.TradeSubscriptions.Should().ContainKey("PREEXISTING");
+        _backupClient.UnsubscribedTradeIds.Should().ContainSingle()
+            .Which.Should().NotBe(subscriptionHandle,
+                "the wrapper handle must resolve to the replacement provider's upstream ID");
+        _sut.GetConnectionDiagnosticsSnapshot().ActiveSubscriptions.Should().Be(0);
+        _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+    }
+
+    [Fact]
+    public async Task Scenario_FeedShutdown_DuringProviderSwitch_CancelsSwitchBeforeDisposingProviders()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _backupClient.BlockConnectUntilCancelled = true;
+
+        var transition = _failoverService.ForceFailoverAsync("test-rule", "backup");
+        await _backupClient.ConnectEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        await _sut.DisposeAsync();
+
+        (await transition).Should().BeFalse();
+        _backupClient.ConnectCancellationObserved.Should().BeTrue();
+        _primaryClient.DisposeCount.Should().Be(1);
+        _backupClient.DisposeCount.Should().Be(1);
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("primary");
+    }
+
+    [Fact]
+    public async Task Scenario_CoordinatorShutdown_DuringProviderSwitch_RejectsWithoutStateDivergence()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _backupClient.BlockConnectUntilCancelled = true;
+
+        var transition = _failoverService.ForceFailoverAsync("test-rule", "backup");
+        await _backupClient.ConnectEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        _failoverService.Dispose();
+
+        (await transition.WaitAsync(TimeSpan.FromSeconds(2))).Should().BeFalse();
+        await WaitUntilAsync(() => _backupClient.ConnectCancellationObserved);
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("primary");
+    }
+
+    [Fact]
+    public async Task DisposeAsync_CalledTwice_DisposesEachProviderExactlyOnce()
+    {
+        await _sut.DisposeAsync();
+        await _sut.DisposeAsync();
+
+        _primaryClient.DisposeCount.Should().Be(1);
+        _backupClient.DisposeCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_AliasedProviderInstance_DisposesSharedInstanceExactlyOnce()
+    {
+        await _sut.DisposeAsync();
+        var sharedProvider = new FakeMarketDataClient("shared");
+        _sut = new FailoverAwareMarketDataClient(
+            new Dictionary<string, IMarketDataClient>
+            {
+                ["primary"] = sharedProvider,
+                ["backup"] = sharedProvider
+            },
+            _failoverService,
+            "test-rule",
+            "primary");
+
+        await _sut.DisposeAsync();
+
+        sharedProvider.DisposeCount.Should().Be(1);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        while (!condition())
+            await Task.Delay(10, timeout.Token);
+    }
+
+    private static void WaitUntilBlockedOnMonitor(Thread thread)
+    {
+        SpinWait.SpinUntil(
+                () => (thread.ThreadState & ThreadState.WaitSleepJoin) != 0,
+                TimeSpan.FromSeconds(2))
+            .Should().BeTrue("the subscription mutation should reach the hand-off synchronization gate");
+    }
+
     /// <summary>
     /// Fake IMarketDataClient for testing failover behavior without real connections.
     /// </summary>
@@ -357,14 +731,24 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
 
         public bool ShouldFailConnect { get; set; }
         public bool ShouldCancelConnect { get; set; }
+        public bool BlockConnectUntilCancelled { get; set; }
+        public bool ShouldFailDepthSubscribe { get; set; }
+        public bool ShouldFailTradeSubscribe { get; set; }
+        public bool ConnectCancellationObserved { get; private set; }
         public int ConnectCallCount { get; private set; }
         public int DisconnectCallCount { get; private set; }
+        public int DisposeCount { get; private set; }
         public int DepthSubscribeCallCount { get; private set; }
         public int TradeSubscribeCallCount { get; private set; }
         public Dictionary<string, int> DepthSubscriptions { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, int> TradeSubscriptions { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, int> TradeSubscribeCallsBySymbol { get; } = new(StringComparer.OrdinalIgnoreCase);
         public List<int> UnsubscribedDepthIds { get; } = new();
         public List<int> UnsubscribedTradeIds { get; } = new();
+        public string? BlockTradeSubscribeSymbol { get; set; }
+        public TaskCompletionSource TradeSubscribeBlocked { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private ManualResetEventSlim BlockedTradeSubscribeRelease { get; } = new(initialState: false);
 
         public FakeMarketDataClient(string id)
         {
@@ -402,18 +786,33 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
                 IdleDuration: null,
                 ActiveSubscriptions: DepthSubscriptions.Count + TradeSubscriptions.Count);
 
-        public Task ConnectAsync(CancellationToken ct = default)
+        public async Task ConnectAsync(CancellationToken ct = default)
         {
             ConnectCallCount++;
+            ConnectEntered.TrySetResult();
+            if (BlockConnectUntilCancelled)
+            {
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    ConnectCancellationObserved = true;
+                    throw;
+                }
+            }
             if (ShouldCancelConnect)
-                return Task.FromCanceled(ct.IsCancellationRequested ? ct : new CancellationToken(canceled: true));
+                await Task.FromCanceled(ct.IsCancellationRequested ? ct : new CancellationToken(canceled: true));
             if (ShouldFailConnect)
                 throw new InvalidOperationException($"Fake connect failure for {_id}");
             _lifecycleState = ProviderConnectionLifecycleState.Connected;
             _lastConnectedAt = DateTimeOffset.UtcNow;
             ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
-            return Task.CompletedTask;
         }
+
+        public TaskCompletionSource ConnectEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public Task DisconnectAsync(CancellationToken ct = default)
         {
@@ -427,6 +826,8 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public int SubscribeMarketDepth(SymbolConfig cfg)
         {
             DepthSubscribeCallCount++;
+            if (ShouldFailDepthSubscribe)
+                throw new InvalidOperationException($"Fake depth subscription failure for {_id}");
             var id = _nextSubId++;
             DepthSubscriptions[cfg.Symbol] = id;
             return id;
@@ -440,6 +841,16 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public int SubscribeTrades(SymbolConfig cfg)
         {
             TradeSubscribeCallCount++;
+            TradeSubscribeCallsBySymbol[cfg.Symbol] =
+                TradeSubscribeCallsBySymbol.GetValueOrDefault(cfg.Symbol) + 1;
+            if (string.Equals(cfg.Symbol, BlockTradeSubscribeSymbol, StringComparison.OrdinalIgnoreCase))
+            {
+                TradeSubscribeBlocked.TrySetResult();
+                if (!BlockedTradeSubscribeRelease.Wait(TimeSpan.FromSeconds(5)))
+                    throw new TimeoutException($"Timed out waiting to release trade subscription for {cfg.Symbol}.");
+            }
+            if (ShouldFailTradeSubscribe)
+                throw new InvalidOperationException($"Fake trade subscription failure for {_id}");
             var id = _nextSubId++;
             TradeSubscriptions[cfg.Symbol] = id;
             return id;
@@ -448,8 +859,20 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public void UnsubscribeTrades(int subscriptionId)
         {
             UnsubscribedTradeIds.Add(subscriptionId);
+            var symbol = TradeSubscriptions.FirstOrDefault(entry => entry.Value == subscriptionId).Key;
+            if (symbol is not null)
+                TradeSubscriptions.Remove(symbol);
         }
 
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public void ReleaseBlockedTradeSubscribe()
+            => BlockedTradeSubscribeRelease.Set();
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeCount++;
+            if (DisposeCount == 1)
+                BlockedTradeSubscribeRelease.Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 }

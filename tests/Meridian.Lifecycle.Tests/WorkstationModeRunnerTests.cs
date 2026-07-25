@@ -63,6 +63,35 @@ public sealed class WorkstationModeRunnerTests : IAsyncDisposable
         server.DisposeCallCount.Should().Be(1);
     }
 
+    [Fact]
+    public async Task RunAsync_ServerStartFailure_StillStopsAndDisposesWithoutMaskingFailure()
+    {
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);
+        var startupFailure = new InvalidOperationException("dashboard-start-failure-sentinel");
+        var server = new RecordingDashboardServer(startupFailure);
+        var runner = new WorkstationModeRunner(_log, (_, _, _) => server);
+        var configPath = Path.Combine(_tempDirectory, "appsettings.json");
+        var context = new StartupContext
+        {
+            CliArgs = CliArguments.Parse(["--mode", "workstation"]),
+            ConfigPath = configPath,
+            Config = new AppConfig { DataRoot = _tempDirectory },
+            Deployment = DeploymentContext.ForWorkstation(configPath, 4321),
+            ConfigurationService = _configurationService,
+            DashboardServerFactory = (_, _, _) => server,
+            Lifecycle = lifecycle,
+            Log = _log,
+            CancellationToken = lifecycle.StopWorkToken
+        };
+
+        var act = () => runner.RunAsync(context);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Should().BeSameAs(startupFailure);
+        server.StopCallCount.Should().Be(1);
+        server.DisposeCallCount.Should().Be(1);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _configurationService.DisposeAsync();
@@ -74,6 +103,13 @@ public sealed class WorkstationModeRunnerTests : IAsyncDisposable
 
     private sealed class RecordingDashboardServer : IHostDashboardServer
     {
+        private readonly Exception? _startFailure;
+
+        public RecordingDashboardServer(Exception? startFailure = null)
+        {
+            _startFailure = startFailure;
+        }
+
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int StopCallCount { get; private set; }
         public int DisposeCallCount { get; private set; }
@@ -81,6 +117,9 @@ public sealed class WorkstationModeRunnerTests : IAsyncDisposable
         public Task StartAsync(CancellationToken ct = default)
         {
             Started.TrySetResult();
+            if (_startFailure is not null)
+                return Task.FromException(_startFailure);
+
             return Task.CompletedTask;
         }
 

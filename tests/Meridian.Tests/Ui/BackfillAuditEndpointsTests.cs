@@ -33,6 +33,20 @@ public sealed class BackfillAuditEndpointsTests
     }
 
     [Fact]
+    public async Task GetProviderConfigAudit_WithoutAuditReader_FailsClosed()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageProviders);
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.BackfillProviderConfigAudit);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        document.RootElement.GetProperty("type").GetString()
+            .Should().Be(ApiProblemTypes.ServiceUnavailable);
+    }
+
+    [Fact]
     public async Task GetProviderConfigAudit_WithManageProviders_RedactsConfigurationValues()
     {
         const string secret = "backfill-audit-secret";
@@ -82,6 +96,8 @@ public sealed class BackfillAuditEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "backfill-audit-operator";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-backfill-audit-tests";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });

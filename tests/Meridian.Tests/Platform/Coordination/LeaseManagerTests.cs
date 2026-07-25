@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Coordination;
 using Meridian.Core.Config;
@@ -135,6 +136,109 @@ public sealed class LeaseManagerTests
         }
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../outside")]
+    [InlineData(@"jobs\..\outside")]
+    [InlineData("jobs//outside")]
+    [InlineData("/absolute")]
+    [InlineData(@"C:\absolute")]
+    public async Task TryAcquireLeaseAsync_InvalidResourcePath_RejectsWithoutCreatingLease(string resourceId)
+    {
+        var tempDir = CreateTempDir();
+        try
+        {
+            var config = CreateConfig(tempDir, leaseTtlSeconds: 5, renewIntervalSeconds: 30, takeoverDelaySeconds: 1);
+            var store = new SharedStorageCoordinationStore(config, tempDir);
+
+            var act = () => store.TryAcquireLeaseAsync(
+                resourceId,
+                "instance-contained",
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(1));
+
+            await act.Should().ThrowAsync<ArgumentException>();
+            Directory.EnumerateFiles(store.RootPath, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempDir(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task ReleaseLeaseAsync_SiblingPrefixTraversal_CannotDeleteOutsideLease()
+    {
+        var tempDir = CreateTempDir();
+        try
+        {
+            var config = CreateConfig(tempDir, leaseTtlSeconds: 5, renewIntervalSeconds: 30, takeoverDelaySeconds: 1);
+            var store = new SharedStorageCoordinationStore(config, tempDir);
+            var outsideDirectory = Path.Combine(tempDir, "_coordination-sibling");
+            Directory.CreateDirectory(outsideDirectory);
+            var outsidePath = Path.Combine(outsideDirectory, "sentinel.lease.json");
+            var outsideLease = new LeaseRecord(
+                "../_coordination-sibling/sentinel",
+                "outside-owner",
+                LeaseVersion: 1,
+                AcquiredAtUtc: DateTimeOffset.UtcNow,
+                ExpiresAtUtc: DateTimeOffset.UtcNow.AddMinutes(1),
+                LastRenewedAtUtc: DateTimeOffset.UtcNow);
+            var outsideJson = JsonSerializer.Serialize(outsideLease);
+            await File.WriteAllTextAsync(outsidePath, outsideJson);
+
+            var act = () => store.ReleaseLeaseAsync(
+                "../_coordination-sibling/sentinel",
+                "outside-owner");
+
+            await act.Should().ThrowAsync<ArgumentException>();
+            File.Exists(outsidePath).Should().BeTrue();
+            (await File.ReadAllTextAsync(outsidePath)).Should().Be(outsideJson);
+        }
+        finally
+        {
+            DeleteTempDir(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task TryAcquireLeaseAsync_ExistingDirectoryLink_CannotWriteOutsideRoot()
+    {
+        var tempDir = CreateTempDir();
+        try
+        {
+            var config = CreateConfig(tempDir, leaseTtlSeconds: 5, renewIntervalSeconds: 30, takeoverDelaySeconds: 1);
+            var store = new SharedStorageCoordinationStore(config, tempDir);
+            var outsideDirectory = Path.Combine(tempDir, "outside-root");
+            Directory.CreateDirectory(outsideDirectory);
+            var jobsLink = Path.Combine(store.RootPath, "jobs");
+            if (!TryCreateDirectoryLink(jobsLink, outsideDirectory))
+                return;
+
+            try
+            {
+                var act = () => store.TryAcquireLeaseAsync(
+                    "jobs/job-1",
+                    "instance-contained",
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(1));
+
+                await act.Should().ThrowAsync<InvalidOperationException>();
+                Directory.EnumerateFiles(outsideDirectory, "*", SearchOption.AllDirectories).Should().BeEmpty();
+            }
+            finally
+            {
+                if (Directory.Exists(jobsLink))
+                    Directory.Delete(jobsLink);
+            }
+        }
+        finally
+        {
+            DeleteTempDir(tempDir);
+        }
+    }
+
     [Fact]
     public async Task LeaseManager_RemovesHeldLease_WhenRenewThrowsInBackgroundLoop()
     {
@@ -185,6 +289,19 @@ public sealed class LeaseManagerTests
     {
         if (Directory.Exists(path))
             Directory.Delete(path, true);
+    }
+
+    private static bool TryCreateDirectoryLink(string linkPath, string targetPath)
+    {
+        try
+        {
+            Directory.CreateSymbolicLink(linkPath, targetPath);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            return false;
+        }
     }
 
     private sealed class ThrowingRenewStore : ICoordinationStore

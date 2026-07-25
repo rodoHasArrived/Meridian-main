@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using Meridian.Core.Config;
 using Meridian.Contracts.Coordination;
 using Meridian.Core.Logging;
@@ -40,27 +41,39 @@ namespace Meridian.Application.Composition;
 [ImplementsAdr("ADR-001", "Unified host startup for all deployment modes")]
 public sealed class HostStartup : IAsyncDisposable
 {
-    private static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultStopTimeout = TimeSpan.FromSeconds(30);
 
     private readonly IHost _host;
     private readonly CompositionOptions _options;
     private readonly Serilog.ILogger _log;
+    private readonly TimeSpan _stopTimeout;
     private readonly SemaphoreSlim _disposeGate = new(1, 1);
     private bool _disposed;
 
-    private HostStartup(IHost host, CompositionOptions options, Serilog.ILogger log)
+    private HostStartup(
+        IHost host,
+        CompositionOptions options,
+        Serilog.ILogger log,
+        TimeSpan stopTimeout)
     {
         _host = host;
         _options = options;
         _log = log;
+        _stopTimeout = stopTimeout;
     }
 
     internal static async Task<HostStartup> CreateStartedHostAsync(
         CompositionOptions options,
         bool enableProcessWideHostedServices,
         Action<IServiceCollection>? configureServices,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool enableDatabaseInitialization = true,
+        TimeSpan? stopTimeout = null)
     {
+        var effectiveStopTimeout = stopTimeout ?? DefaultStopTimeout;
+        if (effectiveStopTimeout <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(stopTimeout), "Stop timeout must be positive.");
+
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
 
         var log = LoggingSetup.ForContext<HostStartup>();
@@ -95,10 +108,13 @@ public sealed class HostStartup : IAsyncDisposable
                 // coordination or any other hosted service starts. Desktop child graphs retain
                 // their local storage/symbol initialization while the parent owns process-wide
                 // coordinators and accounting workers.
-                services.Insert(
-                    1,
-                    ServiceDescriptor.Singleton<IHostedService>(
-                        serviceProvider => new DatabaseInitializationHostedService(serviceProvider)));
+                if (enableDatabaseInitialization)
+                {
+                    services.Insert(
+                        1,
+                        ServiceDescriptor.Singleton<IHostedService>(
+                            serviceProvider => new DatabaseInitializationHostedService(serviceProvider)));
+                }
 
                 configureServices?.Invoke(services);
             });
@@ -111,11 +127,11 @@ public sealed class HostStartup : IAsyncDisposable
             // permanently capture fallback HTTP clients.
             InitializeHttpClientFactory(host.Services, log);
             await host.StartAsync(cancellationToken).ConfigureAwait(false);
-            return new HostStartup(host, options, log);
+            return new HostStartup(host, options, log, effectiveStopTimeout);
         }
         catch
         {
-            await StopAndDisposeFailedHostAsync(host, log).ConfigureAwait(false);
+            await StopAndDisposeFailedHostAsync(host, log, effectiveStopTimeout).ConfigureAwait(false);
             throw;
         }
     }
@@ -410,34 +426,40 @@ public sealed class HostStartup : IAsyncDisposable
                 return;
 
             _disposed = true;
+            var cleanupFailures = new List<Exception>();
 
-            using var stopCts = new CancellationTokenSource(StopTimeout);
-            try
+            var stopFailure = await RunBoundedCleanupAsync(
+                cancellationToken => _host.StopAsync(cancellationToken),
+                _stopTimeout,
+                "Generic Host stop",
+                _log).ConfigureAwait(false);
+            if (stopFailure is not null)
+                cleanupFailures.Add(stopFailure);
+
+            if (_options.EnablePipelineServices)
             {
-                await _host.StopAsync(stopCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (stopCts.IsCancellationRequested)
-            {
-                _log.Warning(
-                    "Generic Host stop did not complete within {StopTimeoutSeconds} seconds",
-                    StopTimeout.TotalSeconds);
-            }
-            finally
-            {
-                try
+                var pipeline = GetService<EventPipeline>();
+                if (pipeline != null)
                 {
-                    if (_options.EnablePipelineServices)
-                    {
-                        var pipeline = GetService<EventPipeline>();
-                        if (pipeline != null)
-                            await pipeline.FlushAsync().ConfigureAwait(false);
-                    }
-                }
-                finally
-                {
-                    await DisposeHostAsync(_host).ConfigureAwait(false);
+                    var flushFailure = await RunBoundedCleanupAsync(
+                        pipeline.FlushAsync,
+                        _stopTimeout,
+                        "Event pipeline flush",
+                        _log).ConfigureAwait(false);
+                    if (flushFailure is not null)
+                        cleanupFailures.Add(flushFailure);
                 }
             }
+
+            var disposalFailure = await RunBoundedCleanupAsync(
+                _ => DisposeHostAsync(_host).AsTask(),
+                _stopTimeout,
+                "Generic Host disposal",
+                _log).ConfigureAwait(false);
+            if (disposalFailure is not null)
+                cleanupFailures.Add(disposalFailure);
+
+            ThrowCleanupFailures(cleanupFailures);
         }
         finally
         {
@@ -445,28 +467,88 @@ public sealed class HostStartup : IAsyncDisposable
         }
     }
 
-    private static async Task StopAndDisposeFailedHostAsync(IHost host, Serilog.ILogger log)
+    private static void ThrowCleanupFailures(IReadOnlyList<Exception> failures)
     {
-        using var stopCts = new CancellationTokenSource(StopTimeout);
+        if (failures.Count == 0)
+            return;
+
+        if (failures.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+            return;
+        }
+
+        throw new AggregateException(
+            "Generic Host shutdown encountered multiple cleanup failures.",
+            failures);
+    }
+
+    private static async Task StopAndDisposeFailedHostAsync(
+        IHost host,
+        Serilog.ILogger log,
+        TimeSpan stopTimeout)
+    {
+        _ = await RunBoundedCleanupAsync(
+            cancellationToken => host.StopAsync(cancellationToken),
+            stopTimeout,
+            "Generic Host cleanup after startup failure",
+            log).ConfigureAwait(false);
+        _ = await RunBoundedCleanupAsync(
+            _ => DisposeHostAsync(host).AsTask(),
+            stopTimeout,
+            "Generic Host disposal after startup failure",
+            log).ConfigureAwait(false);
+    }
+
+    private static async Task<Exception?> RunBoundedCleanupAsync(
+        Func<CancellationToken, Task> operation,
+        TimeSpan timeout,
+        string operationName,
+        Serilog.ILogger log)
+    {
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        Task? operationTask = null;
         try
         {
-            await host.StopAsync(stopCts.Token).ConfigureAwait(false);
+            operationTask = operation(timeoutCts.Token);
+            await operationTask.WaitAsync(timeoutCts.Token).ConfigureAwait(false);
+            return null;
+        }
+        catch (OperationCanceledException ex) when (timeoutCts.IsCancellationRequested)
+        {
+            log.Warning(
+                "{OperationName} did not complete within {TimeoutSeconds} seconds",
+                operationName,
+                timeout.TotalSeconds);
+            ObserveLateFailure(operationTask, operationName, log);
+            return new TimeoutException(
+                $"{operationName} did not complete within {timeout.TotalSeconds} seconds.",
+                ex);
         }
         catch (Exception ex)
         {
-            log.Warning(ex, "Generic Host cleanup raised an error after startup failed");
+            log.Warning(ex, "{OperationName} raised an error", operationName);
+            return ex;
         }
-        finally
-        {
-            try
-            {
-                await DisposeHostAsync(host).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                log.Warning(ex, "Generic Host disposal raised an error after startup failed");
-            }
-        }
+    }
+
+    private static void ObserveLateFailure(
+        Task? operationTask,
+        string operationName,
+        Serilog.ILogger log)
+    {
+        if (operationTask is null || operationTask.IsCompleted)
+            return;
+
+        _ = operationTask.ContinueWith(
+            completedTask =>
+                log.Warning(
+                    completedTask.Exception?.GetBaseException(),
+                    "{OperationName} faulted after its shutdown deadline",
+                    operationName),
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private static ValueTask DisposeHostAsync(IHost host)
@@ -487,14 +569,25 @@ public sealed class HostStartup : IAsyncDisposable
             _serviceProvider = serviceProvider;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            LedgerStartup.EnsureDatabaseReady(_serviceProvider);
-            SecurityMasterStartup.EnsureDatabaseReady(_serviceProvider);
-            DirectLendingStartup.EnsureDatabaseReady(_serviceProvider);
-            AssetOperationsStartup.EnsureDatabaseReady(_serviceProvider);
-            return Task.CompletedTask;
+            await LedgerStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await DirectLendingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await FundAccountsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await FundStructureStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await BankingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
+            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -549,7 +642,8 @@ public static class HostStartupFactory
             ResolveProfile(deployment) with { ConfigPath = configPath },
             enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
             configureServices,
-            cancellationToken);
+            cancellationToken,
+            enableDatabaseInitialization: deployment.Mode != DeploymentMode.Desktop);
 
     /// <summary>
     /// Creates a HostStartup for backfill operations.
@@ -600,7 +694,8 @@ public static class HostStartupFactory
             CompositionOptions.BackfillOnly with { ConfigPath = configPath },
             enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
             configureServices,
-            cancellationToken);
+            cancellationToken,
+            enableDatabaseInitialization: deployment.Mode != DeploymentMode.Desktop);
 
     /// <summary>
     /// Creates a HostStartup for utility commands (validation, config checks, etc.).

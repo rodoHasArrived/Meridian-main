@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -81,7 +82,7 @@ public sealed class StatementImportService(
         "settlementDate", "currency", "feesCommission", "externalTransactionId"
     ];
 
-    private readonly string _retainedRoot = Path.Combine(dataRoot, "reconciliation", "statement-connector-imports");
+    private readonly RootedPathGuard _retainedPathGuard = new(dataRoot);
 
     public async Task<StatementImportPreviewDto> PreviewAsync(
         StatementSourceDocument document,
@@ -125,15 +126,17 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var capturedSourceBytes = request.Document.Content.ToArray();
+        var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
 
-        var (connector, resolutionIssue) = ResolveConnector(request.Document, request.ConnectorId);
+        var (connector, resolutionIssue) = ResolveConnector(capturedDocument, request.ConnectorId);
         if (connector is null)
         {
             throw new InvalidDataException(resolutionIssue!.Message);
         }
 
-        var parse = await connector.ParseAsync(request.Document, ct).ConfigureAwait(false);
+        var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
         if (parse.HasErrors)
         {
             var errors = parse.Issues
@@ -155,37 +158,62 @@ public sealed class StatementImportService(
         // canonical artifact, destroying the normalized evidence that run still references. Combining
         // both hashes gives every distinct rendering its own directory, while a same-profile re-import
         // rewrites identical bytes in place and stays idempotent.
-        var rawHash = ComputeSha256Hex(request.Document.Content.Span);
+        var rawHash = ComputeSha256Hex(capturedSourceBytes);
         var canonicalHash = ComputeSha256Hex(artifactBytes);
         var uploadId = $"sc-{rawHash}-{canonicalHash}";
-        var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
+        const string reconciliationDirectory = "reconciliation";
+        const string retainedImportsDirectory = "statement-connector-imports";
+        var retainedDirectory = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId);
 
         // Retain the raw source under its own subdirectory so a source file literally named
         // "canonical.csv" cannot overwrite (or be overwritten by) the rendered canonical artifact.
         const string sourceSubdirectory = "source";
         var safeSourceName = SanitizeFileName(request.Document.FileName);
-        Directory.CreateDirectory(Path.Combine(retainedDirectory, sourceSubdirectory));
-        var rawPath = Path.Combine(retainedDirectory, sourceSubdirectory, safeSourceName);
-        var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
-        await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
+        var retainedSourceDirectory = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            sourceSubdirectory);
+        Directory.CreateDirectory(retainedSourceDirectory);
+        _retainedPathGuard.EnsurePath(retainedSourceDirectory);
+        var rawPath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            sourceSubdirectory,
+            safeSourceName);
+        var canonicalPath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            "canonical.csv");
+        _retainedPathGuard.EnsurePath(retainedDirectory);
+        await AtomicFileWriter.WriteAsync(rawPath, capturedSourceBytes, ct).ConfigureAwait(false);
+        _retainedPathGuard.EnsurePath(canonicalPath);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
 
-        var runRequest = await StatementRunCreateRequest.FromFileAsync(
-                broker: sourceKind,
-                sourceInstitution: request.SourceInstitution,
-                fundAccountId: request.FundAccountId,
-                externalAccountId: request.ExternalAccountId,
-                statementPeriodStart: request.PeriodStart,
-                statementPeriodEnd: request.PeriodEnd,
-                sourcePath: canonicalPath,
-                mappingProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId,
-                toleranceProfileId: string.IsNullOrWhiteSpace(request.ToleranceProfileId)
-                    ? StatementToleranceProfile.DefaultProfileId
-                    : request.ToleranceProfileId,
-                importedBy: request.ImportedBy,
-                originalFileName: request.Document.FileName,
-                ct: ct)
-            .ConfigureAwait(false);
+        var runRequest = new StatementRunCreateRequest(
+            Broker: sourceKind,
+            SourceInstitution: request.SourceInstitution.Trim(),
+            FundAccountId: request.FundAccountId.Trim(),
+            ExternalAccountId: request.ExternalAccountId.Trim(),
+            StatementPeriodStart: request.PeriodStart,
+            StatementPeriodEnd: request.PeriodEnd,
+            SourcePath: rawPath,
+            OriginalFileName: request.Document.FileName,
+            MappingProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId,
+            ToleranceProfileId: string.IsNullOrWhiteSpace(request.ToleranceProfileId)
+                ? StatementToleranceProfile.DefaultProfileId
+                : request.ToleranceProfileId.Trim(),
+            ImportedBy: request.ImportedBy.Trim(),
+            SourceFileHash: rawHash)
+        {
+            CanonicalSourcePath = canonicalPath,
+            CanonicalArtifactHash = canonicalHash
+        };
 
         var kindSummaries = BuildKindSummaries(parse.Records);
         var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
@@ -196,21 +224,16 @@ public sealed class StatementImportService(
         {
             result = await workflow.CreateAsync(runRequest.ToStatementRunRequest(), ct).ConfigureAwait(false);
         }
+        catch (StatementAlreadyImportedException ex)
+        {
+            // Upgrade compatibility: a pre-hardening run may be keyed only by the canonical
+            // artifact hash. Return that retained run identity instead of inventing the new
+            // raw-plus-canonical key for a run that was not created.
+            return DuplicateResult(ex.ExistingImportId);
+        }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already imported", StringComparison.OrdinalIgnoreCase))
         {
-            // Idempotent re-import: the deterministic artifact hashes to the same duplicate
-            // key, so surface the existing run instead of failing the operator.
-            return new StatementImportCommitResultDto(
-                RunId: runRequest.DuplicateKey,
-                Duplicate: true,
-                RecordCount: parse.Records.Count,
-                KindSummaries: kindSummaries,
-                BreakCount: 0,
-                CaseCount: 0,
-                RetainedSourcePath: relativeRaw,
-                RetainedCanonicalPath: relativeCanonical,
-                Status: "Duplicate",
-                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.");
+            return DuplicateResult(runRequest.DuplicateKey);
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
@@ -246,6 +269,18 @@ public sealed class StatementImportService(
                 .ToArray(),
             ReconciliationCaseLinks = caseLinks
         };
+
+        StatementImportCommitResultDto DuplicateResult(string existingRunId) => new(
+            RunId: existingRunId,
+            Duplicate: true,
+            RecordCount: parse.Records.Count,
+            KindSummaries: kindSummaries,
+            BreakCount: 0,
+            CaseCount: 0,
+            RetainedSourcePath: relativeRaw,
+            RetainedCanonicalPath: relativeCanonical,
+            Status: "Duplicate",
+            NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.");
     }
 
     public async Task<StatementImportValidationResult> ValidateAsync(
@@ -414,7 +449,7 @@ public sealed class StatementImportService(
 
     /// <summary>
     /// Renders records to the canonical CSV artifact deterministically: fixed column order,
-    /// invariant formatting, LF endings, and delimiter-safe values, so the same source file
+    /// invariant formatting, LF endings, and reversible CSV quoting, so the same source file
     /// always produces byte-identical bytes and therefore the same duplicate key.
     /// </summary>
     private static string ComputeSha256Hex(ReadOnlySpan<byte> content)
@@ -427,40 +462,39 @@ public sealed class StatementImportService(
         foreach (var record in records)
         {
             builder
-                .Append(SanitizeArtifactValue(record.Account)).Append(',')
-                .Append(SanitizeArtifactValue(record.Symbol)).Append(',')
+                .Append(EncodeArtifactValue(record.Account)).Append(',')
+                .Append(EncodeArtifactValue(record.Symbol)).Append(',')
                 .Append(record.Quantity.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.Price.ToString(CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.CashAmount.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.ActivityType)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityType)).Append(',')
                 .Append(record.TradeDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.Currency)).Append(',')
+                .Append(EncodeArtifactValue(record.Currency)).Append(',')
                 .Append(record.FeesCommission?.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append('\n');
+                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append('\n');
         }
 
         return builder.ToString();
     }
 
     /// <summary>
-    /// The downstream canonical parser splits rows with a plain comma split, so artifact
-    /// values must never contain the delimiter, quotes, or line breaks.
+    /// Encodes one canonical value without discarding source characters. The downstream parser
+    /// accepts quoted commas, doubled quotes, and quoted line breaks.
     /// </summary>
-    private static string SanitizeArtifactValue(string? value)
+    private static string EncodeArtifactValue(string? value)
     {
         if (string.IsNullOrEmpty(value))
         {
             return string.Empty;
         }
 
-        var builder = new StringBuilder(value.Length);
-        foreach (var character in value)
+        if (value.IndexOfAny([',', '"', '\r', '\n']) < 0)
         {
-            builder.Append(character is ',' or '"' or '\r' or '\n' ? ' ' : character);
+            return value;
         }
 
-        return builder.ToString().Trim();
+        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
 
     private static string NormalizeSourceKind(string sourceKind)
@@ -484,7 +518,15 @@ public sealed class StatementImportService(
             safeName = safeName.Replace(character, '-');
         }
 
-        return safeName;
+        try
+        {
+            RootedPathGuard.ValidatePathSegment(safeName, nameof(fileName));
+            return safeName;
+        }
+        catch (ArgumentException)
+        {
+            return "statement.dat";
+        }
     }
 
     private static string ToRelativeRetainedPath(string uploadId, string fileName)

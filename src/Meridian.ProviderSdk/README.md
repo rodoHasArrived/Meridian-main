@@ -6,7 +6,7 @@ module_id: SRC-PROVIDER-SDK
 path: src/Meridian.ProviderSdk
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.ProviderSdk
@@ -61,7 +61,14 @@ before any service or client can offer export actions.
 scanner rows, real-time bars, historical ticks, account/model-account P&L, and market-rule increments;
 operator surfaces consume this seam rather than vendor callback types. `IIBDataResultStore` is the
 storage-facing companion seam: every materialized IB snapshot carries normalized payload, stable
-request/subscription identity, lifecycle state, capture time, and complete `IBDataLineage` evidence.
+request/subscription identity, lifecycle state, capture time, complete `IBDataLineage` evidence, and
+required tenant/company ownership. Durable result queries require the same tenant/company scope.
+`ITenantScopedProviderDataReadService` is the additive read capability for provider results whose
+ownership is tenant and company specific. Tenant-aware consumers use its scoped snapshot and live
+`WatchAsync` methods when implemented and do not downgrade that provider to its unscoped read
+surface. `ProviderDataProvenance` also carries an
+explicit real/simulated/seeded/sample classification; unattributed compatibility evidence is
+classified as sample rather than being inferred as authoritative.
 
 ## Diagrams
 

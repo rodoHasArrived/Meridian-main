@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.ProviderSdk;
 
@@ -16,10 +17,20 @@ public sealed record ProviderDataProvenance(
     string CorrelationId,
     string StableDeduplicationKey)
 {
+    /// <summary>
+    /// Explicit origin classification for provider output that may be real, simulated, seeded,
+    /// or sample data. Consumers that require an authoritative classification fail closed when
+    /// this value is absent.
+    /// </summary>
+    public DataProvenance? DataProvenance { get; init; }
+
     /// <summary>Creates explicit placeholder provenance for callback bridges before their request context is known.</summary>
     public static ProviderDataProvenance Unattributed(DateTimeOffset sourceTimestamp) => new(
         "unknown", "unknown", sourceTimestamp, DateTimeOffset.UtcNow, "unknown", "unknown", "unknown",
-        "unknown", "unknown", "unknown", "unknown");
+        "unknown", "unknown", "unknown", "unknown")
+    {
+        DataProvenance = Meridian.Contracts.Operations.DataProvenance.Sample
+    };
 }
 
 /// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>
@@ -146,6 +157,8 @@ public sealed record IBDataLineage(
 /// retained separately so consumers need not recover it from an opaque payload.
 /// </summary>
 public sealed record IBDataResult(
+    string TenantId,
+    string CompanyId,
     string ResultIdentity,
     string ProviderFamily,
     string Capability,
@@ -160,6 +173,8 @@ public sealed record IBDataResult(
 
 /// <summary>Bounded filter for durable IB materialized results.</summary>
 public sealed record IBDataResultQuery(
+    string TenantId,
+    string CompanyId,
     string? Capability = null,
     string? RequestIdentity = null,
     string? Symbol = null,
@@ -180,6 +195,20 @@ public interface IProviderDataReadService
 {
     IReadOnlyList<ProviderDataRequestReadModel> GetRequests();
     IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Optional provider read seam for data whose ownership must be evaluated against both tenant and
+/// company scope. Tenant-aware consumers must not fall back to the unscoped read surface when a
+/// provider implements this interface.
+/// </summary>
+public interface ITenantScopedProviderDataReadService : IProviderDataReadService
+{
+    IReadOnlyList<ProviderDataRequestReadModel> GetRequests(string tenantId, string companyId);
+    IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(
+        string tenantId,
+        string companyId,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>Presentation-safe provider news item supplied by providers that support news.</summary>

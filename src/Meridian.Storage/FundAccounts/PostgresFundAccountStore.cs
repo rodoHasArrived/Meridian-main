@@ -46,7 +46,17 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task UpsertAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await UpsertAccountAsync(connection, transaction: null, account, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertAccountAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        AccountSummaryDto account,
+        CancellationToken ct)
+    {
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_definition")}
                 (account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
@@ -280,7 +290,17 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto snapshot, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await InsertBalanceSnapshotAsync(connection, transaction: null, snapshot, ct).ConfigureAwait(false);
+    }
+
+    private async Task InsertBalanceSnapshotAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        AccountBalanceSnapshotDto snapshot,
+        CancellationToken ct)
+    {
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_balance_snapshot")}
                 (snapshot_id, account_id, fund_id, as_of_date, currency,
@@ -371,10 +391,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await InsertCustodianStatementBatchAsync(connection, tx, batch, lines, ct).ConfigureAwait(false);
+        await tx.CommitAsync(ct).ConfigureAwait(false);
+    }
 
+    private async Task InsertCustodianStatementBatchAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CustodianStatementBatchDto batch,
+        IReadOnlyList<CustodianPositionLineDto> lines,
+        CancellationToken ct)
+    {
         await using (var cmd = connection.CreateCommand())
         {
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("custodian_statement_batch")}
                     (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by)
@@ -403,7 +433,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             }, JsonOpts);
 
             await using var cmd = connection.CreateCommand();
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("custodian_position_line")}
                     (position_line_id, batch_id, account_id, as_of_date,
@@ -427,8 +457,6 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("raw_payload", rawPayload);
             await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await tx.CommitAsync(ct).ConfigureAwait(false);
     }
 
     public async Task InsertBankStatementBatchAsync(
@@ -438,10 +466,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await InsertBankStatementBatchAsync(connection, tx, batch, lines, ct).ConfigureAwait(false);
+        await tx.CommitAsync(ct).ConfigureAwait(false);
+    }
 
+    private async Task InsertBankStatementBatchAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        BankStatementBatchDto batch,
+        IReadOnlyList<BankStatementLineDto> lines,
+        CancellationToken ct)
+    {
         await using (var cmd = connection.CreateCommand())
         {
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_batch")}
                     (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by)
@@ -462,7 +500,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         foreach (var line in lines)
         {
             await using var cmd = connection.CreateCommand();
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_line")}
                     (statement_line_id, batch_id, account_id, statement_date, value_date,
@@ -485,8 +523,6 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("running_balance", line.ClosingBalance.HasValue ? (object)line.ClosingBalance.Value : DBNull.Value);
             await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await tx.CommitAsync(ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
@@ -625,10 +661,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await InsertReconciliationRunAsync(connection, tx, run, results, ct).ConfigureAwait(false);
+        await tx.CommitAsync(ct).ConfigureAwait(false);
+    }
 
+    private async Task InsertReconciliationRunAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        AccountReconciliationRunDto run,
+        IReadOnlyList<AccountReconciliationResultDto> results,
+        CancellationToken ct)
+    {
         await using (var cmd = connection.CreateCommand())
         {
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("account_reconciliation_run")}
                     (reconciliation_run_id, account_id, as_of_date, status,
@@ -657,7 +703,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         foreach (var result in results)
         {
             await using var cmd = connection.CreateCommand();
-            cmd.Transaction = tx;
+            cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("account_reconciliation_breaks")}
                     (result_id, reconciliation_run_id, break_type, check_label,
@@ -682,8 +728,6 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("reason", result.Reason);
             await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await tx.CommitAsync(ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
@@ -759,7 +803,17 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task InsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await InsertSyncHistoryAsync(connection, transaction: null, entry, ct).ConfigureAwait(false);
+    }
+
+    private async Task InsertSyncHistoryAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        AccountSyncHistoryEntryDto entry,
+        CancellationToken ct)
+    {
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_sync_history")}
                 (sync_history_id, account_id, capability, status, provider_link_status,
@@ -867,7 +921,17 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await UpsertMarginSnapshotAsync(connection, transaction: null, snapshot, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertMarginSnapshotAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        MarginSnapshotDto snapshot,
+        CancellationToken ct)
+    {
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_margin_snapshot")}
                 (margin_snapshot_id, account_id, effective_at, recorded_at, currency,
@@ -1028,12 +1092,158 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             CorrelationId: reader.IsDBNull(reader.GetOrdinal("correlation_id")) ? null : reader.GetString(reader.GetOrdinal("correlation_id")));
     }
 
+    // ── Transactional legacy import ───────────────────────────────────────────
+
+    public async Task<FundAccountLegacyImportResult> ImportLegacySnapshotIfEmptyAsync(
+        FundAccountLegacyImportRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var sourceHash = NormalizeSourceHash(request.SourceHash);
+        ArgumentNullException.ThrowIfNull(request.Accounts);
+        ct.ThrowIfCancellationRequested();
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct)
+            .ConfigureAwait(false);
+
+        await AcquireLegacyImportLockAsync(connection, transaction, ct).ConfigureAwait(false);
+        if (await HasLegacyImportReceiptAsync(connection, transaction, sourceHash, ct).ConfigureAwait(false))
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return FundAccountLegacyImportResult.AlreadyImported;
+        }
+
+        if (!await IsEmptyAsync(connection, transaction, ct).ConfigureAwait(false))
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return FundAccountLegacyImportResult.StoreNotEmpty;
+        }
+
+        foreach (var accountImport in request.Accounts)
+        {
+            ArgumentNullException.ThrowIfNull(accountImport);
+            await UpsertAccountAsync(connection, transaction, accountImport.Account, ct).ConfigureAwait(false);
+
+            foreach (var snapshot in accountImport.BalanceSnapshots)
+                await InsertBalanceSnapshotAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+
+            foreach (var statement in accountImport.CustodianStatements)
+            {
+                await InsertCustodianStatementBatchAsync(
+                    connection,
+                    transaction,
+                    statement.Batch,
+                    statement.Lines,
+                    ct).ConfigureAwait(false);
+            }
+
+            foreach (var statement in accountImport.BankStatements)
+            {
+                await InsertBankStatementBatchAsync(
+                    connection,
+                    transaction,
+                    statement.Batch,
+                    statement.Lines,
+                    ct).ConfigureAwait(false);
+            }
+
+            foreach (var reconciliation in accountImport.ReconciliationRuns)
+            {
+                await InsertReconciliationRunAsync(
+                    connection,
+                    transaction,
+                    reconciliation.Run,
+                    reconciliation.Results,
+                    ct).ConfigureAwait(false);
+            }
+
+            foreach (var entry in accountImport.SyncHistory)
+                await InsertSyncHistoryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+
+            foreach (var snapshot in accountImport.MarginSnapshots)
+                await UpsertMarginSnapshotAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
+        }
+
+        await using (var receiptCommand = connection.CreateCommand())
+        {
+            receiptCommand.Transaction = transaction;
+            receiptCommand.CommandText = $"""
+                INSERT INTO {Qualified("fund_account_legacy_import_receipt")}
+                    (source_hash, account_count)
+                VALUES (@source_hash, @account_count)
+                """;
+            receiptCommand.Parameters.AddWithValue("source_hash", sourceHash);
+            receiptCommand.Parameters.AddWithValue("account_count", request.Accounts.Count);
+            await receiptCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return FundAccountLegacyImportResult.Imported;
+    }
+
+    private async Task AcquireLegacyImportLockAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT pg_advisory_xact_lock(hashtext(@lock_scope))";
+        command.Parameters.AddWithValue(
+            "lock_scope",
+            $"meridian:{_options.Schema}:fund-account-legacy-import");
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> HasLegacyImportReceiptAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        string sourceHash,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            SELECT EXISTS (
+                SELECT 1
+                FROM {Qualified("fund_account_legacy_import_receipt")}
+                WHERE source_hash = @source_hash)
+            """;
+        command.Parameters.AddWithValue("source_hash", sourceHash);
+        return await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is true;
+    }
+
+    private static string NormalizeSourceHash(string sourceHash)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceHash);
+        var normalized = sourceHash.Trim().ToLowerInvariant();
+        if (normalized.Length != 64 || normalized.Any(static character => !Uri.IsHexDigit(character)))
+        {
+            throw new ArgumentException(
+                "Legacy import source hash must be a 64-character SHA-256 hexadecimal value.",
+                nameof(sourceHash));
+        }
+
+        return normalized;
+    }
+
     // ── Emptiness check ───────────────────────────────────────────────────────
 
     public async Task<bool> IsEmptyAsync(CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        return await IsEmptyAsync(connection, transaction: null, ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> IsEmptyAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        CancellationToken ct)
+    {
         await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $"SELECT COUNT(*) = 0 FROM {Qualified("account_definition")}";
         var result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
         return result is true;

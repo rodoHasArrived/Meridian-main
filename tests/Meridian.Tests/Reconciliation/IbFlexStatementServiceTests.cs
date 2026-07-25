@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -201,6 +203,21 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         await secondImport.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*already imported*");
+    }
+
+    [Fact]
+    public async Task Import_RejectsStaleSuppliedHashWithoutPersistingFlexRows()
+    {
+        var path = WriteFlexFile(SampleFlexXml);
+        var staleHash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(SampleFlexXml + "\n<!-- stale -->")));
+        var request = MakeRequest(path) with { SourceFileHash = staleHash };
+
+        var import = () => _service.ImportAsync(request);
+
+        await import.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*assertion does not match*");
+        (await _store.ListImportsAsync()).Should().BeEmpty();
     }
 
     [Fact]

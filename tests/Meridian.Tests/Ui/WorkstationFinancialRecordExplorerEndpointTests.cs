@@ -364,7 +364,7 @@ public sealed partial class WorkstationEndpointsTests
             field.Label == "Audit Trail" &&
             field.Detail.Contains("audit event", StringComparison.OrdinalIgnoreCase));
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
-            ["Portfolio position", "Ledger trial balance", "Reported-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
+            ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             [
                 "Position / transaction",

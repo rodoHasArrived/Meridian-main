@@ -125,9 +125,10 @@ public sealed class CookieCsrfMiddleware(RequestDelegate next)
     {
         if (!CookieCsrfProtection.TryValidate(context))
         {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync("""{"error":"CSRF validation failed."}""");
+            await ApiProblemDetails.Forbidden(
+                    context,
+                    "The CSRF token is missing or invalid.")
+                .ExecuteAsync(context);
             return;
         }
 

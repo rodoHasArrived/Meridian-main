@@ -1,6 +1,8 @@
+using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
@@ -158,11 +160,38 @@ public sealed class StatementImportServiceTests : IDisposable
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.NormalizedRowCount.Should().Be(6);
+        var rawPath = Path.Combine(_root, result.RetainedSourcePath);
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        run.Import.SourceFileHash.Should().Be(
+            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(rawPath))),
+            "the retained source hash is authoritative evidence for the original upload bytes");
+        run.Import.CanonicalArtifactHash.Should().Be(
+            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(canonicalPath))),
+            "the parse artifact hash is retained separately from the original upload hash");
         run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
         File.Exists(Path.Combine(_root, result.RetainedCanonicalPath)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Commit_CanonicalArtifactQuotesDelimiterAndQuoteCharactersWithoutCollisions()
+    {
+        const string source =
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
+            "FUND-A,\"BRK,B\",1,500,-500,trade,2026-06-02,,USD,,\"TX,\"\"1\"\"\"\n";
+        var document = new StatementSourceDocument("quoted-values.csv", Encoding.UTF8.GetBytes(source));
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        var artifact = await File.ReadAllTextAsync(canonicalPath);
+        artifact.Should().Contain("\"BRK,B\"");
+        artifact.Should().Contain("\"TX,\"\"1\"\"\"");
+        var run = await _workflow.GetAsync(result.RunId);
+        run.Should().NotBeNull();
+        run!.Import.NormalizedRowCount.Should().Be(1);
     }
 
     [Fact]
@@ -204,6 +233,103 @@ public sealed class StatementImportServiceTests : IDisposable
             "the retained raw evidence must be the untouched source bytes, not the canonical rendering");
         (await File.ReadAllTextAsync(canonicalPath)).Should().StartWith(
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate");
+    }
+
+    [Theory]
+    [InlineData(".", "statement.dat")]
+    [InlineData("..", "statement.dat")]
+    [InlineData("CON.csv", "statement.dat")]
+    [InlineData("../../broker.csv", "broker.csv")]
+    [InlineData("normal-statement.csv", "normal-statement.csv")]
+    public async Task Commit_RetainedSourceName_IsOnePortablePathSegment(
+        string suppliedFileName,
+        string expectedRetainedFileName)
+    {
+        var source = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv");
+        var document = new StatementSourceDocument(suppliedFileName, source);
+
+        var result = await _service.CommitAsync(CommitRequest(
+            document,
+            connectorId: CsvStatementConnector.ConnectorId));
+
+        Path.GetFileName(result.RetainedSourcePath).Should().Be(expectedRetainedFileName);
+        var retainedPath = Path.GetFullPath(Path.Combine(_root, result.RetainedSourcePath));
+        var retainedRoot = Path.GetFullPath(Path.Combine(_root, "reconciliation", "statement-connector-imports"));
+        retainedPath.Should().StartWith(
+            retainedRoot + Path.DirectorySeparatorChar,
+            "the retained raw statement must remain below the connector import root");
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(source);
+    }
+
+    [Fact]
+    public async Task Commit_CapturesCallerBytesOnceBeforeParsingHashingAndRetention()
+    {
+        var callerBuffer = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv").ToArray();
+        var expectedSource = callerBuffer.ToArray();
+        var connector = new CallerBufferMutatingConnector(
+            new CsvStatementConnector(_catalog),
+            () => callerBuffer[0] = (byte)'X');
+        var service = new StatementImportService(
+            new StatementConnectorRegistry([connector]),
+            _catalog,
+            _workflow,
+            _root);
+        var document = new StatementSourceDocument("mutable-source.csv", callerBuffer);
+
+        var result = await service.CommitAsync(CommitRequest(
+            document,
+            connectorId: connector.Descriptor.ConnectorId));
+
+        callerBuffer[0].Should().Be((byte)'X', "the test connector must mutate the caller-owned array");
+        var retainedPath = Path.Combine(_root, result.RetainedSourcePath);
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(
+            expectedSource,
+            "parsing, hashing, and retention must all use the immutable entry snapshot");
+        var run = await _workflow.GetAsync(result.RunId);
+        run.Should().NotBeNull();
+        run!.Import.SourceFileHash.Should().Be(
+            Convert.ToHexString(SHA256.HashData(expectedSource)));
+    }
+
+    [Fact]
+    public async Task Commit_RetainedEvidencePathThroughDirectoryLink_IsRejected()
+    {
+        var reconciliationDirectory = Path.Combine(_root, "reconciliation");
+        var retainedImportsLink = Path.Combine(
+            reconciliationDirectory,
+            "statement-connector-imports");
+        var outsideRoot = _root + "-outside";
+        Directory.CreateDirectory(reconciliationDirectory);
+        Directory.CreateDirectory(outsideRoot);
+        try
+        {
+            try
+            {
+                Directory.CreateSymbolicLink(retainedImportsLink, outsideRoot);
+            }
+            catch (Exception ex) when (
+                ex is UnauthorizedAccessException or IOException or PlatformNotSupportedException)
+            {
+                return;
+            }
+
+            var commit = () => _service.CommitAsync(
+                CommitRequest(FixtureDocument("csv-mixed-kinds.csv")));
+
+            await commit.Should().ThrowAsync<InvalidOperationException>();
+            Directory.EnumerateFileSystemEntries(outsideRoot).Should().BeEmpty(
+                "statement retention must not follow a reparse point outside DataRoot");
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(outsideRoot, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+        }
     }
 
     [Fact]
@@ -253,6 +379,64 @@ public sealed class StatementImportServiceTests : IDisposable
         second.Duplicate.Should().BeTrue();
         second.RunId.Should().Be(first.RunId, "the duplicate key is the import id");
         second.Status.Should().Be("Duplicate");
+    }
+
+    [Fact]
+    public async Task Scenario_UpgradeAfterCanonicalOnlyImport_ReimportReturnsTheRetainedLegacyRun()
+    {
+        const string source =
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n";
+        const string canonical =
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,\n";
+        var document = new StatementSourceDocument("legacy-import.csv", Encoding.UTF8.GetBytes(source));
+        var canonicalHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
+        var rawHash = Convert.ToHexString(SHA256.HashData(document.Content.Span));
+        var periodStart = new DateOnly(2026, 6, 1);
+        var periodEnd = new DateOnly(2026, 6, 30);
+        var legacyRunId = StatementDuplicateKey.Create("FUND-A", periodStart, periodEnd, canonicalHash);
+        var hardenedRunId = StatementDuplicateKey.Create(
+            "FUND-A",
+            periodStart,
+            periodEnd,
+            rawHash,
+            canonicalHash);
+        legacyRunId.Should().NotBe(hardenedRunId, "the upgrade scenario must exercise the old canonical-only identity");
+
+        var store = new JsonCanonicalStatementStore(_root);
+        await store.SaveImportAsync(
+            new CanonicalStatementImport(
+                legacyRunId,
+                "broker",
+                periodEnd,
+                DateTimeOffset.UtcNow.AddDays(-1),
+                Path.Combine(_root, "legacy", "canonical.csv"),
+                canonicalHash,
+                RawRowCount: 1,
+                NormalizedRowCount: 1)
+            {
+                SourceInstitution = "Sample Broker",
+                FundAccountId = "FUND-A",
+                ExternalAccountId = "FUND-A",
+                StatementPeriodStart = periodStart,
+                StatementPeriodEnd = periodEnd,
+                OriginalFileName = document.FileName,
+                MappingProfileId = StatementMappingProfileRegistry.CanonicalCsvV1ProfileId,
+                ToleranceProfileId = StatementToleranceProfile.DefaultProfileId,
+                ImportedBy = "pre-upgrade-operator",
+                SourceFileHash = canonicalHash,
+                CanonicalArtifactHash = canonicalHash,
+                DuplicateKey = legacyRunId
+            },
+            []);
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        result.Duplicate.Should().BeTrue();
+        result.RunId.Should().Be(legacyRunId, "operator links must target the retained pre-upgrade run");
+        result.RunId.Should().NotBe(hardenedRunId);
+        (await store.ListImportsAsync()).Should().ContainSingle();
     }
 
     [Fact]
@@ -443,6 +627,27 @@ public sealed class StatementImportServiceTests : IDisposable
 
             public Task<bool> DeleteAsync(string profileId, CancellationToken ct = default)
                 => Task.FromResult(false);
+        }
+    }
+
+    private sealed class CallerBufferMutatingConnector(
+        IStatementConnector inner,
+        Action mutateCallerBuffer) : IStatementConnector
+    {
+        public StatementConnectorDescriptor Descriptor { get; } = inner.Descriptor with
+        {
+            ConnectorId = "caller-buffer-mutation-test",
+            DisplayName = "Caller buffer mutation test"
+        };
+
+        public bool CanHandle(StatementSourceDocument document) => true;
+
+        public Task<StatementParseResult> ParseAsync(
+            StatementSourceDocument document,
+            CancellationToken ct = default)
+        {
+            mutateCallerBuffer();
+            return inner.ParseAsync(document, ct);
         }
     }
 

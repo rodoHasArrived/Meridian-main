@@ -21,8 +21,12 @@ internal static class LedgerStartup
         }
     }
 
-    public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
+    public static async Task EnsureDatabaseReadyAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default,
+        ILogger? logger = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         EnsureEnvironmentDefaults();
         if (!IsConfigured())
         {
@@ -39,7 +43,7 @@ internal static class LedgerStartup
             return;
         }
 
-        Task.Run(() => migrationRunner.EnsureMigratedAsync()).GetAwaiter().GetResult();
+        await migrationRunner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
         logger?.LogInformation("Ledger schema is ready.");
     }
 }

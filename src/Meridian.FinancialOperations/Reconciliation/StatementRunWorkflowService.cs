@@ -117,11 +117,14 @@ public sealed class StatementRunWorkflowService(
 
     private async Task<StatementRunRequest> NormalizeAndValidateAsync(StatementRunRequest request, CancellationToken cancellationToken)
     {
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? await ComputeSourceFileHashAsync(request.SourcePath, cancellationToken).ConfigureAwait(false)
-            : request.SourceFileHash.Trim().ToUpperInvariant();
+        var canonicalSourcePath = string.IsNullOrWhiteSpace(request.CanonicalSourcePath)
+            ? null
+            : request.CanonicalSourcePath.Trim();
         await validationService.ValidateAsync(
-            new StatementReconciliationValidationRequest(request.Broker, request.SourcePath, request.MappingProfileId),
+            new StatementReconciliationValidationRequest(
+                request.Broker,
+                canonicalSourcePath ?? request.SourcePath,
+                request.MappingProfileId),
             cancellationToken).ConfigureAwait(false);
         return request with
         {
@@ -134,7 +137,9 @@ public sealed class StatementRunWorkflowService(
             MappingProfileId = request.MappingProfileId.Trim(),
             ToleranceProfileId = request.ToleranceProfileId.Trim(),
             ImportedBy = request.ImportedBy.Trim(),
-            SourceFileHash = sourceFileHash
+            SourceFileHash = request.SourceFileHash?.Trim().ToUpperInvariant() ?? string.Empty,
+            CanonicalSourcePath = canonicalSourcePath,
+            CanonicalArtifactHash = request.CanonicalArtifactHash?.Trim().ToUpperInvariant() ?? string.Empty
         };
     }
 
@@ -151,7 +156,11 @@ public sealed class StatementRunWorkflowService(
             request.MappingProfileId,
             request.ToleranceProfileId,
             request.ImportedBy,
-            request.SourceFileHash);
+            request.SourceFileHash)
+        {
+            CanonicalSourcePath = request.CanonicalSourcePath,
+            CanonicalArtifactHash = request.CanonicalArtifactHash
+        };
 
     private static string BuildEvidenceLink(StatementRunBreak item)
     {
@@ -305,10 +314,4 @@ public sealed class StatementRunWorkflowService(
         }
     }
 
-    private static async Task<string> ComputeSourceFileHashAsync(string sourcePath, CancellationToken cancellationToken)
-    {
-        await using var stream = File.OpenRead(sourcePath);
-        var hash = await System.Security.Cryptography.SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
-        return Convert.ToHexString(hash);
-    }
 }

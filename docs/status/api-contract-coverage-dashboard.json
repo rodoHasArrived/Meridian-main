@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:525",
+      "source": "src/Meridian/UiServer.cs:597",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:559",
+      "source": "src/Meridian/UiServer.cs:631",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:606",
+      "source": "src/Meridian/UiServer.cs:681",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:625",
+      "source": "src/Meridian/UiServer.cs:702",
       "documented": true
     },
     {
@@ -527,151 +527,151 @@
     {
       "method": "GET",
       "path": "/api/backfill/providers",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:33",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:38",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:43",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:53",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/run/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:56",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:71",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:84",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:127",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/progress",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:112",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:190",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/metadata",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:134",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:217",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/statuses",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:228",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/fallback-chain",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:155",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:245",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/providers/dry-run-plan",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:167",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:263",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:186",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:293",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:28",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:31",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/resolve/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:50",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:63",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/gap-fill",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:89",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/presets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:96",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:157",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/executions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:111",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:173",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/statistics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:129",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:196",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:159",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:236",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:174",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:258",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/{id}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:300",
       "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/backfill/schedules/{id}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:321",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/enable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:216",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:344",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/disable",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:231",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:367",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/backfill/schedules/{id}/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:246",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:390",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/{id}/history",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:271",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:452",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/backfill/schedules/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:284",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs:471",
       "documented": false
     },
     {
@@ -1565,37 +1565,37 @@
     {
       "method": "POST",
       "path": "/api/failover/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:72",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:65",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:95",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:113",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:125",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:134",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/failover/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:227",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:334",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/workstation/desktop/launch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:28",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:29",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/auth/desktop-launch/{ticket}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:51",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:52",
       "documented": false
     },
     {
@@ -2657,7 +2657,7 @@
     {
       "method": "GET",
       "path": "/api/providers/data-projection",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:15",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:16",
       "documented": false
     },
     {
@@ -3707,13 +3707,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2657",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2635",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2778",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2756",
       "documented": false
     }
   ],

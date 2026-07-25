@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Wpf
@@ -29,6 +29,9 @@ Keep shared contracts and read-model logic in shared UI services when browser an
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
 matching module before it expands through the older flat page folders.
+`ProviderDataProjectionViewModel` requires the signed-in tenant and company on every refresh and
+uses the shared scoped provider projection. It has no unscoped fallback, so missing desktop session
+scope fails before any provider rows are read.
 
 ## Key folders and files
 

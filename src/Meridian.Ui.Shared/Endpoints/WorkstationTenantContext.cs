@@ -148,21 +148,20 @@ public static class WorkstationTenantScopeEndpointFilters
             return next(context);
         }
 
-        return ValueTask.FromResult<object?>(Results.Problem(
-            MissingTenantScopeMessage,
-            statusCode: StatusCodes.Status403Forbidden));
+        return ValueTask.FromResult<object?>(
+            ApiProblemDetails.Forbidden(context.HttpContext, MissingTenantScopeMessage));
     }
 }
 
 /// <summary>
-/// Unconditional isolation gate for accounting automation mutations whose durable identity is
-/// tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never
-/// permits or merely logs an incomplete scope.
+/// Unconditional isolation gate for workstation routes whose durable identity is tenant plus
+/// company. Unlike the broader rollout-controlled fund-write gate, this filter never permits or
+/// merely logs an incomplete scope.
 /// </summary>
 public static class WorkstationTenantCompanyScopeEndpointFilters
 {
     private const string MissingScopeMessage =
-        "A tenant- and company-scoped workstation request context is required for accounting automation mutations.";
+        "A tenant- and company-scoped workstation request context is required.";
 
     public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
     {
@@ -181,9 +180,8 @@ public static class WorkstationTenantCompanyScopeEndpointFilters
             return next(context);
         }
 
-        return ValueTask.FromResult<object?>(Results.Problem(
-            MissingScopeMessage,
-            statusCode: StatusCodes.Status403Forbidden));
+        return ValueTask.FromResult<object?>(
+            ApiProblemDetails.Forbidden(context.HttpContext, MissingScopeMessage));
     }
 }
 
@@ -234,7 +232,7 @@ public static class FundScopedWriteTenantEndpointFilters
                 return await next(context).ConfigureAwait(false);
 
             case FundScopedWriteTenantDecision.Deny:
-                return Results.Problem(MissingTenantScopeMessage, statusCode: StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(httpContext, MissingTenantScopeMessage);
 
             default:
                 // Detection-first: record the tenantless fund-scoped write without blocking it. Structured

@@ -16,12 +16,25 @@
   "comment": null,
   "comments": [],
   "composite_types": [],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "fingerprint": "6867757a9bdf909062c2bdb0046e06658b9236bc3b0fafc4834e5c9a7c7cc8cc",
+      "kind": "normal",
+      "source": "fund_structure.ck_fund_structure_legacy_import_receipt_source_hash on fund_structure.fund_structure_legacy_import_receipt",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.fund_structure_legacy_import_receipt.source_hash",
+      "target_kind": "table column",
+      "target_name": "fund_structure_legacy_import_receipt",
+      "target_schema": "fund_structure"
+    }
+  ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "0271886ae6668dd42cf221854a0da9fabc27fddaec729b926d762f9aedfd508b",
+  "fingerprint": "83ea628e231975151306afed4ae0b8d80760bcbaf8f1d18a7637664779de2ff0",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -1284,6 +1297,334 @@
       "is_partition": false,
       "kind": "table",
       "name": "fund_structure_assignment",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5ec388e8eafa5cbc524fd798d31c41b2c76d3886ffba12721777760130bac835",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_hash",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "62105b3d688ad2cf29e995dfea5cc76e04e77fbb4b7467c11e7d50155c22f048",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "imported_at",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "42dfdf57bece7e7d0137e4d8d8b22db1c8f60e8f9caf4d752ffcf6b62802ab82",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_count",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "source_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "adecad61704379cac969c81a5ec8114fceebe9615c46d7739a2b60ec95eac72a",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_fund_structure_legacy_import_receipt_source_hash",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "source_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (source_hash)",
+          "delete_action": null,
+          "fingerprint": "b5e81d311ac7a2efe81b69463fe38b0749c967bdf0f83f4631589a62fca83884",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_legacy_import_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "5d67a03847e99af64a124e2f3a475ea06c60eeb9f8f20a4d7449790a2743165f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_legacy_import_receipt_pkey ON fund_structure.fund_structure_legacy_import_receipt USING btree (source_hash)",
+          "expression": null,
+          "fingerprint": "c34d5d17e1a75a68934f171508b3df679632d92aff0ffb1922047b21d1848bd7",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "source_hash"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_legacy_import_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_legacy_import_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "93a4ff1732e66609528a7eebd53820ec580a82728d7d00f36b91b941d5f01b16",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "4aaebd50d5f2a575b3299949099d719545015ba8c1cdf97c2072d40ee22dc2be",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_at",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "account_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (account_id)",
+          "delete_action": null,
+          "fingerprint": "3ff6e4b1f0be7b3020fbf6bcbbe139a02339bd14d6b7ec587f1bfadb21ee0166",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_linked_account_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_linked_account_pkey ON fund_structure.fund_structure_linked_account USING btree (account_id)",
+          "expression": null,
+          "fingerprint": "163aa41df0601481b2b89752df6226ae5170fb52737277706628671c79533d71",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_linked_account_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_linked_account",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -3454,6 +3795,22 @@
     },
     {
       "enabled": false,
+      "fingerprint": "ea253ef5112030cf008612db0eeef60b1b87c0c499b53fe14f3f56f4dc1a9289",
+      "forced": false,
+      "policies": [],
+      "relation": "fund_structure_legacy_import_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "e21d9f36649781111d73625cf8c9809b079a32f4f37ad95de6ceac7de4244652",
+      "forced": false,
+      "policies": [],
+      "relation": "fund_structure_linked_account",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
       "fingerprint": "2fdf19b645196e38b90b24164e8f858519d614a374a358d26cf2d312302623ee",
       "forced": false,
       "policies": [],
@@ -4762,6 +5119,334 @@
       "is_partition": false,
       "kind": "table",
       "name": "fund_structure_assignment",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5ec388e8eafa5cbc524fd798d31c41b2c76d3886ffba12721777760130bac835",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_hash",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "62105b3d688ad2cf29e995dfea5cc76e04e77fbb4b7467c11e7d50155c22f048",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "imported_at",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "42dfdf57bece7e7d0137e4d8d8b22db1c8f60e8f9caf4d752ffcf6b62802ab82",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_count",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "source_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "adecad61704379cac969c81a5ec8114fceebe9615c46d7739a2b60ec95eac72a",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_fund_structure_legacy_import_receipt_source_hash",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "source_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (source_hash)",
+          "delete_action": null,
+          "fingerprint": "b5e81d311ac7a2efe81b69463fe38b0749c967bdf0f83f4631589a62fca83884",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_legacy_import_receipt_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "5d67a03847e99af64a124e2f3a475ea06c60eeb9f8f20a4d7449790a2743165f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_legacy_import_receipt_pkey ON fund_structure.fund_structure_legacy_import_receipt USING btree (source_hash)",
+          "expression": null,
+          "fingerprint": "c34d5d17e1a75a68934f171508b3df679632d92aff0ffb1922047b21d1848bd7",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "source_hash"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_legacy_import_receipt_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_legacy_import_receipt",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "93a4ff1732e66609528a7eebd53820ec580a82728d7d00f36b91b941d5f01b16",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "account_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "4aaebd50d5f2a575b3299949099d719545015ba8c1cdf97c2072d40ee22dc2be",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "updated_at",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "account_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (account_id)",
+          "delete_action": null,
+          "fingerprint": "3ff6e4b1f0be7b3020fbf6bcbbe139a02339bd14d6b7ec587f1bfadb21ee0166",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "fund_structure_linked_account_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX fund_structure_linked_account_pkey ON fund_structure.fund_structure_linked_account USING btree (account_id)",
+          "expression": null,
+          "fingerprint": "163aa41df0601481b2b89752df6226ae5170fb52737277706628671c79533d71",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "fund_structure_linked_account_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "fund_structure_linked_account",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",

@@ -2,6 +2,12 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Monitoring;
+using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Failover;
+using Microsoft.Extensions.DependencyInjection;
+using UiConfigStore = Meridian.Ui.Shared.Services.ConfigStore;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -12,21 +18,27 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class FailoverEndpointTests
+public sealed class FailoverEndpointTests : IDisposable
 {
+    private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
     public FailoverEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _fixture = fixture;
+        _client = fixture.CreatePermittedClient(
+            UserPermission.ViewDiagnostics,
+            UserPermission.ManageProviders);
     }
+
+    public void Dispose() => _client.Dispose();
 
     #region GET /api/failover/config
 
     [Fact]
     public async Task GetFailoverConfig_ReturnsJsonWithExpectedFields()
     {
-        var response = await _client.GetAsync("/api/failover/config");
+        var response = await GetWithLiveRuntimeAsync("/api/failover/config");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -40,7 +52,7 @@ public sealed class FailoverEndpointTests
     [Fact]
     public async Task GetFailoverConfig_IncludesConfiguredRules()
     {
-        var response = await _client.GetAsync("/api/failover/config");
+        var response = await GetWithLiveRuntimeAsync("/api/failover/config");
         var json = await DeserializeAsync(response);
 
         json.Should().ContainKey("rules");
@@ -78,7 +90,7 @@ public sealed class FailoverEndpointTests
     [Fact]
     public async Task GetFailoverRules_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/failover/rules");
+        var response = await GetWithLiveRuntimeAsync("/api/failover/rules");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -91,7 +103,7 @@ public sealed class FailoverEndpointTests
     [Fact]
     public async Task GetFailoverRules_ContainsExpectedFields()
     {
-        var response = await _client.GetAsync("/api/failover/rules");
+        var response = await GetWithLiveRuntimeAsync("/api/failover/rules");
         var content = await response.Content.ReadAsStringAsync();
         var rules = JsonSerializer.Deserialize<JsonElement[]>(content)!;
 
@@ -105,6 +117,23 @@ public sealed class FailoverEndpointTests
     }
 
     #endregion
+
+    [Theory]
+    [InlineData("/api/failover/config")]
+    [InlineData("/api/failover/rules")]
+    public async Task FailoverStateRead_WhenRuntimeIsMissing_ReturnsServiceUnavailableProblem(
+        string route)
+    {
+        var response = await _client.GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/service-unavailable",
+            "Service Unavailable");
+        problem.GetProperty("service").GetString()
+            .Should().Be("streaming failover runtime");
+    }
 
     #region POST /api/failover/rules
 
@@ -142,6 +171,10 @@ public sealed class FailoverEndpointTests
         var response = await _client.PostAsync("/api/failover/rules", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/validation",
+            "Validation Failed");
     }
 
     [Fact]
@@ -169,6 +202,10 @@ public sealed class FailoverEndpointTests
         var response = await _client.DeleteAsync("/api/failover/rules/nonexistent-rule-id");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/not-found",
+            "Resource Not Found");
     }
 
     [Fact]
@@ -197,16 +234,42 @@ public sealed class FailoverEndpointTests
     #region GET /api/failover/health
 
     [Fact]
-    public async Task GetFailoverHealth_ReturnsJsonArray()
+    public async Task GetFailoverHealth_WhenRuntimeIsMissing_ReturnsServiceUnavailableProblem()
     {
         var response = await _client.GetAsync("/api/failover/health");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/service-unavailable",
+            "Service Unavailable");
+        problem.GetProperty("service").GetString().Should().Be("streaming failover runtime");
+    }
 
-        var content = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(content);
-        doc.RootElement.ValueKind.Should().Be(JsonValueKind.Array);
+    [Fact]
+    public async Task GetFailoverHealth_WhenScorerIsMissing_ReturnsServiceUnavailableInsteadOfZeroScore()
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var healthMonitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(healthMonitor);
+        registry.Service = service;
+
+        try
+        {
+            var response = await _client.GetAsync("/api/failover/health");
+
+            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+            var problem = await AssertProblemDetailsAsync(
+                response,
+                "https://meridian.io/errors/service-unavailable",
+                "Service Unavailable");
+            problem.GetProperty("service").GetString()
+                .Should().Be("provider degradation scorer");
+        }
+        finally
+        {
+            registry.Service = null;
+        }
     }
 
     #endregion
@@ -222,6 +285,10 @@ public sealed class FailoverEndpointTests
         var response = await _client.PostAsync("/api/failover/force/nonexistent-rule", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/not-found",
+            "Resource Not Found");
     }
 
     [Fact]
@@ -233,28 +300,205 @@ public sealed class FailoverEndpointTests
         var response = await _client.PostAsync("/api/failover/force/test-rule-1", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/validation",
+            "Validation Failed");
     }
 
     [Fact]
-    public async Task ForceFailover_WithValidRule_ReturnsJsonWithStatus()
+    public async Task ForceFailover_WithTargetOutsideRule_ReturnsValidationProblem()
+    {
+        var payload = new { TargetProviderId = "not-in-rule" };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/failover/force/test-rule-1", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/validation",
+            "Validation Failed");
+        problem.GetProperty("errors").GetProperty("targetProviderId")[0].GetString()
+            .Should().Contain("primary provider");
+    }
+
+    [Fact]
+    public async Task ForceFailover_WithValidRuleButNoRuntime_ReturnsServiceUnavailableProblem()
     {
         var payload = new { TargetProviderId = "test-backup" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
         var response = await _client.PostAsync("/api/failover/force/test-rule-1", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var json = await DeserializeAsync(response);
-        json.Should().ContainKey("ruleId");
-        json.Should().ContainKey("targetProviderId");
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/service-unavailable",
+            "Service Unavailable");
+    }
+
+    [Fact]
+    public async Task ForceFailover_WithCoordinatorButNoLiveTransitionHandler_ReturnsServiceUnavailableProblem()
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var healthMonitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(healthMonitor);
+        registry.Service = service;
+
+        try
+        {
+            var payload = new { TargetProviderId = "test-backup" };
+            var content = new StringContent(
+                JsonSerializer.Serialize(payload),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _client.PostAsync("/api/failover/force/test-rule-1", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+            await AssertProblemDetailsAsync(
+                response,
+                "https://meridian.io/errors/service-unavailable",
+                "Service Unavailable");
+            service.GetActiveProviderId("test-rule-1").Should().Be("test-alpaca");
+        }
+        finally
+        {
+            registry.Service = null;
+        }
+    }
+
+    [Fact]
+    public async Task ForceFailover_WhenLiveRuntimeRejectsTransition_ReturnsConflictProblem()
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var healthMonitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(healthMonitor);
+        using var registration = service.RegisterTransitionHandler(
+            "test-rule-1",
+            static transition => transition.TryReject("Injected runtime hand-off failure."));
+        registry.Service = service;
+
+        try
+        {
+            var payload = new { TargetProviderId = "test-backup" };
+            var content = new StringContent(
+                JsonSerializer.Serialize(payload),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _client.PostAsync("/api/failover/force/test-rule-1", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            await AssertProblemDetailsAsync(
+                response,
+                "https://meridian.io/errors/conflict",
+                "State Conflict");
+            service.GetActiveProviderId("test-rule-1").Should().Be("test-alpaca");
+        }
+        finally
+        {
+            registry.Service = null;
+        }
     }
 
     #endregion
+
+    [Fact]
+    public async Task ConfigStoreSave_PreCanceledRequest_DoesNotPersistConfiguration()
+    {
+        var tempDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-ui-config-store-tests",
+            Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(tempDirectory, "appsettings.json");
+
+        try
+        {
+            var store = new UiConfigStore(configPath);
+            var config = store.Load();
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            var act = () => store.SaveAsync(config, cts.Token);
+
+            await act.Should().ThrowAsync<OperationCanceledException>();
+            File.Exists(configPath).Should().BeFalse(
+                "a canceled failover configuration write must not become durable");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+                Directory.Delete(tempDirectory, recursive: true);
+        }
+    }
 
     private static async Task<Dictionary<string, JsonElement>> DeserializeAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+    }
+
+    private static async Task<JsonElement> AssertProblemDetailsAsync(
+        HttpResponseMessage response,
+        string expectedType,
+        string expectedTitle)
+    {
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var problem = document.RootElement.Clone();
+        problem.GetProperty("type").GetString().Should().Be(expectedType);
+        problem.GetProperty("title").GetString().Should().Be(expectedTitle);
+        problem.GetProperty("status").GetInt32().Should().Be((int)response.StatusCode);
+        problem.GetProperty("instance").GetString().Should().NotBeNullOrWhiteSpace();
+        problem.GetProperty("traceId").GetString().Should().NotBeNullOrWhiteSpace();
+        problem.GetProperty("timestamp").GetDateTimeOffset().Should().BeCloseTo(
+            DateTimeOffset.UtcNow,
+            TimeSpan.FromMinutes(1));
+        return problem;
+    }
+
+    private async Task<HttpResponseMessage> GetWithLiveRuntimeAsync(string route)
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var healthMonitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(healthMonitor);
+        registry.Service = service;
+
+        try
+        {
+            return await _client.GetAsync(route);
+        }
+        finally
+        {
+            registry.Service = null;
+        }
+    }
+
+    private StreamingFailoverService CreateFailoverService(
+        ConnectionHealthMonitor healthMonitor)
+    {
+        var configured = _fixture.Services
+            .GetRequiredService<UiConfigStore>()
+            .Load()
+            .DataSources ?? new DataSourcesConfig();
+        var rules = configured.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+        var service = new StreamingFailoverService(healthMonitor);
+        foreach (var providerId in rules
+                     .SelectMany(rule => new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            service.RegisterProvider(providerId);
+        }
+
+        service.Start(configured with
+        {
+            EnableFailover = true,
+            HealthCheckIntervalSeconds = 3600,
+            FailoverRules = rules
+        });
+        return service;
     }
 }

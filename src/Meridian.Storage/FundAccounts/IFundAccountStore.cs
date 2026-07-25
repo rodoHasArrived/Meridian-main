@@ -39,4 +39,47 @@ public interface IFundAccountStore
 
     // Emptiness check for import
     Task<bool> IsEmptyAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Imports one legacy JSON snapshot as a single database transaction when the store is empty.
+    /// The source hash is committed in the same transaction so startup can safely recover a process
+    /// failure between database commit and source-file archival.
+    /// </summary>
+    Task<FundAccountLegacyImportResult> ImportLegacySnapshotIfEmptyAsync(
+        FundAccountLegacyImportRequest request,
+        CancellationToken ct = default)
+        => Task.FromException<FundAccountLegacyImportResult>(
+            new NotSupportedException("This fund-account store does not support transactional legacy imports."));
+}
+
+public sealed record FundAccountLegacyImportRequest(
+    string SourceHash,
+    IReadOnlyList<FundAccountLegacyImportAccount> Accounts);
+
+public sealed record FundAccountLegacyImportAccount(
+    AccountSummaryDto Account,
+    IReadOnlyList<AccountBalanceSnapshotDto> BalanceSnapshots,
+    IReadOnlyList<FundAccountLegacyCustodianStatement> CustodianStatements,
+    IReadOnlyList<FundAccountLegacyBankStatement> BankStatements,
+    IReadOnlyList<FundAccountLegacyReconciliationRun> ReconciliationRuns,
+    IReadOnlyList<AccountSyncHistoryEntryDto> SyncHistory,
+    IReadOnlyList<MarginSnapshotDto> MarginSnapshots);
+
+public sealed record FundAccountLegacyCustodianStatement(
+    CustodianStatementBatchDto Batch,
+    IReadOnlyList<CustodianPositionLineDto> Lines);
+
+public sealed record FundAccountLegacyBankStatement(
+    BankStatementBatchDto Batch,
+    IReadOnlyList<BankStatementLineDto> Lines);
+
+public sealed record FundAccountLegacyReconciliationRun(
+    AccountReconciliationRunDto Run,
+    IReadOnlyList<AccountReconciliationResultDto> Results);
+
+public enum FundAccountLegacyImportResult : byte
+{
+    Imported = 0,
+    AlreadyImported = 1,
+    StoreNotEmpty = 2
 }

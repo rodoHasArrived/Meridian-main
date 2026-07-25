@@ -1850,6 +1850,7 @@ Meridian-main
 │   │   ├── appsettings-schema.md
 │   │   ├── backtest-preflight-and-stage-telemetry.md
 │   │   ├── brand-assets.md
+│   │   ├── broker-provider-capability-expansion-review.md
 │   │   ├── contract-compatibility-matrix.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
@@ -3335,6 +3336,7 @@ Meridian-main
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
 │   │   │   ├── LedgerStartup.cs
+│   │   │   ├── LegacySnapshotArchiver.cs
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
@@ -4052,6 +4054,8 @@ Meridian-main
 │   │   │   ├── StorageException.cs
 │   │   │   ├── UnsupportedAssetClassException.cs
 │   │   │   └── ValidationException.cs
+│   │   ├── IO
+│   │   │   └── RootedPathGuard.cs
 │   │   ├── Logging
 │   │   │   └── LoggingSetup.cs
 │   │   ├── Monitoring
@@ -4392,6 +4396,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
+│   │   │   ├── OperationsContinuityWorkflowService.Projection.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
 │   │   │   ├── OperationsLedgerPostingService.cs
@@ -4693,7 +4698,8 @@ Meridian-main
 │   │   │   │   ├── IBDurableResultStore.cs
 │   │   │   │   ├── IBHistoricalDataProvider.cs
 │   │   │   │   ├── IBMarketDataClient.cs
-│   │   │   │   └── IBSimulationClient.cs
+│   │   │   │   ├── IBSimulationClient.cs
+│   │   │   │   └── TenantScopedProviderDataUpdateHub.cs
 │   │   │   ├── NasdaqDataLink
 │   │   │   │   ├── NasdaqDataLinkCorporateActionProvider.cs
 │   │   │   │   ├── NasdaqDataLinkHistoricalDataProvider.cs
@@ -5314,14 +5320,17 @@ Meridian-main
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_fund_accounts.sql
 │   │   │   │   ├── 002_add_operational_status.sql
-│   │   │   │   └── 003_fund_account_tenant_column.sql
+│   │   │   │   ├── 003_fund_account_tenant_column.sql
+│   │   │   │   └── 004_legacy_import_receipts.sql
 │   │   │   ├── FundAccountMigrationRunner.cs
 │   │   │   ├── FundAccountStoreOptions.cs
 │   │   │   ├── IFundAccountStore.cs
 │   │   │   └── PostgresFundAccountStore.cs
 │   │   ├── FundStructure
 │   │   │   ├── Migrations
-│   │   │   │   └── 001_fund_structure.sql
+│   │   │   │   ├── 001_fund_structure.sql
+│   │   │   │   ├── 002_legacy_import_receipts.sql
+│   │   │   │   └── 003_linked_accounts.sql
 │   │   │   ├── FundStructureMigrationRunner.cs
 │   │   │   ├── FundStructureStoreOptions.cs
 │   │   │   ├── IFundStructureStateStore.cs
@@ -6633,6 +6642,10 @@ Meridian-main
 │   │   ├── Endpoints
 │   │   │   ├── Compliance
 │   │   │   │   └── ComplianceEndpoints.cs
+│   │   │   ├── ProblemDetails
+│   │   │   │   ├── ApiProblemDetails.cs
+│   │   │   │   ├── MeridianApiExceptionHandler.cs
+│   │   │   │   └── MeridianApiProblemDetailsServiceCollectionExtensions.cs
 │   │   │   ├── AccountingSystemEndpoints.cs
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
@@ -6689,6 +6702,7 @@ Meridian-main
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.cs
+│   │   │   ├── LedgerEndpoints.Dimensions.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
 │   │   │   ├── LedgerEndpoints.Reporting.cs
 │   │   │   ├── LiveDataEndpoints.cs
@@ -6777,6 +6791,7 @@ Meridian-main
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
+│   │   │   ├── FileEvidenceArtifactStore.Models.cs
 │   │   │   ├── StatementImportEvidenceBridge.cs
 │   │   │   └── StatementToReportWorkflowService.cs
 │   │   ├── Extensibility
@@ -7335,6 +7350,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── Accounting
 │   │   │   │   ├── AccountingCloseViewModel.cs
+│   │   │   │   ├── AccountingCloseViewModel.DraftParsing.cs
 │   │   │   │   ├── AccountingCloseViewModel.Drafts.cs
 │   │   │   │   ├── AccountingCloseViewModel.EvidenceRequests.cs
 │   │   │   │   └── AccountingConfigureViewModel.cs
@@ -7895,6 +7911,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
+│   │   │   │   ├── BackfillWorkerServiceLifecycleTests.cs
 │   │   │   │   ├── BackfillWorkerServiceTests.cs
 │   │   │   │   ├── CompositeHistoricalDataProviderTests.cs
 │   │   │   │   ├── CrossSourceBackfillReconciliationServiceTests.cs
@@ -7934,7 +7951,10 @@ Meridian-main
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── HostStartupLifecycleTests.cs
+│   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
+│   │   │   │   ├── ProcessWideHostedServiceRegistrationTests.cs
 │   │   │   │   ├── ProductionRegistrationGuardServiceTests.cs
 │   │   │   │   ├── ProductionServiceRegistrationPolicyTests.cs
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
@@ -8329,6 +8349,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
+│   │   │   │   ├── AlpacaSymbolSearchProviderTests.cs
 │   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
 │   │   │   │   ├── AlphaVantageSymbolSearchProviderTests.cs
@@ -8440,9 +8461,11 @@ Meridian-main
 │   │   │   │   ├── LiveDataEndpointTests.cs
 │   │   │   │   ├── MaintenanceEndpointTests.cs
 │   │   │   │   ├── NegativePathEndpointTests.cs
+│   │   │   │   ├── OperationalProblemDetailsEndpointTests.cs
 │   │   │   │   ├── OptionsEndpointTests.cs
 │   │   │   │   ├── PilotAcceptanceHarnessTests.cs
 │   │   │   │   ├── ProviderConnectionHonestyEndpointTests.cs
+│   │   │   │   ├── ProviderDataProjectionAuthorizationTests.cs
 │   │   │   │   ├── ProviderEndpointTests.cs
 │   │   │   │   ├── QualityDropsEndpointTests.cs
 │   │   │   │   ├── QualityEndpointContractTests.cs
@@ -8685,6 +8708,8 @@ Meridian-main
 │   │   │   │   ├── FundAccountDatabaseFactAttribute.cs
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
 │   │   │   │   └── PostgresFundAccountStoreTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
 │   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
 │   │   │   ├── Maintenance
@@ -8856,6 +8881,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalDraftIntakeServiceTests.cs
 │   │   │   ├── AutomatedJournalEventProducerTests.cs
 │   │   │   ├── AutomatedJournalScheduleTests.cs
+│   │   │   ├── BackfillAuditEndpointsTests.cs
 │   │   │   ├── BackfillExecutionContractProjectionTests.cs
 │   │   │   ├── BankFeedTransportServiceTests.cs
 │   │   │   ├── BondReferenceEndpointsTests.cs
@@ -8958,6 +8984,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
+│   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
@@ -9139,6 +9166,7 @@ Meridian-main
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
 │   │   │   ├── WorkspaceStateTokenTests.cs
 │   │   │   ├── WorkstationOperatingContextServiceTests.cs
+│   │   │   ├── WorkstationReconciliationApiClientTests.cs
 │   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
 │   │   ├── Shell
 │   │   │   ├── PageContentFactoryTests.cs
@@ -9404,8 +9432,7 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   ├── shared-pattern-suggest.ps1
-│   │   └── test-gap-scan.ps1
+│   │   └── shared-pattern-suggest.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

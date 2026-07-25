@@ -57,6 +57,42 @@ public interface IFundStructureStore
     Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default);
     Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default);
 
+    // Account node identities retained independently from active links/assignments
+    Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);
+    Task<IReadOnlyList<Guid>> GetAllLinkedAccountIdsAsync(CancellationToken ct = default);
+
     // Emptiness check
     Task<bool> IsEmptyAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Imports one legacy JSON snapshot as a single database transaction when the store is empty.
+    /// The source hash is committed in the same transaction so startup can safely recover a process
+    /// failure between database commit and source-file archival.
+    /// </summary>
+    Task<FundStructureLegacyImportResult> ImportLegacySnapshotIfEmptyAsync(
+        FundStructureLegacyImportRequest request,
+        CancellationToken ct = default)
+        => Task.FromException<FundStructureLegacyImportResult>(
+            new NotSupportedException("This fund-structure store does not support transactional legacy imports."));
+}
+
+public sealed record FundStructureLegacyImportRequest(
+    string SourceHash,
+    IReadOnlyList<OrganizationSummaryDto> Organizations,
+    IReadOnlyList<BusinessSummaryDto> Businesses,
+    IReadOnlyList<ClientSummaryDto> Clients,
+    IReadOnlyList<FundSummaryDto> Funds,
+    IReadOnlyList<SleeveSummaryDto> Sleeves,
+    IReadOnlyList<VehicleSummaryDto> Vehicles,
+    IReadOnlyList<LegalEntitySummaryDto> Entities,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
+    IReadOnlyList<FundStructureAssignmentDto> Assignments,
+    IReadOnlyList<Guid> LinkedAccountIds);
+
+public enum FundStructureLegacyImportResult : byte
+{
+    Imported = 0,
+    AlreadyImported = 1,
+    StoreNotEmpty = 2
 }

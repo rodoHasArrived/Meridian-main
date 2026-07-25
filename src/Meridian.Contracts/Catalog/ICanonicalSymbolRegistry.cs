@@ -120,6 +120,23 @@ public interface ICanonicalSymbolRegistry
 }
 
 /// <summary>
+/// Optional atomic-write capability used by startup migrations without expanding the stable
+/// symbol-resolution contract implemented by external registry adapters.
+/// </summary>
+public interface ICanonicalSymbolRegistryMigrationWriter
+{
+    /// <summary>
+    /// Atomically merges one legacy migration batch and its completion fingerprint. A failed or
+    /// cancelled write leaves both the retained registry and the in-memory resolver unchanged.
+    /// </summary>
+    Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default);
+}
+
+/// <summary>
 /// Defines a canonical symbol with all known identifiers, aliases, and metadata.
 /// This is the standardized representation used for symbol naming consistency.
 /// </summary>

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Contracts
@@ -1383,6 +1383,11 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+Canonical symbol registries retain their stable read/write interfaces. Implementations that can
+apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
+must require that additive capability rather than widening the general registry contract or
+falling back to per-definition writes.
 
 The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
 It does not replace Security Master identity, create an Instrument Master above Security Master,

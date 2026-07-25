@@ -850,6 +850,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.MarketDataCapabilityInfo"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.MetricsData"
     },
     {
@@ -1229,6 +1235,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ProviderStatusResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.ProviderStreamStatusResponse"
     },
     {
       "kind": "contract-set-member",
@@ -2290,6 +2302,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
     },
     {
@@ -2495,6 +2513,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.DataSourcesConfigDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.DemoWorkspaceIsolationException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.DemoWorkspaceLayout"
     },
     {
       "kind": "contract-set-member",
@@ -9089,6 +9119,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Services.IOperationalScheduler"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IOperationalTradingCalendar"
     },
     {
       "kind": "contract-set-member",
@@ -20559,6 +20595,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.CapabilityInfo",
+      "target": "contract:Meridian.Contracts.Api.MarketDataCapabilityInfo"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.ConnectionHealthSnapshotDto",
       "target": "contract:Meridian.Contracts.Api.ConnectionHealthDto"
     },
@@ -20945,6 +20987,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Api.ProviderSetupResult",
       "target": "contract:Meridian.Contracts.Configuration.ProviderCredentialStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.ProviderStatusResponse",
+      "target": "contract:Meridian.Contracts.Api.ProviderStreamStatusResponse"
     },
     {
       "kind": "contract-reference",
@@ -29367,6 +29415,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Services.ITradingCalendarProvider",
+      "target": "contract:Meridian.Contracts.Services.IOperationalTradingCalendar"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Services.MaintenanceWindow",
       "target": "contract:Meridian.Contracts.Services.OperationType"
     },
@@ -37549,6 +37603,12 @@
       "target": "database:fund_accounts.bank_statement_batch_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_accounts.ck_fund_account_legacy_import_receipt_source_hash on fund_accounts.fund_account_legacy_import_receipt",
+      "target": "database:fund_accounts.fund_account_legacy_import_receipt.source_hash"
+    },
+    {
       "constraint": "custodian_position_line_account_id_fkey",
       "kind": "foreign-key",
       "label": "account_id",
@@ -37604,6 +37664,12 @@
       "label": "",
       "source": "database:fund_accounts.custodian_statement_batch_account_id_fkey on fund_accounts.custodian_statement_batch",
       "target": "database:fund_accounts.account_definition_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.ck_fund_structure_legacy_import_receipt_source_hash on fund_structure.fund_structure_legacy_import_receipt",
+      "target": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash"
     },
     {
       "declared": true,
@@ -40449,6 +40515,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_accounts",
+      "target": "database:fund_accounts.fund_account_legacy_import_receipt"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_accounts",
       "target": "database:fund_accounts.fund_account_schema_migrations"
     },
     {
@@ -40494,6 +40566,18 @@
       "label": "",
       "source": "schema:fund_structure",
       "target": "database:fund_structure.fund_structure_assignment"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.fund_structure_legacy_import_receipt"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.fund_structure_linked_account"
     },
     {
       "kind": "contains",
@@ -41301,7 +41385,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9dfa9018cdbd2e1ad6f9a3417f0a2426be230c8b45876ec337520bb689034175",
+  "fingerprint": "4457cc5e8dc646e66af1eed81c993e9d42d589f6105905a38ebb2d9be7ff4318",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -42201,6 +42285,12 @@
       "label": "Meridian.Contracts.Api.LiveDataHealthResponse"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.MarketDataCapabilityInfo",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.MarketDataCapabilityInfo"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Api.MetricsData",
       "kind": "contract-type",
@@ -42583,6 +42673,12 @@
       "id": "contract:Meridian.Contracts.Api.ProviderStatusResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.ProviderStatusResponse"
+    },
+    {
+      "classification": "response",
+      "id": "contract:Meridian.Contracts.Api.ProviderStreamStatusResponse",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.ProviderStreamStatusResponse"
     },
     {
       "classification": "class",
@@ -43642,6 +43738,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
@@ -43849,6 +43951,18 @@
       "id": "contract:Meridian.Contracts.Configuration.DataSourcesConfigDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Configuration.DataSourcesConfigDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Configuration.DemoWorkspaceIsolationException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.DemoWorkspaceIsolationException"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Configuration.DemoWorkspaceLayout",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.DemoWorkspaceLayout"
     },
     {
       "classification": "dto",
@@ -50446,6 +50560,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IOperationalTradingCalendar",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IOperationalTradingCalendar"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Services.ISecurityValidationGateService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Services.ISecurityValidationGateService"
@@ -56829,6 +56949,11 @@
       "label": "fund_accounts.bank_statement_line_batch_id_fkey on fund_accounts.bank_statement_line"
     },
     {
+      "id": "database:fund_accounts.ck_fund_account_legacy_import_receipt_source_hash on fund_accounts.fund_account_legacy_import_receipt",
+      "kind": "database-object",
+      "label": "fund_accounts.ck_fund_account_legacy_import_receipt_source_hash on fund_accounts.fund_account_legacy_import_receipt"
+    },
+    {
       "id": "database:fund_accounts.custodian_position_line",
       "kind": "database-table",
       "label": "fund_accounts.custodian_position_line",
@@ -56866,6 +56991,17 @@
       "label": "fund_accounts.custodian_statement_batch_pkey"
     },
     {
+      "id": "database:fund_accounts.fund_account_legacy_import_receipt",
+      "kind": "database-table",
+      "label": "fund_accounts.fund_account_legacy_import_receipt",
+      "schema": "fund_accounts"
+    },
+    {
+      "id": "database:fund_accounts.fund_account_legacy_import_receipt.source_hash",
+      "kind": "database-object",
+      "label": "fund_accounts.fund_account_legacy_import_receipt.source_hash"
+    },
+    {
       "id": "database:fund_accounts.fund_account_schema_migrations",
       "kind": "database-table",
       "label": "fund_accounts.fund_account_schema_migrations",
@@ -56876,6 +57012,11 @@
       "kind": "database-table",
       "label": "fund_structure.business",
       "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.ck_fund_structure_legacy_import_receipt_source_hash on fund_structure.fund_structure_legacy_import_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.ck_fund_structure_legacy_import_receipt_source_hash on fund_structure.fund_structure_legacy_import_receipt"
     },
     {
       "id": "database:fund_structure.client",
@@ -56893,6 +57034,23 @@
       "id": "database:fund_structure.fund_structure_assignment",
       "kind": "database-table",
       "label": "fund_structure.fund_structure_assignment",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_legacy_import_receipt",
+      "kind": "database-table",
+      "label": "fund_structure.fund_structure_legacy_import_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash",
+      "kind": "database-object",
+      "label": "fund_structure.fund_structure_legacy_import_receipt.source_hash"
+    },
+    {
+      "id": "database:fund_structure.fund_structure_linked_account",
+      "kind": "database-table",
+      "label": "fund_structure.fund_structure_linked_account",
       "schema": "fund_structure"
     },
     {
@@ -59816,11 +59974,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2895,
-    "contract_set_memberships": 3305,
-    "edges": 6866,
+    "contract_references": 2898,
+    "contract_set_memberships": 3311,
+    "edges": 6880,
     "foreign_keys": 88,
     "logical_references": 6,
-    "nodes": 3170
+    "nodes": 3183
   }
 }

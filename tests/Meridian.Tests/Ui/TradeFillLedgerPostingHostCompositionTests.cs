@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.Composition.Startup;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution;
@@ -70,6 +71,63 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
         }
         finally
         {
+            Environment.SetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING", priorLedgerConnection);
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", priorGovernance);
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", priorAspNetCoreEnvironment);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", priorDotnetEnvironment);
+            try
+            {
+                Directory.Delete(root, recursive: true);
+            }
+            catch
+            {
+                // Best-effort test cleanup.
+            }
+        }
+    }
+
+    [Fact]
+    public void UiServer_EarlyCompositionFailure_DisposesOwnedLifecycle()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "trade-fill-host-lifecycle",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        File.WriteAllText(configPath, BuildConfig(root));
+
+        var priorUnifiedConnection = Environment.GetEnvironmentVariable("MERIDIAN_DATABASE_URL");
+        var priorLedgerConnection = Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        var priorGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        var priorAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var priorDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        var lifecycle = new RecordingLifecycleCoordinator();
+        try
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATABASE_URL", null);
+            Environment.SetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING", null);
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Development);
+
+            Action compose = () => _ = new UiServer(
+                configPath,
+                port: 0,
+                lifecycle: lifecycle,
+                ownsLifecycle: true,
+                apiHostOptions: null);
+
+            compose.Should().Throw<InvalidOperationException>()
+                .WithMessage("*Execution:TradeFillLedgerPosting:Enabled requires MERIDIAN_LEDGER_CONNECTION_STRING*");
+            lifecycle.DisposeCount.Should().Be(
+                1,
+                "UiServer owns this coordinator and must release it even when composition fails before WebApplication.Build");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATABASE_URL", priorUnifiedConnection);
             Environment.SetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING", priorLedgerConnection);
             Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", priorGovernance);
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", priorAspNetCoreEnvironment);
@@ -229,5 +287,28 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
             CancellationToken ct = default)
             => throw new InvalidOperationException(
                 "The unconfigured Security Master gate must block journal posting in this composition test.");
+    }
+
+    private sealed class RecordingLifecycleCoordinator : IApplicationLifecycleCoordinator
+    {
+        public DateTimeOffset StartedAtUtc { get; } = DateTimeOffset.UtcNow;
+
+        public bool IsShutdownRequested => false;
+
+        public string? ShutdownReason => null;
+
+        public CancellationToken ShutdownToken => CancellationToken.None;
+
+        public string? LocalShutdownToken => null;
+
+        public int DisposeCount { get; private set; }
+
+        public Task RequestShutdownAsync(
+            string reason,
+            string? detail = null,
+            CancellationToken ct = default)
+            => Task.CompletedTask;
+
+        public void Dispose() => DisposeCount++;
     }
 }

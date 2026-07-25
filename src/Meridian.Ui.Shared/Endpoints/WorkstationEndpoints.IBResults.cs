@@ -19,7 +19,7 @@ public static partial class WorkstationEndpoints
             var tenantContext = context.RequestServices.GetRequiredService<IWorkstationTenantContextAccessor>();
             var results = context.RequestServices.GetRequiredService<IBResultQueryService>();
             var tenant = tenantContext.GetRequired();
-            var items = results.Get(tenant.TenantId!, family, accountId, modelAccountId)
+            var items = results.Get(tenant.TenantId!, tenant.CompanyId!, family, accountId, modelAccountId)
                 .Select(x => new
                 {
                     request = x.Request,
@@ -34,7 +34,8 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationIBResults")
         .Produces(200)
-        .Produces(403)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .RequireWorkstationTenantCompanyScope()
         .RequirePermission(UserPermission.ViewTrades);
     }
 }
