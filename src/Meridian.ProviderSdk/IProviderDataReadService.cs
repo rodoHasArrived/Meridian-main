@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.ProviderSdk;
 
@@ -16,10 +17,19 @@ public sealed record ProviderDataProvenance(
     string CorrelationId,
     string StableDeduplicationKey)
 {
+    /// <summary>
+    /// Explicitly identifies whether the data is real, simulated, seeded, or sample. Calendar
+    /// responses require this value so placeholder evidence cannot be presented as real data.
+    /// </summary>
+    public DataProvenance? DataProvenance { get; init; }
+
     /// <summary>Creates explicit placeholder provenance for callback bridges before their request context is known.</summary>
     public static ProviderDataProvenance Unattributed(DateTimeOffset sourceTimestamp) => new(
         "unknown", "unknown", sourceTimestamp, DateTimeOffset.UtcNow, "unknown", "unknown", "unknown",
-        "unknown", "unknown", "unknown", "unknown");
+        "unknown", "unknown", "unknown", "unknown")
+    {
+        DataProvenance = Meridian.Contracts.Operations.DataProvenance.Sample
+    };
 }
 
 /// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>

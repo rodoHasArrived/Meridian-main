@@ -226,8 +226,8 @@
       "id": "SRC-PROVIDER-SDK",
       "path": "src/Meridian.ProviderSdk",
       "readme": "src/Meridian.ProviderSdk/README.md",
-      "readme_hash": "d23062cc46eefe79804be6f5b29a48c1b38991cbb5d98ea2082c288622296012",
-      "source_hash": "8ec0959419ff7275c0ab1a30b1f70cf4d5c26bc719504eecfcdc27de3c7c18ad"
+      "readme_hash": "5283dd07b5f0954a13ed92cc0325bb706e753d32741ed94f8f5c32497d24dcb8",
+      "source_hash": "43005904e814832f9e10f2d1a6a4816163be988bda8f5a6c383c398637453be6"
     },
     {
       "id": "SRC-QUANTSCRIPT",
