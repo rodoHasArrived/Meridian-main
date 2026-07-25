@@ -46,17 +46,15 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m));
 
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the OMS must apply execution reports received via the gateway stream");
-
-        var order = oms.GetOrder(result.OrderId)!;
-        order.FilledQuantity.Should().Be(10m);
-        order.AverageFillPrice.Should().Be(150m);
-
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.OrderId.Should().Be(result.OrderId,
-            because: "stream fills must be forwarded to ExecutionReports consumers");
+            because: "stream fills must be forwarded only after their required side effects complete");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m);
+        order.AverageFillPrice.Should().Be(150m);
     }
 
     [Fact]
@@ -135,12 +133,9 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m));
 
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the completion report must reach tracked order state");
-
         // Reading both published fills is the portfolio barrier: each increment is applied before
         // its report is published, so observing the second one means both have landed. Order
-        // status is not a barrier - see WaitForPublishedFillAsync.
+        // status is not a barrier: the OMS mutates it before applying the fill.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var first = await oms.ExecutionReports.ReadAsync(readCts.Token);
         var second = await oms.ExecutionReports.ReadAsync(readCts.Token);
@@ -148,6 +143,9 @@ public sealed class OrderManagementSystemReportStreamTests
         second.FilledQuantity.Should().Be(5m,
             because: "published fills must carry the increment, not the cumulative quantity");
 
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m);
         portfolio.Positions["AAPL"].Quantity.Should().Be(10,
             because: "cumulative reports must apply as increments (5 + 5), never summed (5 + 10)");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
@@ -179,19 +177,15 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
 
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
-            "the oversized completion report still reaches tracked order state");
-
-        var order = oms.GetOrder(result.OrderId)!;
-        order.FilledQuantity.Should().Be(10m,
-            because: "streamed cumulative fill quantities must be capped to the original order quantity");
-
-        // The published fill is the portfolio barrier - see WaitForPublishedFillAsync.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(10m,
             because: "downstream consumers must receive the validated fill delta, not the oversized broker value");
 
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.FilledQuantity.Should().Be(10m,
+            because: "streamed cumulative fill quantities must be capped to the original order quantity");
         portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "portfolio side effects may only apply the remaining authorized quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
@@ -229,24 +223,18 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 30m, fillPrice: 150m, orderQuantity: 30m));
 
-        // The tracked status flips before the fill reaches the portfolio, so wait on the
-        // effect this test asserts rather than racing the accounting handoff.
-        await WaitUntilAsync(
-            () => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled &&
-                portfolio.Positions.ContainsKey("AAPL"),
-            "the streamed completion report must reach the amended tracked order and the portfolio");
-
-        var order = oms.GetOrder(result.OrderId)!;
-        order.Quantity.Should().Be(30m);
-        order.FilledQuantity.Should().Be(30m,
-            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
-
-        // The published fill is the portfolio barrier - see WaitForPublishedFillAsync.
+        // The published fill is the portfolio barrier: ProcessFillReportAsync applies the fill
+        // and only then writes to the execution-report channel.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
         published.FilledQuantity.Should().Be(30m,
             because: "downstream consumers must receive the full authorized amended fill increment");
 
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.Quantity.Should().Be(30m);
+        order.FilledQuantity.Should().Be(30m,
+            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
         portfolio.Positions["AAPL"].Quantity.Should().Be(30L);
         portfolio.Cash.Should().Be(100_000m - 4_500m);
     }
@@ -276,25 +264,20 @@ public sealed class OrderManagementSystemReportStreamTests
 
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Accepted, ExecutionReportType.Modified, filledQty: 0m, fillPrice: null, orderQuantity: 1_000m));
-        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Accepted,
-            "the unsolicited report still reaches the tracked order");
-
-        oms.GetOrder(result.OrderId)!.Quantity.Should().Be(10m,
-            because: "a gateway report without a local modification must not authorize a larger order");
-
         await gateway.PublishAsync(
             BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 1_000m, fillPrice: 150m));
-        // The tracked status flips before the fill reaches the portfolio, so wait on the
-        // effect this test asserts rather than racing the accounting handoff.
-        await WaitUntilAsync(
-            () => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled &&
-                portfolio.Positions.ContainsKey("AAPL"),
-            "the oversized completion report reaches the tracked order and the portfolio");
 
-        oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
+        // The fill observer is emitted after the preceding modification and all fill side
+        // effects, so it is the deterministic completion barrier for both queued reports.
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        published.FilledQuantity.Should().Be(10m);
 
-        await WaitForPublishedFillAsync(oms, result.OrderId);
-
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Status.Should().Be(OrderStatus.Filled);
+        order.Quantity.Should().Be(10m,
+            because: "a gateway report without a local modification must not authorize a larger order");
+        order.FilledQuantity.Should().Be(10m);
         portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "the portfolio must only receive the originally authorized fill quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
@@ -363,40 +346,6 @@ public sealed class OrderManagementSystemReportStreamTests
             Commission = 0m,
             Timestamp = DateTimeOffset.UtcNow,
         };
-
-    /// <summary>
-    /// Waits until the OMS has published the fill for <paramref name="orderId"/> on its observer
-    /// stream, which is the only barrier these tests have for the portfolio side effect.
-    /// <c>ProcessFillReportAsync</c> applies the fill to the portfolio and only then writes to the
-    /// execution-report channel, so observing the report happens-after the portfolio mutation.
-    /// Order status is not a barrier: the OMS mutates it before calling
-    /// <c>ProcessFillReportAsync</c> at all, so a test that waits on <c>Status == Filled</c> and
-    /// then reads <c>portfolio.Positions</c> is racing an unfinished fill.
-    /// </summary>
-    private static async Task WaitForPublishedFillAsync(OrderManagementSystem oms, string orderId)
-    {
-        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (true)
-        {
-            var report = await oms.ExecutionReports.ReadAsync(readCts.Token);
-            if (report.OrderId == orderId)
-                return;
-        }
-    }
-
-    private static async Task WaitUntilAsync(Func<bool> condition, string because)
-    {
-        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            if (condition())
-                return;
-
-            await Task.Delay(10);
-        }
-
-        condition().Should().BeTrue(because);
-    }
 
     private static async Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> WaitForHandoffFailuresAsync(
         OrderManagementSystem oms,
