@@ -157,7 +157,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
     public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
     public event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
-    public event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, ProviderNewsArticlePayload Article)>? NewsArticleReceived;
     public event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
     public event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
     public event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
@@ -1193,7 +1193,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void newsArticle(int requestId, int articleType, string articleText)
     {
         RecordMessageReceived();
-        NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticle(articleType, articleText)));
+        NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticlePayload(articleType, articleText)));
     }
 
     public void historicalNews(int requestId, string time, string providerCode, string articleId, string headline)

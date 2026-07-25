@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [########################------] 79/100
+  [########################------] 81/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 632 |
-| Total lines | 114,524 |
-| Average file size (lines) | 181.2 |
-| Orphaned files | 258 |
-| Files without headings | 148 |
+| Total documentation files | 1858 |
+| Total lines | 290,976 |
+| Average file size (lines) | 156.6 |
+| Orphaned files | 760 |
+| Files without headings | 207 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 212 |
-| **Health score** | **79/100** |
+| TODO/FIXME markers | 689 |
+| **Health score** | **81/100** |
 
 ### Score Breakdown
 
@@ -44,22 +44,22 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 These files lack a Markdown heading, making them harder to navigate:
 
-- `Meridian Design System/SKILL.md`
-- `Meridian Design System/components/accounting/AccountTree.prompt.md`
-- `Meridian Design System/components/accounting/AgingTable.prompt.md`
-- `Meridian Design System/components/accounting/AllocationEditor.prompt.md`
-- `Meridian Design System/components/accounting/AmountCell.prompt.md`
-- `Meridian Design System/components/accounting/CommitmentBar.prompt.md`
-- `Meridian Design System/components/accounting/FxRevaluationTable.prompt.md`
-- `Meridian Design System/components/accounting/JournalEntryForm.prompt.md`
-- `Meridian Design System/components/accounting/LedgerTable.prompt.md`
-- `Meridian Design System/components/accounting/Money.prompt.md`
-- `Meridian Design System/components/accounting/ReconciliationPanel.prompt.md`
-- `Meridian Design System/components/accounting/StatementTable.prompt.md`
-- `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
-- `Meridian Design System/components/accounting/TrialBalance.prompt.md`
-- `Meridian Design System/components/charts/BarChart.prompt.md`
-- ... and 133 more
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/SKILL.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/CandleChart.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/ChartCard.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/EquityCurve.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Badge.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Button.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Eyebrow.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Input.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/PanelSurface.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/StatusBanner.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/DenseDataTable.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/EntitySummary.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/KeyValueGrid.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/MetricCard.prompt.md`
+- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/shell/NavRail.prompt.md`
+- ... and 192 more
 
 ### Orphaned Documentation
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 238 more
+- ... and 740 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 79 | 632 | 258 | 0 |
+| 1970-01-01 | 81 | 1858 | 760 | 0 |
 
 ---
 

@@ -278,15 +278,18 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     protected int Subscribe(SymbolConfig cfg, string kind)
     {
         ArgumentNullException.ThrowIfNull(cfg);
-        if (!IsSubscriptionAvailable) return -1;
+        if (!IsSubscriptionAvailable)
+            return -1;
         var id = Subscriptions.Subscribe(cfg.Symbol, kind);
-        if (id != -1) ResubscribeAsync(CancellationToken.None).ObserveException(Log, $"Alpaca subscribe {kind} for {cfg.Symbol}");
+        if (id != -1)
+            ResubscribeAsync(CancellationToken.None).ObserveException(Log, $"Alpaca subscribe {kind} for {cfg.Symbol}");
         return id;
     }
 
     protected void Unsubscribe(int subscriptionId)
     {
-        if (Subscriptions.Unsubscribe(subscriptionId) is not null) ResubscribeAsync(CancellationToken.None).ObserveException(Log, "Alpaca unsubscribe");
+        if (Subscriptions.Unsubscribe(subscriptionId) is not null)
+            ResubscribeAsync(CancellationToken.None).ObserveException(Log, "Alpaca unsubscribe");
     }
 
     protected static bool IsConfiguredFeed(string? feed) => !string.IsNullOrWhiteSpace(feed) && !string.Equals(feed, "none", StringComparison.OrdinalIgnoreCase) && !string.Equals(feed, "disabled", StringComparison.OrdinalIgnoreCase);
@@ -341,7 +344,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
         return BuildJsonMessage(writer =>
         {
             writer.WriteString("action", "subscribe");
-            if (symbols.Count > 0) { writer.WritePropertyName("news"); writer.WriteStartArray(); foreach (var symbol in symbols) writer.WriteStringValue(symbol); writer.WriteEndArray(); }
+            if (symbols.Count > 0)
+            { writer.WritePropertyName("news"); writer.WriteStartArray(); foreach (var symbol in symbols) writer.WriteStringValue(symbol); writer.WriteEndArray(); }
         });
     }
 

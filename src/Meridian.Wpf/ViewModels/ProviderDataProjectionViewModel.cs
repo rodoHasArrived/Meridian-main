@@ -36,6 +36,7 @@ public sealed class ProviderDataProjectionViewModel : BindableBase
     private static void Replace<T>(ObservableCollection<T> target, IReadOnlyList<T> source)
     {
         target.Clear();
-        foreach (var item in source) target.Add(item);
+        foreach (var item in source)
+            target.Add(item);
     }
 }

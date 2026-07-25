@@ -59,6 +59,14 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
     public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderContractDetails Details)>? ContractDetailsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsArticlePayload Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderFundamentalReport Report)>? FundamentalReportReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderTickByTickObservation Observation)>? TickByTickReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<Meridian.ProviderSdk.ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionContract Contract)>? OptionContractReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderScannerResult Result)>? ScannerResultReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderRealTimeBar Bar)>? RealTimeBarReceived;

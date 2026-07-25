@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;

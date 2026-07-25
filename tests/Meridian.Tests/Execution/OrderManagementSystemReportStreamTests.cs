@@ -182,7 +182,7 @@ public sealed class OrderManagementSystemReportStreamTests
         var order = oms.GetOrder(result.OrderId)!;
         order.FilledQuantity.Should().Be(10m,
             because: "streamed cumulative fill quantities must be capped to the original order quantity");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "portfolio side effects may only apply the remaining authorized quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
 
@@ -231,7 +231,7 @@ public sealed class OrderManagementSystemReportStreamTests
         order.Quantity.Should().Be(30m);
         order.FilledQuantity.Should().Be(30m,
             because: "fills must be capped to the broker-accepted amended quantity, not the original request");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(30m);
+        portfolio.Positions["AAPL"].Quantity.Should().Be(30L);
         portfolio.Cash.Should().Be(100_000m - 4_500m);
 
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -277,7 +277,7 @@ public sealed class OrderManagementSystemReportStreamTests
             "the oversized completion report reaches the tracked order");
 
         oms.GetOrder(result.OrderId)!.FilledQuantity.Should().Be(10m);
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "the portfolio must only receive the originally authorized fill quantity");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
@@ -318,7 +318,7 @@ public sealed class OrderManagementSystemReportStreamTests
         order.Status.Should().Be(OrderStatus.Filled);
         order.FilledQuantity.Should().Be(10m,
             because: "late reports for terminal orders must not resize completed orders");
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             because: "late reports for terminal orders must not apply additional portfolio fills");
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }

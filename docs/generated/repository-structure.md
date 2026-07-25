@@ -882,6 +882,7 @@ Meridian-main
 │   │   ├── ci.yml
 │   │   ├── codeql.yml
 │   │   ├── copilot-setup-steps.yml
+│   │   ├── demo-smoke.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
 │   │   ├── desktop-standalone-publish.yml
@@ -889,6 +890,7 @@ Meridian-main
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
 │   │   ├── golden-path-validation.yml
+│   │   ├── ibapi-runtime.yml
 │   │   ├── ibapi-smoke.yml
 │   │   ├── maintenance.yml
 │   │   ├── meridian-ci.yml
@@ -1348,7 +1350,8 @@ Meridian-main
 │   │   │   ├── meridian-operational-record-context.mmd
 │   │   │   ├── meridian-operational-record-flow.mmd
 │   │   │   ├── meridian-paper-session-replay-flow.mmd
-│   │   │   └── meridian-source-layer-map.mmd
+│   │   │   ├── meridian-source-layer-map.mmd
+│   │   │   └── meridian-storage-topology.mmd
 │   │   ├── c4-diagrams.md
 │   │   ├── core-extensibility-model.md
 │   │   ├── crystallized-storage-format.md
@@ -1856,6 +1859,7 @@ Meridian-main
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
 │   │   ├── governance-report-packs.md
+│   │   ├── interactive-brokers-api-compatibility.md
 │   │   ├── ledger-journal-store.md
 │   │   ├── lifecycle-control-plane.md
 │   │   ├── oms-ems-integration.md
@@ -3148,6 +3152,7 @@ Meridian-main
 │   │   │   ├── manual-strategy-and-trading.json
 │   │   │   └── screenshot-catalog.json
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── build-ibapi-vendor.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── capture-web-screenshots.mjs
 │   │   ├── check-meridian-process-lifecycle.ps1
@@ -3219,6 +3224,7 @@ Meridian-main
 │   │   ├── app.ico
 │   │   ├── app.manifest
 │   │   ├── DashboardServerBridge.cs
+│   │   ├── DemoWorkspaceCli.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── HostedBrokerageGatewayRuntimeSurfaceCatalog.cs
 │   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
@@ -3718,6 +3724,7 @@ Meridian-main
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── ConnectivityProbeOptions.cs
+│   │   │   ├── DemoWorkspaceLayout.cs
 │   │   │   ├── DerivativesConfigDto.cs
 │   │   │   ├── MeridianPathDefaults.cs
 │   │   │   ├── ProviderConnectionDtos.cs
@@ -4165,11 +4172,14 @@ Meridian-main
 │   │   ├── Meridian.DataIntegration.csproj
 │   │   └── README.md
 │   ├── Meridian.Documents
+│   │   ├── ClientGradeReportRenderer.cs
 │   │   ├── DesignModule.cs
+│   │   ├── DeterministicDocumentPackaging.cs
 │   │   ├── DocumentsServiceCollectionExtensions.cs
 │   │   ├── FinancialReportDocumentRenderer.cs
 │   │   ├── Meridian.Documents.csproj
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── ReportDocumentModel.cs
 │   ├── Meridian.Domain
 │   │   ├── Collectors
 │   │   │   ├── IQuoteStateStore.cs
@@ -4592,6 +4602,7 @@ Meridian-main
 │   ├── Meridian.Infrastructure
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
+│   │   │   │   ├── AlpacaAssetStreamAdapters.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaConstants.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
@@ -4599,7 +4610,9 @@ Meridian-main
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
-│   │   │   │   └── AlpacaSymbolSearchProvider.cs
+│   │   │   │   ├── AlpacaStreamProfiles.cs
+│   │   │   │   ├── AlpacaSymbolSearchProvider.cs
+│   │   │   │   └── AlpacaTradeUpdatesClient.cs
 │   │   │   ├── AlphaVantage
 │   │   │   │   ├── AlphaVantageCorporateActionProvider.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProvider.cs
@@ -4675,6 +4688,9 @@ Meridian-main
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
 │   │   │   │   ├── IBCanonicalPayloadMapper.cs
+│   │   │   │   ├── IBDataResultMaterializer.cs
+│   │   │   │   ├── IBDataServices.cs
+│   │   │   │   ├── IBDurableResultStore.cs
 │   │   │   │   ├── IBHistoricalDataProvider.cs
 │   │   │   │   ├── IBMarketDataClient.cs
 │   │   │   │   └── IBSimulationClient.cs
@@ -5103,17 +5119,24 @@ Meridian-main
 │   │   ├── IHistoricalBarWriter.cs
 │   │   ├── IHistoricalDataSource.cs
 │   │   ├── IMarketDataClient.cs
+│   │   ├── IMarketRuleProvider.cs
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── IOptionsChainProvider.cs
 │   │   ├── IProviderConnectionDiagnosticsSource.cs
+│   │   ├── IProviderDataReadService.cs
 │   │   ├── IProviderFamilyAdapter.cs
+│   │   ├── IProviderInstrumentDiscoveryService.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
 │   │   ├── IProviderModuleConnectionProbe.cs
 │   │   ├── IProviderModuleCredentialHints.cs
 │   │   ├── IProviderModuleSettingsSchema.cs
+│   │   ├── IProviderNewsService.cs
+│   │   ├── IProviderPnlStream.cs
 │   │   ├── IProviderRateLimitDiagnosticsSource.cs
+│   │   ├── IProviderScannerService.cs
 │   │   ├── IRealtimeDataSource.cs
+│   │   ├── ITradingCalendarProvider.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
@@ -5534,6 +5557,7 @@ Meridian-main
 │   │   │   └── ParquetStorageSink.cs
 │   │   ├── Store
 │   │   │   ├── CompositeMarketDataStore.cs
+│   │   │   ├── JsonFileIBDataResultStore.cs
 │   │   │   ├── JsonFileSnapshotStore.cs
 │   │   │   └── JsonlMarketDataStore.cs
 │   │   ├── GlobalUsings.cs
@@ -6685,6 +6709,7 @@ Meridian-main
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
+│   │   │   ├── ProviderDataProjectionEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── ProviderModuleEndpoints.cs
@@ -6718,6 +6743,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.FamilyOffice.cs
 │   │   │   ├── WorkstationEndpoints.FeatureCapabilities.cs
 │   │   │   ├── WorkstationEndpoints.FinancialRecordExplorers.cs
+│   │   │   ├── WorkstationEndpoints.IBResults.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
@@ -6816,6 +6842,7 @@ Meridian-main
 │   │   │   ├── DailyValuationScheduler.cs
 │   │   │   ├── DemoTenantBlueprint.cs
 │   │   │   ├── DemoTenantProvisioner.cs
+│   │   │   ├── DemoWorkspaceSeeder.cs
 │   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
@@ -6834,6 +6861,7 @@ Meridian-main
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── GovernedReportingTemplateCatalog.cs
 │   │   │   ├── IBackfillProviderConfigAuditReader.cs
+│   │   │   ├── IBResultQueryService.cs
 │   │   │   ├── IngestionOperationsService.cs
 │   │   │   ├── InitialAccountBootstrapService.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
@@ -6859,6 +6887,7 @@ Meridian-main
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── ProviderCredentialStore.cs
+│   │   │   ├── ProviderDataReadModelService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.CorporateActions.cs
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.Outcomes.cs
@@ -6878,6 +6907,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
 │   │   │   ├── ReportingReconciliationEvidenceStore.cs
 │   │   │   ├── ReportingRunCertificationService.cs
@@ -7368,6 +7398,7 @@ Meridian-main
 │   │   │   ├── PortfolioImportViewModel.cs
 │   │   │   ├── PositionBlotterViewModel.cs
 │   │   │   ├── ProviderAccountingViewModel.cs
+│   │   │   ├── ProviderDataProjectionViewModel.cs
 │   │   │   ├── ProviderHealthViewModel.cs
 │   │   │   ├── ProviderHealthViewModel.Sections.cs
 │   │   │   ├── ProviderPageModels.cs
@@ -8012,6 +8043,7 @@ Meridian-main
 │   │   │   │   ├── GracefulShutdownTests.cs
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── ProviderTradingCalendarContractsTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
@@ -8137,6 +8169,10 @@ Meridian-main
 │   │   │   │       └── SequenceErrorTrackerTests.cs
 │   │   │   ├── CredentialStoreExtensionsTests.cs
 │   │   │   └── MarketEventFilterTests.cs
+│   │   ├── Demo
+│   │   │   ├── DemoWorkspaceGuardTests.cs
+│   │   │   ├── DemoWorkspaceSeederTests.cs
+│   │   │   └── DemoWorkspaceSmokeTests.cs
 │   │   ├── Deposits
 │   │   │   └── DepositProjectionServiceTests.cs
 │   │   ├── Derivatives
@@ -8284,6 +8320,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
+│   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -8291,6 +8328,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
+│   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
 │   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
 │   │   │   │   ├── AlphaVantageSymbolSearchProviderTests.cs
@@ -8312,6 +8350,7 @@ Meridian-main
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
+│   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
@@ -8339,6 +8378,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
+│   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
@@ -8509,6 +8549,7 @@ Meridian-main
 │   │   │   ├── DataSourceAttributeTests.cs
 │   │   │   ├── DataSourceRegistryTests.cs
 │   │   │   ├── ExceptionTypeTests.cs
+│   │   │   ├── OptionalProviderCapabilityContractsTests.cs
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Reconciliation
@@ -8681,6 +8722,7 @@ Meridian-main
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
+│   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
@@ -8842,6 +8884,7 @@ Meridian-main
 │   │   │   ├── FamilyOfficeContractTests.cs
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
 │   │   │   ├── FileFundProfileTenancyRegistryTests.cs
+│   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
@@ -8863,6 +8906,7 @@ Meridian-main
 │   │   │   ├── PromotionDecisionChainScenarioTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
+│   │   │   ├── ProviderDataProjectionEndpointsTests.cs
 │   │   │   ├── ProviderEndpointProjectionTests.cs
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
@@ -9154,6 +9198,7 @@ Meridian-main
 │   │   │   ├── PortfolioImportViewModelTests.cs
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── ProviderAccountingViewModelTests.cs
+│   │   │   ├── ProviderDataProjectionViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── ProviderViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
@@ -9288,6 +9333,7 @@ Meridian-main
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_mixed_credit_status_set.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
+│   │   ├── test_production_certification_workflow.py
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
@@ -9358,7 +9404,8 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   └── shared-pattern-suggest.ps1
+│   │   ├── shared-pattern-suggest.ps1
+│   │   └── test-gap-scan.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

@@ -8,6 +8,7 @@ using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -150,10 +151,24 @@ public sealed class RiskEndpointsTests
             services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
             services.AddSingleton<IPositionTracker, StaticPositionTracker>();
-            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance));
-            services.AddSingleton<OperatorRiskRuleService>();
-            services.AddSingleton<IRiskValidator>(sp => sp.GetRequiredService<OperatorRiskRuleService>());
+            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton<IRiskValidator>(sp =>
+            {
+                var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+                return new Meridian.Risk.CompositeRiskValidator(
+                    [
+                        new DrawdownGuardrailRule(runtime),
+                        new Meridian.Risk.Rules.OrderRateThrottle(
+                            () => runtime.MaxOrdersPerMinute,
+                            NullLogger<Meridian.Risk.Rules.OrderRateThrottle>.Instance),
+                    ],
+                    NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance);
+            });
             services.AddSingleton<IScopedAuthorizationService>(_ => new AccountScopedAuthorizationService(allowedAccountId));
+            services.AddSingleton<IAccountQueryService>(_ => new StubAccountQueryService(allowedAccountId));
             services.AddSingleton<IOrderManager>(sp =>
                 new OrderManagementSystem(
                     sp.GetRequiredService<IExecutionGateway>(),

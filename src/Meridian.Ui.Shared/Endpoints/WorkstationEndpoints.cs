@@ -55,7 +55,6 @@ public static partial class WorkstationEndpoints
     private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
     private const string PortfolioApiRoutePrefix = "/api/portfolio";
-
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation")

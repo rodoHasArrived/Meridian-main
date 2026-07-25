@@ -16,11 +16,9 @@ public interface IEvidenceArtifactStore
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
         CancellationToken ct = default);
-
     Task<EvidenceVaultIntakeResponseDto> WriteIntakeArtifactAsync(
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default);
-
     Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
@@ -46,20 +44,17 @@ public interface IEvidenceArtifactStore
     Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
         EvidenceVaultDocumentQueryDto query,
         CancellationToken ct = default);
-
     Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
         EvidenceVaultDocumentReviewRequestDto request,
         CancellationToken ct = default);
 }
-
 public sealed record EvidenceManifestFile(
     Stream Content,
     string ContentType,
     string FileName,
     DateTimeOffset LastModified);
-
 public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";
@@ -92,10 +87,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.PaymentIntentKind,
         EvidenceSubjectResolver.ReportPackDeliveryKind
     };
-
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
-
     // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
     // only makes each single write atomic; without this, concurrent document reviews on the
     // same vault could read the same snapshot and silently clobber each other's updates.
@@ -107,14 +100,12 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
-
     public FileEvidenceArtifactStore(string dataRoot, ILogger<FileEvidenceArtifactStore> logger)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
     }
-
     public async Task<EvidencePacketExportResponse> WriteManifestAsync(
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,

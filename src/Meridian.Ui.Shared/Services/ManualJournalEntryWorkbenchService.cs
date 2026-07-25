@@ -275,7 +275,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
         {
-            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing);
+            EnsureRequestedLedgerBookMatchesDraft(
+                request.LedgerBookId,
+                existing,
+                requireScopeForBookScopedDraft: true);
         }
         if (existing is not null && existing.Version != request.Draft.Version)
         {

@@ -46,54 +46,44 @@ public interface IOperationsContinuityWorkflowService
         Guid workflowId,
         OperationsLedgerDraftRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> ValidateLedgerDraftAsync(
         Guid workflowId,
         OperationsLedgerValidationRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(
         Guid workflowId,
         OperationsLedgerPostRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> RunReconciliationAsync(
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> ResolveBreakCaseAsync(
         Guid workflowId,
         string breakId,
         OperationsResolveBreakCaseRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> AssignBreakCaseAsync(
         Guid workflowId,
         string breakId,
         OperationsAssignBreakCaseRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> SubmitForApprovalAsync(
         Guid workflowId,
         OperationsSubmitApprovalRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> ApproveWorkflowAsync(
         Guid workflowId,
         OperationsApprovalDecisionRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> RejectWorkflowAsync(
         Guid workflowId,
         OperationsRejectWorkflowRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> CloseWorkflowAsync(
         Guid workflowId,
         OperationsCloseWorkflowRequestDto request,
         CancellationToken ct = default);
-
     Task<OperationsTransitionResultDto> ReopenWorkflowAsync(
         Guid workflowId,
         OperationsReopenWorkflowRequestDto request,

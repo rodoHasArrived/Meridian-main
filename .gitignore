@@ -293,3 +293,4 @@ __pycache__/
 
 # Provider credential sidecar — contains plaintext credentials; never commit
 provider-credentials.json
+tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs

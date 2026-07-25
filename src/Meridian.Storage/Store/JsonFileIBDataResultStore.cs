@@ -44,8 +44,10 @@ public sealed class JsonFileIBDataResultStore : IIBDataResultStore
     public async ValueTask<IReadOnlyList<IBDataResult>> QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
-        if (query.Limit < 1) throw new ArgumentOutOfRangeException(nameof(query), "Limit must be positive.");
-        if (query.CapturedFrom > query.CapturedTo) throw new ArgumentException("CapturedFrom must not be after CapturedTo.", nameof(query));
+        if (query.Limit < 1)
+            throw new ArgumentOutOfRangeException(nameof(query), "Limit must be positive.");
+        if (query.CapturedFrom > query.CapturedTo)
+            throw new ArgumentException("CapturedFrom must not be after CapturedTo.", nameof(query));
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -63,7 +65,8 @@ public sealed class JsonFileIBDataResultStore : IIBDataResultStore
 
     private async Task<Dictionary<string, IBDataResult>> ReadUnsafeAsync(CancellationToken cancellationToken)
     {
-        if (!File.Exists(_path)) return new(StringComparer.Ordinal);
+        if (!File.Exists(_path))
+            return new(StringComparer.Ordinal);
         await using var stream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
         var values = await JsonSerializer.DeserializeAsync<IBDataResult[]>(stream, JsonOptions, cancellationToken).ConfigureAwait(false) ?? [];
         return values.ToDictionary(x => x.ResultIdentity, StringComparer.Ordinal);

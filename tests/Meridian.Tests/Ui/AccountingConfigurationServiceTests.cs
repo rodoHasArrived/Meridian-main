@@ -2001,7 +2001,8 @@ public sealed class AccountingConfigurationServiceTests
 
         var editSubmitted = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             submitted with { Memo = "Attempted edit while submitted." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: submitted.LedgerBookId));
 
         await editSubmitted.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Submitted and cannot be edited through draft save*");
@@ -2028,7 +2029,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalReviewEvidence(submitted)]));
         var repaired = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             rejected.JournalEntry with { Memo = "Corrected after rejection." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: rejected.JournalEntry.LedgerBookId));
 
         repaired.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         repaired.Version.Should().Be(rejected.JournalEntry.Version + 1);
@@ -2061,7 +2063,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalApprovalEvidence(resubmitted)]));
         var editApproved = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             approved.JournalEntry with { Memo = "Attempted edit while approved." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
 
         await editApproved.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Approved and cannot be edited through draft save*");
@@ -2076,7 +2079,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
         var editPosted = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             posted.JournalEntry with { Memo = "Attempted edit after posting." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
 
         await editPosted.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Posted and cannot be edited through draft save*");

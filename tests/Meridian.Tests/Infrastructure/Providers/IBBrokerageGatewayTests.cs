@@ -127,7 +127,7 @@ public sealed class IBBrokerageGatewayTests
 
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*EnableIbApiVendor=true*")
-            .WithMessage("*interactive-brokers-setup.md*");
+            .WithMessage("*provider-onboarding-interactive-brokers.md*");
     }
 #endif
 

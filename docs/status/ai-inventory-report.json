@@ -4,12 +4,12 @@
   "repositoryName": "Meridian-main",
   "status": "pass",
   "summary": {
-    "inventoryCount": 321,
+    "inventoryCount": 322,
     "findingCount": 0,
     "bySurface": {
       "agent-skills-compatible-hosts": 18,
       "claude": 46,
-      "codex": 145,
+      "codex": 146,
       "docs-ai": 41,
       "github-actions": 2,
       "github-copilot": 44,
@@ -23,7 +23,7 @@
       "agent-profile": 59,
       "ai-doc": 41,
       "ai-workflow": 1,
-      "codex-tool": 9,
+      "codex-tool": 10,
       "config": 3,
       "copilot-workflow": 1,
       "entrypoint": 2,
@@ -1642,6 +1642,19 @@
       "kind": "codex-tool",
       "name": "shared-pattern-suggest.ps1",
       "path": "tools/codex/shared-pattern-suggest.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "test-gap-scan.ps1",
+      "path": "tools/codex/test-gap-scan.ps1",
       "expected_docs": [
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/codex/README.md"

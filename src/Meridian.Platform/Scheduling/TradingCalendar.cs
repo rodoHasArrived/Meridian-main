@@ -9,7 +9,7 @@ namespace Meridian.Platform.Scheduling;
 /// - Regular, pre-market, and after-hours session times
 /// - Timezone-aware market status queries
 /// </summary>
-public sealed class TradingCalendar : IOperationalTradingCalendar, ITradingCalendarProvider
+public sealed class TradingCalendar : IOperationalTradingCalendar
 {
     private readonly TimeZoneInfo _easternTimeZone;
 
@@ -327,9 +327,9 @@ public sealed class TradingCalendar : IOperationalTradingCalendar, ITradingCalen
         return _halfDays.Where(d => d.Year == year).OrderBy(d => d).ToList();
     }
 
-    bool ITradingCalendarProvider.IsTradingDay(DateOnly date, string market) => IsTradingDay(date);
+    bool IOperationalTradingCalendar.IsTradingDay(DateOnly date, string market) => IsTradingDay(date);
 
-    IReadOnlyList<TradingSession> ITradingCalendarProvider.GetTradingSessions(DateOnly date, string market)
+    IReadOnlyList<TradingSession> IOperationalTradingCalendar.GetTradingSessions(DateOnly date, string market)
     {
         if (!IsTradingDay(date))
             return [];
@@ -364,9 +364,9 @@ public sealed class TradingCalendar : IOperationalTradingCalendar, ITradingCalen
         return sessions;
     }
 
-    DateOnly ITradingCalendarProvider.GetNextTradingDay(DateOnly after, string market) => GetNextTradingDay(after);
+    DateOnly IOperationalTradingCalendar.GetNextTradingDay(DateOnly after, string market) => GetNextTradingDay(after);
 
-    IReadOnlyList<DateOnly> ITradingCalendarProvider.GetHolidays(int year, string market)
+    IReadOnlyList<DateOnly> IOperationalTradingCalendar.GetHolidays(int year, string market)
         => GetHolidays(year).Select(holiday => holiday.Date).ToList();
 
     private bool ContainsHoliday(DateOnly date)

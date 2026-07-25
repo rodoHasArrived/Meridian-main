@@ -55,19 +55,21 @@ public sealed class JsonIBDurableResultStore : IBDurableResultStore
 
     private Dictionary<string, IBDurableResult> Load()
     {
-        if (_results is not null) return _results;
-        if (!File.Exists(_path)) return _results = new();
+        if (_results is not null)
+            return _results;
+        if (!File.Exists(_path))
+            return _results = new();
         var values = JsonSerializer.Deserialize<List<IBDurableResult>>(File.ReadAllText(_path)) ?? [];
         return _results = values.ToDictionary(x => $"{x.TenantId}:{x.Request.RequestId}", StringComparer.Ordinal);
     }
 }
 
 /// <summary>Materializes callback updates without treating a submitted request as live entitlement.</summary>
-public sealed class IBDataResultMaterializer
+public sealed class IBDurableResultProjector
 {
     private readonly IBDurableResultStore _store;
     private readonly Func<string> _tenantResolver;
-    public IBDataResultMaterializer(IBDurableResultStore store, Func<string>? tenantResolver = null)
+    public IBDurableResultProjector(IBDurableResultStore store, Func<string>? tenantResolver = null)
     { _store = store; _tenantResolver = tenantResolver ?? (() => "system"); }
     public void Materialize(ProviderDataRequestReadModel request, IBDataLineage? lineage)
         => _store.Upsert(_tenantResolver(), request, lineage);

@@ -885,12 +885,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         {
             var acquisition = requested?.Acquisition
                 ?? throw new InvalidOperationException("Acquisition requires a retained lot instruction.");
-            var assetLines = source.ProjectedEffect!.Lines
+            var acquisitionAssetLines = source.ProjectedEffect!.Lines
                 .Where(line => string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal))
                 .ToArray();
-            RequireAssertion(assetLines.Length == 1 &&
-                             assetLines[0].Debit == source.EventAmount &&
-                             assetLines[0].Credit == 0m,
+            RequireAssertion(acquisitionAssetLines.Length == 1 &&
+                             acquisitionAssetLines[0].Debit == source.EventAmount &&
+                             acquisitionAssetLines[0].Credit == 0m,
                 "Acquisition projected accounting must contain exactly one authorized asset-account debit for the lot cost.");
             return requested;
         }

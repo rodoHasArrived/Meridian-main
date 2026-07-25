@@ -68,7 +68,7 @@ public sealed class CookieCsrfProtectionTests
         IPAddress remoteAddress,
         IPAddress localAddress,
         bool isHttps,
-        string environmentName = Environments.Production,
+        string environmentName = "Production",
         MeridianDeploymentPosture deploymentPosture = MeridianDeploymentPosture.Unspecified)
     {
         var services = new ServiceCollection()
