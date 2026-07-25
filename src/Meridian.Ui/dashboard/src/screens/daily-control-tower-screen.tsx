@@ -10,6 +10,7 @@ import { KeyValueGrid } from "@/components/data/concrete";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
+import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
 import {
   badgeVariantToSeverityStatus,
   readinessToneToSeverityStatus
@@ -18,9 +19,18 @@ import {
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
   trustStrip: AppShellTrustStripState;
+  onEditOperatingScope?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
+export function DailyControlTowerScreen({
+  viewModel,
+  trustStrip,
+  onEditOperatingScope,
+  onRefresh,
+  refreshing = false
+}: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
   // Triage-in-place: the operator can inspect any queue row's evidence without
   // leaving the tower. Falls back to the top-ranked row until one is chosen
@@ -28,12 +38,12 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
   const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
   const selectedQueueRow =
     model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
-  const sourceEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "source");
   const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
   const freshness = buildTowerFreshness(
     selectedQueueRow?.proof?.timestampIso,
     freshnessEvidence?.detail
   );
+  const providerTrust = trustStrip.items.find((item) => item.id === "providers") ?? null;
   const trustTone: OperationalTrustTone = model.statusTone === "ready"
     ? "ready"
     : model.statusTone === "blocked"
@@ -76,19 +86,46 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
       <OperationalTrustSummary
         label="Daily control tower confidence"
         source={{
-          value: sourceEvidence?.value ?? model.ownerLabel,
-          detail: sourceEvidence?.detail ?? "Workspace supplying the leading decision",
-          tone: trustTone
+          label: "Connectivity",
+          value: providerTrust?.value ?? "Provider posture unavailable",
+          detail: providerTrust?.detail ?? "Provider connectivity evidence has not loaded.",
+          tone: providerTrust ? operationalTrustToneFromStrip(providerTrust.tone) : "unknown",
+          action: providerTrust?.href && providerTrust.actionLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={appendOperatingScopeToRoute(providerTrust.href, viewModel.operatingScope)}>
+                {providerTrust.actionLabel}
+              </Link>
+            </Button>
+          ) : null
         }}
         scope={{
-          value: model.ownerLabel,
-          detail: model.outputLabel,
-          tone: selectedQueueRow ? "ready" : "unknown"
+          value: viewModel.operatingScope.summary,
+          detail: viewModel.operatingScope.hasScope
+            ? "Applied to compatible workstation routes."
+            : "Choose a fund, account, run, provider, symbol, or date window.",
+          tone: viewModel.operatingScope.hasScope ? "ready" : "review",
+          action: onEditOperatingScope ? (
+            <Button type="button" variant="outline" size="sm" onClick={onEditOperatingScope}>
+              {viewModel.operatingScope.hasScope ? "Change scope" : "Set operating scope"}
+            </Button>
+          ) : null
         }}
         freshness={{
           value: freshness.value,
           detail: freshness.detail,
-          tone: freshness.tone
+          tone: freshness.tone,
+          action: onRefresh ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+              onClick={onRefresh}
+            >
+              {refreshing ? "Refreshing" : "Refresh evidence"}
+            </Button>
+          ) : null
         }}
         completeness={{
           value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
@@ -252,4 +289,19 @@ function buildTowerFreshness(
     detail: detail ?? "Latest evidence for the leading decision.",
     tone: stale ? "review" : "ready"
   };
+}
+
+function operationalTrustToneFromStrip(
+  tone: AppShellTrustStripState["items"][number]["tone"]
+): OperationalTrustTone {
+  switch (tone) {
+    case "ready":
+      return "ready";
+    case "review":
+      return "review";
+    case "blocked":
+      return "blocked";
+    case "pending":
+      return "unknown";
+  }
 }

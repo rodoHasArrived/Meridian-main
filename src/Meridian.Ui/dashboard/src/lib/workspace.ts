@@ -5,7 +5,7 @@ export const WORKSPACES: WorkspaceSummary[] = WORKSPACE_DEFINITIONS.map((workspa
   key: workspace.key as WorkspaceKey,
   label: workspace.label,
   description: workspace.description,
-  status: workspace.status
+  maturity: workspace.maturity
 }));
 
 export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> = {
@@ -321,7 +321,7 @@ export function canonicalizeWorkspaceSummaries(workspaces: WorkspaceSummary[]): 
     .filter((workspace) => inputByKey.has(workspace.key))
     .map((workspace) => ({
       ...workspace,
-      status: inputByKey.get(workspace.key)?.status ?? workspace.status
+      maturity: inputByKey.get(workspace.key)?.maturity ?? workspace.maturity
     }));
 }
 

@@ -112,7 +112,6 @@ describe("app shell view model", () => {
     expect(statusPanelSource).toContain('title: "Workspace data unavailable"');
     expect(trustStripSource).toContain("export function buildTrustStripState");
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
-    expect(trustStripSource).toContain("function titleCase");
     expect(trustStripSource).toContain("function formatCount");
     expect(trustStripSource).toContain("packageJson.version");
     expect(trustStripSource).toContain("Provider posture has not loaded yet.");
@@ -384,7 +383,7 @@ describe("app shell view model", () => {
     });
 
     expect(state.trustStrip).toMatchObject({
-      ariaLabel: "Workstation build, mode, data source, and provider posture",
+      ariaLabel: "Workstation build, environment, provenance, and provider posture",
       items: [
         {
           id: "build",
@@ -394,18 +393,18 @@ describe("app shell view model", () => {
         },
         {
           id: "mode",
-          label: "Mode",
+          label: "Environment",
           value: "Paper",
           tone: "ready"
         },
         {
           id: "source",
-          label: "Source",
-          value: "Demo data",
-          tone: "pending",
-          detail: "Demo data is visible; confirm live source status before making operating decisions.",
-          href: "/settings#backend-capability-coverage",
-          actionLabel: "Open diagnostics"
+          label: "Provenance",
+          value: "SEEDED",
+          tone: "review",
+          detail: "Seeded demo data. This is seeded demo data shipped without live credentials. It is not real market or account data.",
+          href: "/data/providers",
+          actionLabel: "Connect live source"
         },
         {
           id: "providers",
@@ -417,6 +416,93 @@ describe("app shell view model", () => {
           actionLabel: "Open provider posture"
         }
       ]
+    });
+  });
+
+  it("keeps environment, provenance, and provider operator state independent", () => {
+    const liveSimulatedState = buildAppShellViewState({
+      pathname: "/data/providers",
+      operatingContextSymbol: "MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "simulated",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "live"
+        },
+        data: {
+          metrics: [],
+          providers: [
+            {
+              provider: "Databento",
+              status: "Blocked",
+              capability: "market-data",
+              latency: "timeout",
+              note: "Credential verification failed."
+            }
+          ],
+          backfills: [],
+          exports: []
+        }
+      }
+    });
+
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Live",
+      tone: "review",
+      href: "/trading/readiness"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "SIMULATED",
+      tone: "review",
+      href: "/data/providers"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
+      value: "1 blocked",
+      tone: "blocked",
+      href: "/data/providers",
+      actionLabel: "Open provider posture"
+    });
+    expect(liveSimulatedState.workflowContinuity.operatorFocusItems).toContainEqual(
+      expect.objectContaining({
+        label: "Databento provider blocked",
+        tone: "blocked"
+      })
+    );
+    expect(liveSimulatedState.workflowContinuity.linkedContextItems).toContainEqual(
+      expect.objectContaining({
+        statusLabel: "Provider blocked",
+        tone: "blocked"
+      })
+    );
+
+    const researchRealState = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "real",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "research"
+        }
+      }
+    });
+
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Demo",
+      detail: "Session Ops is operating in research mode, shown as Demo."
+    });
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
   });
 
@@ -476,6 +562,7 @@ describe("app shell view model", () => {
       workspaceErrors: {
         data: "Provider posture timed out."
       },
+      dataProvenance: "real",
       payload: {
         ...emptyPayload,
         session: {
@@ -490,20 +577,22 @@ describe("app shell view model", () => {
 
     expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Live",
-      tone: "blocked",
+      tone: "review",
       href: "/trading/readiness",
       actionLabel: "Review readiness"
     });
     expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
-      value: "Limited data",
-      tone: "review",
-      href: "/settings#backend-capability-coverage",
-      actionLabel: "Open diagnostics"
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
     expect(state.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
-      value: "Pending",
-      href: "/data/providers",
-      actionLabel: "Open provider posture"
+      value: "Unavailable",
+      tone: "blocked",
+      detail: "Data workspace failed: Provider posture timed out.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Open diagnostics"
     });
   });
 

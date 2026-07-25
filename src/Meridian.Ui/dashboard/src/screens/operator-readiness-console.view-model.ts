@@ -804,7 +804,11 @@ function buildProviderTrustRows(
         provider.signalSource,
         provider.gateImpact
       ].filter(Boolean).join(" · ") || provider.capability,
-      level: provider.status === "Healthy" ? "ready" : provider.status === "Degraded" ? "blocked" : "review"
+      level: provider.status === "Healthy"
+        ? "ready"
+        : provider.status === "Degraded" || provider.status === "Blocked"
+          ? "blocked"
+          : "review"
     });
   });
 

@@ -20,6 +20,7 @@ import {
   buildTrustStripState,
   type AppShellTrustStripState
 } from "@/app-shell.trust-strip";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-types";
@@ -121,6 +122,7 @@ export interface BuildAppShellViewStateOptions {
   workflowError?: string | null;
   workspaceErrors: WorkspaceErrorMap;
   usingDevelopmentFixtures?: boolean;
+  dataProvenance?: DataProvenanceKind;
   payload: AppShellWorkspacePayload;
 }
 
@@ -136,6 +138,7 @@ export function buildAppShellViewState({
   workflowError = null,
   workspaceErrors,
   usingDevelopmentFixtures = false,
+  dataProvenance,
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
@@ -167,6 +170,7 @@ export function buildAppShellViewState({
       loading,
       bootstrapFailed,
       usingDevelopmentFixtures,
+      dataProvenance,
       workspaceErrors,
       session: payload.session,
       data: payload.data

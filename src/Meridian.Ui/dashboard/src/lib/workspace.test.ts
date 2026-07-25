@@ -155,8 +155,20 @@ describe("workspace metadata", () => {
   it("returns workspace summaries for canonical keys", () => {
     expect(workspaceForKey("reporting")).toMatchObject({
       label: "Reporting",
-      status: "Review"
+      maturity: "Available"
     });
+  });
+
+  it("keeps product maturity separate from environment and operator state", () => {
+    expect(WORKSPACES.map((workspace) => [workspace.key, workspace.maturity])).toEqual([
+      ["trading", "Available"],
+      ["portfolio", "Preview"],
+      ["accounting", "Available"],
+      ["reporting", "Available"],
+      ["strategy", "Available"],
+      ["data", "Available"],
+      ["settings", "Setup"]
+    ]);
   });
 
   it("resolves route breadcrumb labels from the centralized workstation route registry", () => {

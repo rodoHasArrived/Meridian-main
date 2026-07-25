@@ -1614,7 +1614,8 @@ describe("AccountingScreen", () => {
     await waitForAsyncEffects();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Accounting task modes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
   });
 
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
@@ -3459,12 +3460,7 @@ describe("AccountingScreen", () => {
     const caseQueue = screen.getByRole("region", { name: "Accounting case queue" });
     expect(caseQueue).not.toHaveTextContent("LEDGER_VALIDATION_REQUIRED");
     expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
-    // The recovery navigator is replaced by the route tab strip in the header.
-    const routeTabs = screen.getByRole("tablist", { name: "Accounting routes" });
-    expect(within(routeTabs).getByRole("tab", { name: "Close" })).toHaveAttribute("aria-selected", "true");
-    expect(within(routeTabs).getByRole("tab", { name: "Reconciliation" })).toBeInTheDocument();
-    expect(within(routeTabs).getByRole("tab", { name: "Adjustments" })).toBeInTheDocument();
-    expect(within(routeTabs).getByRole("tab", { name: "Configure" })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("System details"));
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
@@ -3479,23 +3475,7 @@ describe("AccountingScreen", () => {
       "href",
       "/accounting/reconciliation"
     );
-    const taskModes = screen.getByRole("navigation", { name: "Accounting task modes" });
-    expect(within(taskModes).getByRole("link", { name: "Open Reconciliation Casework accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/reconciliation"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Ledger Explorer accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Capital Accounts accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/capital-accounts"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Delivery Evidence accounting task mode" })).toHaveAttribute(
-      "href",
-      "/reporting/evidence"
-    );
+    expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ledger Explorer" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Reconciliation runs" })).not.toBeInTheDocument();
     expect(screen.queryByText("Reporting profiles")).not.toBeInTheDocument();
@@ -4631,11 +4611,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(reportingData, "/accounting/reporting");
 
-    // The reporting workstream has its own tab: the Configure tab
-    // must not claim selection here, since activating it would navigate to
-    // /accounting/configure and hide this reporting-profile band.
-    expect(screen.getByRole("tab", { name: "Delivery evidence", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Configure", selected: false })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Delivery Evidence", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
 
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);

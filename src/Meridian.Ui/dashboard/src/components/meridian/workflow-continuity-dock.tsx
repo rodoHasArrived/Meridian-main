@@ -25,6 +25,10 @@ export function WorkflowContinuityDock({
   const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
   const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
 
+  if (viewModel.mode === "hidden") {
+    return null;
+  }
+
   return (
     <section
       className="workflow-continuity-dock"
@@ -137,26 +141,28 @@ export function WorkflowContinuityDock({
                 {viewModel.nextActionLabel}
               </Link>
             </div>
-            <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-              {viewModel.steps.map((step) => (
-                <Link
-                  key={step.id}
-                  to={step.href}
-                  aria-label={step.ariaLabel}
-                  aria-current={step.active ? "step" : undefined}
-                  className={cn(
-                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                    `workflow-continuity-step-${step.statusTone}`,
-                    step.active && "workflow-continuity-step-active",
-                    step.next && "workflow-continuity-step-next"
-                  )}
-                >
-                  <span className="workflow-continuity-step-label">{step.label}</span>
-                  <span className="workflow-continuity-step-description">{step.description}</span>
-                  <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-                </Link>
-              ))}
-            </nav>
+            {viewModel.steps.length > 0 ? (
+              <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
+                {viewModel.steps.map((step) => (
+                  <Link
+                    key={step.id}
+                    to={step.href}
+                    aria-label={step.ariaLabel}
+                    aria-current={step.active ? "step" : undefined}
+                    className={cn(
+                      "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      `workflow-continuity-step-${step.statusTone}`,
+                      step.active && "workflow-continuity-step-active",
+                      step.next && "workflow-continuity-step-next"
+                    )}
+                  >
+                    <span className="workflow-continuity-step-label">{step.label}</span>
+                    <span className="workflow-continuity-step-description">{step.description}</span>
+                    <span className="workflow-continuity-step-status">{step.statusLabel}</span>
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
             <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
               {viewModel.primaryOperatorFlowSteps.map((step) => (
                 <Link
