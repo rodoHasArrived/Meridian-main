@@ -109,9 +109,9 @@ Total items: **223**
 | `src/Meridian.Ui/dashboard/src/lib/view-state-envelope.test.ts` | 21 | `NOTE` | ❌ | note: "Fónd Δ — ünïcode" |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 555 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 575 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2302 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 906 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6069 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2327 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 904 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6059 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
