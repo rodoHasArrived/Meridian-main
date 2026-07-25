@@ -1897,6 +1897,7 @@ public sealed class InMemoryFundStructureServiceTests
         private readonly Dictionary<Guid, InvestmentPortfolioSummaryDto> _investmentPortfolios = new();
         private readonly Dictionary<Guid, OwnershipLinkDto> _ownershipLinks = new();
         private readonly Dictionary<Guid, FundStructureAssignmentDto> _assignments = new();
+        private readonly HashSet<Guid> _linkedAccountIds = [];
 
         public int PointReadCount { get; private set; }
         public int FullSnapshotReadCount { get; private set; }
@@ -2105,6 +2106,20 @@ public sealed class InMemoryFundStructureServiceTests
             return Task.FromResult<IReadOnlyList<FundStructureAssignmentDto>>(_assignments.Values.ToList());
         }
 
+        public Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _linkedAccountIds.Add(accountId);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<Guid>> GetAllLinkedAccountIdsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
+            return Task.FromResult<IReadOnlyList<Guid>>(_linkedAccountIds.ToList());
+        }
+
         public Task<bool> IsEmptyAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
@@ -2118,7 +2133,8 @@ public sealed class InMemoryFundStructureServiceTests
                 && _entities.Count == 0
                 && _investmentPortfolios.Count == 0
                 && _ownershipLinks.Count == 0
-                && _assignments.Count == 0);
+                && _assignments.Count == 0
+                && _linkedAccountIds.Count == 0);
         }
     }
 

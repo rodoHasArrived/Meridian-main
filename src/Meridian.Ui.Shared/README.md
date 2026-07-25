@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Ui.Shared
@@ -45,6 +45,23 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 ## Important workflows
 
 `ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
+Interactive Brokers request and durable-result projections require the authenticated tenant and
+company. Unowned legacy rows are excluded, durable keys include provider connection and immutable
+request correlation identity, and workstation IB/result projections never fall back to a
+cross-tenant result set. Scoped live projection watches also consume the provider's tenant/company
+watch surface, so another company cannot trigger or populate an operator refresh. Missing company
+scope is rejected by the shared tenant/company filter as typed `403` Problem Details before either
+endpoint resolves provider data. The shared service's legacy unscoped snapshot and watch surfaces
+exclude tenant/company-aware providers entirely rather than invoking their compatibility methods.
+
+Shared operational endpoints use stable RFC 7807 Problem Details types for validation,
+authorization, conflict, unavailable-runtime, timeout, and internal failures. API-key, login-session,
+CSRF, and rate-limit middleware emit that same contract instead of ad hoc bodies. Backfill, schedule,
+and failover routes require tenant and permission scope and propagate request cancellation. Provider
+planning requires effective backfill configuration, schedule-now requires the execution runtime,
+and failover state and health require live runtime snapshots, degradation scoring, and calibration
+governance evidence; missing dependencies return `503`. Forced failover waits for a committed
+handoff before reporting success, and raw exception details are logged but not returned.
 
 The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
 and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
@@ -58,9 +75,10 @@ Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` requi
 Auth endpoints expose governed user-account administration, password reset, account disable, session
 revocation, account audit, role-profile administration, and scoped access assignment administration from
 the shared workstation host while delegating identity state to `Meridian.Identity`. `EndpointAuthorization`
-keeps the existing global role checks for compatibility and adds scoped authorization helpers so
-governance-core routes can require a permission on a specific organization, fund, portfolio, legal
-entity, or account.
+keeps global route checks and adds scoped authorization helpers so governance-core routes can
+require a permission on a specific organization, fund, portfolio, legal entity, or account. Scoped
+authorization fails closed when its service is unavailable; a global permission alone is not a
+substitute for a scope decision.
 `LoginSessionMiddleware` now also attaches a request tenant scope through
 `CurrentTenantIdKey`, currently derived from the authenticated company id until tenant ids diverge
 from company ids. `IWorkstationTenantContextAccessor` is the shared endpoint/service seam for

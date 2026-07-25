@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Meridian.Core.IO;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -24,21 +25,21 @@ namespace Meridian.Execution.Services;
 /// </summary>
 public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 {
-    private readonly string _baseDirectory;
+    private readonly RootedPathGuard _pathGuard;
     private readonly ILogger<JsonlFilePaperSessionStore> _logger;
 
     // One lock for all append operations; paper-trading is not latency-sensitive.
     private readonly SemaphoreSlim _appendLock = new(1, 1);
 
     /// <summary>Root storage directory (guaranteed to be created on first write).</summary>
-    public string BaseDirectory => _baseDirectory;
+    public string BaseDirectory => _pathGuard.RootPath;
 
     public JsonlFilePaperSessionStore(
         string baseDirectory,
         ILogger<JsonlFilePaperSessionStore> logger)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(baseDirectory);
-        _baseDirectory = baseDirectory;
+        _pathGuard = new RootedPathGuard(baseDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -50,7 +51,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     public async Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(record);
-        Directory.CreateDirectory(SessionDir(record.SessionId));
+        EnsureSessionDirectory(record.SessionId);
         var json = JsonSerializer.Serialize(record, ExecutionJsonContext.Default.PersistedSessionRecord);
         await WriteAtomicAsync(MetadataPath(record.SessionId), json, ct).ConfigureAwait(false);
     }
@@ -78,20 +79,44 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     /// <inheritdoc />
     public async Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
     {
-        if (!Directory.Exists(_baseDirectory))
+        if (!Directory.Exists(BaseDirectory))
             return [];
 
         var sessions = new List<PersistedSessionRecord>();
-        foreach (var dir in Directory.EnumerateDirectories(_baseDirectory))
+        foreach (var directory in Directory.EnumerateDirectories(BaseDirectory))
         {
             ct.ThrowIfCancellationRequested();
-            var metaPath = Path.Combine(dir, "session.json");
+            var directoryName = Path.GetFileName(Path.TrimEndingDirectorySeparator(directory));
+            string metaPath;
+            try
+            {
+                metaPath = _pathGuard.ResolvePath(directoryName, "session.json");
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                _logger.LogWarning(ex, "Skipped unsafe paper-session directory {Path}", directory);
+                continue;
+            }
+
             if (!File.Exists(metaPath))
                 continue;
 
             var record = await TryLoadMetadataAsync(metaPath, ct).ConfigureAwait(false);
-            if (record is not null)
-                sessions.Add(record);
+            if (record is null)
+                continue;
+            var pathComparison = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+            if (!string.Equals(record.SessionId, directoryName, pathComparison))
+            {
+                _logger.LogWarning(
+                    "Skipped paper-session metadata whose SessionId {SessionId} does not match directory {Directory}",
+                    record.SessionId,
+                    directoryName);
+                continue;
+            }
+
+            sessions.Add(record);
         }
 
         return sessions;
@@ -127,7 +152,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     {
         ArgumentNullException.ThrowIfNull(entries);
 
-        Directory.CreateDirectory(SessionDir(sessionId));
+        EnsureSessionDirectory(sessionId);
 
         // Build the full JSONL content in-memory then write atomically so a crash
         // during writing never leaves a partial ledger file.
@@ -159,26 +184,34 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     // ------------------------------------------------------------------
 
     private string SessionDir(string sessionId) =>
-        Path.Combine(_baseDirectory, sessionId);
+        _pathGuard.ResolvePath(sessionId);
 
     private string MetadataPath(string sessionId) =>
-        Path.Combine(SessionDir(sessionId), "session.json");
+        _pathGuard.ResolvePath(sessionId, "session.json");
 
     private string FillsPath(string sessionId) =>
-        Path.Combine(SessionDir(sessionId), "fills.jsonl");
+        _pathGuard.ResolvePath(sessionId, "fills.jsonl");
 
     private string OrdersPath(string sessionId) =>
-        Path.Combine(SessionDir(sessionId), "orders.jsonl");
+        _pathGuard.ResolvePath(sessionId, "orders.jsonl");
 
     private string LedgerPath(string sessionId) =>
-        Path.Combine(SessionDir(sessionId), "ledger.jsonl");
+        _pathGuard.ResolvePath(sessionId, "ledger.jsonl");
+
+    private void EnsureSessionDirectory(string sessionId)
+    {
+        var directory = SessionDir(sessionId);
+        Directory.CreateDirectory(directory);
+        _pathGuard.EnsurePath(directory);
+    }
 
     // ------------------------------------------------------------------
     // IO helpers
     // ------------------------------------------------------------------
 
-    private static async Task WriteAtomicAsync(string path, string content, CancellationToken ct)
+    private async Task WriteAtomicAsync(string path, string content, CancellationToken ct)
     {
+        _pathGuard.EnsurePath(path);
         await AtomicFileWriter.WriteAsync(path, content, ct).ConfigureAwait(false);
     }
 
@@ -186,10 +219,12 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     {
         var dir = Path.GetDirectoryName(path)!;
         Directory.CreateDirectory(dir);
+        _pathGuard.EnsurePath(path);
 
         await _appendLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            _pathGuard.EnsurePath(path);
             await AtomicFileWriter.AppendLinesAsync(path, [line], ct).ConfigureAwait(false);
         }
         finally
@@ -202,6 +237,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
     {
         try
         {
+            _pathGuard.EnsurePath(path);
             var json = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
             return JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.PersistedSessionRecord);
         }
@@ -212,13 +248,14 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
         }
     }
 
-    private static async Task<IReadOnlyList<T>> LoadJsonlAsync<T>(
+    private async Task<IReadOnlyList<T>> LoadJsonlAsync<T>(
         string path,
         JsonTypeInfo<T> typeInfo,
         ILogger logger,
         CancellationToken ct)
     {
         var results = new List<T>();
+        _pathGuard.EnsurePath(path);
         await using var fs = File.OpenRead(path);
         using var reader = new StreamReader(fs, Encoding.UTF8);
 

@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
+using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Meridian.Core.Resilience;
 using Meridian.Core.Serialization;
@@ -23,7 +25,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// Background worker service that processes the backfill request queue.
 /// Handles rate limits, retries, writes data to storage, and supports offline-first mode.
 /// </summary>
-public sealed class BackfillWorkerService : IDisposable
+public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
 {
     private readonly BackfillJobManager _jobManager;
     private readonly BackfillRequestQueue _requestQueue;
@@ -37,10 +39,24 @@ public sealed class BackfillWorkerService : IDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _concurrencySemaphore;
     private readonly BackfillProgressTracker _progressTracker;
+    private readonly ConcurrentDictionary<BackfillRequestAttemptToken, ActiveBackfillAttempt> _inFlightRequests = new();
+    private readonly ConcurrentDictionary<string, byte> _jobsBeingCancelled =
+        new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<BackfillRequest, byte> _requestsBeingCancelled =
+        new(ReferenceEqualityComparer.Instance);
+    private readonly ConcurrentQueue<Exception> _cleanupFailures = new();
+    private readonly object _lifecycleSync = new();
+    private readonly object _lifecycleNotificationSync = new();
+    private readonly object _jobCancellationSync = new();
+    private readonly TaskCompletionSource _startNotificationPublished =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly IDisposable _jobCancellationRegistration;
     private Task? _workerTask;
     private Task? _completionTask;
-    private bool _disposed;
-    private bool _isRunning;
+    private Task? _stopTask;
+    private Task? _disposeTask;
+    private bool _disposeRequested;
+    private volatile bool _isRunning;
 
     // Rate limit backoff tracking
     private int _consecutiveEmptyPolls;
@@ -122,6 +138,9 @@ public sealed class BackfillWorkerService : IDisposable
         }
 
         _provider.OnProgressUpdate += HandleProviderProgress;
+        _jobCancellationRegistration = _jobManager.RegisterJobCancellationHandler(
+            CancelJobAttemptsAsync,
+            CancelUncommittedBatchAsync);
     }
 
     private void HandleProviderProgress(ProviderBackfillProgress progress)
@@ -137,42 +156,136 @@ public sealed class BackfillWorkerService : IDisposable
     /// </summary>
     public void Start()
     {
-        if (_isRunning)
-            return;
+        lock (_lifecycleSync)
+        {
+            if (_disposeRequested)
+                throw new ObjectDisposedException(nameof(BackfillWorkerService));
+            if (_isRunning)
+                return;
+            if (_stopTask is not null)
+                throw new InvalidOperationException("A stopped backfill worker cannot be restarted.");
 
-        _isRunning = true;
-        _workerTask = RunWorkerLoopAsync(_cts.Token);
-        _completionTask = RunCompletionLoopAsync(_cts.Token);
+            _isRunning = true;
+            _workerTask = RunWorkerLoopAsync(_cts.Token);
+            _completionTask = RunCompletionLoopAsync();
+        }
 
-        OnRunningStateChanged?.Invoke(true);
+        try
+        {
+            NotifyRunningStateChanged(true);
+        }
+        finally
+        {
+            // Stop may race Start after the worker tasks are published. Its false
+            // notification waits on this barrier so observers can never see false, true.
+            _startNotificationPublished.TrySetResult();
+        }
+
         _log.Information("Backfill worker service started");
     }
 
     /// <summary>
     /// Stop the worker service.
     /// </summary>
-    public async Task StopAsync(CancellationToken ct = default)
+    public Task StopAsync(CancellationToken ct = default)
     {
-        if (!_isRunning)
-            return;
+        Task stopTask;
+        lock (_lifecycleSync)
+        {
+            if (_stopTask is not null)
+            {
+                stopTask = _stopTask;
+            }
+            else if (!_isRunning)
+            {
+                return Task.CompletedTask;
+            }
+            else
+            {
+                _stopTask = StopCoreAsync();
+                stopTask = _stopTask;
+            }
+        }
 
+        return stopTask.WaitAsync(ct);
+    }
+
+    private async Task StopCoreAsync()
+    {
         _cts.Cancel();
+        var failures = new List<Exception>(capacity: 4);
 
         try
         {
-            if (_workerTask != null)
-                await _workerTask.ConfigureAwait(false);
-            if (_completionTask != null)
-                await _completionTask.ConfigureAwait(false);
+            await AwaitShutdownTaskAsync(_workerTask, failures).ConfigureAwait(false);
+
+            // The worker loop no longer admits requests once cancellation is observed.
+            // Await the remaining request tasks before reporting a stopped state so the
+            // queue and provider can be disposed without racing active work. The completion
+            // reader remains live while those producers publish into the bounded channel.
+            var inFlight = _inFlightRequests.Values
+                .Select(static attempt => attempt.Task)
+                .ToArray();
+            if (inFlight.Length > 0)
+                await AwaitShutdownTaskAsync(Task.WhenAll(inFlight), failures).ConfigureAwait(false);
+
+            // No admitted request can publish after this point. Close the writer and let the
+            // completion loop drain every retained notification before it terminates.
+            _requestQueue.CompleteCompletionNotifications();
+            await AwaitShutdownTaskAsync(_completionTask, failures).ConfigureAwait(false);
+
+            // A persisted Running/RateLimited job has no durable request queue to resume after
+            // process restart. Move it to a truthful resumable state before owned resources close.
+            foreach (var job in _jobManager.GetAllJobs()
+                         .Where(static job => job.Status is BackfillJobStatus.Running or BackfillJobStatus.RateLimited))
+            {
+                try
+                {
+                    await _jobManager.PauseJobAsync(
+                        job.JobId,
+                        BackfillJobManager.HostShutdownPauseReason,
+                        CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    failures.Add(new InvalidOperationException(
+                        $"Failed to persist the shutdown state for backfill job {job.JobId}.",
+                        ex));
+                }
+            }
         }
-        catch (OperationCanceledException)
+        finally
         {
-            // Expected
+            await _startNotificationPublished.Task.ConfigureAwait(false);
+            _isRunning = false;
+            NotifyRunningStateChanged(false);
+            _log.Information("Backfill worker service stopped");
         }
 
-        _isRunning = false;
-        OnRunningStateChanged?.Invoke(false);
-        _log.Information("Backfill worker service stopped");
+        while (_cleanupFailures.TryDequeue(out var cleanupFailure))
+            failures.Add(cleanupFailure);
+
+        if (failures.Count > 0)
+            throw new AggregateException("One or more backfill tasks failed during shutdown.", failures);
+    }
+
+    private async Task AwaitShutdownTaskAsync(Task? task, ICollection<Exception> failures)
+    {
+        if (task is null)
+            return;
+
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+        {
+            // Expected while loops and active requests observe worker shutdown.
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
     }
 
     /// <summary>
@@ -185,13 +298,20 @@ public sealed class BackfillWorkerService : IDisposable
         {
             try
             {
+                if (_appConfig.OfflineFirstMode &&
+                    _connectivityProbe is { IsOnline: false })
+                {
+                    await Task.Delay(EmptyPollMaxDelay, ct).ConfigureAwait(false);
+                    continue;
+                }
+
                 // Wait for a slot
                 await _concurrencySemaphore.WaitAsync(ct).ConfigureAwait(false);
 
                 // Try to get a request
-                var request = await _requestQueue.TryDequeueAsync(ct).ConfigureAwait(false);
+                var dequeuedAttempt = await _requestQueue.TryDequeueAsync(ct).ConfigureAwait(false);
 
-                if (request == null)
+                if (dequeuedAttempt is null)
                 {
                     _concurrencySemaphore.Release();
 
@@ -217,8 +337,43 @@ public sealed class BackfillWorkerService : IDisposable
                 // Reset empty poll counter on successful dequeue
                 _consecutiveEmptyPolls = 0;
 
-                // Process request in background
-                _ = ProcessRequestAsync(request, ct);
+                // Process requests concurrently, but retain every task so shutdown can
+                // quiesce them before queue/provider resources are released.
+                var attempt = dequeuedAttempt.Value;
+                var request = attempt.Request;
+                var attemptToken = attempt.Token;
+                var attemptCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                var startSignal = new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                var trackedTask = TrackRequestAttemptAsync(
+                    attemptToken,
+                    request,
+                    startSignal.Task,
+                    attemptCancellation);
+                var activeAttempt = new ActiveBackfillAttempt(
+                    request.JobId,
+                    request,
+                    attemptCancellation,
+                    trackedTask);
+
+                lock (_jobCancellationSync)
+                {
+                    if (!_inFlightRequests.TryAdd(attemptToken, activeAttempt))
+                    {
+                        attemptCancellation.Cancel();
+                        startSignal.SetResult();
+                        throw new InvalidOperationException(
+                            $"Backfill queue issued duplicate attempt identity {attemptToken.Value}.");
+                    }
+
+                    if (_jobsBeingCancelled.ContainsKey(request.JobId) ||
+                        _requestsBeingCancelled.ContainsKey(request))
+                    {
+                        attemptCancellation.Cancel();
+                    }
+                }
+
+                startSignal.SetResult();
             }
             catch (OperationCanceledException)
             {
@@ -232,11 +387,173 @@ public sealed class BackfillWorkerService : IDisposable
         }
     }
 
+    private async Task TrackRequestAttemptAsync(
+        BackfillRequestAttemptToken attemptToken,
+        BackfillRequest request,
+        Task startSignal,
+        CancellationTokenSource attemptCancellation)
+    {
+        var ct = attemptCancellation.Token;
+        try
+        {
+            await startSignal.ConfigureAwait(false);
+            await ProcessRequestAsync(request, attemptToken, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Cancellation is recorded on the request by ProcessRequestAsync.
+        }
+        catch (Exception ex)
+        {
+            var retainedFailure = new InvalidOperationException(
+                $"Backfill request {request.RequestId}, attempt {attemptToken.Value}, failed during terminal cleanup.",
+                ex);
+            _cleanupFailures.Enqueue(retainedFailure);
+            _log.Error(
+                ex,
+                "Backfill request task {RequestId}, attempt {AttemptId}, terminated unexpectedly",
+                request.RequestId,
+                attemptToken.Value);
+        }
+        finally
+        {
+            lock (_jobCancellationSync)
+            {
+                _inFlightRequests.TryRemove(attemptToken, out _);
+                attemptCancellation.Dispose();
+            }
+        }
+    }
+
+    private async Task CancelJobAttemptsAsync(string jobId, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
+        ct.ThrowIfCancellationRequested();
+
+        // Publish the cancellation fence before removing pending entries. An attempt already
+        // dequeued but not yet registered will see this fence and begin with a cancelled token.
+        _jobsBeingCancelled.TryAdd(jobId, 0);
+
+        // Once cancellation is accepted, every remaining step is deliberately non-cancellable.
+        // Returning early after revoking ownership would leave a durable Running job behind a
+        // permanent cancellation fence.
+        await _requestQueue.CancelJobRequestsAsync(
+            jobId,
+            CancellationToken.None).ConfigureAwait(false);
+
+        while (true)
+        {
+            ActiveBackfillAttempt[] activeAttempts;
+            lock (_jobCancellationSync)
+            {
+                activeAttempts = _inFlightRequests.Values
+                    .Where(attempt => string.Equals(
+                        attempt.JobId,
+                        jobId,
+                        StringComparison.Ordinal))
+                    .ToArray();
+
+                foreach (var attempt in activeAttempts)
+                    attempt.Cancellation.Cancel();
+            }
+
+            if (activeAttempts.Length > 0)
+            {
+                await Task.WhenAll(activeAttempts.Select(static attempt => attempt.Task))
+                    .ConfigureAwait(false);
+            }
+
+            // Queue ownership closes the tiny dequeue-to-registration race. Do not return until
+            // both views agree that no attempt for this job remains admitted.
+            var remainingRequests = await _requestQueue.GetJobRequestsAsync(
+                    jobId,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            lock (_jobCancellationSync)
+            {
+                if (remainingRequests.Count == 0 &&
+                    !_inFlightRequests.Values.Any(attempt => string.Equals(
+                        attempt.JobId,
+                        jobId,
+                        StringComparison.Ordinal)))
+                {
+                    return;
+                }
+            }
+
+            await Task.Yield();
+        }
+    }
+
+    private async Task CancelUncommittedBatchAsync(
+        IReadOnlyCollection<BackfillRequest> requests)
+    {
+        if (requests.Count == 0)
+            return;
+
+        var requestSet = new HashSet<BackfillRequest>(
+            requests,
+            ReferenceEqualityComparer.Instance);
+        foreach (var request in requestSet)
+            _requestsBeingCancelled.TryAdd(request, 0);
+
+        try
+        {
+            // Pending entries never became durable job work, so remove them silently. Any entry
+            // already dequeued is fenced above and must observe cancellation before rollback.
+            await _requestQueue.RollbackPendingRequestsAsync(
+                requests,
+                CancellationToken.None).ConfigureAwait(false);
+
+            while (true)
+            {
+                ActiveBackfillAttempt[] activeAttempts;
+                lock (_jobCancellationSync)
+                {
+                    activeAttempts = _inFlightRequests.Values
+                        .Where(attempt => requestSet.Contains(attempt.Request))
+                        .ToArray();
+                    foreach (var attempt in activeAttempts)
+                        attempt.Cancellation.Cancel();
+                }
+
+                if (activeAttempts.Length > 0)
+                {
+                    await Task.WhenAll(activeAttempts.Select(static attempt => attempt.Task))
+                        .ConfigureAwait(false);
+                }
+
+                var queueOwnsBatch = await _requestQueue.ContainsAnyRequestsAsync(
+                    requests,
+                    CancellationToken.None).ConfigureAwait(false);
+                lock (_jobCancellationSync)
+                {
+                    if (!queueOwnsBatch &&
+                        !_inFlightRequests.Values.Any(
+                            attempt => requestSet.Contains(attempt.Request)))
+                    {
+                        return;
+                    }
+                }
+
+                await Task.Yield();
+            }
+        }
+        finally
+        {
+            foreach (var request in requestSet)
+                _requestsBeingCancelled.TryRemove(request, out _);
+        }
+    }
+
     /// <summary>
     /// Process a single backfill request with automatic retry and exponential backoff
     /// for rate-limited responses. In offline-first mode, queues requests when offline.
     /// </summary>
-    private async Task ProcessRequestAsync(BackfillRequest request, CancellationToken ct)
+    private async Task ProcessRequestAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        CancellationToken ct)
     {
         using var activity = MarketDataTracing.StartBackfillActivity(
             request.AssignedProvider ?? "unknown",
@@ -255,19 +572,32 @@ public sealed class BackfillWorkerService : IDisposable
 
         try
         {
+            ct.ThrowIfCancellationRequested();
+
             // Check offline-first mode
             if (_appConfig.OfflineFirstMode && _connectivityProbe != null && !_connectivityProbe.IsOnline)
             {
                 scopedLog.Warning("Offline mode: queueing backfill for {Symbol} until connectivity restored", request.Symbol);
                 activity?.SetTag("backfill.outcome", "offline_queued");
-                await _requestQueue.EnqueueAsync(request, ct).ConfigureAwait(false);
+                var requeued = await _requestQueue.RequeueInFlightAttemptAsync(
+                    request,
+                    attemptToken,
+                    "Waiting for connectivity to be restored.",
+                    ct).ConfigureAwait(false);
+                if (!requeued)
+                {
+                    throw new InvalidOperationException(
+                        $"Backfill request {request.RequestId} attempt {attemptToken.Value} lost queue ownership before offline requeue.");
+                }
                 return;
             }
 
             var retryAttempt = 0;
 
-            while (!ct.IsCancellationRequested)
+            while (true)
             {
+                ct.ThrowIfCancellationRequested();
+
                 try
                 {
                     var providerName = request.AssignedProvider ?? _provider.Name;
@@ -310,7 +640,11 @@ public sealed class BackfillWorkerService : IDisposable
                     }
 
                     // Mark as complete
-                    await _requestQueue.CompleteRequestAsync(request, true, ct: ct).ConfigureAwait(false);
+                    await _requestQueue.CompleteRequestAttemptAsync(
+                        request,
+                        attemptToken,
+                        success: true,
+                        ct: ct).ConfigureAwait(false);
                     await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
                     _progressTracker.MarkCompleted(request.Symbol);
 
@@ -361,16 +695,91 @@ public sealed class BackfillWorkerService : IDisposable
 
                     MarketDataTracing.RecordError(activity, ex);
                     activity?.SetTag("backfill.outcome", isRateLimited ? "rate_limit_exhausted" : "error");
-                    await _requestQueue.CompleteRequestAsync(request, false, ex.Message, ct).ConfigureAwait(false);
+                    await _requestQueue.CompleteRequestAttemptAsync(
+                        request,
+                        attemptToken,
+                        success: false,
+                        error: ex.Message,
+                        ct: ct).ConfigureAwait(false);
                     await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
                     _progressTracker.MarkFailed(request.Symbol, ex.Message);
                     return;
                 }
             }
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            activity?.SetTag("backfill.outcome", "cancelled");
+            var cancellationReason = _requestsBeingCancelled.ContainsKey(request)
+                ? "Cancelled because the owning backfill job start did not commit."
+                : _jobsBeingCancelled.ContainsKey(request.JobId)
+                    ? "Cancelled with the owning backfill job."
+                    : "Cancelled while the backfill worker was stopping.";
+            await MarkRequestCancelledAsync(
+                request,
+                attemptToken,
+                cancellationReason,
+                scopedLog).ConfigureAwait(false);
+            throw;
+        }
         finally
         {
             _concurrencySemaphore.Release();
+        }
+    }
+
+    private async Task MarkRequestCancelledAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        string cancellationReason,
+        ILogger scopedLog)
+    {
+        if (request.Status != BackfillRequestStatus.InProgress)
+            return;
+
+        var cancelled = await _requestQueue.CancelInFlightAttemptAsync(
+            request,
+            attemptToken,
+            cancellationReason,
+            CancellationToken.None).ConfigureAwait(false);
+
+        if (cancelled)
+        {
+            scopedLog.Information("Backfill request cancelled: {Reason}", cancellationReason);
+        }
+        else
+        {
+            scopedLog.Warning(
+                "Backfill request cancellation ignored because attempt {AttemptId} was no longer queue-owned",
+                attemptToken.Value);
+        }
+    }
+
+    private void NotifyRunningStateChanged(bool isRunning)
+    {
+        lock (_lifecycleNotificationSync)
+        {
+            var handlers = OnRunningStateChanged;
+            if (handlers is null)
+                return;
+
+            foreach (var handler in handlers.GetInvocationList().Cast<Action<bool>>())
+            {
+                try
+                {
+                    handler(isRunning);
+                }
+                catch (Exception ex)
+                {
+                    _cleanupFailures.Enqueue(new InvalidOperationException(
+                        $"A backfill lifecycle observer failed while publishing IsRunning={isRunning}.",
+                        ex));
+                    _log.Error(
+                        ex,
+                        "Backfill lifecycle observer failed while publishing IsRunning={IsRunning}",
+                        isRunning);
+                }
+            }
         }
     }
 
@@ -741,22 +1150,15 @@ public sealed class BackfillWorkerService : IDisposable
     /// <summary>
     /// Process completed requests and update job progress.
     /// </summary>
-    private async Task RunCompletionLoopAsync(CancellationToken ct)
+    private async Task RunCompletionLoopAsync()
     {
-        try
+        await foreach (var request in _requestQueue.CompletedRequests.ReadAllAsync())
         {
-            await foreach (var request in _requestQueue.CompletedRequests.ReadAllAsync(ct))
-            {
-                // Progress is already updated in ProcessRequestAsync
-                // This loop is for additional processing if needed
+            // Progress is already updated in ProcessRequestAsync.
+            // This loop owns the lossless bounded completion drain.
 
-                _log.Verbose("Request {RequestId} completed: {Status}",
-                    request.RequestId, request.Status);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected when stopping
+            _log.Verbose("Request {RequestId} completed: {Status}",
+                request.RequestId, request.Status);
         }
     }
 
@@ -778,22 +1180,76 @@ public sealed class BackfillWorkerService : IDisposable
     }
 
     public void Dispose()
-    {
-        if (_disposed)
-            return;
-        _disposed = true;
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        if (_appConfig.OfflineFirstMode && _connectivityProbe != null)
+    public ValueTask DisposeAsync()
+    {
+        Task disposeTask;
+        lock (_lifecycleSync)
         {
-            _connectivityProbe.ConnectivityChanged -= OnConnectivityChanged;
+            if (_disposeTask is null)
+            {
+                _disposeRequested = true;
+                _disposeTask = DisposeCoreAsync();
+            }
+
+            disposeTask = _disposeTask;
         }
 
-        _provider.OnProgressUpdate -= HandleProviderProgress;
-
-        _cts.Cancel();
-        _cts.Dispose();
-        _concurrencySemaphore.Dispose();
+        return new ValueTask(disposeTask);
     }
+
+    private async Task DisposeCoreAsync()
+    {
+        var failures = new List<Exception>(capacity: 4);
+
+        try
+        {
+            await StopAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+
+        CaptureCleanupFailure(
+            failures,
+            () =>
+            {
+                if (_appConfig.OfflineFirstMode && _connectivityProbe != null)
+                    _connectivityProbe.ConnectivityChanged -= OnConnectivityChanged;
+            });
+        CaptureCleanupFailure(
+            failures,
+            () =>
+            {
+                _provider.OnProgressUpdate -= HandleProviderProgress;
+            });
+        CaptureCleanupFailure(failures, _jobCancellationRegistration.Dispose);
+        CaptureCleanupFailure(failures, _cts.Dispose);
+        CaptureCleanupFailure(failures, _concurrencySemaphore.Dispose);
+
+        if (failures.Count > 0)
+            throw new AggregateException("Backfill worker disposal completed with failures.", failures);
+    }
+
+    private static void CaptureCleanupFailure(ICollection<Exception> failures, Action cleanup)
+    {
+        try
+        {
+            cleanup();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+    }
+
+    private sealed record ActiveBackfillAttempt(
+        string JobId,
+        BackfillRequest Request,
+        CancellationTokenSource Cancellation,
+        Task Task);
 }
 
 /// <summary>
@@ -821,7 +1277,11 @@ public sealed class BackfillServiceFactory
         IConnectivityProbeService? connectivityProbe = null)
     {
         var jobsConfig = config.Jobs ?? new BackfillJobsConfig();
-        var jobsDirectory = Path.Combine(dataRoot, jobsConfig.JobsDirectory);
+        var dataRootGuard = new RootedPathGuard(dataRoot);
+        var jobsDirectorySegments = ResolveRelativeDirectorySegments(
+            jobsConfig.JobsDirectory,
+            nameof(jobsConfig.JobsDirectory));
+        var jobsDirectory = dataRootGuard.ResolvePath(jobsDirectorySegments);
 
         // Create rate limit tracker
         var rateLimitTracker = new ProviderRateLimitTracker(_log);
@@ -873,12 +1333,34 @@ public sealed class BackfillServiceFactory
             worker,
             ownedSymbolResolver: null);
     }
+
+    private static string[] ResolveRelativeDirectorySegments(
+        string relativeDirectory,
+        string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativeDirectory, parameterName);
+        if (Path.IsPathRooted(relativeDirectory))
+            throw new ArgumentException("The jobs directory must be relative to DataRoot.", parameterName);
+
+        var segments = relativeDirectory.Split(
+            ['/', '\\'],
+            StringSplitOptions.None);
+        if (segments.Length == 0)
+            throw new ArgumentException("The jobs directory must contain at least one path segment.", parameterName);
+
+        foreach (var segment in segments)
+        {
+            RootedPathGuard.ValidatePathSegment(segment, parameterName);
+        }
+
+        return segments;
+    }
 }
 
 /// <summary>
 /// Container for all backfill-related services.
 /// </summary>
-public sealed class BackfillServices : IDisposable
+public sealed class BackfillServices : IDisposable, IAsyncDisposable
 {
     public BackfillJobManager JobManager { get; }
     public BackfillRequestQueue RequestQueue { get; }
@@ -888,6 +1370,8 @@ public sealed class BackfillServices : IDisposable
     public BackfillWorkerService Worker { get; }
 
     private readonly IDisposable? _ownedSymbolResolver;
+    private readonly object _disposeSync = new();
+    private Task? _disposeTask;
 
     public BackfillServices(
         BackfillJobManager jobManager,
@@ -928,16 +1412,58 @@ public sealed class BackfillServices : IDisposable
     /// </summary>
     public async Task StopWorkerAsync(CancellationToken ct = default)
     {
-        await Worker.StopAsync().ConfigureAwait(false);
+        await Worker.StopAsync(ct).ConfigureAwait(false);
     }
 
     public void Dispose()
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public ValueTask DisposeAsync()
     {
-        Worker.Dispose();
-        RequestQueue.Dispose();
-        JobManager.Dispose();
-        RateLimitTracker.Dispose();
-        Provider.Dispose();
-        _ownedSymbolResolver?.Dispose();
+        Task disposeTask;
+        lock (_disposeSync)
+        {
+            _disposeTask ??= DisposeCoreAsync();
+            disposeTask = _disposeTask;
+        }
+
+        return new ValueTask(disposeTask);
+    }
+
+    private async Task DisposeCoreAsync()
+    {
+        var failures = new List<Exception>(capacity: 6);
+
+        try
+        {
+            await Worker.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+
+        CaptureCleanupFailure(failures, RequestQueue.Dispose);
+        CaptureCleanupFailure(failures, JobManager.Dispose);
+        CaptureCleanupFailure(failures, RateLimitTracker.Dispose);
+        CaptureCleanupFailure(failures, Provider.Dispose);
+
+        if (_ownedSymbolResolver is not null)
+            CaptureCleanupFailure(failures, _ownedSymbolResolver.Dispose);
+
+        if (failures.Count > 0)
+            throw new AggregateException("Backfill service disposal completed with failures.", failures);
+    }
+
+    private static void CaptureCleanupFailure(ICollection<Exception> failures, Action cleanup)
+    {
+        try
+        {
+            cleanup();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
     }
 }

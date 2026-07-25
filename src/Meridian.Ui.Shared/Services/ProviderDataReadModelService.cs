@@ -62,11 +62,31 @@ public sealed class ProviderDataReadModelService
         _availabilityProviders = availabilityProviders?.ToArray() ?? [];
     }
 
+    /// <summary>
+    /// Returns only providers whose contract is explicitly unscoped. Tenant/company-aware
+    /// providers are excluded rather than downgraded to their compatibility read surface.
+    /// </summary>
     public IReadOnlyList<ProviderDataRequestReadModel> GetRequests() => _providers
+        .Where(static provider => provider is not ITenantScopedProviderDataReadService)
         .SelectMany(static provider => provider.GetRequests())
         .OrderByDescending(static request => request.UpdatedAt)
         .ThenBy(static request => request.RequestId)
         .ToArray();
+
+    public IReadOnlyList<ProviderDataRequestReadModel> GetRequests(string tenantId, string companyId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        tenantId = tenantId.Trim();
+        companyId = companyId.Trim();
+        return _providers
+            .SelectMany(provider => provider is ITenantScopedProviderDataReadService scoped
+                ? scoped.GetRequests(tenantId, companyId)
+                : provider.GetRequests())
+            .OrderByDescending(static request => request.UpdatedAt)
+            .ThenBy(static request => request.RequestId)
+            .ToArray();
+    }
 
     /// <summary>Emits the initial projection and a refreshed snapshot after any optional provider stream changes.</summary>
     public async IAsyncEnumerable<ProviderDataProjectionSnapshot> WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -74,7 +94,9 @@ public sealed class ProviderDataReadModelService
         yield return GetProjection();
         var updates = Channel.CreateUnbounded<bool>();
         var pumps = new List<Task>();
-        pumps.AddRange(_providers.Select(provider => Pump(provider.WatchAsync(cancellationToken), updates.Writer, cancellationToken)));
+        pumps.AddRange(_providers
+            .Where(static provider => provider is not ITenantScopedProviderDataReadService)
+            .Select(provider => Pump(provider.WatchAsync(cancellationToken), updates.Writer, cancellationToken)));
         pumps.AddRange(_newsProviders.Select(provider => Pump(provider.WatchNewsAsync(cancellationToken), updates.Writer, cancellationToken)));
         pumps.AddRange(_calendarProviders.Select(provider => Pump(provider.WatchCalendarEventsAsync(cancellationToken), updates.Writer, cancellationToken)));
         pumps.AddRange(_instrumentProviders.Select(provider => Pump(provider.WatchInstrumentsAsync(cancellationToken), updates.Writer, cancellationToken)));
@@ -84,6 +106,38 @@ public sealed class ProviderDataReadModelService
             yield return GetProjection();
     }
 
+    /// <summary>
+    /// Emits only projection updates owned by the requested tenant and company. Tenant-scoped
+    /// providers are never consumed through their unscoped watch surface.
+    /// </summary>
+    public async IAsyncEnumerable<ProviderDataProjectionSnapshot> WatchAsync(
+        string tenantId,
+        string companyId,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        tenantId = tenantId.Trim();
+        companyId = companyId.Trim();
+
+        yield return GetProjection(tenantId, companyId);
+        var updates = Channel.CreateUnbounded<bool>();
+        var pumps = new List<Task>();
+        pumps.AddRange(_providers.Select(provider => Pump(
+            provider is ITenantScopedProviderDataReadService scoped
+                ? scoped.WatchAsync(tenantId, companyId, cancellationToken)
+                : provider.WatchAsync(cancellationToken),
+            updates.Writer,
+            cancellationToken)));
+        pumps.AddRange(_newsProviders.Select(provider => Pump(provider.WatchNewsAsync(cancellationToken), updates.Writer, cancellationToken)));
+        pumps.AddRange(_calendarProviders.Select(provider => Pump(provider.WatchCalendarEventsAsync(cancellationToken), updates.Writer, cancellationToken)));
+        pumps.AddRange(_instrumentProviders.Select(provider => Pump(provider.WatchInstrumentsAsync(cancellationToken), updates.Writer, cancellationToken)));
+        _ = Task.WhenAll(pumps).ContinueWith(_ => updates.Writer.TryComplete(), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+
+        await foreach (var _ in updates.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            yield return GetProjection(tenantId, companyId);
+    }
+
     private static async Task Pump<T>(IAsyncEnumerable<T> stream, ChannelWriter<bool> updates, CancellationToken cancellationToken)
     {
         await foreach (var _ in stream.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -91,11 +145,17 @@ public sealed class ProviderDataReadModelService
     }
 
     public ProviderDataProjectionSnapshot GetProjection()
+        => GetProjection(GetRequests());
+
+    public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId)
+        => GetProjection(GetRequests(tenantId, companyId));
+
+    private ProviderDataProjectionSnapshot GetProjection(
+        IReadOnlyList<ProviderDataRequestReadModel> requests)
     {
         var availability = _availabilityProviders.SelectMany(static provider => provider.GetAvailability())
             .GroupBy(static item => item.ProviderFamily, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.OrderByDescending(x => x.ObservedAt).First(), StringComparer.OrdinalIgnoreCase);
-        var requests = GetRequests();
 
         var news = _newsProviders.SelectMany(provider => provider.GetNews().Select(item => (provider.ProviderFamily, item)))
             .Select(entry => new ProviderNewsReadModel(OptionalProvenance(entry.ProviderFamily, "news", entry.item.NewsId, entry.item.PublishedAt, entry.item.Provenance), OptionalAvailability(entry.ProviderFamily, entry.item.PublishedAt, availability), entry.item));

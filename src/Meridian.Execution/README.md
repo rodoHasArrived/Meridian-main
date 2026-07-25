@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Execution
@@ -104,6 +104,10 @@ OMS runtime guardrails are configuration-backed under `Execution:OrderManagement
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
 Fill-report publication observes bounded-channel `WriteAsync` backpressure, and duplicate gateway
 reports resume only unfinished portfolio, durable-accounting, session, or subscriber side effects.
+Paper-session persistence resolves session identifiers through the Core rooted-path guard. It
+rejects traversal, rooted, reserved, and ambiguous path segments, refuses existing descendant
+links/reparse points, and ignores retained metadata whose session identity does not match its
+directory before reading or appending session evidence.
 
 ## Diagrams
 

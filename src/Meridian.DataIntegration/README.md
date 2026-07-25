@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.DataIntegration
@@ -130,6 +130,10 @@ monitoring and connection-status notification over the Contracts-owned monitorin
 provider latency histograms, provider metrics snapshot contracts, provider degradation
 scoring/config, and provider calibration datasets/snapshots also live here so routing,
 diagnostics, browser, and desktop surfaces consume a single provider-trust model.
+Calibration snapshot persistence validates every identity-bearing path segment, refuses symbolic
+link or reparse-point escapes from the configured root, and selects only timestamped calibration
+snapshot artifacts when resolving the latest snapshot; governance decision JSON cannot be
+misread as calibration evidence.
 Provider health, latency, and degradation scoring normalize provider names for lookup and scoring
 so case or whitespace variants cannot split trust signals for the same upstream provider.
 Provider degradation score discovery includes providers observed only through latency histograms, so

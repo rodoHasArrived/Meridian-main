@@ -77,10 +77,10 @@ public sealed class ApiKeyMiddleware
         if (string.IsNullOrWhiteSpace(providedKey) ||
             !CryptographicEquals(providedKey, expectedApiKey))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(
-                """{"error":"Unauthorized. Provide a valid API key via the X-Api-Key header."}""");
+            await ApiProblemDetails.Unauthorized(
+                    context,
+                    "Provide a valid API key using the X-Api-Key header.")
+                .ExecuteAsync(context);
             return;
         }
 
@@ -189,14 +189,15 @@ public sealed class ApiKeyRateLimitMiddleware
 
         if (rateLimited)
         {
-            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            context.Response.ContentType = "application/json";
             context.Response.Headers["Retry-After"] = retryAfter.ToString();
             context.Response.Headers["X-RateLimit-Limit"] = MaxRequestsPerMinute.ToString();
             context.Response.Headers["X-RateLimit-Remaining"] = "0";
 
-            await context.Response.WriteAsync(
-                $$$"""{"error":"Rate limit exceeded. Maximum {{{MaxRequestsPerMinute}}} requests per minute.","retry_after":{{{retryAfter}}}}""");
+            await ApiProblemDetails.TooManyRequests(
+                    context,
+                    retryAfter,
+                    MaxRequestsPerMinute)
+                .ExecuteAsync(context);
             return;
         }
 

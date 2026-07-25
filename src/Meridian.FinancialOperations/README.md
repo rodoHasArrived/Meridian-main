@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.FinancialOperations
@@ -101,6 +101,16 @@ Statement reconciliation also lives here. Broker/custodian statement intake, map
 The statement-run workflow reconciles each imported statement against Meridian's own book rather than against itself: `StatementRunWorkflowService` resolves internal positions, cash, and ledger transactions through `IInternalReconciliationPopulationProvider` (default: an empty book, so every row is a genuine unmatched break) and runs the shared `StatementMatchingEngine` across positions, cash, and transactions in exact / tolerance / candidate / unmatched tiers. Foreign-currency amounts normalize to the reporting base currency through a fail-closed `IReconciliationFxRateProvider` (identity-only by default, so cross-currency lines break unless a rate is configured); cash matching retains its original currency identity after conversion so distinct per-currency balances cannot cross-match. Both statement-only and internal-only records surface as breaks with a truthful tolerance-breached flag and engine-sourced confidence. A real `IFxRateProvider` implementation (`InMemoryFxRateProvider`, identity/inverse/triangulation with as-of selection) is available to the execution and ledger layers.
 
 The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is shared and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+Import services capture bounded raw and canonical bytes once, compute authoritative SHA-256 values
+from those snapshots, validate any caller-supplied hash only as an assertion, and parse the same
+captured bytes. Canonical CSV rendering uses reversible RFC-style quoting for commas, quotes, and
+line breaks rather than replacing source characters. Raw uploads are retained under a portable,
+single-segment filename; traversal-shaped names keep only a valid basename, while dot segments and
+reserved device names use a deterministic safe fallback. Every retained path is resolved beneath
+the configured data root and refuses existing symbolic-link or reparse-point traversal. The
+retained duplicate key binds the raw and canonical hashes when they differ. Upgrade duplicate
+detection also checks the prior canonical-only identity and returns that retained run id, preventing
+the first post-upgrade retry from creating a second run for an already imported artifact.
 The commit result also carries the specific break ids and structured reconciliation case links
 created by the Financial Operations workflow, including each case route, status, priority, reason,
 and suggested next action, allowing Evidence Vault and browser clients to point operators directly

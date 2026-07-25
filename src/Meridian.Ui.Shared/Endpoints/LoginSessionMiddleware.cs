@@ -166,10 +166,10 @@ public sealed class LoginSessionMiddleware
         // Unauthenticated request — differentiate API from browser
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(
-                """{"error":"Unauthorized. Please sign in via the login page."}""");
+            await ApiProblemDetails.Unauthorized(
+                    context,
+                    "Sign in using the login page before accessing this resource.")
+                .ExecuteAsync(context);
         }
         else
         {
@@ -185,9 +185,11 @@ public sealed class LoginSessionMiddleware
 
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(
-                """{"error":"Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development."}""");
+            await ApiProblemDetails.ServiceUnavailable(
+                    context,
+                    "authentication",
+                    "Authentication is required but is not configured. Configure governed users or explicitly enable optional authentication for local development.")
+                .ExecuteAsync(context);
             return;
         }
 

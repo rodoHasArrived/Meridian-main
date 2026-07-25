@@ -6,6 +6,7 @@ using FluentAssertions;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -2877,6 +2878,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
         builder.Services.AddSingleton(fixture.BrokerageSync);
         builder.Services.AddSingleton(fixture.Reconciliation);
         builder.Services.AddSingleton(fixture.CloseReadiness);
+        builder.Services.AddSingleton<IScopedAuthorizationService>(
+            new AccountScopedAuthorizationService(fixture.AccountId));
 
         var app = builder.Build();
         app.Use(async (context, next) =>
@@ -2888,6 +2891,34 @@ public sealed class ProviderLedgerReconciliationServiceTests
         app.MapFundAccountEndpoints(JsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class AccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission required,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var isAllowed =
+                scopeKind == AccessScopeKindDto.Account &&
+                scopeId == allowedAccountId &&
+                (globalPermissions & required) == required;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                IsAllowed: isAllowed,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: isAllowed
+                    ? "The endpoint fixture grants the actor access to its test account."
+                    : "The endpoint fixture denies access outside its test account."));
+        }
     }
 
     private static string CreateTempRoot()

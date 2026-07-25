@@ -398,6 +398,120 @@ public sealed class PositionSnapshotStoreTests : IDisposable
             "LifecyclePolicyEngine scans {StorageRoot}/portfolios/**/*.jsonl for tiered-storage enforcement");
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../outside")]
+    [InlineData(@"..\outside")]
+    [InlineData("run/child")]
+    [InlineData(@"run\child")]
+    [InlineData("/absolute")]
+    [InlineData(@"C:\absolute")]
+    public async Task SaveSnapshot_InvalidRunPathSegment_RejectsWithoutCreatingFiles(string runId)
+    {
+        var act = () => _store.SaveSnapshotAsync(BuildSnapshot(runId, "acc-contained", cash: 1_000m));
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        Directory.EnumerateFiles(_tempRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SnapshotPartition_DotTraversal_CannotReadOrWriteOutsideConfiguredRoot()
+    {
+        var containedRoot = Path.Combine(_tempRoot, "contained-root");
+        var outsidePath = Path.Combine(_tempRoot, "snapshots.jsonl");
+        var outsideSnapshot = BuildSnapshot("..", "..", cash: 91_000m);
+        var outsideJson = JsonSerializer.Serialize(outsideSnapshot, SnapshotJsonOptions);
+        await File.WriteAllTextAsync(outsidePath, outsideJson + Environment.NewLine);
+        var store = new JsonlPositionSnapshotStore(
+            new StorageOptions { RootPath = containedRoot },
+            NullLogger<JsonlPositionSnapshotStore>.Instance);
+
+        var read = () => store.GetLatestSnapshotAsync("..", "..");
+        var write = () => store.SaveSnapshotAsync(outsideSnapshot with { Cash = 1m });
+
+        await read.Should().ThrowAsync<ArgumentException>();
+        await write.Should().ThrowAsync<ArgumentException>();
+        (await File.ReadAllTextAsync(outsidePath)).Should().Be(outsideJson + Environment.NewLine);
+        Directory.Exists(containedRoot).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SaveOwnedSnapshot_InvalidTenantPathSegment_RejectsWithoutCreatingFiles()
+    {
+        var snapshot = BuildSnapshot("run-owned-contained", "acc-owned-contained", cash: 1_000m) with
+        {
+            TenantId = "..",
+            CompanyId = "company-1",
+            FundProfileId = "fund-1",
+            LedgerBookId = Guid.NewGuid(),
+            EntityId = "entity-1"
+        };
+
+        var act = () => _store.SaveSnapshotAsync(snapshot);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        Directory.EnumerateFiles(_tempRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_ExistingDirectoryLink_RejectsWithoutWritingThroughLink()
+    {
+        var containedRoot = Path.Combine(_tempRoot, "link-root");
+        var outsideRoot = Path.Combine(_tempRoot, "outside-root");
+        Directory.CreateDirectory(containedRoot);
+        Directory.CreateDirectory(outsideRoot);
+        var portfoliosLink = Path.Combine(containedRoot, "portfolios");
+        if (!TryCreateDirectoryLink(portfoliosLink, outsideRoot))
+            return;
+
+        try
+        {
+            var store = new JsonlPositionSnapshotStore(
+                new StorageOptions { RootPath = containedRoot },
+                NullLogger<JsonlPositionSnapshotStore>.Instance);
+
+            var act = () => store.SaveSnapshotAsync(
+                BuildSnapshot("run-linked", "acc-linked", cash: 1_000m));
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            Directory.EnumerateFiles(outsideRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(portfoliosLink))
+                Directory.Delete(portfoliosLink);
+        }
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_ConfiguredRootLink_RejectsWithoutWritingThroughLink()
+    {
+        var outsideRoot = Path.Combine(_tempRoot, "outside-root-link-target");
+        var linkedRoot = Path.Combine(_tempRoot, "linked-snapshot-root");
+        Directory.CreateDirectory(outsideRoot);
+        if (!TryCreateDirectoryLink(linkedRoot, outsideRoot))
+            return;
+
+        try
+        {
+            var store = new JsonlPositionSnapshotStore(
+                new StorageOptions { RootPath = linkedRoot },
+                NullLogger<JsonlPositionSnapshotStore>.Instance);
+
+            var act = () => store.SaveSnapshotAsync(
+                BuildSnapshot("run-root-linked", "acc-root-linked", cash: 1_000m));
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            Directory.EnumerateFiles(outsideRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(linkedRoot))
+                Directory.Delete(linkedRoot);
+        }
+    }
+
     // ─── Positions serialisation ──────────────────────────────────────────────
 
     [Fact]
@@ -423,6 +537,19 @@ public sealed class PositionSnapshotStoreTests : IDisposable
         => new(
             new StorageOptions { RootPath = _tempRoot },
             NullLogger<JsonlPositionSnapshotStore>.Instance);
+
+    private static bool TryCreateDirectoryLink(string linkPath, string targetPath)
+    {
+        try
+        {
+            Directory.CreateSymbolicLink(linkPath, targetPath);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            return false;
+        }
+    }
 
     private string GetSnapshotPath(string runId, string accountId)
         => Path.Combine(_tempRoot, "portfolios", runId, accountId, "snapshots.jsonl");

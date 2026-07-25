@@ -143,17 +143,30 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
+            var hasProcessWideScopedAccessMigration = services.Any(
+                static descriptor =>
+                    descriptor.ServiceType == typeof(IHostedService) &&
+                    string.Equals(
+                        descriptor.ImplementationType?.Name,
+                        "ScopedAccessAssignmentStoreMigrationHostedService",
+                        StringComparison.Ordinal));
             services.TryAddSingleton(new ScopedAccessStoreOptions
             {
                 ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
                 Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
             });
+            services.TryAddSingleton<PostgresScopedAccessAssignmentStore>(sp =>
+                new PostgresScopedAccessAssignmentStore(
+                    sp.GetRequiredService<ScopedAccessStoreOptions>()));
             services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
+                sp.GetRequiredService<PostgresScopedAccessAssignmentStore>());
+            if (!hasProcessWideScopedAccessMigration)
             {
-                var store = new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>());
-                store.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return store;
-            });
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<
+                        IHostedService,
+                        WorkstationScopedAccessMigrationHostedService>());
+            }
         }
         else
         {
@@ -442,39 +455,24 @@ public static class WorkstationServiceCollectionExtensions
                 Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
             });
             services.TryAddSingleton<ReportingMigrationRunner>();
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<
+                    IHostedService,
+                    WorkstationReportingMigrationHostedService>());
             services.TryAddSingleton<IReportingArtifactStore>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<IReportingArtifactCatalog>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingArtifactCatalog(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingArtifactCatalog(sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<IReportingArtifactAuditStore>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingArtifactAuditStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingArtifactAuditStore(sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<ReportingArtifactVaultService>();
             services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingGovernanceRepository(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingGovernanceRepository(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<ReportingGovernanceService>();
             services.TryAddSingleton<PostgresReportingReconciliationEvidenceStore>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingReconciliationEvidenceStore(
-                    sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingReconciliationEvidenceStore(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<IReportingReconciliationEvidenceStore>(sp =>
                 sp.GetRequiredService<PostgresReportingReconciliationEvidenceStore>());
             services.TryAddSingleton<IReportingReconciliationEvidenceRetentionStore>(sp =>
@@ -492,18 +490,12 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton<IReportingGovernanceEndpointCoordinator>(sp =>
                 sp.GetRequiredService<ReportingGovernanceCoordinatorService>());
             services.TryAddSingleton<IReportingAccessGrantStore>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingAccessGrantStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingAccessGrantStore(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<ReportingAccessGrantService>();
             services.TryAddSingleton<IReportingDeliveryStore>(sp =>
-            {
-                sp.GetRequiredService<ReportingMigrationRunner>()
-                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return new PostgresReportingDeliveryStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
-            });
+                new PostgresReportingDeliveryStore(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.AddSecureReportingDistribution();
         }
         // Resolve the durable ledger dependencies only when a certification attempt is made. This
@@ -969,6 +961,26 @@ public static class WorkstationServiceCollectionExtensions
 
     private static string ResolveWorkstationDataDirectory(IServiceProvider services)
         => Path.Combine(ResolveConfigDataRoot(services), "workstation");
+}
+
+internal sealed class WorkstationScopedAccessMigrationHostedService(
+    PostgresScopedAccessAssignmentStore store) : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+        => store.EnsureMigratedAsync(cancellationToken);
+
+    public Task StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}
+
+internal sealed class WorkstationReportingMigrationHostedService(
+    ReportingMigrationRunner runner) : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+        => runner.EnsureMigratedAsync(cancellationToken);
+
+    public Task StopAsync(CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }
 
 /// <summary>

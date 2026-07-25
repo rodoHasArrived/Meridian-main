@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Audit.Compliance;
@@ -55,6 +56,7 @@ namespace Meridian;
 public sealed class UiServer : IAsyncDisposable
 {
     public const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+    private static readonly TimeSpan FailedStartCleanupTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>Configuration section that binds <see cref="BrokerageConfiguration"/> for the host.</summary>
     public const string ExecutionBrokerageSectionKey = "Execution:Brokerage";
@@ -66,7 +68,17 @@ public sealed class UiServer : IAsyncDisposable
     private readonly ApiHostOptions _apiHostOptions;
     private readonly string _configPath;
     private readonly int _port;
+    private readonly Func<CancellationToken, Task>? _readinessEvaluator;
+    private readonly SemaphoreSlim _databaseReadinessGate = new(1, 1);
+    private readonly SemaphoreSlim _lifecycleOperationGate = new(1, 1);
+    private readonly object _disposeStateGate = new();
     private volatile bool _databaseReadinessCompleted;
+    private bool _disposeRequested;
+    private bool _applicationStartBegan;
+    private bool _applicationStopCompleted;
+    private bool _startCompleted;
+    private bool _startFailed;
+    private Task? _disposeTask;
 
     /// <summary>
     /// Creates a new UiServer using the centralized ServiceCompositionRoot.
@@ -80,422 +92,482 @@ public sealed class UiServer : IAsyncDisposable
         int port = 8080,
         IApplicationLifecycleCoordinator? lifecycle = null,
         ApiHostOptions? apiHostOptions = null)
+        : this(
+            configPath,
+            port,
+            lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger),
+            ownsLifecycle: lifecycle is null,
+            apiHostOptions: apiHostOptions)
     {
-        var serverBuildStopwatch = Stopwatch.StartNew();
+    }
+
+    internal UiServer(
+        string configPath,
+        int port,
+        IApplicationLifecycleCoordinator lifecycle,
+        bool ownsLifecycle,
+        ApiHostOptions? apiHostOptions,
+        Func<CancellationToken, Task>? readinessEvaluator = null,
+        Action<IServiceCollection>? configureServices = null)
+    {
         _configPath = configPath;
         _port = port;
-        _lifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger);
-        _ownsLifecycle = lifecycle is null;
+        _lifecycle = lifecycle ?? throw new ArgumentNullException(nameof(lifecycle));
+        _ownsLifecycle = ownsLifecycle;
+        _readinessEvaluator = readinessEvaluator;
 
-        // Unified persistence config must resolve before service composition and the
-        // ledger/readiness gates below read the per-domain connection-string variables.
-        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
-
-        var persistenceStatus = PersistenceConfigurationStatus.Evaluate();
-        if (persistenceStatus.Mode != PersistenceStatusSnapshot.Configured)
+        WebApplication? builtApp = null;
+        try
         {
-            Serilog.Log.Warning(
-                "PERSISTENCE: {PersistenceMode} — store domains without a database: {MissingDomains}. " +
-                "Journal entries, reconciliations, and approvals in these domains are held in memory and will be " +
-                "lost on restart. Set MERIDIAN_DATABASE_URL (or the per-domain MERIDIAN_*_CONNECTION_STRING variables) to persist them.",
-                persistenceStatus.Mode.ToUpperInvariant(),
-                string.Join(", ", persistenceStatus.MissingDomains));
-        }
+            var serverBuildStopwatch = Stopwatch.StartNew();
 
-        var contentRootPath = Directory.GetCurrentDirectory();
-        var serviceRegistrationStopwatch = Stopwatch.StartNew();
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            ContentRootPath = contentRootPath
-        });
-        if (File.Exists(configPath))
-        {
-            builder.Configuration.AddJsonFile(configPath, optional: true, reloadOnChange: false);
-        }
+            // Unified persistence config must resolve before service composition and the
+            // ledger/readiness gates below read the per-domain connection-string variables.
+            Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
 
-        _apiHostOptions = apiHostOptions ?? ApiHostOptions.FromConfiguration(builder.Configuration, port);
-        var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
-
-        // Minimize logging from ASP.NET Core
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
-        builder.WebHost.UseUrls(_apiHostOptions.Urls);
-
-        // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
-        // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
-        // Existing source-generated contexts still take precedence; reflection acts as a fallback only.
-        builder.Services.ConfigureHttpJsonOptions(o =>
-            o.SerializerOptions.TypeInfoResolverChain.Add(new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()));
-        if (_apiHostOptions.AllowedOrigins.Length > 0)
-        {
-            builder.Services.AddCors(options =>
+            var persistenceStatus = PersistenceConfigurationStatus.Evaluate();
+            if (persistenceStatus.Mode != PersistenceStatusSnapshot.Configured)
             {
-                options.AddPolicy(
-                    ApiHostOptions.CorsPolicyName,
-                    policy => policy
-                        .WithOrigins(_apiHostOptions.AllowedOrigins)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials());
-            });
-        }
-
-        // ADR-019: declare the typed deployment posture before feature composition so the
-        // production registration policy and the host resolve the same production answer.
-        builder.Services.DeclareMeridianDeploymentPosture(_apiHostOptions.ToDeploymentPosture());
-
-        // Use centralized service composition root
-        var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
-        builder.Services.AddMarketDataServices(compositionOptions);
-        builder.Services.AddMutationRateLimiter();
-        builder.Services.AddSingleton(_lifecycle);
-
-        var tradeFillPostingOptions = builder.Configuration
-            .GetSection(TradeFillLedgerPostingHostOptions.SectionKey)
-            .Get<TradeFillLedgerPostingHostOptions>()
-            ?? new TradeFillLedgerPostingHostOptions();
-        if (tradeFillPostingOptions.Enabled)
-        {
-            if (!LedgerStartup.IsConfigured())
-            {
-                throw new InvalidOperationException(
-                    $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} " +
-                    $"(or {Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable}) so accepted fills have an authoritative ledger target.");
+                Serilog.Log.Warning(
+                    "PERSISTENCE: {PersistenceMode} — store domains without a database: {MissingDomains}. " +
+                    "Journal entries, reconciliations, and approvals in these domains are held in memory and will be " +
+                    "lost on restart. Set MERIDIAN_DATABASE_URL (or the per-domain MERIDIAN_*_CONNECTION_STRING variables) to persist them.",
+                    persistenceStatus.Mode.ToUpperInvariant(),
+                    string.Join(", ", persistenceStatus.MissingDomains));
             }
 
-            var postingContext = tradeFillPostingOptions.BuildContext();
-            var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
-            builder.Services.AddTradeFillLedgerPosting(
-                postingContext,
-                sp => new GovernedTradeFillLedgerPostingTarget(
-                    sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
-                    sp.GetRequiredService<ILedgerJournalStore>()),
-                sp => new WalTradeFillPostingStore(
-                    new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
-                    sp.GetRequiredService<ILogger<WalTradeFillPostingStore>>()),
-                _ => new AtomicTradeFillHandoffFailureStore(
-                    new TradeFillHandoffFailureStoreOptions(
-                        tradeFillStoreRoot,
-                        postingContext)),
-                configure: options =>
+            var contentRootPath = Directory.GetCurrentDirectory();
+            var serviceRegistrationStopwatch = Stopwatch.StartNew();
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = contentRootPath
+            });
+            if (File.Exists(configPath))
+            {
+                builder.Configuration.AddJsonFile(configPath, optional: true, reloadOnChange: false);
+            }
+
+            _apiHostOptions = apiHostOptions ?? ApiHostOptions.FromConfiguration(builder.Configuration, port);
+            var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
+
+            // Minimize logging from ASP.NET Core
+            builder.Logging.SetMinimumLevel(LogLevel.Warning);
+            builder.WebHost.UseUrls(_apiHostOptions.Urls);
+
+            // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
+            // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
+            // Existing source-generated contexts still take precedence; reflection acts as a fallback only.
+            builder.Services.ConfigureHttpJsonOptions(o =>
+                o.SerializerOptions.TypeInfoResolverChain.Add(new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()));
+            builder.Services.AddMeridianApiProblemDetails();
+            if (_apiHostOptions.AllowedOrigins.Length > 0)
+            {
+                builder.Services.AddCors(options =>
                 {
-                    options.ChannelCapacity = tradeFillPostingOptions.ChannelCapacity;
-                    options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
-                    options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
+                    options.AddPolicy(
+                        ApiHostOptions.CorsPolicyName,
+                        policy => policy
+                            .WithOrigins(_apiHostOptions.AllowedOrigins)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials());
                 });
-        }
-
-        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
-        builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
-        builder.Services.AddWorkstationSharedServices();
-        builder.Services.AddOmsIntegrationApiHandlers();
-
-        if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
-        {
-            builder.Services.AddSingleton(runtimeLifecycle);
-            builder.Services.AddSingleton<IRuntimeLifecycleControlPlane>(runtimeLifecycle);
-            builder.Services.AddSingleton<ILifecycleReceiptStore>(new JsonLifecycleReceiptStore(
-                new LifecycleReceiptStoreOptions { DataRoot = resolvedDataRoot }));
-            builder.Services.AddSingleton(new RuntimeShutdownOptions());
-            builder.Services.AddSingleton<IRuntimeShutdownParticipant, EventPipelineShutdownParticipant>();
-            builder.Services.AddSingleton<IRuntimeShutdownSequence, RuntimeShutdownSequence>();
-            builder.Services.AddHostedService<LifecycleControlPlaneHostedService>();
-            if (!string.IsNullOrWhiteSpace(
-                    Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
-            {
-                builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
             }
 
-            AddLifecycleReadinessChecks(
-                builder.Services,
-                contentRootPath,
-                resolvedDataRoot,
-                builder.Environment);
-            builder.Services.AddSingleton<IRuntimeReadinessService, RuntimeReadinessService>();
-        }
+            // ADR-019: declare the typed deployment posture before feature composition so the
+            // production registration policy and the host resolve the same production answer.
+            builder.Services.DeclareMeridianDeploymentPosture(_apiHostOptions.ToDeploymentPosture());
 
-        builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
-        {
-            var pipeline = sp.GetRequiredService<EventPipeline>();
-            var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
+            // Use centralized service composition root
+            var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+            builder.Services.AddMarketDataServices(compositionOptions);
+            builder.Services.AddMutationRateLimiter();
+            builder.Services.AddSingleton(_lifecycle);
 
-            return new StatusEndpointHandlers(
-                Metrics.GetSnapshot,
-                pipeline.GetStatistics,
-                () => depthCollector.GetRecentIntegrityEvents(),
-                () => null,
-                degradedModeProvider: () => EvaluateDegradedMode(sp));
-        });
-
-        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
-            new JsonlReconciliationGovernanceAuditStore(Path.Combine(resolvedDataRoot, "reconciliation", "governance-audit.jsonl")));
-        builder.Services.AddSingleton<ReconciliationGovernanceService>();
-        // Durable promotion-record store is required by PromotionService; without it
-        // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
-        builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
-            new JsonlPromotionRecordStore(
-                Path.Combine(resolvedDataRoot, "strategies", "promotions"),
-                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
-        builder.Services.AddSingleton<ExecutionAuditTrailService>();
-        builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
-            Path.Combine(resolvedDataRoot, "execution", "controls"),
-            FailClosedOnMissingOrCorruptSnapshot:
-                ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
-        builder.Services.AddSingleton<ExecutionOperatorControlService>();
-        // Durable paper-session storage root is operator-tunable via
-        // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
-        var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
-            $"{PaperSessionOptions.SectionKey}:{nameof(PaperSessionOptions.BaseDirectory)}");
-        builder.Services.AddSingleton<IPaperSessionStore>(sp =>
-            new JsonlFilePaperSessionStore(
-                string.IsNullOrWhiteSpace(paperSessionBaseDirectory)
-                    ? Path.Combine(resolvedDataRoot, "execution", "sessions")
-                    : paperSessionBaseDirectory,
-                sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
-        builder.Services.AddSingleton<PaperSessionPersistenceService>();
-        builder.Services.AddSingleton<StrategyLifecycleManager>();
-        builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        // Durable, tamper-evident compliance audit log — persisted so events survive a restart
-        // (an in-memory-only log would silently lose all compliance history).
-        builder.Services.AddSingleton(
-            new Meridian.Audit.Compliance.ImmutableAuditLogService(
-                Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
-        builder.Services.AddSingleton<AccessReviewService>();
-
-        // Execution layer — brokerage-configuration-aware gateway composition. The default
-        // configuration ("paper", live execution disabled) preserves the paper-first host:
-        // the paper gateways below are registered ahead of AddBrokerageExecution's TryAdd
-        // fallbacks and now price market fills from the live feed cache. When
-        // "Execution:Brokerage" enables live execution with a named gateway, the host skips
-        // the paper registrations so AddBrokerageExecution routes orders to the registered
-        // brokerage gateway behind the OMS pre-trade gate stack.
-        var brokerageConfiguration = builder.Configuration
-            .GetSection(ExecutionBrokerageSectionKey)
-            .Get<BrokerageConfiguration>()
-            ?? new BrokerageConfiguration();
-        var usesPaperGateway = !brokerageConfiguration.LiveExecutionEnabled
-            || string.IsNullOrWhiteSpace(brokerageConfiguration.Gateway)
-            || string.Equals(brokerageConfiguration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
-        builder.Services.AddSingleton(
-            builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
-                .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
-            ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
-        var configuredOrderManagement = builder.Configuration
-            .GetSection(OrderManagementSystemOptions.SectionKey)
-            .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
-        builder.Services.AddSingleton(new OrderManagementSystemOptions
-        {
-            MaxRetainedOrders = configuredOrderManagement.MaxRetainedOrders,
-            ExecutionChannelCapacity = configuredOrderManagement.ExecutionChannelCapacity,
-            CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
-            RequireProductionSafetyDependencies =
-                ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
-        });
-        builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
-            builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
-        builder.Services.AddHostedBrokerageGateways();
-        if (usesPaperGateway)
-        {
-            builder.Services.AddSingleton<IOrderGateway>(sp =>
-                new Meridian.Execution.Adapters.PaperTradingGateway(
-                    sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
-                    securityMaster: null,
-                    options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                    liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
-        }
-        builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
-        builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
-        // Production IPositionTracker projection over the live portfolio state. Gives the
-        // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
-        // instead of leaving IPositionTracker without any non-test implementation.
-        builder.Services.AddSingleton<IPositionTracker>(sp =>
-            new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
-        builder.Services.AddSingleton<IOrderManager>(sp =>
-        {
-            var gateway = sp.GetRequiredService<IExecutionGateway>();
-            var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-            // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
-            // not a valid host composition in any supported production posture.
-            var risk = sp.GetRequiredService<IRiskValidator>();
-            var portfolio = sp.GetRequiredService<PaperTradingPortfolio>();
-            return new OrderManagementSystem(
-                gateway,
-                logger,
-                riskValidator: risk,
-                securityMasterGate: sp.GetService<ISecurityMasterGate>(),
-                operatorControls: sp.GetService<ExecutionOperatorControlService>(),
-                auditTrail: sp.GetService<ExecutionAuditTrailService>(),
-                portfolioState: portfolio,
-                sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
-                liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
-                options: sp.GetRequiredService<OrderManagementSystemOptions>(),
-                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
-        });
-        if (usesPaperGateway)
-        {
-            builder.Services.AddSingleton<IExecutionGateway>(sp =>
-                new Meridian.Execution.PaperTradingGateway(
-                    sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
-                    sp.GetService<ISecurityMasterQueryService>(),
-                    sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
-                    sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
-        }
-
-        // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway
-        // selection (TryAdd: the paper registrations above win when paper mode is configured).
-        builder.Services.AddBrokerageExecution(config =>
-            builder.Configuration.GetSection(ExecutionBrokerageSectionKey).Bind(config));
-
-        // Live trading engine — closes the promotion loop by running promoted paper/live
-        // strategies against the live market data feed through the OMS.
-        builder.Services.AddLiveTradingEngine(builder.Configuration);
-
-        // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
-        // engine compiles and executes arbitrary C# in-process. Production/customer distributions
-        // fail closed until execution is moved behind a separately isolated worker boundary.
-        var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
-        ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
-            builder.Services,
-            quantLabEnabled);
-        if (quantLabEnabled)
-        {
-            builder.Services.AddMeridianQuantScript();
-        }
-
-        // Register OpenAPI/Swagger services
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
+            var tradeFillPostingOptions = builder.Configuration
+                .GetSection(TradeFillLedgerPostingHostOptions.SectionKey)
+                .Get<TradeFillLedgerPostingHostOptions>()
+                ?? new TradeFillLedgerPostingHostOptions();
+            if (tradeFillPostingOptions.Enabled)
             {
-                Title = "Meridian API",
-                Version = "v1",
-                Description = "REST API for the Meridian system. Provides endpoints for real-time data streaming, " +
-                              "historical backfill, storage management, provider configuration, and data quality monitoring.",
-                Contact = new OpenApiContact
+                if (!LedgerStartup.IsConfigured())
                 {
-                    Name = "Meridian Team"
-                },
-                License = new OpenApiLicense
-                {
-                    Name = "MIT"
+                    throw new InvalidOperationException(
+                        $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} " +
+                        $"(or {Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable}) so accepted fills have an authoritative ledger target.");
                 }
-            });
 
-            options.TagActionsBy(api =>
+                var postingContext = tradeFillPostingOptions.BuildContext();
+                var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+                builder.Services.AddTradeFillLedgerPosting(
+                    postingContext,
+                    sp => new GovernedTradeFillLedgerPostingTarget(
+                        sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                        sp.GetRequiredService<ILedgerJournalStore>()),
+                    sp => new WalTradeFillPostingStore(
+                        new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
+                        sp.GetRequiredService<ILogger<WalTradeFillPostingStore>>()),
+                    _ => new AtomicTradeFillHandoffFailureStore(
+                        new TradeFillHandoffFailureStoreOptions(
+                            tradeFillStoreRoot,
+                            postingContext)),
+                    configure: options =>
+                    {
+                        options.ChannelCapacity = tradeFillPostingOptions.ChannelCapacity;
+                        options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
+                        options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
+                    });
+            }
+
+            builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
+            builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
+            builder.Services.AddWorkstationSharedServices();
+            builder.Services.AddOmsIntegrationApiHandlers();
+
+            if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
             {
-                var path = api.RelativePath ?? string.Empty;
-                if (path.StartsWith("api/symbols"))
-                    return ["Symbols"];
-                if (path.StartsWith("api/storage/quality"))
-                    return ["Storage Quality"];
-                if (path.StartsWith("api/storage"))
-                    return ["Storage"];
-                if (path.StartsWith("api/config"))
-                    return ["Configuration"];
-                if (path.StartsWith("api/backfill"))
-                    return ["Backfill"];
-                if (path.StartsWith("api/providers"))
-                    return ["Providers"];
-                if (path.StartsWith("api/quality"))
-                    return ["Data Quality"];
-                if (path.StartsWith("api/sla"))
-                    return ["SLA"];
-                if (path.StartsWith("api/maintenance"))
-                    return ["Maintenance"];
-                if (path.StartsWith("api/packaging"))
-                    return ["Packaging"];
-                if (path.StartsWith("api/failover"))
-                    return ["Failover"];
-                if (path.StartsWith("api/export"))
-                    return ["Export"];
-                if (path.StartsWith("api/diagnostics"))
-                    return ["Diagnostics"];
-                if (path.StartsWith("api/admin"))
-                    return ["Admin"];
-                if (path.StartsWith("api/live"))
-                    return ["Live Data"];
-                if (path.StartsWith("api/replay"))
-                    return ["Replay"];
-                if (path.StartsWith("api/lean"))
-                    return ["Lean Integration"];
-                if (path.StartsWith("api/messaging"))
-                    return ["Messaging"];
-                if (path.StartsWith("api/analytics"))
-                    return ["Analytics"];
-                if (path.StartsWith("api/historical"))
-                    return ["Historical"];
-                if (path.StartsWith("api/options"))
-                    return ["Options"];
-                if (path.StartsWith("api/strategies"))
-                    return ["Strategies"];
-                if (path.StartsWith("api/execution"))
-                    return ["Execution"];
-                if (path.StartsWith("api/promotion"))
-                    return ["Promotion"];
-                return ["General"];
+                builder.Services.AddSingleton(runtimeLifecycle);
+                builder.Services.AddSingleton<IRuntimeLifecycleControlPlane>(runtimeLifecycle);
+                builder.Services.AddSingleton<ILifecycleReceiptStore>(new JsonLifecycleReceiptStore(
+                    new LifecycleReceiptStoreOptions { DataRoot = resolvedDataRoot }));
+                builder.Services.AddSingleton(new RuntimeShutdownOptions());
+                builder.Services.AddSingleton<IRuntimeShutdownParticipant, EventPipelineShutdownParticipant>();
+                builder.Services.AddSingleton<IRuntimeShutdownSequence, RuntimeShutdownSequence>();
+                builder.Services.AddHostedService<LifecycleControlPlaneHostedService>();
+                if (!string.IsNullOrWhiteSpace(
+                        Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
+                {
+                    builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
+                }
+
+                AddLifecycleReadinessChecks(
+                    builder.Services,
+                    contentRootPath,
+                    resolvedDataRoot,
+                    builder.Environment);
+                builder.Services.AddSingleton<IRuntimeReadinessService, RuntimeReadinessService>();
+            }
+
+            builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
+            {
+                var pipeline = sp.GetRequiredService<EventPipeline>();
+                var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
+
+                return new StatusEndpointHandlers(
+                    Metrics.GetSnapshot,
+                    pipeline.GetStatistics,
+                    () => depthCollector.GetRecentIntegrityEvents(),
+                    () => null,
+                    degradedModeProvider: () => EvaluateDegradedMode(sp));
             });
-        });
 
-        ValidateAuthenticationTransportSecurity(builder.Environment, _apiHostOptions);
-        serviceRegistrationStopwatch.Stop();
+            builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
+                new JsonlReconciliationGovernanceAuditStore(Path.Combine(resolvedDataRoot, "reconciliation", "governance-audit.jsonl")));
+            builder.Services.AddSingleton<ReconciliationGovernanceService>();
+            // Durable promotion-record store is required by PromotionService; without it
+            // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
+            builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
+                new JsonlPromotionRecordStore(
+                    Path.Combine(resolvedDataRoot, "strategies", "promotions"),
+                    sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
+            builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
+            builder.Services.AddSingleton<ExecutionAuditTrailService>();
+            builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
+                Path.Combine(resolvedDataRoot, "execution", "controls"),
+                FailClosedOnMissingOrCorruptSnapshot:
+                    ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
+            builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            // Durable paper-session storage root is operator-tunable via
+            // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
+            var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
+                $"{PaperSessionOptions.SectionKey}:{nameof(PaperSessionOptions.BaseDirectory)}");
+            builder.Services.AddSingleton<IPaperSessionStore>(sp =>
+                new JsonlFilePaperSessionStore(
+                    string.IsNullOrWhiteSpace(paperSessionBaseDirectory)
+                        ? Path.Combine(resolvedDataRoot, "execution", "sessions")
+                        : paperSessionBaseDirectory,
+                    sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
+            builder.Services.AddSingleton<PaperSessionPersistenceService>();
+            builder.Services.AddSingleton<StrategyLifecycleManager>();
+            builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
+            // Durable, tamper-evident compliance audit log — persisted so events survive a restart
+            // (an in-memory-only log would silently lose all compliance history).
+            builder.Services.AddSingleton(
+                new Meridian.Audit.Compliance.ImmutableAuditLogService(
+                    Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
+            builder.Services.AddSingleton<AccessReviewService>();
 
-        var appBuildStopwatch = Stopwatch.StartNew();
-        _app = builder.Build();
-        appBuildStopwatch.Stop();
-        _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
-        _logger.LogInformation(
-            "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
-            serviceRegistrationStopwatch.ElapsedMilliseconds,
-            appBuildStopwatch.ElapsedMilliseconds);
+            // Execution layer — brokerage-configuration-aware gateway composition. The default
+            // configuration ("paper", live execution disabled) preserves the paper-first host:
+            // the paper gateways below are registered ahead of AddBrokerageExecution's TryAdd
+            // fallbacks and now price market fills from the live feed cache. When
+            // "Execution:Brokerage" enables live execution with a named gateway, the host skips
+            // the paper registrations so AddBrokerageExecution routes orders to the registered
+            // brokerage gateway behind the OMS pre-trade gate stack.
+            var brokerageConfiguration = builder.Configuration
+                .GetSection(ExecutionBrokerageSectionKey)
+                .Get<BrokerageConfiguration>()
+                ?? new BrokerageConfiguration();
+            var usesPaperGateway = !brokerageConfiguration.LiveExecutionEnabled
+                || string.IsNullOrWhiteSpace(brokerageConfiguration.Gateway)
+                || string.Equals(brokerageConfiguration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
+            builder.Services.AddSingleton(
+                builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
+                    .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
+                ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+            var configuredOrderManagement = builder.Configuration
+                .GetSection(OrderManagementSystemOptions.SectionKey)
+                .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
+            builder.Services.AddSingleton(new OrderManagementSystemOptions
+            {
+                MaxRetainedOrders = configuredOrderManagement.MaxRetainedOrders,
+                ExecutionChannelCapacity = configuredOrderManagement.ExecutionChannelCapacity,
+                CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
+                RequireProductionSafetyDependencies =
+                    ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
+            });
+            builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
+                builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
+            builder.Services.AddHostedBrokerageGateways();
+            if (usesPaperGateway)
+            {
+                builder.Services.AddSingleton<IOrderGateway>(sp =>
+                    new Meridian.Execution.Adapters.PaperTradingGateway(
+                        sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
+                        securityMaster: null,
+                        options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
+                        liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+            }
+            builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+            builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+            // Production IPositionTracker projection over the live portfolio state. Gives the
+            // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
+            // instead of leaving IPositionTracker without any non-test implementation.
+            builder.Services.AddSingleton<IPositionTracker>(sp =>
+                new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
+            builder.Services.AddSingleton<IOrderManager>(sp =>
+            {
+                var gateway = sp.GetRequiredService<IExecutionGateway>();
+                var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
+                // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
+                // not a valid host composition in any supported production posture.
+                var risk = sp.GetRequiredService<IRiskValidator>();
+                var portfolio = sp.GetRequiredService<PaperTradingPortfolio>();
+                return new OrderManagementSystem(
+                    gateway,
+                    logger,
+                    riskValidator: risk,
+                    securityMasterGate: sp.GetService<ISecurityMasterGate>(),
+                    operatorControls: sp.GetService<ExecutionOperatorControlService>(),
+                    auditTrail: sp.GetService<ExecutionAuditTrailService>(),
+                    portfolioState: portfolio,
+                    sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
+                    brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
+                    liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
+                    options: sp.GetRequiredService<OrderManagementSystemOptions>(),
+                    tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
+                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+            });
+            if (usesPaperGateway)
+            {
+                builder.Services.AddSingleton<IExecutionGateway>(sp =>
+                    new Meridian.Execution.PaperTradingGateway(
+                        sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
+                        sp.GetService<ISecurityMasterQueryService>(),
+                        sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
+                        sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+            }
 
-        var readinessStopwatch = Stopwatch.StartNew();
-        LedgerStartup.EnsureDatabaseReady(_app.Services, _logger);
-        SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
-        DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
-        FundAccountsStartup.EnsureDatabaseReady(_app.Services, _logger);
-        FundStructureStartup.EnsureDatabaseReady(_app.Services, _logger);
-        BankingStartup.EnsureDatabaseReady(_app.Services, _logger);
-        MoneyMarketStartup.EnsureDatabaseReady(_app.Services, _logger);
-        _databaseReadinessCompleted = true;
-        readinessStopwatch.Stop();
-        _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
+            // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway
+            // selection (TryAdd: the paper registrations above win when paper mode is configured).
+            builder.Services.AddBrokerageExecution(config =>
+                builder.Configuration.GetSection(ExecutionBrokerageSectionKey).Bind(config));
 
-        // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
-        ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
+            // Live trading engine — closes the promotion loop by running promoted paper/live
+            // strategies against the live market data feed through the OMS.
+            builder.Services.AddLiveTradingEngine(builder.Configuration);
 
-        // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
-        _app.UseLoginSessionAuthentication();
-        // Enforce X-Api-Key on /api/* for out-of-band clients when MDC_API_KEY is set.
-        // Runs after session auth so browser-workstation requests authenticated by a login
-        // session pass without a key; a no-op when MDC_API_KEY is unset.
-        _app.UseApiKeyAuthentication();
-        _app.UseCookieCsrfProtection();
-        _app.UseRateLimiter();
-        if (_apiHostOptions.AllowedOrigins.Length > 0)
-        {
-            _app.UseCors(ApiHostOptions.CorsPolicyName);
+            // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
+            // engine compiles and executes arbitrary C# in-process. Production/customer distributions
+            // fail closed until execution is moved behind a separately isolated worker boundary.
+            var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
+            ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
+                builder.Services,
+                quantLabEnabled);
+            if (quantLabEnabled)
+            {
+                builder.Services.AddMeridianQuantScript();
+            }
+
+            // Register OpenAPI/Swagger services
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Meridian API",
+                    Version = "v1",
+                    Description = "REST API for the Meridian system. Provides endpoints for real-time data streaming, " +
+                                  "historical backfill, storage management, provider configuration, and data quality monitoring.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Meridian Team"
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "MIT"
+                    }
+                });
+
+                options.TagActionsBy(api =>
+                {
+                    var path = api.RelativePath ?? string.Empty;
+                    if (path.StartsWith("api/symbols"))
+                        return ["Symbols"];
+                    if (path.StartsWith("api/storage/quality"))
+                        return ["Storage Quality"];
+                    if (path.StartsWith("api/storage"))
+                        return ["Storage"];
+                    if (path.StartsWith("api/config"))
+                        return ["Configuration"];
+                    if (path.StartsWith("api/backfill"))
+                        return ["Backfill"];
+                    if (path.StartsWith("api/providers"))
+                        return ["Providers"];
+                    if (path.StartsWith("api/quality"))
+                        return ["Data Quality"];
+                    if (path.StartsWith("api/sla"))
+                        return ["SLA"];
+                    if (path.StartsWith("api/maintenance"))
+                        return ["Maintenance"];
+                    if (path.StartsWith("api/packaging"))
+                        return ["Packaging"];
+                    if (path.StartsWith("api/failover"))
+                        return ["Failover"];
+                    if (path.StartsWith("api/export"))
+                        return ["Export"];
+                    if (path.StartsWith("api/diagnostics"))
+                        return ["Diagnostics"];
+                    if (path.StartsWith("api/admin"))
+                        return ["Admin"];
+                    if (path.StartsWith("api/live"))
+                        return ["Live Data"];
+                    if (path.StartsWith("api/replay"))
+                        return ["Replay"];
+                    if (path.StartsWith("api/lean"))
+                        return ["Lean Integration"];
+                    if (path.StartsWith("api/messaging"))
+                        return ["Messaging"];
+                    if (path.StartsWith("api/analytics"))
+                        return ["Analytics"];
+                    if (path.StartsWith("api/historical"))
+                        return ["Historical"];
+                    if (path.StartsWith("api/options"))
+                        return ["Options"];
+                    if (path.StartsWith("api/strategies"))
+                        return ["Strategies"];
+                    if (path.StartsWith("api/execution"))
+                        return ["Execution"];
+                    if (path.StartsWith("api/promotion"))
+                        return ["Promotion"];
+                    return ["General"];
+                });
+            });
+
+            ValidateAuthenticationTransportSecurity(builder.Environment, _apiHostOptions);
+            configureServices?.Invoke(builder.Services);
+            serviceRegistrationStopwatch.Stop();
+
+            var appBuildStopwatch = Stopwatch.StartNew();
+            builtApp = builder.Build();
+            _app = builtApp;
+            appBuildStopwatch.Stop();
+            _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+            _logger.LogInformation(
+                "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
+                serviceRegistrationStopwatch.ElapsedMilliseconds,
+                appBuildStopwatch.ElapsedMilliseconds);
+
+            // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
+            ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
+
+            // Standardize fail-closed endpoint failures before authentication and other
+            // middleware can short-circuit the request pipeline.
+            _app.UseExceptionHandler();
+            _app.UseWhen(
+                context => context.Request.Path.StartsWithSegments("/api"),
+                apiPipeline => apiPipeline.UseStatusCodePages(async statusCodeContext =>
+                {
+                    var problemDetailsService = statusCodeContext.HttpContext.RequestServices
+                        .GetRequiredService<IProblemDetailsService>();
+                    await problemDetailsService.WriteAsync(
+                        new ProblemDetailsContext
+                        {
+                            HttpContext = statusCodeContext.HttpContext
+                        });
+                }));
+
+            // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
+            _app.UseLoginSessionAuthentication();
+            // Enforce X-Api-Key on /api/* for out-of-band clients when MDC_API_KEY is set.
+            // Runs after session auth so browser-workstation requests authenticated by a login
+            // session pass without a key; a no-op when MDC_API_KEY is unset.
+            _app.UseApiKeyAuthentication();
+            _app.UseCookieCsrfProtection();
+            _app.UseRateLimiter();
+            if (_apiHostOptions.AllowedOrigins.Length > 0)
+            {
+                _app.UseCors(ApiHostOptions.CorsPolicyName);
+            }
+
+            // Enable Swagger middleware
+            _app.UseSwagger();
+            _app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meridian API v1");
+                options.RoutePrefix = "swagger";
+                options.DocumentTitle = "Meridian - API Documentation";
+            });
+
+            var routeStopwatch = Stopwatch.StartNew();
+            ConfigureRoutes();
+            routeStopwatch.Stop();
+            serverBuildStopwatch.Stop();
+            _logger.LogInformation(
+                "UiServer configured routes in {RouteMapMs} ms; constructor completed in {ElapsedMs} ms",
+                routeStopwatch.ElapsedMilliseconds,
+                serverBuildStopwatch.ElapsedMilliseconds);
         }
-
-        // Enable Swagger middleware
-        _app.UseSwagger();
-        _app.UseSwaggerUI(options =>
+        catch
         {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Meridian API v1");
-            options.RoutePrefix = "swagger";
-            options.DocumentTitle = "Meridian - API Documentation";
-        });
+            try
+            {
+                if (builtApp is not null)
+                    builtApp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+            catch (Exception cleanupException)
+            {
+                Serilog.Log.Warning(
+                    cleanupException,
+                    "UiServer disposal raised an error after construction failed");
+            }
 
-        var routeStopwatch = Stopwatch.StartNew();
-        ConfigureRoutes();
-        routeStopwatch.Stop();
-        serverBuildStopwatch.Stop();
-        _logger.LogInformation(
-            "UiServer configured routes in {RouteMapMs} ms; constructor completed in {ElapsedMs} ms",
-            routeStopwatch.ElapsedMilliseconds,
-            serverBuildStopwatch.ElapsedMilliseconds);
+            if (_ownsLifecycle)
+            {
+                try
+                {
+                    _lifecycle.Dispose();
+                }
+                catch (Exception cleanupException)
+                {
+                    Serilog.Log.Warning(
+                        cleanupException,
+                        "UiServer lifecycle disposal raised an error after construction failed");
+                }
+            }
+
+            throw;
+        }
     }
 
     private void ConfigureRoutes()
@@ -525,7 +597,7 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapGet("/api/system/lifecycle", (HttpContext context) =>
         {
             if (!IsLoopbackRequest(context))
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(context);
 
             var authorizationFailure = ValidateLifecycleAuthorization(context);
             if (authorizationFailure is not null)
@@ -559,7 +631,7 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapPost("/api/system/shutdown", async (HttpContext context) =>
         {
             if (!IsLoopbackRequest(context))
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(context);
 
             var authorizationFailure = ValidateLifecycleAuthorization(context);
             if (authorizationFailure is not null)
@@ -583,7 +655,10 @@ public sealed class UiServer : IAsyncDisposable
                 }
                 catch (System.Text.Json.JsonException)
                 {
-                    return Results.BadRequest(new { error = "Invalid lifecycle shutdown request." });
+                    return ApiProblemDetails.Validation(
+                        context,
+                        "request",
+                        "Invalid lifecycle shutdown request.");
                 }
 
                 var accepted = await runtimeLifecycle.RequestShutdownAsync(request, context.RequestAborted);
@@ -606,7 +681,7 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapGet("/api/system/shutdown/{operationId}", (string operationId, HttpContext context) =>
         {
             if (!IsLoopbackRequest(context))
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(context);
 
             var authorizationFailure = ValidateLifecycleAuthorization(context);
             if (authorizationFailure is not null)
@@ -616,7 +691,9 @@ public sealed class UiServer : IAsyncDisposable
                 runtimeLifecycle.ActiveShutdownOperation is not { } operation ||
                 !string.Equals(operation.OperationId, operationId, StringComparison.Ordinal))
             {
-                return Results.NotFound();
+                return ApiProblemDetails.NotFound(
+                    context,
+                    "The requested shutdown operation was not found.");
             }
 
             return Results.Ok(operation);
@@ -625,7 +702,7 @@ public sealed class UiServer : IAsyncDisposable
         _app.MapGet("/api/system/shutdown/receipts/latest", async (HttpContext context) =>
         {
             if (!IsLoopbackRequest(context))
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(context);
 
             var authorizationFailure = ValidateLifecycleAuthorization(context);
             if (authorizationFailure is not null)
@@ -640,7 +717,9 @@ public sealed class UiServer : IAsyncDisposable
                     .ReadLatestHostReceiptAsync(context.RequestAborted);
             }
 
-            return receipt is null ? Results.NotFound() : Results.Ok(receipt);
+            return receipt is null
+                ? ApiProblemDetails.NotFound(context, "No shutdown receipt was found.")
+                : Results.Ok(receipt);
         });
     }
 
@@ -653,12 +732,12 @@ public sealed class UiServer : IAsyncDisposable
 
         if (!EndpointAuthorization.TryGetPermissions(context, out _))
         {
-            return Results.Unauthorized();
+            return ApiProblemDetails.Unauthorized(context);
         }
 
         return EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
             ? null
-            : Results.StatusCode(StatusCodes.Status403Forbidden);
+            : ApiProblemDetails.Forbidden(context);
     }
 
     private bool IsValidLocalShutdownToken(HttpContext context)
@@ -984,33 +1063,298 @@ public sealed class UiServer : IAsyncDisposable
 
     public async Task StartAsync(CancellationToken ct = default)
     {
-        var stopwatch = Stopwatch.StartNew();
-        await _app.StartAsync(ct);
-        if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+        await _lifecycleOperationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            runtimeLifecycle.TransitionTo(RuntimeLifecycleState.EvaluatingReadiness, "evaluating-readiness");
-            var readiness = _app.Services.GetRequiredService<IRuntimeReadinessService>();
-            await readiness.EvaluateAsync(ct);
+            ThrowIfDisposeRequested();
+            if (_startFailed)
+            {
+                throw new InvalidOperationException(
+                    "UiServer cannot retry startup after WebApplication.StartAsync began and failed. " +
+                    "Dispose this instance and create a new server.");
+            }
+            if (_startCompleted)
+            {
+                throw new InvalidOperationException(
+                    "UiServer startup is single-use and has already completed for this instance.");
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            await EnsureDatabaseReadinessAsync(ct).ConfigureAwait(false);
+            try
+            {
+                _applicationStartBegan = true;
+                await _app.StartAsync(ct);
+                if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+                {
+                    runtimeLifecycle.TransitionTo(RuntimeLifecycleState.EvaluatingReadiness, "evaluating-readiness");
+                }
+
+                if (_readinessEvaluator is not null)
+                {
+                    await _readinessEvaluator(ct).ConfigureAwait(false);
+                }
+                else if (_lifecycle is IRuntimeLifecycleControlPlane)
+                {
+                    var readiness = _app.Services.GetRequiredService<IRuntimeReadinessService>();
+                    await readiness.EvaluateAsync(ct).ConfigureAwait(false);
+                }
+            }
+            catch (Exception startException)
+            {
+                _startFailed = true;
+                await StopAfterFailedStartAsync(startException).ConfigureAwait(false);
+                throw;
+            }
+
+            _startCompleted = true;
+            _logger.LogInformation(
+                "UiServer started on {Urls} in {ElapsedMs} ms",
+                string.Join(", ", _app.Urls),
+                stopwatch.ElapsedMilliseconds);
         }
-        _logger.LogInformation(
-            "UiServer started on {Urls} in {ElapsedMs} ms",
-            string.Join(", ", _app.Urls),
-            stopwatch.ElapsedMilliseconds);
+        finally
+        {
+            _lifecycleOperationGate.Release();
+        }
+    }
+
+    private async Task StopAfterFailedStartAsync(Exception startException)
+    {
+        using var cleanupTimeout = new CancellationTokenSource(FailedStartCleanupTimeout);
+        Task? stopTask = null;
+        try
+        {
+            stopTask = _app.StopAsync(cleanupTimeout.Token);
+            await stopTask
+                .WaitAsync(cleanupTimeout.Token)
+                .ConfigureAwait(false);
+            _applicationStopCompleted = true;
+            _logger.LogWarning(
+                startException,
+                "UiServer startup failed after application start began; the application was stopped and this server instance cannot be restarted");
+        }
+        catch (Exception cleanupException)
+        {
+            if (stopTask is { IsCompleted: false })
+                _ = ObserveLateFailedStartCleanupAsync(stopTask);
+
+            _logger.LogError(
+                cleanupException,
+                "UiServer cleanup failed after startup error {StartupExceptionType}; the original startup error will be rethrown",
+                startException.GetType().Name);
+        }
+    }
+
+    private async Task ObserveLateFailedStartCleanupAsync(Task stopTask)
+    {
+        try
+        {
+            await stopTask.ConfigureAwait(false);
+        }
+        catch (Exception cleanupException)
+        {
+            _logger.LogError(
+                cleanupException,
+                "UiServer startup cleanup completed with a late failure after the bounded wait ended");
+        }
+    }
+
+    private async Task EnsureDatabaseReadinessAsync(CancellationToken cancellationToken)
+    {
+        if (_databaseReadinessCompleted)
+            return;
+
+        await _databaseReadinessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_databaseReadinessCompleted)
+                return;
+
+            var readinessStopwatch = Stopwatch.StartNew();
+            await LedgerStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await DirectLendingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await FundAccountsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await FundStructureStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await BankingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+                .ConfigureAwait(false);
+
+            _databaseReadinessCompleted = true;
+            readinessStopwatch.Stop();
+            _logger.LogInformation(
+                "UiServer readiness checks completed in {ElapsedMs} ms",
+                readinessStopwatch.ElapsedMilliseconds);
+        }
+        finally
+        {
+            _databaseReadinessGate.Release();
+        }
     }
 
     public async Task StopAsync(CancellationToken ct = default)
     {
-        var stopwatch = Stopwatch.StartNew();
-        await _app.StopAsync(ct);
-        _logger.LogInformation("UiServer stopped in {ElapsedMs} ms", stopwatch.ElapsedMilliseconds);
+        await _lifecycleOperationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposeRequested();
+
+            var stopwatch = Stopwatch.StartNew();
+            await _app.StopAsync(ct);
+            _applicationStopCompleted = true;
+            _logger.LogInformation("UiServer stopped in {ElapsedMs} ms", stopwatch.ElapsedMilliseconds);
+        }
+        finally
+        {
+            _lifecycleOperationGate.Release();
+        }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await _app.DisposeAsync();
-        if (_ownsLifecycle)
+        TaskCompletionSource? completionToRun = null;
+        Task disposeTask;
+        lock (_disposeStateGate)
         {
-            _lifecycle.Dispose();
+            _disposeRequested = true;
+            if (_disposeTask is null)
+            {
+                completionToRun = new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                _disposeTask = completionToRun.Task;
+            }
+
+            disposeTask = _disposeTask;
+        }
+
+        if (completionToRun is not null)
+            _ = CompleteDisposeAsync(completionToRun);
+
+        return new ValueTask(disposeTask);
+    }
+
+    private async Task CompleteDisposeAsync(TaskCompletionSource completion)
+    {
+        try
+        {
+            await DisposeCoreAsync().ConfigureAwait(false);
+            completion.SetResult();
+        }
+        catch (OperationCanceledException exception)
+        {
+            completion.SetCanceled(exception.CancellationToken);
+        }
+        catch (Exception exception)
+        {
+            completion.SetException(exception);
+        }
+    }
+
+    private async Task DisposeCoreAsync()
+    {
+        await _lifecycleOperationGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        var failures = new List<Exception>();
+        try
+        {
+            if (_applicationStartBegan && !_applicationStopCompleted)
+            {
+                var stopFailure = await RunBoundedLifecycleCleanupAsync(
+                    cancellationToken => _app.StopAsync(cancellationToken),
+                    "UiServer stop during disposal").ConfigureAwait(false);
+                if (stopFailure is null)
+                    _applicationStopCompleted = true;
+                else
+                    failures.Add(stopFailure);
+            }
+
+            var disposeFailure = await RunBoundedLifecycleCleanupAsync(
+                _ => _app.DisposeAsync().AsTask(),
+                "UiServer host disposal").ConfigureAwait(false);
+            if (disposeFailure is not null)
+                failures.Add(disposeFailure);
+
+            try
+            {
+                if (_ownsLifecycle)
+                    _lifecycle.Dispose();
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+
+            _databaseReadinessGate.Dispose();
+        }
+        finally
+        {
+            _lifecycleOperationGate.Release();
+        }
+
+        if (failures.Count == 1)
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        if (failures.Count > 1)
+            throw new AggregateException("UiServer disposal completed with failures.", failures);
+    }
+
+    private async Task<Exception?> RunBoundedLifecycleCleanupAsync(
+        Func<CancellationToken, Task> operation,
+        string operationName)
+    {
+        using var timeout = new CancellationTokenSource(FailedStartCleanupTimeout);
+        Task? operationTask = null;
+        try
+        {
+            operationTask = operation(timeout.Token);
+            await operationTask.WaitAsync(timeout.Token).ConfigureAwait(false);
+            return null;
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            if (operationTask is { IsCompleted: false })
+                _ = ObserveLateLifecycleCleanupAsync(operationTask, operationName);
+
+            var failure = new TimeoutException(
+                $"{operationName} did not complete within {FailedStartCleanupTimeout.TotalSeconds} seconds.");
+            _logger.LogError(failure, "{OperationName} exceeded its shutdown deadline", operationName);
+            return failure;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "{OperationName} failed", operationName);
+            return exception;
+        }
+    }
+
+    private async Task ObserveLateLifecycleCleanupAsync(Task operationTask, string operationName)
+    {
+        try
+        {
+            await operationTask.ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "{OperationName} completed with a late failure after the bounded wait ended",
+                operationName);
+        }
+    }
+
+    private void ThrowIfDisposeRequested()
+    {
+        lock (_disposeStateGate)
+        {
+            if (_disposeRequested)
+                throw new ObjectDisposedException(nameof(UiServer));
         }
     }
 }

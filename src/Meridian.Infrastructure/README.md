@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Infrastructure
@@ -29,6 +29,25 @@ This layer owns external integration details while depending on lower contracts 
 ## Important workflows
 
 Use this module for provider implementation, external service integration, and adapter behavior.
+
+Backfill worker shutdown closes intake, cancels and observes every admitted provider attempt,
+atomically releases queue ownership, and retains a restart-safe job transition before owned
+providers and queue resources are disposed. Its bounded completion reader remains live until every
+admitted producer has quiesced, then drains every retained notification without loss before
+shutdown completes; cleanup failures remain part of the terminal stop result.
+
+Streaming failover uses a two-phase runtime handoff. The coordinator proposes a transition, the
+client connects and restores the required subscriptions, and only then does the coordinator commit
+the active provider; rejected or cancelled handoffs retain the prior provider and state.
+Transitions fail closed when no live runtime handler is registered, and caller cancellation remains
+attached while connection failure retries advance through candidate providers. Subscription changes
+are reconciled with an in-progress handoff, and disposal rejects pending transition tickets before
+disposing each provider instance exactly once.
+
+Broker statement adapters capture bounded raw and canonical artifacts, compute authoritative hashes,
+and parse those same immutable bytes. Interactive Brokers durable callbacks require tenant/company
+ownership captured before transport; persisted keys include tenant, company, provider connection,
+request correlation, and request ID, while unscoped legacy rows fail closed.
 
 Every `IMarketDataClient` now inherits the ProviderSdk-owned
 `IProviderConnectionDiagnosticsSource` contract. Adapters without a lifecycle supervisor receive a
@@ -131,8 +150,15 @@ contract details, option chains, news, fundamentals, tick-by-tick data, account 
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
 live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
 materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
-it commits each `WatchAsync` update to `IIBDataResultStore` before making that update available to
-operator readers; successful request submission is not evidence of a live entitlement.
+each worker requires an explicit tenant and company, consumes only that scoped source stream, and
+commits each update to the same-scoped `IIBDataResultStore` before caching or publishing it to
+operator readers. Unscoped materializer snapshots and streams fail closed; successful request
+submission is not evidence of a live entitlement.
+`IBDataServices` persists and publishes the initial owner-bound `Requested` state before transport
+submission so a synchronous vendor callback cannot be overwritten by a stale initial projection.
+Its legacy unscoped request/lineage snapshots, watches, and public update events expose only
+explicitly ownerless requests; owner-bound requests remain visible solely through the matching
+tenant/company snapshot/watch overloads and durable materialization paths.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
 rules. Each returned request and observation carries required provenance: provider and configured

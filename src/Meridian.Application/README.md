@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Application
@@ -422,12 +422,13 @@ and UI presentation concerns in their owning layers.
   Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
   final production-registration guard, database initialization, coordination, and other registered
   hosted services enter the normal start/stop lifecycle. The guard starts first, database
-  initialization for Ledger, Security Master, Direct Lending, and Asset Operations follows before
-  background workers start, and host disposal stops hosted services before flushing the event
-  pipeline. Desktop child composition keeps the same final guard and child-local storage/symbol
-  initialization, while delegating process-wide coordinator and accounting-worker ownership to its
-  parent WebApplication to avoid duplicates. One-shot ETL hosts likewise retain guard and local
-  initialization without activating unrelated polling, reconciliation, or daily-accrual workers.
+  initialization for Ledger, Security Master, Direct Lending, Asset Operations, Fund Accounts,
+  Fund Structure, Banking, and Money Market follows before background workers start, and host
+  disposal stops hosted services before flushing the event pipeline. Desktop child composition
+  keeps the same final guard and child-local storage/symbol initialization, while delegating
+  process-wide coordinator and accounting-worker ownership to its parent WebApplication to avoid
+  duplicates. One-shot ETL hosts likewise retain guard and local initialization without activating
+  unrelated polling, reconciliation, or daily-accrual workers.
   Backfill mode uses one backfill-profile host for both its pipeline and providers.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
@@ -448,6 +449,27 @@ and UI presentation concerns in their owning layers.
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
+
+Host startup and mode runners preserve one owner for every started resource. Database
+initialization is asynchronous and cancellation-aware; failed UI starts still stop and dispose the
+created server, and an internally owned lifecycle coordinator is released for failures anywhere
+after ownership begins, including service registration before `WebApplication.Build`; collector
+failover setup disposes every partially created provider and initializes coordinator state from the
+provider actually selected for startup; and backfill mode disposes either the composite provider or
+each directly owned provider after the run. Normal Generic Host disposal attempts stop, pipeline
+flush, and host disposal even when an earlier stage fails, then surfaces the original failure, a
+truthful timeout, or an aggregate of multiple cleanup failures. Failed-start cleanup remains
+best-effort so it cannot replace the original startup exception.
+`DualPathEventPipeline` closes admission before shutdown, exposes an explicit bounded stop outcome,
+serializes concurrent writers at each SPSC producer boundary, waits for admitted publishers, and
+reports publication faults or unflushed events rather than silently treating a partial slow-path
+batch as drained. When a bounded stop cannot quiesce, callers can explicitly await terminal cleanup
+before disposing the caller-owned slow path.
+
+Canonical symbol seed migrations use the additive atomic-migration capability exposed by Storage.
+The application migration coordinator submits the complete batch and durable marker together and
+fails closed when a registry does not provide that capability; it no longer publishes per-symbol
+progress that could survive a later conflict or cancellation.
 
 Application consumes coordination through the shared contract ports and module-owned
 implementations. Lease, leadership, scheduled-work ownership, subscription ownership, lease-record,

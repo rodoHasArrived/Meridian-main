@@ -82,6 +82,74 @@ public sealed class ProviderDegradationCalibrationTests
             || reason.Contains("recall", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task SnapshotStore_GetLatest_IgnoresNewerGovernanceDecisionArtifact()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-provider-calibration-tests",
+            Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var store = new ProviderKernelCalibrationSnapshotStore(root);
+            var expected = BuildSnapshot();
+            await store.SaveAsync(expected);
+
+            var calibrationDirectory = Path.Combine(
+                root,
+                "calibration",
+                "provider-degradation");
+            var governancePath = Path.Combine(
+                calibrationDirectory,
+                "latest-governance-decision.json");
+            await File.WriteAllTextAsync(
+                governancePath,
+                """{"approved":true,"candidateKernelVersion":"candidate-v2"}""");
+            File.SetCreationTimeUtc(governancePath, DateTime.UtcNow.AddMinutes(1));
+
+            var actual = await store.GetLatestAsync();
+
+            actual.Should().NotBeNull();
+            actual!.SnapshotId.Should().Be(expected.SnapshotId);
+            actual.CandidateKernelVersion.Should().Be(expected.CandidateKernelVersion);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SnapshotStore_Save_RejectsCandidateKernelPathTraversal()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-provider-calibration-tests",
+            Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var store = new ProviderKernelCalibrationSnapshotStore(root);
+            var snapshot = BuildSnapshot() with
+            {
+                CandidateKernelVersion =
+                    $"candidate{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}escaped"
+            };
+
+            var action = () => store.SaveAsync(snapshot);
+
+            await action.Should().ThrowAsync<ArgumentException>();
+            Directory.Exists(root).Should().BeFalse();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static ProviderIncidentCalibrationDataset BuildDataset()
     {
         return new ProviderIncidentCalibrationDataset(

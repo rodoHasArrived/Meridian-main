@@ -20,6 +20,7 @@ public sealed record CanonicalStatementImport(
     public string ToleranceProfileId { get; init; } = string.Empty;
     public string ImportedBy { get; init; } = "system";
     public string SourceFileHash { get; init; } = SourceChecksum;
+    public string CanonicalArtifactHash { get; init; } = SourceChecksum;
     public string DuplicateKey { get; init; } = string.Empty;
 }
 

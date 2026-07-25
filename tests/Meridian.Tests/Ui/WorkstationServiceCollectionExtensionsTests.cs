@@ -3,15 +3,20 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.Identity;
+using Meridian.Reporting;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Tests.Ui;
 
+[Collection("Sequential")]
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
     [Fact]
@@ -181,6 +186,71 @@ public sealed class WorkstationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public async Task AddWorkstationSharedServices_ConfiguredReporting_DefersMigrationToCancellableHostedService()
+    {
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=30");
+        using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_CONNECTION_STRING",
+            null);
+        var services = CreateMinimalWorkstationServices();
+
+        services.AddWorkstationSharedServices();
+
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(WorkstationReportingMigrationHostedService));
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IReportingArtifactStore>()
+            .Should().BeOfType<PostgresReportingArtifactStore>(
+                "resolving a store must not synchronously open a database connection");
+        var migration = ActivatorUtilities.CreateInstance<WorkstationReportingMigrationHostedService>(
+            provider);
+        using var canceled = new CancellationTokenSource();
+        canceled.Cancel();
+
+        var start = () => migration.StartAsync(canceled.Token);
+
+        await start.Should().ThrowAsync<OperationCanceledException>(
+            "the host startup token must reach reporting migrations");
+    }
+
+    [Fact]
+    public async Task AddWorkstationSharedServices_ConfiguredScopedAccess_DefersMigrationToCancellableHostedService()
+    {
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var scopedAccess = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=30");
+        var services = CreateMinimalWorkstationServices();
+
+        services.AddWorkstationSharedServices();
+
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(WorkstationScopedAccessMigrationHostedService));
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IScopedAccessAssignmentStore>()
+            .Should().BeOfType<PostgresScopedAccessAssignmentStore>(
+                "resolving a store must not synchronously open a database connection");
+        var migration = ActivatorUtilities.CreateInstance<WorkstationScopedAccessMigrationHostedService>(
+            provider);
+        using var canceled = new CancellationTokenSource();
+        canceled.Cancel();
+
+        var start = () => migration.StartAsync(canceled.Token);
+
+        await start.Should().ThrowAsync<OperationCanceledException>(
+            "the host startup token must reach scoped-access migrations");
+    }
+
+    [Fact]
     public void ResolvePersistentDataRoot_UsesConfiguredDataRootFromConfigFile()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
@@ -191,5 +261,21 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         UiServer.ResolvePersistentDataRoot(configPath)
             .Should()
             .Be(Path.GetFullPath(Path.Combine(root, "..", "portable-data")));
+    }
+
+    private static ServiceCollection CreateMinimalWorkstationServices()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+        return services;
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Threading.Channels;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk;
 
@@ -83,7 +82,7 @@ public sealed record IBMarketDataTypeUpdate(int RequestId, int MarketDataType);
 /// while retaining request lineage. This surface never fabricates availability: callers begin at
 /// <see cref="IBMarketDataAvailability.Unknown"/> until TWS/Gateway reports a data type.
 /// </summary>
-public sealed class IBDataServices : IProviderDataReadService, IDisposable
+public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisposable
 {
     private const string ProviderId = "interactive-brokers";
     private readonly string _providerConnectionId;
@@ -92,8 +91,9 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private readonly IBDurableResultProjector? _projector;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
-    private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
-        new BoundedChannelOptions(256) { SingleReader = false, SingleWriter = false, FullMode = BoundedChannelFullMode.DropOldest });
+    private readonly ConcurrentDictionary<int, IBDataRequestOwnership> _ownership = new();
+    private readonly ConcurrentDictionary<int, string> _requestCorrelationIds = new();
+    private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
 
     public IBDataServices(IIBDataServiceTransport transport, string providerConnectionId = "interactive-brokers/default")
@@ -137,24 +137,74 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         _projector = projector ?? throw new ArgumentNullException(nameof(projector));
     }
 
-    /// <summary>Raised after request, status, or contract-lineage evidence changes.</summary>
+    /// <summary>
+    /// Compatibility event raised only for explicitly ownerless request lineage. Owner-bound
+    /// updates remain available through the scoped request watch and durable result paths.
+    /// </summary>
     public event Action<IBDataLineage>? LineageUpdated;
 
-    /// <summary>Raised when a provider-neutral request projection changes.</summary>
+    /// <summary>
+    /// Compatibility event raised only when an explicitly ownerless request projection changes.
+    /// </summary>
     public event Action<ProviderDataRequestReadModel>? ReadModelUpdated;
 
-    /// <summary>Returns the current lineage evidence in stable request-id order.</summary>
-    public IReadOnlyList<IBDataLineage> GetLineage() => _lineage.Values.OrderBy(x => x.RequestId).ToArray();
+    /// <summary>Returns explicitly ownerless lineage evidence in stable request-id order.</summary>
+    public IReadOnlyList<IBDataLineage> GetLineage()
+        => _lineage.Values
+            .Where(lineage => !_ownership.ContainsKey(lineage.RequestId))
+            .OrderBy(static lineage => lineage.RequestId)
+            .ToArray();
 
-    public IReadOnlyList<ProviderDataRequestReadModel> GetRequests() => _requests.Values.OrderBy(x => x.RequestId).ToArray();
-
-    public async IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    /// <summary>Returns lineage owned by the exact tenant and company scope.</summary>
+    public IReadOnlyList<IBDataLineage> GetLineage(string tenantId, string companyId)
     {
-        await foreach (var update in _updates.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
-            yield return update;
+        var ownership = IBDataRequestOwnership.Require(new IBDataRequestOwnership(tenantId, companyId));
+        return _lineage.Values
+            .Where(lineage =>
+                _ownership.TryGetValue(lineage.RequestId, out var owner) &&
+                string.Equals(owner.TenantId, ownership.TenantId, StringComparison.Ordinal) &&
+                string.Equals(owner.CompanyId, ownership.CompanyId, StringComparison.Ordinal))
+            .OrderBy(static lineage => lineage.RequestId)
+            .ToArray();
     }
 
-    public int RequestScanner(IBScannerRequest request, CancellationToken ct = default)
+    /// <summary>
+    /// Compatibility read for explicitly ownerless requests only. Owner-bound requests must be
+    /// queried through the tenant/company overload and are never downgraded to this surface.
+    /// </summary>
+    public IReadOnlyList<ProviderDataRequestReadModel> GetRequests()
+        => _requests.Values
+            .Where(request => !_ownership.ContainsKey(request.RequestId))
+            .OrderBy(static request => request.RequestId)
+            .ToArray();
+
+    public IReadOnlyList<ProviderDataRequestReadModel> GetRequests(string tenantId, string companyId)
+    {
+        var ownership = IBDataRequestOwnership.Require(new IBDataRequestOwnership(tenantId, companyId));
+        return _requests.Values
+            .Where(request =>
+                _ownership.TryGetValue(request.RequestId, out var owner) &&
+                string.Equals(owner.TenantId, ownership.TenantId, StringComparison.Ordinal) &&
+                string.Equals(owner.CompanyId, ownership.CompanyId, StringComparison.Ordinal))
+            .OrderBy(static request => request.RequestId)
+            .ToArray();
+    }
+
+    public IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(CancellationToken cancellationToken = default)
+        => _updates.WatchUnownedAsync(cancellationToken);
+
+    public IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(
+        string tenantId,
+        string companyId,
+        CancellationToken cancellationToken = default)
+        => _updates.WatchAsync(
+            IBDataRequestOwnership.Require(new IBDataRequestOwnership(tenantId, companyId)),
+            cancellationToken);
+
+    public int RequestScanner(
+        IBScannerRequest request,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (string.IsNullOrWhiteSpace(request.Instrument) || string.IsNullOrWhiteSpace(request.LocationCode) || string.IsNullOrWhiteSpace(request.ScanCode))
@@ -162,16 +212,29 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         if (request.NumberOfRows is < 1 or > 50)
             throw new ArgumentOutOfRangeException(nameof(request), "IB scanner row count must be between 1 and 50.");
 
-        return Issue("scanner", request.Instrument, request.LocationCode, request.ScanCode, id => _transport.RequestScanner(id, request), ct);
+        return Issue("scanner", request.Instrument, request.LocationCode, request.ScanCode, id => _transport.RequestScanner(id, request), ct, ownership);
     }
 
-    public int RequestContractDetails(SymbolConfig contract, CancellationToken ct = default)
-        => Issue("contract-details", RequireSymbol(contract), contract.Exchange, null, id => _transport.RequestContractDetails(id, contract), ct);
+    public int RequestContractDetails(
+        SymbolConfig contract,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
+        => Issue("contract-details", RequireSymbol(contract), contract.Exchange, null, id => _transport.RequestContractDetails(id, contract), ct, ownership);
 
-    public int RequestOptionChain(SymbolConfig underlying, CancellationToken ct = default)
-        => Issue("option-chain", RequireSymbol(underlying), underlying.Exchange, null, id => _transport.RequestOptionChain(id, underlying), ct);
+    public int RequestOptionChain(
+        SymbolConfig underlying,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
+        => Issue("option-chain", RequireSymbol(underlying), underlying.Exchange, null, id => _transport.RequestOptionChain(id, underlying), ct, ownership);
 
-    public int RequestHistoricalNews(int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults = 100, CancellationToken ct = default)
+    public int RequestHistoricalNews(
+        int conId,
+        string providerCodes,
+        DateTimeOffset start,
+        DateTimeOffset end,
+        int maximumResults = 100,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (conId <= 0)
             throw new ArgumentOutOfRangeException(nameof(conId));
@@ -181,71 +244,103 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             throw new ArgumentException("News start must not be after end.", nameof(start));
         if (maximumResults is < 1 or > 300)
             throw new ArgumentOutOfRangeException(nameof(maximumResults));
-        return Issue("historical-news", conId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, providerCodes, id => _transport.RequestHistoricalNews(id, conId, providerCodes, start, end, maximumResults), ct);
+        return Issue("historical-news", conId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, providerCodes, id => _transport.RequestHistoricalNews(id, conId, providerCodes, start, end, maximumResults), ct, ownership);
     }
 
-    public int RequestNewsArticle(string providerCode, string articleId, CancellationToken ct = default)
+    public int RequestNewsArticle(
+        string providerCode,
+        string articleId,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (string.IsNullOrWhiteSpace(providerCode) || string.IsNullOrWhiteSpace(articleId))
             throw new ArgumentException("IB news provider code and article id are required.");
-        return Issue("news-article", articleId, null, providerCode, id => _transport.RequestNewsArticle(id, providerCode, articleId), ct);
+        return Issue("news-article", articleId, null, providerCode, id => _transport.RequestNewsArticle(id, providerCode, articleId), ct, ownership);
     }
 
-    public int RequestFundamentals(SymbolConfig contract, string reportType, CancellationToken ct = default)
+    public int RequestFundamentals(
+        SymbolConfig contract,
+        string reportType,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (string.IsNullOrWhiteSpace(reportType))
             throw new ArgumentException("IB fundamental report type is required.", nameof(reportType));
-        return Issue("fundamentals", RequireSymbol(contract), contract.Exchange, reportType, id => _transport.RequestFundamentals(id, contract, reportType), ct);
+        return Issue("fundamentals", RequireSymbol(contract), contract.Exchange, reportType, id => _transport.RequestFundamentals(id, contract, reportType), ct, ownership);
     }
 
     /// <summary>
     /// Requests IB's dividend forecast and fundamental-ratio generic ticks. Availability remains
     /// entitlement-dependent and is recorded as lineage rather than inferred from the request.
     /// </summary>
-    public int SubscribeDividendEarnings(SymbolConfig contract, CancellationToken ct = default)
-        => Issue("dividend-earnings", RequireSymbol(contract), contract.Exchange, "456,258", id => _transport.RequestDividendEarnings(id, contract), ct);
+    public int SubscribeDividendEarnings(
+        SymbolConfig contract,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
+        => Issue("dividend-earnings", RequireSymbol(contract), contract.Exchange, "456,258", id => _transport.RequestDividendEarnings(id, contract), ct, ownership);
 
-    public int SubscribeTickByTick(SymbolConfig contract, string tickType = "Last", int numberOfTicks = 0, bool ignoreSize = false, CancellationToken ct = default)
+    public int SubscribeTickByTick(
+        SymbolConfig contract,
+        string tickType = "Last",
+        int numberOfTicks = 0,
+        bool ignoreSize = false,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (string.IsNullOrWhiteSpace(tickType))
             throw new ArgumentException("IB tick-by-tick type is required.", nameof(tickType));
         if (numberOfTicks < 0)
             throw new ArgumentOutOfRangeException(nameof(numberOfTicks));
-        return Issue("tick-by-tick", RequireSymbol(contract), contract.Exchange, tickType, id => _transport.RequestTickByTick(id, contract, tickType, numberOfTicks, ignoreSize), ct);
+        return Issue("tick-by-tick", RequireSymbol(contract), contract.Exchange, tickType, id => _transport.RequestTickByTick(id, contract, tickType, numberOfTicks, ignoreSize), ct, ownership);
     }
 
-    public int SubscribePnl(string account, string? modelCode = null, CancellationToken ct = default)
+    public int SubscribePnl(
+        string account,
+        string? modelCode = null,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (string.IsNullOrWhiteSpace(account))
             throw new ArgumentException("IB account is required.", nameof(account));
-        return Issue("pnl", account, null, modelCode, id => _transport.RequestPnl(id, account, modelCode), ct);
+        return Issue("pnl", account, null, modelCode, id => _transport.RequestPnl(id, account, modelCode), ct, ownership);
     }
 
-    public int SubscribeRealTimeBars(IBRealTimeBarRequest request, CancellationToken ct = default)
+    public int SubscribeRealTimeBars(
+        IBRealTimeBarRequest request,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return Issue("real-time-bars", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestRealTimeBars(id, request), ct);
+        return Issue("real-time-bars", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestRealTimeBars(id, request), ct, ownership);
     }
 
-    public int RequestHistoricalTicks(IBHistoricalTickRequest request, CancellationToken ct = default)
+    public int RequestHistoricalTicks(
+        IBHistoricalTickRequest request,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (request.NumberOfTicks is < 1 or > 1000)
             throw new ArgumentOutOfRangeException(nameof(request), "IB historical-tick requests must contain 1 to 1,000 ticks.");
         if (request.Start.HasValue && request.End.HasValue && request.Start > request.End)
             throw new ArgumentException("Historical tick start must not be after end.", nameof(request));
-        return Issue("historical-ticks", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestHistoricalTicks(id, request), ct);
+        return Issue("historical-ticks", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestHistoricalTicks(id, request), ct, ownership);
     }
 
-    public int RequestMarketRule(int marketRuleId, CancellationToken ct = default)
+    public int RequestMarketRule(
+        int marketRuleId,
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
     {
         if (marketRuleId <= 0)
             throw new ArgumentOutOfRangeException(nameof(marketRuleId));
-        return Issue("market-rule", marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), id => _transport.RequestMarketRule(id, marketRuleId), ct);
+        return Issue("market-rule", marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), id => _transport.RequestMarketRule(id, marketRuleId), ct, ownership);
     }
 
-    public int RequestDepthExchanges(CancellationToken ct = default)
-        => Issue("depth-exchanges", "IB", null, null, _transport.RequestDepthExchanges, ct);
+    public int RequestDepthExchanges(
+        CancellationToken ct = default,
+        IBDataRequestOwnership? ownership = null)
+        => Issue("depth-exchanges", "IB", null, null, _transport.RequestDepthExchanges, ct, ownership);
 
     /// <summary>Records the actual data type reported by IB for a request/subscription.</summary>
     public void RecordMarketDataType(int requestId, int marketDataType)
@@ -431,13 +526,43 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private void OnRequestCompleted(object? sender, int requestId) => CompleteRequest(requestId);
     private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value) => RejectRequest(value.RequestId, value.Code, value.Message);
 
-    private int Issue(string service, string symbol, string? exchange, string? subscription, Action<int> send, CancellationToken ct)
+    private int Issue(
+        string service,
+        string symbol,
+        string? exchange,
+        string? subscription,
+        Action<int> send,
+        CancellationToken ct,
+        IBDataRequestOwnership? ownership)
     {
         ct.ThrowIfCancellationRequested();
+        var normalizedOwnership = ownership is null
+            ? null
+            : IBDataRequestOwnership.Require(ownership);
+        if (_projector is not null && normalizedOwnership is null)
+        {
+            throw new InvalidOperationException(
+                "Durable IB requests require tenant and company ownership before transport submission.");
+        }
+
         var requestId = Interlocked.Increment(ref _nextRequestId);
+        var correlationId = Guid.NewGuid().ToString("N");
         var evidence = new IBDataLineage(requestId, service, symbol, exchange, null, null, subscription, IBMarketDataAvailability.Unknown, false, "requested", DateTimeOffset.UtcNow);
+        if (!_requestCorrelationIds.TryAdd(requestId, correlationId))
+        {
+            throw new InvalidOperationException($"Duplicate IB request correlation for request id {requestId}.");
+        }
+        if (normalizedOwnership is not null && !_ownership.TryAdd(requestId, normalizedOwnership))
+        {
+            _requestCorrelationIds.TryRemove(requestId, out _);
+            throw new InvalidOperationException($"Duplicate IB request ownership for request id {requestId}.");
+        }
         if (!_lineage.TryAdd(requestId, evidence))
+        {
+            _ownership.TryRemove(requestId, out _);
+            _requestCorrelationIds.TryRemove(requestId, out _);
             throw new InvalidOperationException($"Duplicate IB request id {requestId}.");
+        }
         var projection = new ProviderDataRequestReadModel(
             requestId,
             "interactive-brokers",
@@ -446,19 +571,64 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             evidence.ObservedAt,
             CreateRequestProvenance(evidence),
             Lineage: evidence);
-        _requests.TryAdd(requestId, projection);
+        if (!_requests.TryAdd(requestId, projection))
+        {
+            _lineage.TryRemove(requestId, out _);
+            _ownership.TryRemove(requestId, out _);
+            _requestCorrelationIds.TryRemove(requestId, out _);
+            throw new InvalidOperationException($"Duplicate IB request projection for request id {requestId}.");
+        }
+
         try
-        { send(requestId); }
-        catch { _lineage.TryRemove(requestId, out _); _requests.TryRemove(requestId, out _); throw; }
-        LineageUpdated?.Invoke(evidence);
-        Publish(projection);
+        {
+            // Persist and publish the immutable owner-bound Requested state before transport. IB
+            // transports may deliver callbacks synchronously; publishing after send could otherwise
+            // overwrite a callback's richer Streaming/Completed snapshot with stale Requested state.
+            PublishLineageUpdated(evidence);
+            Publish(projection);
+        }
+        catch
+        {
+            _lineage.TryRemove(requestId, out _);
+            _requests.TryRemove(requestId, out _);
+            _ownership.TryRemove(requestId, out _);
+            _requestCorrelationIds.TryRemove(requestId, out _);
+            throw;
+        }
+
+        try
+        {
+            send(requestId);
+        }
+        catch (Exception transportException)
+        {
+            try
+            {
+                UpdateReadModel(requestId, current => current with
+                {
+                    Status = ProviderDataRequestStatus.Failed,
+                    ErrorCode = "transport-submission-failed",
+                    ErrorMessage = "The IB transport failed before request submission completed."
+                });
+            }
+            catch (Exception materializationException)
+            {
+                throw new AggregateException(
+                    "The IB transport failed and the terminal request state could not be materialized.",
+                    transportException,
+                    materializationException);
+            }
+
+            throw;
+        }
+
         return requestId;
     }
 
     private IBDataLineage Update(int requestId, Func<IBDataLineage, IBDataLineage> update)
     {
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
-        LineageUpdated?.Invoke(updated);
+        PublishLineageUpdated(updated);
         UpdateReadModel(requestId, current => current with { Lineage = updated });
         return updated;
     }
@@ -501,7 +671,9 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         providerNativeId = string.IsNullOrWhiteSpace(providerNativeId) ? lineage.Symbol : providerNativeId;
         var availability = lineage.Availability.ToString();
         var descriptor = string.Join("|", lineage.Service, lineage.Symbol, lineage.Exchange ?? string.Empty, lineage.Subscription ?? string.Empty);
-        var correlationId = lineage.RequestId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var correlationId = _requestCorrelationIds.TryGetValue(lineage.RequestId, out var capturedCorrelationId)
+            ? capturedCorrelationId
+            : throw new KeyNotFoundException($"Unknown IB request correlation for request id {lineage.RequestId}.");
         var keyMaterial = string.Join("|", ProviderId, _providerConnectionId, providerNativeId, descriptor, correlationId);
         var deduplicationKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(keyMaterial))).ToLowerInvariant();
         return new ProviderDataProvenance(ProviderId, _providerConnectionId, sourceTimestamp, receiptTimestamp ?? DateTimeOffset.UtcNow,
@@ -511,9 +683,31 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
 
     private void Publish(ProviderDataRequestReadModel model)
     {
-        _updates.Writer.TryWrite(model);
-        ReadModelUpdated?.Invoke(model);
-        _projector?.Materialize(model, _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
+        _ownership.TryGetValue(model.RequestId, out var capturedOwnership);
+        if (_projector is not null)
+        {
+            var ownership = capturedOwnership
+                ?? throw new InvalidOperationException(
+                    $"Durable IB callback {model.RequestId} has no captured tenant and company ownership.");
+            _projector.Materialize(
+                ownership,
+                model,
+                _lineage.TryGetValue(model.RequestId, out var lineage) ? lineage : null);
+        }
+
+        _updates.Publish(capturedOwnership, model);
+        if (capturedOwnership is null)
+        {
+            ReadModelUpdated?.Invoke(model);
+        }
+    }
+
+    private void PublishLineageUpdated(IBDataLineage lineage)
+    {
+        if (!_ownership.ContainsKey(lineage.RequestId))
+        {
+            LineageUpdated?.Invoke(lineage);
+        }
     }
 
     private static IReadOnlyList<T> Append<T>(IReadOnlyList<T>? existing, T value)
@@ -542,7 +736,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             callbacks.RequestCompleted -= OnRequestCompleted;
             callbacks.RequestRejected -= OnRequestRejected;
         }
-        _updates.Writer.TryComplete();
+        _updates.Complete();
     }
 
     private static string RequireSymbol(SymbolConfig contract)

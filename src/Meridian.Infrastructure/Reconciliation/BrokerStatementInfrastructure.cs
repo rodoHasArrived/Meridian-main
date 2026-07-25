@@ -7,6 +7,109 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
+internal sealed record BrokerStatementFileSnapshot(string Path, byte[] Content, string Sha256);
+
+internal sealed record BrokerStatementSourceSnapshots(
+    BrokerStatementFileSnapshot Source,
+    BrokerStatementFileSnapshot ParseArtifact);
+
+internal static class BrokerStatementSourceSnapshot
+{
+    public static async Task<BrokerStatementSourceSnapshots> CaptureAsync(
+        BrokerStatementImportRequest request,
+        long maximumBytes,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var source = await CaptureFileAsync(request.SourcePath, maximumBytes, ct).ConfigureAwait(false);
+        BrokerStatementFileSnapshot parseArtifact;
+        if (PathsEqual(request.SourcePath, request.EffectiveParsePath))
+        {
+            parseArtifact = source;
+        }
+        else
+        {
+            parseArtifact = await CaptureFileAsync(request.EffectiveParsePath, maximumBytes, ct).ConfigureAwait(false);
+        }
+
+        AssertHash(request.SourceFileHash, source.Sha256, "Source file");
+        AssertHash(request.CanonicalArtifactHash, parseArtifact.Sha256, "Canonical artifact");
+        return new BrokerStatementSourceSnapshots(source, parseArtifact);
+    }
+
+    private static async Task<BrokerStatementFileSnapshot> CaptureFileAsync(
+        string path,
+        long maximumBytes,
+        CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        if (stream.Length > maximumBytes)
+        {
+            throw new InvalidDataException($"Statement file exceeds the {maximumBytes}-byte limit.");
+        }
+
+        using var buffer = new MemoryStream(stream.Length > int.MaxValue ? 0 : (int)stream.Length);
+        var chunk = new byte[64 * 1024];
+        while (true)
+        {
+            var read = await stream.ReadAsync(chunk, ct).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (buffer.Length + read > maximumBytes)
+            {
+                throw new InvalidDataException($"Statement file exceeds the {maximumBytes}-byte limit.");
+            }
+
+            await buffer.WriteAsync(chunk.AsMemory(0, read), ct).ConfigureAwait(false);
+        }
+
+        var content = buffer.ToArray();
+        return new BrokerStatementFileSnapshot(
+            path,
+            content,
+            Convert.ToHexString(SHA256.HashData(content)));
+    }
+
+    private static void AssertHash(string? assertion, string authoritativeHash, string label)
+    {
+        if (string.IsNullOrWhiteSpace(assertion))
+        {
+            return;
+        }
+
+        var normalized = assertion.Trim();
+        if (normalized.Length != 64 || normalized.Any(static character => !Uri.IsHexDigit(character)))
+        {
+            throw new InvalidDataException($"{label} SHA-256 assertion must contain exactly 64 hexadecimal characters.");
+        }
+
+        var assertedBytes = Convert.FromHexString(normalized);
+        var authoritativeBytes = Convert.FromHexString(authoritativeHash);
+        if (!CryptographicOperations.FixedTimeEquals(assertedBytes, authoritativeBytes))
+        {
+            throw new InvalidDataException($"{label} SHA-256 assertion does not match the captured bytes.");
+        }
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), comparison);
+    }
+}
+
 public interface ICanonicalStatementStore
 {
     Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default);
@@ -139,6 +242,8 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         var errors = new List<string>();
         if (!File.Exists(request.SourcePath))
             errors.Add("Source file not found.");
+        if (!File.Exists(request.EffectiveParsePath))
+            errors.Add("Canonical statement artifact not found.");
         if (!IsSupportedStatementSource(request.Broker))
             errors.Add("Unsupported broker or custodian statement source.");
         if (errors.Count > 0)
@@ -146,7 +251,15 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
         try
         {
-            var rows = await ParseFileAsync(request.SourcePath, request, importId: "validation", ct).ConfigureAwait(false);
+            var snapshots = await BrokerStatementSourceSnapshot
+                .CaptureAsync(request, MaximumStatementBytes, ct)
+                .ConfigureAwait(false);
+            var rows = await ParseFileAsync(
+                    snapshots.ParseArtifact.Content,
+                    request,
+                    importId: "validation",
+                    ct)
+                .ConfigureAwait(false);
             ValidateRowAccounts(rows, request.ExternalAccountId);
             return new BrokerStatementValidationResult(true, errors, rows.Count);
         }
@@ -159,22 +272,39 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
     public async Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
-        EnsureBoundedFile(request.SourcePath);
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? await HashFileAsync(request.SourcePath, ct).ConfigureAwait(false)
-            : request.SourceFileHash.Trim().ToUpperInvariant();
-        var duplicateKey = StatementDuplicateKey.Create(
+        var snapshots = await BrokerStatementSourceSnapshot
+            .CaptureAsync(request, MaximumStatementBytes, ct)
+            .ConfigureAwait(false);
+        var sourceFileHash = snapshots.Source.Sha256;
+        var canonicalArtifactHash = snapshots.ParseArtifact.Sha256;
+        var compatibleDuplicateKeys = StatementDuplicateKey.CreateCompatibleKeys(
             request.FundAccountId,
             request.StatementPeriodStart,
             request.StatementPeriodEnd,
-            sourceFileHash);
+            sourceFileHash,
+            canonicalArtifactHash);
+        var duplicateKey = compatibleDuplicateKeys[0];
 
-        if (await store.ImportExistsByDuplicateKeyAsync(duplicateKey, ct).ConfigureAwait(false))
-            throw new InvalidOperationException("Statement already imported (fund account, statement period, and source file hash match).");
+        foreach (var candidate in compatibleDuplicateKeys)
+        {
+            if (await store.ImportExistsByDuplicateKeyAsync(candidate, ct).ConfigureAwait(false))
+            {
+                throw new StatementAlreadyImportedException(candidate);
+            }
+        }
 
         var importId = duplicateKey;
-        var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
-        var rows = await ParseFileAsync(request.SourcePath, normalizedRequest, importId, ct).ConfigureAwait(false);
+        var normalizedRequest = request with
+        {
+            SourceFileHash = sourceFileHash,
+            CanonicalArtifactHash = canonicalArtifactHash
+        };
+        var rows = await ParseFileAsync(
+                snapshots.ParseArtifact.Content,
+                normalizedRequest,
+                importId,
+                ct)
+            .ConfigureAwait(false);
         ValidateRowAccounts(rows, normalizedRequest.ExternalAccountId);
         var import = new CanonicalStatementImport(
             importId,
@@ -196,36 +326,29 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             ToleranceProfileId = normalizedRequest.ToleranceProfileId,
             ImportedBy = normalizedRequest.ImportedBy,
             SourceFileHash = sourceFileHash,
+            CanonicalArtifactHash = canonicalArtifactHash,
             DuplicateKey = duplicateKey
         };
         if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
         {
-            throw new InvalidOperationException(
-                "Statement already imported (fund account, statement period, and source file hash match).");
+            throw new StatementAlreadyImportedException(duplicateKey);
         }
 
         return new BrokerStatementImportResult(import, rows);
     }
 
     private static async Task<IReadOnlyList<CanonicalStatementRow>> ParseFileAsync(
-        string path,
+        byte[] content,
         BrokerStatementImportRequest request,
         string importId,
         CancellationToken ct)
     {
-        EnsureBoundedFile(path);
         var rows = new List<CanonicalStatementRow>();
-        await using var stream = new FileStream(
-            path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 64 * 1024,
-            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await using var stream = new MemoryStream(content, writable: false);
         using var reader = new StreamReader(stream, new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: true);
-        var headerLine = await reader.ReadLineAsync(ct).ConfigureAwait(false)
+        var headerRecord = await ReadCsvRecordAsync(reader, ct).ConfigureAwait(false)
             ?? throw new InvalidDataException("Statement CSV is empty.");
-        var header = ParseCsvLine(headerLine, rowNumber: 1);
+        var header = ParseCsvLine(headerRecord.Text, rowNumber: 1);
         var optionalColumnCount = header.Count - ExpectedColumns.Length;
         if (optionalColumnCount < 0 ||
             optionalColumnCount > OptionalCanonicalColumns.Length ||
@@ -239,10 +362,12 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 $"followed only by the optional columns {string.Join(',', OptionalCanonicalColumns)} in order.");
         }
 
-        var sourceRowNumber = 1;
-        while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
+        var sourceRowNumber = headerRecord.PhysicalLineCount;
+        while (await ReadCsvRecordAsync(reader, ct).ConfigureAwait(false) is { } record)
         {
-            sourceRowNumber++;
+            var recordStartLine = sourceRowNumber + 1;
+            sourceRowNumber += record.PhysicalLineCount;
+            var line = record.Text;
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
@@ -253,11 +378,11 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 throw new InvalidDataException($"Statement CSV exceeds the {MaximumRows}-row limit.");
             }
 
-            var fields = ParseCsvLine(line, sourceRowNumber);
+            var fields = ParseCsvLine(line, recordStartLine);
             if (fields.Count != header.Count)
             {
                 throw new InvalidDataException(
-                    $"Statement CSV row {sourceRowNumber} has {fields.Count} columns; expected {header.Count} from the validated header.");
+                    $"Statement CSV row {recordStartLine} has {fields.Count} columns; expected {header.Count} from the validated header.");
             }
 
             if (!decimal.TryParse(fields[2], NumberStyles.Number, CultureInfo.InvariantCulture, out var quantity) ||
@@ -265,7 +390,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 !decimal.TryParse(fields[4], NumberStyles.Number, CultureInfo.InvariantCulture, out var cashAmount) ||
                 !DateOnly.TryParse(fields[6], CultureInfo.InvariantCulture, DateTimeStyles.None, out var tradeDate))
             {
-                throw new InvalidDataException($"Statement CSV row {sourceRowNumber} contains an invalid numeric or date value.");
+                throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid numeric or date value.");
             }
 
             // Capture the optional canonical columns (settlementDate, currency, feesCommission,
@@ -284,7 +409,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 if (!DateOnly.TryParse(fields[7], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedSettlement))
                 {
                     throw new InvalidDataException(
-                        $"Statement CSV row {sourceRowNumber} has an invalid optional settlement date '{fields[7]}'.");
+                        $"Statement CSV row {recordStartLine} has an invalid optional settlement date '{fields[7]}'.");
                 }
 
                 settlementDate = parsedSettlement;
@@ -307,7 +432,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
             rows.Add(new CanonicalStatementRow(
                 importId,
-                sourceRowNumber,
+                recordStartLine,
                 fields[0],
                 fields[1],
                 quantity,
@@ -326,6 +451,59 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
         return rows;
     }
+
+    private static async Task<CsvRecord?> ReadCsvRecordAsync(StreamReader reader, CancellationToken ct)
+    {
+        var firstLine = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+        if (firstLine is null)
+        {
+            return null;
+        }
+
+        var builder = new StringBuilder(firstLine);
+        var physicalLineCount = 1;
+        while (HasUnclosedQuotedField(builder))
+        {
+            var continuation = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            if (continuation is null)
+            {
+                throw new InvalidDataException("Statement CSV contains an unterminated quoted field.");
+            }
+
+            builder.Append('\n').Append(continuation);
+            physicalLineCount++;
+            if (builder.Length > MaximumLineCharacters)
+            {
+                throw new InvalidDataException("Statement CSV record exceeds the line limit.");
+            }
+        }
+
+        return new CsvRecord(builder.ToString(), physicalLineCount);
+    }
+
+    private static bool HasUnclosedQuotedField(StringBuilder value)
+    {
+        var quoted = false;
+        for (var index = 0; index < value.Length; index++)
+        {
+            if (value[index] != '"')
+            {
+                continue;
+            }
+
+            if (quoted && index + 1 < value.Length && value[index + 1] == '"')
+            {
+                index++;
+                continue;
+            }
+
+            quoted = !quoted;
+        }
+
+        return quoted;
+    }
+
+    private sealed record CsvRecord(string Text, int PhysicalLineCount);
 
     private static void ValidateRowAccounts(
         IReadOnlyList<CanonicalStatementRow> rows,
@@ -387,28 +565,6 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
         fields.Add(field.ToString().Trim());
         return fields;
-    }
-
-    private static void EnsureBoundedFile(string path)
-    {
-        var length = new FileInfo(path).Length;
-        if (length > MaximumStatementBytes)
-        {
-            throw new InvalidDataException($"Statement file exceeds the {MaximumStatementBytes}-byte limit.");
-        }
-    }
-
-    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
-    {
-        await using var stream = new FileStream(
-            path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 64 * 1024,
-            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-        var hash = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
-        return Convert.ToHexString(hash);
     }
 
     private static string Hash(string input)

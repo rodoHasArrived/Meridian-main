@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Storage
@@ -48,7 +48,9 @@ lookup paths, and evidence trails those layers rely on.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
-  that can play saved data back.
+  that can play saved data back. `JsonFileIBDataResultStore` requires tenant/company scope on writes
+  and queries, keys matching result identities by that scope, and excludes unscoped legacy rows
+  during restart hydration.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
   the contracts-owned `ICanonicalSymbolRegistry` over the symbol registry store.
 - `Ledger/` - authoritative accounting journal storage, source-event queries, tax-lot policy inputs,
@@ -145,6 +147,11 @@ lease records under the configured
 coordination root with per-resource lock files and `AtomicFileWriter`; Platform owns lease renewal,
 coordinator election, split-brain detection, scheduled-work ownership, and subscription ownership
 decisions, while Application consumes those services through the shared contracts.
+Lease, position-snapshot, and other identity-partitioned file paths use the Core rooted-path guard:
+identifiers remain one validated component, resolved paths must stay beneath the configured root,
+and links/reparse points at either the configured root or an existing descendant are rejected before
+reads, writes, locks, or deletes.
+Unsafe identifiers fail without creating a sanitized alias or touching a sibling path.
 
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
@@ -161,6 +168,21 @@ Canonical symbol resolution is Storage-owned because it wraps the durable symbol
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
 workflows.
+The optional atomic-migration capability builds the complete candidate registry and lookup caches
+off to the side, persists that candidate through `AtomicFileWriter`, and publishes it only after
+the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
+registry and migration marker unchanged.
+
+Fund-account and fund-structure legacy JSON imports are bounded and replay-safe. Startup submits a
+typed snapshot to the PostgreSQL store, which takes a schema-scoped advisory lock and writes all
+rows plus a domain-specific source SHA-256 receipt in one serializable transaction. Fund-account
+imports include statement batches and lines, and fund-structure emptiness covers every imported
+entity table. Fund structure also persists the legacy linked-account identity set independently
+from active links and assignments, so disconnected account nodes keep their type and uniqueness
+semantics after restart. After `Imported` or receipt-backed `AlreadyImported`, startup atomically
+claims and re-hashes the exact source bytes before archival; a pending claim is recoverable after
+process failure. Cancellation, rollback, a hash mismatch, or a non-empty store retains the source
+for operator recovery.
 
 ### Accounting and Security Master evidence
 

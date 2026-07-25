@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
@@ -690,6 +691,77 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
         await svc3.InitialiseAsync();
         svc3.GetSessions().Should().ContainSingle(session => session.SessionId == created.SessionId && !session.IsActive);
     }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../outside")]
+    [InlineData(@"..\outside")]
+    [InlineData("session/child")]
+    [InlineData(@"session\child")]
+    [InlineData("/absolute")]
+    [InlineData(@"C:\absolute")]
+    public async Task SaveSessionMetadataAsync_InvalidSessionPath_RejectsWithoutCreatingFiles(string sessionId)
+    {
+        var store = BuildStore();
+        var record = BuildSessionRecord(sessionId);
+
+        var act = () => store.SaveSessionMetadataAsync(record);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        Directory.EnumerateFiles(_tempDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LoadFillsAsync_RootedSiblingPath_RejectsWithoutReadingOutsideBase()
+    {
+        var outsideDirectory = _tempDir + "-sibling";
+        Directory.CreateDirectory(outsideDirectory);
+        var outsidePath = Path.Combine(outsideDirectory, "fills.jsonl");
+        var outsideFill = BuildFill("OUTSIDE", OrderSide.Buy, 1m, 999m);
+        var outsideJson = JsonSerializer.Serialize(outsideFill);
+        await File.WriteAllTextAsync(outsidePath, outsideJson + Environment.NewLine);
+        try
+        {
+            var store = BuildStore();
+
+            var act = () => store.LoadFillsAsync(outsideDirectory);
+
+            await act.Should().ThrowAsync<ArgumentException>();
+            (await File.ReadAllTextAsync(outsidePath)).Should().Be(outsideJson + Environment.NewLine);
+        }
+        finally
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task LoadAllSessionsAsync_MetadataSessionIdDoesNotMatchDirectory_SkipsRecord()
+    {
+        var sessionDirectory = Path.Combine(_tempDir, "PAPER-SAFE-001");
+        Directory.CreateDirectory(sessionDirectory);
+        var record = BuildSessionRecord("../outside");
+        await File.WriteAllTextAsync(
+            Path.Combine(sessionDirectory, "session.json"),
+            JsonSerializer.Serialize(record));
+        var store = BuildStore();
+
+        var sessions = await store.LoadAllSessionsAsync();
+
+        sessions.Should().BeEmpty();
+    }
+
+    private static PersistedSessionRecord BuildSessionRecord(string sessionId)
+        => new(
+            sessionId,
+            "strategy-contained",
+            "Contained session",
+            10_000m,
+            DateTimeOffset.UtcNow,
+            ClosedAt: null,
+            IsActive: true,
+            Symbols: ["AAPL"]);
 }
 
 // ---------------------------------------------------------------------------

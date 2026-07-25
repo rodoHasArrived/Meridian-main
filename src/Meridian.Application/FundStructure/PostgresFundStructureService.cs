@@ -648,6 +648,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
             if (kind == FundStructureNodeKindDto.Account)
                 snap.LinkedAccountIds.Add(request.NodeId);
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
+            if (kind == FundStructureNodeKindDto.Account)
+                await _store.UpsertLinkedAccountIdAsync(request.NodeId, ct).ConfigureAwait(false);
             return assignment;
         }
         finally { _writeLock.Release(); }
@@ -1062,6 +1064,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         snap.InvestmentPortfolios = (await _store.GetAllInvestmentPortfoliosAsync(ct).ConfigureAwait(false)).ToDictionary(static p => p.InvestmentPortfolioId);
         snap.OwnershipLinks = (await _store.GetAllOwnershipLinksAsync(ct).ConfigureAwait(false)).ToDictionary(static l => l.OwnershipLinkId);
         snap.Assignments = (await _store.GetAllAssignmentsAsync(ct).ConfigureAwait(false)).ToDictionary(static a => a.AssignmentId);
+        snap.LinkedAccountIds = (await _store.GetAllLinkedAccountIdsAsync(ct).ConfigureAwait(false)).ToHashSet();
 
         var structureNodeIds = snap.Organizations.Keys
             .Concat<Guid>(snap.Businesses.Keys).Concat(snap.Clients.Keys)
@@ -1104,6 +1107,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
             await _store.UpsertOwnershipLinkAsync(l, ct).ConfigureAwait(false);
         foreach (var a in snap.Assignments.Values)
             await _store.UpsertAssignmentAsync(a, ct).ConfigureAwait(false);
+        foreach (var linkedAccountId in snap.LinkedAccountIds)
+            await _store.UpsertLinkedAccountIdAsync(linkedAccountId, ct).ConfigureAwait(false);
     }
 
     private async Task<FundStructureNodeKindDto?> ResolveNodeKindAsync(Guid nodeId, CancellationToken ct)

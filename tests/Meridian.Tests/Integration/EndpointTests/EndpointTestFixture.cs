@@ -11,7 +11,10 @@ using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Failover;
+using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -120,6 +123,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.TryAddSingleton<StreamingFailoverRegistry>();
         builder.Services.RemoveAll<ProviderRegistry>();
         builder.Services.AddSingleton(_ => CreateTestProviderRegistry());
         builder.Services.RemoveAll<IDirectLendingService>();
@@ -247,6 +251,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         var registry = new ProviderRegistry();
         registry.Register(new NoOpMarketDataClient(), priorityOverride: 100);
         registry.Register(new SyntheticHistoricalDataProvider(), priorityOverride: 10);
+        registry.Register(new StooqHistoricalDataProvider(), priorityOverride: 20);
+        registry.Register(new YahooFinanceHistoricalDataProvider(), priorityOverride: 30);
         return registry;
     }
 

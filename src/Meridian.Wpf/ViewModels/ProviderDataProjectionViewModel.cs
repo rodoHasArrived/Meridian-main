@@ -22,9 +22,11 @@ public sealed class ProviderDataProjectionViewModel : BindableBase
     public ObservableCollection<ProviderInstrumentDiscoveryReadModel> Instruments { get; } = [];
     public ProviderDataProjectionSnapshot? Projection { get => _projection; private set => SetProperty(ref _projection, value); }
 
-    public void Refresh()
+    public void Refresh(string tenantId, string companyId)
     {
-        Projection = _providerData.GetProjection();
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        Projection = _providerData.GetProjection(tenantId.Trim(), companyId.Trim());
         Replace(News, Projection.News);
         Replace(ScannerResults, Projection.ScannerResults);
         Replace(PnlStreams, Projection.PnlStreams);

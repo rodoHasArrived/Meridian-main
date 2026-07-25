@@ -19,21 +19,30 @@ public sealed class BackfillModeRunner
 {
     private readonly ILogger _log;
     private readonly BackfillHostFactory _hostFactory;
+    private readonly BackfillProviderFactory _providerFactory;
+    private readonly CompositeBackfillProviderFactory _compositeProviderFactory;
 
     public BackfillModeRunner(ILogger log)
         : this(
             log,
             static (deployment, configPath, ct) =>
-                HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct))
+                HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct),
+            static host => host.CreateBackfillProviders(),
+            static (host, providers) => host.CreateCompositeBackfillProvider(providers))
     {
     }
 
     internal BackfillModeRunner(
         ILogger log,
-        BackfillHostFactory hostFactory)
+        BackfillHostFactory hostFactory,
+        BackfillProviderFactory? providerFactory = null,
+        CompositeBackfillProviderFactory? compositeProviderFactory = null)
     {
         _log = log;
         _hostFactory = hostFactory;
+        _providerFactory = providerFactory ?? (static host => host.CreateBackfillProviders());
+        _compositeProviderFactory = compositeProviderFactory
+            ?? (static (host, providers) => host.CreateCompositeBackfillProvider(providers));
     }
 
     /// <summary>
@@ -78,38 +87,74 @@ public sealed class BackfillModeRunner
     {
         var backfillRequest = SharedStartupHelpers.BuildBackfillRequest(ctx.Config, ctx.CliArgs);
 
-        var backfillProviders = backfillHost.CreateBackfillProviders();
-
-        IHistoricalDataProvider[] providersArray;
+        var backfillProviders = _providerFactory(backfillHost);
         var requestedProvider = backfillRequest.Provider?.Trim();
         var useCompositeProvider = (ctx.Config.Backfill?.EnableFallback ?? true)
             && (string.IsNullOrWhiteSpace(requestedProvider)
                 || string.Equals(requestedProvider, "composite", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(requestedProvider, "auto", StringComparison.OrdinalIgnoreCase));
 
-        if (useCompositeProvider)
+        CompositeHistoricalDataProvider? composite = null;
+        try
         {
-            var composite = backfillHost.CreateCompositeBackfillProvider(backfillProviders);
-            providersArray = [composite];
+            IHistoricalDataProvider[] providersArray;
+            if (useCompositeProvider)
+            {
+                composite = _compositeProviderFactory(backfillHost, backfillProviders);
+                providersArray = [composite];
+            }
+            else
+            {
+                providersArray = backfillProviders.ToArray();
+            }
+
+            var backfill = new HistoricalBackfillService(providersArray, _log);
+            var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
+            var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
+            await statusStore.WriteAsync(result, ct).ConfigureAwait(false);
+            await pipeline.FlushAsync(ct).ConfigureAwait(false);
+            await statusWriter.WriteOnceAsync(ct).ConfigureAwait(false);
+
+            return result.Success ? 0 : ErrorCode.ProviderError.ToExitCode();
         }
-        else
+        finally
         {
-            providersArray = backfillProviders.ToArray();
+            if (composite is not null)
+            {
+                DisposeProvider(composite);
+            }
+            else
+            {
+                foreach (var provider in backfillProviders)
+                    DisposeProvider(provider);
+            }
         }
+    }
 
-        var backfill = new HistoricalBackfillService(providersArray, _log);
-        var result = await backfill.RunAsync(backfillRequest, pipeline, ct);
-        var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
-        await statusStore.WriteAsync(result);
-        await pipeline.FlushAsync();
-        await statusWriter.WriteOnceAsync();
-
-        return result.Success ? 0 : ErrorCode.ProviderError.ToExitCode();
+    private void DisposeProvider(IHistoricalDataProvider provider)
+    {
+        try
+        {
+            provider.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Backfill provider {ProviderName} raised an error during disposal",
+                provider.Name);
+        }
     }
 
     internal delegate Task<HostStartup> BackfillHostFactory(
         Meridian.Platform.Runtime.DeploymentContext deployment,
         string configPath,
         CancellationToken cancellationToken);
+
+    internal delegate IReadOnlyList<IHistoricalDataProvider> BackfillProviderFactory(HostStartup host);
+
+    internal delegate CompositeHistoricalDataProvider CompositeBackfillProviderFactory(
+        HostStartup host,
+        IReadOnlyList<IHistoricalDataProvider> providers);
 
 }
