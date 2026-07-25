@@ -34,9 +34,11 @@ gateway and all live-routing, phase, validation, and sign-off gates are explicit
 brokerage configuration remains allowed only for the default paper gateway.
 After the brokerage gate allows a non-paper broker, the OMS also requires `runId` metadata,
 `OrderRequest.FundAccountId`, and a registered `ILiveOrderReadinessGate` approval with a retained
-evidence reference before submitting to the gateway; missing run/account context, missing readiness
-registration, rejected readiness, or an approval without retained evidence produces an audited
-rejection instead of a broker submit.
+evidence reference before submitting to the gateway; shared HTTP order submission must authorize any
+present `FundAccountId` against the authenticated actor's account-scoped `ManageOrders` access
+before the OMS can use that account in live-readiness evaluation. Missing run/account context,
+missing readiness registration, rejected readiness, or an approval without retained evidence
+produces an audited rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
@@ -73,6 +75,10 @@ P&amp;L, or publish an enriched `TradeExecutedEvent` through the abstraction ins
 the OMS fallback value.
 The OMS sends only fills for its own tracked orders to the accounting publisher; untracked broker
 stream reports remain observable through `ExecutionReports` but cannot contaminate the configured book.
+For tracked orders, each streamed fill delta is capped to the remaining broker-authorized quantity,
+including an accepted quantity amendment, before portfolio state, public reports, and the accounting
+publisher observe it. An oversized or repeated callback therefore cannot overstate positions or
+post more than the accepted order quantity.
 After a broker acknowledges a fill, the OMS admits it to the accounting publisher before attempting
 cancelable paper-session history or audit bookkeeping. Report-pump shutdown likewise cannot cancel a
 dequeued fill before durable accounting admission; downstream session/channel work may be cancelled

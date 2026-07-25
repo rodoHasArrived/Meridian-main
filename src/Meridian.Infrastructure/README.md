@@ -40,6 +40,18 @@ transport-specific lifecycle evidence. For polling, raw-socket, simulation, and 
 diagnostics, `WebSocketState` is `None`. Consumers should use this contract instead of reaching
 into provider-specific transport internals.
 
+Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
+WebSocket endpoints. Consumers resolve them through the capability-aware Alpaca asset-stream router, which
+fails closed when a requested stream has no usable entitlement rather than falling back to equities. Its diagnostics carry a per-stream selected feed and entitlement (for
+example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
+misrepresented as consolidated or OPRA-entitled data.
+
+Alpaca reference-data search preserves broker-supplied marginability, shortability,
+easy-to-borrow, fractionability, and minimum/increment constraints on symbol details. Unfiltered
+searches default to equities to keep the non-paginated asset response bounded; callers can
+explicitly select crypto, options, or fixed-income assets when the configured Alpaca API
+entitlement exposes them.
+
 The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
 existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
 Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former
@@ -104,7 +116,28 @@ corporate-action, and factor evidence without placing orders. Adapter readiness 
 any write-capable live execution path back to the shared execution governance gates.
 Interactive Brokers contract construction resolves default SecType values from the Contracts-owned
 `InstrumentTypeDescriptorCatalog`, while still honoring explicit provider SecType overrides such
-as `GOVT` for government bonds.
+as `GOVT` for government bonds. The IBKR gateway exposes its actual execution mode to the shared
+OMS, so guidance or smoke builds are simulation-only and cannot be promoted into live routing by
+configuration. It also owns account catalog, portfolio snapshot, and connected-session execution
+sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
+account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
+dividends, interest, FX conversions, corporate actions, and prior-session activity.
+TWS account summaries and positions remain keyed by provider account, including identical symbols
+held in multiple accounts; an unknown requested account fails closed instead of inheriting another
+account's balances or positions. Account-summary request correlation is registered before dispatch
+so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
+The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
+contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
+and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
+live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
+materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
+it commits each `WatchAsync` update to `IIBDataResultStore` before making that update available to
+operator readers; successful request submission is not evidence of a live entitlement.
+Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
+option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
+rules. Each returned request and observation carries required provenance: provider and configured
+connection identity, source and receipt times, reported entitlement/feed/availability, request descriptor,
+provider-native identity, correlation, and a deterministic de-duplication key. Vendor SDK absence remains simulation/fail-closed and cannot advertise live IB capability.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

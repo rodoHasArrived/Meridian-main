@@ -97,6 +97,32 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveDraftAsync_ReportsEachUndeclaredCapabilityOnce()
+    {
+        var service = new ProviderIntegrationSetupService(new FileProviderIntegrationManifestStore(testRoot));
+        var request = CreateRequest();
+        request = request with
+        {
+            Connection = request.Connection with
+            {
+                EnabledCapabilities =
+                [
+                    ProviderCapabilityKindDto.Transactions,
+                    ProviderCapabilityKindDto.Transactions,
+                    ProviderCapabilityKindDto.Transactions
+                ]
+            }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Should().ContainSingle(issue =>
+            issue.Code == "provider-setup.connection-capability-not-declared" &&
+            issue.Message.Contains("Transactions", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task SaveDraftAsync_ReportsNullCapabilityCollectionsAsValidationIssues()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);

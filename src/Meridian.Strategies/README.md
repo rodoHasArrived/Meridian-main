@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Strategies
@@ -33,10 +33,26 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
+the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
+intent before invoking the external strategy, then return a validated Succeeded,
+CompletedWithWarnings, Failed, or Blocked receipt with recovery guidance. Transient final-evidence
+failures retain a warning and can be reconciled against the already-completed external state without
+repeating the action. Lifecycle snapshots retain deterministic input hashes, actors, correlation and
+attempt lineage, exception details, approvals, evidence, artifacts, legal transition order, and
+monotonic timestamps. Version-two input hashes bind parent-run lineage, portfolio, ledger, audit,
+and fund-profile scope as well as datasets, feeds, engines, and ordered parameters; replay accepts
+verified legacy hashes only for an explicit one-time upgrade and rejects later scope mutation. The
+parameterless store remains an explicit in-memory compatibility seam for
+isolated tests; browser and WPF production composition and the desktop fallback use the same
+data-root-backed durable history store.
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
 not need to infer backtest acceptance from dashboard-only state.
+Completed runs may receive a subsequent append-only walk-forward evidence snapshot when the
+snapshot changes only that evidence; durable replay preserves the completed lifecycle state while
+allowing paper-to-live promotion to evaluate the newly retained out-of-sample evidence.
 `LedgerReadService` projects strategy-run trial balance and journal rows with canonical
 `LedgerDimensionSetDto` scope for fund, strategy, portfolio, book, account, entity, sleeve,
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
@@ -79,6 +95,10 @@ The shared reconciliation break queue also enforces v0.18 reviewed-automation bo
 or automation-origin commands may assist triage, comments, and evidence gathering, but resolve,
 sign-off, dismiss, and privileged reopen paths fail closed with a retained `MaterialActionDenied`
 audit event before case state changes.
+Break records carry explicit Value, Quantity, and CostBasis comparisons. A source that cannot
+provide a measure retains an unavailable reason instead of substituting zero. Governed casework
+supports assign, resolve, waive, and supersede dispositions with evidence hashes, independent
+approval for material dispositions, successor lineage, idempotency, and append-only audit history.
 
 ## Diagrams
 

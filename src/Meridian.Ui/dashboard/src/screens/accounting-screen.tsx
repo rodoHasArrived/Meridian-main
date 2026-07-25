@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -2684,26 +2685,32 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                     ariaLabel={reconciliation.statementRunsView.tableLabel}
                     caption={reconciliation.statementRunsView.tableCaption}
                   />
-                  <Tabs
+                  <DenseRowDetailPanel
                     id={reconciliation.statementRunsView.detailPanelId}
-                    aria-label="Statement run detail tabs"
-                    tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
-                      ariaLabel: tab.ariaLabel,
-                      count: tab.badgeLabel,
-                      disabled: tab.disabled,
-                      id: tab.id,
-                      label: tab.label
-                    }))}
+                    ariaLabel="Selected statement run detail"
+                    selectedSourceLabel="Selected from Accounting statement runs"
+                    className="row-detail-panel min-w-0"
                   >
-                    {reconciliation.statementRunsView.tabs.map((tab) => (
-                      <TabPanel key={tab.id}>
-                        <div className="rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-sm">
-                          <div className="font-semibold text-foreground">{tab.label}</div>
-                          <p className="mt-1 leading-5 text-muted-foreground">{tab.disabledReason ?? tab.description}</p>
-                        </div>
-                      </TabPanel>
-                    ))}
-                  </Tabs>
+                    <Tabs
+                      aria-label="Statement run detail tabs"
+                      tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
+                        ariaLabel: tab.ariaLabel,
+                        count: tab.badgeLabel,
+                        disabled: tab.disabled,
+                        id: tab.id,
+                        label: tab.label
+                      }))}
+                    >
+                      {reconciliation.statementRunsView.tabs.map((tab) => (
+                        <TabPanel key={tab.id}>
+                          <div className="rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-sm">
+                            <div className="font-semibold text-foreground">{tab.label}</div>
+                            <p className="mt-1 leading-5 text-muted-foreground">{tab.disabledReason ?? tab.description}</p>
+                          </div>
+                        </TabPanel>
+                      ))}
+                    </Tabs>
+                  </DenseRowDetailPanel>
                   <p className="text-xs text-muted-foreground">
                     Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
                   </p>
@@ -2748,13 +2755,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               aria-label="Selected reconciliation case detail"
               data-master-detail-rail="reconciliation"
             >
-              <Card
+              <DenseRowDetailPanel
                 id={reconciliation.detailPanelId}
-                data-selected-source="Selected from reconciliation break queue"
-                className="row-detail-panel panel-surface-strong bg-panel-strong text-foreground"
-                role="region"
-                aria-live="polite"
-                aria-label={
+                selectedSourceLabel="Selected from reconciliation break queue"
+                className="row-detail-panel panel-surface-strong rounded-[2px] border border-border bg-panel-strong text-foreground"
+                ariaLabel={
                   reconciliation.selectedDetail?.ariaLabel
                   ?? selectedReconciliationDetail?.ariaLabel
                   ?? reconciliation.detailEmptyAriaLabel
@@ -2996,7 +3001,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </DenseRowDetailPanel>
             </div>
           </section>
         </section>

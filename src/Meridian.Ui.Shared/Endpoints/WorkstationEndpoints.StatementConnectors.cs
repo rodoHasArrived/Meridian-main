@@ -12,14 +12,17 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
-    // IB Flex XML exports routinely exceed the 5 MB data-upload cap; statements get their own limit.
-    private const long StatementConnectorMaxFileBytes = 20 * 1024 * 1024;
+    // IB Flex XML exports routinely exceed the 5 MB data-upload cap; statements get their own limit,
+    // shared with the CLI import/validate commands so the two paths cannot drift.
+    private const long StatementConnectorMaxFileBytes = StatementConnectorLimits.MaxFileBytes;
 
     private static readonly string[] StatementConnectorAcceptedExtensions =
-        [".csv", ".txt", ".ofx", ".qfx", ".xml", ".json"];
+        [".csv", ".txt", ".ofx", ".qfx", ".xml", ".json", ".bai", ".bai2", ".camt", ".053"];
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        MapStatementToReportEndpoints(group, jsonOptions);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (
             HttpContext context,
             [FromServices] StatementConnectorRegistry? registry) =>
@@ -352,7 +355,10 @@ public static partial class WorkstationEndpoints
                                 ? "statement-default"
                                 : request.ToleranceProfileId,
                             request.CadenceHours,
-                            request.Enabled),
+                            request.Enabled,
+                            SourceKind: string.IsNullOrWhiteSpace(request.SourceKind)
+                                ? "broker"
+                                : request.SourceKind),
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(ToScheduleDto(saved), jsonOptions);
@@ -561,5 +567,6 @@ public static partial class WorkstationEndpoints
             schedule.Enabled,
             schedule.LastRunAtUtc,
             schedule.LastRunStatus,
-            schedule.NextDueAtUtc);
+            schedule.NextDueAtUtc,
+            schedule.SourceKind);
 }

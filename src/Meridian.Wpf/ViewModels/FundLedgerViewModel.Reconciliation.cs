@@ -12,6 +12,14 @@ public sealed partial class FundLedgerViewModel
 {
     private const string DefaultReconciliationOperator = "desktop-user";
 
+    /// <summary>
+    /// Audit finding P8: reconciliation decisions are attributed to the authenticated desktop
+    /// operator when a session exists. The constant stays as the anonymous-session sentinel,
+    /// which the action-posture rendering treats as "owner not confirmed".
+    /// </summary>
+    private string ResolveReconciliationOperator() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : DefaultReconciliationOperator;
+
     private FundReconciliationDetailModel? _currentReconciliationDetail;
     private CancellationTokenSource? _reconciliationDetailCts;
     private readonly List<FundReconciliationMatchCandidateRow> _reconciliationMatchRowsWithSubscriptions = [];
@@ -662,7 +670,19 @@ public sealed partial class FundLedgerViewModel
             }
 
             await RefreshReconciliationWorkbenchCoreAsync(activeFund, ct);
-            ReconciliationActionFeedbackText = successMessage;
+            if (result.CompletedWithWarnings)
+            {
+                var warningMessage = result.OperatorMessage
+                    ?? (result.Outcome is null
+                        ? null
+                        : WorkstationReconciliationApiClient.BuildOutcomeOperatorMessage(result.Outcome))
+                    ?? "Reconciliation action completed with warnings.";
+                ReconciliationActionFeedbackText = $"{successMessage} {warningMessage}";
+            }
+            else
+            {
+                ReconciliationActionFeedbackText = successMessage;
+            }
         }
         finally
         {
@@ -879,7 +899,7 @@ public sealed partial class FundLedgerViewModel
             ReconciliationSection.SearchText = string.Empty;
             ReconciliationSection.SelectedBreakQueueItem = null;
             ReconciliationSection.SelectedRun = null;
-            ReconciliationSection.OperatorText = DefaultReconciliationOperator;
+            ReconciliationSection.OperatorText = ResolveReconciliationOperator();
             ReconciliationSection.NoteText = string.Empty;
             ReconciliationSection.ActionFeedbackText = string.Empty;
             ReconciliationSection.BreakQueueItems.Clear();

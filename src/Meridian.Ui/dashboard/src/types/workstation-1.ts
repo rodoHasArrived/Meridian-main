@@ -4,6 +4,8 @@ import type {
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
   OperationsCloseReadiness,
+  ReconciliationBreakDisposition,
+  ReconciliationBreakMeasure,
 } from "../types";
 
 export type WorkspaceKey =
@@ -779,6 +781,7 @@ export interface StrategyRunRecord {
   netPnl?: number | null;
   totalReturn?: number | null;
   finalEquity?: number | null;
+  biasDisclosure?: import("./workstation-6").BiasDisclosure | null;
 }
 
 // --- Promotion workflow types ---
@@ -1243,6 +1246,14 @@ export interface OperationsBreakCase {
   rootCauseCode?: string | null;
   approvalState?: string | null;
   blockedOutputs?: string[] | null;
+  measures?: ReconciliationBreakMeasure[] | null;
+  disposition?: ReconciliationBreakDisposition | null;
+  dispositionReason?: string | null;
+  supersedingBreakId?: string | null;
+  dispositionApprovedBy?: string | null;
+  dispositionApprovalReference?: string | null;
+  dispositionEvidenceHash?: string | null;
+  disposedAtUtc?: string | null;
 }
 
 export interface OperationsReconciliationLaneSummary {

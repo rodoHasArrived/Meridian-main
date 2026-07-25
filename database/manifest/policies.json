@@ -2,11 +2,21 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 183,
-    "warning": 183
+    "total": 193,
+    "warning": 193
   },
   "failed": false,
   "findings": [
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_accounting_event_projections"
+      },
+      "message": "Business table asset_operations.asset_accounting_event_projections does not have a table comment.",
+      "object": "asset_operations.asset_accounting_event_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
     {
       "details": {
         "schema": "asset_operations",
@@ -460,6 +470,16 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Business table ledger.atomic_tax_lot_posting_batches does not have a table comment.",
+      "object": "ledger.atomic_tax_lot_posting_batches",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "fund_profile_tenancy"
       },
       "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
@@ -524,6 +544,16 @@
       },
       "message": "Business table ledger.period_close_events does not have a table comment.",
       "object": "ledger.period_close_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "tax_lot_mutations"
+      },
+      "message": "Business table ledger.tax_lot_mutations does not have a table comment.",
+      "object": "ledger.tax_lot_mutations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -684,6 +714,16 @@
       },
       "message": "Business table reporting.reporting_reconciliation_evidence does not have a table comment.",
       "object": "reporting.reporting_reconciliation_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_reconciliation_evidence_v2"
+      },
+      "message": "Business table reporting.reporting_reconciliation_evidence_v2 does not have a table comment.",
+      "object": "reporting.reporting_reconciliation_evidence_v2",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1431,6 +1471,76 @@
     {
       "details": {
         "columns": [
+          "corrects_mutation_batch_id"
+        ],
+        "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "period_id"
+        ],
+        "constraint": "atomic_tax_lot_posting_batches_period_id_fkey",
+        "schema": "ledger",
+        "table": "atomic_tax_lot_posting_batches"
+      },
+      "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "corrects_mutation_batch_id"
+        ],
+        "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lot_mutations"
+      },
+      "message": "Foreign key ledger.tax_lot_mutations.tax_lot_mutations_corrects_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lot_mutations.tax_lot_mutations_corrects_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "last_mutation_batch_id"
+        ],
+        "constraint": "tax_lots_last_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Foreign key ledger.tax_lots.tax_lots_last_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lots.tax_lots_last_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "originating_mutation_batch_id"
+        ],
+        "constraint": "tax_lots_originating_mutation_batch_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Foreign key ledger.tax_lots.tax_lots_originating_mutation_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lots.tax_lots_originating_mutation_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_journal_entry_id"
         ],
         "constraint": "tax_lots_source_journal_entry_id_fkey",
@@ -1959,6 +2069,16 @@
     {
       "details": {
         "schema": "reporting",
+        "table": "reporting_reconciliation_evidence_v2"
+      },
+      "message": "Table reporting.reporting_reconciliation_evidence_v2 is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_reconciliation_evidence_v2",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
         "table": "reporting_restatement_requests"
       },
       "message": "Table reporting.reporting_restatement_requests is in an RLS-required schema but row-level security is disabled.",
@@ -1977,5 +2097,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "a48dce3e060f710c51f23225e6ee344a6fadee99eae677d57bca058c6b56aae2"
+  "fingerprint": "f736697d4a1273ea781433c94cd3158a9bcd2b6f9a3cee39ed4e3b306577c85d"
 }

@@ -450,6 +450,7 @@ classDiagram
         +DateOnly AsOfDate
         +string? AssetClass
         +Guid BatchId
+        +decimal? CostBasis
         +string Currency
         +string Identifier
         +string IdentifierType
@@ -457,7 +458,6 @@ classDiagram
         +Guid LineId
         +decimal MarketValue
         +decimal Quantity
-        +string? SecurityName
     }
     class Meridian_Contracts_FundStructure_CustodianStatementBatchDto["CustodianStatementBatchDto"] {
         +Guid AccountId

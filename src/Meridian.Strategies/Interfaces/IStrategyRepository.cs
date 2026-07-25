@@ -1,5 +1,7 @@
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Storage;
 
 namespace Meridian.Strategies.Interfaces;
 
@@ -11,6 +13,29 @@ public interface IStrategyRepository
 {
     /// <summary>Records a new or updated run entry.</summary>
     Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default);
+
+    /// <summary>
+    /// Records an explicit lifecycle transition while preserving compatibility with repositories
+    /// that only retain the latest run snapshot.
+    /// </summary>
+    Task RecordLifecycleEventAsync(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType,
+        CancellationToken ct = default) =>
+        RecordRunAsync(entry with { LastLifecycleEvent = eventType }, ct);
+
+    /// <summary>
+    /// Records a lifecycle transition and returns its validated terminal receipt when the event
+    /// represents a completed command rather than an intent-only transition.
+    /// </summary>
+    async Task<VerifiedOperationOutcome?> RecordLifecycleEventWithOutcomeAsync(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType,
+        CancellationToken ct = default)
+    {
+        await RecordLifecycleEventAsync(entry, eventType, ct).ConfigureAwait(false);
+        return StrategyRunStore.CreateLifecycleOutcome(entry, eventType);
+    }
 
     /// <summary>Retrieves all runs for <paramref name="strategyId"/> in ascending start order.</summary>
     IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default);
@@ -127,7 +152,8 @@ internal static class StrategyRunRepositoryOrdering
     internal static readonly IComparer<StrategyRunEntry> StartedAtAscending = Comparer<StrategyRunEntry>.Create(CompareStartedAtAscending);
     internal static readonly IComparer<StrategyRunEntry> LastUpdatedDescending = Comparer<StrategyRunEntry>.Create(CompareLastUpdatedDescending);
 
-    internal static DateTimeOffset GetLastUpdatedAt(StrategyRunEntry run) => run.EndedAt ?? run.StartedAt;
+    internal static DateTimeOffset GetLastUpdatedAt(StrategyRunEntry run) =>
+        run.LifecycleEventAtUtc ?? run.EndedAt ?? run.StartedAt;
 
     internal static StrategyRunStatus MapStatus(StrategyRunEntry run)
     {
@@ -136,9 +162,16 @@ internal static class StrategyRunRepositoryOrdering
             return run.TerminalStatus.Value;
         }
 
-        return run.EndedAt.HasValue
-            ? StrategyRunStatus.Completed
-            : StrategyRunStatus.Running;
+        return run.LastLifecycleEvent switch
+        {
+            StrategyRunLifecycleEventType.Paused => StrategyRunStatus.Paused,
+            StrategyRunLifecycleEventType.Completed => StrategyRunStatus.Completed,
+            StrategyRunLifecycleEventType.StartFailed or
+            StrategyRunLifecycleEventType.Failed => StrategyRunStatus.Failed,
+            StrategyRunLifecycleEventType.Cancelled => StrategyRunStatus.Cancelled,
+            _ when run.EndedAt.HasValue => StrategyRunStatus.Completed,
+            _ => StrategyRunStatus.Running
+        };
     }
 
     private static int CompareStartedAtAscending(StrategyRunEntry? left, StrategyRunEntry? right)

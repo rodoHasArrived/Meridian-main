@@ -17,13 +17,15 @@ public sealed record StatementFetchSchedule(
     int CadenceHours,
     bool Enabled,
     DateTimeOffset? LastRunAtUtc = null,
-    string? LastRunStatus = null)
+    string? LastRunStatus = null,
+    string SourceKind = "broker",
+    DateTimeOffset? LastAttemptAtUtc = null)
 {
     public DateTimeOffset? NextDueAtUtc =>
-        !Enabled ? null : LastRunAtUtc?.AddHours(Math.Max(1, CadenceHours));
+        !Enabled ? null : (LastAttemptAtUtc ?? LastRunAtUtc)?.AddHours(Math.Max(1, CadenceHours));
 
     public bool IsDue(DateTimeOffset nowUtc) =>
-        Enabled && (LastRunAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
+        Enabled && (NextDueAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
 }
 
 public sealed record StatementFetchScheduleSnapshot(
@@ -40,6 +42,11 @@ public interface IStatementFetchScheduleStore
     Task<StatementFetchSchedule> UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);
     Task<bool> DeleteAsync(string scheduleId, CancellationToken ct = default);
     Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);
+    Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default);
 }
 
 /// <summary>
@@ -72,7 +79,8 @@ public sealed class FileStatementFetchScheduleStore
         {
             ScheduleId = string.IsNullOrWhiteSpace(schedule.ScheduleId)
                 ? Guid.NewGuid().ToString("N")
-                : schedule.ScheduleId.Trim()
+                : schedule.ScheduleId.Trim(),
+            SourceKind = schedule.SourceKind.Trim().ToLowerInvariant()
         };
 
         return await UpdateSnapshotAsync(snapshot =>
@@ -86,7 +94,8 @@ public sealed class FileStatementFetchScheduleStore
                 normalized = normalized with
                 {
                     LastRunAtUtc = existing.LastRunAtUtc,
-                    LastRunStatus = existing.LastRunStatus
+                    LastRunStatus = existing.LastRunStatus,
+                    LastAttemptAtUtc = existing.LastAttemptAtUtc
                 };
             }
 
@@ -125,7 +134,42 @@ public sealed class FileStatementFetchScheduleStore
                 return snapshot;
             }
 
-            var updated = existing with { LastRunAtUtc = ranAtUtc, LastRunStatus = status };
+            var updated = existing with
+            {
+                LastRunAtUtc = ranAtUtc,
+                LastAttemptAtUtc = ranAtUtc,
+                LastRunStatus = status
+            };
+            var retained = snapshot.Schedules
+                .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
+                    ? updated
+                    : candidate)
+                .ToArray();
+            return new StatementFetchScheduleSnapshot(SnapshotVersion, retained);
+        }, ct).ConfigureAwait(false);
+    }
+
+    public async Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        await UpdateSnapshotAsync(snapshot =>
+        {
+            var existing = snapshot.Schedules.FirstOrDefault(candidate =>
+                string.Equals(candidate.ScheduleId, scheduleId.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                return snapshot;
+            }
+
+            var updated = existing with
+            {
+                LastAttemptAtUtc = attemptedAtUtc,
+                LastRunStatus = status
+            };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated
@@ -167,6 +211,12 @@ public sealed class FileStatementFetchScheduleStore
         if (schedule.CadenceHours < 1)
         {
             throw new InvalidDataException("Fetch schedule cadence must be at least one hour.");
+        }
+
+        if (!string.Equals(schedule.SourceKind, "broker", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(schedule.SourceKind, "custodian", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Fetch schedule source kind must be broker or custodian.");
         }
     }
 

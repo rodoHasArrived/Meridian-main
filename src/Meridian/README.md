@@ -49,9 +49,10 @@ non-HTTPS bindings unless
 separately from the service.
 
 Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
-by keyed runtime ID (`alpaca`, `ib`, `ibkr`, `robinhood`) and registers StockSharp only when the
-connector runtime type is present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted
-registration surface for Alpaca, Interactive Brokers, the `ibkr` alias, Robinhood, and optional
+by keyed runtime ID (`alpaca`, `ibkr`, `robinhood`), retains `ib` as an Interactive Brokers
+compatibility alias, and registers StockSharp only when the connector runtime type is present.
+`HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted registration surface for Alpaca,
+Interactive Brokers, the `ib` compatibility alias, Robinhood, and optional
 StockSharp: concrete gateway type, declared gateway id, runtime-key match status,
 account/portfolio/activity sync support, order-modification and partial-fill capability, supported
 asset classes, validation issues, and missing-runtime notes. This is offline DI/runtime surface

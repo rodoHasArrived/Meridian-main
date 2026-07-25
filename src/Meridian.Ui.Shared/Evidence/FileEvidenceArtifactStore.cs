@@ -16,11 +16,9 @@ public interface IEvidenceArtifactStore
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
         CancellationToken ct = default);
-
     Task<EvidenceVaultIntakeResponseDto> WriteIntakeArtifactAsync(
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default);
-
     Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
@@ -46,20 +44,17 @@ public interface IEvidenceArtifactStore
     Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
         EvidenceVaultDocumentQueryDto query,
         CancellationToken ct = default);
-
     Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
         EvidenceVaultDocumentReviewRequestDto request,
         CancellationToken ct = default);
 }
-
 public sealed record EvidenceManifestFile(
     Stream Content,
     string ContentType,
     string FileName,
     DateTimeOffset LastModified);
-
 public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";
@@ -92,10 +87,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.PaymentIntentKind,
         EvidenceSubjectResolver.ReportPackDeliveryKind
     };
-
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
-
     // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
     // only makes each single write atomic; without this, concurrent document reviews on the
     // same vault could read the same snapshot and silently clobber each other's updates.
@@ -107,14 +100,12 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
-
     public FileEvidenceArtifactStore(string dataRoot, ILogger<FileEvidenceArtifactStore> logger)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
     }
-
     public async Task<EvidencePacketExportResponse> WriteManifestAsync(
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
@@ -654,6 +645,15 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
         var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
         var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
+
+        // Avoid retaining a process-lifetime lock for a vault that does not exist. The identity is
+        // read again after acquiring the lock so a concurrent review still operates on the latest
+        // persisted state.
+        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
+        if (await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false) is null)
+        {
+            return null;
+        }
 
         var vaultLock = _vaultWriteLocks.GetOrAdd(safeVaultId, static _ => new SemaphoreSlim(1, 1));
         await vaultLock.WaitAsync(ct).ConfigureAwait(false);
@@ -2561,27 +2561,4 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         ? StringComparison.OrdinalIgnoreCase
         : StringComparison.Ordinal;
 
-    private sealed record RetainedEvidenceManifestDto(
-        int SchemaVersion,
-        DateTimeOffset ExportedAt,
-        string? RequestedBy,
-        string? Reason,
-        bool ManifestOnly,
-        EvidenceSubjectDto Subject,
-        EvidenceCompletenessDto Completeness,
-        IReadOnlyList<EvidenceNodeDto> Nodes,
-        IReadOnlyList<EvidenceEdgeDto> Edges,
-        IReadOnlyList<WorkflowActionDto> Actions,
-        IReadOnlyList<string> Warnings,
-        IReadOnlyList<EvidenceRequestListDto> RequestLists,
-        IReadOnlyList<EvidenceSupportRequestDto> SupportRequests,
-        EvidenceVaultIdentityDto? VaultIdentity,
-        EvidenceLifecycleMetadataDto? Lifecycle,
-        EvidenceSubjectLinkageDto? Linkage);
-
-    private sealed record EvidenceRequestListTarget(
-        string RequestListKind,
-        EvidenceRequestListKindDto RequestListKindCode,
-        string TargetKind,
-        string TargetId);
 }

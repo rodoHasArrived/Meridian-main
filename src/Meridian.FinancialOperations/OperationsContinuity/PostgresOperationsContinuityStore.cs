@@ -181,6 +181,19 @@ public sealed class PostgresOperationsContinuityStore :
             results.Add(DeserializeAudit(reader.GetString(0), workflowId));
         }
 
+        if (results.Any(entry => entry.WorkflowId != workflowId))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' contains an event for a different workflow.");
+        }
+
+        if (results.Count > 0 &&
+            !OperationsWorkflowAuditHashing.TryValidateChain(results, out var blockerCode, out var message))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' is invalid ({blockerCode}): {message}");
+        }
+
         return results;
     }
 
@@ -204,6 +217,33 @@ public sealed class PostgresOperationsContinuityStore :
         return new OperationsContinuityTransactionalCommitResult(workflow, audit);
     }
 
+    public async Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowTransitionAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        bool persistWorkflowState,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        ArgumentNullException.ThrowIfNull(auditDraft);
+        if (workflow.WorkflowId != auditDraft.WorkflowId)
+        {
+            throw new ArgumentException("Workflow and audit draft identities must match.", nameof(auditDraft));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+
+        var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
+        if (persistWorkflowState)
+        {
+            workflow.Touch(audit.OccurredAtUtc);
+            await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new OperationsContinuityTransactionalCommitResult(workflow, audit);
+    }
+
     public async Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(
         OperationsContinuityWorkflow workflow,
         OperationsWorkflowAuditDraft auditDraft,
@@ -217,6 +257,8 @@ public sealed class PostgresOperationsContinuityStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        // Reject an unresolved book before a transactional ledger append can create any related writes.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
         await _ledgerJournalStore.AppendAsync(connection, transaction, journalEntry, ct).ConfigureAwait(false);
         var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
         workflow.Touch(audit.OccurredAtUtc);
@@ -348,6 +390,10 @@ public sealed class PostgresOperationsContinuityStore :
         OperationsContinuityWorkflow workflow,
         CancellationToken ct)
     {
+        // Keep the tenant-resolution precondition at the write seam so all workflow upserts, including
+        // transactional workflow starts, reject book-scoped workflows that cannot be tenant-stamped.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -424,8 +470,10 @@ public sealed class PostgresOperationsContinuityStore :
         // Trust-on-first-use fallback tenant for a genuinely BOOK-LESS workflow only: the resolved tenant of
         // the operator performing the write. Bound to null whenever a ledger book is present, so a
         // book-scoped workflow always derives its tenant from the authoritative fund registry (see the stamp
-        // SQL) and can never be mis-stamped with a caller tenant that differs from the fund's owner. Null for
-        // a background/non-request writer, which stays fail-open. Trimmed to match the write-side stamp.
+        // SQL) and can never be mis-stamped with a caller tenant that differs from the fund's owner. The
+        // pre-insert ledger-book tenant guard rejects unresolved book scopes before they can persist a
+        // tenantless fail-open workflow. Null for a background/non-request writer, which stays fail-open
+        // only for genuinely book-less workflows. Trimmed to match the write-side stamp.
         var callerTenantStamp = ResolveCallerTenant();
         var bookLessCallerTenant = workflow.LedgerBookId is null && !string.IsNullOrWhiteSpace(callerTenantStamp)
             ? (object)callerTenantStamp.Trim()
@@ -437,6 +485,37 @@ public sealed class PostgresOperationsContinuityStore :
         {
             throw new InvalidOperationException(
                 $"Operations continuity workflow '{workflow.WorkflowId}' was not saved because the stored version is newer or equal.");
+        }
+    }
+
+    private async Task EnsureLedgerBookTenantResolvableAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OperationsContinuityWorkflow workflow,
+        CancellationToken ct)
+    {
+        if (workflow.LedgerBookId is null)
+        {
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select t.tenant_id
+            from {Qualified("ledger_books")} b
+            join {Qualified("fund_profile_tenancy")} t
+              on t.fund_profile_id = lower(trim(b.fund_profile_id))
+            where b.ledger_book_id = @tenant_ledger_book_id
+            """;
+        command.Parameters.AddWithValue("tenant_ledger_book_id", workflow.LedgerBookId.Value);
+
+        var tenantId = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            throw new InvalidOperationException(
+                $"Operations continuity workflow '{workflow.WorkflowId}' cannot be saved because ledger book '{workflow.LedgerBookId.Value}' does not resolve to a claimed fund tenant.");
         }
     }
 

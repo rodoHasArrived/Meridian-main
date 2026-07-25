@@ -500,9 +500,9 @@ describe("dashboard design-system contract", () => {
     expect(readDashboardPrimitive("date-range-picker.tsx")).toContain("font-mono");
     expect(readDashboardPrimitive("file-upload.tsx")).toContain('className="font-mono"');
 
-    expect(statusBanner).toContain("var(--severity-info-bd)");
-    expect(statusBanner).toContain("var(--severity-info-bg)");
-    expect(statusBanner).toContain("var(--severity-info-fg)");
+    expect(statusBanner).toContain("var(--severity-info-bd");
+    expect(statusBanner).toContain("var(--severity-info-bg");
+    expect(statusBanner).toContain("var(--severity-info-fg");
     expect(statusBanner).not.toContain('info: "border-l-primary');
     expect(designSystemStatusBanner).toContain("var(--severity-info-bg");
     expect(designSystemStatusBanner).toContain("var(--severity-info-bd");

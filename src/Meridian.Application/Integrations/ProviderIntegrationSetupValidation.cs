@@ -177,9 +177,10 @@ public static class ProviderIntegrationSetupValidator
         var declaredCapabilities = (manifest.Capabilities ?? [])
             .Select(capability => capability.Capability)
             .ToHashSet();
+        var undeclaredCapabilities = new HashSet<ProviderCapabilityKindDto>();
         foreach (var capability in connection.EnabledCapabilities ?? [])
         {
-            if (!declaredCapabilities.Contains(capability))
+            if (!declaredCapabilities.Contains(capability) && undeclaredCapabilities.Add(capability))
             {
                 issues.Add(new ProviderIntegrationSetupValidationIssue(
                     "connection.enabledCapabilities",

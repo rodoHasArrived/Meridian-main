@@ -374,6 +374,7 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         {
             PositionId = Guid.Parse("a3000000-aaaa-4000-8000-000000000099"),
             Version = 1,
+            PositionSide = $"{initial.Position.PositionSide} ",
             CurrentEconomicState = null,
             OriginEvent = initial.Position.OriginEvent! with
             {

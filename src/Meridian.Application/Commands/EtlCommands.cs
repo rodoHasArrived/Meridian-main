@@ -1,6 +1,7 @@
 using Meridian.Application.Composition;
 using Meridian.Platform.Results;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Operations;
 using Meridian.DataIntegration.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
 using Serilog;
@@ -12,11 +13,25 @@ internal sealed class EtlCommands : ICliCommand
     private readonly string _configPath;
     private readonly ILogger _log;
     private readonly CliCommandRouteTable _routes;
+    private readonly EtlHostFactory _hostFactory;
 
     public EtlCommands(string configPath, ILogger log)
+        : this(
+            configPath,
+            log,
+            static (path, cancellationToken) =>
+                HostStartup.CreateForEtlAsync(path, cancellationToken))
+    {
+    }
+
+    internal EtlCommands(
+        string configPath,
+        ILogger log,
+        EtlHostFactory hostFactory)
     {
         _configPath = configPath;
         _log = log;
+        _hostFactory = hostFactory;
         _routes = new CliCommandRouteTable(
             CliCommandRoute.Flag("--etl-resume", RunResumeAsync),
             CliCommandRoute.Flags(
@@ -41,19 +56,21 @@ internal sealed class EtlCommands : ICliCommand
 
     private async Task<CliResult> RunResumeAsync(string[] args, CancellationToken ct)
     {
-        await using var startup = HostStartup.CreateDefault(_configPath);
+        await using var startup = await _hostFactory(_configPath, ct)
+            .ConfigureAwait(false);
         var svc = startup.GetRequiredService<IEtlJobService>();
 
         var jobId = CliArguments.RequireValue(args, "--etl-resume", "--etl-resume <job-id>");
         if (jobId is null)
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
         var result = await svc.RunAsync(jobId, ct).ConfigureAwait(false);
-        return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
+        return ReportRunResult(jobId, result);
     }
 
     private async Task<CliResult> RunJobAsync(string[] args, CancellationToken ct)
     {
-        await using var startup = HostStartup.CreateDefault(_configPath);
+        await using var startup = await _hostFactory(_configPath, ct)
+            .ConfigureAwait(false);
         var svc = startup.GetRequiredService<IEtlJobService>();
         if (!TryBuildDefinition(args, out var definition))
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
@@ -114,14 +131,7 @@ internal sealed class EtlCommands : ICliCommand
 
         var job = await svc.CreateJobAsync(definition, ct).ConfigureAwait(false);
         var run = await svc.RunAsync(job.JobId, ct).ConfigureAwait(false);
-        if (!run.Success)
-        {
-            Console.Error.WriteLine($"ETL failed: {string.Join("; ", run.Errors)}");
-            return CliResult.Fail(ErrorCode.Unknown);
-        }
-
-        Console.WriteLine($"ETL job {job.JobId} completed. Files={run.FilesProcessed}, Records={run.RecordsProcessed}, Accepted={run.RecordsAccepted}, Rejected={run.RecordsRejected}, Deduplicated={run.RecordsDeduplicated}");
-        return CliResult.Ok();
+        return ReportRunResult(job.JobId, run);
     }
 
     internal static bool TryBuildDefinition(string[] args, out EtlJobDefinition definition)
@@ -170,10 +180,43 @@ internal sealed class EtlCommands : ICliCommand
             ToDateUtc = DateTime.TryParse(CliArguments.GetValue(args, "--etl-to"), out var to) ? to : null,
             PublishPortablePackage = CliArguments.HasFlag(args, "--etl-publish-package"),
             PublishNormalizedExtract = CliArguments.HasFlag(args, "--etl-publish-normalized"),
-            ContinueOnRecordError = CliArguments.HasFlag(args, "--etl-continue-on-error")
+            ContinueOnRecordError = CliArguments.HasFlag(args, "--etl-continue-on-error"),
+            FailRoundTripOnExportError = !CliArguments.HasFlag(args, "--etl-continue-on-export-error")
         };
         return true;
     }
+
+    internal static CliResult ToCliResult(EtlRunResult result) => result.Outcome.State switch
+    {
+        OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings => CliResult.Ok(),
+        OperationTerminalState.Blocked => CliResult.Fail(ErrorCode.InvalidOperation),
+        _ => CliResult.Fail(ErrorCode.Unknown)
+    };
+
+    internal static string FormatRunSummary(string jobId, EtlRunResult result) =>
+        $"ETL job {jobId} {result.Outcome.State}. Files={result.FilesProcessed}, Records={result.RecordsProcessed}, " +
+        $"Accepted={result.RecordsAccepted}, Rejected={result.RecordsRejected}, Deduplicated={result.RecordsDeduplicated}. " +
+        $"Operation={result.Outcome.OperationId}.";
+
+    private static CliResult ReportRunResult(string jobId, EtlRunResult result)
+    {
+        var summary = FormatRunSummary(jobId, result);
+        if (result.Outcome.State == OperationTerminalState.Succeeded)
+            Console.WriteLine(summary);
+        else
+            Console.Error.WriteLine(summary);
+
+        foreach (var issue in result.Outcome.Issues)
+            Console.Error.WriteLine($"{issue.Severity}: {issue.Code}: {issue.Message}");
+        foreach (var recovery in result.Outcome.Recovery)
+            Console.Error.WriteLine($"Recovery: {recovery.Guidance}");
+
+        return ToCliResult(result);
+    }
+
+    internal delegate Task<HostStartup> EtlHostFactory(
+        string configPath,
+        CancellationToken cancellationToken);
 
     internal static EtlInspectionMode ResolveInspectionMode(string[] args)
     {

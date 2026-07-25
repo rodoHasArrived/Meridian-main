@@ -88,7 +88,8 @@ public sealed record WorkstationStrategyRunCard(
     decimal? TotalReturn,
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
-    WorkstationRunDrillInLinks DrillIn);
+    WorkstationRunDrillInLinks DrillIn,
+    BiasDisclosureDto? BiasDisclosure = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,

@@ -12,11 +12,28 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Sequence
+
+CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
+
+# Test projects that cannot execute on the ubuntu PR lane and are exercised by the
+# windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
+# (EnableDefaultCompileItems=false) and Meridian.LifecycleSupervisor.Tests targets
+# net10.0-windows. verify_test_project_coverage() accepts these as wired.
+WINDOWS_ONLY_TEST_PROJECTS = [
+    "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+    "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+]
+
+# Projects that are shared support libraries, not runnable test projects.
+SUPPORT_TEST_PROJECTS = {
+    "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
+}
 
 DEFAULT_TEST_PROJECTS = [
     ("core-application", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Application"),
@@ -90,13 +107,76 @@ DEFAULT_TEST_PROJECTS = [
             "FullyQualifiedName~Meridian.Tests.ExponentialBackoffTests|FullyQualifiedName~Meridian.Tests.CircuitBreakerTests"
         ),
     ),
+    (
+        "core-reporting",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Reporting",
+    ),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
     ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),
     ("directlending", "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj", None),
     ("fundstructure", "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj", None),
     ("quantscript", "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj", None),
+    ("designmodules", "tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj", None),
+    ("lifecycle", "tests/Meridian.Lifecycle.Tests/Meridian.Lifecycle.Tests.csproj", None),
 ]
+
+_POSITIVE_FILTER_PREFIX = re.compile(r"(?<!!)FullyQualifiedName~([A-Za-z0-9_.]+)")
+
+
+def build_core_remainder_filter(projects: Sequence[tuple[str, str, str | None]]) -> str:
+    """Build a catch-all filter for Meridian.Tests namespaces no explicit core shard matches.
+
+    The shard roster is a hand-maintained whitelist; before this remainder existed, a test
+    namespace that matched no shard fragment (Meridian.Tests.Reporting was one) silently
+    never ran on the PR lane. The remainder shard executes everything in Meridian.Tests
+    minus the prefixes already claimed by the explicit core shards, so a newly created
+    namespace runs automatically instead of being skipped.
+    """
+    excluded: list[str] = []
+    seen: set[str] = set()
+    for _, path, filter_expression in projects:
+        if path != CORE_TEST_PROJECT_PATH or not filter_expression:
+            continue
+        for prefix in _POSITIVE_FILTER_PREFIX.findall(filter_expression):
+            if prefix not in seen:
+                seen.add(prefix)
+                excluded.append(prefix)
+
+    terms = ["FullyQualifiedName~Meridian.Tests"]
+    terms.extend(f"FullyQualifiedName!~{prefix}" for prefix in sorted(excluded))
+    return "&".join(terms)
+
+
+DEFAULT_TEST_PROJECTS.append(
+    ("core-remainder", CORE_TEST_PROJECT_PATH, build_core_remainder_filter(DEFAULT_TEST_PROJECTS))
+)
+
+
+def discover_test_project_paths(repo_root: Path) -> list[str]:
+    tests_dir = repo_root / "tests"
+    paths: list[str] = []
+    for pattern in ("*/*.csproj", "*/*.fsproj"):
+        for project_file in sorted(tests_dir.glob(pattern)):
+            paths.append(project_file.relative_to(repo_root).as_posix())
+    return paths
+
+
+def verify_test_project_coverage(repo_root: Path, projects: Sequence["TestProject"]) -> list[str]:
+    """Return the tests/* projects that no CI lane runs.
+
+    Every runnable project under tests/ must be either in the shard roster (this lane) or in
+    WINDOWS_ONLY_TEST_PROJECTS (the windows-desktop lane). Anything else is a silent coverage
+    gap — exactly how four whole test projects previously never ran on pull requests.
+    """
+    wired = {project.path for project in projects}
+    wired.update(WINDOWS_ONLY_TEST_PROJECTS)
+    return [
+        path
+        for path in discover_test_project_paths(repo_root)
+        if path not in wired and path not in SUPPORT_TEST_PROJECTS
+    ]
 
 
 @dataclass(frozen=True)
@@ -322,6 +402,23 @@ def main() -> int:
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 2
+
+    # Only enforce wiring completeness for the default roster: --project overrides are
+    # deliberate narrow runs (e.g. the targeted-test workflow).
+    if not args.project:
+        repo_root = Path(__file__).resolve().parents[3]
+        unwired = verify_test_project_coverage(repo_root, projects)
+        if unwired:
+            print("Test projects not wired to any CI lane:", file=sys.stderr)
+            for path in unwired:
+                print(f"- {path}", file=sys.stderr)
+            print(
+                "Add each project to DEFAULT_TEST_PROJECTS (ubuntu lane) or "
+                "WINDOWS_ONLY_TEST_PROJECTS (windows-desktop lane) in "
+                "build/scripts/ci/run-dotnet-ci-tests.py.",
+                file=sys.stderr,
+            )
+            return 2
 
     results_dir = Path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)

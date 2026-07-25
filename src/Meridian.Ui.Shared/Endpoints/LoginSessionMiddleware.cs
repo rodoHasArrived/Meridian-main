@@ -104,6 +104,13 @@ public sealed class LoginSessionMiddleware
                 return;
             }
 
+            // API-key clients authenticate downstream via ApiKeyMiddleware, not sessions.
+            if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+            {
+                await _next(context);
+                return;
+            }
+
             await WriteAuthenticationConfigurationErrorAsync(context, path);
             return;
         }
@@ -146,6 +153,14 @@ public sealed class LoginSessionMiddleware
                 await _next(context);
                 return;
             }
+        }
+
+        // Defer to the API-key middleware when API-key auth is configured and the caller
+        // presented a key: out-of-band API clients authenticate with X-Api-Key, not sessions.
+        if (ApiKeyMiddleware.IsApiKeyCandidate(context))
+        {
+            await _next(context);
+            return;
         }
 
         // Unauthenticated request — differentiate API from browser

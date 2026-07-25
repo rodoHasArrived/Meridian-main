@@ -256,6 +256,10 @@ export function buildAccountingSectionVisibility(
     showReporting: taskMode.workstream === "reporting"
   };
 
+  if (!isCloseCockpitLanding) {
+    return visibility;
+  }
+
   const targetId = normalizeAccountingHashTarget(hash);
   if (!targetId) {
     return visibility;

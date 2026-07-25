@@ -115,6 +115,7 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             maxConcurrentRemediations: Math.Max(1, config.MaxConcurrentRemediations),
             defaultProvider: string.IsNullOrWhiteSpace(config.DefaultProvider)
                 ? AutoGapRemediationPolicy.Default.DefaultProvider
-                : config.DefaultProvider.Trim());
+                : config.DefaultProvider.Trim(),
+            enabled: config.Enabled);
     }
 }

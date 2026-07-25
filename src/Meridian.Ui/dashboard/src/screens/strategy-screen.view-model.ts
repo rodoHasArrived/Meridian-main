@@ -285,6 +285,7 @@ export interface StrategyRunDetailState {
   notesText: string;
   closeButtonLabel: string;
   closeButtonAriaLabel: string;
+  biasDisclosure: import("@/types/workstation-6").BiasDisclosure | null;
 }
 
 export type StrategyRunDetailBadgeVariant = "research" | "paper" | "live";
@@ -836,7 +837,6 @@ export function useStrategyRunLibraryViewModel(
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
-
     setSelectedRun(null);
     return true;
   }, []);
@@ -846,7 +846,6 @@ export function useStrategyRunLibraryViewModel(
     if (!nextView) {
       return null;
     }
-
     setActivePlotToolView(nextView);
     return plotToolTabIdForView(nextView);
   }, [activePlotToolView]);
@@ -2777,7 +2776,8 @@ export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
     notesLabel: "Operator notes",
     notesText: formatOptionalNotes(run.notes),
     closeButtonLabel: "Close",
-    closeButtonAriaLabel: `Close ${title} run detail`
+    closeButtonAriaLabel: `Close ${title} run detail`,
+    biasDisclosure: run.biasDisclosure ?? null
   };
 }
 

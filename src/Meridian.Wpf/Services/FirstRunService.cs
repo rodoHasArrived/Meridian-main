@@ -18,8 +18,10 @@ public sealed class FirstRunService
     private bool? _isFirstRun;
     private bool _isInitialized;
     private readonly object _lock = new();
+    private readonly DesktopConfigurationRecoveryService _configurationRecoveryService;
     private ConfigurationProvisioningResult _lastConfigurationProvisioningResult =
         ConfigurationProvisioningResult.AlreadyValid;
+    private DesktopConfigurationRecoveryResult? _lastConfigurationRecoveryResult;
 
     /// <summary>
     /// Gets the singleton instance of the FirstRunService.
@@ -51,6 +53,7 @@ public sealed class FirstRunService
         AppDataPath = MeridianPathDefaults.GetLocalApplicationDataRoot();
         ConfigFilePath = MeridianPathDefaults.GetDesktopConfigPath();
         FirstRunMarkerPath = MeridianPathDefaults.GetFirstRunMarkerPath();
+        _configurationRecoveryService = new DesktopConfigurationRecoveryService(ConfigFilePath);
     }
 
     /// <summary>
@@ -190,51 +193,51 @@ public sealed class FirstRunService
 
     public ConfigurationProvisioningResult LastConfigurationProvisioningResult => _lastConfigurationProvisioningResult;
 
+    public DesktopConfigurationRecoveryResult? LastConfigurationRecoveryResult => _lastConfigurationRecoveryResult;
+
     public Task<ConfigurationProvisioningResult> EnsureConfigurationExistsAsync()
     {
         lock (_lock)
         {
-            Directory.CreateDirectory(AppDataPath);
+            _lastConfigurationRecoveryResult =
+                _configurationRecoveryService.EnsureReadableConfiguration();
+            _lastConfigurationProvisioningResult = _lastConfigurationRecoveryResult.Outcome;
 
-            if (!File.Exists(ConfigFilePath))
-            {
-                CreateDefaultConfiguration();
-                _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.CreatedDefault;
-                LoggingService.Instance.LogInfo(
-                    "Configuration provisioning completed",
-                    ("Outcome", "CreatedDefault"),
-                    ("Path", ConfigFilePath));
-                return Task.FromResult(_lastConfigurationProvisioningResult);
-            }
-
-            if (!TryParseConfiguration(ConfigFilePath, out var parseError))
-            {
-                var backupPath = $"{ConfigFilePath}.invalid-{DateTime.UtcNow:yyyyMMddHHmmssfff}.bak";
-                File.Copy(ConfigFilePath, backupPath, overwrite: true);
-                CreateDefaultConfiguration();
-                _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.RepairedInvalid;
-                LoggingService.Instance.LogWarning(
-                    "Configuration provisioning repaired invalid configuration",
+            var log = _lastConfigurationRecoveryResult.Recovered
+                ? (Action<string, (string Key, string Value)[]>)LoggingService.Instance.LogWarning
+                : LoggingService.Instance.LogInfo;
+            log(
+                "Configuration preflight completed",
+                [
+                    ("Outcome", _lastConfigurationProvisioningResult.ToString()),
                     ("Path", ConfigFilePath),
-                    ("BackupPath", backupPath),
-                    ("Reason", parseError ?? "unknown"));
-                return Task.FromResult(_lastConfigurationProvisioningResult);
-            }
-
-            _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.AlreadyValid;
-            LoggingService.Instance.LogInfo(
-                "Configuration provisioning skipped",
-                ("Outcome", "AlreadyValid"),
-                ("Path", ConfigFilePath));
+                    ("InvalidArtifact", _lastConfigurationRecoveryResult.InvalidConfigurationPath ?? string.Empty),
+                    ("RecoveryReceipt", _lastConfigurationRecoveryResult.RecoveryReceiptPath ?? string.Empty)
+                ]);
             return Task.FromResult(_lastConfigurationProvisioningResult);
         }
+    }
+
+    public async Task PersistConfigurationAsync(string json, CancellationToken ct = default)
+    {
+        await _configurationRecoveryService
+            .PersistValidConfigurationAsync(json, ct)
+            .ConfigureAwait(false);
+        _lastConfigurationProvisioningResult = ConfigurationProvisioningResult.AlreadyValid;
+        _lastConfigurationRecoveryResult = new DesktopConfigurationRecoveryResult(
+            ConfigurationProvisioningResult.AlreadyValid,
+            ConfigFilePath,
+            RestoredFromPath: null,
+            InvalidConfigurationPath: null,
+            RecoveryReceiptPath: null,
+            FailureReason: null);
     }
 
     private void CreateDefaultConfiguration()
     {
         // CreateDefaultConfiguration: first-run bootstrap must use the same canonical defaults as Settings reset.
         var defaultConfig = AppConfigDefaults.CreateDefaultAppConfig();
-        var defaultConfigJson = JsonSerializer.Serialize(defaultConfig, AppConfigJsonOptions.Write);
+        var defaultConfigJson = JsonSerializer.Serialize(defaultConfig, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
 
         File.WriteAllText(ConfigFilePath, defaultConfigJson);
 
@@ -268,26 +271,12 @@ public sealed class FirstRunService
         Initialized?.Invoke(this, e);
     }
 
-    private static bool TryParseConfiguration(string path, out string? parseError)
-    {
-        try
-        {
-            var json = File.ReadAllText(path);
-            using var _ = JsonDocument.Parse(json);
-            parseError = null;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            parseError = ex.Message;
-            return false;
-        }
-    }
 }
 
 public enum ConfigurationProvisioningResult
 {
     CreatedDefault,
+    RestoredLastKnownGood,
     RepairedInvalid,
     AlreadyValid
 }

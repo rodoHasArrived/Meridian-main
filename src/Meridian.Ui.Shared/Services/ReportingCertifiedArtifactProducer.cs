@@ -3,10 +3,10 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
+using Meridian.Ui.Shared.Serialization;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -54,11 +54,21 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 {
     public const string RetainedManifestSchemaVersion = "meridian.reporting.retained-manifest.v1";
 
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        Encoder = JavaScriptEncoder.Default,
-        WriteIndented = false
-    };
+    private const int PdfCharactersPerLine = 86;
+    private const int PdfLinesPerPage = 48;
+
+    private readonly IReportingPrimaryDocumentRenderer? _primaryRenderer;
+
+    /// <summary>
+    /// Constructs the producer with an optional client-grade primary-document renderer. When null
+    /// (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX
+    /// rendering is used; production composition injects a QuestPDF/ClosedXML renderer so governed
+    /// report packs export client-grade bytes. Every other artifact (CSV, evidence vault, preview,
+    /// manifest, grids) is unaffected by this choice.
+    /// </summary>
+    public DeterministicReportingCertifiedArtifactProducer(
+        IReportingPrimaryDocumentRenderer? primaryRenderer = null)
+        => _primaryRenderer = primaryRenderer;
 
     public ValueTask<ReportingGovernedArtifactProduction> ProduceAsync(
         ReportingOutputManifest manifest,
@@ -132,7 +142,9 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             descriptors
                 .OrderBy(static descriptor => descriptor.ArtifactId, StringComparer.Ordinal)
                 .ToImmutableArray());
-        var retainedManifestBytes = SerializeCanonical(retainedDocument);
+        var retainedManifestBytes = JsonSerializer.SerializeToUtf8Bytes(
+            retainedDocument,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedManifestDocument);
         rendered.Add(new ReportingRenderedArtifact(
             manifestDeclaration.ArtifactId,
             manifestDeclaration.FileName,
@@ -175,7 +187,9 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         ReportingRetainedManifestDocument document;
         try
         {
-            document = JsonSerializer.Deserialize<ReportingRetainedManifestDocument>(retainedBytes, JsonOptions)
+            document = JsonSerializer.Deserialize(
+                    retainedBytes,
+                    ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedManifestDocument)
                 ?? throw new ReportingArtifactCatalogIntegrityException(
                     "Retained reporting manifest deserialized to null.");
         }
@@ -219,17 +233,22 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return document;
     }
 
-    private static byte[] RenderArtifact(
+    private byte[] RenderArtifact(
         ReportingOutputManifest manifest,
         ReportingDeclaredArtifact declaration) => declaration.Kind switch
         {
             ReportingDeclaredArtifactKind.PrimaryOutput => manifest.ResolvedParameters!.OutputFormat switch
             {
-                ReportingOutputFormatDto.Xlsx => RenderXlsx(manifest),
+                ReportingOutputFormatDto.Xlsx => _primaryRenderer is { } workbookRenderer
+                    ? workbookRenderer.RenderWorkbook(manifest)
+                    : RenderXlsx(manifest),
                 ReportingOutputFormatDto.Csv => RenderPrimaryCsv(manifest),
                 ReportingOutputFormatDto.EvidenceVault => RenderEvidenceVault(manifest),
-                _ => RenderPdf(manifest)
+                _ => _primaryRenderer is { } documentRenderer
+                    ? documentRenderer.RenderPdf(manifest)
+                    : RenderPdf(manifest)
             },
+            ReportingDeclaredArtifactKind.Preview => RenderPreview(manifest),
             ReportingDeclaredArtifactKind.CertifiedSourceSchedule => RenderCertifiedRowsCsv(manifest),
             ReportingDeclaredArtifactKind.SupportingSchedules => RenderSupportingSchedules(manifest),
             ReportingDeclaredArtifactKind.EvidenceAppendix => RenderEvidenceAppendix(manifest),
@@ -237,6 +256,39 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             _ => throw new ReportingGovernanceException(
                 $"Artifact kind '{declaration.Kind}' cannot be rendered outside the retained manifest pass.")
         };
+
+    private static byte[] RenderPreview(ReportingOutputManifest manifest)
+    {
+        var rows = manifest.CertifiedDatasetRows
+            .Take(25)
+            .Select(static row => row
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal))
+            .ToArray();
+        var primary = ReportingArtifactDeclaration.Build(manifest)
+            .Single(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput);
+        var document = new ReportingRetainedPreviewDocument(
+            "meridian.reporting.retained-preview.v1",
+            manifest.RunId,
+            NormalizeOptional(manifest.RunSeriesId) ?? manifest.RunId,
+            manifest.TemplateId,
+            manifest.ResolvedTemplate!,
+            manifest.AsOfDate,
+            manifest.AuthoritativeSource!.CheckpointId,
+            manifest.CertifiedSnapshot!.SnapshotId,
+            manifest.CertifiedDatasetRows.Length,
+            ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+            rows.Length,
+            ResolveCertifiedColumns(manifest.CertifiedDatasetRows),
+            rows,
+            new ReportingRetainedPreviewPrimaryArtifact(
+                primary.ArtifactId,
+                primary.FileName,
+                primary.ContentType));
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedPreviewDocument);
+    }
 
     private static byte[] RenderPrimaryCsv(ReportingOutputManifest manifest)
         => RenderCertifiedRowsCsv(manifest);
@@ -293,33 +345,47 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return Utf8(builder.ToString());
     }
 
-    private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest) =>
-        SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.evidence-vault.v1",
+    private static byte[] RenderEvidenceVault(ReportingOutputManifest manifest)
+    {
+        var document = new ReportingEvidenceVaultDocument(
+            "meridian.reporting.evidence-vault.v1",
             manifest.RunId,
             manifest.AsOfDate,
-            source = manifest.AuthoritativeSource,
-            snapshot = manifest.CertifiedSnapshot,
-            readiness = manifest.Readiness,
-            sections = manifest.Sections.OrderBy(static section => section.SectionId, StringComparer.Ordinal),
-            certifiedDatasetHashSha256 = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
-            certifiedDatasetRows = manifest.CertifiedDatasetRows
-        });
+            manifest.AuthoritativeSource!,
+            manifest.CertifiedSnapshot!,
+            manifest.Readiness!,
+            manifest.Sections
+                .OrderBy(static section => section.SectionId, StringComparer.Ordinal)
+                .ToArray(),
+            ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+            manifest.CertifiedDatasetRows
+                .Select(static row => row
+                    .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal))
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingEvidenceVaultDocument);
+    }
 
-    private static byte[] RenderEvidenceAppendix(ReportingOutputManifest manifest) =>
-        SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.evidence-appendix.v1",
+    private static byte[] RenderEvidenceAppendix(ReportingOutputManifest manifest)
+    {
+        var document = new ReportingEvidenceAppendixDocument(
+            "meridian.reporting.evidence-appendix.v1",
             manifest.RunId,
-            evidence = manifest.AuthoritativeSource!.EvidenceIds
+            manifest.AuthoritativeSource!.EvidenceIds
                 .Concat(manifest.Readiness!.Checks.SelectMany(static check => check.EvidenceReferences))
                 .Distinct(StringComparer.Ordinal)
-                .OrderBy(static evidence => evidence, StringComparer.Ordinal),
-            lineage = manifest.Sections
+                .OrderBy(static evidence => evidence, StringComparer.Ordinal)
+                .ToArray(),
+            manifest.Sections
                 .OrderBy(static section => section.SectionId, StringComparer.Ordinal)
                 .Select(static section => section.Lineage)
-        });
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingEvidenceAppendixDocument);
+    }
 
     private static byte[] RenderGrid(ReportingOutputManifest manifest, string gridId)
     {
@@ -329,27 +395,33 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                     string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase)))
             ?? throw new ReportingGovernanceException(
                 $"Declared report-writer grid '{gridId}' has no rendered grid payload.");
-        return SerializeCanonical(new
-        {
-            schemaVersion = "meridian.reporting.grid.v1",
+        var document = new ReportingRetainedGridDocument(
+            "meridian.reporting.grid.v1",
             grid.GridId,
             grid.Title,
-            kind = grid.Kind.ToString(),
-            columns = grid.Columns.Select(static column => new { column.Key, column.Label, column.Role }),
-            rows = grid.Rows
+            grid.Kind.ToString(),
+            grid.Columns
+                .Select(static column => new ReportingRetainedGridColumn(
+                    column.Key,
+                    column.Label,
+                    column.Role))
+                .ToArray(),
+            grid.Rows
                 .OrderBy(static row => row.RowKey, StringComparer.Ordinal)
-                .Select(static row => new
-                {
+                .Select(static row => new ReportingRetainedGridRow(
                     row.RowKey,
-                    values = row.Values.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    row.Values.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                         .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal)
-                }),
-            warnings = grid.Warnings.OrderBy(static warning => warning, StringComparer.Ordinal),
+                ))
+                .ToArray(),
+            grid.Warnings.OrderBy(static warning => warning, StringComparer.Ordinal).ToArray(),
             grid.Lineage,
             grid.DataDictionary,
             grid.ValidationChecks,
-            grid.Chart
-        });
+            grid.Chart);
+        return JsonSerializer.SerializeToUtf8Bytes(
+            document,
+            ReportingCertifiedArtifactJsonContext.Default.ReportingRetainedGridDocument);
     }
 
     private static byte[] RenderPdf(ReportingOutputManifest manifest)
@@ -365,18 +437,32 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             $"Certified ledger rows: {manifest.CertifiedDatasetRows.Length.ToString(CultureInfo.InvariantCulture)}",
             $"Certified row hash: {ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)}"
         };
-        var accountSummaries = manifest.CertifiedDatasetRows
-            .Where(static row => row.ContainsKey("account"))
-            .GroupBy(static row => row["account"], StringComparer.Ordinal)
-            .OrderBy(static group => group.Key, StringComparer.Ordinal)
-            .Select(group => new
-            {
-                Account = group.Key,
-                Debit = group.Sum(static row => ReadDecimal(row, "debit")),
-                Credit = group.Sum(static row => ReadDecimal(row, "credit")),
-                Net = group.Sum(static row => ReadDecimal(row, "netAmount"))
-            })
-            .ToArray();
+        var canRenderAccountSummary = manifest.CertifiedDatasetRows.Length > 0
+            && manifest.CertifiedDatasetRows.All(static row =>
+                row.ContainsKey("account")
+                && row.ContainsKey("debit")
+                && row.ContainsKey("credit")
+                && row.ContainsKey("netAmount"));
+        var accountSummaries = canRenderAccountSummary
+            ? manifest.CertifiedDatasetRows
+                .Select((row, index) => new
+                {
+                    Account = row["account"],
+                    Debit = ReadRequiredDecimal(row, "debit", index),
+                    Credit = ReadRequiredDecimal(row, "credit", index),
+                    Net = ReadRequiredDecimal(row, "netAmount", index)
+                })
+                .GroupBy(static row => row.Account, StringComparer.Ordinal)
+                .OrderBy(static group => group.Key, StringComparer.Ordinal)
+                .Select(group => new
+                {
+                    Account = group.Key,
+                    Debit = group.Sum(static row => row.Debit),
+                    Credit = group.Sum(static row => row.Credit),
+                    Net = group.Sum(static row => row.Net)
+                })
+                .ToArray()
+            : [];
         if (accountSummaries.Length > 0)
         {
             textLines.Add("Account totals (debit / credit / net)");
@@ -385,7 +471,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         }
         else
         {
-            foreach (var row in manifest.CertifiedDatasetRows.Take(40))
+            foreach (var row in manifest.CertifiedDatasetRows)
             {
                 textLines.Add(string.Join(
                     "; ",
@@ -393,38 +479,128 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                         .Select(static pair => $"{pair.Key}={pair.Value}")));
             }
         }
-        var content = new StringBuilder("BT /F1 10 Tf 48 744 Td 14 TL\n");
-        foreach (var line in textLines)
+
+        // A substituted primary document is not a warning-only outcome: it would certify different
+        // text than the source. Fail before byte production so the coordinator retains a Failed
+        // execution with the recovery guidance below instead of a superficially successful PDF.
+        EnsurePdfTextCanBeRenderedWithoutLoss(textLines);
+        var wrappedLines = textLines.SelectMany(WrapPdfLine).ToArray();
+        var pageStreams = wrappedLines
+            .Chunk(PdfLinesPerPage)
+            .Select(RenderPdfPage)
+            .ToArray();
+        if (pageStreams.Length == 0)
         {
-            content.Append('(').Append(EscapePdf(line)).Append(") Tj T*\n");
+            pageStreams = [RenderPdfPage([])];
         }
-        content.Append("ET\n");
-        var stream = content.ToString();
-        var objects = new[]
+
+        const int catalogObjectId = 1;
+        const int pagesObjectId = 2;
+        const int fontObjectId = 3;
+        var objects = new List<string>(3 + (pageStreams.Length * 2))
         {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(stream).ToString(CultureInfo.InvariantCulture)} >>\nstream\n{stream}endstream"
+            $"<< /Type /Catalog /Pages {pagesObjectId} 0 R >>",
+            string.Empty,
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
         };
+        var pageObjectIds = new List<int>(pageStreams.Length);
+        foreach (var stream in pageStreams)
+        {
+            var pageObjectId = objects.Count + 1;
+            var contentObjectId = pageObjectId + 1;
+            pageObjectIds.Add(pageObjectId);
+            objects.Add(
+                $"<< /Type /Page /Parent {pagesObjectId} 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 {fontObjectId} 0 R >> >> /Contents {contentObjectId} 0 R >>");
+            objects.Add(
+                $"<< /Length {Encoding.ASCII.GetByteCount(stream).ToString(CultureInfo.InvariantCulture)} >>\nstream\n{stream}endstream");
+        }
+
+        objects[pagesObjectId - 1] =
+            $"<< /Type /Pages /Kids [{string.Join(" ", pageObjectIds.Select(static id => $"{id} 0 R"))}] /Count {pageStreams.Length.ToString(CultureInfo.InvariantCulture)} >>";
         using var output = new MemoryStream();
         WriteAscii(output, "%PDF-1.4\n%Meridian\n");
         var offsets = new List<long> { 0 };
-        for (var index = 0; index < objects.Length; index++)
+        for (var index = 0; index < objects.Count; index++)
         {
             offsets.Add(output.Position);
             WriteAscii(output, $"{index + 1} 0 obj\n{objects[index]}\nendobj\n");
         }
         var xref = output.Position;
-        WriteAscii(output, $"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        WriteAscii(output, $"xref\n0 {objects.Count + 1}\n0000000000 65535 f \n");
         foreach (var offset in offsets.Skip(1))
         {
             WriteAscii(output, $"{offset.ToString("D10", CultureInfo.InvariantCulture)} 00000 n \n");
         }
         WriteAscii(output,
-            $"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref.ToString(CultureInfo.InvariantCulture)}\n%%EOF\n");
+            $"trailer\n<< /Size {objects.Count + 1} /Root {catalogObjectId} 0 R >>\nstartxref\n{xref.ToString(CultureInfo.InvariantCulture)}\n%%EOF\n");
         return output.ToArray();
+    }
+
+    private static void EnsurePdfTextCanBeRenderedWithoutLoss(IEnumerable<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            foreach (var rune in line.EnumerateRunes())
+            {
+                if (rune.Value is >= 0x20 and <= 0x7E)
+                {
+                    continue;
+                }
+
+                throw new ReportingGovernanceException(
+                    $"PDF artifact rendering is blocked because certified report text contains Unicode scalar U+{rune.Value:X4}, which is outside the producer's deterministic ASCII Helvetica font mapping. No lossy PDF bytes were emitted or retained. Choose XLSX, CSV, or Evidence Vault output to preserve the source text, or configure an embedded Unicode PDF font before retrying.");
+            }
+        }
+    }
+
+    private static string RenderPdfPage(IEnumerable<string> lines)
+    {
+        var content = new StringBuilder("BT /F1 10 Tf 48 744 Td 14 TL\n");
+        foreach (var line in lines)
+        {
+            content.Append('(').Append(EscapePdf(line)).Append(") Tj T*\n");
+        }
+
+        return content.Append("ET\n").ToString();
+    }
+
+    private static IEnumerable<string> WrapPdfLine(string value)
+    {
+        var normalized = string.Concat(value.Select(static character =>
+            char.IsControl(character) ? ' ' : character)).Trim();
+        if (normalized.Length == 0)
+        {
+            yield return string.Empty;
+            yield break;
+        }
+
+        var continuation = false;
+        while (normalized.Length > 0)
+        {
+            var prefix = continuation ? "  " : string.Empty;
+            var capacity = PdfCharactersPerLine - prefix.Length;
+            if (normalized.Length <= capacity)
+            {
+                yield return prefix + normalized;
+                yield break;
+            }
+
+            var split = normalized.LastIndexOf(' ', capacity - 1, capacity);
+            if (split <= 0)
+            {
+                split = capacity;
+                if (char.IsHighSurrogate(normalized[split - 1])
+                    && split < normalized.Length
+                    && char.IsLowSurrogate(normalized[split]))
+                {
+                    split--;
+                }
+            }
+
+            yield return prefix + normalized[..split].TrimEnd();
+            normalized = normalized[split..].TrimStart();
+            continuation = true;
+        }
     }
 
     private static byte[] RenderXlsx(ReportingOutputManifest manifest)
@@ -514,7 +690,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         return builder.ToString();
     }
 
-    private static string[] ResolveCertifiedColumns(
+    internal static string[] ResolveCertifiedColumns(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows) =>
         rows.IsDefaultOrEmpty
             ? []
@@ -523,13 +699,24 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 .OrderBy(static column => column, StringComparer.Ordinal)
                 .ToArray();
 
-    private static decimal ReadDecimal(IReadOnlyDictionary<string, string> row, string key) =>
-        row.TryGetValue(key, out var value)
-        && decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : 0m;
+    private static decimal ReadRequiredDecimal(
+        IReadOnlyDictionary<string, string> row,
+        string key,
+        int zeroBasedRowIndex)
+    {
+        if (row.TryGetValue(key, out var value)
+            && decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
 
-    private static string ComputeCertifiedRowsHash(
+        throw new ReportingGovernanceException(
+            $"Certified ledger row {(zeroBasedRowIndex + 1).ToString(CultureInfo.InvariantCulture)} has an invalid '{key}' value. " +
+            "PDF account totals were not produced because invalid certified numeric data cannot be coerced to zero. " +
+            "Correct and recertify the authoritative dataset, then retry artifact production.");
+    }
+
+    internal static string ComputeCertifiedRowsHash(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows)
     {
         using var stream = new MemoryStream();
@@ -628,9 +815,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         }
     }
 
-    private static byte[] SerializeCanonical<T>(T value) =>
-        JsonSerializer.SerializeToUtf8Bytes(value, JsonOptions);
-
     private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value);
 
     private static string EscapePdf(string value) =>
@@ -638,8 +822,25 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             .Replace("(", "\\(", StringComparison.Ordinal)
             .Replace(")", "\\)", StringComparison.Ordinal);
 
-    private static string EscapeXml(string value) =>
-        System.Security.SecurityElement.Escape(value) ?? string.Empty;
+    private static string EscapeXml(string value)
+    {
+        var sanitized = new StringBuilder(value.Length);
+        foreach (var rune in value.EnumerateRunes())
+        {
+            if (IsXml10Character(rune.Value))
+            {
+                sanitized.Append(rune.ToString());
+            }
+        }
+
+        return System.Security.SecurityElement.Escape(sanitized.ToString()) ?? string.Empty;
+    }
+
+    private static bool IsXml10Character(int scalar) =>
+        scalar is 0x9 or 0xA or 0xD
+        || scalar is >= 0x20 and <= 0xD7FF
+        || scalar is >= 0xE000 and <= 0xFFFD
+        || scalar is >= 0x10000 and <= 0x10FFFF;
 
     private static void WriteAscii(Stream stream, string value)
     {

@@ -69,6 +69,14 @@ public sealed class TradingCalendarTests
     }
 
     [Fact]
+    public void IsTradingDay_HolidayOutsideSeedWindow_LazilyGeneratesYear()
+    {
+        var result = _sut.IsTradingDay(new DateOnly(2014, 7, 4));
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
     public void IsTradingDay_MLKDay2025_ReturnsFalse()
     {
         // MLK Day 2025 = 3rd Monday of January = Jan 20
@@ -129,11 +137,13 @@ public sealed class TradingCalendarTests
     #region Holiday Observance Rules
 
     [Fact]
-    public void IsTradingDay_NewYearsFallingOnSaturday_ObservedOnFriday()
+    public void IsTradingDay_NewYearsFallingOnSaturday_DoesNotCloseFriday()
     {
-        // 2028-01-01 is a Saturday, observed Friday 2027-12-31
+        // NYSE does not observe Saturday 2028-01-01 on Friday 2027-12-31.
+        _ = _sut.GetHolidays(2028);
+
         var result = _sut.IsTradingDay(new DateOnly(2027, 12, 31));
-        result.Should().BeFalse();
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -193,19 +203,18 @@ public sealed class TradingCalendarTests
     [Fact]
     public void IsHalfDay_ChristmasEveOnWeekend_NotHalfDay()
     {
-        // 2027-12-24 is a Friday (check) — actually need to find a year where Dec 24 is Sat/Sun
-        // 2022-12-24 is a Saturday → not a half day
-        // Calendar range is year-1 to year+2 so this may or may not be generated.
-        // Instead test with a known weekday check:
-        // 2028-12-24 is a Sunday → not a half day
-        // But 2028 might be out of range. Let's just test logic by confirming
-        // that half days only appear on weekdays.
-        var halfDays = _sut.GetHalfDays(2025);
-        foreach (var hd in halfDays)
-        {
-            hd.DayOfWeek.Should().NotBe(DayOfWeek.Saturday);
-            hd.DayOfWeek.Should().NotBe(DayOfWeek.Sunday);
-        }
+        _sut.IsHalfDay(new DateOnly(2022, 12, 24)).Should().BeFalse();
+        _sut.GetHalfDays(2022).Should().NotContain(new DateOnly(2022, 12, 24));
+    }
+
+    [Fact]
+    public void IsHalfDay_ChristmasEveObservedHoliday_NotHalfDay()
+    {
+        var observedChristmas = new DateOnly(2027, 12, 24);
+
+        _sut.IsTradingDay(observedChristmas).Should().BeFalse();
+        _sut.IsHalfDay(observedChristmas).Should().BeFalse();
+        _sut.GetHalfDays(2027).Should().NotContain(observedChristmas);
     }
 
     #endregion
@@ -700,6 +709,27 @@ public sealed class TradingCalendarTests
         _sut.IsHalfDay(new DateOnly(2027, 7, 3)).Should().BeFalse();
     }
 
+    [Fact]
+    public void IsHalfDay_DateOutsideSeedWindow_LazilyGeneratesYear()
+    {
+        _sut.IsHalfDay(new DateOnly(2014, 7, 3)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetStatusAt_HalfDayOutsideSeedWindow_UsesEarlyCloseWithoutAfterHours()
+    {
+        var beforeClose = _sut.GetStatusAt(EasternTime(2014, 7, 3, 12, 30));
+        var afterClose = _sut.GetStatusAt(EasternTime(2014, 7, 3, 13, 30));
+
+        beforeClose.State.Should().Be(MarketState.Open);
+        beforeClose.IsHalfDay.Should().BeTrue();
+        beforeClose.CurrentSessionEnd.Should().Be(EasternTime(2014, 7, 3, 13, 0));
+
+        afterClose.State.Should().Be(MarketState.Closed);
+        afterClose.IsHalfDay.Should().BeTrue();
+        afterClose.Reason.Should().Be("Half-day close");
+    }
+
     #endregion
 
     #region Concurrency
@@ -719,6 +749,8 @@ public sealed class TradingCalendarTests
         {
             tasks.Add(Task.Run(() => calendar.GetHolidays(year)));
             tasks.Add(Task.Run(() => calendar.IsTradingDay(new DateOnly(year, 7, 4))));
+            tasks.Add(Task.Run(() => calendar.GetHalfDays(year)));
+            tasks.Add(Task.Run(() => calendar.IsHalfDay(new DateOnly(year, 7, 3))));
         }
 
         var act = async () => await Task.WhenAll(tasks);

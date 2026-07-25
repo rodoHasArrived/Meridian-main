@@ -70,9 +70,11 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
@@ -729,6 +731,12 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
+    );
+    expect(reconciliationBreakWaiveEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive"
+    );
+    expect(reconciliationBreakSupersedeEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede"
     );
     expect(reconciliationBreakAssignEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/assign"

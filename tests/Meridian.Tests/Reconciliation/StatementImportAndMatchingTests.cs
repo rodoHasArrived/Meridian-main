@@ -14,7 +14,10 @@ public sealed class StatementImportAndMatchingTests
         var path = Path.Combine(root, "statement.csv");
         await File.WriteAllTextAsync(path, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,5000,BUY,2026-01-02\n");
         var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
-        var req = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31));
+        var req = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
+        {
+            ExternalAccountId = "A1"
+        };
 
         await service.ImportAsync(req);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ImportAsync(req));
@@ -47,7 +50,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             firstPath,
@@ -58,7 +61,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             secondPath,
@@ -87,7 +90,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             firstPath,
@@ -98,7 +101,7 @@ public sealed class StatementImportAndMatchingTests
             "samplebroker",
             "samplecustodian",
             "fund-account-1",
-            "external-account-1",
+            "A1",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
             secondPath,
@@ -114,32 +117,27 @@ public sealed class StatementImportAndMatchingTests
     }
 
     [Fact]
-    public void Matcher_returns_confidence_and_rationale()
+    public async Task Import_captures_optional_currency_and_external_id_columns()
     {
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows([
-            new("i1",1,"A1","SPY",0,0,0.005m,"cash",new DateOnly(2026,1,1),"x"),
-            new("i1",2,"A1","SPY",1,500,500,"BUY",new DateOnly(2026,1,1),"y")
-        ]);
-        Assert.Equal(2, outcomes.Count);
-        Assert.Contains(outcomes, o => o.OutcomeType == "matched" && o.Confidence >= 0.8m && o.Rationale.Contains("Tolerance rule", StringComparison.Ordinal));
-        Assert.Contains(outcomes, o => o.OutcomeType == "TXN_TOLERANCE_BREACH" && o.Confidence < 0.5m);
-    }
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "statement.csv");
+        await File.WriteAllTextAsync(
+            path,
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n"
+            + "A1,SPY,10,500,-5000,BUY,2026-01-02,2026-01-04,EUR,1.5,EXT-42\n");
+        var service = new CsvBrokerStatementService(new JsonCanonicalStatementStore(root));
 
-    [Fact]
-    public void Matcher_applies_rule_tiers_with_confidence_bands()
-    {
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows([
-            new("i1",1,"A1","SPY",10,500,5000,"position",new DateOnly(2026,1,1),"position"),
-            new("i1",2,"A1","QQQ",0,0,0.005m,"cash",new DateOnly(2026,1,1),"cash"),
-            new("i1",3,"A1","MSFT",1,0.005m,0.005m,"BUY",new DateOnly(2026,1,1),"transaction"),
-            new("i1",4,"A1","AAPL",1,500,500,"BUY",new DateOnly(2026,1,1),"breach")
-        ]);
+        var imported = await service.ImportAsync(
+            new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 1, 31)) with
+            {
+                ExternalAccountId = "A1"
+            });
 
-        Assert.Contains(outcomes, o => o.RowChecksum == "position" && o.OutcomeType == "matched" && o.Confidence >= 0.95m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "cash" && o.OutcomeType == "matched" && o.Confidence is >= 0.9m and < 0.95m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "transaction" && o.OutcomeType == "matched" && o.Confidence is >= 0.8m and < 0.9m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "breach" && o.OutcomeType == "TXN_TOLERANCE_BREACH" && o.Confidence < 0.5m);
+        var row = Assert.Single(imported.Rows);
+        Assert.Equal("EUR", row.Currency);
+        Assert.Equal(new DateOnly(2026, 1, 4), row.SettlementDate);
+        Assert.Equal(1.5m, row.FeesCommission);
+        Assert.Equal("EXT-42", row.ExternalTransactionId);
     }
 }

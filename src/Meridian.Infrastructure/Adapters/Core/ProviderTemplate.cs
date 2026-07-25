@@ -176,7 +176,15 @@ public static class ProviderTemplateFactory
             SupportsQuotes = caps.SupportsRealtimeQuotes || caps.SupportsHistoricalQuotes,
             SupportsOptionsChain = caps.SupportsOptionsChain,
             SupportsBrokerage = caps.SupportsBrokerage,
-            SupportsAuctions = caps.SupportsHistoricalAuctions
+            SupportsAuctions = caps.SupportsHistoricalAuctions,
+            MarketDataCapabilities = caps.MarketDataCapabilities
+                .Select(product => new MarketDataCapabilityInfo(
+                    product.Capability.ToString(), product.AssetClasses, product.Geographies,
+                    product.Venues, product.Feed, product.Delivery, product.EntitlementState,
+                    product.MaxRequestsPerWindow, product.PacingWindow?.TotalSeconds,
+                    product.MinimumRequestDelay?.TotalMilliseconds, product.SourceTimestamp,
+                    product.QualityPosture))
+                .ToArray()
         };
 
         return new ProviderCatalogEntry

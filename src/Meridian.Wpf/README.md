@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Wpf
@@ -51,6 +51,13 @@ returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
+
+Desktop configuration is preflighted before the generic host parses `appsettings.json`. Invalid
+configuration is moved to a timestamped retained backup, a valid last-known-good copy is restored
+when available (otherwise safe defaults are written), and a recovery receipt is retained beside the
+configuration. The Data Sources page remains navigable, displays the recovery outcome and retained
+artifact path, and exposes a retry command after the operator corrects file access or syntax; a
+configuration failure no longer terminates the entire desktop process.
 
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
@@ -262,8 +269,24 @@ Fund Ledger trial-balance and journal grids project the canonical ledger dimensi
 shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
 project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
-queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints and inspect
+the returned verified outcome before displaying
+success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
+failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
+HTTP response or compatibility message. `CompletedWithWarnings` retains the successful mutation,
+refreshes the shared queue, and keeps its issues and recovery guidance visible; only `Blocked` or
+`Failed` suppresses the success path. Strategy workspace composition resolves the durable
+strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
+artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
+in-memory production history.
+
+The desktop pending-operations store persists a versioned queue envelope. Unknown operation types
+remain durable for a later handler, while the retired authentication-sensitive
+`reconciliation.review-break` and `reconciliation.resolve-break` replay types move once into
+payload-free quarantine so operator notes and evidence are not retained in an unsafe replay record.
+
+After mutation, the desktop refreshes the queue from the shared break read model after
+review/resolve/dismiss and keeps the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting

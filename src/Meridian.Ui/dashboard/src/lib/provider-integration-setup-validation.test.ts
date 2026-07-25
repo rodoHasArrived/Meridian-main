@@ -124,6 +124,17 @@ describe("validateProviderIntegrationSetupDraft", () => {
     });
   });
 
+  it("reports each undeclared capability once", () => {
+    const connection = createConnection({
+      enabledCapabilities: ["Positions", "Transactions", "Transactions", "Transactions"]
+    });
+
+    const issues = validateProviderIntegrationSetupDraft(createManifest(), connection);
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.message).toContain("Transactions");
+  });
+
   it("reports missing capability collections from hand-edited JSON instead of crashing", () => {
     const manifest = {
       ...createManifest(),

@@ -236,64 +236,79 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return new DualPathEventPipeline(slowPath, symbolTable, logger: logger);
         });
 
-        // IMarketEventPublisher - facade for publishing events.
+        // IMarketEventPublisher - facade for publishing events. The composed publisher is
+        // wrapped with QualityMonitoringPublisher so live trade/quote ingress feeds the
+        // data-quality monitoring suite (dashboards, gap analysis, anomaly detection).
         services.AddSingleton<IMarketEventPublisher>(sp =>
         {
-            // Check if canonicalization should wrap the publisher
-            var canonPublisher = sp.GetService<CanonicalizingPublisher>();
-            if (canonPublisher is not null)
-            {
-                var configStore = sp.GetRequiredService<ConfigStore>();
-                var config = configStore.Load();
-                if (config.Canonicalization is { Enabled: true })
-                    return canonPublisher;
-            }
-
-            var metrics = sp.GetRequiredService<IEventMetrics>();
-            IMarketEventPublisher innerPublisher = sp.GetRequiredService<DualPathEventPipeline>();
-            IMarketEventPublisher publisher = new PipelinePublisher(
-                innerPublisher,
-                metrics);
-
-            var pipelineConfigStore = sp.GetRequiredService<ConfigStore>();
-            var pipelineConfig = pipelineConfigStore.Load();
-
-            if (pipelineConfig.Canonicalization is { Enabled: true })
-            {
-                var canonConfig = pipelineConfig.Canonicalization;
-                var symbolRegistry = sp.GetService<Contracts.Catalog.ICanonicalSymbolRegistry>();
-                if (symbolRegistry is null)
-                {
-                    Log.ForContext<EventPipeline>().Warning(
-                        "Canonicalization enabled but ICanonicalSymbolRegistry not registered; skipping");
-                    return publisher;
-                }
-                var conditionsPath = canonConfig.ConditionCodesPath
-                    ?? Path.Combine(AppContext.BaseDirectory, "config", "condition-codes.json");
-                var conditions = ConditionCodeMapper.LoadFromFile(conditionsPath);
-                var venuesPath = canonConfig.VenueMappingPath
-                    ?? Path.Combine(AppContext.BaseDirectory, "config", "venue-mapping.json");
-                var venues = VenueMicMapper.LoadFromFile(venuesPath);
-                var securityIdLookup = sp.GetService<ICanonicalSecurityIdLookup>();
-                var canonicalizer = new EventCanonicalizer(
-                    symbolRegistry, conditions, venues, (byte)canonConfig.Version, securityIdLookup);
-
-                CanonicalizationMetrics.SetActiveVersion(canonConfig.Version);
-
-                publisher = new CanonicalizingPublisher(
-                    publisher, canonicalizer, canonConfig.PilotSymbols, canonConfig.EnableDualWrite);
-
-                Log.ForContext<EventPipeline>().Information(
-                    "Canonicalization enabled (version={Version}, pilotSymbols={PilotCount}, dualWrite={DualWrite})",
-                    canonConfig.Version,
-                    canonConfig.PilotSymbols?.Length ?? 0,
-                    canonConfig.EnableDualWrite);
-            }
-
-            return publisher;
+            var publisher = BuildCorePublisher(sp);
+            return new QualityMonitoringPublisher(
+                publisher,
+                sp.GetRequiredService<DataQualityMonitoringService>(),
+                sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>());
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Composes the pipeline-backed publisher chain (dual-path pipeline, metrics facade, and
+    /// optional canonicalization) that <see cref="QualityMonitoringPublisher"/> decorates.
+    /// </summary>
+    private static IMarketEventPublisher BuildCorePublisher(IServiceProvider sp)
+    {
+        // Check if canonicalization should wrap the publisher
+        var canonPublisher = sp.GetService<CanonicalizingPublisher>();
+        if (canonPublisher is not null)
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var config = configStore.Load();
+            if (config.Canonicalization is { Enabled: true })
+                return canonPublisher;
+        }
+
+        var metrics = sp.GetRequiredService<IEventMetrics>();
+        IMarketEventPublisher innerPublisher = sp.GetRequiredService<DualPathEventPipeline>();
+        IMarketEventPublisher publisher = new PipelinePublisher(
+            innerPublisher,
+            metrics);
+
+        var pipelineConfigStore = sp.GetRequiredService<ConfigStore>();
+        var pipelineConfig = pipelineConfigStore.Load();
+
+        if (pipelineConfig.Canonicalization is { Enabled: true })
+        {
+            var canonConfig = pipelineConfig.Canonicalization;
+            var symbolRegistry = sp.GetService<Contracts.Catalog.ICanonicalSymbolRegistry>();
+            if (symbolRegistry is null)
+            {
+                Log.ForContext<EventPipeline>().Warning(
+                    "Canonicalization enabled but ICanonicalSymbolRegistry not registered; skipping");
+                return publisher;
+            }
+            var conditionsPath = canonConfig.ConditionCodesPath
+                ?? Path.Combine(AppContext.BaseDirectory, "config", "condition-codes.json");
+            var conditions = ConditionCodeMapper.LoadFromFile(conditionsPath);
+            var venuesPath = canonConfig.VenueMappingPath
+                ?? Path.Combine(AppContext.BaseDirectory, "config", "venue-mapping.json");
+            var venues = VenueMicMapper.LoadFromFile(venuesPath);
+            var securityIdLookup = sp.GetService<ICanonicalSecurityIdLookup>();
+            var canonicalizer = new EventCanonicalizer(
+                symbolRegistry, conditions, venues, (byte)canonConfig.Version, securityIdLookup);
+
+            CanonicalizationMetrics.SetActiveVersion(canonConfig.Version);
+
+            publisher = new CanonicalizingPublisher(
+                publisher, canonicalizer, canonConfig.PilotSymbols, canonConfig.EnableDualWrite);
+
+            Log.ForContext<EventPipeline>().Information(
+                "Canonicalization enabled (version={Version}, pilotSymbols={PilotCount}, dualWrite={DualWrite})",
+                canonConfig.Version,
+                canonConfig.PilotSymbols?.Length ?? 0,
+                canonConfig.EnableDualWrite);
+        }
+
+        return publisher;
     }
 
     /// <summary>

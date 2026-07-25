@@ -132,6 +132,7 @@ classDiagram
         +decimal CommitmentFeeAmount
         +decimal InterestAmount
         +decimal PenaltyAmount
+        +decimal PikInterestAmount
         +DateTimeOffset RecordedAt
     }
     class Meridian_Contracts_DirectLending_DayCountBasis["DayCountBasis"] {

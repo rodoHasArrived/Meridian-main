@@ -83,6 +83,7 @@ export interface StatementFetchSchedule {
   lastRunAtUtc: string | null;
   lastRunStatus: string | null;
   nextDueAtUtc: string | null;
+  sourceKind: StatementImportSourceKind;
 }
 
 export type StatementImportSourceKind = "broker" | "custodian";
@@ -106,6 +107,7 @@ export interface StatementFetchScheduleUpsertRequest {
   toleranceProfileId?: string | null;
   cadenceHours: number;
   enabled: boolean;
+  sourceKind?: StatementImportSourceKind | null;
 }
 
 export interface AccountingReconciliationRecord {
@@ -1587,7 +1589,19 @@ export type ReconciliationCaseLifecycleState = "Open" | "InReview" | "AwaitingAp
 export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
 export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | "Breached" | "Paused" | "Stopped";
 export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
-export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve";
+export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve" | "Waive" | "Supersede";
+export type ReconciliationBreakMeasureKind = "Value" | "Quantity" | "CostBasis";
+export type ReconciliationBreakDisposition = "Resolved" | "Waived" | "Superseded";
+
+export interface ReconciliationBreakMeasure {
+  kind: ReconciliationBreakMeasureKind;
+  expected: number | null;
+  actual: number | null;
+  variance: number | null;
+  tolerance: number | null;
+  unit: string;
+  unavailableReason?: string | null;
+}
 
 export interface ReconciliationBreakExplanation {
   summary: string;

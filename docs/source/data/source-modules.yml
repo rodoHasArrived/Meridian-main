@@ -43,6 +43,22 @@ modules:
     todos: []
     last_reviewed: 2026-07-17
 
+  - id: SRC-LAUNCHER
+    path: src/Meridian.Launcher
+    name: Meridian launcher
+    layer: Host
+    status: active
+    owner_lane: Runtime Host
+    purpose: Thin installed-workstation entrypoint that launches the lifecycle supervisor, verifies the bound startup outcome, and opens the workstation only after exact readiness succeeds.
+    readme: src/Meridian.Launcher/README.md
+    roadmap_items: []
+    stage_gates: []
+    validation:
+      - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
+    diagrams: []
+    todos: []
+    last_reviewed: 2026-07-19
+
   - id: SRC-APP
     path: src/Meridian.Application
     name: Meridian application layer
@@ -86,6 +102,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -109,7 +126,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -220,6 +237,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W9-ASSET-010
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -237,6 +255,7 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
     diagrams:
       - DIA-ASSURANCE-LOOP
+      - DIA-STORAGE-TOPOLOGY
     todos: []
     last_reviewed: 2026-07-15
 
@@ -386,6 +405,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -672,6 +692,7 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-MASSET-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -723,6 +744,7 @@ modules:
       - W5X-FINOPS-001
       - W5X-CONNECT-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -742,7 +764,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-02
+    last_reviewed: 2026-07-18
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -870,7 +892,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-18
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -917,6 +939,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -929,7 +952,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -965,7 +988,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-WPF
     path: src/Meridian.Wpf

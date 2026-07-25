@@ -135,7 +135,16 @@ public sealed record TradingParametersDto(
     decimal? MarginRequirementPct,
     string? TradingHoursUtc,
     decimal? CircuitBreakerThresholdPct,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    public bool? IsMarginable { get; init; }
+    public bool? IsShortable { get; init; }
+    public bool? IsEasyToBorrow { get; init; }
+    public bool? IsFractionable { get; init; }
+    public decimal? MinimumOrderSize { get; init; }
+    public decimal? MinimumTradeIncrement { get; init; }
+    public decimal? PriceIncrement { get; init; }
+}
 
 /// <summary>
 /// A single corporate action event envelope returned by the corporate actions query.

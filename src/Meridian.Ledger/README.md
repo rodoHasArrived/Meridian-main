@@ -31,7 +31,45 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
-income-statement and balance-sheet rows with net-income and accounting-equation checks.
+income-statement and balance-sheet rows with net-income and accounting-equation checks;
+`BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
+investing / financing, reconciled to beginning and ending cash) and a
+`LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
+allocated result, ending capital per equity account) from the period's journal activity. The
+allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
+`FeeAllocations` (management and performance fees, identified by
+`LedgerAccounts.IsFundFeeExpenseAccount`) so a client-grade partners' capital statement reports the
+income/expense/fee drivers a fund accountant delivers rather than one lumped figure; the split holds
+`AllocatedResult == IncomeGainAllocations - ExpenseAllocations - FeeAllocations` on every line, so it
+never disturbs the existing ending-capital reconciliation, and it flows through both the
+partners-capital CSV artifact and the shared `LedgerReportPresentation` table that drives the Xlsx/Pdf
+renderers.
+`LedgerReportPackBuilder` emits those statements as CSV/JSON pack artifacts, and
+`LedgerScheduledReportExportPackageBuilder` now honors every declared `LedgerReportExportFormat`:
+Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
+`ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
+default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
+QuestPDF/ClosedXML output for client delivery).
+Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
+and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
+account symbols; the currency-aware `Ledger.PostLines` overload and
+`MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+
+Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
+simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
+capital → preferred return → automatic GP catch-up → carried-interest split),
+`CarriedInterestClawbackCalculator` (end-of-life GP giveback), and the share-class/unit register
+(`ShareClass`, `ShareClassUnitRegisterProjector`, `NavPerUnitCalculator`, `EqualizationCalculator`)
+for unitized NAV-per-unit with single-NAV equalisation. `PrivateCapitalCommitments` plus
+`CapitalCallDraftFactory` and `CapitalCallPlanBuilder` add the LP commitment register,
+uncalled-commitment roll-forward invariant, and governed capital-call drafting;
+`CapitalCallScheduleDraftBuilder` closes the wiring gap between the two — it apportions a fund-level
+call over the commitment roll-forwards (`CapitalCallPlanBuilder`) and turns each executable plan line
+into a balanced governed issuance draft (`CapitalCallDraftFactory`) in a deterministic per-investor
+order, failing closed when the plan does not tie to the requested amount, so callers post capital
+calls through the standard `AutomatedJournalApproval` lifecycle instead of leaving the kernels
+uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` live in
+`Meridian.FinancialOperations/PrivateCapital`.
 `Ledger.CalculateNetBalance` exposes the ledger-owned normal-balance calculation over the shared
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
@@ -135,6 +173,11 @@ scope, and statement totals without claiming full XBRL/iXBRL coverage.
 child `LedgerEntry` lines. Broader business `Transaction` and operational-event records can explain
 or initiate posting intent, but they are not aliases for the journal and do not become accounting
 truth without the governed append path.
+Asset Accounting lifecycle terminology follows the same boundary: Expected, Projected, Drafted,
+and Approved do not imply journal impact. Posted requires the immutable journal id, ledger book,
+period, basis, currency, balanced line amounts, and Posted status. Reconciled and Reported are later
+evidence-bearing states over that journal fact, not replacements for it; reporting publication
+remains a separate governed outcome.
 `JournalEntryMetadata`, `JournalEvidenceReference`, and `LedgerQuery` now carry treasury-ledger audit context for private-capital
 and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
 payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger
@@ -193,6 +236,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

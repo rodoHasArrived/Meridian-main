@@ -11,6 +11,7 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -237,7 +238,7 @@ public sealed class FundLedgerViewModelTests
 
     [Fact]
     [Trait("Category", "W4Acceptance")]
-    public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
+    public void ResolveSelectedBreakAsync_CompletedWithWarnings_RefreshesQueueAndKeepsOperatorGuidanceVisible()
     {
         WpfTestThread.Run(async () =>
         {
@@ -281,6 +282,7 @@ public sealed class FundLedgerViewModelTests
                 [
                     BuildStrategyDetail("run-fund-ops")
                 ]);
+                fakeApiClient.ResolveOutcome = BuildCompletedWithWarningsOutcome();
 
                 var fundAccountService = new InMemoryFundAccountService();
                 var fundAccountReadService = new FundAccountReadService(fundAccountService);
@@ -351,7 +353,14 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationAuditRows.Should().Contain(row =>
                     row.Title == "Break closed" &&
                     row.Description == "Reviewed custodian statement and matched ledger adjustment.");
-                viewModel.ReconciliationActionFeedbackText.Should().Be("Break resolved and audit note captured.");
+                viewModel.ReconciliationActionFeedbackText.Should().StartWith("Break resolved and audit note captured.");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("completed with warnings");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("supporting-evidence-stale");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain(
+                    "Supporting evidence is older than the preferred review window.");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("Refresh supporting evidence");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain(
+                    "Attach a current source statement before close sign-off.");
             }
             finally
             {
@@ -2035,7 +2044,8 @@ public sealed class FundLedgerViewModelTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
@@ -2388,6 +2398,60 @@ public sealed class FundLedgerViewModelTests
         }
 
         condition().Should().BeTrue();
+    }
+
+    private static VerifiedOperationOutcome BuildCompletedWithWarningsOutcome()
+    {
+        var startedAt = new DateTimeOffset(2026, 7, 24, 16, 0, 0, TimeSpan.Zero);
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: "reconciliation-casework:warning-1",
+            OperationKind: "reconciliation.casework.resolve",
+            State: OperationTerminalState.CompletedWithWarnings,
+            StartedAtUtc: startedAt,
+            CompletedAtUtc: startedAt.AddSeconds(2),
+            AttemptNumber: 1,
+            CorrelationId: "warning-correlation-1",
+            InputHashSha256: new string('a', 64),
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "break-resolved",
+                    "The selected reconciliation break reached a terminal state.",
+                    OperationPostconditionState.Satisfied,
+                    Required: true,
+                    EvidenceIds: ["warning-evidence"])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    "warning-evidence",
+                    "reconciliation-casework",
+                    "Retained warning receipt.",
+                    Uri: "urn:reconciliation:warning-1",
+                    ContentHashSha256: new string('b', 64),
+                    CapturedAtUtc: startedAt.AddSeconds(2))
+            ],
+            Artifacts: [],
+            Issues:
+            [
+                new OperationIssue(
+                    "supporting-evidence-stale",
+                    "Supporting evidence is older than the preferred review window.",
+                    OperationIssueSeverity.Warning,
+                    EvidenceId: "warning-evidence")
+            ],
+            Recovery:
+            [
+                new OperationRecoveryAction(
+                    "refresh-support",
+                    "Refresh supporting evidence",
+                    "Attach a current source statement before close sign-off.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = ["warning-evidence"]
+                }
+            ]));
     }
 
     private static ReconciliationBreakQueueItem BuildBreakQueueItem(string runId)

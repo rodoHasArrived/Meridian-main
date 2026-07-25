@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Core.Config;
 
 /// <summary>
@@ -19,5 +21,13 @@ public sealed record AlpacaOptions(
     string SecretKey = "",
     string Feed = "iex",            // stocks: iex, sip, delayed_sip, boats, overnight, otc; streams also support test
     bool UseSandbox = false,        // stream.data.sandbox.alpaca.markets / paper-api.alpaca.markets
-    bool SubscribeQuotes = false    // if true, subscribes to quotes too (currently not wired to L2 collector)
-);
+    bool SubscribeQuotes = false,   // if true, subscribes to quotes too (currently not wired to L2 collector)
+    string? OptionsFeed = null,     // indicative (default) or opra; OPRA requires the corresponding entitlement
+    string CryptoFeed = "us",
+    string NewsFeed = "basic"
+)
+{
+    /// <summary>Equity feed retained under its original configuration name for compatibility.</summary>
+    [JsonIgnore]
+    public string EquitiesFeed => Feed;
+}

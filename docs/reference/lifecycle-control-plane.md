@@ -73,8 +73,10 @@ Run commands from the installation root:
 ./Meridian.LifecycleSupervisor.exe stop
 ```
 
-`start` establishes the single per-user owner and opens the browser after readiness. `run` performs
-the same owner loop without opening a browser. If an owner already exists, `start` routes to its
+`start` establishes the single per-user owner and opens the browser only after `/readyz` returns a
+lifecycle snapshot that is exactly `Ready` and accepting work; `Degraded` does not satisfy this
+consumer launch gate. `run` performs the same owner loop without opening a browser. If an owner
+already exists, `start` routes to its
 `open` command. The command channel is a current-user-only named pipe keyed by the canonical
 installation path; a per-install mutex prevents duplicate owners.
 
@@ -124,6 +126,20 @@ Lifecycle evidence is written atomically below
 `<data-root>\runtime\lifecycle\receipts`. Host receipts record participant stages, durations, and
 outcomes. Supervisor session receipts combine the host receipt with database outcome and explicit
 host/database forced-termination flags. Runtime identity JSON contains no shutdown secret.
+
+Verified startup outcomes are written atomically under
+`%LOCALAPPDATA%\Meridian\service\receipts`. A readiness-gate receipt is flushed before any browser
+attempt, and the terminal receipt classifies the complete startup as `Succeeded`,
+`CompletedWithWarnings`, `Failed`, or `Blocked`. It records evaluated postconditions, safe evidence
+locations (`%LOCALAPPDATA%\Meridian\service\logs\lifecycle-supervisor.log`, the host `_logs`
+directory, and `<data-root>\postgresql\postgresql.log`), recovery instructions, and exact timeout
+or process-exit detail. Browser-launch warnings retain a safe manual URL but never the one-time
+bootstrap token.
+
+Forwarded `open` commands remain pending until the owning supervisor has retained the validated
+terminal outcome and returns its state and path. The consumer launcher fingerprints receipt
+timestamp, length, and SHA-256 as well as path, so an atomic update to an existing supervisor
+session receipt is observable and cannot be mistaken for stale evidence or an early success.
 
 The internal shutdown capability is stored only at
 `%LOCALAPPDATA%\Meridian\service\lifecycle-shutdown-token.dpapi`; the dedicated PostgreSQL SCRAM

@@ -15,10 +15,8 @@ using Meridian.Infrastructure.Http;
 using Meridian.Platform.Monitoring;
 using Meridian.Storage;
 using Meridian.Storage.Policies;
-using Meridian.Storage.Sinks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;
@@ -42,80 +40,228 @@ namespace Meridian.Application.Composition;
 [ImplementsAdr("ADR-001", "Unified host startup for all deployment modes")]
 public sealed class HostStartup : IAsyncDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
+    private static readonly TimeSpan StopTimeout = TimeSpan.FromSeconds(30);
+
+    private readonly IHost _host;
     private readonly CompositionOptions _options;
     private readonly Serilog.ILogger _log;
+    private readonly SemaphoreSlim _disposeGate = new(1, 1);
     private bool _disposed;
 
-    private HostStartup(IServiceProvider serviceProvider, CompositionOptions options, Serilog.ILogger log)
+    private HostStartup(IHost host, CompositionOptions options, Serilog.ILogger log)
     {
-        _serviceProvider = serviceProvider;
+        _host = host;
         _options = options;
         _log = log;
     }
 
-    private static HostStartup Create(CompositionOptions options)
+    internal static async Task<HostStartup> CreateStartedHostAsync(
+        CompositionOptions options,
+        bool enableProcessWideHostedServices,
+        Action<IServiceCollection>? configureServices,
+        CancellationToken cancellationToken)
     {
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         var log = LoggingSetup.ForContext<HostStartup>();
-        var services = new ServiceCollection();
-        services.AddLogging(builder => builder.AddSerilog());
-        services.AddMarketDataServices(options);
+        var aspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var dotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        var environmentName = !string.IsNullOrWhiteSpace(aspNetCoreEnvironment)
+            ? aspNetCoreEnvironment
+            : !string.IsNullOrWhiteSpace(dotnetEnvironment)
+                ? dotnetEnvironment
+                : Environments.Production;
+        var builder = new Microsoft.Extensions.Hosting.HostBuilder()
+            .UseEnvironment(environmentName)
+            // Preserve the former raw-provider validation behavior. The Meridian final-graph guard
+            // remains authoritative; enabling Generic Host's Development-only ValidateOnBuild
+            // would reject unrelated lazy registrations that these executable profiles never use.
+            .UseDefaultServiceProvider((_, providerOptions) =>
+            {
+                providerOptions.ValidateOnBuild = false;
+                providerOptions.ValidateScopes = false;
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddLogging(logging => logging.AddSerilog());
+                var effectiveOptions = options with
+                {
+                    EnableProcessWideHostedServices = enableProcessWideHostedServices
+                };
+                services.AddMarketDataServices(effectiveOptions);
 
-        var serviceProvider = services.BuildServiceProvider();
-        InitializeHttpClientFactory(serviceProvider, log);
-        LedgerStartup.EnsureDatabaseReady(serviceProvider);
-        SecurityMasterStartup.EnsureDatabaseReady(serviceProvider);
-        AssetOperationsStartup.EnsureDatabaseReady(serviceProvider);
+                // AddMarketDataServices inserts the final-graph production guard at index 0.
+                // Database initialization must run immediately after that guard and before
+                // coordination or any other hosted service starts. Desktop child graphs retain
+                // their local storage/symbol initialization while the parent owns process-wide
+                // coordinators and accounting workers.
+                services.Insert(
+                    1,
+                    ServiceDescriptor.Singleton<IHostedService>(
+                        serviceProvider => new DatabaseInitializationHostedService(serviceProvider)));
 
-        return new HostStartup(serviceProvider, options, log);
+                configureServices?.Invoke(services);
+            });
+
+        var host = builder.Build();
+        try
+        {
+            // The production guard resolves factory-backed singletons while validating the final
+            // graph. Initialize these static routers before StartAsync so those factories cannot
+            // permanently capture fallback HTTP clients.
+            InitializeHttpClientFactory(host.Services, log);
+            await host.StartAsync(cancellationToken).ConfigureAwait(false);
+            return new HostStartup(host, options, log);
+        }
+        catch
+        {
+            await StopAndDisposeFailedHostAsync(host, log).ConfigureAwait(false);
+            throw;
+        }
     }
 
     /// <summary>
     /// Creates a host startup for streaming data collection (CLI headless mode).
     /// </summary>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup instance.</returns>
-    public static HostStartup CreateForStreaming(string configPath)
-        => Create(CompositionOptions.Streaming with { ConfigPath = configPath });
+    public static Task<HostStartup> CreateForStreamingAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Streaming with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateForStreamingAsync(
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Streaming with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Creates a host startup for the default/full host profile.
     /// </summary>
-    public static HostStartup CreateDefault(string configPath)
-        => Create(CompositionOptions.Default with { ConfigPath = configPath });
+    /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
+    /// <returns>Configured HostStartup instance.</returns>
+    public static Task<HostStartup> CreateDefaultAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Default with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateDefaultAsync(
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Default with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices,
+            cancellationToken);
+
+    /// <summary>
+    /// Creates a default-profile host for a one-shot ETL command without unrelated process-wide
+    /// coordination, reconciliation, polling, or accounting workers.
+    /// </summary>
+    /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
+    /// <returns>Configured HostStartup instance.</returns>
+    public static Task<HostStartup> CreateForEtlAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Default with { ConfigPath = configPath },
+            enableProcessWideHostedServices: false,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateForEtlAsync(
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Default with { ConfigPath = configPath },
+            enableProcessWideHostedServices: false,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Creates a host startup for backfill-only operation.
     /// </summary>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup instance.</returns>
-    public static HostStartup CreateForBackfill(string configPath)
-        => Create(CompositionOptions.BackfillOnly with { ConfigPath = configPath });
+    public static Task<HostStartup> CreateForBackfillAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.BackfillOnly with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateForBackfillAsync(
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.BackfillOnly with { ConfigPath = configPath },
+            enableProcessWideHostedServices: true,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Creates a host startup for minimal utility commands (validation, config checks, etc.).
     /// </summary>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup instance.</returns>
-    public static HostStartup CreateForUtility(string configPath)
-        => Create(CompositionOptions.Minimal with { ConfigPath = configPath });
+    public static Task<HostStartup> CreateForUtilityAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Minimal with { ConfigPath = configPath },
+            enableProcessWideHostedServices: false,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateForUtilityAsync(
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateStartedHostAsync(
+            CompositionOptions.Minimal with { ConfigPath = configPath },
+            enableProcessWideHostedServices: false,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Gets a required service from the DI container.
     /// </summary>
     public T GetRequiredService<T>() where T : notnull
-        => _serviceProvider.GetRequiredService<T>();
+        => _host.Services.GetRequiredService<T>();
 
     /// <summary>
     /// Gets a service from the DI container, or null if not registered.
     /// </summary>
     public T? GetService<T>() where T : class
-        => _serviceProvider.GetService<T>();
+        => _host.Services.GetService<T>();
 
     /// <summary>
     /// Gets the service provider for advanced scenarios.
     /// </summary>
-    public IServiceProvider ServiceProvider => _serviceProvider;
+    public IServiceProvider ServiceProvider => _host.Services;
 
     /// <summary>
     /// Gets the ConfigStore from the DI container.
@@ -257,35 +403,102 @@ public sealed class HostStartup : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-
-        // Dispose pipeline if it exists
-        if (_options.EnablePipelineServices)
+        await _disposeGate.WaitAsync().ConfigureAwait(false);
+        try
         {
-            var pipeline = GetService<EventPipeline>();
-            if (pipeline != null)
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            using var stopCts = new CancellationTokenSource(StopTimeout);
+            try
             {
-                await pipeline.FlushAsync();
-                await pipeline.DisposeAsync();
+                await _host.StopAsync(stopCts.Token).ConfigureAwait(false);
             }
-
-            var sink = GetService<JsonlStorageSink>();
-            if (sink != null)
+            catch (OperationCanceledException) when (stopCts.IsCancellationRequested)
             {
-                await sink.DisposeAsync();
+                _log.Warning(
+                    "Generic Host stop did not complete within {StopTimeoutSeconds} seconds",
+                    StopTimeout.TotalSeconds);
+            }
+            finally
+            {
+                try
+                {
+                    if (_options.EnablePipelineServices)
+                    {
+                        var pipeline = GetService<EventPipeline>();
+                        if (pipeline != null)
+                            await pipeline.FlushAsync().ConfigureAwait(false);
+                    }
+                }
+                finally
+                {
+                    await DisposeHostAsync(_host).ConfigureAwait(false);
+                }
             }
         }
+        finally
+        {
+            _disposeGate.Release();
+        }
+    }
 
-        if (_serviceProvider is IAsyncDisposable asyncDisposable)
+    private static async Task StopAndDisposeFailedHostAsync(IHost host, Serilog.ILogger log)
+    {
+        using var stopCts = new CancellationTokenSource(StopTimeout);
+        try
         {
-            await asyncDisposable.DisposeAsync();
+            await host.StopAsync(stopCts.Token).ConfigureAwait(false);
         }
-        else if (_serviceProvider is IDisposable disposable)
+        catch (Exception ex)
         {
-            disposable.Dispose();
+            log.Warning(ex, "Generic Host cleanup raised an error after startup failed");
         }
+        finally
+        {
+            try
+            {
+                await DisposeHostAsync(host).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                log.Warning(ex, "Generic Host disposal raised an error after startup failed");
+            }
+        }
+    }
+
+    private static ValueTask DisposeHostAsync(IHost host)
+    {
+        if (host is IAsyncDisposable asyncDisposable)
+            return asyncDisposable.DisposeAsync();
+
+        host.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private sealed class DatabaseInitializationHostedService : IHostedService
+    {
+        private readonly IServiceProvider _serviceProvider;
+
+        public DatabaseInitializationHostedService(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            LedgerStartup.EnsureDatabaseReady(_serviceProvider);
+            SecurityMasterStartup.EnsureDatabaseReady(_serviceProvider);
+            DirectLendingStartup.EnsureDatabaseReady(_serviceProvider);
+            AssetOperationsStartup.EnsureDatabaseReady(_serviceProvider);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
     }
 }
 
@@ -312,27 +525,91 @@ public static class HostStartupFactory
     /// </summary>
     /// <param name="deployment">Deployment context from command line arguments.</param>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup instance.</returns>
-    public static HostStartup Create(DeploymentContext deployment, string configPath)
-        => deployment.Mode switch
-        {
-            DeploymentMode.Desktop => HostStartup.CreateDefault(configPath),
-            _ => HostStartup.CreateForStreaming(configPath)
-        };
+    public static Task<HostStartup> CreateAsync(
+        DeploymentContext deployment,
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateCoreAsync(deployment, configPath, configureServices: null, cancellationToken);
+
+    internal static Task<HostStartup> CreateAsync(
+        DeploymentContext deployment,
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateCoreAsync(deployment, configPath, configureServices, cancellationToken);
+
+    private static Task<HostStartup> CreateCoreAsync(
+        DeploymentContext deployment,
+        string configPath,
+        Action<IServiceCollection>? configureServices,
+        CancellationToken cancellationToken)
+        => HostStartup.CreateStartedHostAsync(
+            ResolveProfile(deployment) with { ConfigPath = configPath },
+            enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Creates a HostStartup for backfill operations.
     /// </summary>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup for backfill.</returns>
-    public static HostStartup CreateForBackfill(string configPath)
-        => HostStartup.CreateForBackfill(configPath);
+    public static Task<HostStartup> CreateForBackfillAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => HostStartup.CreateForBackfillAsync(configPath, cancellationToken);
+
+    /// <summary>
+    /// Creates a backfill HostStartup while respecting background-service ownership for the
+    /// supplied deployment context.
+    /// </summary>
+    /// <param name="deployment">Deployment context that identifies the parent host.</param>
+    /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
+    /// <returns>Configured HostStartup for backfill.</returns>
+    public static Task<HostStartup> CreateForBackfillAsync(
+        DeploymentContext deployment,
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => CreateForBackfillCoreAsync(
+            deployment,
+            configPath,
+            configureServices: null,
+            cancellationToken);
+
+    internal static Task<HostStartup> CreateForBackfillAsync(
+        DeploymentContext deployment,
+        string configPath,
+        Action<IServiceCollection> configureServices,
+        CancellationToken cancellationToken = default)
+        => CreateForBackfillCoreAsync(
+            deployment,
+            configPath,
+            configureServices,
+            cancellationToken);
+
+    private static Task<HostStartup> CreateForBackfillCoreAsync(
+        DeploymentContext deployment,
+        string configPath,
+        Action<IServiceCollection>? configureServices,
+        CancellationToken cancellationToken)
+        => HostStartup.CreateStartedHostAsync(
+            CompositionOptions.BackfillOnly with { ConfigPath = configPath },
+            enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
+            configureServices,
+            cancellationToken);
 
     /// <summary>
     /// Creates a HostStartup for utility commands (validation, config checks, etc.).
     /// </summary>
     /// <param name="configPath">Path to configuration file.</param>
+    /// <param name="cancellationToken">Token that cancels host startup.</param>
     /// <returns>Configured HostStartup for utilities.</returns>
-    public static HostStartup CreateForUtility(string configPath)
-        => HostStartup.CreateForUtility(configPath);
+    public static Task<HostStartup> CreateForUtilityAsync(
+        string configPath,
+        CancellationToken cancellationToken = default)
+        => HostStartup.CreateForUtilityAsync(configPath, cancellationToken);
 }

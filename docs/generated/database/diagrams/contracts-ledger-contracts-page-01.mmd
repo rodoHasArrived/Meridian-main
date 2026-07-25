@@ -51,27 +51,32 @@ classDiagram
     class Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneKindDto["AccountingDimensionalCertificationLaneKindDto"] {
     }
     class Meridian_Contracts_AccountingSystem_AccountingDimensionalReportingReadinessDto["AccountingDimensionalReportingReadinessDto"] {
+        +IReadOnlyList~AccountingDimensionalCertificationArtifactDto~ CertificationArtifacts
+        +string? CompanyId
         +bool CrossPeriodReportDimensionQueriesCertified
         +IReadOnlyList~string~ EvidenceReferences
         +bool ExternalExportDimensionMappingCertified
+        +string? FundProfileId
         +bool JournalQueryDimensionFiltersCertified
         +Guid? LedgerBookId
         +bool LedgerLineDimensionsPersistedCertified
         +bool PeriodReportDimensionQueriesCertified
         +bool ReportPackageDimensionProvenanceCertified
-        +bool TrialBalanceDimensionFiltersCertified
+        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
     }
     class Meridian_Contracts_AccountingSystem_AccountingLedgerBookWorkflowReadinessDto["AccountingLedgerBookWorkflowReadinessDto"] {
+        +IReadOnlyList~AccountingWorkflowCertificationArtifactDto~ CertificationArtifacts
         +bool ClosePlanConfigurationLedgerBookNativeCertified
         +bool CloseReportingLedgerBookNativeCertified
+        +string? CompanyId
         +bool DirectLendingLedgerBookNativeCertified
         +IReadOnlyList~string~ EvidenceReferences
         +bool ExternalGlLedgerBookNativeCertified
+        +string? FundProfileId
         +bool JournalLifecycleLedgerBookNativeCertified
         +Guid? LedgerBookId
         +bool PostingRulesLedgerBookNativeCertified
         +bool ReconciliationLedgerBookNativeCertified
-        +bool StrategyLedgerReadLedgerBookNativeCertified
     }
     class Meridian_Contracts_AccountingSystem_AccountingMigrationRolloutPlanItemDto["AccountingMigrationRolloutPlanItemDto"] {
         +string? ActionRoute
@@ -172,6 +177,10 @@ classDiagram
         +string Actor
         +AccountingMigrationRunWorkerPlanDto Plan
     }
+    class Meridian_Contracts_AccountingSystem_AccountingProductionCertificationEvidenceSubjectTypes["AccountingProductionCertificationEvidenceSubjectTypes"] {
+    }
+    class Meridian_Contracts_AccountingSystem_AccountingProductionCertificationEvidenceValidator["AccountingProductionCertificationEvidenceValidator"] {
+    }
     class Meridian_Contracts_AccountingSystem_AccountingProductionCertificationProfileDto["AccountingProductionCertificationProfileDto"] {
         +bool ClosePlanConfigurationLedgerBookNativeCertified
         +bool CloseReportingLedgerBookNativeCertified
@@ -192,6 +201,7 @@ classDiagram
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +AccountingProductionCertificationProfileDto Profile
+        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
     }
     class Meridian_Contracts_AccountingSystem_AccountingProductionGapDto["AccountingProductionGapDto"] {
         +IReadOnlyList~AccountingProductionReadinessAreaDto~ Areas
@@ -506,12 +516,12 @@ classDiagram
         +bool AuditReviewToolingConfigured
         +bool BrowserAccountingAdminSurfaceConfigured
         +bool BulkImportExportSafeguardsConfigured
+        +IReadOnlyList~AccountingTenantAdminCertificationArtifactDto~ CertificationArtifacts
         +bool ChartAdministrationStudioConfigured
         +bool CloseSetupStudioConfigured
         +string? CompanyId
         +bool DimensionMappingStudioConfigured
         +bool DisasterRecoveryRunbookConfigured
-        +IReadOnlyList~string~ EvidenceReferences
     }
     class Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto["AccountingWorkflowCertificationArtifactDto"] {
         +string CertificationId
@@ -671,29 +681,6 @@ classDiagram
         +decimal TotalDebits
         +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
     }
-    class Meridian_Contracts_Ledger_AccountingPolicyDto["AccountingPolicyDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateTimeOffset CreatedAt
-        +string DisplayName
-        +DateOnly EffectiveFrom
-        +DateOnly? EffectiveTo
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +string? InstrumentId
-        +bool IsDefault
-        +string PolicyId
-        +AccountingPolicyRulePackDto? RulePack
-        +string RulesJson
-    }
-    class Meridian_Contracts_Ledger_AccountingPolicyQuery["AccountingPolicyQuery"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateOnly? EffectiveDate
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +string? InstrumentId
-        +string? PolicyId
-        +Guid? SourceEventId
-    }
     Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactStatusDto
@@ -701,6 +688,8 @@ classDiagram
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactLaneStatusDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneDto --> Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationLaneKindDto
+    Meridian_Contracts_AccountingSystem_AccountingDimensionalReportingReadinessDto --> Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto
+    Meridian_Contracts_AccountingSystem_AccountingLedgerBookWorkflowReadinessDto --> Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingMigrationRolloutPlanItemDto --> Meridian_Contracts_AccountingSystem_AccountingMigrationRunKindDto
     Meridian_Contracts_AccountingSystem_AccountingMigrationRolloutPlanItemDto --> Meridian_Contracts_AccountingSystem_AccountingMigrationRunStatusDto
     Meridian_Contracts_AccountingSystem_AccountingMigrationRolloutPlanItemDto --> Meridian_Contracts_AccountingSystem_AccountingProductionReadinessStatusDto
@@ -769,6 +758,7 @@ classDiagram
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto --> Meridian_Contracts_AccountingSystem_AccountingApprovalQueueConfigurationDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto --> Meridian_Contracts_AccountingSystem_AccountingDimensionMappingConfigurationDto
     Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileUpsertRequestDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationProfileDto
+    Meridian_Contracts_AccountingSystem_AccountingTenantAdministrationReadinessDto --> Meridian_Contracts_AccountingSystem_AccountingTenantAdminCertificationArtifactDto
     Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactStatusDto
     Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingWorkflowCertificationLaneDto
@@ -788,5 +778,3 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto
-    Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
-    Meridian_Contracts_Ledger_AccountingPolicyQuery --> Meridian_Contracts_Ledger_AccountingBasisKindDto

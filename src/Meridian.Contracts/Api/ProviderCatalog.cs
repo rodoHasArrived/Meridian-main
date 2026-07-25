@@ -766,6 +766,9 @@ public sealed class RateLimitInfo
 /// </summary>
 public sealed class CapabilityInfo
 {
+    /// <summary>Granular, entitlement-aware market-data product declarations.</summary>
+    [JsonPropertyName("marketDataCapabilities")]
+    public IReadOnlyList<MarketDataCapabilityInfo> MarketDataCapabilities { get; init; } = Array.Empty<MarketDataCapabilityInfo>();
     /// <summary>
     /// Gets a value indicating whether streaming is supported.
     /// </summary>
@@ -873,6 +876,21 @@ public sealed class CapabilityInfo
         return dict;
     }
 }
+
+/// <summary>Wire-safe granular market-data capability declaration for catalog consumers.</summary>
+public sealed record MarketDataCapabilityInfo(
+    [property: JsonPropertyName("capability")] string Capability,
+    [property: JsonPropertyName("assetClasses")] IReadOnlyList<string> AssetClasses,
+    [property: JsonPropertyName("geographies")] IReadOnlyList<string> Geographies,
+    [property: JsonPropertyName("venues")] IReadOnlyList<string> Venues,
+    [property: JsonPropertyName("feed")] string Feed,
+    [property: JsonPropertyName("delivery")] string Delivery,
+    [property: JsonPropertyName("entitlementState")] string EntitlementState,
+    [property: JsonPropertyName("maxRequestsPerWindow")] int? MaxRequestsPerWindow,
+    [property: JsonPropertyName("pacingWindowSeconds")] double? PacingWindowSeconds,
+    [property: JsonPropertyName("minimumRequestDelayMs")] double? MinimumRequestDelayMs,
+    [property: JsonPropertyName("sourceTimestamp")] string SourceTimestamp,
+    [property: JsonPropertyName("qualityPosture")] string QualityPosture);
 
 /// <summary>
 /// Typed, wire-compatible response envelope for <c>GET /api/providers/catalog</c>.

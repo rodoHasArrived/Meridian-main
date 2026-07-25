@@ -1,8 +1,8 @@
 # Web UI Structural Improvement Proposal
 
-**Status:** delivered (Phases A–E and the Accounting Phase-D follow-ups shipped)
+**Status:** in delivery (Phases A–E and the Accounting Phase-D follow-ups shipped; Phase F screen consolidation in delivery)
 **Owner:** core-team
-**Reviewed:** 2026-07-17
+**Reviewed:** 2026-07-25
 
 > **Delivery status (2026-07-13).** Phase A landed app-wide: the decision brief renders as a
 > masthead status pill (`DecisionBriefPill`) instead of a per-route banner, the onboarding coach
@@ -29,6 +29,20 @@
 > Ledger Explorer and shared explorer shell are owned by the canonical `/accounting/ledger` route;
 > and the workflow, posture, external-GL, and
 > multi-asset tail is scoped to its owning Accounting workstreams.
+>
+> **Delivery status (2026-07-19).** Phase F (screen consolidation, `W8-UX-CONSOL-001`) is in
+> delivery: Trial Balance now renders as a tab of the Ledger Explorer
+> (`/accounting/ledger?view=trial-balance`) and the Formula Workbench placeholder as a tab of
+> Quant Lab (`/strategy/quant-lab?view=formulas`); both retired routes redirect with query and
+> hash scope preserved via `legacyWorkspaceRedirect()`. The Evidence Workbench is canonicalized
+> to `/reporting/evidence`: the `/accounting/evidence` and `/data/evidence` mounts and the
+> `/accounting/evidence/detail` stub redirect there with subject scope preserved, matching the
+> existing `evidenceWorkbenchPath()` gravity. The Market Data desk
+> (`screens/market-data-screen.tsx`) now owns `/data/quotes`, hosting the live-quote, watchlist,
+> and price-alert panels as `?view=` tabs over the shared quote stream — three Data sidebar items
+> collapse into one "Market data" entry, with `/data/watchlist` and `/data/alerts` redirecting.
+> The reporting run-flow merge and reconciliation module extraction remain sequenced as
+> follow-ups.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,
@@ -346,6 +360,7 @@ pipeline (`npm run screenshots` → `scripts/dev/capture-web-screenshots.mjs`, v
 | **C — Master–detail cockpit** | P1, P9 layout for the Phase-B views | `screen-layout`/`panel-surface`, new detail-rail composite | Medium |
 | **D — Settings & Accounting restructure** | P7 plus Accounting deep routes on the Phase-B/C pattern | `settings-screen.tsx`, `accounting-screen.tsx` decomposition | High (largest files) |
 | **E — Token & density polish** | P8 | `styles/index.css`, `tailwind.config.ts`, design-system package + contract test | Low–medium |
+| **F — Screen consolidation** | Fold sibling tools into deeper host screens behind the charter roots (`W8-UX-CONSOL-001`): Trial Balance → Ledger Explorer tab, Formula Workbench → Quant Lab tab, Evidence Workbench canonicalized to one Reporting home, Live Quotes + Watchlist + Price Alerts → one Market Data desk; retired routes stay as scope-preserving redirects | route table + `legacyWorkspaceRedirect()` in `lib/workspace.ts`, `workspace-nav.view-model.ts`, `app.tsx` routes, host screens (`finance-standard-pages-screen.tsx`, `quant-lab-screen.tsx`, `evidence-workbench-screen.tsx`, `live-quotes-screen.tsx`) | Medium |
 
 Validation per phase: targeted vitest suites (including the per-screen `*.a11y.test.tsx` axe
 suites), `npm --prefix src/Meridian.Ui/dashboard run build`, screenshot regeneration for touched

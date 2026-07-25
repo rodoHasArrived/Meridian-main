@@ -1,8 +1,26 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
+
+/// <summary>
+/// Exact break evidence retained at the reconciliation/reporting boundary. Missing source measures
+/// remain explicit through <see cref="ReconciliationBreakMeasureDto.UnavailableReason"/>.
+/// </summary>
+public sealed record ReportingReconciliationBreakEvidence(
+    string BreakId,
+    ImmutableArray<ReconciliationBreakMeasureDto> Measures,
+    ImmutableArray<string> BlockedOutputs,
+    ImmutableArray<string> EvidenceIds,
+    string EvidenceHashSha256,
+    ReconciliationBreakDispositionDto? Disposition = null,
+    string? DispositionReason = null,
+    string? SupersedingBreakId = null,
+    string? DispositionActor = null,
+    string? ApprovalActor = null,
+    string? ApprovalReference = null);
 
 /// <summary>
 /// Durable result of a reconciliation/close process. Reporting can consume only an exact retained
@@ -25,7 +43,8 @@ public sealed record ReportingReconciliationEvidenceReceipt(
     bool HasOpenBreaks,
     ImmutableArray<string> EvidenceIds,
     string? CompletionCheckpointId = null,
-    string? CompletionCheckpointHash = null);
+    string? CompletionCheckpointHash = null,
+    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default);
 
 /// <summary>
 /// Immutable result emitted by a server-owned close/reconciliation workflow. The reporting
@@ -36,7 +55,8 @@ public sealed record ReportingReconciliationCompletionEvidence(
     string CompletionCheckpointHash,
     DateTimeOffset CompletedAtUtc,
     bool HasOpenBreaks,
-    ImmutableArray<string> EvidenceIds);
+    ImmutableArray<string> EvidenceIds,
+    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default);
 
 /// <summary>
 /// Durable evidence read boundary. Implementations must return only an exact retained receipt for
@@ -56,6 +76,19 @@ public interface IReportingReconciliationEvidenceStore
         string sourceCheckpointId,
         string sourceCheckpointHash,
         CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// The retained evidence is authentic legacy data but cannot certify current reporting without a
+/// new governed reconciliation/close receipt. Adapters throw this instead of misclassifying a
+/// verified upgrade condition as corruption or silently synthesizing missing item evidence.
+/// </summary>
+public class ReportingReconciliationEvidenceRecoveryRequiredException : IOException
+{
+    public ReportingReconciliationEvidenceRecoveryRequiredException(string message)
+        : base(message)
+    {
+    }
 }
 
 /// <summary>Append-only retention boundary used by the governed reconciliation completion path.</summary>
@@ -96,6 +129,7 @@ public static class ReportingReconciliationEvidenceValidation
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static item => item, StringComparer.Ordinal)
             .ToImmutableArray();
+        var breakEvidence = NormalizeBreakEvidence(completion.BreakEvidence);
         var hash = ComputeReceiptHash(
             source.TenantId,
             source.OrganizationId,
@@ -111,7 +145,8 @@ public static class ReportingReconciliationEvidenceValidation
             completion.CompletionCheckpointHash,
             completion.CompletedAtUtc,
             completion.HasOpenBreaks,
-            evidence);
+            evidence,
+            breakEvidence);
         var checkpointId = $"report-reconciliation-{hash[..32]}";
         return new ReportingReconciliationEvidenceReceipt(
             source.TenantId,
@@ -130,7 +165,8 @@ public static class ReportingReconciliationEvidenceValidation
             completion.HasOpenBreaks,
             evidence.Append($"reconciliation-checkpoint:{checkpointId}:{hash}").ToImmutableArray(),
             completion.CompletionCheckpointId,
-            completion.CompletionCheckpointHash);
+            completion.CompletionCheckpointHash,
+            breakEvidence);
     }
 
     public static void ValidateCompletion(ReportingReconciliationCompletionEvidence completion)
@@ -146,6 +182,14 @@ public static class ReportingReconciliationEvidenceValidation
         {
             throw new ArgumentException(
                 "Reconciliation completion evidence requires a UTC timestamp and unique immutable evidence ids.",
+                nameof(completion));
+        }
+
+        var breakEvidence = NormalizeBreakEvidence(completion.BreakEvidence);
+        if (completion.HasOpenBreaks != breakEvidence.Any(static item => item.Disposition is null))
+        {
+            throw new ArgumentException(
+                "Reconciliation completion open-break state must match its exact retained break evidence.",
                 nameof(completion));
         }
     }
@@ -179,6 +223,7 @@ public static class ReportingReconciliationEvidenceValidation
                 StringComparison.Ordinal))
             .OrderBy(static item => item, StringComparer.Ordinal)
             .ToImmutableArray();
+        var breakEvidence = NormalizeBreakEvidence(receipt.BreakEvidence);
         var expectedHash = ComputeReceiptHash(
             receipt.TenantId,
             receipt.OrganizationId,
@@ -194,7 +239,11 @@ public static class ReportingReconciliationEvidenceValidation
             receipt.CompletionCheckpointHash!,
             receipt.ReconciledAtUtc,
             receipt.HasOpenBreaks,
-            evidenceWithoutReceipt);
+            evidenceWithoutReceipt,
+            breakEvidence);
+        var matchedHash = string.Equals(receipt.ReconciliationCheckpointHash, expectedHash, StringComparison.Ordinal)
+            ? expectedHash
+            : null;
         if (receipt.AsOfDate == default
             || receipt.ReconciledAtUtc == default
             || receipt.ReconciledAtUtc.Offset != TimeSpan.Zero
@@ -202,17 +251,18 @@ public static class ReportingReconciliationEvidenceValidation
             || receipt.EvidenceIds.Any(string.IsNullOrWhiteSpace)
             || receipt.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != receipt.EvidenceIds.Length
             || string.Equals(receipt.SourceCheckpointId, receipt.ReconciliationCheckpointId, StringComparison.Ordinal)
+            || matchedHash is null
             || !string.Equals(
                 receipt.ReconciliationCheckpointId,
-                $"report-reconciliation-{expectedHash[..32]}",
+                $"report-reconciliation-{matchedHash[..32]}",
                 StringComparison.Ordinal)
-            || !string.Equals(receipt.ReconciliationCheckpointHash, expectedHash, StringComparison.Ordinal)
             || !receipt.EvidenceIds.Contains(
                 $"reconciliation-completion:{receipt.CompletionCheckpointId}:{receipt.CompletionCheckpointHash}",
                 StringComparer.Ordinal)
             || !receipt.EvidenceIds.Contains(
                 $"reconciliation-checkpoint:{receipt.ReconciliationCheckpointId}:{receipt.ReconciliationCheckpointHash}",
-                StringComparer.Ordinal))
+                StringComparer.Ordinal)
+            || receipt.HasOpenBreaks != breakEvidence.Any(static item => item.Disposition is null))
         {
             throw new ArgumentException(
                 "A retained reconciliation receipt requires a UTC timestamp, distinct source/reconciliation identities, and unique exact evidence.",
@@ -262,9 +312,55 @@ public static class ReportingReconciliationEvidenceValidation
     public static bool SameReceipt(
         ReportingReconciliationEvidenceReceipt left,
         ReportingReconciliationEvidenceReceipt right) =>
-        left with { EvidenceIds = ImmutableArray<string>.Empty }
-            == right with { EvidenceIds = ImmutableArray<string>.Empty }
-        && left.EvidenceIds.SequenceEqual(right.EvidenceIds, StringComparer.Ordinal);
+        left with
+        {
+            EvidenceIds = ImmutableArray<string>.Empty,
+            BreakEvidence = ImmutableArray<ReportingReconciliationBreakEvidence>.Empty
+        } == right with
+        {
+            EvidenceIds = ImmutableArray<string>.Empty,
+            BreakEvidence = ImmutableArray<ReportingReconciliationBreakEvidence>.Empty
+        }
+        && left.EvidenceIds.SequenceEqual(right.EvidenceIds, StringComparer.Ordinal)
+        && NormalizeBreakEvidence(left.BreakEvidence).SequenceEqual(NormalizeBreakEvidence(right.BreakEvidence));
+
+    public static ReportingReconciliationBreakEvidence CreateBreakEvidence(
+        ReconciliationBreakQueueItem item,
+        IReadOnlyList<string>? blockedOutputs = null)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var measures = NormalizeMeasures(item.Measures);
+        var outputs = (blockedOutputs ?? item.BlockedOutputs ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToImmutableArray();
+        var evidenceIds = (item.EvidenceLinks ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Append(string.IsNullOrWhiteSpace(item.DispositionApprovalReference)
+                ? null
+                : item.DispositionApprovalReference.Trim())
+            .Where(static value => value is not null)
+            .Select(static value => value!)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToImmutableArray();
+        var evidence = new ReportingReconciliationBreakEvidence(
+            item.BreakId.Trim(),
+            measures,
+            outputs,
+            evidenceIds,
+            string.Empty,
+            item.Disposition,
+            item.DispositionReason,
+            item.SupersedingBreakId,
+            item.ResolvedBy,
+            item.DispositionApprovedBy,
+            item.DispositionApprovalReference);
+        return evidence with { EvidenceHashSha256 = ComputeBreakEvidenceHash(evidence) };
+    }
 
     public static bool IsLowercaseSha256(string? value) =>
         value is { Length: 64 }
@@ -302,7 +398,8 @@ public static class ReportingReconciliationEvidenceValidation
         string completionCheckpointHash,
         DateTimeOffset reconciledAtUtc,
         bool hasOpenBreaks,
-        ImmutableArray<string> evidenceIds)
+        ImmutableArray<string> evidenceIds,
+        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -328,9 +425,176 @@ public static class ReportingReconciliationEvidenceValidation
                 writer.WriteStringValue(evidence);
             }
             writer.WriteEndArray();
+            writer.WriteStartArray("breakEvidence");
+            foreach (var breakItem in breakEvidence)
+            {
+                WriteBreakEvidence(writer, breakItem, includeDeclaredHash: true);
+            }
+            writer.WriteEndArray();
             writer.WriteEndObject();
         }
 
         return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+    }
+
+    private static ImmutableArray<ReportingReconciliationBreakEvidence> NormalizeBreakEvidence(
+        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence)
+    {
+        var normalized = breakEvidence.IsDefault
+            ? ImmutableArray<ReportingReconciliationBreakEvidence>.Empty
+            : breakEvidence
+                .OrderBy(static item => item.BreakId, StringComparer.Ordinal)
+                .ToImmutableArray();
+        if (normalized.Select(static item => item.BreakId).Distinct(StringComparer.Ordinal).Count() != normalized.Length)
+        {
+            throw new ArgumentException("Retained reconciliation break ids must be unique.", nameof(breakEvidence));
+        }
+
+        foreach (var item in normalized)
+        {
+            ValidateBreakEvidence(item);
+        }
+
+        return normalized;
+    }
+
+    private static ImmutableArray<ReconciliationBreakMeasureDto> NormalizeMeasures(
+        IReadOnlyList<ReconciliationBreakMeasureDto>? measures)
+    {
+        var normalized = (measures ?? [])
+            .OrderBy(static item => item.Kind)
+            .ToImmutableArray();
+        var requiredKinds = Enum.GetValues<ReconciliationBreakMeasureKindDto>();
+        if (normalized.Length != requiredKinds.Length
+            || normalized.Select(static item => item.Kind).Distinct().Count() != requiredKinds.Length
+            || requiredKinds.Any(kind => normalized.All(item => item.Kind != kind)))
+        {
+            throw new ArgumentException("Break evidence requires exactly one Value, Quantity, and CostBasis measure.", nameof(measures));
+        }
+
+        foreach (var measure in normalized)
+        {
+            var hasExpected = measure.Expected.HasValue;
+            var hasActual = measure.Actual.HasValue;
+            var hasVariance = measure.Variance.HasValue;
+            var hasCompleteComparison = hasExpected && hasActual && hasVariance;
+            var isExplicitlyUnavailable = !hasExpected && !hasActual && !hasVariance
+                && !string.IsNullOrWhiteSpace(measure.UnavailableReason);
+            if (string.IsNullOrWhiteSpace(measure.Unit)
+                || !string.Equals(measure.Unit, measure.Unit.Trim(), StringComparison.Ordinal)
+                || measure.Tolerance is < 0m
+                || hasCompleteComparison && measure.Variance!.Value != measure.Actual!.Value - measure.Expected!.Value
+                || hasCompleteComparison && !string.IsNullOrWhiteSpace(measure.UnavailableReason)
+                || !hasCompleteComparison && !isExplicitlyUnavailable)
+            {
+                throw new ArgumentException(
+                    "Break measures require a trimmed unit and either a complete, arithmetically honest comparison or an explicit unavailable reason.",
+                    nameof(measures));
+            }
+        }
+
+        return normalized;
+    }
+
+    private static void ValidateBreakEvidence(ReportingReconciliationBreakEvidence item)
+    {
+        RequireText(item.BreakId, nameof(item.BreakId));
+        _ = NormalizeMeasures(item.Measures);
+        if (item.Disposition is { } disposition && !Enum.IsDefined(disposition))
+        {
+            throw new ArgumentException(
+                $"Retained reconciliation break evidence contains undefined disposition value '{(byte)disposition}'.",
+                nameof(item));
+        }
+
+        var hasDisposition = item.Disposition.HasValue;
+        var dispositionComplete = !hasDisposition
+            || !string.IsNullOrWhiteSpace(item.DispositionReason)
+                && !string.IsNullOrWhiteSpace(item.DispositionActor);
+        var governedExceptionComplete = item.Disposition is not (
+                ReconciliationBreakDispositionDto.Waived or ReconciliationBreakDispositionDto.Superseded)
+            || !string.IsNullOrWhiteSpace(item.ApprovalActor)
+                && !string.IsNullOrWhiteSpace(item.ApprovalReference)
+                && !string.Equals(item.DispositionActor, item.ApprovalActor, StringComparison.OrdinalIgnoreCase);
+        if (item.Disposition is null && item.BlockedOutputs.IsDefaultOrEmpty
+            || item.BlockedOutputs.Any(string.IsNullOrWhiteSpace)
+            || item.BlockedOutputs.Any(static value => !string.Equals(value, value.Trim(), StringComparison.Ordinal))
+            || item.BlockedOutputs.Distinct(StringComparer.Ordinal).Count() != item.BlockedOutputs.Length
+            || item.EvidenceIds.IsDefaultOrEmpty
+            || item.EvidenceIds.Any(string.IsNullOrWhiteSpace)
+            || item.EvidenceIds.Any(static value => !string.Equals(value, value.Trim(), StringComparison.Ordinal))
+            || item.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != item.EvidenceIds.Length
+            || !dispositionComplete
+            || !governedExceptionComplete
+            || item.Disposition == ReconciliationBreakDispositionDto.Superseded && string.IsNullOrWhiteSpace(item.SupersedingBreakId)
+            || !IsLowercaseSha256(item.EvidenceHashSha256)
+            || !string.Equals(item.EvidenceHashSha256, ComputeBreakEvidenceHash(item), StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Retained reconciliation break evidence is incomplete or failed hash validation.", nameof(item));
+        }
+    }
+
+    private static string ComputeBreakEvidenceHash(ReportingReconciliationBreakEvidence item)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            WriteBreakEvidence(writer, item, includeDeclaredHash: false);
+        }
+        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+    }
+
+    private static void WriteBreakEvidence(
+        Utf8JsonWriter writer,
+        ReportingReconciliationBreakEvidence item,
+        bool includeDeclaredHash)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("breakId", item.BreakId);
+        writer.WriteString("disposition", item.Disposition?.ToString());
+        writer.WriteString("dispositionReason", item.DispositionReason);
+        writer.WriteString("supersedingBreakId", item.SupersedingBreakId);
+        writer.WriteString("dispositionActor", item.DispositionActor);
+        writer.WriteString("approvalActor", item.ApprovalActor);
+        writer.WriteString("approvalReference", item.ApprovalReference);
+        if (includeDeclaredHash)
+        {
+            writer.WriteString("evidenceHashSha256", item.EvidenceHashSha256);
+        }
+        writer.WriteStartArray("measures");
+        foreach (var measure in item.Measures.OrderBy(static value => value.Kind))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("kind", measure.Kind.ToString());
+            if (measure.Expected.HasValue)
+                writer.WriteNumber("expected", measure.Expected.Value);
+            else
+                writer.WriteNull("expected");
+            if (measure.Actual.HasValue)
+                writer.WriteNumber("actual", measure.Actual.Value);
+            else
+                writer.WriteNull("actual");
+            if (measure.Variance.HasValue)
+                writer.WriteNumber("variance", measure.Variance.Value);
+            else
+                writer.WriteNull("variance");
+            if (measure.Tolerance.HasValue)
+                writer.WriteNumber("tolerance", measure.Tolerance.Value);
+            else
+                writer.WriteNull("tolerance");
+            writer.WriteString("unit", measure.Unit);
+            writer.WriteString("unavailableReason", measure.UnavailableReason);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
+        writer.WriteStartArray("blockedOutputs");
+        foreach (var output in item.BlockedOutputs.OrderBy(static value => value, StringComparer.Ordinal))
+            writer.WriteStringValue(output);
+        writer.WriteEndArray();
+        writer.WriteStartArray("evidenceIds");
+        foreach (var evidenceId in item.EvidenceIds.OrderBy(static value => value, StringComparer.Ordinal))
+            writer.WriteStringValue(evidenceId);
+        writer.WriteEndArray();
+        writer.WriteEndObject();
     }
 }

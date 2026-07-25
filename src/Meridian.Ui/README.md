@@ -36,6 +36,9 @@ state so host-served workstation assets retain the same financial-operations flo
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
 The browser Accounting screen renders that same lane above its detailed closeout panels.
+The Accounting `Import statement` route supports file upload and provider-backed scheduled fetches,
+including canonical confidence preview, broker/custodian classification, and direct Evidence Vault
+and reconciliation-queue handoff; persistence and import policy remain server-owned.
 The dashboard Reporting workspace owns schedule draft/save, pause/resume, and single-schedule run
 controls. Persistence and release-gated delivery remain server-owned, and due schedules are leased
 only by the hosted reporting worker; the browser has no public batch due-run control.

@@ -37,6 +37,16 @@ public sealed class ReconciliationApiServiceTests
         services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root));
         services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root));
         services.AddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        // Reconcile against a small internal book that holds the statement's SPY position, so the
+        // position matches exactly and only the cash and fee rows surface as breaks. This proves the
+        // engine now compares statements to Meridian's records instead of to themselves.
+        services.AddSingleton<IInternalReconciliationPopulationProvider>(
+            new StubInternalPopulationProvider(new InternalReconciliationPopulations(
+                [new InternalPortfolioPosition("internal-spy", "FUND-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+                [],
+                [])));
+        services.AddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        services.AddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.AddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
         services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 
@@ -48,7 +58,7 @@ public sealed class ReconciliationApiServiceTests
                 Broker: "custodian",
                 SourceInstitution: "Sample Custodian",
                 FundAccountId: fundAccountId.ToString("D"),
-                ExternalAccountId: "external-account-1",
+                ExternalAccountId: "FUND-1",
                 StatementPeriodStart: new DateOnly(2026, 5, 1),
                 StatementPeriodEnd: new DateOnly(2026, 5, 31),
                 SourcePath: statementPath,
@@ -60,6 +70,8 @@ public sealed class ReconciliationApiServiceTests
 
         created.Should().NotBeNull();
         created!.Status.Should().Be(StatementRunStatus.ReviewRequired);
+        // The SPY position matches the internal book; cash and fee have no internal counterparts and
+        // therefore remain honest unmatched breaks.
         created.MatchSummary!.StatementItemCount.Should().Be(3);
         created.MatchSummary.BreakCount.Should().Be(2);
         created.Breaks.Should().HaveCount(2);
@@ -105,6 +117,8 @@ public sealed class ReconciliationApiServiceTests
         var summary = summaries.Should().ContainSingle(item => item.RunId == created.RunId).Subject;
         summary.Status.Should().Be(StatementRunStatus.ReviewRequired);
         summary.OpenExceptionCount.Should().Be(2);
+        // PositionMatches carries matched-item count (rows minus open exceptions); the SPY position
+        // matches the retained internal book while the cash and fee rows remain unmatched.
         summary.PositionMatches.Should().Be(1);
         summary.CompletedAtUtc.Should().BeNull();
 
@@ -203,6 +217,15 @@ public sealed class ReconciliationApiServiceTests
         projected.EscalationLabel.Should().Be("Escalate");
         projected.EscalationReason.Should().Contain("breached SLA");
         projected.EvidenceLink.Should().Be("/api/workstation/reconciliation/statement-runs/statement-run-1");
+    }
+
+    private sealed class StubInternalPopulationProvider(InternalReconciliationPopulations populations)
+        : IInternalReconciliationPopulationProvider
+    {
+        public Task<InternalReconciliationPopulations> GetPopulationsAsync(
+            InternalReconciliationPopulationContext context,
+            CancellationToken ct = default)
+            => Task.FromResult(populations);
     }
 
     private sealed class StubStatementRunWorkflowService(

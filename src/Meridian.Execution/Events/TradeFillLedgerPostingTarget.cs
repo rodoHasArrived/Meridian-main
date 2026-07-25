@@ -15,7 +15,8 @@ public sealed record TradeFillLedgerPostingContext(
     Guid PeriodId,
     Guid LedgerBookId,
     string AccountingPolicyId = "execution-trade-fill",
-    string AccountingPolicyVersion = "1")
+    string AccountingPolicyVersion = "1",
+    long? ExpectedPeriodVersion = null)
 {
     public TradeFillLedgerPostingContext Validate()
     {
@@ -28,6 +29,8 @@ public sealed record TradeFillLedgerPostingContext(
             throw new ArgumentException("A ledger book id is required.", nameof(LedgerBookId));
         ArgumentException.ThrowIfNullOrWhiteSpace(AccountingPolicyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(AccountingPolicyVersion);
+        if (ExpectedPeriodVersion is < 0)
+            throw new ArgumentOutOfRangeException(nameof(ExpectedPeriodVersion));
 
         return this with
         {

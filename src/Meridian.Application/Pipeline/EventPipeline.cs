@@ -56,6 +56,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     private int _disposed;
     private int _activeConsumers;
     private int _finalFlushStarted;
+    private long _consumerIterationFailures;
+    private long _lastConsumerFaultTicks;
 
     // Performance metrics
     private long _publishedCount;
@@ -669,6 +671,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     /// </summary>
     public PipelineStatistics GetStatistics()
     {
+        var lastFaultTicks = Interlocked.Read(ref _lastConsumerFaultTicks);
         return new PipelineStatistics(
             PublishedCount: PublishedCount,
             DroppedCount: DroppedCount,
@@ -687,7 +690,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             IsValidationEnabled: IsValidationEnabled,
             IsDeduplicationEnabled: IsDeduplicationEnabled,
             QueueFullMode: _fullMode,
-            HighWaterMarkWarned: _highWaterMarkWarned
+            HighWaterMarkWarned: _highWaterMarkWarned,
+            ConsumerCount: _consumerCount,
+            ActiveConsumers: Volatile.Read(ref _activeConsumers),
+            FaultedConsumers: _consumers.Count(static t => t.IsFaulted),
+            ConsumerIterationFailures: Interlocked.Read(ref _consumerIterationFailures),
+            LastConsumerFaultAtUtc: lastFaultTicks > 0 ? new DateTimeOffset(lastFaultTicks, TimeSpan.Zero) : null
         );
     }
 
@@ -699,8 +707,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         try
         {
             var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
+            var retryPendingBatch = false;
+            var nextPendingEventIndex = 0;
 
-            while (await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
+            while (retryPendingBatch || await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
                 Interlocked.Increment(ref _activeConsumers);
                 var startTs = Stopwatch.GetTimestamp();
@@ -709,11 +719,17 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 {
                     var targetBatchSize = GetAdaptiveBatchSize();
 
-                    // Drain up to _batchSize events from the channel
-                    batchBuffer.Clear();
-                    while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
+                    // Drain up to _batchSize events from the channel. A WAL-backed batch that
+                    // failed after its records were appended is retried before reading later
+                    // events, because WAL commits are cumulative through a sequence number.
+                    if (!retryPendingBatch)
                     {
-                        batchBuffer.Add(evt);
+                        batchBuffer.Clear();
+                        nextPendingEventIndex = 0;
+                        while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
+                        {
+                            batchBuffer.Add(evt);
+                        }
                     }
 
                     // [3.1] E2E trace propagation: start a per-batch activity so each consume
@@ -723,7 +739,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     long maxWalSequence = _lastCommittedWalSequence;
 
                     // Write each event: dedup → validate → WAL (if enabled) → sink
-                    for (var i = 0; i < batchBuffer.Count; i++)
+                    for (var i = nextPendingEventIndex; i < batchBuffer.Count; i++)
                     {
                         var tracedEvent = batchBuffer[i];
                         var evt = tracedEvent.Event;
@@ -743,6 +759,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             if (await _dedupLedger.IsDuplicateAsync(evt, _cts.Token).ConfigureAwait(false))
                             {
                                 Interlocked.Increment(ref _deduplicatedCount);
+                                nextPendingEventIndex = i + 1;
                                 continue; // Skip duplicate events
                             }
                         }
@@ -758,6 +775,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 {
                                     await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
                                 }
+                                nextPendingEventIndex = i + 1;
                                 continue; // Skip persisting invalid events
                             }
                         }
@@ -769,6 +787,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         else if (_wal != null)
                         {
                             var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
+                            tracedEvent = tracedEvent with { WalSequence = walRecord.Sequence };
+                            batchBuffer[i] = tracedEvent;
                             maxWalSequence = Math.Max(maxWalSequence, walRecord.Sequence);
                         }
 
@@ -780,6 +800,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         storageActivity?.SetTag("event.source", evt.Source);
 
                         await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
+                        // AppendAsync returning successfully is the sink acknowledgement boundary.
+                        // If a later append or the batch flush fails, retry only the suffix that has
+                        // not crossed that boundary; arbitrary sinks are not necessarily idempotent.
+                        nextPendingEventIndex = i + 1;
                     }
 
                     // [1.2] WAL-sink transaction: flush the sink first, then update local sequence
@@ -809,6 +833,54 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     }
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
+                    retryPendingBatch = false;
+                    nextPendingEventIndex = 0;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // A persistence failure must not kill the consumer: before this catch existed,
+                    // any sink/WAL/dedup exception silently faulted the consumer task (observed
+                    // only at disposal) while producers kept publishing into a channel nobody
+                    // drained. A WAL-backed batch that has appended records must be retried
+                    // before later batches: committing a later WAL sequence would otherwise
+                    // cumulatively acknowledge the failed records.
+                    Interlocked.Increment(ref _consumerIterationFailures);
+                    Interlocked.Exchange(ref _lastConsumerFaultTicks, DateTimeOffset.UtcNow.UtcTicks);
+                    retryPendingBatch = _wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0);
+                    _logger.LogError(ex,
+                        "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
+                        batchBuffer.Count,
+                        retryPendingBatch
+                            ? "the WAL-backed batch will retry before later batches are committed"
+                            : "WAL commit withheld and consumer continuing");
+
+                    if (_deadLetterSink != null && !retryPendingBatch)
+                    {
+                        foreach (var traced in batchBuffer)
+                        {
+                            try
+                            {
+                                await _deadLetterSink.RecordAsync(
+                                    traced.Event,
+                                    new[] { $"pipeline-persist-failure: {ex.GetType().Name}: {ex.Message}" },
+                                    CancellationToken.None).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                // DeadLetterSink logs its own failures; recording is best-effort.
+                            }
+                        }
+                    }
+
+                    try
+                    {
+                        // Brief backoff so a persistently failing sink cannot spin the consumer.
+                        await Task.Delay(TimeSpan.FromMilliseconds(250), _cts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Shutdown requested; the next WaitToReadAsync observes the cancellation.
+                    }
                 }
                 finally
                 {

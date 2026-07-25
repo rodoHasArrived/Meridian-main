@@ -99,7 +99,11 @@ module internal ServicingAggregate =
                 servicing.LastPaymentDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" settleDate (sprintf "Drawdown booked for %.2f." amount) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; LotId = lotId }
 
@@ -132,7 +136,11 @@ module internal ServicingAggregate =
                 servicing.LastPaymentDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Rate reset applied at %M." allInRate) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; AllInRate = allInRate }
 
@@ -163,7 +171,11 @@ module internal ServicingAggregate =
                 Nullable effectiveDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Principal payment applied for %.2f." appliedAmount) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; AppliedAmount = appliedAmount }
 
@@ -197,7 +209,11 @@ module internal ServicingAggregate =
                 Nullable effectiveDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Mixed payment applied for %.2f." amount) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         let cashTransactionId = Guid.NewGuid()
         let allocations =
@@ -249,7 +265,11 @@ module internal ServicingAggregate =
                 servicing.LastPaymentDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Fee assessed for %.2f." amount) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated }
 
@@ -279,7 +299,11 @@ module internal ServicingAggregate =
                 servicing.LastPaymentDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate reason servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; AppliedAmount = appliedAmount }
 
@@ -296,21 +320,35 @@ module internal ServicingAggregate =
         let annualRate =
             DirectLendingInterop.ApplyRateBounds(terms.EffectiveRateFloor, terms.EffectiveRateCap, annualRate)
 
-        // Use the date-aware day-count helper so Act/Act accrues against the actual
+        // PIK posture: interest capitalizes into the principal balance instead of
+        // accruing as a cash receivable.
+        let isPikAccrual = servicing.IsPikToggled
+
+        // Use the date-aware day-count helpers so Act/Act accrues against the actual
         // year length of the accrual date (366 in leap years); other conventions
         // keep their fixed denominators.
-        let interestAmount =
+        let accruedInterest =
             if servicing.Balances.PrincipalOutstanding > 0m then
                 Math.Round(
-                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(
-                        servicing.Balances.PrincipalOutstanding,
-                        annualRate,
-                        int terms.DayCountBasis,
-                        accrualDate),
+                    (if isPikAccrual then
+                        DirectLendingInterop.CalculatePikAccrual(
+                            servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            int terms.DayCountBasis,
+                            accrualDate)
+                     else
+                        DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                            servicing.Balances.PrincipalOutstanding,
+                            annualRate,
+                            int terms.DayCountBasis,
+                            accrualDate)),
                     2,
                     MidpointRounding.AwayFromZero)
             else
                 0m
+
+        let interestAmount = if isPikAccrual then 0m else accruedInterest
+        let pikInterestAmount = if isPikAccrual then accruedInterest else 0m
 
         let commitmentFeeAmount =
             if terms.CommitmentFeeRate.HasValue then
@@ -333,12 +371,13 @@ module internal ServicingAggregate =
                 commitmentFeeAmount,
                 0m,
                 annualRate,
-                DateTimeOffset.UtcNow)
+                DateTimeOffset.UtcNow,
+                pikInterestAmount)
 
         let nextRevision = servicing.ServicingRevision + 1L
         let balances =
             OutstandingBalancesDto(
-                servicing.Balances.PrincipalOutstanding,
+                servicing.Balances.PrincipalOutstanding + pikInterestAmount,
                 servicing.Balances.InterestAccruedUnpaid + interestAmount,
                 servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
                 servicing.Balances.FeesAccruedUnpaid,
@@ -363,8 +402,20 @@ module internal ServicingAggregate =
                 Nullable accrualDate,
                 servicing.LastPaymentDate,
                 nextRevision,
-                prependRevision nextRevision "InternalEvent" accrualDate (sprintf "Daily accrual posted at annual rate %M." annualRate) servicing.RevisionHistory,
-                accrualEntries)
+                prependRevision
+                    nextRevision
+                    "InternalEvent"
+                    accrualDate
+                    (if isPikAccrual then
+                        sprintf "Daily PIK accrual capitalized at annual rate %M." annualRate
+                     else
+                        sprintf "Daily accrual posted at annual rate %M." annualRate)
+                    servicing.RevisionHistory,
+                accrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; Entry = entry }
 
@@ -404,6 +455,10 @@ module internal ServicingAggregate =
                 servicing.LastPaymentDate,
                 nextRevision,
                 prependRevision nextRevision "InternalEvent" effectiveDate (sprintf "Prepayment penalty charged for %.2f." penaltyAmount) servicing.RevisionHistory,
-                servicing.AccrualEntries)
+                servicing.AccrualEntries,
+                Collateral = servicing.Collateral,
+                UnamortizedDiscount = servicing.UnamortizedDiscount,
+                UnamortizedPremium = servicing.UnamortizedPremium,
+                IsPikToggled = servicing.IsPikToggled)
 
         { Servicing = updated; PenaltyAmount = penaltyAmount }

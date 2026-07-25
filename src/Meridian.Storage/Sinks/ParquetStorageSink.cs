@@ -22,6 +22,14 @@ namespace Meridian.Storage.Sinks;
 /// Apache Parquet storage sink for high-performance columnar storage.
 /// Provides 10-20x better compression than JSONL and optimized for analytics.
 ///
+/// Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink's persistent
+/// append streams): Parquet's footer-at-end format means a persistently open writer leaves an
+/// unreadable, footerless file after a crash, violating the published-artifact readability
+/// invariant that copy-plus-rename guarantees; part-file compaction would change the
+/// one-file-per-day contract query/export paths consume. Row-group flushes are batched and
+/// lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost.
+/// Revisit only with a measured need.
+///
 /// Based on: https://github.com/aloneguid/parquet-dotnet (MIT)
 /// Reference: docs/open-source-references.md #20
 /// </summary>

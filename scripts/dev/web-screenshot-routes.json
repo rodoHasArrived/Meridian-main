@@ -315,7 +315,7 @@
     {
       "id": "W03D1",
       "name": "web-accounting-trial-balance-detail",
-      "path": "/accounting/trial-balance?runId=run-42",
+      "path": "/accounting/ledger?view=trial-balance&runId=run-42",
       "docLabel": "Accounting \u2014 Trial Balance Detail",
       "waitForText": "Trial Balance",
       "requiredApiRoutes": [
@@ -483,16 +483,15 @@
       "id": "W03I5",
       "name": "web-accounting-evidence-detail",
       "path": "/accounting/evidence/detail?evidenceId=bank-statement",
-      "docLabel": "Accounting \u2014 Evidence Detail",
-      "waitForText": "Evidence Detail",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Accounting \u2014 Evidence Detail (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence reference ready for inspection",
-        "Ready to inspect",
-        "does not approve, post, or release work",
-        "Inspect selected evidence"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {
@@ -555,15 +554,15 @@
       "id": "W03L",
       "name": "web-accounting-evidence-workbench",
       "path": "/accounting/evidence",
-      "docLabel": "Accounting \u2014 Evidence Workbench",
-      "waitForText": "Evidence Workbench",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Accounting \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence subjects",
-        "Evidence Vault documents",
-        "operating-bank-statement.csv"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {
@@ -882,9 +881,9 @@
     {
       "id": "W05E",
       "name": "web-strategy-formula-workbench",
-      "path": "/strategy/formula-workbench",
+      "path": "/strategy/quant-lab?view=formulas",
       "docLabel": "Strategy \u2014 Formula Workbench",
-      "waitForText": "Formula Workbench",
+      "waitForText": "Quant Lab",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
@@ -930,8 +929,8 @@
     {
       "id": "W06A",
       "name": "web-data-watchlist",
-      "path": "/data/watchlist",
-      "docLabel": "Data \u2014 Watchlist",
+      "path": "/data/quotes?view=watchlist",
+      "docLabel": "Data \u2014 Market Data (Watchlist view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -949,7 +948,7 @@
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
-      "docLabel": "Data \u2014 Live Quotes",
+      "docLabel": "Data \u2014 Market Data (Live Quotes view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -1034,8 +1033,8 @@
     {
       "id": "W06E",
       "name": "web-data-alerts",
-      "path": "/data/alerts",
-      "docLabel": "Data \u2014 Price Alerts",
+      "path": "/data/quotes?view=alerts",
+      "docLabel": "Data \u2014 Market Data (Price Alerts view)",
       "waitForText": "Price alerts",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -1050,15 +1049,15 @@
       "id": "W06F",
       "name": "web-data-evidence-workbench",
       "path": "/data/evidence",
-      "docLabel": "Data \u2014 Evidence Workbench",
-      "waitForText": "Evidence Workbench",
+      "expectedRedirectPath": "/reporting/evidence",
+      "docLabel": "Data \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/data"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence subjects",
-        "Document intake",
-        "Evidence Vault documents"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {

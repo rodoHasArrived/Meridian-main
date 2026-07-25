@@ -24,6 +24,7 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
         first.Manifest.DatabaseTimeoutSeconds.Should().Be(60);
         first.PipeName.Should().Be(second.PipeName);
         first.PipeName.Should().StartWith("Meridian.LifecycleSupervisor.");
+        first.HostLogRoot.Should().Be(Path.Combine(first.DataRoot, "_logs"));
         File.Exists(first.ManifestPath).Should().BeTrue();
     }
 
@@ -105,6 +106,20 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
     }
 
     [Fact]
+    public void Load_MalformedManifestThrowsJsonExceptionForProgramBoundaryClassification()
+    {
+        var serviceRoot = Path.Combine(_root, "service");
+        Directory.CreateDirectory(serviceRoot);
+        File.WriteAllText(
+            Path.Combine(serviceRoot, "lifecycle-supervisor.json"),
+            "{ this is not valid JSON");
+
+        var act = () => LifecycleSupervisorConfiguration.Load(_root);
+
+        act.Should().Throw<JsonException>();
+    }
+
+    [Fact]
     public void ResolveTool_ExplicitBinPathDoesNotFallThroughToPath()
     {
         var explicitBin = Path.Combine(_root, "missing-explicit-bin");
@@ -114,7 +129,7 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
         resolved.Should().BeNull();
     }
 
-    [Fact]
+    [WindowsDpapiFact]
     public void ProtectedShutdownToken_RoundTripsWithoutPlaintextPersistence()
     {
         Directory.CreateDirectory(_root);
@@ -127,9 +142,45 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
         System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(path)).Should().NotContain(token);
     }
 
+    [NonWindowsDpapiFact]
+    public void ProtectedShutdownToken_UnsupportedPlatformFailsClosedWithoutPersistence()
+    {
+        var path = Path.Combine(_root, "token.dpapi");
+        const string token = "this-token-must-not-appear-on-disk";
+
+        var write = () => LifecycleProtectedSecretStore.Write(path, token);
+        var read = () => LifecycleProtectedSecretStore.Read(path);
+
+        write.Should().Throw<PlatformNotSupportedException>()
+            .WithMessage("*Windows current-user DPAPI*");
+        read.Should().Throw<PlatformNotSupportedException>()
+            .WithMessage("*Windows current-user DPAPI*");
+        File.Exists(path).Should().BeFalse();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
             Directory.Delete(_root, recursive: true);
+    }
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class WindowsDpapiFactAttribute : FactAttribute
+{
+    public WindowsDpapiFactAttribute()
+    {
+        if (!LifecycleProtectedSecretStore.IsSupported)
+            Skip = "Windows current-user DPAPI is unavailable on this platform.";
+    }
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class NonWindowsDpapiFactAttribute : FactAttribute
+{
+    public NonWindowsDpapiFactAttribute()
+    {
+        if (LifecycleProtectedSecretStore.IsSupported)
+            Skip = "This assertion covers the fail-closed behavior when Windows DPAPI is unavailable.";
     }
 }

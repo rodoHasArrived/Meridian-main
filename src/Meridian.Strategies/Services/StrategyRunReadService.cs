@@ -149,7 +149,32 @@ public sealed class StrategyRunReadService
             Promotion: BuildPromotionSummary(run, promotionLookup),
             Governance: BuildGovernanceSummary(run),
             // PR-02: governance hooks for approval/audit/compliance seams
-            GovernanceHooks: BuildGovernanceHooks(run, promotionLookup));
+            GovernanceHooks: BuildGovernanceHooks(run, promotionLookup),
+            BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure));
+    }
+
+    /// <summary>Projects the engine's bias-disclosure report onto the workstation DTO.</summary>
+    public static BiasDisclosureDto? MapBiasDisclosure(BiasDisclosureReport? report)
+    {
+        if (report is null)
+        {
+            return null;
+        }
+
+        return new BiasDisclosureDto(
+            FillTiming: report.FillTiming.ToString(),
+            FillConservatism: report.FillConservatism.ToString(),
+            DelistingPolicy: report.DelistingPolicy.ToString(),
+            UniverseSource: report.UniverseSource,
+            CorporateActionsAdjusted: report.CorporateActionsAdjusted,
+            MaxSeverity: report.MaxSeverity.ToString().ToLowerInvariant(),
+            Items: report.Items
+                .Select(static item => new BiasDisclosureItemDto(
+                    item.Code,
+                    item.Severity.ToString().ToLowerInvariant(),
+                    item.Title,
+                    item.Detail))
+                .ToArray());
     }
 
     // ── PR-02: mode-filtered and active-run queries ──────────────────────────

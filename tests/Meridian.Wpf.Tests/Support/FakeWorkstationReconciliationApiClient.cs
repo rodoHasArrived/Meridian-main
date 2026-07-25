@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Wpf.Services;
@@ -10,6 +11,9 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
     private readonly Dictionary<string, ReconciliationRunDetail> _runDetailsByRunId;
     private readonly Dictionary<string, ReconciliationRunDetail> _runDetailsByReconciliationRunId;
     private readonly ReconciliationCalibrationSummaryDto? _calibrationSummaryOverride;
+
+    public VerifiedOperationOutcome? ReviewOutcome { get; set; }
+    public VerifiedOperationOutcome? ResolveOutcome { get; set; }
 
     public FakeWorkstationReconciliationApiClient(
         IEnumerable<ReconciliationBreakQueueItem>? breakQueueItems = null,
@@ -88,7 +92,7 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
             ReviewedAt = DateTimeOffset.UtcNow
         };
         _breakQueueById[breakId] = updated;
-        return Task.FromResult(new WorkstationReconciliationActionResult(true, null, updated));
+        return Task.FromResult(BuildSuccessfulActionResult(updated, ReviewOutcome));
     }
 
     public Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
@@ -110,8 +114,19 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
             ResolutionNote = request.ResolutionNote
         };
         _breakQueueById[breakId] = updated;
-        return Task.FromResult(new WorkstationReconciliationActionResult(true, null, updated));
+        return Task.FromResult(BuildSuccessfulActionResult(updated, ResolveOutcome));
     }
+
+    private static WorkstationReconciliationActionResult BuildSuccessfulActionResult(
+        ReconciliationBreakQueueItem updated,
+        VerifiedOperationOutcome? outcome)
+        => new(true, null, updated)
+        {
+            Outcome = outcome,
+            OperatorMessage = outcome is null
+                ? null
+                : WorkstationReconciliationApiClient.BuildOutcomeOperatorMessage(outcome)
+        };
 
     private static string Normalize(string value)
         => value.Replace("-", string.Empty, StringComparison.Ordinal).Trim();

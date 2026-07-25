@@ -1,6 +1,6 @@
 # Web Workstation Screenshot Audit
 
-Date: 2026-07-19 UTC
+Date: 2026-07-25 UTC
 
 ## Outcome
 
@@ -35,7 +35,7 @@ agree. The maintained catalog contains 77 routes rather than the previously docu
 The capture manifest reports `status: passed`, `selectedCaptureCount: 77`,
 `capturedCount: 77`, `failedCaptureCount: 0`, and `totalCaptureCount: 77`. Strict freshness
 validation reported 77 expected captures and 77 PNG files. The screenshot workflow contract suite
-passed all 28 tests. The full browser suite passed all 254 test files across its 32 maintained
+passed all 35 tests. The full browser suite passed all 259 test files across its 33 maintained
 batches, including component accessibility and axe coverage.
 
 ## Improvements Confirmed In The Rendered Catalog

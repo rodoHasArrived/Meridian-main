@@ -79,6 +79,37 @@ describe("buildAccountingSectionVisibility", () => {
     }
   });
 
+  it.each([
+    "#accounting-posture",
+    "#accounting-exceptions",
+    "#accounting-actions",
+    "#accounting-history",
+    "#reconciliation-break-queue",
+    "#manual-je-heading",
+    "#manual-je-balance-impact-heading",
+    "#accounting-configure-heading",
+    "#security-master-search",
+    "#security-detail-page-title",
+    "#accounting-reporting"
+  ])("does not let the legacy %s hash widen a deep Accounting route", (hash) => {
+    expect(visibilityFor("/accounting/configure", hash)).toMatchObject({
+      showCloseCockpitLanding: false,
+      showWorkflowDetails: false,
+      showMultiAssetCoverage: false,
+      showExternalGl: false,
+      showConfiguration: true,
+      showJournalEntries: false,
+      showCapitalAccounts: false,
+      showApprovals: false,
+      showExceptionWorkbench: false,
+      showPosture: false,
+      showReconciliation: false,
+      showSecurityMaster: false,
+      showReconciliationActions: false,
+      showReporting: false
+    });
+  });
+
   it("links Ledger Explorer through its canonical route without making AccountingScreen own the explorer", () => {
     const taskMode = buildAccountingTaskMode("/accounting/ledger");
     expect(taskMode).toMatchObject({

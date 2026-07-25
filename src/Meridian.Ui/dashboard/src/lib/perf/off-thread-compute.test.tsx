@@ -21,8 +21,10 @@ describe("useOffThreadCompute", () => {
     );
 
     expect(result.current.value).toBe(4);
+    expect(result.current.valueKey).toBe("2");
     rerender({ n: 5 });
     await waitFor(() => expect(result.current.value).toBe(10));
+    expect(result.current.valueKey).toBe("5");
   });
 
   it("offloads recomputes to the worker while showing the previous value", async () => {

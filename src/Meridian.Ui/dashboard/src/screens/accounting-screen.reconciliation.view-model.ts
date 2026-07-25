@@ -1,5 +1,6 @@
 import { getRunReviewPacketPath } from "@/lib/api";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
+import { reconciliationStatementRunEndpoint } from "@/lib/workstation-endpoints";
 import {
   evidenceWorkbenchPath,
   normalizeLocalWorkstationRoute,
@@ -71,19 +72,31 @@ export function resolveSelectedReconciliation(
 export function buildReconciliationDetailActions(
   item: AccountingWorkspaceResponse["reconciliationQueue"][number]
 ): ReconciliationDetailActionsViewModel {
-  const openBreakLabel = `${item.openBreakCount} open break${item.openBreakCount === 1 ? "" : "s"}`;
+  return buildReconciliationDetailActionsForRun(
+    item.runId,
+    item.strategyName,
+    item.openBreakCount
+  );
+}
+
+function buildReconciliationDetailActionsForRun(
+  runId: string,
+  displayLabel: string,
+  openBreakCount: number
+): ReconciliationDetailActionsViewModel {
+  const openBreakLabel = `${openBreakCount} open break${openBreakCount === 1 ? "" : "s"}`;
 
   return {
     breakChecklistTargetId: "reconciliation-break-queue",
     breakChecklistHref: "#reconciliation-break-queue",
     breakChecklistLabel: "Open break checklist",
-    breakChecklistAriaLabel: `Open break checklist for ${item.strategyName}; ${openBreakLabel}`,
-    evidencePacketHref: evidenceWorkbenchPath("reconciliation-review", item.runId),
+    breakChecklistAriaLabel: `Open break checklist for ${displayLabel}; ${openBreakLabel}`,
+    evidencePacketHref: evidenceWorkbenchPath("reconciliation-review", runId),
     evidencePacketLabel: "Evidence packet",
-    evidencePacketAriaLabel: `Open reconciliation evidence packet for ${item.strategyName}`,
-    auditPacketHref: getRunReviewPacketPath(item.runId),
+    evidencePacketAriaLabel: `Open reconciliation evidence packet for ${displayLabel}`,
+    auditPacketHref: getRunReviewPacketPath(runId),
     auditPacketLabel: "Review audit packet",
-    auditPacketAriaLabel: `Review audit packet for ${item.strategyName}`
+    auditPacketAriaLabel: `Review audit packet for ${displayLabel}`
   };
 }
 
@@ -108,6 +121,96 @@ export function buildReconciliationDetailViewState(
     narrativeLabel: `Reconciliation narrative for ${item.strategyName}`,
     fields
   };
+}
+
+export function buildSelectedReconciliationRunContext(
+  queue: AccountingWorkspaceResponse["reconciliationQueue"],
+  statementRuns: StatementRunSummary[],
+  selectedRunId: string | null
+) {
+  const selectedReconciliation = resolveSelectedReconciliation(queue, selectedRunId);
+  if (selectedReconciliation) {
+    return {
+      selectedReconciliation,
+      detailActions: buildReconciliationDetailActions(selectedReconciliation),
+      detailView: buildReconciliationDetailViewState(selectedReconciliation)
+    };
+  }
+
+  const selectedStatementRun = selectedRunId
+    ? statementRuns.find((run) => run.runId === selectedRunId) ?? null
+    : statementRuns[0] ?? null;
+  if (!selectedStatementRun) {
+    return {
+      selectedReconciliation: null,
+      detailActions: null,
+      detailView: null
+    };
+  }
+
+  const displayLabel = statementRunDisplayLabel(selectedStatementRun);
+  return {
+    selectedReconciliation: null,
+    detailActions: buildStatementRunDetailActions(selectedStatementRun, displayLabel),
+    detailView: buildStatementRunDetailViewState(selectedStatementRun, displayLabel)
+  };
+}
+
+function buildStatementRunDetailActions(
+  run: StatementRunSummary,
+  displayLabel: string
+): ReconciliationDetailActionsViewModel {
+  const openExceptionLabel = `${run.openExceptionCount} open exception${run.openExceptionCount === 1 ? "" : "s"}`;
+  return {
+    breakChecklistTargetId: "reconciliation-break-queue",
+    breakChecklistHref: "#reconciliation-break-queue",
+    breakChecklistLabel: "Open exception checklist",
+    breakChecklistAriaLabel: `Review exception checklist for ${displayLabel}; ${openExceptionLabel} reported by the statement run`,
+    evidencePacketHref: evidenceWorkbenchPath("reconciliation-review", run.runId),
+    evidencePacketLabel: "Evidence packet",
+    evidencePacketAriaLabel: `Open reconciliation evidence packet for ${displayLabel}`,
+    auditPacketHref: reconciliationStatementRunEndpoint(run.runId),
+    auditPacketLabel: "Statement run record",
+    auditPacketAriaLabel: `Open statement run record for ${displayLabel}`
+  };
+}
+
+function buildStatementRunDetailViewState(
+  run: StatementRunSummary,
+  displayLabel: string
+): ReconciliationDetailViewState {
+  const openExceptionCount = run.openExceptionCount;
+  const matchCount = run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches;
+  const statusLabel = formatReconciliationState(
+    run.status?.trim() || (openExceptionCount > 0 ? "Open" : "Matched")
+  );
+  const importId = run.importId.trim() || "Unavailable";
+  const openExceptionTone: CashFlowEvidenceTone = openExceptionCount === 0 ? "success" : "warning";
+  const narrative = openExceptionCount === 0
+    ? `The statement reconciliation service reports ${matchCount.toLocaleString()} matched records and no open exceptions for import ${importId}. Review retained evidence and audit history before drawing an accounting conclusion.`
+    : `The statement reconciliation service reports ${matchCount.toLocaleString()} matched records and ${openExceptionCount.toLocaleString()} open exception${openExceptionCount === 1 ? "" : "s"} for import ${importId}. Review retained evidence and audit history before resolving the remaining casework.`;
+
+  return {
+    eyebrow: "Statement run detail",
+    title: displayLabel,
+    description: `Service-supplied statement run status: ${statusLabel}.`,
+    ariaLabel: `Statement run detail for ${displayLabel}`,
+    narrative,
+    narrativeLabel: `Statement run narrative for ${displayLabel}`,
+    fields: [
+      buildReconciliationDetailField("Import", importId, "default"),
+      buildReconciliationDetailField("Run status", statusLabel, "default"),
+      buildReconciliationDetailField("Matched records", matchCount.toLocaleString(), "default"),
+      buildReconciliationDetailField("Open exceptions", openExceptionCount.toLocaleString(), openExceptionTone),
+      buildReconciliationDetailField("Completed", formatDateTimeLabel(run.completedAtUtc), "default")
+    ]
+  };
+}
+
+function statementRunDisplayLabel(run: StatementRunSummary): string {
+  return run.brokerCustodian?.trim()
+    || run.account?.trim()
+    || `Statement run ${run.runId}`;
 }
 
 interface ReconciliationStatementRunsBuildInput {

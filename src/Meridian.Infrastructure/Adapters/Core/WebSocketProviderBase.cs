@@ -35,7 +35,8 @@ namespace Meridian.Infrastructure.Adapters.Core;
 public abstract class WebSocketProviderBase :
     IMarketDataClient,
     IProviderConnectionDiagnosticsSource,
-    IProviderRateLimitDiagnosticsSource
+    IProviderRateLimitDiagnosticsSource,
+    IReconnectionGapSource
 {
     private readonly WebSocketConnectionManager _connectionManager;
     private Uri? _wsUri;
@@ -61,6 +62,13 @@ public abstract class WebSocketProviderBase :
     {
         add => _connectionManager.DiagnosticsChanged += value;
         remove => _connectionManager.DiagnosticsChanged -= value;
+    }
+
+    /// <inheritdoc/>
+    public event Action<ReconnectionGap>? ReconnectionGapDetected
+    {
+        add => _connectionManager.GapDetected += value;
+        remove => _connectionManager.GapDetected -= value;
     }
 
     /// <summary>
@@ -92,7 +100,7 @@ public abstract class WebSocketProviderBase :
     public abstract bool IsEnabled { get; }
 
     /// <inheritdoc/>
-    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    public virtual WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
         var connection = _connectionManager.GetDiagnosticsSnapshot();
         var subscriptions = Subscriptions.GetSnapshot();

@@ -265,7 +265,8 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        long? expectedCanonicalVersion = null)
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));

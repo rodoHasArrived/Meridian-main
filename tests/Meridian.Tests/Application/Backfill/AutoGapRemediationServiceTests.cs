@@ -4,6 +4,7 @@ using Meridian.Application.Backfill;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Xunit;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
@@ -18,6 +19,38 @@ namespace Meridian.Tests.Application.Backfill;
 /// </summary>
 public sealed class AutoGapRemediationServiceTests
 {
+    [Fact]
+    public async Task LiveQualityGap_DefaultPolicy_DoesNotStartBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(gateway, history, quality);
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(0);
+        history.GetRecentExecutions(10).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LiveQualityGap_ExplicitlyEnabledPolicy_StartsBackfill()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        await using var quality = CreateQualityServiceWithShortGapThreshold();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            quality,
+            AutoGapRemediationPolicy.Default with { Enabled = true });
+
+        PublishLiveGap(quality);
+
+        gateway.Calls.Should().Be(1);
+        history.GetRecentExecutions(10).Should().ContainSingle();
+    }
+
     [Fact]
     public void BackfillRemediationSlaPolicy_CriticalWorkflow_RequiresSameBusinessDayOwnerAssignment()
     {
@@ -72,6 +105,134 @@ public sealed class AutoGapRemediationServiceTests
 
         gateway.Calls.Should().Be(1);
         history.GetRecentExecutions(10).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ConcurrentDuplicateTrigger_HasSingleIdempotencyOwner()
+    {
+        var gateway = new FirstCallBlockingGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.FromMinutes(30),
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "AAPL",
+            EventType: "Trade",
+            GapStart: DateTimeOffset.UtcNow.AddMinutes(-10),
+            GapEnd: DateTimeOffset.UtcNow.AddMinutes(-5),
+            Duration: TimeSpan.FromMinutes(5),
+            MissedSequenceStart: 1,
+            MissedSequenceEnd: 10,
+            EstimatedMissedEvents: 10,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: null);
+
+        var first = service.HandleDataQualityGapAsync(gap);
+        try
+        {
+            await gateway.FirstCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var duplicate = await service
+                .RequestDataQualityGapAsync(gap)
+                .WaitAsync(TimeSpan.FromSeconds(5));
+            duplicate.Outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        }
+        finally
+        {
+            gateway.ReleaseFirstCall();
+        }
+
+        await first.WaitAsync(TimeSpan.FromSeconds(5));
+
+        gateway.Calls.Should().Be(1);
+        history.GetRecentExecutions(10).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PostSlotCancellation_IsRecordedPropagatedAndReleasesIdempotencyClaim()
+    {
+        var gateway = new FirstCallBlockingGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.FromMinutes(30),
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 1,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "AAPL",
+            EventType: "Trade",
+            GapStart: DateTimeOffset.UtcNow.AddMinutes(-10),
+            GapEnd: DateTimeOffset.UtcNow.AddMinutes(-5),
+            Duration: TimeSpan.FromMinutes(5),
+            MissedSequenceStart: 1,
+            MissedSequenceEnd: 10,
+            EstimatedMissedEvents: 10,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: null);
+        using var cts = new CancellationTokenSource();
+
+        var cancelledRequest = service.HandleDataQualityGapAsync(gap, ct: cts.Token);
+        await gateway.FirstCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cts.Cancel();
+
+        var act = async () => await cancelledRequest;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        gateway.ReleaseFirstCall();
+        await service.HandleDataQualityGapAsync(gap).WaitAsync(TimeSpan.FromSeconds(5));
+
+        gateway.Calls.Should().Be(2);
+        var executions = history.GetRecentExecutions(10);
+        executions.Should().HaveCount(2);
+        executions.Should().ContainSingle(execution => execution.Status == ExecutionStatus.Cancelled);
+        executions.Should().ContainSingle(execution => execution.Status == ExecutionStatus.Completed);
+        executions.Should().Contain(execution =>
+            execution.AutoRemediationLastOutcome == AutoRemediationOutcome.Cancelled.ToString());
+    }
+
+    [Fact]
+    public async Task ReconnectionGap_UsesConfiguredThresholdAndProviderCooldown()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(2),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.FromMinutes(5),
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+
+        var reconnectedAt = DateTimeOffset.UtcNow;
+        await service.HandleReconnectionGapAsync(
+            new ReconnectionGap("live-provider", reconnectedAt.AddSeconds(-30), reconnectedAt, 1),
+            ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(0, "a sub-threshold reconnection must not start a backfill");
+
+        var qualifyingGap = new ReconnectionGap("live-provider", reconnectedAt.AddMinutes(-3), reconnectedAt, 1);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+        await service.HandleReconnectionGapAsync(qualifyingGap, ["AAPL", "MSFT"]);
+
+        gateway.Calls.Should().Be(1, "the shared provider cooldown suppresses repeated reconnects");
+        gateway.Requests.Should().ContainSingle().Which.Provider.Should().Be("composite");
+        history.GetRecentExecutions(10).Should().ContainSingle()
+            .Which.AutoRemediationSla!.TriggerSource.Should().Be(AutoRemediationTriggerSource.ReconnectionGap);
     }
 
     [Fact]
@@ -483,6 +644,55 @@ public sealed class AutoGapRemediationServiceTests
                 StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
                 CompletedUtc: DateTimeOffset.UtcNow));
         }
+    }
+
+    private sealed class FirstCallBlockingGateway : IBackfillExecutionGateway
+    {
+        private readonly TaskCompletionSource<bool> _releaseFirstCall =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _calls;
+
+        public TaskCompletionSource<bool> FirstCallEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int Calls => Volatile.Read(ref _calls);
+
+        public async Task<BackfillResult> RunAsync(
+            AppBackfillRequest request,
+            CancellationToken ct = default)
+        {
+            var call = Interlocked.Increment(ref _calls);
+            if (call == 1)
+            {
+                FirstCallEntered.TrySetResult(true);
+                await _releaseFirstCall.Task.WaitAsync(ct);
+            }
+
+            return new BackfillResult(
+                Success: true,
+                Provider: request.Provider,
+                Symbols: request.Symbols.ToArray(),
+                From: request.From,
+                To: request.To,
+                BarsWritten: 10,
+                StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
+                CompletedUtc: DateTimeOffset.UtcNow);
+        }
+
+        public void ReleaseFirstCall() => _releaseFirstCall.TrySetResult(true);
+    }
+
+    private static DataQualityMonitoringService CreateQualityServiceWithShortGapThreshold() =>
+        new(new DataQualityMonitoringConfig
+        {
+            GapAnalyzerConfig = new GapAnalyzerConfig { GapThresholdSeconds = 1 }
+        });
+
+    private static void PublishLiveGap(DataQualityMonitoringService quality)
+    {
+        var timestamp = new DateTimeOffset(2026, 07, 10, 14, 00, 00, TimeSpan.Zero);
+        quality.ProcessTrade("AAPL", timestamp, 150m, 100m, sequence: 1, provider: "stooq");
+        quality.ProcessTrade("AAPL", timestamp.AddMinutes(5), 150m, 100m, sequence: 2, provider: "stooq");
     }
 
     private static SymbolGapInfo BuildGap(string symbol, params DateOnly[] gapDates)

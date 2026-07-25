@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
@@ -967,6 +968,20 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LedgerJournalCurrencyMigration_DefinesTransactionCurrencyColumns()
+    {
+        var sql = ReadMigration("V_ledger_026__journal_leg_currency.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists transaction_currency text null");
+        sql.Should().Contain("add column if not exists functional_currency text null");
+        sql.Should().Contain("add column if not exists transaction_debit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists transaction_credit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists fx_rate_to_functional numeric(38, 10) null");
+        sql.Should().Contain("ck_journal_legs_currency_detail");
+    }
+
+    [Fact]
     public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
     {
         var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");
@@ -979,6 +994,72 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("on __SCHEMA__.journal_entries (occurred_at, global_sequence, journal_entry_id)");
     }
 
+
+    [Theory]
+    [InlineData("Simulated")]
+    [InlineData("seeded")]
+    [InlineData("seed")]
+    [InlineData("demo")]
+    [InlineData("fixture")]
+    [InlineData("sample")]
+    [InlineData("placeholder")]
+    public void PostingCommand_UnmarkedNonRealEvidence_IsRejectedAtAppendBoundary(string evidenceSource)
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Real, evidenceSource);
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*unmarked simulated figure*");
+    }
+
+    [Fact]
+    public void PostingCommand_SimulatedMarkRetained_PostsAndRetainsProvenanceTag()
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Simulated);
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.Entry.Metadata.Tags.Should().ContainKey("dataProvenance");
+        normalized.Entry.Metadata.Tags["dataProvenance"].Should().Be("SIMULATED");
+    }
+
+    private static LedgerJournalEntryWrite BuildSimulatedOriginPostingWrite(
+        DataProvenance provenance,
+        string evidenceSource = "Simulated")
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        return BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "sim:shadow-book:20260131",
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                ApprovalId: "approval-sim-1",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-sim-1",
+                        "evidence://sim/shadow-book-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        evidenceSource,
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+            {
+                Provenance = provenance
+            }
+        };
+    }
 
     [Fact]
     public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()

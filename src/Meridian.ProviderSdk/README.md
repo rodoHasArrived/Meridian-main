@@ -14,7 +14,7 @@ last_reviewed: 2026-07-15
 ## Purpose
 
 ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill
-job descriptors, dynamic provider plugin discovery, and accounting-system integrations.
+job descriptors, dynamic provider plugin discovery, accounting-system integrations, and provenance-complete provider trading-calendar data.
 
 ## Layer responsibility
 
@@ -37,18 +37,31 @@ report `Disabled`, `WebSocketState` is `None`, and no live connection is inferre
 connection supervisor should override the default event and snapshot with proven runtime state.
 The retained `WebSocketConnectionDiagnostics` name is transport-compatible; polling and raw-socket
 providers use `WebSocketState.None`.
+Connection snapshots may include `ProviderStreamDiagnostics` entries for independently entitled
+asset-class feeds. Consumers must present each stream's feed, entitlement, and degradation reason
+instead of inferring that a connected provider has consolidated or real-time coverage everywhere.
 `Backfill/BackfillJob.cs` owns the shared backfill job descriptors and `DataGranularity`
 conversion helpers.
 `PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
 `DataSourceRegistry` under the `Meridian.ProviderSdk` namespace; WPF and host composition consume that ProviderSdk-owned loader rather than
 keeping reflection-based provider discovery in Application.
+Provider trading-calendar output is requested through `ITradingCalendarProvider` and must include the shared `ProviderDataProvenance` envelope, including provider/connection identity, source and receipt timestamps, entitlement/feed posture, request identity, correlation, a stable deduplication key, and a recognized real/simulated/seeded/sample classification. Calendar responses reject placeholder `unknown` evidence. The former session-only contract remains available as an obsolete transition seam; new adapters must return provenance-complete `ProviderTradingCalendarResponse` values. Local `IOperationalTradingCalendar` policy remains deterministic and is not a provider adapter.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
+`ProviderCapabilities.MarketDataCapabilities` is the granular entitlement-aware product contract:
+each declared product records asset class, geography/venue, feed, delivery status, entitlement
+posture, pacing budget, source-timestamp semantics, and quality posture. Registry-derived catalog
+entries project this contract rather than maintaining a separate UI capability inventory.
 `AccountingSystem/IAccountingSystemProvider.cs` defines the provider-neutral GL import surface for
 chart-of-accounts, journal-entry, trial-balance, and reconciliation-preview evidence. It is
 read-oriented by default; write/posting support must be exposed explicitly by provider capabilities
 before any service or client can offer export actions.
+`IProviderDataReadService` owns vendor-neutral, request-correlated read models for option discovery,
+scanner rows, real-time bars, historical ticks, account/model-account P&L, and market-rule increments;
+operator surfaces consume this seam rather than vendor callback types. `IIBDataResultStore` is the
+storage-facing companion seam: every materialized IB snapshot carries normalized payload, stable
+request/subscription identity, lifecycle state, capture time, and complete `IBDataLineage` evidence.
 
 ## Diagrams
 

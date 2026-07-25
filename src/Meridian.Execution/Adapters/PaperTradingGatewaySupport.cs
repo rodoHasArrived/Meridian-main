@@ -132,6 +132,14 @@ internal static class PaperTradingGatewayScaffoldPricing
         return scaffoldPrice;
     }
 
+    public static bool ResolveAllowScaffoldMarketFills(PaperTradingGatewayOptions? options)
+        => (options ?? new PaperTradingGatewayOptions()).AllowScaffoldMarketFills;
+
+    public static string BuildNoReferencePriceRejectReason(string symbol)
+        => $"No live reference price is available for '{symbol}' and scaffold fill pricing is disabled. " +
+           "Wire a live feed price source, submit the order with an explicit price, or opt in via " +
+           $"'{PaperTradingGatewayOptions.SectionKey}:{nameof(PaperTradingGatewayOptions.AllowScaffoldMarketFills)}'.";
+
     public static void WarnIfFirstUse(
         ref int warningIssued,
         ILogger logger,

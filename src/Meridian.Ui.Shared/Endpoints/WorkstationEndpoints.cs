@@ -55,7 +55,6 @@ public static partial class WorkstationEndpoints
     private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
     private const string PortfolioApiRoutePrefix = "/api/portfolio";
-
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation")
@@ -127,6 +126,7 @@ public static partial class WorkstationEndpoints
         MapDataOperationsAssuranceEndpoints(group);
         MapStatementConnectorEndpoints(group, jsonOptions);
         MapProviderIntegrationEndpoints(group, jsonOptions);
+        MapIBResultEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowSummary), async (
             bool? hasOperatingContext,
@@ -1280,7 +1280,13 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with
+            {
+                Actor = currentUser,
+                ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
+                ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
+            };
             var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1539,7 +1545,6 @@ public static partial class WorkstationEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("AcknowledgeOperationsContinuityChecklistTask");
 
-
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
@@ -1642,28 +1647,8 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var trustedRequest = request with { ImportedBy = currentUser };
-            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
-        })
+            HttpContext context) =>
+            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
         .Produces(401)
@@ -1906,15 +1891,10 @@ public static partial class WorkstationEndpoints
             {
                 ReviewedBy = ResolveCurrentActor(context)
             }, context.RequestAborted).ConfigureAwait(false);
-            return transition.Status switch
-            {
-                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
-            };
+            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
         .WithName("ReviewReconciliationBreak")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(401)
         .Produces(403)
@@ -1951,15 +1931,10 @@ public static partial class WorkstationEndpoints
             {
                 ResolvedBy = ResolveCurrentActor(context)
             }, context.RequestAborted).ConfigureAwait(false);
-            return transition.Status switch
-            {
-                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
-            };
+            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
         .WithName("ResolveReconciliationBreak")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(401)
         .Produces(403)
@@ -1969,7 +1944,7 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Assign }, context, jsonOptions).ConfigureAwait(false))
         .WithName("AssignReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(403)
         .Produces(404)
@@ -1978,7 +1953,25 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakTransition), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.TransitionStatus }, context, jsonOptions).ConfigureAwait(false))
         .WithName("TransitionReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakWaive), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Waive }, context, jsonOptions).ConfigureAwait(false))
+        .WithName("WaiveReconciliationBreakCase")
+        .Produces<ReconciliationCaseworkOperationResult>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSupersede), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Supersede }, context, jsonOptions).ConfigureAwait(false))
+        .WithName("SupersedeReconciliationBreakCase")
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(403)
         .Produces(404)
@@ -2023,12 +2016,12 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.AddComment }, context, jsonOptions).ConfigureAwait(false))
         .WithName("AddReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.EditComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
         .WithName("EditReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (
             string breakId,
@@ -2054,27 +2047,27 @@ public static partial class WorkstationEndpoints
                 context,
                 jsonOptions).ConfigureAwait(false))
         .WithName("DeleteReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetRootCause }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SetReconciliationBreakRootCause")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolution), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetResolution }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SetReconciliationBreakResolution")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSignOff), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SignOff }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SignOffReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReopen), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Reopen }, context, jsonOptions).ConfigureAwait(false))
         .WithName("ReopenReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkDryRun), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
             await ApplyReconciliationBulkEndpointAsync(request with { DryRun = true }, context, jsonOptions).ConfigureAwait(false))
@@ -4215,7 +4208,14 @@ public static partial class WorkstationEndpoints
                         SourceReference: reconciliationBreak.CheckId,
                         SourceBreakId: reconciliationBreak.CheckId,
                         SourceFingerprint: ComputeReconciliationSourceFingerprint("provider-ledger", run.RunId, reconciliationBreak.CheckId, reconciliationBreak.Category.ToString(), reconciliationBreak.Reason, reconciliationBreak.Variance.ToString(CultureInfo.InvariantCulture)),
-                        LedgerBookId: null),
+                        LedgerBookId: null,
+                        Measures: reconciliationBreak.Measures ?? BuildDefaultBreakMeasures(
+                            reconciliationBreak.ExpectedAmount,
+                            reconciliationBreak.ActualAmount,
+                            reconciliationBreak.Variance,
+                            routing.ToleranceBand,
+                            "currency"),
+                        BlockedOutputs: ["FinalReport", "PeriodClose"]),
                     ct).ConfigureAwait(false);
             }
         }
@@ -4418,80 +4418,6 @@ public static partial class WorkstationEndpoints
             AutoMatchRateAlertThreshold = 0.85m,
             T0ClosureRateAlertThreshold = 0.90m
         };
-    }
-
-    private static async Task<IResult> ApplyReconciliationCaseworkEndpointAsync(
-        string breakId,
-        ReconciliationCaseworkCommand request,
-        HttpContext context,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!CanMutateReconciliationBreakQueue(context))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
-        {
-            return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
-        }
-
-        if (!TryResolveCurrentUser(context, out var currentUser))
-        {
-            return Results.Unauthorized();
-        }
-
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
-        {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-        }
-
-        var trusted = request with { Actor = currentUser, Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source };
-        var transition = await repository.ApplyCaseworkCommandAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return transition.Status switch
-        {
-            ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-            ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-            ReconciliationBreakQueueTransitionStatus.Conflict => Results.Conflict(new { error = transition.Error ?? "Version conflict.", currentState = transition.Item?.LifecycleState.ToString(), currentVersion = transition.Item?.Version }),
-            _ => Results.BadRequest(new { error = transition.Error ?? "Invalid reconciliation casework command.", code = transition.ErrorCode.ToString(), validation = transition.Validation })
-        };
-    }
-
-    private static async Task<IResult> ApplyReconciliationBulkEndpointAsync(
-        ReconciliationBulkCaseworkRequest request,
-        HttpContext context,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!CanMutateReconciliationBreakQueue(context))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
-        {
-            return Results.BadRequest(new { error = "Idempotency key is required." });
-        }
-
-        if (request.BreakIds.Count > request.MaxCaseCount)
-        {
-            return Results.BadRequest(new { error = $"Bulk action exceeds max case count {request.MaxCaseCount}." });
-        }
-
-        if (!TryResolveCurrentUser(context, out var currentUser))
-        {
-            return Results.Unauthorized();
-        }
-
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
-        {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-        }
-
-        var trusted = request with { Actor = currentUser, Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source };
-        var result = await repository.ApplyBulkCaseworkAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return Results.Json(result, jsonOptions);
     }
 
     private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(

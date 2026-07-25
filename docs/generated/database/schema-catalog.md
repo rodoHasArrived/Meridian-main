@@ -6,16 +6,16 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 
 | Physical schema | Logical migration modules | Relations | Functions | Triggers | Policies | Fingerprint |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 15 | 0 | 0 | 0 | `0a8def871ac2` |
+| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `78161959c33a` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `f2356c67a593` |
 | [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 11 | 0 | 0 | 0 | `8a59bdf0b477` |
 | [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 11 | 0 | 0 | 0 | `0271886ae666` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
-| [`ledger`](modules/ledger.md) | `ledger` | 19 | 0 | 0 | 0 | `a72d72259357` |
+| [`ledger`](modules/ledger.md) | `ledger` | 21 | 1 | 2 | 0 | `72748467f9d0` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
-| [`reporting`](modules/reporting.md) | `reporting` | 14 | 11 | 13 | 0 | `6c80489f9e0c` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 70 | 1 | 1 | 0 | `1c9d9e8253b3` |
+| [`reporting`](modules/reporting.md) | `reporting` | 15 | 12 | 14 | 0 | `b27a859e8dd2` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 70 | 1 | 1 | 0 | `d3baca69e8da` |
 
 ## Default topology
 

@@ -201,17 +201,6 @@ export function FinancialRecordExplorerShell({
     currentHref: getCurrentExplorerHref()
   });
 
-  useEffect(() => {
-    if (!dtoMode || typeof window === "undefined" || shareHref === "#") {
-      return;
-    }
-
-    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (currentHref !== shareHref) {
-      window.history.replaceState(window.history.state, "", shareHref);
-    }
-  }, [dtoMode, shareHref]);
-
   async function handleSaveView() {
     if (!dtoMode || !onSaveView || !canSaveView) {
       return;

@@ -99,6 +99,20 @@ public sealed record ReportingGovernanceArtifactDto(
     string ArtifactHash,
     long ByteLength);
 
+/// <summary>
+/// Discoverable immutable artifact retained for a successfully executed governed run. Preview
+/// access is available before release; final distribution remains release-gated.
+/// </summary>
+public sealed record ReportingGovernanceRetainedArtifactDto(
+    string ArtifactId,
+    string FileName,
+    string ContentType,
+    long ByteLength,
+    string ContentHashSha256,
+    string Kind,
+    bool IsPreview,
+    string DownloadRoute);
+
 public sealed record ReportingGovernanceReleaseDto(
     ReportingGovernanceAuthorityDto Authority,
     DateTimeOffset ReleasedAtUtc,

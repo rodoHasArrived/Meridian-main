@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
   AccountingSystemImportDetail,
   AccountingSystemProvider,
@@ -27,7 +28,9 @@ import type {
   CapitalAccountWorkbench,
   GeneratedPostingLine,
   PostingRuleJournalCandidateResult,
+  ReconciliationBreakQueueItem,
   RuleDryRunResult,
+  ReconciliationCaseworkOperationResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
@@ -1460,6 +1463,25 @@ async function renderAccountingScreen(
   const result = renderWithRouter(<AccountingScreen data={screenData} />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
+}
+
+function successfulReconciliationCaseworkOperation(
+  item: ReconciliationBreakQueueItem
+): ReconciliationCaseworkOperationResult {
+  return {
+    transitionStatus: "Succeeded",
+    item,
+    outcome: buildSuccessfulVerifiedOperationOutcome({
+      operationId: `reconciliation-casework:${item.breakId}`,
+      operationKind: "reconciliation.casework.assign",
+      startedAtUtc: "2026-01-01T00:05:00Z",
+      completedAtUtc: "2026-01-01T00:05:00Z",
+      correlationId: `assign:${item.breakId}`
+    }),
+    error: null,
+    errorCode: null,
+    validationIssues: []
+  };
 }
 
 function AccountingLocationProbe({ onChange }: { onChange: (search: string) => void }) {
@@ -3032,7 +3054,11 @@ describe("AccountingScreen", () => {
       isLocked: false,
       plan: queuedClosePlan,
       transition: null,
-      issues: []
+      issues: [],
+      outcome: buildSuccessfulVerifiedOperationOutcome({
+        operationId: "close-period:workflow-approval-1:prepare-closing-entries",
+        operationKind: "accounting.close-period.prepare-closing-entries"
+      })
     });
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
@@ -4392,17 +4418,53 @@ describe("AccountingScreen", () => {
     );
   });
 
-  it("supports keyboard selection from the reconciliation detail queue table", async () => {
+  it("hands focus from a statement run row to its detail panel and back", async () => {
     const user = userEvent.setup();
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
     const nextRun = screen.getByRole("row", { name: "Inspect statement run run-57" });
+    const detailPanel = screen.getByRole("region", { name: "Selected statement run detail" });
     nextRun.focus();
 
     await user.keyboard("{Enter}");
 
     expect(nextRun).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: "Selected reconciliation run context" })).toHaveTextContent("Intraday Vol Carry");
+    await waitFor(() => expect(detailPanel).toHaveFocus());
+
+    await user.keyboard("{Escape}");
+
+    expect(nextRun).toHaveFocus();
+  });
+
+  it("hands focus from a reconciliation break row to its detail panel and back", async () => {
+    const user = userEvent.setup();
+    const feeBreak = {
+      ...data.breakQueue[0],
+      breakId: "run-42:fees",
+      category: "FeeMismatch",
+      variance: -125,
+      reason: "Fee accrual differs from broker statement."
+    };
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
+      data.breakQueue[0],
+      feeBreak
+    ]);
+
+    await renderAccountingScreen(data, "/accounting/reconciliation");
+
+    const nextBreak = await screen.findByRole("row", { name: "Inspect reconciliation break run-42:fees" });
+    nextBreak.focus();
+
+    await user.keyboard(" ");
+
+    expect(nextBreak).toHaveAttribute("aria-selected", "true");
+    const detailPanel = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:fees" });
+    await waitFor(() => expect(detailPanel).toHaveFocus());
+
+    await user.keyboard("{Escape}");
+
+    expect(nextBreak).toHaveFocus();
   });
 
   it("renders reconciliation detail queue empty state when no runs are available", async () => {
@@ -5064,7 +5126,9 @@ describe("AccountingScreen", () => {
     };
 
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(updatedBreak);
+    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(
+      successfulReconciliationCaseworkOperation(updatedBreak)
+    );
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 

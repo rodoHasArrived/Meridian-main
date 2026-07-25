@@ -69,7 +69,7 @@ class ArtifactRetentionModuleTests(unittest.TestCase):
         nested_file.parent.mkdir(parents=True, exist_ok=True)
         nested_file.write_bytes(b"x" * 1024)
 
-        timestamp = datetime(2026, 4, 28, tzinfo=timezone.utc).timestamp() - (age_days * 24 * 60 * 60)
+        timestamp = datetime.now(timezone.utc).timestamp() - (age_days * 24 * 60 * 60)
         for candidate in (nested_file, nested_file.parent, path):
             os.utime(candidate, (timestamp, timestamp))
 

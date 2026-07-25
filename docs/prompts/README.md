@@ -1,5 +1,9 @@
 # Prompt Documentation
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This folder consolidates the active prompt, agent, and automation-note map.
 
 - [Automation Prompts](automation-prompts.md)

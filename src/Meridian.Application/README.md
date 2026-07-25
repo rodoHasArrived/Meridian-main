@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Application
@@ -46,6 +46,12 @@ and UI presentation concerns in their owning layers.
   schema-aware CSV sampling for `bank.statement.csv.v1` and `bank.transactions.csv.v1`, explicit
   source post-processing options, and runtime SFTP capability checks so operators can validate
   connectivity, host-key pinning, and file shape before committing an import.
+  ETL command execution now consumes the Data Integration-owned `VerifiedOperationOutcome` receipt:
+  every admitted run returns `Succeeded`, `CompletedWithWarnings`, `Failed`, or `Blocked` with
+  postconditions, evidence, artifacts, and recovery guidance. Required normalization, pipeline, and
+  export stages cannot be collapsed into a successful CLI exit when a terminal write or export
+  fails; blocked and failed receipts map to non-zero command results. Runbook commands use the same
+  receipt contract and no longer treat a message-only handler response as execution evidence.
 - `Integrations/` - provider integration template catalog, setup persistence, dry-run
   orchestration, and activation readiness. The catalog seeds the first no-code template pack for
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
@@ -209,7 +215,10 @@ and UI presentation concerns in their owning layers.
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
-  remediation paths remain single-symbol signals. Auto-remediation execution history also retains
+  remediation paths remain single-symbol signals. A remediation is retained as completed only after
+  its backfill succeeds; cancellation and failure keep their terminal state and recovery evidence,
+  and repeated request identities reuse the retained outcome instead of executing the same repair
+  twice. Auto-remediation execution history also retains
   SLA tier, due-time, owner-assignment, downstream-workflow, and reason-code metadata, and exposes
   `EvaluateRemediationSla` snapshots for overdue, due-soon, failed, open, and completed remediation
   items so critical paper, reconciliation, accounting, and reporting gaps can be distinguished from
@@ -410,10 +419,24 @@ and UI presentation concerns in their owning layers.
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
   in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
+  Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
+  final production-registration guard, database initialization, coordination, and other registered
+  hosted services enter the normal start/stop lifecycle. The guard starts first, database
+  initialization for Ledger, Security Master, Direct Lending, and Asset Operations follows before
+  background workers start, and host disposal stops hosted services before flushing the event
+  pipeline. Desktop child composition keeps the same final guard and child-local storage/symbol
+  initialization, while delegating process-wide coordinator and accounting-worker ownership to its
+  parent WebApplication to avoid duplicates. One-shot ETL hosts likewise retain guard and local
+  initialization without activating unrelated polling, reconciliation, or daily-accrual workers.
+  Backfill mode uses one backfill-profile host for both its pipeline and providers.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
-  startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
-  `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
-  persistence-backed services. Local/dev launcher flows may set
+  startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
+  `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`)
+  so fund account and fund structure workflows use persistence-backed services.
+  `MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl` (in `Meridian.Storage`) propagates
+  `MERIDIAN_DATABASE_URL` into every unset per-domain connection-string variable at composition
+  time; `PersistenceConfigurationStatus.Evaluate` reports the resulting NONE/PARTIAL/CONFIGURED
+  posture for status endpoints and readiness checks. Local/dev launcher flows may set
   `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment. Placeholder
   projection-reconciliation jobs are also omitted from production composition until real domain
   reconcilers replace them; production startup does not report a no-op comparison as assurance.
