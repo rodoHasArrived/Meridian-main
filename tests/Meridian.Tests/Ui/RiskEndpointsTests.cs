@@ -8,6 +8,7 @@ using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -151,9 +152,25 @@ public sealed class RiskEndpointsTests
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
             services.AddSingleton<IPositionTracker, StaticPositionTracker>();
             services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance));
-            services.AddSingleton<OperatorRiskRuleService>();
-            services.AddSingleton<IRiskValidator>(sp => sp.GetRequiredService<OperatorRiskRuleService>());
+            services.AddSingleton<RiskRuleRuntimeService>();
+            services.AddSingleton<IRiskValidator>(sp =>
+            {
+                var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+                return new Meridian.Risk.CompositeRiskValidator(
+                    [
+                        new DrawdownGuardrailRule(runtime),
+                        new Meridian.Risk.Rules.OrderRateThrottle(
+                            () => runtime.MaxOrdersPerMinute,
+                            NullLogger<Meridian.Risk.Rules.OrderRateThrottle>.Instance),
+                        new Meridian.Risk.Rules.PositionLimitRule(
+                            sp.GetRequiredService<IPositionTracker>(),
+                            () => null,
+                            NullLogger<Meridian.Risk.Rules.PositionLimitRule>.Instance)
+                    ],
+                    NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance);
+            });
             services.AddSingleton<IScopedAuthorizationService>(_ => new AccountScopedAuthorizationService(allowedAccountId));
+            services.AddSingleton<IAccountQueryService>(_ => new StubAccountQueryService(allowedAccountId));
             services.AddSingleton<IOrderManager>(sp =>
                 new OrderManagementSystem(
                     sp.GetRequiredService<IExecutionGateway>(),
@@ -188,6 +205,7 @@ public sealed class RiskEndpointsTests
                 type = 0,
                 timeInForce = 0,
                 quantity = 1,
+                limitPrice = 100m,
                 strategyId = "account-scope-check",
                 fundAccountId = allowedAccountId
             }));

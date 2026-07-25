@@ -255,7 +255,10 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         // CSV broker with a CSV file → validates via the CSV parser.
         var csvPath = Path.Combine(_tempDir, "statement.csv");
         File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,0,position,2026-06-30\n");
-        var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30));
+        var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30)) with
+        {
+            ExternalAccountId = "A1"
+        };
         var csvResult = await router.ValidateAsync(csvRequest);
         csvResult.IsValid.Should().BeTrue();
         csvResult.RowCount.Should().Be(1);
@@ -268,7 +271,10 @@ public sealed class IbFlexStatementServiceTests : IDisposable
             new CsvBrokerStatementService(_store),
             _service);
         var path = WriteFlexFile(SampleFlexXml);
-        var request = new BrokerStatementImportRequest("broker", path, new DateOnly(2026, 6, 30));
+        var request = new BrokerStatementImportRequest("broker", path, new DateOnly(2026, 6, 30)) with
+        {
+            ExternalAccountId = "U1234567"
+        };
 
         var result = await router.ValidateAsync(request);
 

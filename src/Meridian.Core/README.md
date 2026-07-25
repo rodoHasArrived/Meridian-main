@@ -53,6 +53,8 @@ validation pipeline stages, credential placeholder detection, default config-pat
 environment-variable override handling, configuration-template generation, and debounced config
 file hot-reload watching for Application commands, configuration services, WPF setup flows, and
 shared endpoints.
+Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
+compatibility aliases, but they are not accepted configuration inputs.
 These Core configuration records and helpers use the `Meridian.Core.Config` namespace; Application
 keeps only configuration orchestration, credential testing, and deployment/startup adapters.
 Core exception, logging, pipeline-policy, subscription model, serialization, and monitoring helper

@@ -76,7 +76,7 @@ public static class DataProvenanceExtensions
         "real" or "live" => DataProvenance.Real,
         "seeded" or "seed" or "demo" or "fixture" => DataProvenance.Seeded,
         "sample" or "placeholder" => DataProvenance.Sample,
-        null or "" => DataProvenance.Real,
+        null or "" => DataProvenance.Simulated,
         _ => DataProvenance.Simulated
     };
 }

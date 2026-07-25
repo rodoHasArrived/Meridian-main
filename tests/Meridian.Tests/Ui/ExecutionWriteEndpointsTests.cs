@@ -477,7 +477,9 @@ public sealed class ExecutionWriteEndpointsTests
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: []);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -749,7 +751,9 @@ public sealed class ExecutionWriteEndpointsTests
     {
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: []);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(

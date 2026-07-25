@@ -52,7 +52,7 @@ public sealed class CommandModeRunnerTests
                 "--statement-broker", "custodian",
                 "--statement-source-institution", "Sample Custodian",
                 "--statement-fund-account-id", "fund-account-1",
-                "--statement-external-account-id", "external-account-1",
+                "--statement-external-account-id", "FUND-1",
                 "--statement-mapping-profile-id", "canonical-csv-v1",
                 "--statement-tolerance-profile-id", "statement-default",
                 "--statement-imported-by", "ops-user",

@@ -464,10 +464,17 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private static void EnsureRequestedLedgerBookMatchesDraft(
         Guid? requestedLedgerBookId,
-        ManualJournalEntryDraftDto draft)
+        ManualJournalEntryDraftDto draft,
+        bool requireScopeForBookScopedDraft = false)
     {
         if (!requestedLedgerBookId.HasValue)
         {
+            if (requireScopeForBookScopedDraft && draft.LedgerBookId.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $"Manual journal entry '{draft.JournalEntryId:D}' belongs to ledger book '{draft.LedgerBookId.Value:D}' and requires the request to specify that ledger book.");
+            }
+
             return;
         }
 

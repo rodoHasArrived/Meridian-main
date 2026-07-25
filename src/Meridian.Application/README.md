@@ -215,7 +215,10 @@ and UI presentation concerns in their owning layers.
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
-  remediation paths remain single-symbol signals. Auto-remediation execution history also retains
+  remediation paths remain single-symbol signals. A remediation is retained as completed only after
+  its backfill succeeds; cancellation and failure keep their terminal state and recovery evidence,
+  and repeated request identities reuse the retained outcome instead of executing the same repair
+  twice. Auto-remediation execution history also retains
   SLA tier, due-time, owner-assignment, downstream-workflow, and reason-code metadata, and exposes
   `EvaluateRemediationSla` snapshots for overdue, due-soon, failed, open, and completed remediation
   items so critical paper, reconciliation, accounting, and reporting gaps can be distinguished from

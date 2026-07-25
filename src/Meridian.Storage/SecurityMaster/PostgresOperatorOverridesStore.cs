@@ -277,7 +277,7 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
-            $"select coalesce(max(stream_version), 0) from {Qualified(\"security_events\")} where security_id = @security_id;";
+            $"select coalesce(max(stream_version), 0) from {Qualified("security_events")} where security_id = @security_id;";
         command.Parameters.AddWithValue("security_id", securityId);
         return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L);
     }

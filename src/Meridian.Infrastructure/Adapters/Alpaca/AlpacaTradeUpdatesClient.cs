@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Meridian.Core.Config;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
+using OrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
@@ -47,9 +48,11 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
 
     public Task StartAsync(CancellationToken ct = default)
     {
-        if (_runTask is not null) return Task.CompletedTask;
+        if (_runTask is not null)
+            return Task.CompletedTask;
         _watermark = _cursorStore.Load();
-        foreach (var eventId in _cursorStore.LoadRecentEventIds()) Remember(eventId);
+        foreach (var eventId in _cursorStore.LoadRecentEventIds())
+            Remember(eventId);
         _runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _runTask = Task.Run(() => RunAsync(_runCts.Token), CancellationToken.None);
         return Task.CompletedTask;
@@ -63,11 +66,15 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     {
         using var doc = JsonDocument.Parse(message);
         var root = doc.RootElement;
-        if (root.TryGetProperty("stream", out var stream) && stream.GetString() != "trade_updates") return;
-        if (!root.TryGetProperty("data", out var data)) return;
+        if (root.TryGetProperty("stream", out var stream) && stream.GetString() != "trade_updates")
+            return;
+        if (!root.TryGetProperty("data", out var data))
+            return;
         var eventId = data.TryGetProperty("event_id", out var id) ? id.GetString() : null;
-        if (string.IsNullOrWhiteSpace(eventId)) eventId = data.TryGetProperty("id", out id) ? id.GetString() : null;
-        if (string.IsNullOrWhiteSpace(eventId) || !Remember(eventId)) return;
+        if (string.IsNullOrWhiteSpace(eventId))
+            eventId = data.TryGetProperty("id", out id) ? id.GetString() : null;
+        if (string.IsNullOrWhiteSpace(eventId) || !Remember(eventId))
+            return;
 
         var order = data.GetProperty("order");
         var timestamp = ReadTime(data, "timestamp") ?? ReadTime(order, "updated_at") ?? _clock.GetUtcNow();
@@ -76,13 +83,17 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         _failure = null;
         var status = order.TryGetProperty("status", out var statusElement) ? statusElement.GetString() : null;
         var mapped = Map(status);
-        var report = new ExecutionReport {
+        var report = new ExecutionReport
+        {
             OrderId = ReadString(order, "id") ?? throw new JsonException("Alpaca trade update lacks order.id."),
-            GatewayOrderId = ReadString(order, "id"), ClientOrderId = ReadString(order, "client_order_id"),
+            GatewayOrderId = ReadString(order, "id"),
+            ClientOrderId = ReadString(order, "client_order_id"),
             Symbol = ReadString(order, "symbol") ?? string.Empty,
             Side = string.Equals(ReadString(order, "side"), "sell", StringComparison.OrdinalIgnoreCase) ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = mapped.status, ReportType = mapped.type,
-            OrderQuantity = ReadDecimal(order, "qty"), FilledQuantity = ReadDecimal(order, "filled_qty"),
+            OrderStatus = mapped.status,
+            ReportType = mapped.type,
+            OrderQuantity = ReadDecimal(order, "qty"),
+            FilledQuantity = ReadDecimal(order, "filled_qty"),
             FillPrice = ReadNullableDecimal(data, "price") ?? ReadNullableDecimal(order, "filled_avg_price"),
             Timestamp = timestamp,
             RejectReason = ReadString(data, "reason"),
@@ -96,21 +107,26 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         var delay = TimeSpan.FromSeconds(1);
         while (!ct.IsCancellationRequested)
         {
-            try {
+            try
+            {
                 _socket = new ClientWebSocket();
                 await _socket.ConnectAsync(new Uri(_options.UseSandbox ? "wss://paper-api.alpaca.markets/stream" : "wss://api.alpaca.markets/stream"), ct).ConfigureAwait(false);
                 await SendAsync(new { action = "auth", key = _options.KeyId, secret = _options.SecretKey }, ct).ConfigureAwait(false);
                 await SendAsync(new { action = "listen", data = new { streams = new[] { "trade_updates" } } }, ct).ConfigureAwait(false);
-                foreach (var report in await _reconcile(ct).ConfigureAwait(false)) await _reports.Writer.WriteAsync(report, ct).ConfigureAwait(false);
+                foreach (var report in await _reconcile(ct).ConfigureAwait(false))
+                    await _reports.Writer.WriteAsync(report, ct).ConfigureAwait(false);
                 delay = TimeSpan.FromSeconds(1);
                 var buffer = new byte[64 * 1024];
-                while (_socket.State == WebSocketState.Open && !ct.IsCancellationRequested) {
+                while (_socket.State == WebSocketState.Open && !ct.IsCancellationRequested)
+                {
                     var result = await _socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
-                    if (result.MessageType == WebSocketMessageType.Close) break;
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        break;
                     await ProcessMessageAsync(Encoding.UTF8.GetString(buffer, 0, result.Count), ct).ConfigureAwait(false);
                 }
                 _failure = "Alpaca trade-update socket closed.";
-            } catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
             catch (Exception ex) { _failure = ex.Message; _logger.LogWarning(ex, "Alpaca trade-update stream failed; reconnecting"); }
             finally { _socket?.Dispose(); _socket = null; }
             await Task.Delay(delay, ct).ConfigureAwait(false);
@@ -152,7 +168,8 @@ public sealed class FileAlpacaTradeUpdateCursorStore : IAlpacaTradeUpdateCursorS
     }
     private (DateTimeOffset? watermark, IReadOnlyList<string> ids) Read()
     {
-        try { var state = File.Exists(_path) ? JsonSerializer.Deserialize<PersistedState>(File.ReadAllText(_path)) : null; return (state?.Watermark, state?.EventIds ?? []); }
+        try
+        { var state = File.Exists(_path) ? JsonSerializer.Deserialize<PersistedState>(File.ReadAllText(_path)) : null; return (state?.Watermark, state?.EventIds ?? []); }
         catch (JsonException) { return (null, []); }
     }
     private sealed record PersistedState(DateTimeOffset Watermark, IReadOnlyList<string> EventIds);

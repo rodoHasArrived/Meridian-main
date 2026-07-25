@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using UiBackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 
 namespace Meridian.Tests.Ui;
 
@@ -72,7 +73,7 @@ public sealed class BackfillAuditEndpointsTests
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new ConfigStore(configPath));
-        builder.Services.AddSingleton<BackfillCoordinator>();
+        builder.Services.AddSingleton<UiBackfillCoordinator>();
         if (auditReader is not null)
         {
             builder.Services.AddSingleton(auditReader);

@@ -4,6 +4,7 @@ import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
+import { apiGetJson } from "@/lib/api";
 import { renderWithRouter } from "@/test/render";
 import { useNavigate } from "react-router-dom";
 import type {
@@ -21,6 +22,7 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
+    apiGetJson: vi.fn(),
     markWorkflowPresetUsed: vi.fn().mockResolvedValue(undefined)
   };
 });
@@ -235,6 +237,14 @@ describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
     window.localStorage.clear();
+    vi.mocked(apiGetJson).mockReset();
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === "/api/demo/mode") {
+        return Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -266,6 +276,21 @@ describe("App", () => {
       refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
+  });
+
+  it("surfaces successful seeded demo JSON even without a development-fixture response header", async () => {
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === "/api/demo/mode") {
+        return Promise.resolve({ enabled: true, provenance: "seeded" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+    mockWorkstationData({ loading: false, usingDevelopmentFixtures: false });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    expect(await screen.findByTestId("data-provenance-seeded")).toHaveTextContent("SEEDED");
   });
 
   it("opens and closes the command palette with Control+K", async () => {

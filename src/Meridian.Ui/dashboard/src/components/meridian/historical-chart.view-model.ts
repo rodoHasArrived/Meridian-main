@@ -1519,13 +1519,15 @@ export function toChronologicalCloses(bars: readonly HistoricalBarPoint[]): numb
   return toChronologicalChartBars(bars).map(({ bar }) => bar.close);
 }
 
-/** Cheap, order-sensitive signature so indicators recompute only when closes change. */
-function candlestickIndicatorKey(closes: number[]): string {
-  let checksum = 0;
-  for (let i = 0; i < closes.length; i++) {
-    checksum = (checksum + closes[i]! * (i + 1)) % 1_000_000_007;
-  }
-  return `${closes.length}:${checksum}`;
+/**
+ * Collision-free key for the finite close-price sequence consumed by the indicator worker.
+ * JavaScript's canonical number text round-trips every finite IEEE-754 value; explicit `-0`
+ * handling keeps the remaining distinct bit-level value from collapsing into positive zero.
+ */
+export function candlestickIndicatorKey(closes: readonly number[]): string {
+  return `v2:${closes.length}:${closes
+    .map((close) => Object.is(close, -0) ? "-0" : close.toString())
+    .join(",")}`;
 }
 
 export function formatIntervalLabel(intervalMinutes: number): string {

@@ -670,7 +670,19 @@ public sealed partial class FundLedgerViewModel
             }
 
             await RefreshReconciliationWorkbenchCoreAsync(activeFund, ct);
-            ReconciliationActionFeedbackText = successMessage;
+            if (result.CompletedWithWarnings)
+            {
+                var warningMessage = result.OperatorMessage
+                    ?? (result.Outcome is null
+                        ? null
+                        : WorkstationReconciliationApiClient.BuildOutcomeOperatorMessage(result.Outcome))
+                    ?? "Reconciliation action completed with warnings.";
+                ReconciliationActionFeedbackText = $"{successMessage} {warningMessage}";
+            }
+            else
+            {
+                ReconciliationActionFeedbackText = successMessage;
+            }
         }
         finally
         {

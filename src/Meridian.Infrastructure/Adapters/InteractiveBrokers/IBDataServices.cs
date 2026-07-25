@@ -60,7 +60,7 @@ public interface IIBDataCallbackSource
     event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
     event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
     event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
-    event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+    event EventHandler<(int RequestId, ProviderNewsArticlePayload Article)>? NewsArticleReceived;
     event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
     event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
     event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
@@ -89,16 +89,20 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private readonly string _providerConnectionId;
     private readonly IIBDataServiceTransport _transport;
     private readonly IIBDataCallbackSource? _callbackSource;
-    private readonly IBDataResultMaterializer? _materializer;
+    private readonly IBDurableResultMaterializer? _materializer;
     private readonly ConcurrentDictionary<int, IBDataLineage> _lineage = new();
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly Channel<ProviderDataRequestReadModel> _updates = Channel.CreateBounded<ProviderDataRequestReadModel>(
         new BoundedChannelOptions(256) { SingleReader = false, SingleWriter = false, FullMode = BoundedChannelFullMode.DropOldest });
     private int _nextRequestId = 90_000;
 
-    public IBDataServices(IIBDataServiceTransport transport, string providerConnectionId = "interactive-brokers/default")
+    public IBDataServices(
+        IIBDataServiceTransport transport,
+        string providerConnectionId = "interactive-brokers/default",
+        IBDurableResultMaterializer? materializer = null)
     {
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        _materializer = materializer;
         _providerConnectionId = transport is IIBProviderConnectionIdentity identity
             ? identity.ProviderConnectionId
             : providerConnectionId;
@@ -164,22 +168,28 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
 
     public int RequestHistoricalNews(int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults = 100, CancellationToken ct = default)
     {
-        if (conId <= 0) throw new ArgumentOutOfRangeException(nameof(conId));
-        if (string.IsNullOrWhiteSpace(providerCodes)) throw new ArgumentException("At least one IB news provider code is required.", nameof(providerCodes));
-        if (start > end) throw new ArgumentException("News start must not be after end.", nameof(start));
-        if (maximumResults is < 1 or > 300) throw new ArgumentOutOfRangeException(nameof(maximumResults));
+        if (conId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(conId));
+        if (string.IsNullOrWhiteSpace(providerCodes))
+            throw new ArgumentException("At least one IB news provider code is required.", nameof(providerCodes));
+        if (start > end)
+            throw new ArgumentException("News start must not be after end.", nameof(start));
+        if (maximumResults is < 1 or > 300)
+            throw new ArgumentOutOfRangeException(nameof(maximumResults));
         return Issue("historical-news", conId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, providerCodes, id => _transport.RequestHistoricalNews(id, conId, providerCodes, start, end, maximumResults), ct);
     }
 
     public int RequestNewsArticle(string providerCode, string articleId, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(providerCode) || string.IsNullOrWhiteSpace(articleId)) throw new ArgumentException("IB news provider code and article id are required.");
+        if (string.IsNullOrWhiteSpace(providerCode) || string.IsNullOrWhiteSpace(articleId))
+            throw new ArgumentException("IB news provider code and article id are required.");
         return Issue("news-article", articleId, null, providerCode, id => _transport.RequestNewsArticle(id, providerCode, articleId), ct);
     }
 
     public int RequestFundamentals(SymbolConfig contract, string reportType, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(reportType)) throw new ArgumentException("IB fundamental report type is required.", nameof(reportType));
+        if (string.IsNullOrWhiteSpace(reportType))
+            throw new ArgumentException("IB fundamental report type is required.", nameof(reportType));
         return Issue("fundamentals", RequireSymbol(contract), contract.Exchange, reportType, id => _transport.RequestFundamentals(id, contract, reportType), ct);
     }
 
@@ -192,14 +202,17 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
 
     public int SubscribeTickByTick(SymbolConfig contract, string tickType = "Last", int numberOfTicks = 0, bool ignoreSize = false, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(tickType)) throw new ArgumentException("IB tick-by-tick type is required.", nameof(tickType));
-        if (numberOfTicks < 0) throw new ArgumentOutOfRangeException(nameof(numberOfTicks));
+        if (string.IsNullOrWhiteSpace(tickType))
+            throw new ArgumentException("IB tick-by-tick type is required.", nameof(tickType));
+        if (numberOfTicks < 0)
+            throw new ArgumentOutOfRangeException(nameof(numberOfTicks));
         return Issue("tick-by-tick", RequireSymbol(contract), contract.Exchange, tickType, id => _transport.RequestTickByTick(id, contract, tickType, numberOfTicks, ignoreSize), ct);
     }
 
     public int SubscribePnl(string account, string? modelCode = null, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(account)) throw new ArgumentException("IB account is required.", nameof(account));
+        if (string.IsNullOrWhiteSpace(account))
+            throw new ArgumentException("IB account is required.", nameof(account));
         return Issue("pnl", account, null, modelCode, id => _transport.RequestPnl(id, account, modelCode), ct);
     }
 
@@ -212,14 +225,17 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     public int RequestHistoricalTicks(IBHistoricalTickRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (request.NumberOfTicks is < 1 or > 1000) throw new ArgumentOutOfRangeException(nameof(request), "IB historical-tick requests must contain 1 to 1,000 ticks.");
-        if (request.Start.HasValue && request.End.HasValue && request.Start > request.End) throw new ArgumentException("Historical tick start must not be after end.", nameof(request));
+        if (request.NumberOfTicks is < 1 or > 1000)
+            throw new ArgumentOutOfRangeException(nameof(request), "IB historical-tick requests must contain 1 to 1,000 ticks.");
+        if (request.Start.HasValue && request.End.HasValue && request.Start > request.End)
+            throw new ArgumentException("Historical tick start must not be after end.", nameof(request));
         return Issue("historical-ticks", RequireSymbol(request.Contract), request.Contract.Exchange, request.WhatToShow, id => _transport.RequestHistoricalTicks(id, request), ct);
     }
 
     public int RequestMarketRule(int marketRuleId, CancellationToken ct = default)
     {
-        if (marketRuleId <= 0) throw new ArgumentOutOfRangeException(nameof(marketRuleId));
+        if (marketRuleId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(marketRuleId));
         return Issue("market-rule", marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), null, marketRuleId.ToString(System.Globalization.CultureInfo.InvariantCulture), id => _transport.RequestMarketRule(id, marketRuleId), ct);
     }
 
@@ -254,14 +270,16 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
                 x.LowEdge.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 ":",
                 x.Increment.ToString(System.Globalization.CultureInfo.InvariantCulture))));
-        if (string.IsNullOrWhiteSpace(serialized)) throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
+        if (string.IsNullOrWhiteSpace(serialized))
+            throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
         Update(requestId, x => x with { MinimumIncrements = serialized, Status = "market-rule", ObservedAt = DateTimeOffset.UtcNow });
     }
 
     /// <summary>Records an entitlement or exchange-specific terminal status without discarding lineage.</summary>
     public void RecordStatus(int requestId, string status)
     {
-        if (string.IsNullOrWhiteSpace(status)) throw new ArgumentException("Status is required.", nameof(status));
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status is required.", nameof(status));
         Update(requestId, x => x with { Status = status, ObservedAt = DateTimeOffset.UtcNow });
     }
 
@@ -285,7 +303,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, NewsHeadlines = Append(current.NewsHeadlines, headline) });
     }
 
-    public void RecordNewsArticle(int requestId, ProviderNewsArticle article)
+    public void RecordNewsArticle(int requestId, ProviderNewsArticlePayload article)
     {
         ArgumentNullException.ThrowIfNull(article);
         UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, NewsArticle = article });
@@ -354,7 +372,8 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     {
         ArgumentNullException.ThrowIfNull(increments);
         var values = increments.ToArray();
-        if (values.Length == 0) throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
+        if (values.Length == 0)
+            throw new ArgumentException("At least one market-rule increment is required.", nameof(increments));
         UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Completed, MarketRuleIncrements = values.Select((value, index) => value with { Provenance = CreateObservationProvenance(current, $"{value.LowEdge}:{value.Increment}:{index}", value.Provenance.SourceTimestamp) }).ToArray() });
     }
 
@@ -366,7 +385,8 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     public void CancelRequest(int requestId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (!_requests.TryGetValue(requestId, out var request)) throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+        if (!_requests.TryGetValue(requestId, out var request))
+            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
         _transport.CancelDataRequest(requestId, request.Capability);
         CancelRequest(requestId);
     }
@@ -374,7 +394,8 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     /// <summary>Fails closed on a local timeout and stops a cancellable vendor stream.</summary>
     public void TimeoutRequest(int requestId)
     {
-        if (!_requests.TryGetValue(requestId, out var request)) throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
+        if (!_requests.TryGetValue(requestId, out var request))
+            throw new KeyNotFoundException($"Unknown IB request id {requestId}.");
         _transport.CancelDataRequest(requestId, request.Capability);
         UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.TimedOut, ErrorCode = "timeout", ErrorMessage = "The provider callback did not complete before the request timeout." });
     }
@@ -391,7 +412,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value) => RecordContractDetails(value.RequestId, value.Details);
     private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value) => RecordOptionChainDefinition(value.RequestId, value.Definition);
     private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value) => RecordNewsHeadline(value.RequestId, value.Headline);
-    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticle Article) value) => RecordNewsArticle(value.RequestId, value.Article);
+    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value) => RecordNewsArticle(value.RequestId, value.Article);
     private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value) => RecordFundamentalReport(value.RequestId, value.Report);
     private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
     {
@@ -418,10 +439,19 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         ct.ThrowIfCancellationRequested();
         var requestId = Interlocked.Increment(ref _nextRequestId);
         var evidence = new IBDataLineage(requestId, service, symbol, exchange, null, null, subscription, IBMarketDataAvailability.Unknown, false, "requested", DateTimeOffset.UtcNow);
-        if (!_lineage.TryAdd(requestId, evidence)) throw new InvalidOperationException($"Duplicate IB request id {requestId}.");
-        var projection = new ProviderDataRequestReadModel(requestId, "interactive-brokers", service, ProviderDataRequestStatus.Requested, evidence.ObservedAt, Lineage: evidence);
+        if (!_lineage.TryAdd(requestId, evidence))
+            throw new InvalidOperationException($"Duplicate IB request id {requestId}.");
+        var projection = new ProviderDataRequestReadModel(
+            requestId,
+            ProviderId,
+            service,
+            ProviderDataRequestStatus.Requested,
+            evidence.ObservedAt,
+            CreateRequestProvenance(evidence),
+            Lineage: evidence);
         _requests.TryAdd(requestId, projection);
-        try { send(requestId); }
+        try
+        { send(requestId); }
         catch { _lineage.TryRemove(requestId, out _); _requests.TryRemove(requestId, out _); throw; }
         LineageUpdated?.Invoke(evidence);
         Publish(projection);
@@ -433,6 +463,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
         LineageUpdated?.Invoke(updated);
         UpdateReadModel(requestId, current => current with { Lineage = updated });
+        return updated;
     }
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
@@ -520,7 +551,8 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     private static string RequireSymbol(SymbolConfig contract)
     {
         ArgumentNullException.ThrowIfNull(contract);
-        if (string.IsNullOrWhiteSpace(contract.Symbol)) throw new ArgumentException("IB contract symbol is required.", nameof(contract));
+        if (string.IsNullOrWhiteSpace(contract.Symbol))
+            throw new ArgumentException("IB contract symbol is required.", nameof(contract));
         return contract.Symbol;
     }
 }

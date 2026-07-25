@@ -364,7 +364,7 @@ public sealed partial class WorkstationEndpointsTests
             field.Label == "Audit Trail" &&
             field.Detail.Contains("audit event", StringComparison.OrdinalIgnoreCase));
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
-            ["Portfolio position", "Ledger trial balance", "Reported-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
+            ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             [
                 "Position / transaction",
@@ -471,15 +471,21 @@ public sealed partial class WorkstationEndpointsTests
 
         var row = explorer!.Rows.Single(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}");
         row.Detail.Fields.Should().NotContain(static field =>
-            field.Label is "Source Evidence" or "Corporate Action Evidence" or "Role / Position");
+            field.Label == "Source Evidence" ||
+            field.Label == "Corporate Action Evidence" ||
+            field.Label == "Role / Position");
         row.Detail.Impacts.Should().NotContain(static impact =>
-            impact.RelationshipId is "factor-evidence" or "instrument-role-position" or "economic-projection");
+            impact.RelationshipId == "factor-evidence" ||
+            impact.RelationshipId == "instrument-role-position" ||
+            impact.RelationshipId == "economic-projection");
         row.Detail.UsedIn.Should().NotContain(static relationship =>
             relationship.RelationshipId == "accounting-projection-proof");
         explorer.RecordGraph.Nodes.Should().NotContain(static node =>
-            node.Label is "Source evidence" or "Role / position");
+            node.Label == "Source evidence" ||
+            node.Label == "Role / position");
         explorer.RecordGraph.Edges.Should().NotContain(static edge =>
-            edge.Label is "supports" or "projects");
+            edge.Label == "supports" ||
+            edge.Label == "projects");
         app.Services.GetRequiredService<FinancialRecordExplorerJournalStore>().LastQuery.Should().BeNull();
     }
 

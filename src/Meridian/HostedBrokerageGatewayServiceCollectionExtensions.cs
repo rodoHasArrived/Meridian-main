@@ -25,7 +25,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
         });
-        services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
+        services.TryAddKeyedSingleton<IBrokerageGateway>(
+            "alpaca",
+            (sp, _) => sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, AlpacaBrokerageSyncAdapter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, AlpacaBrokerageSyncAdapter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, AlpacaBrokerageSyncAdapter>());
@@ -46,14 +48,22 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         });
         services.TryAddSingleton<IBDataServices>(sp => new IBDataServices(
             sp.GetRequiredService<EnhancedIBConnectionManager>(),
-            new IBDataResultMaterializer(sp.GetRequiredService<IBDurableResultStore>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderDataReadService>(sp => sp.GetRequiredService<IBDataServices>()));
+            materializer: new IBDurableResultMaterializer(sp.GetRequiredService<IBDurableResultStore>())));
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IProviderDataReadService, InteractiveBrokersProviderDataReadAdapter>());
 #endif
-        services.AddBrokerageGateway("ib", sp => sp.GetRequiredService<IBBrokerageGateway>());
-        services.AddBrokerageGateway("ibkr", sp => sp.GetRequiredService<IBBrokerageGateway>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
+        services.TryAddKeyedSingleton<IBrokerageGateway>(
+            "ibkr",
+            (sp, _) => sp.GetRequiredService<IBBrokerageGateway>());
+        services.TryAddKeyedSingleton<IBrokerageGateway>(
+            "ib",
+            (sp, _) => sp.GetRequiredService<IBBrokerageGateway>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrokerageAccountCatalog, InteractiveBrokersBrokerageSyncAdapter>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrokeragePortfolioSync, InteractiveBrokersBrokerageSyncAdapter>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IBrokerageActivitySync, InteractiveBrokersBrokerageSyncAdapter>());
 
         RegisterOptionalStockSharpGateway(services);
 
@@ -63,7 +73,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<RobinhoodBrokerageGateway>>();
             return new RobinhoodBrokerageGateway(httpClientFactory, logger);
         });
-        services.AddBrokerageGateway("robinhood", sp => sp.GetRequiredService<RobinhoodBrokerageGateway>());
+        services.TryAddKeyedSingleton<IBrokerageGateway>(
+            "robinhood",
+            (sp, _) => sp.GetRequiredService<RobinhoodBrokerageGateway>());
         services.TryAddSingleton(_ => RobinhoodReadOnlyBrokerageOptions.FromEnvironment());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, RobinhoodReadOnlyBrokerageSyncAdapter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, RobinhoodReadOnlyBrokerageSyncAdapter>());
@@ -87,7 +99,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         }
 
         services.TryAddSingleton(gatewayType);
-        services.AddBrokerageGateway("stocksharp", sp => (IBrokerageGateway)sp.GetRequiredService(gatewayType));
+        services.TryAddKeyedSingleton<IBrokerageGateway>(
+            "stocksharp",
+            (sp, _) => (IBrokerageGateway)sp.GetRequiredService(gatewayType));
         services.TryAddSingleton(sp => new StockSharpBrokerageGatewayAccessor(sp, gatewayType));
         services.TryAddSingleton(sp =>
             new StockSharpBrokerageSyncAdapter(sp.GetRequiredService<StockSharpBrokerageGatewayAccessor>()));
@@ -124,6 +138,47 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
     }
+
+    private sealed class InteractiveBrokersBrokerageSyncAdapter(IBBrokerageGateway gateway) :
+        IBrokerageAccountCatalog,
+        IBrokeragePortfolioSync,
+        IBrokerageActivitySync
+    {
+        private readonly IBrokerageAccountCatalog _accountCatalog = gateway;
+        private readonly IBrokeragePortfolioSync _portfolioSync = gateway;
+        private readonly IBrokerageActivitySync _activitySync = gateway;
+
+        public string ProviderId => _accountCatalog.ProviderId;
+
+        public string ProviderDisplayName => _accountCatalog.ProviderDisplayName;
+
+        Task<IReadOnlyList<BrokerageExternalAccountDto>> IBrokerageAccountCatalog.GetAccountsAsync(
+            CancellationToken ct)
+            => _accountCatalog.GetAccountsAsync(ct);
+
+        Task<BrokeragePortfolioSnapshotDto> IBrokeragePortfolioSync.GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct)
+            => _portfolioSync.GetPortfolioSnapshotAsync(externalAccountId, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
+    }
+
+#if IBAPI
+    private sealed class InteractiveBrokersProviderDataReadAdapter(IBDataServices dataServices) :
+        IProviderDataReadService
+    {
+        public IReadOnlyList<ProviderDataRequestReadModel> GetRequests() => dataServices.GetRequests();
+
+        public IAsyncEnumerable<ProviderDataRequestReadModel> WatchAsync(
+            CancellationToken cancellationToken = default)
+            => dataServices.WatchAsync(cancellationToken);
+    }
+#endif
 
     private sealed class StockSharpBrokerageGatewayAccessor(IServiceProvider services, Type gatewayType)
     {

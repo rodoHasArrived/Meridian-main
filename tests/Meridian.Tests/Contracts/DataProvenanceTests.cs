@@ -27,8 +27,8 @@ public sealed class DataProvenanceTests
     }
 
     [Theory]
-    [InlineData(null, DataProvenance.Real)]
-    [InlineData("", DataProvenance.Real)]
+    [InlineData(null, DataProvenance.Simulated)]
+    [InlineData("", DataProvenance.Simulated)]
     [InlineData("real", DataProvenance.Real)]
     [InlineData("live", DataProvenance.Real)]
     [InlineData("seeded", DataProvenance.Seeded)]

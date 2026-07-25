@@ -34,7 +34,33 @@ public sealed class IBDataServicesTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DurableMaterializer_PersistsPublishedRequestsInTheResolvedTenantOnly()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-durable-materializer", Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(root, "results.json");
+        try
+        {
+            var store = new JsonIBDurableResultStore(path);
+            var materializer = new IBDurableResultMaterializer(store, () => "tenant-a");
+            using var services = new IBDataServices(new RecordingTransport(), materializer: materializer);
+
+            var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+            store.Get("tenant-a").Should().ContainSingle()
+                .Which.Request.RequestId.Should().Be(requestId);
+            store.Get("tenant-a").Single().Lineage.Should().NotBeNull();
+            store.Get("tenant-b").Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
         }
     }
 
@@ -166,7 +192,8 @@ public sealed class IBDataServicesTests
         scannerKeys[0].Should().Be(scannerKeys[1], "identical provider callbacks must retain the same deduplication key");
         records.Single(x => x.RequestId == bars).RealTimeBars!.Single().Provenance.SourceTimestamp.Should().Be(callbackTime);
         records.Single(x => x.RequestId == bars).RealTimeBars!.Single().Provenance.ReceiptTimestamp.Should().NotBe(callbackTime);
-        records.Single(x => x.RequestId == scanner).ScannerResults!.Single().Provenance.MarketDataAvailability.Should().Be("Delayed");
+        records.Single(x => x.RequestId == scanner).ScannerResults!
+            .Should().OnlyContain(result => result.Provenance.MarketDataAvailability == "Delayed");
     }
 
     [Fact]
@@ -258,18 +285,40 @@ public sealed class IBDataServicesTests
         var scanner = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
         var pnl = services.SubscribePnl("DU123");
         var rules = services.RequestMarketRule(26);
+        var callbackTime = DateTimeOffset.UtcNow;
 
-        transport.RaiseContract(contract, new ProviderContractDetails("265598", "AAPL", null, "STK", "NASDAQ", null, "USD", null, null, null, null, "26", .01m, "Apple", null, null, null, null, null, null));
+        transport.RaiseContract(contract, new ProviderContractDetails(
+            ProviderContractId: "265598",
+            Symbol: "AAPL",
+            LocalSymbol: null,
+            SecurityType: "STK",
+            Exchange: "NASDAQ",
+            PrimaryExchange: null,
+            Currency: "USD",
+            TradingClass: null,
+            Multiplier: null,
+            Expiration: null,
+            Strike: null,
+            Right: null,
+            MarketRuleIds: "26",
+            MinimumTick: .01m,
+            LongName: "Apple",
+            Industry: null,
+            Category: null,
+            Subcategory: null,
+            TimeZoneId: null,
+            TradingHours: null,
+            LiquidHours: null));
         transport.RaiseChain(chain, new ProviderOptionChainDefinition("SMART", "265598", "AAPL", "100", [new DateOnly(2027, 1, 15)], [250m]));
         transport.RaiseHeadline(headlines, new ProviderNewsHeadline(DateTimeOffset.UtcNow, "BRFG", "headline-1", "Apple headline"));
-        transport.RaiseArticle(article, new ProviderNewsArticle(0, "article text"));
+        transport.RaiseArticle(article, new ProviderNewsArticlePayload(0, "article text"));
         transport.RaiseFundamental(fundamentals, new ProviderFundamentalReport("<Report />"));
         transport.RaiseTick(ticks, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
         transport.RaiseDepth(depth, [new ProviderDepthExchangeDescription("NASDAQ", "STK", "NASDAQ", "Deep", false)]);
         transport.RaiseDividend(dividends, new ProviderDividendEarnings(1m, 1.1m, new DateOnly(2027, 2, 1), .30m, 7m, 30m));
-        transport.RaiseScanner(scanner, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null));
-        transport.RaisePnl(pnl, new ProviderAccountPnl("DU123", null, 1m, 2m, 3m));
-        transport.RaiseMarketRule(rules, [new ProviderMarketRuleIncrement(0m, .01m)]);
+        transport.RaiseScanner(scanner, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null, ProviderDataProvenance.Unattributed(callbackTime)));
+        transport.RaisePnl(pnl, new ProviderAccountPnl("DU123", null, 1m, 2m, 3m, null, null, ProviderDataProvenance.Unattributed(callbackTime)));
+        transport.RaiseMarketRule(rules, [new ProviderMarketRuleIncrement(0m, .01m, ProviderDataProvenance.Unattributed(callbackTime))]);
         transport.RaiseCompleted(contract);
         transport.RaiseRejected(ticks, "354", "Not subscribed");
 
@@ -314,6 +363,8 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) => Calls.Add($"pnl:{requestId}:{account}");
         public void RequestMarketRule(int requestId, int marketRuleId) => Calls.Add($"market-rule:{requestId}:{marketRuleId}");
         public void RequestDepthExchanges(int requestId) => Calls.Add($"depth-exchanges:{requestId}");
+        public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) => Calls.Add($"real-time-bars:{requestId}:{request.Contract.Symbol}");
+        public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) => Calls.Add($"historical-ticks:{requestId}:{request.Contract.Symbol}");
         public void CancelDataRequest(int requestId, string capability) => Calls.Add($"cancel:{requestId}:{capability}");
     }
 
@@ -324,7 +375,7 @@ public sealed class IBDataServicesTests
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
         public event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
-        public event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+        public event EventHandler<(int RequestId, ProviderNewsArticlePayload Article)>? NewsArticleReceived;
         public event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
         public event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
         public event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
@@ -349,19 +400,19 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) { }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
-        public void RaiseContract(int requestId, ProviderContractDetails details) => ContractDetailsReceived?.Invoke(this, (requestId, details));
-        public void RaiseChain(int requestId, ProviderOptionChainDefinition definition) => OptionChainDefinitionReceived?.Invoke(this, (requestId, definition));
-        public void RaiseHeadline(int requestId, ProviderNewsHeadline headline) => HistoricalNewsReceived?.Invoke(this, (requestId, headline));
-        public void RaiseArticle(int requestId, ProviderNewsArticle article) => NewsArticleReceived?.Invoke(this, (requestId, article));
-        public void RaiseFundamental(int requestId, ProviderFundamentalReport report) => FundamentalReportReceived?.Invoke(this, (requestId, report));
-        public void RaiseTick(int requestId, ProviderTickByTickObservation observation) => TickByTickReceived?.Invoke(this, (requestId, observation));
-        public void RaiseDepth(int requestId, IReadOnlyList<ProviderDepthExchangeDescription> exchanges) => DepthExchangesReceived?.Invoke(this, (requestId, exchanges));
-        public void RaiseDividend(int requestId, ProviderDividendEarnings payload) => DividendEarningsReceived?.Invoke(this, (requestId, payload));
-        public void RaiseScanner(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
-        public void RaisePnl(int requestId, ProviderAccountPnl pnl) => PnlReceived?.Invoke(this, (requestId, pnl));
-        public void RaiseMarketRule(int requestId, IReadOnlyList<ProviderMarketRuleIncrement> increments) => MarketRuleReceived?.Invoke(this, (requestId, increments));
-        public void RaiseCompleted(int requestId) => RequestCompleted?.Invoke(this, requestId);
-        public void RaiseRejected(int requestId, string code, string message) => RequestRejected?.Invoke(this, (requestId, code, message));
+        public void RaiseContract(int id, ProviderContractDetails value) => ContractDetailsReceived?.Invoke(this, (id, value));
+        public void RaiseChain(int id, ProviderOptionChainDefinition value) => OptionChainDefinitionReceived?.Invoke(this, (id, value));
+        public void RaiseHeadline(int id, ProviderNewsHeadline value) => HistoricalNewsReceived?.Invoke(this, (id, value));
+        public void RaiseArticle(int id, ProviderNewsArticlePayload value) => NewsArticleReceived?.Invoke(this, (id, value));
+        public void RaiseFundamental(int id, ProviderFundamentalReport value) => FundamentalReportReceived?.Invoke(this, (id, value));
+        public void RaiseTick(int id, ProviderTickByTickObservation value) => TickByTickReceived?.Invoke(this, (id, value));
+        public void RaiseDepth(int id, IReadOnlyList<ProviderDepthExchangeDescription> value) => DepthExchangesReceived?.Invoke(this, (id, value));
+        public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
+        public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));
+        public void RaisePnl(int id, ProviderAccountPnl value) => PnlReceived?.Invoke(this, (id, value));
+        public void RaiseMarketRule(int id, IReadOnlyList<ProviderMarketRuleIncrement> value) => MarketRuleReceived?.Invoke(this, (id, value));
+        public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
+        public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
         public void RaiseScannerResult(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
         public void RaiseMarketDataType(int requestId, int marketDataType) => MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
     }
