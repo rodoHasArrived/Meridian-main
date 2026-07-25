@@ -18,8 +18,23 @@ namespace Meridian.Application.Composition.Startup.ModeRunners;
 public sealed class BackfillModeRunner
 {
     private readonly ILogger _log;
+    private readonly BackfillHostFactory _hostFactory;
 
-    public BackfillModeRunner(ILogger log) => _log = log;
+    public BackfillModeRunner(ILogger log)
+        : this(
+            log,
+            static (deployment, configPath, ct) =>
+                HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct))
+    {
+    }
+
+    internal BackfillModeRunner(
+        ILogger log,
+        BackfillHostFactory hostFactory)
+    {
+        _log = log;
+        _hostFactory = hostFactory;
+    }
 
     /// <summary>
     /// Executes the backfill from a resolved startup context.
@@ -35,27 +50,34 @@ public sealed class BackfillModeRunner
             statusPath,
             () => ctx.ConfigurationService.LoadAndPrepareConfig(ctx.ConfigPath));
 
-        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
+        await using var hostStartup = await _hostFactory(ctx.Deployment, ctx.ConfigPath, ct)
+            .ConfigureAwait(false);
         var pipeline = hostStartup.Pipeline;
-        await pipeline.RecoverAsync();
+        await pipeline.RecoverAsync(ct);
         _log.Information("WAL enabled for pipeline durability");
 
-        return await RunBackfillAsync(ctx, pipeline, statusWriter, ct);
+        return await RunBackfillAsync(ctx, hostStartup, pipeline, statusWriter, ct);
     }
 
     /// <summary>
-    /// Executes the backfill using a pre-existing <paramref name="pipeline"/> and <paramref name="statusWriter"/>
-    /// created by the caller (e.g. <see cref="CollectorModeRunner"/> or <see cref="DesktopModeRunner"/>).
+    /// Executes the backfill using the caller-owned <paramref name="backfillHost"/>,
+    /// <paramref name="pipeline"/>, and <paramref name="statusWriter"/>.
     /// </summary>
+    /// <param name="ctx">Prepared startup context.</param>
+    /// <param name="backfillHost">Started backfill host that owns providers and hosted services.</param>
+    /// <param name="pipeline">Pipeline owned by <paramref name="backfillHost"/>.</param>
+    /// <param name="statusWriter">Status writer for the current process.</param>
+    /// <param name="ct">Token that cancels the backfill.</param>
+    /// <returns>The process exit code.</returns>
     internal async Task<int> RunBackfillAsync(
         StartupContext ctx,
+        HostStartup backfillHost,
         EventPipeline pipeline,
         StatusWriter statusWriter,
         CancellationToken ct = default)
     {
         var backfillRequest = SharedStartupHelpers.BuildBackfillRequest(ctx.Config, ctx.CliArgs);
 
-        await using var backfillHost = HostStartupFactory.CreateForBackfill(ctx.ConfigPath);
         var backfillProviders = backfillHost.CreateBackfillProviders();
 
         IHistoricalDataProvider[] providersArray;
@@ -76,7 +98,7 @@ public sealed class BackfillModeRunner
         }
 
         var backfill = new HistoricalBackfillService(providersArray, _log);
-        var result = await backfill.RunAsync(backfillRequest, pipeline);
+        var result = await backfill.RunAsync(backfillRequest, pipeline, ct);
         var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
         await statusStore.WriteAsync(result);
         await pipeline.FlushAsync();
@@ -84,4 +106,10 @@ public sealed class BackfillModeRunner
 
         return result.Success ? 0 : ErrorCode.ProviderError.ToExitCode();
     }
+
+    internal delegate Task<HostStartup> BackfillHostFactory(
+        Meridian.Platform.Runtime.DeploymentContext deployment,
+        string configPath,
+        CancellationToken cancellationToken);
+
 }

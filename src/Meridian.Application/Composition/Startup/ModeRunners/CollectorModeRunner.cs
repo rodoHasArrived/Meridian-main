@@ -51,11 +51,13 @@ public sealed class CollectorModeRunner
 
         ConfigWatcher? watcher = null;
 
-        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
+        await using var hostStartup = await HostStartupFactory
+            .CreateAsync(ctx.Deployment, ctx.ConfigPath, ct)
+            .ConfigureAwait(false);
         var storageOpt = hostStartup.StorageOptions;
         var pipeline = hostStartup.Pipeline;
 
-        await pipeline.RecoverAsync();
+        await pipeline.RecoverAsync(ct);
         _log.Information("WAL enabled for pipeline durability");
 
         var policy = hostStartup.GetRequiredService<JsonlStoragePolicy>();
