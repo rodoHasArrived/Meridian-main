@@ -419,6 +419,16 @@ and UI presentation concerns in their owning layers.
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
   in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
+  Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
+  final production-registration guard, database initialization, coordination, and other registered
+  hosted services enter the normal start/stop lifecycle. The guard starts first, database
+  initialization for Ledger, Security Master, Direct Lending, and Asset Operations follows before
+  background workers start, and host disposal stops hosted services before flushing the event
+  pipeline. Desktop child composition keeps the same final guard and child-local storage/symbol
+  initialization, while delegating process-wide coordinator and accounting-worker ownership to its
+  parent WebApplication to avoid duplicates. One-shot ETL hosts likewise retain guard and local
+  initialization without activating unrelated polling, reconciliation, or daily-accrual workers.
+  Backfill mode uses one backfill-profile host for both its pipeline and providers.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
   `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`)

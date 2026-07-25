@@ -141,7 +141,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>()));
             services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
                 sp.GetRequiredService<PostgresScopedAccessAssignmentStore>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            }
         }
         else
         {
@@ -302,9 +306,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
-            services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
-            services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
-            services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+            if (options.EnableHttpClientFactory)
+            {
+                services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
+                services.AddSingleton<PolygonCorporateActionFetcher>(
+                    sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
+                if (options.EnableProcessWideHostedServices)
+                {
+                    services.AddHostedService<PolygonCorporateActionFetcher>(
+                        sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+                }
+            }
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
 
             // Security Master bulk import services
@@ -440,8 +452,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
-            services.AddHostedService<DirectLendingOutboxDispatcher>();
-            services.AddHostedService<DailyAccrualWorker>();
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.AddHostedService<DirectLendingOutboxDispatcher>();
+                services.AddHostedService<DailyAccrualWorker>();
+            }
         }
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
@@ -595,7 +610,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
             services.AddSingleton<IDomainProjectionReconciliationJob>(
                 _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+            }
         }
         return services;
     }

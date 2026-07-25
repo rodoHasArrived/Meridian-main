@@ -13,11 +13,25 @@ internal sealed class EtlCommands : ICliCommand
     private readonly string _configPath;
     private readonly ILogger _log;
     private readonly CliCommandRouteTable _routes;
+    private readonly EtlHostFactory _hostFactory;
 
     public EtlCommands(string configPath, ILogger log)
+        : this(
+            configPath,
+            log,
+            static (path, cancellationToken) =>
+                HostStartup.CreateForEtlAsync(path, cancellationToken))
+    {
+    }
+
+    internal EtlCommands(
+        string configPath,
+        ILogger log,
+        EtlHostFactory hostFactory)
     {
         _configPath = configPath;
         _log = log;
+        _hostFactory = hostFactory;
         _routes = new CliCommandRouteTable(
             CliCommandRoute.Flag("--etl-resume", RunResumeAsync),
             CliCommandRoute.Flags(
@@ -42,7 +56,8 @@ internal sealed class EtlCommands : ICliCommand
 
     private async Task<CliResult> RunResumeAsync(string[] args, CancellationToken ct)
     {
-        await using var startup = HostStartup.CreateDefault(_configPath);
+        await using var startup = await _hostFactory(_configPath, ct)
+            .ConfigureAwait(false);
         var svc = startup.GetRequiredService<IEtlJobService>();
 
         var jobId = CliArguments.RequireValue(args, "--etl-resume", "--etl-resume <job-id>");
@@ -54,7 +69,8 @@ internal sealed class EtlCommands : ICliCommand
 
     private async Task<CliResult> RunJobAsync(string[] args, CancellationToken ct)
     {
-        await using var startup = HostStartup.CreateDefault(_configPath);
+        await using var startup = await _hostFactory(_configPath, ct)
+            .ConfigureAwait(false);
         var svc = startup.GetRequiredService<IEtlJobService>();
         if (!TryBuildDefinition(args, out var definition))
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
@@ -197,6 +213,10 @@ internal sealed class EtlCommands : ICliCommand
 
         return ToCliResult(result);
     }
+
+    internal delegate Task<HostStartup> EtlHostFactory(
+        string configPath,
+        CancellationToken cancellationToken);
 
     internal static EtlInspectionMode ResolveInspectionMode(string[] args)
     {
