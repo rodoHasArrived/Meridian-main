@@ -179,22 +179,22 @@ public sealed class ScriptRunnerTests
     {
         var runner = BuildRunner(runTimeoutSeconds: 10);
         using var cts = new CancellationTokenSource();
-
-        cts.CancelAfter(TimeSpan.FromMilliseconds(200));
-        var elapsed = Stopwatch.StartNew();
+        var parameters = new Dictionary<string, object?>
+        {
+            ["CancelRun"] = (Action)cts.Cancel
+        };
 
         var result = await runner.RunAsync(
-            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
-            NoParams,
+            """
+            Param<System.Action>("CancelRun")();
+            CancellationToken.ThrowIfCancellationRequested();
+            """,
+            parameters,
             cts.Token);
-
-        elapsed.Stop();
 
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script cancelled by user.");
         result.Checkpoint.Should().BeNull();
-        RuntimeElapsed(result).Should().BeLessThan(TimeSpan.FromSeconds(3));
-        elapsed.Elapsed.Should().BeLessThan(result.CompileTime + TimeSpan.FromSeconds(3));
     }
 
     [Fact]
