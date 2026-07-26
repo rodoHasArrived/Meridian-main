@@ -582,31 +582,309 @@ public interface IReconciliationBreakStore
 {
     Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
     Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default);
+
+    Task<ReconciliationBreakRecord?> GetAsync(string breakId, CancellationToken ct = default)
+        => Task.FromResult<ReconciliationBreakRecord?>(null);
+
+    Task<ReconciliationBreakRecord> ApplyCaseworkAsync(
+        StatementBreakCaseworkUpdate update,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation break store does not support durable statement casework synchronization.");
 }
 
-public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliationBreakStore
+public sealed record StatementBreakCaseworkUpdate(
+    string BreakId,
+    string ImportId,
+    string Status,
+    string Actor,
+    string Action,
+    string CommandId,
+    string CorrelationId,
+    string? Reason,
+    string? Disposition,
+    string? ApprovalActor,
+    string? ApprovalReference,
+    string? SupersedingBreakId,
+    IReadOnlyList<string> EvidenceLinks,
+    DateTimeOffset OccurredAtUtc);
+
+public sealed record StatementBreakCaseworkAuditEvent(
+    string EventId,
+    string BreakId,
+    string ImportId,
+    string PreviousStatus,
+    string NewStatus,
+    string Actor,
+    string Action,
+    string CommandId,
+    string CorrelationId,
+    string? Reason,
+    string? Disposition,
+    string? ApprovalActor,
+    string? ApprovalReference,
+    string? SupersedingBreakId,
+    IReadOnlyList<string> EvidenceLinks,
+    DateTimeOffset OccurredAtUtc,
+    string InputHashSha256);
+
+public sealed class JsonReconciliationBreakStore : IReconciliationBreakStore
 {
-    private readonly string _folder = Path.Combine(dataRoot, "reconciliation", "statement-breaks");
+    private readonly string _folder;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
+    public JsonReconciliationBreakStore(string dataRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _folder = Path.Combine(dataRoot, "reconciliation", "statement-breaks");
+    }
 
     public async Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default)
     {
-        foreach (var record in records)
+        ArgumentNullException.ThrowIfNull(records);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(record.BreakId)}.json");
-            await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
+            foreach (var record in records)
+            {
+                ArgumentNullException.ThrowIfNull(record);
+                await AtomicFileWriter
+                    .WriteAsync(BreakPath(record.BreakId), JsonSerializer.Serialize(record, _jsonOptions), ct)
+                    .ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
         }
     }
 
-    public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (!Directory.Exists(_folder))
-            return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>([]);
-        var items = Directory.EnumerateFiles(_folder, "*.json")
-            .Select(path => JsonSerializer.Deserialize<ReconciliationBreakRecord>(File.ReadAllText(path)))
-            .Where(x => x is not null && x.Status == "Open")
-            .Cast<ReconciliationBreakRecord>()
-            .OrderByDescending(x => x.CreatedAtUtc)
-            .ToList();
-        return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>(items);
+            return [];
+
+        var items = new List<ReconciliationBreakRecord>();
+        foreach (var path in Directory.EnumerateFiles(_folder, "*.json"))
+        {
+            ct.ThrowIfCancellationRequested();
+            await using var stream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                64 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            var record = await JsonSerializer
+                .DeserializeAsync<ReconciliationBreakRecord>(stream, _jsonOptions, ct)
+                .ConfigureAwait(false);
+            if (record is not null && string.Equals(record.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            {
+                items.Add(record);
+            }
+        }
+
+        return items
+            .OrderByDescending(static item => item.CreatedAtUtc)
+            .ToArray();
     }
+
+    public async Task<ReconciliationBreakRecord?> GetAsync(string breakId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadBreakCoreAsync(breakId, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<ReconciliationBreakRecord> ApplyCaseworkAsync(
+        StatementBreakCaseworkUpdate update,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        ValidateCaseworkUpdate(update);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var inputHash = ComputeCaseworkInputHash(update);
+            var receiptPath = CaseworkReceiptPath(update.CommandId);
+            if (File.Exists(receiptPath))
+            {
+                var retained = await ReadJsonAsync<StatementBreakCaseworkReceipt>(receiptPath, ct).ConfigureAwait(false)
+                    ?? throw new InvalidDataException(
+                        $"Statement break casework receipt '{update.CommandId}' retained a null payload.");
+                if (!string.Equals(retained.BreakId, update.BreakId, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(retained.InputHashSha256, inputHash, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement break casework command '{update.CommandId}' is already bound to different input.");
+                }
+
+                return retained.Record;
+            }
+
+            var current = await ReadBreakCoreAsync(update.BreakId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException(
+                    $"Source statement break '{update.BreakId}' was not found.");
+            if (!string.Equals(current.ImportId, update.ImportId, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(current.RunId, update.ImportId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Source statement break '{update.BreakId}' is not owned by import '{update.ImportId}'.");
+            }
+
+            var next = current with { Status = update.Status.Trim() };
+            var audit = new StatementBreakCaseworkAuditEvent(
+                EventId: $"statement-casework:{inputHash[..24]}",
+                BreakId: current.BreakId,
+                ImportId: current.ImportId,
+                PreviousStatus: current.Status,
+                NewStatus: next.Status,
+                Actor: update.Actor.Trim(),
+                Action: update.Action.Trim(),
+                CommandId: update.CommandId.Trim(),
+                CorrelationId: update.CorrelationId.Trim(),
+                Reason: Normalize(update.Reason),
+                Disposition: Normalize(update.Disposition),
+                ApprovalActor: Normalize(update.ApprovalActor),
+                ApprovalReference: Normalize(update.ApprovalReference),
+                SupersedingBreakId: Normalize(update.SupersedingBreakId),
+                EvidenceLinks: NormalizeEvidence(update.EvidenceLinks),
+                OccurredAtUtc: update.OccurredAtUtc.ToUniversalTime(),
+                InputHashSha256: inputHash);
+            var receipt = new StatementBreakCaseworkReceipt(
+                update.CommandId.Trim(),
+                current.BreakId,
+                inputHash,
+                next,
+                audit);
+
+            await AtomicFileWriter
+                .WriteAsync(BreakPath(next.BreakId), JsonSerializer.Serialize(next, _jsonOptions), ct)
+                .ConfigureAwait(false);
+            await AtomicFileWriter
+                .WriteAsync(CaseworkAuditPath(next.BreakId, update.CommandId), JsonSerializer.Serialize(audit, _jsonOptions), ct)
+                .ConfigureAwait(false);
+            await AtomicFileWriter
+                .WriteAsync(receiptPath, JsonSerializer.Serialize(receipt, _jsonOptions), ct)
+                .ConfigureAwait(false);
+            return next;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task<ReconciliationBreakRecord?> ReadBreakCoreAsync(
+        string breakId,
+        CancellationToken ct)
+    {
+        var path = BreakPath(breakId);
+        return File.Exists(path)
+            ? await ReadJsonAsync<ReconciliationBreakRecord>(path, ct).ConfigureAwait(false)
+            : null;
+    }
+
+    private async Task<T?> ReadJsonAsync<T>(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, ct).ConfigureAwait(false);
+    }
+
+    private string BreakPath(string breakId)
+        => Path.Combine(_folder, $"{ReconciliationRecordFileName.For(breakId)}.json");
+
+    private string CaseworkReceiptPath(string commandId)
+        => Path.Combine(
+            _folder,
+            "_casework",
+            "receipts",
+            $"{CaseworkCommandFileName(commandId)}.json");
+
+    private string CaseworkAuditPath(string breakId, string commandId)
+        => Path.Combine(
+            _folder,
+            "_casework",
+            "audit",
+            ReconciliationRecordFileName.For(breakId),
+            $"{CaseworkCommandFileName(commandId)}.json");
+
+    private static string CaseworkCommandFileName(string commandId)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
+            .ToLowerInvariant();
+
+    private string ComputeCaseworkInputHash(StatementBreakCaseworkUpdate update)
+    {
+        var canonical = JsonSerializer.Serialize(update with
+        {
+            BreakId = update.BreakId.Trim(),
+            ImportId = update.ImportId.Trim(),
+            Status = update.Status.Trim(),
+            Actor = update.Actor.Trim(),
+            Action = update.Action.Trim(),
+            CommandId = update.CommandId.Trim(),
+            CorrelationId = update.CorrelationId.Trim(),
+            Reason = Normalize(update.Reason),
+            Disposition = Normalize(update.Disposition),
+            ApprovalActor = Normalize(update.ApprovalActor),
+            ApprovalReference = Normalize(update.ApprovalReference),
+            SupersedingBreakId = Normalize(update.SupersedingBreakId),
+            EvidenceLinks = NormalizeEvidence(update.EvidenceLinks),
+            OccurredAtUtc = update.OccurredAtUtc.ToUniversalTime()
+        }, _jsonOptions);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"meridian.statement-break-casework.v1\n{canonical}"))).ToLowerInvariant();
+    }
+
+    private static void ValidateCaseworkUpdate(StatementBreakCaseworkUpdate update)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.BreakId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.ImportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.Status);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.Actor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.Action);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.CommandId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.CorrelationId);
+        if (update.OccurredAtUtc == default)
+        {
+            throw new ArgumentException("Statement casework occurrence time is required.", nameof(update));
+        }
+    }
+
+    private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string>? evidence)
+        => (evidence ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed record StatementBreakCaseworkReceipt(
+        string CommandId,
+        string BreakId,
+        string InputHashSha256,
+        ReconciliationBreakRecord Record,
+        StatementBreakCaseworkAuditEvent Audit);
 }

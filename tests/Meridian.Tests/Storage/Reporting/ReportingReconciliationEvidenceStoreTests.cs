@@ -125,7 +125,7 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
     }
 
     [ReportingDatabaseFact]
-    public async Task HardCloseBridge_RetainsDurableReceipt_ThatRestartedCertificationConsumes()
+    public async Task HardCloseBridge_RetainsCompatibilityReceipt_ThatFinalCertificationRejectsWithoutCommittedWorkflow()
     {
         const string tenantId = "tenant-close";
         const string companyId = "company-close";
@@ -306,10 +306,10 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             ],
             BlockingReasons: [],
             EvidenceHash: new string('a', 64));
-        var certified = await new ReportingRunCertificationService(
-                authoritativeSource,
-                restartedEvidenceSource)
-            .CertifyAsync(
+        var certification = new ReportingRunCertificationService(
+            authoritativeSource,
+            restartedEvidenceSource);
+        Func<Task> certify = async () => await certification.CertifyAsync(
                 new ReportingTemplateMetadata(
                     "close-report",
                     ReportingTemplateFamily.CustomReport,
@@ -327,9 +327,9 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
                     TenantId: tenantId,
                     RequireBoundScope: true));
 
-        certified.Snapshot.ReconciliationCheckpointId.Should().NotBeNullOrWhiteSpace();
-        certified.Snapshot.SourceCheckpointId.Should().Be(certified.AuthoritativeSource.CheckpointId);
-        certified.Readiness.CanGenerateFinal.Should().BeTrue();
+        var blocked = await certify.Should().ThrowAsync<ReportingRunReadinessBlockedException>();
+        blocked.Which.Message.Should().Contain(
+            "Final reporting requires retained proof that the accounting-close workflow committed");
     }
 
     private static ReportingReconciliationEvidenceReceipt NewReceipt()

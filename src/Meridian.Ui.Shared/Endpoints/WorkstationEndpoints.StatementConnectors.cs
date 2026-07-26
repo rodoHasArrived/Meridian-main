@@ -21,7 +21,7 @@ public static partial class WorkstationEndpoints
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        MapStatementToReportEndpoints(group, jsonOptions);
+        MapStatementReconciliationReportEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (
             HttpContext context,

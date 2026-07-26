@@ -114,7 +114,7 @@ diff --git a/src/Meridian.Contracts/Workstation/LedgerContinuityDtos.cs b/src/Me
         with tempfile.TemporaryDirectory(dir="src/Meridian.Contracts/Workstation") as tmp_dir:
             temp_path = Path(tmp_dir) / "GovernanceInstrumentContractDto.cs"
             temp_path.write_text("public sealed record GovernanceInstrumentContractDto(string InstrumentTicker);", encoding="utf-8")
-            changed_files = [str(temp_path.relative_to(Path.cwd()))]
+            changed_files = [temp_path.resolve().relative_to(Path.cwd().resolve()).as_posix()]
             patch = f"""
 diff --git a/{changed_files[0]} b/{changed_files[0]}
 --- a/{changed_files[0]}
@@ -132,7 +132,7 @@ diff --git a/{changed_files[0]} b/{changed_files[0]}
             temp_path.write_text(
                 "public sealed record GovernanceInstrumentContractDto(string InstrumentTicker, Guid SecurityId, string SecurityMasterSource);",
                 encoding="utf-8")
-            changed_files = [str(temp_path.relative_to(Path.cwd()))]
+            changed_files = [temp_path.resolve().relative_to(Path.cwd().resolve()).as_posix()]
             patch = f"""
 diff --git a/{changed_files[0]} b/{changed_files[0]}
 --- a/{changed_files[0]}

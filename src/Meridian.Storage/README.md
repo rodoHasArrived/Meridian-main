@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-26
 ---
 
 # src/Meridian.Storage
@@ -74,13 +74,17 @@ lookup paths, and evidence trails those layers rely on.
   storage-backed rows and migrations.
 - `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes and catalogs, governed
   revisions, restatement requests, exact close/reconciliation receipts, append-only lifecycle and
-  access audit chains, opaque access-grant state, durable delivery jobs, and provider receipts.
+  access audit chains, certified run manifests and run audit, scoped schedule snapshots, opaque
+  access-grant state, durable delivery jobs, and provider receipts.
   Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger;
   immutable rows and authority/payload fields are guarded against update or deletion. The store uses
   `MERIDIAN_REPORTING_CONNECTION_STRING` with the intentional ledger-connection fallback and
-  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
-  remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
-  part of the same reporting state set.
+  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`). Migration `010_reporting_operational_state.sql`
+  adds tenant-bound run snapshots and tenant/company-bound schedule snapshots with canonical JSON
+  digests and indexed identity checks. When the reporting connection is absent, UI Shared can
+  register file-backed run and schedule compatibility stores for local development, but the
+  independent Reporting deployment capability remains blocked; those files are not production
+  recovery authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.
@@ -396,6 +400,13 @@ receipt-bearing jobs only through exact tenant/package keys, and prevents author
 provider-message, access-grant, lifecycle, and receipt evidence from being replaced or moved
 backwards. Retry claims use leased skip-locked rows, while terminal provider and audited-download
 receipts append without overwriting prior evidence.
+`PostgresReportingRunStore` retains the canonical certified manifest and run audit under tenant/run
+identity, re-hashes the manifest, audit, and certified rows before returning them, and treats
+identity or digest drift as operational-state corruption. `PostgresReportingScheduleStore` retains
+the complete scoped schedule set in a serializable transaction under tenant/company/schedule
+identity and verifies each canonical payload digest on read. These operational snapshots support
+the canonical Reporting services; they do not replace governed lifecycle, artifact-vault, release,
+or delivery-receipt authority.
 
 ## Glossary
 
@@ -479,6 +490,7 @@ selected-lot cost basis.
 
 ```bash
 dotnet build src/Meridian.Storage/Meridian.Storage.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOperationalStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
@@ -494,4 +506,5 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 - `docs/reference/accounting-report-packs.md`
 - `docs/reference/database-schema.md`
 - `docs/operators/governed-reporting-operations.md`
+- `docs/operators/statement-reconciliation-report-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`

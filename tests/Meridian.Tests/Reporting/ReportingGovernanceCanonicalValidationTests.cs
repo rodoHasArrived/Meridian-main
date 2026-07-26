@@ -325,6 +325,88 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task Coordinator_ClientPackageReleaseValidatesBothImmutablePrimaryDocuments()
+    {
+        var template = CoordinatorTemplate();
+        var source = new VersionedCoordinatorSource();
+        var certification = new ReportingRunCertificationService(
+            source,
+            new CoordinatorReconciliationSource());
+        var orchestration = new ReportingOrchestrationService(
+            new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(),
+            () => Now);
+        var certified = await certification.CertifyAsync(
+            template,
+            CoordinatorReadiness(
+                "evaluation-client-package",
+                ReportingOutputFormatDto.ClientPackage),
+            CoordinatorAccess("maker-a"));
+        var manifest = await orchestration.ExecuteAsync(
+            CoordinatorJob("job-client-package", template, certified),
+            CancellationToken.None);
+        var primaryDeclarations = ReportingArtifactDeclaration.Build(manifest)
+            .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .ToArray();
+        var coordinator = CreateCoordinator(
+            new MemoryGovernanceRepository(),
+            certification,
+            orchestration,
+            new RestartableArtifactStore(Now),
+            new RestartableArtifactCatalog(),
+            new RestartableArtifactAuditStore(),
+            new DeterministicReportingCertifiedArtifactProducer(
+                new DocumentsReportingPrimaryDocumentRenderer()),
+            template);
+        var maker = CoordinatorCaller("maker-a");
+        var approver = CoordinatorCaller("approver-b");
+        var releaser = CoordinatorCaller("releaser-c");
+
+        var run = await coordinator.CreateFromCompletedCertifiedManifestAsync(manifest.RunId, maker);
+        run = await coordinator.ValidateAsync(run.RunId, run.Version, maker);
+        run = await coordinator.SubmitAsync(run.RunId, run.Version, maker);
+        run = await coordinator.ApproveAsync(
+            run.RunId,
+            run.Version,
+            "Independent PDF and workbook review completed",
+            approver);
+        run = await coordinator.ReleaseAsync(run.RunId, run.Version, releaser);
+
+        primaryDeclarations.Should().HaveCount(2);
+        primaryDeclarations.Select(static artifact => artifact.ContentType).Should().Equal(
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        var releasedReferences = run.Release!.Artifacts
+            .Where(reference => primaryDeclarations.Any(declaration =>
+                string.Equals(
+                    declaration.ArtifactId,
+                    reference.ArtifactId,
+                    StringComparison.Ordinal)))
+            .OrderBy(static reference => reference.ArtifactId, StringComparer.Ordinal)
+            .ToArray();
+        releasedReferences.Should().HaveCount(2);
+
+        foreach (var declaration in primaryDeclarations)
+        {
+            var download = await coordinator.DownloadRetainedArtifactAsync(
+                run.RunId,
+                declaration.ArtifactId,
+                releaser);
+            var releaseReference = releasedReferences.Single(reference =>
+                string.Equals(
+                    reference.ArtifactId,
+                    declaration.ArtifactId,
+                    StringComparison.Ordinal));
+
+            download.Content.Should().NotBeEmpty();
+            download.Descriptor.ByteLength.Should().Be(download.Content.LongLength);
+            releaseReference.ByteLength.Should().Be(download.Content.LongLength);
+            download.Descriptor.ContentHashSha256.Should().Be(HashBytes(download.Content));
+            releaseReference.ArtifactHash.Should().Be(download.Descriptor.ContentHashSha256);
+        }
+    }
+
+    [Fact]
     public async Task Coordinator_FinalReleaseRevalidatesAndBlocksWhenCanonicalQueueReopensAfterCertification()
     {
         var template = CoordinatorTemplate();
@@ -1005,11 +1087,13 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             ],
             CompanyId: "company-a"));
 
-    private static ReportingRunReadinessDto CoordinatorReadiness(string evaluationId) => new(
+    private static ReportingRunReadinessDto CoordinatorReadiness(
+        string evaluationId,
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf) => new(
         evaluationId,
         Now.AddMinutes(-20),
         new VersionedReportTemplateIdDto("coordinator-report", 1),
-        CoordinatorParameters(),
+        CoordinatorParameters(outputFormat),
         ReportingRunReadinessStatusDto.Ready,
         CanGenerateDraft: true,
         CanGenerateFinal: true,
@@ -1028,7 +1112,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         BlockingReasons: [],
         EvidenceHash: new string('a', 64));
 
-    private static ReportingRunParametersDto CoordinatorParameters() => new(
+    private static ReportingRunParametersDto CoordinatorParameters(
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf) => new(
         new ReportingRunScopeDto("fund-a"),
         "2026-06",
         new DateOnly(2026, 6, 30),
@@ -1036,7 +1121,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         ReportingAccountingBasisDto.Gaap,
         "USD",
         ReportingConsolidationLevelDto.Fund,
-        ReportingOutputFormatDto.Pdf,
+        outputFormat,
         ReportingFinalityDto.Final,
         IncludeSupportingSchedules: true,
         IncludeEvidenceAppendix: true);
@@ -1206,7 +1291,20 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                     new string('c', 64),
                     source.CapturedAtUtc,
                     HasOpenBreaks: false,
-                    [$"close:{source.CheckpointId}"])));
+                    [$"close:{source.CheckpointId}"],
+                    CloseWorkflowCompletion: new ReportingCloseWorkflowCompletionEvidence(
+                        "55555555-5555-5555-5555-555555555555",
+                        9,
+                        "66666666-6666-6666-6666-666666666666",
+                        source.LedgerBookId,
+                        source.AccountingPeriodId,
+                        "close-approval-coordinator",
+                        new string('d', 64),
+                        new string('e', 64),
+                        "close-package-coordinator",
+                        new string('f', 64),
+                        "77777777-7777-7777-7777-777777777777",
+                        new string('a', 64)))));
         }
     }
 

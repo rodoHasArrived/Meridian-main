@@ -8,7 +8,7 @@ export function buildReportingOperatorFocusItems(reporting: ReportingWorkspaceRe
     return [];
   }
 
-  const distributions = getReportPackDistributions(reporting.reporting);
+  const distributions = getReportPackDistributions(reporting);
   return distributions.length === 0
     ? [buildOperatorFocusCandidate({
         id: "reporting:missing-report-pack-distribution",

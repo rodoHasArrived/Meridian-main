@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.PrivateCapital;
@@ -7,18 +10,38 @@ using Meridian.Identity;
 using Meridian.Reporting;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
+using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
+#pragma warning disable CS0618
+using LegacyReportingScheduleStore = Meridian.Ui.Shared.Services.IReportingScheduleStore;
+#pragma warning restore CS0618
 
 namespace Meridian.Tests.Ui;
 
 [Collection("Sequential")]
 public sealed class WorkstationServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void ReportingAuthoritativeSource_NonPostgresDependencies_ShouldNotClaimDurableConfiguration()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(Substitute.For<ILedgerJournalStore>());
+        services.AddSingleton(Substitute.For<IFundProfileTenancyRegistry>());
+        services.AddSingleton(Substitute.For<IFundStructureService>());
+        using var provider = services.BuildServiceProvider();
+
+        var source = new ServiceProviderReportingAuthoritativeSource(provider);
+
+        source.IsConfigured.Should().BeFalse(
+            "in-memory or file compatibility services are not a durable certified-reporting authority");
+    }
+
     [Fact]
     public void AddWorkstationSharedServices_UsesConfiguredDataRootForStrategyStores()
     {
@@ -44,9 +67,10 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<ReportingRunStoreOptions>().RootDirectory
             .Should()
             .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "runs"));
-        provider.GetRequiredService<ReportPackWorkflowRecordStoreOptions>().SnapshotPath
-            .Should()
-            .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-pack-workflows.json"));
+        provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull(
+            "the retired report-pack workflow must not retain a second lifecycle authority");
+        provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull(
+            "canonical secure distribution owns delivery jobs and immutable receipts");
         provider.GetRequiredService<ReportTemplateGovernanceStoreOptions>().SnapshotPath
             .Should()
             .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-templates.json"));
@@ -197,6 +221,19 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
             "MERIDIAN_LEDGER_CONNECTION_STRING",
             null);
+        using var destinations = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_RECIPIENT_DESTINATIONS_JSON",
+            """
+            [
+              {
+                "tenantId": "tenant-test",
+                "companyId": "tenant-test",
+                "principalId": "client-1",
+                "transportId": "secure-portal",
+                "destination": "client-1"
+              }
+            ]
+            """);
         var services = CreateMinimalWorkstationServices();
 
         services.AddWorkstationSharedServices();
@@ -208,6 +245,24 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<IReportingArtifactStore>()
             .Should().BeOfType<PostgresReportingArtifactStore>(
                 "resolving a store must not synchronously open a database connection");
+        provider.GetRequiredService<IReportingRunStore>()
+            .Should().BeOfType<PostgresReportingRunStore>();
+        var canonicalScheduleStore = provider.GetRequiredService<IReportingScheduleStore>();
+        canonicalScheduleStore
+            .Should().BeOfType<PostgresReportingScheduleStore>();
+#pragma warning disable CS0618
+        var legacyScheduleStore = provider.GetRequiredService<LegacyReportingScheduleStore>();
+#pragma warning restore CS0618
+        legacyScheduleStore.Should().NotBeSameAs(canonicalScheduleStore);
+        legacyScheduleStore.Should().BeAssignableTo<IReportingScheduleStore>();
+        provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull();
+        provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull();
+        provider.GetRequiredService<IReportingDeploymentReadinessService>()
+            .Evaluate()
+            .IsReady
+            .Should()
+            .BeFalse(
+                "registered PostgreSQL adapters are not deployment proof until migrations complete and the authority is reachable");
         var migration = ActivatorUtilities.CreateInstance<WorkstationReportingMigrationHostedService>(
             provider);
         using var canceled = new CancellationTokenSource();

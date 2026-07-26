@@ -1,0 +1,786 @@
+using System.Data;
+using System.Text.Json;
+using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace Meridian.Storage.Reporting;
+
+/// <summary>
+/// PostgreSQL-backed authoritative schedule snapshot. Composite tenant/company/schedule identity
+/// prevents cross-scope replacement, and every row is integrity-checked before it is returned.
+/// </summary>
+public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
+{
+    private const int MaximumIdentityLength = 256;
+
+    private readonly ReportingArtifactStoreOptions _options;
+    private readonly string _scheduleTable;
+    private readonly object _legacySnapshotGate = new();
+    private IReadOnlyDictionary<ReportingScheduleStorageKey, LegacySnapshotEntry>
+        _legacySnapshotBaseline =
+            new Dictionary<ReportingScheduleStorageKey, LegacySnapshotEntry>();
+    private IReadOnlySet<ReportingScheduleScopeKey> _legacySnapshotScopes =
+        new HashSet<ReportingScheduleScopeKey>();
+    private bool _hasLegacySnapshotBaseline;
+    private bool _legacySnapshotCoversAllScopes;
+
+    public PostgresReportingScheduleStore(ReportingArtifactStoreOptions options)
+    {
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        ArgumentException.ThrowIfNullOrWhiteSpace(_options.ConnectionString);
+        ReportingDistributionStoreGuard.ValidateIdentifier(_options.Schema, nameof(options.Schema));
+        _scheduleTable = $"\"{_options.Schema}\".\"reporting_schedule_snapshots\"";
+    }
+
+    public IReadOnlyList<ReportingScheduleRecordDto> Load()
+    {
+        lock (_legacySnapshotGate)
+        {
+            using var connection = OpenConnection();
+            var retained = ReadAllSchedules(connection, transaction: null);
+            _legacySnapshotBaseline = retained.ToDictionary(
+                static state => ReportingScheduleStorageKey.From(state.Identity),
+                static state => new LegacySnapshotEntry(
+                    state.Schedule,
+                    state.PayloadHashSha256));
+            _legacySnapshotScopes = retained
+                .Select(static state => ReportingScheduleStorageKey.From(state.Identity))
+                .Select(static key => ReportingScheduleScopeKey.From(key))
+                .ToHashSet();
+            _hasLegacySnapshotBaseline = true;
+            _legacySnapshotCoversAllScopes = true;
+
+            return retained.Select(static state => state.Schedule).ToArray();
+        }
+    }
+
+    public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules)
+    {
+        ArgumentNullException.ThrowIfNull(schedules);
+        var entries = PrepareEntries(schedules);
+        lock (_legacySnapshotGate)
+        {
+            using var connection = OpenConnection();
+            using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+            LockForLegacySnapshotReplacement(connection, transaction);
+            var current = ReadAllSchedules(connection, transaction)
+                .ToDictionary(
+                    static state => ReportingScheduleStorageKey.From(state.Identity));
+            var desired = entries.ToDictionary(
+                static entry => ReportingScheduleStorageKey.From(entry.Identity));
+            var desiredScopes = desired.Keys
+                .Select(static key => ReportingScheduleScopeKey.From(key))
+                .ToHashSet();
+            var baselineCoversAllScopes = _hasLegacySnapshotBaseline
+                ? _legacySnapshotCoversAllScopes
+                : desiredScopes.Count == 0;
+            var baselineScopes = _hasLegacySnapshotBaseline
+                ? _legacySnapshotScopes
+                : desiredScopes.Count == 0
+                    ? current.Keys
+                        .Select(static key => ReportingScheduleScopeKey.From(key))
+                        .ToHashSet()
+                    : desiredScopes;
+            var replacementScopes = baselineScopes
+                .Concat(desiredScopes)
+                .ToHashSet();
+            var baselineForSave = _hasLegacySnapshotBaseline
+                ? _legacySnapshotBaseline
+                : current
+                    .Where(pair => baselineCoversAllScopes
+                        || desiredScopes.Contains(
+                            ReportingScheduleScopeKey.From(pair.Key)))
+                    .ToDictionary(
+                        static pair => pair.Key,
+                        static pair => new LegacySnapshotEntry(
+                            pair.Value.Schedule,
+                            pair.Value.PayloadHashSha256));
+
+            foreach (var retained in current)
+            {
+                if (baselineForSave.ContainsKey(retained.Key)
+                    || desired.ContainsKey(retained.Key)
+                    || (!baselineCoversAllScopes
+                        && !replacementScopes.Contains(
+                            ReportingScheduleScopeKey.From(retained.Key))))
+                {
+                    continue;
+                }
+
+                throw ReportingScheduleConcurrencyException.ForConflict(
+                    retained.Value.Schedule,
+                    expectedUpdatedAtUtc: null);
+            }
+
+            foreach (var baseline in baselineForSave)
+            {
+                if (!replacementScopes.Contains(
+                        ReportingScheduleScopeKey.From(baseline.Key))
+                    || desired.ContainsKey(baseline.Key)
+                    || !current.TryGetValue(baseline.Key, out var retained))
+                {
+                    continue;
+                }
+                if (!ReportingOperationalStoreJson.FixedHashEquals(
+                        retained.PayloadHashSha256,
+                        baseline.Value.PayloadHashSha256))
+                {
+                    throw ReportingScheduleConcurrencyException.ForConflict(
+                        retained.Schedule,
+                        baseline.Value.Schedule.UpdatedAtUtc);
+                }
+
+                DeleteEntry(
+                    connection,
+                    transaction,
+                    retained.Identity,
+                    retained.PayloadHashSha256,
+                    retained.Schedule,
+                    baseline.Value.Schedule.UpdatedAtUtc);
+            }
+
+            foreach (var entry in entries)
+            {
+                var key = ReportingScheduleStorageKey.From(entry.Identity);
+                current.TryGetValue(key, out var retained);
+                if (baselineForSave.TryGetValue(key, out var baseline))
+                {
+                    if (retained is null)
+                    {
+                        throw ReportingScheduleConcurrencyException.ForMissing(
+                            entry.Schedule,
+                            baseline.Schedule.UpdatedAtUtc);
+                    }
+                    if (ReportingOperationalStoreJson.FixedHashEquals(
+                            retained.PayloadHashSha256,
+                            entry.PayloadHashSha256))
+                    {
+                        continue;
+                    }
+                    if (!ReportingOperationalStoreJson.FixedHashEquals(
+                            retained.PayloadHashSha256,
+                            baseline.PayloadHashSha256))
+                    {
+                        throw ReportingScheduleConcurrencyException.ForConflict(
+                            retained.Schedule,
+                            baseline.Schedule.UpdatedAtUtc);
+                    }
+                    if (entry.Schedule.UpdatedAtUtc <= retained.Schedule.UpdatedAtUtc)
+                    {
+                        throw new ArgumentException(
+                            "A changed reporting schedule must advance UpdatedAtUtc beyond the retained revision.",
+                            nameof(schedules));
+                    }
+
+                    Update(
+                        connection,
+                        transaction,
+                        entry,
+                        retained.PayloadHashSha256);
+                    continue;
+                }
+
+                if (retained is null)
+                {
+                    Insert(connection, transaction, entry);
+                    continue;
+                }
+                if (!ReportingOperationalStoreJson.FixedHashEquals(
+                        retained.PayloadHashSha256,
+                        entry.PayloadHashSha256))
+                {
+                    throw ReportingScheduleConcurrencyException.ForConflict(
+                        retained.Schedule,
+                        expectedUpdatedAtUtc: null);
+                }
+            }
+
+            transaction.Commit();
+            _legacySnapshotBaseline = desired.ToDictionary(
+                static pair => pair.Key,
+                static pair => new LegacySnapshotEntry(
+                    pair.Value.Schedule,
+                    pair.Value.PayloadHashSha256));
+            _legacySnapshotScopes = replacementScopes;
+            _hasLegacySnapshotBaseline = true;
+            _legacySnapshotCoversAllScopes = baselineCoversAllScopes;
+        }
+    }
+
+    public void Upsert(ReportingScheduleRecordDto schedule) =>
+        Upsert(schedule, expectedUpdatedAtUtc: null);
+
+    public void Upsert(
+        ReportingScheduleRecordDto schedule,
+        DateTimeOffset? expectedUpdatedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        var entry = PrepareEntries([schedule]).Single();
+
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        PersistEntry(connection, transaction, entry, expectedUpdatedAtUtc);
+        transaction.Commit();
+    }
+
+    public bool Delete(
+        string tenantId,
+        string companyId,
+        string scheduleId,
+        DateTimeOffset expectedUpdatedAtUtc)
+    {
+        var normalizedTenantId = ReportingOperationalStoreJson.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var normalizedCompanyId = ReportingOperationalStoreJson.NormalizeRequired(
+            companyId,
+            nameof(companyId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var normalizedScheduleId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            scheduleId,
+            nameof(scheduleId),
+            MaximumIdentityLength);
+
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        var identity = new ReportingScheduleIdentity(
+            normalizedTenantId,
+            normalizedCompanyId,
+            normalizedScheduleId,
+            normalizedScheduleId.ToLowerInvariant());
+        var current = ReadCurrentSchedule(connection, transaction, identity);
+        if (current is null)
+        {
+            transaction.Commit();
+            return false;
+        }
+        if (current.Schedule.UpdatedAtUtc != expectedUpdatedAtUtc)
+        {
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                current.Schedule,
+                expectedUpdatedAtUtc);
+        }
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            delete from {_scheduleTable}
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and schedule_id_key = @schedule_id_key
+              and payload_hash_sha256 = @payload_hash_sha256;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+        command.Parameters.AddWithValue("company_id", NpgsqlDbType.Text, normalizedCompanyId);
+        command.Parameters.AddWithValue(
+            "schedule_id_key",
+            NpgsqlDbType.Text,
+            normalizedScheduleId.ToLowerInvariant());
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            current.PayloadHashSha256);
+        var deleted = command.ExecuteNonQuery() > 0;
+        if (!deleted)
+        {
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                current.Schedule,
+                expectedUpdatedAtUtc);
+        }
+
+        transaction.Commit();
+        return true;
+    }
+
+    private static IReadOnlyList<StoredScheduleEntry> PrepareEntries(
+        IReadOnlyList<ReportingScheduleRecordDto> schedules)
+    {
+        var identities = new HashSet<ReportingScheduleStorageKey>();
+        var entries = new List<StoredScheduleEntry>(schedules.Count);
+        foreach (var schedule in schedules)
+        {
+            ArgumentNullException.ThrowIfNull(schedule);
+            var identity = ValidateSchedule(schedule);
+            if (!identities.Add(ReportingScheduleStorageKey.From(identity)))
+            {
+                throw new ArgumentException(
+                    $"Reporting schedules contain duplicate scoped identity '{identity.TenantId}/{identity.CompanyId}/{identity.ScheduleId}'.",
+                    nameof(schedules));
+            }
+
+            var payload = ReportingOperationalStoreJson.SerializeCanonical(
+                schedule,
+                nameof(schedules));
+            entries.Add(new StoredScheduleEntry(
+                identity,
+                schedule,
+                payload,
+                ReportingOperationalStoreJson.ComputeSha256(payload)));
+        }
+
+        return entries
+            .OrderBy(static entry => entry.Identity.TenantId, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.Identity.CompanyId, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.Identity.ScheduleIdKey, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static ReportingScheduleRecordDto ReadSchedule(NpgsqlDataReader reader)
+    {
+        var retainedTenantId = reader.GetString(0);
+        var retainedCompanyId = reader.GetString(1);
+        var retainedScheduleId = reader.GetString(2);
+        var entityId = $"{retainedTenantId}/{retainedCompanyId}/{retainedScheduleId}";
+
+        try
+        {
+            var schedule = ReportingOperationalStoreJson.DeserializeRetained<ReportingScheduleRecordDto>(
+                reader.GetString(3),
+                "schedule snapshot",
+                entityId);
+            var retainedHash = reader.GetString(4);
+            var identity = ValidateSchedule(schedule);
+            if (!string.Equals(identity.TenantId, retainedTenantId, StringComparison.Ordinal)
+                || !string.Equals(identity.CompanyId, retainedCompanyId, StringComparison.Ordinal)
+                || !string.Equals(identity.ScheduleId, retainedScheduleId, StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    "the indexed tenant/company/schedule identity does not match the retained payload");
+            }
+
+            var computedHash = ReportingOperationalStoreJson.ComputeSha256(
+                ReportingOperationalStoreJson.SerializeCanonical(
+                    schedule,
+                    nameof(schedule)));
+            if (!ReportingOperationalStoreJson.FixedHashEquals(retainedHash, computedHash))
+            {
+                throw new InvalidDataException(
+                    "the canonical schedule JSON integrity digest does not match");
+            }
+
+            return schedule;
+        }
+        catch (ReportingOperationalStateCorruptionException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is ArgumentException
+            or InvalidDataException
+            or InvalidOperationException
+            or JsonException
+            or NotSupportedException)
+        {
+            throw new ReportingOperationalStateCorruptionException(
+                "schedule snapshot",
+                entityId,
+                ex.Message,
+                ex);
+        }
+    }
+
+    private static ReportingScheduleIdentity ValidateSchedule(
+        ReportingScheduleRecordDto schedule)
+    {
+        var tenantId = ReportingOperationalStoreJson.NormalizeRequired(
+            schedule.TenantId
+            ?? throw new ArgumentException(
+                "PostgreSQL reporting schedule persistence requires tenant scope.",
+                nameof(schedule)),
+            nameof(schedule.TenantId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var companyId = ReportingOperationalStoreJson.NormalizeRequired(
+            schedule.CompanyId
+            ?? throw new ArgumentException(
+                "PostgreSQL reporting schedule persistence requires company scope.",
+                nameof(schedule)),
+            nameof(schedule.CompanyId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var scheduleId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            schedule.ScheduleId,
+            nameof(schedule.ScheduleId),
+            MaximumIdentityLength);
+        _ = ReportingOperationalStoreJson.NormalizeRequired(
+            schedule.TemplateId,
+            nameof(schedule.TemplateId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        _ = ReportingOperationalStoreJson.NormalizeRequired(
+            schedule.CronExpression,
+            nameof(schedule.CronExpression),
+            1024,
+            requireCanonical: true);
+        _ = ReportingOperationalStoreJson.NormalizeRequired(
+            schedule.RequestedBy,
+            nameof(schedule.RequestedBy),
+            512,
+            requireCanonical: true);
+
+        if (schedule.NextAsOfDate == default
+            || schedule.DueAtUtc == default
+            || schedule.DueAtUtc.Offset != TimeSpan.Zero
+            || schedule.CreatedAtUtc == default
+            || schedule.CreatedAtUtc.Offset != TimeSpan.Zero
+            || schedule.UpdatedAtUtc == default
+            || schedule.UpdatedAtUtc.Offset != TimeSpan.Zero
+            || schedule.UpdatedAtUtc < schedule.CreatedAtUtc
+            || schedule.LastRunAtUtc is { Offset: var lastRunOffset }
+            && lastRunOffset != TimeSpan.Zero
+            || schedule.MaxRetries < 0
+            || schedule.RunCount < 0
+            || !Enum.IsDefined(schedule.State))
+        {
+            throw new ArgumentException(
+                "Reporting schedule dates, counters, or lifecycle state are invalid.",
+                nameof(schedule));
+        }
+
+        return new ReportingScheduleIdentity(
+            tenantId,
+            companyId,
+            scheduleId,
+            scheduleId.ToLowerInvariant());
+    }
+
+    private void PersistEntry(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        StoredScheduleEntry entry,
+        DateTimeOffset? expectedUpdatedAtUtc)
+    {
+        var current = ReadCurrentSchedule(
+            connection,
+            transaction,
+            entry.Identity);
+        if (current is null)
+        {
+            if (expectedUpdatedAtUtc is not null)
+            {
+                throw ReportingScheduleConcurrencyException.ForMissing(
+                    entry.Schedule,
+                    expectedUpdatedAtUtc.Value);
+            }
+
+            Insert(connection, transaction, entry);
+            return;
+        }
+
+        if (expectedUpdatedAtUtc is null)
+        {
+            if (ReportingOperationalStoreJson.FixedHashEquals(
+                    current.PayloadHashSha256,
+                    entry.PayloadHashSha256))
+            {
+                return;
+            }
+
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                current.Schedule,
+                expectedUpdatedAtUtc: null);
+        }
+        if (current.Schedule.UpdatedAtUtc != expectedUpdatedAtUtc.Value)
+        {
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                current.Schedule,
+                expectedUpdatedAtUtc.Value);
+        }
+        if (ReportingOperationalStoreJson.FixedHashEquals(
+                current.PayloadHashSha256,
+                entry.PayloadHashSha256))
+        {
+            return;
+        }
+        if (entry.Schedule.UpdatedAtUtc <= current.Schedule.UpdatedAtUtc)
+        {
+            throw new ArgumentException(
+                "A changed reporting schedule must advance UpdatedAtUtc beyond the retained revision.",
+                nameof(entry));
+        }
+
+        Update(connection, transaction, entry, current.PayloadHashSha256);
+    }
+
+    private StoredScheduleState? ReadCurrentSchedule(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingScheduleIdentity identity)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select tenant_id,
+                   company_id,
+                   schedule_id,
+                   schedule_payload::text,
+                   payload_hash_sha256
+            from {_scheduleTable}
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and schedule_id_key = @schedule_id_key
+            for update;
+            """;
+        AddIdentityParameters(command, identity);
+        using var reader = command.ExecuteReader();
+        return reader.Read()
+            ? new StoredScheduleState(
+                identity,
+                ReadSchedule(reader),
+                reader.GetString(4))
+            : null;
+    }
+
+    private IReadOnlyList<StoredScheduleState> ReadAllSchedules(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select tenant_id,
+                   company_id,
+                   schedule_id,
+                   schedule_payload::text,
+                   payload_hash_sha256
+            from {_scheduleTable}
+            order by tenant_id, company_id, schedule_id_key;
+            """;
+        var retained = new List<StoredScheduleState>();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var schedule = ReadSchedule(reader);
+            retained.Add(new StoredScheduleState(
+                ValidateSchedule(schedule),
+                schedule,
+                reader.GetString(4)));
+        }
+
+        return retained;
+    }
+
+    private void LockForLegacySnapshotReplacement(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"lock table {_scheduleTable} in exclusive mode;";
+        command.ExecuteNonQuery();
+    }
+
+    private void DeleteEntry(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingScheduleIdentity identity,
+        string retainedPayloadHashSha256,
+        ReportingScheduleRecordDto schedule,
+        DateTimeOffset expectedUpdatedAtUtc)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            delete from {_scheduleTable}
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and schedule_id_key = @schedule_id_key
+              and payload_hash_sha256 = @payload_hash_sha256;
+            """;
+        AddIdentityParameters(command, identity);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            retainedPayloadHashSha256);
+        if (command.ExecuteNonQuery() != 1)
+        {
+            throw ReportingScheduleConcurrencyException.ForMissing(
+                schedule,
+                expectedUpdatedAtUtc);
+        }
+    }
+
+    private void Insert(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        StoredScheduleEntry entry)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {_scheduleTable} as retained (
+                tenant_id,
+                company_id,
+                schedule_id,
+                schedule_id_key,
+                schedule_payload,
+                payload_hash_sha256,
+                stored_at_utc)
+            values (
+                @tenant_id,
+                @company_id,
+                @schedule_id,
+                @schedule_id_key,
+                @schedule_payload,
+                @payload_hash_sha256,
+                @stored_at_utc)
+            on conflict (tenant_id, company_id, schedule_id_key) do nothing;
+            """;
+        AddIdentityParameters(command, entry.Identity);
+        command.Parameters.AddWithValue(
+            "schedule_id",
+            NpgsqlDbType.Text,
+            entry.Identity.ScheduleId);
+        command.Parameters.AddWithValue(
+            "schedule_payload",
+            NpgsqlDbType.Jsonb,
+            entry.Payload);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "stored_at_utc",
+            NpgsqlDbType.TimestampTz,
+            DateTime.UtcNow);
+        if (command.ExecuteNonQuery() != 1)
+        {
+            var concurrent = ReadCurrentSchedule(
+                connection,
+                transaction,
+                entry.Identity);
+            if (concurrent is not null
+                && ReportingOperationalStoreJson.FixedHashEquals(
+                    concurrent.PayloadHashSha256,
+                    entry.PayloadHashSha256))
+            {
+                return;
+            }
+
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                concurrent?.Schedule ?? entry.Schedule,
+                expectedUpdatedAtUtc: null);
+        }
+    }
+
+    private void Update(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        StoredScheduleEntry entry,
+        string retainedPayloadHashSha256)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            update {_scheduleTable}
+            set schedule_id = @schedule_id,
+                schedule_payload = @schedule_payload,
+                payload_hash_sha256 = @payload_hash_sha256,
+                stored_at_utc = @stored_at_utc
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and schedule_id_key = @schedule_id_key
+              and payload_hash_sha256 = @retained_payload_hash_sha256;
+            """;
+        AddIdentityParameters(command, entry.Identity);
+        command.Parameters.AddWithValue(
+            "schedule_id",
+            NpgsqlDbType.Text,
+            entry.Identity.ScheduleId);
+        command.Parameters.AddWithValue(
+            "schedule_payload",
+            NpgsqlDbType.Jsonb,
+            entry.Payload);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "stored_at_utc",
+            NpgsqlDbType.TimestampTz,
+            DateTime.UtcNow);
+        command.Parameters.AddWithValue(
+            "retained_payload_hash_sha256",
+            NpgsqlDbType.Text,
+            retainedPayloadHashSha256);
+        if (command.ExecuteNonQuery() != 1)
+        {
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                entry.Schedule,
+                expectedUpdatedAtUtc: entry.Schedule.UpdatedAtUtc);
+        }
+    }
+
+    private static void AddIdentityParameters(
+        NpgsqlCommand command,
+        ReportingScheduleIdentity identity)
+    {
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, identity.TenantId);
+        command.Parameters.AddWithValue("company_id", NpgsqlDbType.Text, identity.CompanyId);
+        command.Parameters.AddWithValue(
+            "schedule_id_key",
+            NpgsqlDbType.Text,
+            identity.ScheduleIdKey);
+    }
+
+    private NpgsqlConnection OpenConnection()
+    {
+        var connection = new NpgsqlConnection(_options.ConnectionString);
+        connection.Open();
+        return connection;
+    }
+
+    private readonly record struct ReportingScheduleIdentity(
+        string TenantId,
+        string CompanyId,
+        string ScheduleId,
+        string ScheduleIdKey);
+
+    private readonly record struct ReportingScheduleStorageKey(
+        string TenantId,
+        string CompanyId,
+        string ScheduleIdKey)
+    {
+        internal static ReportingScheduleStorageKey From(
+            ReportingScheduleIdentity identity) =>
+            new(
+                identity.TenantId,
+                identity.CompanyId,
+                identity.ScheduleIdKey);
+    }
+
+    private readonly record struct ReportingScheduleScopeKey(
+        string TenantId,
+        string CompanyId)
+    {
+        internal static ReportingScheduleScopeKey From(
+            ReportingScheduleStorageKey key) =>
+            new(key.TenantId, key.CompanyId);
+    }
+
+    private sealed record StoredScheduleEntry(
+        ReportingScheduleIdentity Identity,
+        ReportingScheduleRecordDto Schedule,
+        string Payload,
+        string PayloadHashSha256);
+
+    private sealed record StoredScheduleState(
+        ReportingScheduleIdentity Identity,
+        ReportingScheduleRecordDto Schedule,
+        string PayloadHashSha256);
+
+    private sealed record LegacySnapshotEntry(
+        ReportingScheduleRecordDto Schedule,
+        string PayloadHashSha256);
+}

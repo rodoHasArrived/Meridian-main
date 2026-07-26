@@ -126,7 +126,7 @@ describe("finance standard pages", () => {
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
-    await renderPage(<ReportPreviewValidationScreen data={data} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
 
     expect(screen.getByRole("heading", { name: "Report Preview & Validation" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Preview" })).toBeInTheDocument();

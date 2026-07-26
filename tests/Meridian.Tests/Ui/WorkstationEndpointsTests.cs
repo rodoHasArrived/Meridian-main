@@ -42,6 +42,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
 using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
 using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
@@ -6113,20 +6114,27 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_ReportingWorkspace_ShouldReturnTypedReportingPayloadWithProfiles()
+    public async Task MapWorkstationEndpoints_ReportingWorkspace_ShouldReturnIndependentTypedCapability()
     {
-        // The reporting workspace rides on the accounting payload, which requires the strategy
-        // run read service; without it the endpoint returns 503 instead of fabricated data.
-        await using var app = await CreateAppAsync(
-            services => RegisterRunReadServices(services),
+        var capability = ReadyReportingDeploymentCapability();
+        var readiness = Substitute.For<IReportingDeploymentReadinessService>();
+        readiness.Evaluate().Returns(capability);
+        await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(readiness);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog()));
+            },
             currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
 
-        var reportingSection = reporting.RootElement.GetProperty("reporting");
+        var reportingSection = reporting.RootElement;
         reportingSection.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
         reportingSection.GetProperty("summary").GetString().Should().Contain("profiles are available");
+        reportingSection.GetProperty("deploymentCapability").GetProperty("isReady").GetBoolean()
+            .Should().BeTrue();
         reportingSection.TryGetProperty("reportPackTargets", out _).Should().BeFalse();
         var distributions = reportingSection.GetProperty("reportPackDistributions").EnumerateArray().ToArray();
         distributions.Should().NotBeEmpty();
@@ -6152,6 +6160,72 @@ public sealed partial class WorkstationEndpointsTests
             .Select(r => r.GetString())
             .ToArray();
         recommended.Should().Contain(value => value == "excel" || value == "python-pandas");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportingWorkspace_WithoutDurableAuthority_ShouldFailClosed()
+    {
+        var readiness = Substitute.For<IReportingDeploymentReadinessService>();
+        readiness.Evaluate().Returns(new ReportingDeploymentCapabilityDto(
+            IsReady: false,
+            DurableGovernance: true,
+            DurableArtifacts: true,
+            DurableRuns: false,
+            DurableScheduling: false,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: false,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components:
+            [
+                new("runs", "Run history", false, "Certified reporting runs are not backed by the PostgreSQL authority."),
+                new("scheduling", "Scheduling", false, "Reporting schedules are not backed by the PostgreSQL authority.")
+            ],
+            BlockingReasons:
+            [
+                "Certified reporting runs are not backed by the PostgreSQL authority.",
+                "Reporting schedules are not backed by the PostgreSQL authority."
+            ]));
+        await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(readiness);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog()));
+            },
+            currentUserPermissions: UserPermission.ViewReporting);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/reporting");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(ServerJsonOptions);
+        problem.GetProperty("detail").GetString().Should().Contain("PostgreSQL authority");
+    }
+
+    private static ReportingDeploymentCapabilityDto ReadyReportingDeploymentCapability()
+    {
+        var components = new[]
+        {
+            new ReportingDeploymentComponentDto("governance", "Governance", true, "Ready."),
+            new ReportingDeploymentComponentDto("artifacts", "Artifact vault", true, "Ready."),
+            new ReportingDeploymentComponentDto("runs", "Run history", true, "Ready."),
+            new ReportingDeploymentComponentDto("scheduling", "Scheduling", true, "Ready."),
+            new ReportingDeploymentComponentDto("delivery", "Delivery", true, "Ready."),
+            new ReportingDeploymentComponentDto("recipient-destinations", "Recipient destinations", true, "Ready."),
+            new ReportingDeploymentComponentDto("client-documents", "Client documents", true, "Ready."),
+            new ReportingDeploymentComponentDto("migrations", "Reporting migrations", true, "Ready.")
+        };
+        return new ReportingDeploymentCapabilityDto(
+            IsReady: true,
+            DurableGovernance: true,
+            DurableArtifacts: true,
+            DurableRuns: true,
+            DurableScheduling: true,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: true,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components: components,
+            BlockingReasons: []);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
 
 namespace Meridian.Tests.Ui;
 
@@ -760,7 +761,11 @@ public sealed class ReportingTenantIsolationTests
             readinessService: readiness,
             certificationService: certification,
             governanceCoordinator: governance);
-        var parameters = BuildExactRunParameters();
+        var parameters = BuildExactRunParameters() with
+        {
+            PeriodId = "55555555-5555-5555-5555-555555555555",
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
         var request = new ReportingScheduleUpsertRequestDto(
             "private-month-end",
             draft.Definition.TemplateId.Name,
@@ -774,7 +779,10 @@ public sealed class ReportingTenantIsolationTests
             [
                 new ReportingScheduleDeliveryTargetDto(
                     "fund-operations",
-                    [GovernanceReportArtifactFormatDto.Pdf],
+                    [
+                        GovernanceReportArtifactFormatDto.Pdf,
+                        GovernanceReportArtifactFormatDto.Xlsx
+                    ],
                     ReportPackDeliveryModeDto.SecurePortal,
                     RecipientPrincipalId: "operator-a",
                     RecipientPrincipalKind: ReportAccessPrincipalKindDto.User)
@@ -803,7 +811,7 @@ public sealed class ReportingTenantIsolationTests
             },
             ownerScope);
         unavailableFormat.Should().Throw<InvalidDataException>()
-            .WithMessage("*exact primary output is Pdf*");
+            .WithMessage("*exact primary outputs are Pdf, Xlsx*");
 
         var retainedSchedule = service.Upsert(request, ownerScope);
         var incompleteScope = Scope("operator-b", "tenant-b", "company-b");
@@ -826,7 +834,9 @@ public sealed class ReportingTenantIsolationTests
         invalidActivation.Should().Throw<InvalidDataException>()
             .WithMessage("*immutable run-parameter snapshot*");
 
-        var result = await service.RunDueAsync(FixedNow, CancellationToken.None);
+        var workerResult = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+        workerResult.Failures.Should().BeEmpty();
+        var result = workerResult.Result;
 
         var runResult = result.Runs.Should().ContainSingle().Subject;
         governance.CurrentRun.Should().NotBeNull();
@@ -902,12 +912,12 @@ public sealed class ReportingTenantIsolationTests
             governanceCoordinator: restartedGovernance);
         var recovered = await recoveredService.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
         recovered.Result.Runs.Should().ContainSingle(run => run.Run.RunId == governed.RunId);
-        recovered.Failures.Should().ContainSingle(failure =>
-            failure.ScheduleId == incompleteDraft.ScheduleId
-            && failure.TenantId == "tenant-b"
-            && failure.CompanyId == "company-b"
-            && failure.ErrorType == nameof(InvalidDataException)
-            && failure.FailureRecordingErrorType == null);
+        var recoveredFailure = recovered.Failures.Should().ContainSingle().Subject;
+        recoveredFailure.ScheduleId.Should().Be(incompleteDraft.ScheduleId);
+        recoveredFailure.TenantId.Should().Be("tenant-b");
+        recoveredFailure.CompanyId.Should().Be("company-b");
+        recoveredFailure.ErrorType.Should().Be(nameof(InvalidDataException));
+        recoveredFailure.FailureRecordingErrorType.Should().BeNull();
         runStore.ListRuns(10).Should().ContainSingle(snapshot => snapshot.Manifest.RunId == governed.RunId);
         var retainedFailure = recoveredService.ListSchedules(incompleteScope)
             .Should().ContainSingle().Subject;
@@ -942,8 +952,12 @@ public sealed class ReportingTenantIsolationTests
         handoff.State.Should().Be(ReportingScheduledReleaseHandoffStateDto.PendingRelease);
         handoff.HandoffId.Should().HaveLength(64);
         handoff.DistributionId.Should().Be($"scheduled:{handoff.HandoffId}");
-        handoff.RequestedFormats.Should().Equal(GovernanceReportArtifactFormatDto.Pdf);
-        handoff.ArtifactIds.Should().Equal($"{governed.RunId}.pdf");
+        handoff.RequestedFormats.Should().Equal(
+            GovernanceReportArtifactFormatDto.Pdf,
+            GovernanceReportArtifactFormatDto.Xlsx);
+        handoff.ArtifactIds.Should().Equal(
+            $"{governed.RunId}.pdf",
+            $"{governed.RunId}.xlsx");
         handoff.Destination.Should().BeEmpty(
             "the recipient directory owns external destination resolution after release");
 
@@ -1524,25 +1538,27 @@ public sealed class ReportingTenantIsolationTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var checkpointId = "reconciliation-month-end-a";
-            var checkpointHash = new string('c', 64);
-            return ValueTask.FromResult(new ReportingReconciliationEvidenceReceipt(
-                source.TenantId,
-                source.OrganizationId,
-                source.CompanyId,
-                source.FundId,
-                source.LedgerBookId,
-                source.AccountingPeriodId,
-                source.AccountingBasis,
-                source.AsOfDate,
-                source.CheckpointId,
-                source.CheckpointHash,
-                checkpointId,
-                checkpointHash,
-                FixedNow,
-                HasOpenBreaks: false,
-                EvidenceIds: ImmutableArray.Create(
-                    $"reconciliation-checkpoint:{checkpointId}:{checkpointHash}")));
+            return ValueTask.FromResult(ReportingReconciliationEvidenceValidation.CreateReceipt(
+                source,
+                new ReportingReconciliationCompletionEvidence(
+                    $"hard-close-{source.CheckpointId}",
+                    new string('c', 64),
+                    FixedNow,
+                    HasOpenBreaks: false,
+                    [$"close:{source.CheckpointId}"],
+                    CloseWorkflowCompletion: new ReportingCloseWorkflowCompletionEvidence(
+                        "22222222-2222-2222-2222-222222222222",
+                        11,
+                        "33333333-3333-3333-3333-333333333333",
+                        source.LedgerBookId,
+                        source.AccountingPeriodId,
+                        "close-approval-month-end-a",
+                        new string('d', 64),
+                        new string('e', 64),
+                        "close-package-month-end-a",
+                        new string('f', 64),
+                        "44444444-4444-4444-4444-444444444444",
+                        new string('a', 64)))));
         }
     }
 

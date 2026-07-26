@@ -390,6 +390,7 @@ export function ReportingScheduleManagementPanel({
                     <option value="Xlsx">XLSX</option>
                     <option value="Csv">CSV</option>
                     <option value="EvidenceVault">Evidence Vault</option>
+                    <option value="ClientPackage">Client Package</option>
                   </Select>
                 </label>
                 <label className="space-y-1">

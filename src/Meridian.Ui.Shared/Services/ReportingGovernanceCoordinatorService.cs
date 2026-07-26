@@ -889,6 +889,7 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
                 manifest.ResolvedParameters
                     ?? throw new ReportingGovernanceException(
                         $"Reporting run '{run.RunId}' has no retained parameter snapshot for final release revalidation."),
+                manifest.TemplateId,
                 manifest.AuthoritativeSource
                     ?? throw new ReportingGovernanceException(
                         $"Reporting run '{run.RunId}' has no retained authoritative source for final release revalidation."),

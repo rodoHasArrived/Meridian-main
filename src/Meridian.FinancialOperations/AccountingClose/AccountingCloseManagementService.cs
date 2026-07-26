@@ -970,6 +970,38 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             var updatedPlan = transition.Workflow is null
                 ? plan
                 : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct, tenantId, companyId).ConfigureAwait(false);
+            if (transition.Success)
+            {
+                try
+                {
+                    // The first hard-close call deliberately cannot retain certifiable reporting
+                    // evidence while the Operations Continuity close transition is pending. Once
+                    // that transition commits, repeat the idempotent handoff so the final receipt
+                    // binds the closed workflow version, approval, checklist, close package, and
+                    // close-audit hash without reopening or re-closing the ledger period.
+                    await _postingWorkbench.FinalizeHardCloseAsync(
+                            RequirePostingContext(transition.Workflow ?? workflow, updatedPlan, tenantId, companyId),
+                            new AccountingClosePostingCommand(
+                                resolvedActor,
+                                RequireText(request.Rationale, "Rationale"),
+                                NormalizeEvidenceLinks(request.EvidenceLinks),
+                                request.ActionOrigin,
+                                Role: "Fund Controller",
+                                CorrelationId: request.CorrelationId),
+                            ct)
+                        .ConfigureAwait(false);
+                }
+                catch (ReportingCloseEvidenceHandoffException ex)
+                {
+                    updatedPlan = updatedPlan with
+                    {
+                        IsPeriodLocked = true,
+                        CloseCalendar = BuildCloseCalendar(updatedPlan.Tasks, isPeriodLocked: true)
+                    };
+                    return ReportingEvidenceHandoffPending(updatedPlan, ex);
+                }
+            }
+
             var transitionIssues = transition.Success
                 ? Array.Empty<AccountingConfigurationValidationIssueDto>()
                 : transition.Blockers

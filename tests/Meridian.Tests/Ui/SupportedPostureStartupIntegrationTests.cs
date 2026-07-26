@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
+using Meridian.Contracts.Lifecycle;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -57,6 +58,14 @@ public sealed class SupportedPostureStartupIntegrationTests
             using var client = new HttpClient { BaseAddress = new Uri(address) };
             var health = await client.GetAsync("/healthz", startTimeout.Token);
             health.IsSuccessStatusCode.Should().BeTrue("a started supported-posture host must serve liveness");
+            var readiness = await app.Services
+                .GetRequiredService<IRuntimeReadinessService>()
+                .EvaluateAsync(startTimeout.Token);
+            var reportingDurability = readiness.Checks
+                .Single(check => check.Id == "reporting-durability");
+            reportingDurability.Requirement.Should().Be(LifecycleCheckRequirement.Degradable);
+            reportingDurability.Status.Should().Be(LifecycleCheckStatus.Degraded);
+            reportingDurability.Message.Should().Contain("unavailable durable components");
 
             using var unauthorized = await client.GetAsync(
                 "/api/problem-details/empty-unauthorized",

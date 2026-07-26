@@ -16,7 +16,22 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed record ReportingAuthoritativeSourceCapture(
     ReportingAuthoritativeSourceCheckpoint Checkpoint,
-    ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows);
+    ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows,
+    ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
+
+/// <summary>
+/// Template identity supplied by the governed certification/revalidation path when an
+/// authoritative source capture may require template-specific presentation evidence.
+/// </summary>
+public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
+{
+    public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(
+        ReportingTemplateMetadata template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        return new ReportingAuthoritativeSourceCaptureIntent(template.TemplateId);
+    }
+}
 
 /// <summary>
 /// Durable, server-owned source boundary used by certification. Implementations must return the
@@ -28,6 +43,21 @@ public interface IReportingAuthoritativeSource
         ReportingRunParametersDto parameters,
         ReportAccessQueryContext accessContext,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Captures the same template-neutral authoritative checkpoint while also retaining any
+    /// explicitly required template presentation evidence. Existing sources that do not provide
+    /// template-specific presentations retain their normal capture behavior.
+    /// </summary>
+    ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+        ReportingRunParametersDto parameters,
+        ReportAccessQueryContext accessContext,
+        ReportingAuthoritativeSourceCaptureIntent intent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(intent);
+        return CaptureAsync(parameters, accessContext, cancellationToken);
+    }
 }
 
 public class ReportingAuthoritativeSourceUnavailableException : InvalidOperationException
@@ -63,10 +93,34 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    public async ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+    public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
         ReportingRunParametersDto parameters,
         ReportAccessQueryContext accessContext,
+        CancellationToken cancellationToken = default) =>
+        CaptureCoreAsync(parameters, accessContext, intent: null, cancellationToken);
+
+    public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+        ReportingRunParametersDto parameters,
+        ReportAccessQueryContext accessContext,
+        ReportingAuthoritativeSourceCaptureIntent intent,
         CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(intent);
+        if (string.IsNullOrWhiteSpace(intent.TemplateId))
+        {
+            throw new ArgumentException(
+                "A governed template identity is required for a template-scoped authoritative capture.",
+                nameof(intent));
+        }
+
+        return CaptureCoreAsync(parameters, accessContext, intent, cancellationToken);
+    }
+
+    private async ValueTask<ReportingAuthoritativeSourceCapture> CaptureCoreAsync(
+        ReportingRunParametersDto parameters,
+        ReportAccessQueryContext accessContext,
+        ReportingAuthoritativeSourceCaptureIntent? intent,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(accessContext);
@@ -161,6 +215,20 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 "Final reporting is blocked because the exact fund/book/period/basis/as-of source contains no ledger rows.");
         }
 
+        var canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(
+                intent?.TemplateId,
+                parameters.OutputFormat)
+            ? await BuildCanonicalLedgerReportPackAsync(
+                    parameters,
+                    fundId,
+                    book,
+                    period,
+                    basis,
+                    cutoffUtc,
+                    requiredDimensions,
+                    cancellationToken)
+                .ConfigureAwait(false)
+            : null;
         var highestSequence = ordered.Length == 0 ? 0 : ordered.Max(static record => record.GlobalSequence);
         var capturedAtUtc = _timeProvider.GetUtcNow().ToUniversalTime();
         var sourceId = $"ledger:{book.LedgerBookId:D}:{period.PeriodId:D}";
@@ -177,11 +245,16 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             highestSequence,
             rows);
         var checkpointId = $"ledger-checkpoint-{checkpointHash[..32]}";
-        var evidence = ImmutableArray.Create(
-            $"reporting-source-checkpoint:{checkpointId}:{checkpointHash}",
-            $"ledger-source:{tenantId}:{organization.OrganizationId:D}:{companyId}:{fundId}:{book.LedgerBookId:D}:{period.PeriodId:D}:{basis}:{parameters.AsOfDate:yyyy-MM-dd}",
-            $"ledger-sequence:{highestSequence.ToString(CultureInfo.InvariantCulture)}",
-            $"ledger-rows:{rows.Length.ToString(CultureInfo.InvariantCulture)}");
+        var evidence = ImmutableArray.CreateBuilder<string>();
+        evidence.Add($"reporting-source-checkpoint:{checkpointId}:{checkpointHash}");
+        evidence.Add(
+            $"ledger-source:{tenantId}:{organization.OrganizationId:D}:{companyId}:{fundId}:{book.LedgerBookId:D}:{period.PeriodId:D}:{basis}:{parameters.AsOfDate:yyyy-MM-dd}");
+        evidence.Add($"ledger-sequence:{highestSequence.ToString(CultureInfo.InvariantCulture)}");
+        evidence.Add($"ledger-rows:{rows.Length.ToString(CultureInfo.InvariantCulture)}");
+        if (canonicalReportPack is not null)
+        {
+            evidence.Add(ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(canonicalReportPack));
+        }
         var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
             SourceKind,
             sourceId,
@@ -200,8 +273,112 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             checkpointId,
             checkpointHash,
             capturedAtUtc,
-            evidence);
-        return new ReportingAuthoritativeSourceCapture(checkpoint, rows);
+            evidence.ToImmutable());
+        var presentation = canonicalReportPack is null
+            ? null
+            : new ReportingCertifiedLedgerPresentationInput(
+                checkpointId,
+                checkpointHash,
+                DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(rows),
+                canonicalReportPack);
+        return new ReportingAuthoritativeSourceCapture(checkpoint, rows, presentation);
+    }
+
+    private async Task<LedgerFinancialReportPack> BuildCanonicalLedgerReportPackAsync(
+        ReportingRunParametersDto parameters,
+        string fundId,
+        LedgerBookRecord book,
+        LedgerAccountingPeriod period,
+        AccountingBasisKindDto basis,
+        DateTimeOffset cutoffUtc,
+        LedgerLineDimensionSet selectedDimensions,
+        CancellationToken cancellationToken)
+    {
+        var baseDimensions = new LedgerLineDimensionSet(
+            FundId: fundId,
+            OrganizationId: selectedDimensions.OrganizationId,
+            BookId: book.LedgerBookId.ToString("D"));
+        IReadOnlyList<LedgerJournalEntryRecord> historicalRecords;
+        try
+        {
+            historicalRecords = await _journalStore.QueryAsync(
+                    new LedgerJournalEntryQuery(
+                        LedgerBookId: book.LedgerBookId,
+                        LineDimensions: baseDimensions,
+                        OccurredTo: cutoffUtc),
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (NotSupportedException exception)
+        {
+            throw Unavailable(
+                $"The configured ledger journal store cannot build the canonical partners-capital presentation from complete as-of history: {exception.Message}");
+        }
+
+        var orderedHistory = historicalRecords
+            .OrderBy(static record => record.GlobalSequence)
+            .ThenBy(static record => record.Entry.JournalEntryId)
+            .ToArray();
+        var sequences = new HashSet<long>();
+        var ledger = new Meridian.Ledger.Ledger();
+        foreach (var record in orderedHistory)
+        {
+            if (record.AccountingBasis != basis
+                || record.Entry.Timestamp > cutoffUtc
+                || record.GlobalSequence <= 0
+                || !sequences.Add(record.GlobalSequence))
+            {
+                throw Unavailable(
+                    $"Ledger journal record '{record.Entry.JournalEntryId:D}' is outside the canonical book/basis/as-of presentation checkpoint or has an invalid sequence.");
+            }
+
+            foreach (var line in record.Entry.Lines)
+            {
+                var dimensions = line.Dimensions
+                    ?? throw Unavailable(
+                        $"Ledger line '{line.EntryId:D}' lacks the immutable dimensional scope required for the canonical client presentation.");
+                EnsureDimensionsMatch(dimensions, baseDimensions, line.EntryId);
+            }
+
+            try
+            {
+                ledger.Post(record.Entry);
+            }
+            catch (LedgerValidationException exception)
+            {
+                throw Unavailable(
+                    $"Ledger journal record '{record.Entry.JournalEntryId:D}' cannot be replayed into the canonical client presentation: {exception.Message}");
+            }
+        }
+
+        var periodStart = StartOfUtcDate(period.StartDate);
+        var periodEnd = EndOfUtcDate(period.EndDate);
+        var lockedPeriod = parameters.Finality == ReportingFinalityDto.Final
+            ? new LockedAccountingPeriod(
+                new LedgerBookKey(fundId, book.LedgerBookId.ToString("D")),
+                period.PeriodId.ToString("D"),
+                periodStart,
+                periodEnd,
+                period.ClosedAt ?? periodEnd,
+                "accounting-close",
+                "Durable hard close retained for certified reporting.")
+            : null;
+        var generatedAtUtc = period.ClosedAt?.ToUniversalTime() ?? cutoffUtc;
+        var reportRequest = new LedgerReportPackRequest(
+            reportId:
+                $"ledger-report-pack-{book.LedgerBookId:N}-{period.PeriodId:N}-{parameters.AsOfDate:yyyyMMdd}",
+            fundId,
+            period.PeriodId.ToString("D"),
+            periodStart,
+            periodEnd,
+            cutoffUtc,
+            book.BaseCurrency,
+            generatedBy: "meridian-reporting-authority",
+            generatedAtUtc,
+            lockedPeriod,
+            lineDimensions: selectedDimensions);
+
+        return LedgerReportPackBuilder.Build(ledger, reportRequest);
     }
 
     private async Task<LedgerBookRecord> ResolveBookAsync(
@@ -808,6 +985,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
 
     private static DateTimeOffset EndOfUtcDate(DateOnly date) =>
         new(date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc), TimeSpan.Zero);
+
+    private static DateTimeOffset StartOfUtcDate(DateOnly date) =>
+        new(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), TimeSpan.Zero);
 
     private static void RequireBoundAccess(ReportAccessQueryContext accessContext)
     {

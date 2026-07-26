@@ -30,8 +30,9 @@ or provider implementations.
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
-- `Workstation/` - workstation and operator workflow DTOs, including the persisted
-  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
+  reconciliation report status, stage, retained JSON/CSV artifact, evidence-link, and recovery
+  payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.

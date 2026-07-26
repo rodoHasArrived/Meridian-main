@@ -55,6 +55,9 @@ public static partial class WorkstationEndpoints
     private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
     private const string PortfolioApiRoutePrefix = "/api/portfolio";
+    private static readonly JsonSerializerOptions ReconciliationAuditJsonOptions =
+        CreateReconciliationAuditJsonOptions();
+
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation")
@@ -491,16 +494,47 @@ public static partial class WorkstationEndpoints
         .Produces<WorkstationAccountingPayload>(200)
         .Produces(503);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReporting), async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReporting), (HttpContext context) =>
         {
-            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
-            return payload is null
-                ? StrategyReadServiceUnavailable()
-                : Results.Ok(payload);
+            var deployment = context.RequestServices
+                .GetService<IReportingDeploymentReadinessService>()
+                ?.Evaluate();
+            if (deployment is null)
+            {
+                return WorkstationServiceUnavailable(
+                    "The reporting deployment capability service is not registered.");
+            }
+
+            if (!deployment.IsReady)
+            {
+                return WorkstationServiceUnavailable(
+                    $"Authoritative reporting is unavailable: {string.Join(" ", deployment.BlockingReasons)}");
+            }
+
+            var readService = context.RequestServices.GetService<ReportPackRunReadService>();
+            if (readService is null)
+            {
+                return WorkstationServiceUnavailable(
+                    "The authoritative reporting read service is not registered.");
+            }
+
+            try
+            {
+                var payload = readService.BuildPayload(BuildReportAccessQueryContext(context)) with
+                {
+                    DeploymentCapability = deployment
+                };
+                return Results.Ok(payload);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                return WorkstationServiceUnavailable(
+                    "The authoritative reporting store is temporarily unavailable.");
+            }
         })
         .WithName("GetWorkstationReporting")
         .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.AdminMaintenance)
-        .Produces<WorkstationAccountingPayload>(200)
+        .Produces<WorkstationReportingPayload>(200)
         .Produces(401)
         .Produces(403)
         .Produces(503);
@@ -510,8 +544,21 @@ public static partial class WorkstationEndpoints
             string? format,
             HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<ReportPackRunReadService>()
-                ?? new ReportPackRunReadService(new DefaultReportingTemplateCatalog());
+            var deployment = context.RequestServices
+                .GetService<IReportingDeploymentReadinessService>()
+                ?.Evaluate();
+            if (deployment?.IsReady != true)
+            {
+                return WorkstationServiceUnavailable(
+                    "Authoritative reporting exports are unavailable until the durable reporting deployment is ready.");
+            }
+
+            var service = context.RequestServices.GetService<ReportPackRunReadService>();
+            if (service is null)
+            {
+                return WorkstationServiceUnavailable(
+                    "The authoritative reporting read service is not registered.");
+            }
             try
             {
                 var payload = service.GetStructuredReportingExport(
@@ -548,6 +595,13 @@ public static partial class WorkstationEndpoints
 
                 return Results.Json(payload, jsonOptions);
             }
+            catch (Exception exception) when (exception is not ArgumentException
+                and not KeyNotFoundException
+                and not OperationCanceledException)
+            {
+                return WorkstationServiceUnavailable(
+                    "The authoritative reporting store is temporarily unavailable.");
+            }
             catch (ArgumentException ex)
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
@@ -566,7 +620,8 @@ public static partial class WorkstationEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(400)
-        .Produces(404);
+        .Produces(404)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolio), async (HttpContext context) =>
         {
@@ -1927,18 +1982,32 @@ public static partial class WorkstationEndpoints
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, request with
+            try
             {
-                ResolvedBy = ResolveCurrentActor(context)
-            }, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
+                var transition = await ResolveBreakAsync(
+                    context.RequestServices,
+                    request with
+                    {
+                        ResolvedBy = ResolveCurrentActor(context)
+                    },
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
+            }
+            catch (StatementReconciliationCaseworkHandoffException exception)
+            {
+                return Results.Problem(
+                    detail: $"{exception.Code}: {exception.Message}",
+                    statusCode: StatusCodes.Status503ServiceUnavailable,
+                    title: "Statement reconciliation casework handoff failed");
+            }
         })
         .WithName("ResolveReconciliationBreak")
         .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(401)
         .Produces(403)
-        .Produces(404);
+        .Produces(404)
+        .Produces(503);
 
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
@@ -3876,8 +3945,40 @@ public static partial class WorkstationEndpoints
     }
 
     private static WorkstationReportingPayload BuildReportingPayload(HttpContext? context = null)
-        => context?.RequestServices.GetService<ReportPackRunReadService>()?.BuildPayload(BuildReportAccessQueryContext(context))
-           ?? ReportPackRunReadService.BuildFallbackPayload();
+    {
+        if (context is null)
+        {
+            return BuildUnavailableReportingPayload(null);
+        }
+
+        var deployment = context.RequestServices
+            .GetService<IReportingDeploymentReadinessService>()
+            ?.Evaluate();
+        if (deployment?.IsReady != true)
+        {
+            return BuildUnavailableReportingPayload(deployment);
+        }
+
+        var readService = context.RequestServices.GetService<ReportPackRunReadService>();
+        return readService is null
+            ? BuildUnavailableReportingPayload(deployment)
+            : readService.BuildPayload(BuildReportAccessQueryContext(context)) with
+            {
+                DeploymentCapability = deployment
+            };
+    }
+
+    private static WorkstationReportingPayload BuildUnavailableReportingPayload(
+        ReportingDeploymentCapabilityDto? deployment) =>
+        new(
+            ProfileCount: 0,
+            RecommendedProfiles: [],
+            Profiles: [],
+            ReportPackDistributions: [],
+            Summary: "Authoritative reporting is unavailable. Review the reporting deployment capability and readiness checks.",
+            Templates: [],
+            RecentRuns: [],
+            DeploymentCapability: deployment);
 
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
@@ -4451,7 +4552,112 @@ public static partial class WorkstationEndpoints
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
+        if (repository is null)
+        {
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.NotFound,
+                Item: null,
+                Error: "Reconciliation break queue repository is not registered.");
+        }
+
+        var item = await repository.GetByIdAsync(request.BreakId, ct).ConfigureAwait(false);
+        if (item is null || !string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase))
+        {
+            return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
+        }
+
+        var handoff = services.GetService<IStatementReconciliationCaseworkHandoffService>()
+            ?? throw new StatementReconciliationCaseworkHandoffException(
+                "STATEMENT_CASEWORK_AUTHORITY_REQUIRED",
+                "Authoritative statement reconciliation casework handoff is not registered.");
+        var command = await BuildLegacyStatementResolveCommandAsync(
+                repository,
+                item,
+                request,
+                ct)
+            .ConfigureAwait(false);
+        return await handoff.ApplyAsync(command, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<ReconciliationCaseworkCommand> BuildLegacyStatementResolveCommandAsync(
+        IReconciliationBreakQueueRepository repository,
+        ReconciliationBreakQueueItem current,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
+    {
+        var material = string.Join(
+            '\n',
+            "meridian.workstation.statement-legacy-resolve.v1",
+            request.BreakId.Trim(),
+            request.Status.ToString(),
+            request.ResolvedBy.Trim(),
+            (request.ResolutionNote ?? string.Empty).Trim(),
+            (request.OperatorRationale ?? string.Empty).Trim(),
+            OperationsActionOriginDto.HumanOperator.ToString());
+        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material)))
+            .ToLowerInvariant();
+        var commandId = $"statement-legacy-resolve:{inputHash}";
+        var commandBase = current;
+        if (StatementCaseworkHandoffObligation.HasPending(current, commandId)
+            || StatementCaseworkHandoffObligation.HasCompleted(current, commandId))
+        {
+            var retainedAudit = (await repository.GetAuditHistoryAsync(current.BreakId, ct).ConfigureAwait(false))
+                .LastOrDefault(audit =>
+                    string.Equals(audit.CommandId, commandId, StringComparison.Ordinal)
+                    && !string.IsNullOrWhiteSpace(audit.BeforePayload));
+            if (retainedAudit is null)
+            {
+                throw new StatementReconciliationCaseworkHandoffException(
+                    "STATEMENT_CASEWORK_RECEIPT_MISSING",
+                    $"Statement case '{current.BreakId}' retains a handoff marker without its originating casework audit.");
+            }
+
+            try
+            {
+                commandBase = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(
+                                  retainedAudit.BeforePayload!,
+                                  ReconciliationAuditJsonOptions)
+                              ?? throw new JsonException("The retained before-payload was empty.");
+            }
+            catch (JsonException exception)
+            {
+                throw new StatementReconciliationCaseworkHandoffException(
+                    "STATEMENT_CASEWORK_RECEIPT_INVALID",
+                    $"The retained statement casework receipt for '{current.BreakId}' cannot be reconstructed.",
+                    exception);
+            }
+        }
+
+        var dismissed = request.Status == ReconciliationBreakQueueStatus.Dismissed;
+        return new ReconciliationCaseworkCommand(
+            BreakId: request.BreakId,
+            Action: ReconciliationCaseworkAction.Resolve,
+            Actor: request.ResolvedBy,
+            CommandId: commandId,
+            CorrelationId: $"statement-legacy-resolve:{inputHash[..16]}",
+            Source: "workstation-statement-legacy-resolve-adapter",
+            ExpectedVersion: commandBase.Version,
+            Reason: request.OperatorRationale,
+            Note: request.ResolutionNote,
+            RootCauseCode: dismissed ? "DismissedFalsePositive" : commandBase.RootCauseCode,
+            ResolutionCode: dismissed
+                ? "DismissedFalsePositive"
+                : commandBase.ResolutionCode ?? "LegacyResolved",
+            EvidenceLinks: (commandBase.EvidenceLinks ?? [])
+                .Where(static evidence => !StatementCaseworkHandoffObligation.IsControlMarker(evidence))
+                .ToArray(),
+            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+    }
+
+    private static JsonSerializerOptions CreateReconciliationAuditJsonOptions()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+        options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        return options;
     }
 
     private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(

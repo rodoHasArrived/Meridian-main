@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -67,10 +68,12 @@ public sealed class FileReportingRunStore : IReportingRunStore
     private const string LegacySchemaVersion = "meridian.reporting.run-store.v1";
     private const string LegacyRunRemediation =
         "Read-only legacy run. Preserve for inventory, then freshly recertify from authoritative source data before current use.";
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> StoreGates =
+        new(StringComparer.OrdinalIgnoreCase);
 
     private readonly ReportingRunStoreOptions _options;
     private readonly ILogger<FileReportingRunStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly SemaphoreSlim _gate;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -86,6 +89,9 @@ public sealed class FileReportingRunStore : IReportingRunStore
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.RootDirectory);
         Directory.CreateDirectory(_options.RootDirectory);
+        _gate = StoreGates.GetOrAdd(
+            Path.GetFullPath(Path.Combine(_options.RootDirectory, SnapshotFileName)),
+            static _ => new SemaphoreSlim(1, 1));
     }
 
     public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
@@ -95,6 +101,54 @@ public sealed class FileReportingRunStore : IReportingRunStore
             .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
             .Take(Math.Clamp(limit, 1, 200))
             .ToArray();
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(string tenantId, int limit = 25)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        var normalizedTenantId = tenantId.Trim();
+        return LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                run.Manifest.OperationalScope?.TenantId,
+                normalizedTenantId,
+                StringComparison.Ordinal))
+            .OrderByDescending(static run => run.UpdatedAtUtc)
+            .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
+            .Take(Math.Clamp(limit, 1, 200))
+            .ToArray();
+    }
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(
+        string tenantId,
+        string? companyId,
+        int limit = 25) =>
+        ListRuns(tenantId, companyId, offset: 0, limit: limit);
+
+    public IReadOnlyList<ReportingRunSnapshot> ListRuns(
+        string tenantId,
+        string? companyId,
+        int offset,
+        int limit)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        var normalizedTenantId = tenantId.Trim();
+        var normalizedCompanyId = companyId?.Trim();
+        return LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    normalizedTenantId,
+                    StringComparison.Ordinal)
+                && (string.IsNullOrWhiteSpace(normalizedCompanyId)
+                    || string.Equals(
+                    run.Manifest.OperationalScope?.CompanyId,
+                    normalizedCompanyId,
+                    StringComparison.Ordinal)))
+            .OrderByDescending(static run => run.UpdatedAtUtc)
+            .ThenBy(static run => run.Manifest.RunId, StringComparer.Ordinal)
+            .Skip(offset)
+            .Take(Math.Clamp(limit, 1, 200))
+            .ToArray();
+    }
 
     public ReportingOutputManifest? GetManifest(string runId)
     {
@@ -138,9 +192,54 @@ public sealed class FileReportingRunStore : IReportingRunStore
             ?.AuditTrail ?? [];
     }
 
+    public string? GetRevision(string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var matches = LoadActiveSnapshot().Runs
+            .Where(run => string.Equals(
+                run.Manifest.RunId,
+                runId.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            .Take(2)
+            .ToArray();
+        return matches.Length == 1
+            ? ReportingRunStoreRevision.Compute(
+                matches[0].Manifest,
+                matches[0].AuditTrail)
+            : null;
+    }
+
+    public string? GetRevision(string tenantId, string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var retained = LoadActiveSnapshot().Runs
+            .SingleOrDefault(run =>
+                string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    tenantId.Trim(),
+                    StringComparison.Ordinal)
+                && string.Equals(
+                    run.Manifest.RunId,
+                    runId.Trim(),
+                    StringComparison.OrdinalIgnoreCase));
+        return retained is null
+            ? null
+            : ReportingRunStoreRevision.Compute(
+                retained.Manifest,
+                retained.AuditTrail);
+    }
+
+    public Task SaveAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        CancellationToken ct = default) =>
+        SaveAsync(manifest, auditTrail, expectedRevision: null, ct: ct);
+
     public async Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string? expectedRevision,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(manifest);
@@ -155,6 +254,10 @@ public sealed class FileReportingRunStore : IReportingRunStore
         // shape for already-retained runs are unchanged.
         manifest = NormalizeManifestArrays(manifest);
         ValidateManifest(manifest);
+        var retainedAudit = auditTrail.ToArray();
+        var candidateRevision = ReportingRunStoreRevision.Compute(
+            manifest,
+            retainedAudit);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -162,12 +265,62 @@ public sealed class FileReportingRunStore : IReportingRunStore
             var tenantId = manifest.OperationalScope?.TenantId;
             var retained = new ReportingRunSnapshot(
                 manifest,
-                auditTrail.ToArray(),
+                retainedAudit,
                 DateTimeOffset.UtcNow,
                 ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
                 ComputeManifestHash(manifest));
             var state = LoadStoreState();
             EnsureLegacyStateArchived(state);
+            var existing = state.Snapshot.Runs.SingleOrDefault(
+                run => SameIdentity(run.Manifest, tenantId, manifest.RunId));
+            if (existing is null)
+            {
+                if (expectedRevision is not null)
+                {
+                    throw ReportingRunConcurrencyException.ForMissing(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision);
+                }
+            }
+            else
+            {
+                var currentRevision = ReportingRunStoreRevision.Compute(
+                    existing.Manifest,
+                    existing.AuditTrail);
+                if (expectedRevision is null)
+                {
+                    if (ReportingRunStoreRevision.Matches(
+                            currentRevision,
+                            candidateRevision))
+                    {
+                        return;
+                    }
+
+                    throw ReportingRunConcurrencyException.ForConflict(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision: null,
+                        currentRevision);
+                }
+                if (!ReportingRunStoreRevision.Matches(
+                        currentRevision,
+                        expectedRevision))
+                {
+                    throw ReportingRunConcurrencyException.ForConflict(
+                        tenantId,
+                        manifest.RunId,
+                        expectedRevision,
+                        currentRevision);
+                }
+                if (ReportingRunStoreRevision.Matches(
+                        currentRevision,
+                        candidateRevision))
+                {
+                    return;
+                }
+            }
+
             var current = state.Snapshot.Runs
                 .Where(run => !SameIdentity(run.Manifest, tenantId, manifest.RunId))
                 .Append(retained)

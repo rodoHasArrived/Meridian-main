@@ -19,30 +19,30 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Fact]
-    public async Task MapWorkstationEndpoints_StatementToReport_ShouldCompleteAndServeRetainedArtifact()
+    public async Task MapWorkstationEndpoints_StatementReconciliationReport_ShouldCompleteAndServeRetainedArtifact()
     {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-statement-to-report-endpoint", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Path.GetTempPath(), "meridian-statement-reconciliation-report-endpoint", Guid.NewGuid().ToString("N"));
         try
         {
-            var workflow = new StatementToReportWorkflowService(
+            var workflow = new StatementReconciliationReportWorkflowService(
                 new EndpointStatementImportService(),
                 new EndpointStatementEvidenceRetainer(),
                 new EndpointStatementRunWorkflowService(),
                 root);
             await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
             var client = app.GetTestClient();
-            using var content = BuildStatementToReportContent();
+            using var content = BuildStatementReconciliationReportContent();
 
-            var response = await client.PostAsync(UiApiRoutes.ReconciliationStatementToReport, content);
+            var response = await client.PostAsync(UiApiRoutes.ReconciliationStatementReconciliationReport, content);
 
             response.StatusCode.Should().Be(HttpStatusCode.Created);
-            var result = await response.Content.ReadFromJsonAsync<StatementToReportWorkflowDto>(ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<StatementReconciliationReportWorkflowDto>(ServerJsonOptions);
             result.Should().NotBeNull();
-            result!.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+            result!.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
             result.TenantId.Should().Be("tenant-test");
             result.RetainedArtifacts.Should().HaveCount(2);
 
-            var status = await client.GetFromJsonAsync<StatementToReportWorkflowDto>(
+            var status = await client.GetFromJsonAsync<StatementReconciliationReportWorkflowDto>(
                 result.StatusRoute,
                 ServerJsonOptions);
             status!.WorkflowId.Should().Be(result.WorkflowId);
@@ -57,25 +57,134 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
-    [Theory]
-    [InlineData("statement.bai")]
-    [InlineData("statement.bai2")]
-    [InlineData("statement.camt")]
-    [InlineData("statement.053")]
-    public async Task MapWorkstationEndpoints_StatementToReport_ShouldAcceptRegisteredConnectorExtensions(string fileName)
+    [Fact]
+    public async Task MapWorkstationEndpoints_PreRenameStatementReportRoutes_ShouldProjectLegacyContractDirectly()
     {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-statement-connector-extension", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-to-report-compat-endpoint",
+            Guid.NewGuid().ToString("N"));
         try
         {
-            var workflow = new StatementToReportWorkflowService(
+            var workflow = new StatementReconciliationReportWorkflowService(
                 new EndpointStatementImportService(),
                 new EndpointStatementEvidenceRetainer(),
                 new EndpointStatementRunWorkflowService(),
                 root);
             await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
-            using var content = BuildStatementToReportContent(fileName);
+            var client = app.GetTestClient();
+            using var content = BuildStatementReconciliationReportContent();
 
-            var response = await app.GetTestClient().PostAsync(UiApiRoutes.ReconciliationStatementToReport, content);
+            var startedResponse = await client.PostAsync(
+                UiApiRoutes.ReconciliationStatementToReport,
+                content);
+
+            startedResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+#pragma warning disable CS0618 // Verifies the retained pre-rename HTTP contract.
+            var started = await startedResponse.Content.ReadFromJsonAsync<StatementToReportWorkflowDto>(
+                ServerJsonOptions);
+            started.Should().NotBeNull();
+            started!.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+            started.StatusRoute.Should().StartWith(
+                "/api/workstation/reconciliation/statement-to-report/");
+            started.ResumeRoute.Should().StartWith(
+                "/api/workstation/reconciliation/statement-to-report/");
+
+            var statusResponse = await client.GetAsync(started.StatusRoute);
+            statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var status = await statusResponse.Content.ReadFromJsonAsync<StatementToReportWorkflowDto>(
+                ServerJsonOptions);
+            status!.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+
+            var resumeResponse = await client.PostAsync(started.ResumeRoute, content: null);
+            resumeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var resumed = await resumeResponse.Content.ReadFromJsonAsync<StatementToReportWorkflowDto>(
+                ServerJsonOptions);
+            resumed!.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+
+            var artifactResponse = await client.GetAsync(started.RetainedArtifacts[0].DownloadRoute);
+            artifactResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+#pragma warning restore CS0618
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void StatementReconciliationReport_LegacyProjection_ShouldRetainOldWireStatusAndLinks()
+    {
+        var retainedAt = DateTimeOffset.Parse("2026-07-26T12:00:00Z");
+        var canonical = new StatementReconciliationReportWorkflowDto(
+            "statement-reconciliation-report-retained",
+            StatementReconciliationReportWorkflowStatusDto.RenderingReconciliationReport,
+            3,
+            "tenant-test",
+            "company-test",
+            "Broker",
+            "fund-1",
+            "external-1",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            "run-1",
+            null,
+            [
+                new StatementReconciliationReportArtifactDto(
+                    "artifact-1",
+                    "reconciliation-report-json",
+                    "report.json",
+                    "application/json",
+                    10,
+                    new string('a', 64),
+                    "/canonical-artifact",
+                    retainedAt)
+            ],
+            ["evidence-1"],
+            1,
+            1,
+            retainedAt,
+            retainedAt,
+            null,
+            null,
+            null,
+            "/canonical-status",
+            "/canonical-resume");
+
+#pragma warning disable CS0618 // Verifies the retained pre-rename wire contract.
+        var legacy = Meridian.Ui.Shared.Endpoints.WorkstationEndpoints
+            .ToLegacyStatementToReportWorkflow(canonical);
+
+        legacy.Status.Should().Be(StatementToReportWorkflowStatusDto.RenderingReport);
+        legacy.StatusRoute.Should().StartWith(
+            UiApiRoutes.ReconciliationStatementToReportById.Split('{')[0]);
+        legacy.ResumeRoute.Should().StartWith(
+            UiApiRoutes.ReconciliationStatementToReportResume.Split('{')[0]);
+        legacy.RetainedArtifacts[0].DownloadRoute.Should().Contain(
+            UiApiRoutes.ReconciliationStatementToReportArtifact.Split('{')[0]);
+#pragma warning restore CS0618
+    }
+
+    [Theory]
+    [InlineData("statement.bai")]
+    [InlineData("statement.bai2")]
+    [InlineData("statement.camt")]
+    [InlineData("statement.053")]
+    public async Task MapWorkstationEndpoints_StatementReconciliationReport_ShouldAcceptRegisteredConnectorExtensions(string fileName)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-statement-connector-extension", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var workflow = new StatementReconciliationReportWorkflowService(
+                new EndpointStatementImportService(),
+                new EndpointStatementEvidenceRetainer(),
+                new EndpointStatementRunWorkflowService(),
+                root);
+            await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
+            using var content = BuildStatementReconciliationReportContent(fileName);
+
+            var response = await app.GetTestClient().PostAsync(UiApiRoutes.ReconciliationStatementReconciliationReport, content);
 
             response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
@@ -250,7 +359,7 @@ public sealed partial class WorkstationEndpointsTests
         return accounts;
     }
 
-    private static MultipartFormDataContent BuildStatementToReportContent(string fileName = "statement.csv")
+    private static MultipartFormDataContent BuildStatementReconciliationReportContent(string fileName = "statement.csv")
     {
         var content = new MultipartFormDataContent();
         content.Add(

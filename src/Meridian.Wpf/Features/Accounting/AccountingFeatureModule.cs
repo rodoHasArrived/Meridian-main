@@ -179,7 +179,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
-                sp.GetService<IFundProfileTenancyRegistry>()));
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetService<IOperationsContinuityWorkflowService>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());

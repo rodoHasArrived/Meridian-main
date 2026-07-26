@@ -1,11 +1,11 @@
 {
   "total_files": 634,
-  "total_lines": 115855,
+  "total_lines": 116032,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 212,
-  "average_lines": 182.7,
+  "todo_count": 211,
+  "average_lines": 183.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2549,9 +2549,9 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9515,
+      "line_count": 9532,
       "has_heading": true,
-      "todo_count": 8,
+      "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2693,7 +2693,7 @@
     },
     {
       "path": "docs/operators/governed-reporting-operations.md",
-      "line_count": 205,
+      "line_count": 268,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2764,8 +2764,8 @@
       "stale": false
     },
     {
-      "path": "docs/operators/statement-to-report-operations.md",
-      "line_count": 81,
+      "path": "docs/operators/statement-reconciliation-report-operations.md",
+      "line_count": 115,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3045,7 +3045,7 @@
     },
     {
       "path": "docs/reference/contract-compatibility-matrix.md",
-      "line_count": 193,
+      "line_count": 194,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4989,7 +4989,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1430,
+      "line_count": 1431,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5053,7 +5053,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 623,
+      "line_count": 624,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5197,7 +5197,7 @@
     },
     {
       "path": "src/Meridian.Reporting/README.md",
-      "line_count": 182,
+      "line_count": 205,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5221,7 +5221,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 497,
+      "line_count": 510,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5245,7 +5245,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2013,
+      "line_count": 2037,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

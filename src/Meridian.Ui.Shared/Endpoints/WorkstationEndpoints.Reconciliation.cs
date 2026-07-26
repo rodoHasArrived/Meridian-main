@@ -19,6 +19,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
+    private static bool LegacyReconciliationEndpointMapEnabled => false;
+
     private sealed record ReconciliationBreakBulkActionRequest(
         IReadOnlyList<string> BreakIds,
         string Action,
@@ -29,6 +31,12 @@ public static partial class WorkstationEndpoints
 
     private static void MapReconciliationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        if (!LegacyReconciliationEndpointMapEnabled)
+        {
+            throw new InvalidOperationException(
+                "The duplicate reconciliation endpoint mapper is retired. MapWorkstationEndpoints owns the authoritative reconciliation routes.");
+        }
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (
             ReconciliationRunRequest request,
             HttpContext context,

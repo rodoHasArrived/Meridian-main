@@ -1,8 +1,79 @@
 using System.Globalization;
+using Meridian.Contracts.Workstation;
 using Meridian.Documents;
+using Meridian.Ledger;
 using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Checkpoint-bound input for a canonical ledger presentation. The source implementation must
+/// resolve an already-built <see cref="LedgerFinancialReportPack"/> from the exact authoritative
+/// checkpoint represented by the reporting manifest. It must not rebuild the report pack from the
+/// manifest's display rows because those rows do not prove opening balances or period
+/// classifications.
+/// </summary>
+public sealed record ReportingCertifiedLedgerPresentationInput(
+    string SourceCheckpointId,
+    string SourceCheckpointHash,
+    string CertifiedDatasetHashSha256,
+    LedgerFinancialReportPack ReportPack);
+
+/// <summary>
+/// Shared binding rules for the one governed report family that requires the complete-history
+/// ledger presentation. The authoritative checkpoint remains template-neutral; this separate
+/// evidence receipt binds the signed report pack to the certified manifest without making every
+/// client package depend on a partners-capital replay.
+/// </summary>
+internal static class ReportingCertifiedLedgerPresentationBinding
+{
+    internal const string CapitalAccountTemplateId = "capital-account-statement";
+    internal const string EvidencePrefix = "ledger-report-pack:";
+
+    internal static bool IsRequired(
+        string? templateId,
+        ReportingOutputFormatDto outputFormat) =>
+        string.Equals(templateId, CapitalAccountTemplateId, StringComparison.OrdinalIgnoreCase)
+        && outputFormat == ReportingOutputFormatDto.ClientPackage;
+
+    internal static bool IsRequired(ReportingOutputManifest manifest) =>
+        manifest.ResolvedParameters is { } parameters
+        && IsRequired(manifest.TemplateId, parameters.OutputFormat);
+
+    internal static string BuildEvidenceId(LedgerFinancialReportPack reportPack)
+    {
+        ArgumentNullException.ThrowIfNull(reportPack);
+        return $"{EvidencePrefix}{reportPack.Request.ReportId}:{reportPack.Signature.PayloadChecksumSha256}";
+    }
+
+    internal static string? GetSingleEvidenceId(ReportingAuthoritativeSourceCheckpoint checkpoint)
+    {
+        ArgumentNullException.ThrowIfNull(checkpoint);
+        if (checkpoint.EvidenceIds.IsDefaultOrEmpty)
+        {
+            return null;
+        }
+
+        var matches = checkpoint.EvidenceIds
+            .Where(static evidence =>
+                evidence.StartsWith(EvidencePrefix, StringComparison.Ordinal))
+            .Take(2)
+            .ToArray();
+        return matches.Length == 1 ? matches[0] : null;
+    }
+}
+
+/// <summary>
+/// Resolves the canonical ledger report pack whose accounting presentation was certified for an
+/// exact reporting checkpoint. Returning <see langword="null"/> means that no authoritative
+/// presentation is available and callers that require it must fail closed.
+/// </summary>
+public interface IReportingCertifiedLedgerPresentationSource
+{
+    ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveExactAsync(
+        ReportingOutputManifest manifest,
+        CancellationToken cancellationToken = default);
+}
 
 /// <summary>
 /// Renders the primary PDF/XLSX artifact of a governed reporting run. This is the seam that lets the
@@ -19,13 +90,32 @@ public interface IReportingPrimaryDocumentRenderer
 }
 
 /// <summary>
+/// Extended primary-document contract for renderers that can consume canonical ledger
+/// presentation tables supplied by the certified artifact producer.
+/// </summary>
+public interface IReportingPrimaryDocumentRendererWithLedgerPresentation :
+    IReportingPrimaryDocumentRenderer
+{
+    byte[] RenderPdf(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable> certifiedLedgerPresentation);
+
+    byte[] RenderWorkbook(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable> certifiedLedgerPresentation);
+}
+
+/// <summary>
 /// Client-grade primary-document renderer backed by <see cref="ClientGradeReportRenderer"/>
 /// (QuestPDF/ClosedXML). It maps the certified reporting manifest into the presentation-neutral
 /// <see cref="ReportDocumentModel"/> and preserves the exact certified figures — only the
 /// presentation changes relative to the built-in plain-text output.
 /// </summary>
-public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimaryDocumentRenderer
+public sealed class DocumentsReportingPrimaryDocumentRenderer :
+    IReportingPrimaryDocumentRendererWithLedgerPresentation
 {
+    private const string PartnersCapitalTableTitle = "Statement of Changes in Partners' Capital";
+
     private readonly ClientGradeReportRenderer _renderer = new();
 
     public byte[] RenderPdf(ReportingOutputManifest manifest)
@@ -34,14 +124,36 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimar
     public byte[] RenderWorkbook(ReportingOutputManifest manifest)
         => _renderer.RenderWorkbook(BuildModel(manifest));
 
-    private static ReportDocumentModel BuildModel(ReportingOutputManifest manifest)
+    public byte[] RenderPdf(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable> certifiedLedgerPresentation)
+        => _renderer.RenderPdf(BuildModel(manifest, certifiedLedgerPresentation));
+
+    public byte[] RenderWorkbook(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable> certifiedLedgerPresentation)
+        => _renderer.RenderWorkbook(BuildModel(manifest, certifiedLedgerPresentation));
+
+    /// <summary>
+    /// Projects the certified manifest and, when supplied, canonical ledger presentation tables into
+    /// the client-grade document model. The manifest's retained journal rows do not carry the
+    /// beginning-balance and period-classification state required to recalculate partners' capital,
+    /// so this method never reconstructs that accounting math. A caller that owns the exact
+    /// certified ledger report pack may pass the output of
+    /// <see cref="LedgerReportPresentation.BuildTables"/>; only its already-calculated partners'
+    /// capital table is copied, byte-for-byte at the cell-value boundary.
+    /// </summary>
+    internal static ReportDocumentModel BuildModel(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable>? certifiedLedgerPresentation = null)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         var template = manifest.ResolvedTemplate!;
         var rowHash = DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(
             manifest.CertifiedDatasetRows);
 
-        if (manifest.CertifiedPartnersCapital is { } partnersCapital)
+        if (certifiedLedgerPresentation is null
+            && manifest.CertifiedPartnersCapital is { } partnersCapital)
         {
             return BuildPartnersCapitalModel(manifest, partnersCapital, rowHash);
         }
@@ -68,6 +180,16 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimar
                     column => row.TryGetValue(column, out var value) ? value : string.Empty))
                 .ToArray();
             tables.Add(new ReportDocumentTable("Certified dataset", columns, rows));
+        }
+
+        if (CanProjectPartnersCapital(manifest, certifiedLedgerPresentation))
+        {
+            var partnersCapitalTable = certifiedLedgerPresentation!.First(static table =>
+                string.Equals(table.Title, PartnersCapitalTableTitle, StringComparison.Ordinal));
+            tables.Add(new ReportDocumentTable(
+                partnersCapitalTable.Title,
+                partnersCapitalTable.Headers,
+                partnersCapitalTable.Rows));
         }
 
         return new ReportDocumentModel(
@@ -151,4 +273,18 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimar
 
     private static string FormatMoney(decimal value)
         => value.ToString("N2", CultureInfo.InvariantCulture);
+
+    private static bool CanProjectPartnersCapital(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<LedgerReportTable>? certifiedLedgerPresentation)
+        => string.Equals(
+                manifest.TemplateId,
+                ReportingCertifiedLedgerPresentationBinding.CapitalAccountTemplateId,
+                StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                manifest.AuthoritativeSource?.SourceKind,
+                "durable-ledger-journal",
+                StringComparison.Ordinal)
+            && certifiedLedgerPresentation?.Any(static table =>
+                string.Equals(table.Title, PartnersCapitalTableTitle, StringComparison.Ordinal)) == true;
 }

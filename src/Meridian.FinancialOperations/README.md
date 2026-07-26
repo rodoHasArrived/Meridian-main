@@ -64,8 +64,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
-  boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
-  before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
+  boundary used by the persisted statement reconciliation report coordinator; a committed import is
+  checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
+  recovery cannot silently repeat the import.
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.

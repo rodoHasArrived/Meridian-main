@@ -1488,7 +1488,11 @@ describe("ReportingScreen", () => {
   });
 
   it("renders private-capital fund event report readiness from the shared workbench projection", () => {
-    renderWithRouter(<ReportingScreen data={withPrivateCapitalReportReview()} />, { initialEntries: ["/reporting/report-builder"] });
+    const privateCapitalData = withPrivateCapitalReportReview();
+    renderWithRouter(
+      <ReportingScreen data={privateCapitalData} accounting={privateCapitalData} />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
 
     const readiness = screen.getByRole("region", { name: "Private-capital report readiness" });
     expect(within(readiness).getByText("Fund event ledger and capital account subledger")).toBeInTheDocument();
@@ -3516,7 +3520,7 @@ describe("ReportingScreen", () => {
       target: { value: "Portfolio" }
     });
     fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
-      target: { value: "Xlsx" }
+      target: { value: "ClientPackage" }
     });
     fireEvent.change(screen.getByLabelText("Reporting schedule finality"), {
       target: { value: "Final" }
@@ -3615,7 +3619,7 @@ describe("ReportingScreen", () => {
         accountingBasis: "Statutory",
         presentationCurrency: "EUR",
         consolidationLevel: "Portfolio",
-        outputFormat: "Xlsx",
+        outputFormat: "ClientPackage",
         finality: "Final",
         includeSupportingSchedules: false,
         includeEvidenceAppendix: true,

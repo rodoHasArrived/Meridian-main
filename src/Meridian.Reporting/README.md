@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-26
 ---
 
 # src/Meridian.Reporting
@@ -41,6 +41,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   approval lineage, and per-break evidence hashes.
 - `ReportingDistributionContracts.cs` - opaque scoped grants, durable delivery jobs, leases,
   retries, provider receipts, and release authorization contracts.
+- `ReportingOperationalStoreContracts.cs` - Reporting-owned schedule and legacy
+  compatibility-store boundaries implemented by UI Shared or Storage adapters.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
 - `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
@@ -64,6 +66,24 @@ PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty co
 identity, and retains them in one immutable package. Final report readiness fails closed when exact
 reconciliation evidence identifies an unresolved break; blocker evidence names the break, measures,
 impacted outputs, and retained evidence hash.
+
+Production reporting is also fail-closed at the workspace boundary. The independent
+`GET /api/workstation/reporting` capability is ready only when PostgreSQL governance, artifact,
+run, schedule, access-grant, delivery, and receipt stores are active together with managed
+migrations, exact-scope recipient destinations, and the canonical client-document renderer.
+File-backed run and schedule stores remain local/development compatibility; they do not satisfy the
+production capability.
+
+`ReportingOutputFormatDto.ClientPackage` declares both PDF and XLSX primary outputs. UI Shared uses
+the deterministic certified-artifact producer and the Documents-backed primary renderer to produce
+and hash those bytes from the same certified manifest.
+
+The Statement Reconciliation Report endpoint is upstream preprocessing owned by UI Shared. Its
+retained JSON/CSV artifacts are not a Reporting run, governed artifact package, approval, release,
+or delivery receipt, and this module does not automatically promote them. The canonical downstream
+path reuses Operations Continuity for reconciliation/accounting/close evidence, this module's
+certification and governance lifecycle, the shared client-document renderer, and secure
+distribution after release.
 
 ## Diagrams
 
@@ -94,7 +114,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 ### API and contract notes
 
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
-`IReportingRunStore`, `IReportingGovernanceRepository`, `IReportingArtifactStore`,
+`IReportingRunStore`, `IReportingScheduleStore`, `IReportingGovernanceRepository`, `IReportingArtifactStore`,
 `IReportingArtifactCatalog`, `IReportingAccessGrantStore`, `IReportingDeliveryStore`,
 `ReportGenerationService`, and `NavAttributionService` publish the Reporting module seams consumed
 by UI Shared, Storage, browser, and WPF. A successful orchestration manifest remains a certified
@@ -167,7 +187,9 @@ approval transition, audit-entry, and run-store seams moved out of the legacy Ap
 folder into this module. UI Shared and UI Services consume these module services but do not own the
 reporting behavior. Report-pack generation and NAV attribution also moved from
 `Meridian.Application.Services` into this module and now depend on the contracts-owned Security
-Master query seam.
+Master query seam. Reporting operational-store interfaces also live here; PostgreSQL run and
+schedule implementations remain Storage-owned, while file implementations are compatibility
+adapters rather than production authority.
 
 ## Change rules
 
@@ -180,3 +202,4 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/architecture/module-map.md`
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
+- `docs/operators/statement-reconciliation-report-operations.md`

@@ -10,6 +10,142 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>
+/// Durable queue-owned obligation proving that statement casework still needs to be synchronized
+/// to the source statement stores and retained on the matching Operations Continuity workflow.
+/// Completion is represented by an append-only paired marker so a crash cannot erase the pending
+/// fact without retaining the governed completion audit that cleared it.
+/// </summary>
+public static class StatementCaseworkHandoffObligation
+{
+    public const string CompletionSource = "statement-casework-handoff";
+    private const string PendingPrefix = "urn:meridian:statement-casework-handoff:pending:";
+    private const string CompletedPrefix = "urn:meridian:statement-casework-handoff:completed:";
+    private const string CompletionCommandPrefix = "statement-casework-handoff-complete:";
+
+    public static string CreatePendingMarker(string commandId)
+        => PendingPrefix + ComputeCommandKey(commandId);
+
+    public static string CreateCompletedMarker(string commandId)
+        => CompletedPrefix + ComputeCommandKey(commandId);
+
+    public static string CreateCompletionCommandId(string commandId)
+        => CompletionCommandPrefix + ComputeCommandKey(commandId);
+
+    public static bool HasPending(ReconciliationBreakQueueItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var evidence = item.EvidenceLinks ?? [];
+        var completed = evidence
+            .Where(IsCompletedMarker)
+            .Select(static value => value[CompletedPrefix.Length..])
+            .ToHashSet(StringComparer.Ordinal);
+        return evidence
+            .Where(IsPendingMarker)
+            .Select(static value => value[PendingPrefix.Length..])
+            .Any(key => !completed.Contains(key));
+    }
+
+    public static bool HasPending(
+        ReconciliationBreakQueueItem item,
+        string commandId)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var evidence = item.EvidenceLinks ?? [];
+        return evidence.Contains(CreatePendingMarker(commandId), StringComparer.Ordinal)
+            && !evidence.Contains(CreateCompletedMarker(commandId), StringComparer.Ordinal);
+    }
+
+    public static bool HasCompleted(
+        ReconciliationBreakQueueItem item,
+        string commandId)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return (item.EvidenceLinks ?? [])
+            .Contains(CreateCompletedMarker(commandId), StringComparer.Ordinal);
+    }
+
+    public static bool IsControlMarker(string? value)
+        => IsPendingMarker(value) || IsCompletedMarker(value);
+
+    internal static ReconciliationBreakQueueItem MarkPending(
+        ReconciliationBreakQueueItem before,
+        ReconciliationCaseworkCommand command,
+        ReconciliationBreakQueueItem after)
+    {
+        if (!string.Equals(before.SourceType, "statement", StringComparison.OrdinalIgnoreCase)
+            || command.Action is not (
+                ReconciliationCaseworkAction.Resolve
+                or ReconciliationCaseworkAction.Waive
+                or ReconciliationCaseworkAction.Supersede
+                or ReconciliationCaseworkAction.SignOff
+                or ReconciliationCaseworkAction.Reopen))
+        {
+            return after;
+        }
+
+        var completedMarker = CreateCompletedMarker(command.CommandId);
+        var evidence = (after.EvidenceLinks ?? [])
+            .Where(value => !string.Equals(value, completedMarker, StringComparison.Ordinal))
+            .Append(CreatePendingMarker(command.CommandId))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray();
+        var blockedOutputs = (after.BlockedOutputs ?? [])
+            .Concat(["FinalReport", "PeriodClose"])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray();
+        return after with
+        {
+            EvidenceLinks = evidence,
+            EvidenceCount = evidence.Length,
+            BlockedOutputs = blockedOutputs
+        };
+    }
+
+    internal static bool IsCompletionCommand(
+        ReconciliationBreakQueueItem item,
+        ReconciliationCaseworkCommand command)
+    {
+        if (command.Action != ReconciliationCaseworkAction.LinkEvidence
+            || !string.Equals(command.Source, CompletionSource, StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(command.CausationId)
+            || command.EvidenceLinks is not { Count: 1 })
+        {
+            return false;
+        }
+
+        var causationId = command.CausationId.Trim();
+        return string.Equals(
+                   command.CommandId,
+                   CreateCompletionCommandId(causationId),
+                   StringComparison.Ordinal)
+               && string.Equals(
+                   command.EvidenceLinks[0],
+                   CreateCompletedMarker(causationId),
+                   StringComparison.Ordinal)
+               && HasPending(item, causationId);
+    }
+
+    private static bool IsPendingMarker(string? value)
+        => value?.StartsWith(PendingPrefix, StringComparison.Ordinal) == true
+           && value.Length > PendingPrefix.Length;
+
+    private static bool IsCompletedMarker(string? value)
+        => value?.StartsWith(CompletedPrefix, StringComparison.Ordinal) == true
+           && value.Length > CompletedPrefix.Length;
+
+    private static string ComputeCommandKey(string commandId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
+            .ToLowerInvariant();
+    }
+}
+
 public sealed partial class FileReconciliationBreakQueueRepository
 {
     private async Task AppendMaterialActionDeniedAuditAsync(
@@ -860,7 +996,31 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 genericGovernedTarget);
         }
 
-        if (IsImmutableTerminalMutation(item.LifecycleState, command.Action))
+        if (StatementCaseworkHandoffObligation.HasPending(item)
+            && RequiresHumanOrigin(command)
+            && !StatementCaseworkHandoffObligation.IsCompletionCommand(item, command))
+        {
+            return Invalid(
+                item,
+                $"Reconciliation case {item.BreakId} has a pending statement-source/Operations evidence handoff. Replay the exact retained casework command before applying another material transition.",
+                ReconciliationBreakQueueTransitionErrorCode.MissingEvidence,
+                ["statementCaseworkHandoff"],
+                RequestedLifecycle(command));
+        }
+
+        if ((command.EvidenceLinks ?? []).Any(StatementCaseworkHandoffObligation.IsControlMarker)
+            && !StatementCaseworkHandoffObligation.IsCompletionCommand(item, command))
+        {
+            return Invalid(
+                item,
+                "Statement casework handoff control markers can only be written by the paired governed completion command.",
+                ReconciliationBreakQueueTransitionErrorCode.InvalidRequest,
+                ["evidenceLinks"],
+                RequestedLifecycle(command));
+        }
+
+        if (IsImmutableTerminalMutation(item.LifecycleState, command.Action)
+            && !StatementCaseworkHandoffObligation.IsCompletionCommand(item, command))
         {
             return Invalid(
                 item,
@@ -1292,6 +1452,27 @@ public sealed partial class FileReconciliationBreakQueueRepository
             case ReconciliationCaseworkAction.SetResolution:
                 return item with { ResolutionCode = command.ResolutionCode, ResolutionNote = command.Note ?? item.ResolutionNote, LastUpdatedAt = now };
             case ReconciliationCaseworkAction.LinkEvidence:
+                if (StatementCaseworkHandoffObligation.IsCompletionCommand(item, command))
+                {
+                    var pendingMarker = StatementCaseworkHandoffObligation.CreatePendingMarker(command.CausationId!);
+                    evidence.RemoveAll(value => string.Equals(value, pendingMarker, StringComparison.Ordinal));
+                    var remainingBlockedOutputs = (item.BlockedOutputs ?? [])
+                        .Where(output =>
+                            !string.Equals(output, "FinalReport", StringComparison.Ordinal)
+                            && !string.Equals(output, "PeriodClose", StringComparison.Ordinal))
+                        .ToArray();
+                    evidence.AddRange(command.EvidenceLinks ?? []);
+                    var completedEvidence = evidence
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    return item with
+                    {
+                        EvidenceLinks = completedEvidence,
+                        EvidenceCount = completedEvidence.Length,
+                        BlockedOutputs = remainingBlockedOutputs,
+                        LastUpdatedAt = now
+                    };
+                }
                 evidence.AddRange(command.EvidenceLinks ?? []);
                 return item with { EvidenceLinks = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), EvidenceCount = evidence.Distinct(StringComparer.OrdinalIgnoreCase).Count(), LastUpdatedAt = now };
             case ReconciliationCaseworkAction.Resolve:

@@ -187,6 +187,91 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             query.ActiveOnly && query.AsOf == CutoffUtc);
     }
 
+    [Fact]
+    public async Task CaptureAsync_CapitalAccountClientPackage_ShouldBindPartnersCapitalToCompleteAsOfLedgerHistory()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with
+        {
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
+        var priorPeriodId = Guid.NewGuid();
+        fixture.JournalStore.Records.Add(
+            Record(
+                fixture,
+                new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero),
+                10,
+                debitCostCenterId: "cost-center-a",
+                creditCostCenterId: "cost-center-a") with
+            {
+                PeriodId = priorPeriodId
+            });
+        fixture.JournalStore.Records.Add(Record(
+            fixture,
+            new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero),
+            11,
+            debitCostCenterId: "cost-center-a",
+            creditCostCenterId: "cost-center-a"));
+
+        var templateNeutralCapture =
+            await fixture.Source.CaptureAsync(fixture.Parameters, fixture.Access);
+        var capture = await fixture.Source.CaptureAsync(
+            fixture.Parameters,
+            fixture.Access,
+            new ReportingAuthoritativeSourceCaptureIntent("capital-account-statement"));
+
+        capture.DatasetRows.Should().HaveCount(2);
+        capture.Checkpoint.CheckpointId.Should().Be(templateNeutralCapture.Checkpoint.CheckpointId);
+        capture.Checkpoint.CheckpointHash.Should().Be(
+            templateNeutralCapture.Checkpoint.CheckpointHash,
+            "the durable source checkpoint must remain independent of the output template");
+        capture.CertifiedLedgerPresentation.Should().NotBeNull();
+        var presentation = capture.CertifiedLedgerPresentation!;
+        presentation.SourceCheckpointId.Should().Be(capture.Checkpoint.CheckpointId);
+        presentation.SourceCheckpointHash.Should().Be(capture.Checkpoint.CheckpointHash);
+        var partnersCapital = presentation.ReportPack.Statements.PartnersCapital;
+        partnersCapital.Should().NotBeNull();
+        partnersCapital!.BeginningCapital.Should().Be(125m);
+        partnersCapital.EndingCapital.Should().Be(250m);
+        partnersCapital.IsReconciled.Should().BeTrue();
+        presentation.ReportPack.IsBalanced.Should().BeTrue();
+        capture.Checkpoint.EvidenceIds.Should().Contain(
+            $"ledger-report-pack:{presentation.ReportPack.Request.ReportId}:{presentation.ReportPack.Signature.PayloadChecksumSha256}");
+        fixture.JournalStore.LastQuery.Should().NotBeNull();
+        fixture.JournalStore.LastQuery!.PeriodId.Should().BeNull(
+            "the presentation must include retained history before the reporting period");
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CaptureAsync_NonCapitalClientPackage_DoesNotRequireCompleteHistoryReplay()
+    {
+        var fixture = CreateFixture();
+        fixture.Parameters = fixture.Parameters with
+        {
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
+        fixture.JournalStore.Records.Add(Record(
+            fixture,
+            new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero),
+            11,
+            debitCostCenterId: "cost-center-a",
+            creditCostCenterId: "cost-center-a"));
+        fixture.JournalStore.RejectCompleteHistoryQueries = true;
+
+        var capture = await fixture.Source.CaptureAsync(
+            fixture.Parameters,
+            fixture.Access,
+            new ReportingAuthoritativeSourceCaptureIntent("investor-statement"));
+
+        capture.DatasetRows.Should().HaveCount(2);
+        capture.CertifiedLedgerPresentation.Should().BeNull();
+        capture.Checkpoint.EvidenceIds.Should().NotContain(reference =>
+            reference.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
+        fixture.JournalStore.QueryCount.Should().Be(1);
+        fixture.JournalStore.CompleteHistoryQueryCount.Should().Be(0);
+    }
+
     private static Fixture CreateFixture(string periodStatus = "HardClosed")
     {
         const string tenantId = "tenant-reporting";
@@ -401,6 +486,9 @@ public sealed class LedgerReportingAuthoritativeSourceTests
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public bool ApplyQueryFilters { get; set; } = true;
+        public bool RejectCompleteHistoryQueries { get; set; }
+        public int QueryCount { get; private set; }
+        public int CompleteHistoryQueryCount { get; private set; }
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
@@ -408,6 +496,16 @@ public sealed class LedgerReportingAuthoritativeSourceTests
             CancellationToken ct = default)
         {
             LastQuery = query;
+            QueryCount++;
+            if (query.PeriodId is null)
+            {
+                CompleteHistoryQueryCount++;
+                if (RejectCompleteHistoryQueries)
+                {
+                    throw new NotSupportedException(
+                        "Complete-history replay is intentionally unavailable in this test.");
+                }
+            }
             IReadOnlyList<LedgerJournalEntryRecord> result = ApplyQueryFilters
                 ? Records.Where(record =>
                         (query.PeriodId is null || record.PeriodId == query.PeriodId)

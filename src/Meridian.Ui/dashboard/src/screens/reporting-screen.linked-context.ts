@@ -25,8 +25,8 @@ export function buildReportingLinkedContextItem(
     });
   }
 
-  const distributions = getReportPackDistributions(reporting.reporting);
-  const pendingCount = countPendingReportPackDistributions(reporting.reporting);
+  const distributions = getReportPackDistributions(reporting);
+  const pendingCount = countPendingReportPackDistributions(reporting);
   const packCount = distributions.length;
   return buildLinkedContextItem({
     id: "reporting-evidence",

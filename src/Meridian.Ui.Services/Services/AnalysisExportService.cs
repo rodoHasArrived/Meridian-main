@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
@@ -43,79 +45,60 @@ public sealed class AnalysisExportService
 
     public async Task<AnalysisExportResult> ExportAsync(AnalysisExportOptions options, CancellationToken ct = default)
     {
-        var (success, errorMessage, data) = await PostApiAsync<AnalysisExportResponse>(
+        ArgumentNullException.ThrowIfNull(options);
+        var request = CreateCanonicalExportRequest(options);
+        var (success, errorMessage, data) = await PostApiAsync<ExportAnalysisApiResponse>(
             "/api/export/analysis",
-            new
-            {
-                symbols = options.Symbols,
-                fromDate = options.FromDate?.ToString("yyyy-MM-dd"),
-                toDate = options.ToDate?.ToString("yyyy-MM-dd"),
-                format = options.Format.ToString(),
-                aggregation = options.Aggregation?.ToString(),
-                includeFields = options.IncludeFields,
-                excludeFields = options.ExcludeFields,
-                filters = options.Filters,
-                outputPath = options.OutputPath,
-                fileName = options.FileName,
-                compression = options.Compression?.ToString(),
-                includeMetadata = options.IncludeMetadata,
-                splitBySymbol = options.SplitBySymbol,
-                timezone = options.Timezone
-            },
+            request,
             ct);
 
         if (success && data != null)
-        {
-            return new AnalysisExportResult
-            {
-                Success = data.Success,
-                OutputPath = data.OutputPath,
-                FilesCreated = data.FilesCreated != null ? new List<string>(data.FilesCreated) : new List<string>(),
-                RowsExported = data.RowsExported,
-                BytesWritten = data.BytesWritten,
-                Duration = TimeSpan.FromSeconds(data.DurationSeconds),
-                Warnings = data.Warnings != null ? new List<string>(data.Warnings) : new List<string>()
-            };
-        }
+            return MapCanonicalExportResponse(data);
 
         return new AnalysisExportResult { Success = false, Error = errorMessage ?? "Export failed" };
     }
 
     public async Task<ExportFormatsResult> GetAvailableFormatsAsync(CancellationToken ct = default)
     {
-        var (success, _, data) = await GetApiAsync<ExportFormatsResponse>("/api/export/formats", ct);
+        var (success, errorMessage, data) = await GetApiAsync<ExportFormatsResponse>("/api/export/formats", ct);
 
         if (success && data != null)
         {
+            var compatible = (data.Formats ?? [])
+                .Where(format => GetCanonicalFormats().Any(candidate =>
+                    string.Equals(candidate.Extension, format.Extension, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (compatible.Count == 0)
+            {
+                return new ExportFormatsResult
+                {
+                    Success = false,
+                    Error = "The export service did not advertise any format supported by the canonical analysis export request.",
+                    Formats = GetCanonicalFormats()
+                };
+            }
+
             return new ExportFormatsResult
             {
                 Success = true,
-                Formats = data.Formats ?? new List<ExportFormatInfo>()
+                Formats = compatible
             };
         }
 
         return new ExportFormatsResult
         {
-            Success = true,
-            Formats = GetDefaultFormats()
+            Success = false,
+            Error = errorMessage ?? "The export format capability endpoint is unavailable.",
+            Formats = GetCanonicalFormats()
         };
     }
 
     public Task<List<AggregationOption>> GetAggregationOptionsAsync(CancellationToken ct = default)
     {
-        return Task.FromResult(new List<AggregationOption>
-        {
-            new() { Value = "Tick", DisplayName = "Tick (No Aggregation)", Description = "Raw tick data" },
-            new() { Value = "Second", DisplayName = "1 Second", Description = "Aggregate to 1-second bars" },
-            new() { Value = "Minute", DisplayName = "1 Minute", Description = "Aggregate to 1-minute bars" },
-            new() { Value = "FiveMinute", DisplayName = "5 Minutes", Description = "Aggregate to 5-minute bars" },
-            new() { Value = "FifteenMinute", DisplayName = "15 Minutes", Description = "Aggregate to 15-minute bars" },
-            new() { Value = "ThirtyMinute", DisplayName = "30 Minutes", Description = "Aggregate to 30-minute bars" },
-            new() { Value = "Hour", DisplayName = "1 Hour", Description = "Aggregate to hourly bars" },
-            new() { Value = "Daily", DisplayName = "Daily", Description = "Aggregate to daily bars" },
-            new() { Value = "Weekly", DisplayName = "Weekly", Description = "Aggregate to weekly bars" },
-            new() { Value = "Monthly", DisplayName = "Monthly", Description = "Aggregate to monthly bars" }
-        });
+        ct.ThrowIfCancellationRequested();
+        // ExportAnalysisApiRequest has no aggregation field. An empty capability list prevents a
+        // client from selecting a value that the shared endpoint would silently ignore.
+        return Task.FromResult(new List<AggregationOption>());
     }
 
     public async Task<QualityReportResult> GenerateQualityReportAsync(QualityReportOptions options, CancellationToken ct = default)
@@ -240,64 +223,102 @@ public sealed class AnalysisExportService
 
     public Task<List<ExportTemplate>> GetExportTemplatesAsync(CancellationToken ct = default)
     {
-        return Task.FromResult(new List<ExportTemplate>
-        {
-            new()
-            {
-                Name = "Academic Research",
-                Description = "Clean dataset suitable for academic research papers",
-                Format = AnalysisExportFormat.Parquet,
-                Aggregation = DataAggregation.Daily,
-                IncludeFields = new[] { "Symbol", "Date", "Open", "High", "Low", "Close", "Volume", "AdjClose" },
-                IncludeMetadata = true
-            },
-            new()
-            {
-                Name = "Machine Learning",
-                Description = "Format optimized for ML pipelines",
-                Format = AnalysisExportFormat.Parquet,
-                Aggregation = DataAggregation.Minute,
-                IncludeFields = new[] { "Timestamp", "Symbol", "Price", "Volume", "BidPrice", "AskPrice", "Spread" },
-                IncludeMetadata = false
-            },
-            new()
-            {
-                Name = "Backtesting",
-                Description = "Data format compatible with backtesting engines",
-                Format = AnalysisExportFormat.CSV,
-                Aggregation = DataAggregation.Minute,
-                IncludeFields = new[] { "DateTime", "Symbol", "Open", "High", "Low", "Close", "Volume" },
-                IncludeMetadata = false
-            },
-            new()
-            {
-                Name = "Order Flow Analysis",
-                Description = "Tick data with trade direction and size",
-                Format = AnalysisExportFormat.Parquet,
-                Aggregation = DataAggregation.Tick,
-                IncludeFields = new[] { "Timestamp", "Symbol", "Price", "Size", "Side", "Exchange", "Sequence" },
-                IncludeMetadata = true
-            },
-            new()
-            {
-                Name = "Market Microstructure",
-                Description = "Full LOB snapshots and trades for microstructure research",
-                Format = AnalysisExportFormat.HDF5,
-                Aggregation = DataAggregation.Tick,
-                IncludeFields = new[] { "Timestamp", "Symbol", "EventType", "Price", "Size", "BidPrices", "AskPrices", "BidSizes", "AskSizes" },
-                IncludeMetadata = true
-            }
-        });
+        ct.ThrowIfCancellationRequested();
+        // The historical presets included aggregation and field-selection semantics absent from
+        // ExportAnalysisApiRequest. Do not advertise them until the shared contract can execute
+        // every retained option.
+        return Task.FromResult(new List<ExportTemplate>());
     }
 
-    private static List<ExportFormatInfo> GetDefaultFormats() => new()
+    internal static ExportAnalysisApiRequest CreateCanonicalExportRequest(AnalysisExportOptions options)
     {
-        new() { Name = "CSV", Extension = ".csv", Description = "Comma-separated values", SupportsCompression = true },
-        new() { Name = "Parquet", Extension = ".parquet", Description = "Apache Parquet columnar format", SupportsCompression = true },
-        new() { Name = "JSON", Extension = ".json", Description = "JSON format", SupportsCompression = true },
-        new() { Name = "JSONL", Extension = ".jsonl", Description = "JSON Lines format (one JSON per line)", SupportsCompression = true },
+        ArgumentNullException.ThrowIfNull(options);
+        EnsureCanonicalRequestCanRepresent(options);
+        var (profileId, format) = options.Format switch
+        {
+            AnalysisExportFormat.CSV => ("r-stats", "csv"),
+            AnalysisExportFormat.Parquet => ("python-pandas", "parquet"),
+            AnalysisExportFormat.Excel => ("excel", "xlsx"),
+            AnalysisExportFormat.Feather => ("arrow-feather", "arrow"),
+            _ => throw new NotSupportedException(
+                $"Analysis export format '{options.Format}' is not supported by a registered export profile.")
+        };
+
+        return new ExportAnalysisApiRequest(
+            profileId,
+            options.Symbols?.ToArray(),
+            format,
+            ToUtcDateTime(options.FromDate),
+            ToUtcDateTime(options.ToDate));
+    }
+
+    private static void EnsureCanonicalRequestCanRepresent(AnalysisExportOptions options)
+    {
+        var unsupported = new List<string>();
+        if (options.Aggregation.HasValue)
+            unsupported.Add(nameof(options.Aggregation));
+        if (options.IncludeFields is { Length: > 0 })
+            unsupported.Add(nameof(options.IncludeFields));
+        if (options.ExcludeFields is { Length: > 0 })
+            unsupported.Add(nameof(options.ExcludeFields));
+        if (options.Filters is { Count: > 0 })
+            unsupported.Add(nameof(options.Filters));
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+            unsupported.Add(nameof(options.OutputPath));
+        if (!string.IsNullOrWhiteSpace(options.FileName))
+            unsupported.Add(nameof(options.FileName));
+        if (options.Compression.HasValue)
+            unsupported.Add(nameof(options.Compression));
+        if (!options.IncludeMetadata)
+            unsupported.Add($"{nameof(options.IncludeMetadata)}=false");
+        if (options.SplitBySymbol)
+            unsupported.Add($"{nameof(options.SplitBySymbol)}=true");
+        if (!string.IsNullOrWhiteSpace(options.Timezone))
+            unsupported.Add(nameof(options.Timezone));
+
+        if (unsupported.Count > 0)
+        {
+            throw new NotSupportedException(
+                "The shared analysis export API cannot represent these requested options: " +
+                string.Join(", ", unsupported) +
+                ". No export was requested.");
+        }
+    }
+
+    internal static AnalysisExportResult MapCanonicalExportResponse(ExportAnalysisApiResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var files = response.Files
+            .Select(file =>
+                string.IsNullOrWhiteSpace(response.OutputDirectory) || Path.IsPathRooted(file.Path)
+                    ? file.Path
+                    : Path.Combine(response.OutputDirectory, file.Path))
+            .ToList();
+
+        return new AnalysisExportResult
+        {
+            Success = response.Success,
+            Error = response.Error,
+            OutputPath = response.OutputDirectory,
+            FilesCreated = files,
+            RowsExported = response.TotalRecords,
+            BytesWritten = response.TotalBytes,
+            Duration = TimeSpan.FromSeconds(response.DurationSeconds),
+            Warnings = response.Warnings.ToList()
+        };
+    }
+
+    private static DateTime? ToUtcDateTime(DateOnly? date) =>
+        date.HasValue
+            ? date.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
+            : null;
+
+    internal static List<ExportFormatInfo> GetCanonicalFormats() => new()
+    {
+        new() { Name = "CSV", Extension = ".csv", Description = "Comma-separated values", SupportsCompression = false },
+        new() { Name = "Parquet", Extension = ".parquet", Description = "Apache Parquet columnar format", SupportsCompression = false },
         new() { Name = "Excel", Extension = ".xlsx", Description = "Microsoft Excel format", SupportsCompression = false },
-        new() { Name = "HDF5", Extension = ".h5", Description = "HDF5 hierarchical data format", SupportsCompression = true },
-        new() { Name = "Feather", Extension = ".feather", Description = "Apache Arrow Feather format", SupportsCompression = true }
+        new() { Name = "Apache Arrow IPC", Extension = ".arrow", Description = "Apache Arrow IPC format", SupportsCompression = false }
     };
 }

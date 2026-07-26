@@ -18,6 +18,10 @@ public sealed record ReportPackDeliveryArtifactContent(
     string ContentType,
     byte[] Content);
 
+/// <summary>
+/// Compatibility-only snapshot seam. Production composition does not register this store;
+/// canonical delivery authority is <see cref="IReportingDeliveryStore"/>.
+/// </summary>
 public interface IReportPackDeliveryRecordStore
 {
     IReadOnlyList<ReportPackDeliveryAttemptDto> Load();

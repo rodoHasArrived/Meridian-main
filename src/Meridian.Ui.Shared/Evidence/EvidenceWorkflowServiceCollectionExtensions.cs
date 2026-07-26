@@ -22,12 +22,16 @@ public static class EvidenceWorkflowServiceCollectionExtensions
             FileEvidenceArtifactStore.ResolveDataRoot(sp)));
         services.TryAddSingleton<IStatementImportEvidenceRetainer>(sp =>
             sp.GetRequiredService<StatementImportEvidenceBridge>());
-        services.TryAddSingleton(sp => new StatementToReportWorkflowService(
+        services.TryAddSingleton(sp => new StatementReconciliationReportWorkflowService(
             sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService>(),
             sp.GetRequiredService<IStatementImportEvidenceRetainer>(),
             sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowService>(),
             FileEvidenceArtifactStore.ResolveDataRoot(sp),
-            sp.GetService<ILogger<StatementToReportWorkflowService>>()));
+            sp.GetService<ILogger<StatementReconciliationReportWorkflowService>>()));
+#pragma warning disable CS0618 // Preserve injection compatibility while the operation is renamed.
+        services.TryAddSingleton(sp => new StatementToReportWorkflowService(
+            sp.GetRequiredService<StatementReconciliationReportWorkflowService>()));
+#pragma warning restore CS0618
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, StrategyRunEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, TradingReadinessEvidenceContributor>());

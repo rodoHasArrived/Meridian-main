@@ -10,9 +10,11 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -50,6 +52,68 @@ public sealed class ReportingRunCertificationServiceTests
         first.OperationalScope.CompanyId.Should().Be("company-a");
         first.Readiness.ResolvedParameters.LedgerBook.LedgerBookId.Should().Be(StubAuthoritativeSource.BookId);
         first.Readiness.ResolvedParameters.PeriodId.Should().Be(StubAuthoritativeSource.PeriodId.ToString("D"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RevalidateForReleaseAsync_CapitalAccountClientPackageRejectsMissingOrChangedPresentationEvidence(
+        bool removeEvidence)
+    {
+        var template = CapitalAccountTemplate();
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var source = new StubAuthoritativeSource(CapitalAccountRows(), reportPack);
+        var sut = new ReportingRunCertificationService(source, new StubReconciliationSource());
+        var certified = await sut.CertifyAsync(
+            template,
+            Readiness(
+                "evaluation-capital-revalidation",
+                CapturedAt,
+                ReportingOutputFormatDto.ClientPackage,
+                new VersionedReportTemplateIdDto(template.TemplateId, 1)),
+            Access());
+        if (removeEvidence)
+        {
+            source.OmitCertifiedLedgerPresentationEvidence = true;
+        }
+        else
+        {
+            source.CertifiedLedgerPresentationEvidenceOverride =
+                $"ledger-report-pack:changed:{new string('f', 64)}";
+        }
+
+        Func<Task> revalidate = async () => await sut.RevalidateForReleaseAsync(
+            certified.Readiness.ResolvedParameters,
+            template.TemplateId,
+            certified.AuthoritativeSource,
+            certified.Snapshot,
+            Access());
+
+        await revalidate.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*authoritative ledger source changed after certification*");
+    }
+
+    [Fact]
+    public async Task CertifyAsync_CapitalAccountClientPackageWithoutPresentationEvidenceFailsClosed()
+    {
+        var template = CapitalAccountTemplate();
+        var sut = new ReportingRunCertificationService(
+            new StubAuthoritativeSource(CapitalAccountRows()),
+            new StubReconciliationSource());
+
+        Func<Task> certify = async () => await sut.CertifyAsync(
+            template,
+            Readiness(
+                "evaluation-capital-no-presentation-evidence",
+                CapturedAt,
+                ReportingOutputFormatDto.ClientPackage,
+                new VersionedReportTemplateIdDto(template.TemplateId, 1)),
+            Access());
+
+        await certify.Should()
+            .ThrowAsync<ReportingAuthoritativeSourceUnavailableException>()
+            .WithMessage("*did not retain one signed canonical ledger-presentation checksum*");
     }
 
     [Fact]
@@ -845,6 +909,290 @@ public sealed class ReportingRunCertificationServiceTests
     }
 
     [Fact]
+    public async Task ProduceAsync_ClientPackageRetainsDeterministicPdfAndXlsxWithDeclaredHashesAndSizes()
+    {
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-client-package",
+            ReportingOutputFormatDto.ClientPackage);
+        var declarations = ReportingArtifactDeclaration.Build(manifest);
+        var primaryDeclarations = declarations
+            .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .ToArray();
+        var presentationSource = new StubCertifiedLedgerPresentationSource(
+            input: null,
+            throwOnResolve: true);
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer(),
+            presentationSource);
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        presentationSource.ResolveCount.Should().Be(
+            0,
+            "an unrelated client package must not depend on complete-history partners-capital resolution");
+        primaryDeclarations.Should().HaveCount(2);
+        primaryDeclarations.Select(static artifact => artifact.FileName)
+            .Should().Equal("run-client-package.pdf", "run-client-package.xlsx");
+        var firstPrimary = primaryDeclarations
+            .Select(declaration => first.Artifacts.Single(artifact =>
+                string.Equals(artifact.ArtifactId, declaration.ArtifactId, StringComparison.Ordinal)))
+            .ToArray();
+        var secondPrimary = primaryDeclarations
+            .Select(declaration => second.Artifacts.Single(artifact =>
+                string.Equals(artifact.ArtifactId, declaration.ArtifactId, StringComparison.Ordinal)))
+            .ToArray();
+
+        Encoding.ASCII.GetString(firstPrimary[0].Content.Span[..5]).Should().Be("%PDF-");
+        using (var archive = new ZipArchive(
+                   new MemoryStream(firstPrimary[1].Content.ToArray()),
+                   ZipArchiveMode.Read))
+        {
+            archive.GetEntry("xl/workbook.xml").Should().NotBeNull();
+        }
+
+        for (var index = 0; index < firstPrimary.Length; index++)
+        {
+            firstPrimary[index].Content.Should().NotBeEmpty();
+            firstPrimary[index].Content.ToArray().Should().Equal(
+                secondPrimary[index].Content.ToArray(),
+                "every primary document in one certified client package must be reproducible");
+        }
+
+        var retainedManifestArtifact = first.Artifacts.Single(artifact =>
+            string.Equals(artifact.ArtifactId, first.ManifestArtifactId, StringComparison.Ordinal));
+        var retainedManifest = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+            retainedManifestArtifact.Content.Span);
+        foreach (var artifact in firstPrimary)
+        {
+            var descriptor = retainedManifest.Artifacts.Single(item =>
+                string.Equals(item.ArtifactId, artifact.ArtifactId, StringComparison.Ordinal));
+            descriptor.ByteLength.Should().Be(artifact.Content.Length);
+            descriptor.ContentHashSha256.Should().Be(
+                Convert.ToHexString(SHA256.HashData(artifact.Content.Span)).ToLowerInvariant());
+        }
+
+        var preview = first.Artifacts.Single(static artifact =>
+            artifact.ContentType == "application/vnd.meridian.reporting-preview+json");
+        var previewDocument = JsonNode.Parse(preview.Content.Span)!;
+        previewDocument["primaryArtifact"]!["artifactId"]!.GetValue<string>()
+            .Should().Be("run-client-package.pdf", "the PDF is the deterministic preview anchor");
+    }
+
+    [Fact]
+    public async Task ResolveExactAsync_NonCapitalClientPackageDoesNotRequireDurableLedgerGraph()
+    {
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-client-package-no-ledger-graph",
+            ReportingOutputFormatDto.ClientPackage);
+        using var services = new ServiceCollection().BuildServiceProvider();
+        var source = new ServiceProviderReportingAuthoritativeSource(services);
+
+        var presentation = await source.ResolveExactAsync(manifest);
+
+        source.IsConfigured.Should().BeFalse();
+        presentation.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ResolveExactAsync_CapitalAccountClientPackageWithoutRetainedPresentationEvidenceFailsClosed()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = RemoveCertifiedLedgerPresentationEvidence(
+            await BuildCertifiedManifestAsync(
+                "run-capital-account-no-retained-evidence",
+                ReportingOutputFormatDto.ClientPackage,
+                CapitalAccountRows(),
+                CapitalAccountTemplate(),
+                reportPack));
+        using var services = new ServiceCollection().BuildServiceProvider();
+        var source = new ServiceProviderReportingAuthoritativeSource(services);
+
+        Func<Task> resolve = async () => await source.ResolveExactAsync(manifest);
+
+        await resolve.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*no unique retained signed ledger-presentation checksum*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_CapitalAccountClientPackageContainsCanonicalPartnersCapitalInPdfAndWorkbook()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-capital-account",
+            ReportingOutputFormatDto.ClientPackage,
+            CapitalAccountRows(),
+            CapitalAccountTemplate(),
+            reportPack);
+        var canonicalTables = LedgerReportPresentation.BuildTables(reportPack);
+        var expected = canonicalTables.Single(static table =>
+            table.Title == "Statement of Changes in Partners' Capital");
+        var presentationSource = new StubCertifiedLedgerPresentationSource(
+            BindCanonicalPresentation(manifest, reportPack));
+        var renderer = new DocumentsReportingPrimaryDocumentRenderer();
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            renderer,
+            presentationSource);
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        var firstPdf = first.Artifacts.Single(static artifact =>
+            artifact.ContentType == "application/pdf").Content.ToArray();
+        var secondPdf = second.Artifacts.Single(static artifact =>
+            artifact.ContentType == "application/pdf").Content.ToArray();
+        var firstWorkbook = first.Artifacts.Single(static artifact =>
+            artifact.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .Content.ToArray();
+        var secondWorkbook = second.Artifacts.Single(static artifact =>
+            artifact.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .Content.ToArray();
+        var model = DocumentsReportingPrimaryDocumentRenderer.BuildModel(
+            manifest,
+            canonicalTables);
+
+        presentationSource.ResolveCount.Should().Be(2, "the producer resolves one exact presentation per package");
+        Encoding.ASCII.GetString(firstPdf, 0, 5).Should().Be("%PDF-");
+        firstPdf.Should().Equal(secondPdf);
+        firstPdf.Should().NotEqual(
+            renderer.RenderPdf(manifest),
+            "the PDF rendered through the producer must include the canonical partners-capital table");
+        firstWorkbook.Should().Equal(secondWorkbook);
+
+        using (var archive = new ZipArchive(new MemoryStream(firstWorkbook), ZipArchiveMode.Read))
+        {
+            var workbookEntry = archive.GetEntry("xl/workbook.xml");
+            workbookEntry.Should().NotBeNull();
+            using var workbookStream = workbookEntry!.Open();
+            var workbook = XDocument.Load(workbookStream);
+            XNamespace spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+            workbook.Descendants(spreadsheet + "sheet")
+                .Select(static element => element.Attribute("name")?.Value)
+                .Should().Contain(static name =>
+                    name != null
+                    && name.StartsWith("Statement of Changes in", StringComparison.Ordinal));
+        }
+
+        var actual = model.Tables.Single(static table =>
+            table.Title == "Statement of Changes in Partners' Capital");
+        actual.Headers.Should().Equal(expected.Headers);
+        actual.Rows.Should().HaveSameCount(expected.Rows);
+        for (var index = 0; index < expected.Rows.Count; index++)
+        {
+            actual.Rows[index].Should().Equal(expected.Rows[index]);
+        }
+        actual.Rows.Should().Contain(static row =>
+            row.Contains("1,000,000.00", StringComparer.Ordinal)
+            && row.Contains("250,000.00", StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public async Task ProduceAsync_CapitalAccountClientPackageWithoutCanonicalPresentationFailsClosed()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-capital-account-unavailable",
+            ReportingOutputFormatDto.ClientPackage,
+            CapitalAccountRows(),
+            CapitalAccountTemplate(),
+            reportPack);
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer());
+
+        Func<Task> produce = async () => await producer.ProduceAsync(manifest);
+
+        await produce.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage(
+                "*no exact checkpoint-bound canonical ledger presentation*not recalculated from incomplete certified display rows*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_CapitalAccountClientPackageRejectsPresentationWithMismatchedDatasetHash()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-capital-account-mismatched",
+            ReportingOutputFormatDto.ClientPackage,
+            CapitalAccountRows(),
+            CapitalAccountTemplate(),
+            reportPack);
+        var presentation = BindCanonicalPresentation(
+            manifest,
+            reportPack) with
+        {
+            CertifiedDatasetHashSha256 = new string('f', 64)
+        };
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer(),
+            new StubCertifiedLedgerPresentationSource(presentation));
+
+        Func<Task> produce = async () => await producer.ProduceAsync(manifest);
+
+        await produce.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*not bound to the exact certified source checkpoint and dataset hash*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_CapitalAccountClientPackageWithoutCertifiedPresentationEvidenceFailsClosed()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = RemoveCertifiedLedgerPresentationEvidence(
+            await BuildCertifiedManifestAsync(
+                "run-capital-account-no-evidence",
+                ReportingOutputFormatDto.ClientPackage,
+                CapitalAccountRows(),
+                CapitalAccountTemplate(),
+                reportPack));
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer(),
+            new StubCertifiedLedgerPresentationSource(
+                BindCanonicalPresentation(manifest, reportPack)));
+
+        Func<Task> produce = async () => await producer.ProduceAsync(manifest);
+
+        await produce.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*signed ledger presentation checksum is missing from or changed relative to the certified source evidence*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_CapitalAccountClientPackageWithChangedPresentationEvidenceFailsClosed()
+    {
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-capital-account-changed-evidence",
+            ReportingOutputFormatDto.ClientPackage,
+            CapitalAccountRows(),
+            CapitalAccountTemplate(),
+            reportPack);
+        var source = manifest.AuthoritativeSource!;
+        manifest = manifest with
+        {
+            AuthoritativeSource = source with
+            {
+                EvidenceIds = source.EvidenceIds
+                    .Where(static evidence =>
+                        !evidence.StartsWith("ledger-report-pack:", StringComparison.Ordinal))
+                    .Append($"ledger-report-pack:changed:{new string('f', 64)}")
+                    .ToImmutableArray()
+            }
+        };
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer(),
+            new StubCertifiedLedgerPresentationSource(
+                BindCanonicalPresentation(manifest, reportPack)));
+
+        Func<Task> produce = async () => await producer.ProduceAsync(manifest);
+
+        await produce.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*signed ledger presentation checksum is missing from or changed relative to the certified source evidence*");
+    }
+
+    [Fact]
     public async Task ProduceAsync_ClientGradePreservesDeclarationsDescriptorsAndRetainedManifest()
     {
         var manifest = await BuildCertifiedManifestAsync("run-cg-parity", ReportingOutputFormatDto.Pdf);
@@ -1193,16 +1541,26 @@ public sealed class ReportingRunCertificationServiceTests
         string runId,
         ReportingOutputFormatDto outputFormat,
         ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default,
+        ReportingTemplateMetadata? selectedTemplate = null,
+        LedgerFinancialReportPack? certifiedLedgerReportPack = null,
         CertifiedPartnersCapitalProjection? partnersCapital = null)
     {
         var rows = certifiedRows.IsDefault ? Rows() : certifiedRows;
-        var template = Template(reportWriterGrid: false);
+        var template = selectedTemplate ?? Template(reportWriterGrid: false);
         var certified = await new ReportingRunCertificationService(
-                new StubAuthoritativeSource(rows),
+                new StubAuthoritativeSource(rows, certifiedLedgerReportPack),
                 new StubReconciliationSource())
             .CertifyAsync(
                 template,
-                Readiness("evaluation-artifact", CapturedAt, outputFormat),
+                Readiness(
+                    "evaluation-artifact",
+                    CapturedAt,
+                    outputFormat,
+                    new VersionedReportTemplateIdDto(
+                        template.TemplateId,
+                        int.Parse(
+                            template.Version.Split('.', 2, StringSplitOptions.TrimEntries)[0],
+                            CultureInfo.InvariantCulture))),
                 Access());
         return BuildManifest(runId, template, certified, partnersCapital);
     }
@@ -1292,14 +1650,27 @@ public sealed class ReportingRunCertificationServiceTests
             ReportAccessModeDto.CompanyWide,
             CompanyId: "company-a"));
 
+    private static ReportingTemplateMetadata CapitalAccountTemplate() => new(
+        "capital-account-statement",
+        ReportingTemplateFamily.CapitalAccountStatement,
+        "Capital Account Statement",
+        "1.0.0",
+        ["cover", "capital-balance", "flows", "allocation"],
+        ImmutableDictionary<string, string>.Empty,
+        ReportWriterGrids: [],
+        AccessPolicy: new ReportAccessPolicyDto(
+            ReportAccessModeDto.CompanyWide,
+            CompanyId: "company-a"));
+
     private static ReportingRunReadinessDto Readiness(
         string evaluationId,
         DateTimeOffset evaluatedAt,
-        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf) =>
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf,
+        VersionedReportTemplateIdDto? resolvedTemplate = null) =>
         new(
             evaluationId,
             evaluatedAt,
-            new VersionedReportTemplateIdDto("test-report", 2),
+            resolvedTemplate ?? new VersionedReportTemplateIdDto("test-report", 2),
             Parameters(outputFormat),
             ReportingRunReadinessStatusDto.Ready,
             CanGenerateDraft: true,
@@ -1360,6 +1731,82 @@ public sealed class ReportingRunCertificationServiceTests
             ("entryId", "22222222-2222-2222-2222-222222222222"))
     ];
 
+    private static ImmutableArray<IReadOnlyDictionary<string, string>> CapitalAccountRows() =>
+    [
+        Row(
+            ("account", "Cash"),
+            ("accountType", "Asset"),
+            ("debit", "250000"),
+            ("credit", "0"),
+            ("netAmount", "250000"),
+            ("entryId", "11111111-1111-1111-1111-111111111111")),
+        Row(
+            ("account", "Investor Capital - investor-a"),
+            ("accountType", "Equity"),
+            ("debit", "0"),
+            ("credit", "250000"),
+            ("netAmount", "-250000"),
+            ("investorId", "investor-a"),
+            ("capitalAccountId", "capital-account-a"),
+            ("entryId", "22222222-2222-2222-2222-222222222222"))
+    ];
+
+    private static LedgerFinancialReportPack BuildCanonicalCapitalReportPack()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        ledger.PostLines(
+            new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
+            "opening capital",
+            [
+                (LedgerAccounts.Cash, 1_000_000m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor-a"), 0m, 1_000_000m),
+            ]);
+        ledger.PostLines(
+            new DateTimeOffset(2026, 6, 5, 12, 0, 0, TimeSpan.Zero),
+            "period capital contribution",
+            [
+                (LedgerAccounts.Cash, 250_000m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor-a"), 0m, 250_000m),
+            ]);
+        var request = new LedgerReportPackRequest(
+            "capital-account-report",
+            "fund-a",
+            StubAuthoritativeSource.PeriodId.ToString("D"),
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+            "USD",
+            "controller",
+            CapturedAt);
+        return LedgerReportPackBuilder.Build(ledger, request);
+    }
+
+    private static ReportingCertifiedLedgerPresentationInput BindCanonicalPresentation(
+        ReportingOutputManifest manifest,
+        LedgerFinancialReportPack reportPack) =>
+        new(
+            manifest.AuthoritativeSource!.CheckpointId,
+            manifest.AuthoritativeSource.CheckpointHash,
+            DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(
+                manifest.CertifiedDatasetRows),
+            reportPack);
+
+    private static ReportingOutputManifest RemoveCertifiedLedgerPresentationEvidence(
+        ReportingOutputManifest manifest)
+    {
+        var source = manifest.AuthoritativeSource!;
+        return manifest with
+        {
+            AuthoritativeSource = source with
+            {
+                EvidenceIds = source.EvidenceIds
+                    .Where(static evidence =>
+                        !evidence.StartsWith("ledger-report-pack:", StringComparison.Ordinal))
+                    .ToImmutableArray()
+            }
+        };
+    }
+
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
         values.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
 
@@ -1371,13 +1818,19 @@ public sealed class ReportingRunCertificationServiceTests
         public static readonly Guid BookId = Guid.Parse("33333333-3333-3333-3333-333333333333");
         public static readonly Guid PeriodId = Guid.Parse("44444444-4444-4444-4444-444444444444");
         private readonly ImmutableArray<IReadOnlyDictionary<string, string>> _rows;
+        private readonly LedgerFinancialReportPack? _certifiedLedgerReportPack;
 
-        public StubAuthoritativeSource(ImmutableArray<IReadOnlyDictionary<string, string>> rows)
+        public StubAuthoritativeSource(
+            ImmutableArray<IReadOnlyDictionary<string, string>> rows,
+            LedgerFinancialReportPack? certifiedLedgerReportPack = null)
         {
             _rows = rows;
+            _certifiedLedgerReportPack = certifiedLedgerReportPack;
         }
 
         public int CaptureCount { get; private set; }
+        public bool OmitCertifiedLedgerPresentationEvidence { get; set; }
+        public string? CertifiedLedgerPresentationEvidenceOverride { get; set; }
 
         public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
             ReportingRunParametersDto parameters,
@@ -1388,6 +1841,15 @@ public sealed class ReportingRunCertificationServiceTests
             CaptureCount++;
             var hash = new string('b', 64);
             var checkpointId = "ledger-checkpoint-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+            var evidence = ImmutableArray.CreateBuilder<string>();
+            evidence.Add($"reporting-source-checkpoint:{checkpointId}:{hash}");
+            evidence.Add("ledger-sequence:42");
+            if (_certifiedLedgerReportPack is not null
+                && !OmitCertifiedLedgerPresentationEvidence)
+            {
+                evidence.Add(CertifiedLedgerPresentationEvidenceOverride
+                    ?? $"ledger-report-pack:{_certifiedLedgerReportPack.Request.ReportId}:{_certifiedLedgerReportPack.Signature.PayloadChecksumSha256}");
+            }
             var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
                 "durable-ledger-journal",
                 $"ledger:{BookId:D}:{PeriodId:D}",
@@ -1408,8 +1870,31 @@ public sealed class ReportingRunCertificationServiceTests
                 checkpointId,
                 hash,
                 CapturedAt,
-                [$"reporting-source-checkpoint:{checkpointId}:{hash}", "ledger-sequence:42"]);
+                evidence.ToImmutable());
             return ValueTask.FromResult(new ReportingAuthoritativeSourceCapture(checkpoint, _rows));
+        }
+    }
+
+    private sealed class StubCertifiedLedgerPresentationSource(
+        ReportingCertifiedLedgerPresentationInput? input,
+        bool throwOnResolve = false) :
+        IReportingCertifiedLedgerPresentationSource
+    {
+        public int ResolveCount { get; private set; }
+
+        public ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveExactAsync(
+            ReportingOutputManifest manifest,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(manifest);
+            cancellationToken.ThrowIfCancellationRequested();
+            ResolveCount++;
+            if (throwOnResolve)
+            {
+                throw new InvalidOperationException(
+                    "The complete-history presentation source must not be consulted.");
+            }
+            return ValueTask.FromResult(input);
         }
     }
 
@@ -1429,7 +1914,20 @@ public sealed class ReportingRunCertificationServiceTests
                     new string('c', 64),
                     CapturedAt,
                     HasOpenBreaks: false,
-                    ["ledger-period:44444444-4444-4444-4444-444444444444:hard-closed"])));
+                    ["ledger-period:44444444-4444-4444-4444-444444444444:hard-closed"],
+                    CloseWorkflowCompletion: new ReportingCloseWorkflowCompletionEvidence(
+                        "66666666-6666-6666-6666-666666666666",
+                        7,
+                        "77777777-7777-7777-7777-777777777777",
+                        source.LedgerBookId,
+                        source.AccountingPeriodId,
+                        "close-approval-1",
+                        new string('d', 64),
+                        new string('e', 64),
+                        "close-package-1",
+                        new string('f', 64),
+                        "88888888-8888-8888-8888-888888888888",
+                        new string('a', 64)))));
         }
     }
 

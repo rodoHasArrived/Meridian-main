@@ -150,7 +150,63 @@ public sealed record StatementImportReconciliationCaseLinkDto(
     string Reason,
     string SuggestedNextAction);
 
-/// <summary>Status of the durable statement-to-report workflow.</summary>
+/// <summary>Status of the durable statement reconciliation report workflow.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StatementReconciliationReportWorkflowStatusDto>))]
+public enum StatementReconciliationReportWorkflowStatusDto : byte
+{
+    InputRetained = 0,
+    Importing = 1,
+    AwaitingReconciliation = 2,
+    RenderingReconciliationReport = 3,
+    Completed = 4,
+    Failed = 5
+}
+
+/// <summary>One immutable, hash-verified artifact produced by the statement reconciliation report workflow.</summary>
+public sealed record StatementReconciliationReportArtifactDto(
+    string ArtifactId = default!,
+    string ArtifactKind = default!,
+    string FileName = default!,
+    string ContentType = default!,
+    long ByteLength = default,
+    string ContentHashSha256 = default!,
+    string DownloadRoute = default!,
+    DateTimeOffset RetainedAtUtc = default);
+
+/// <summary>
+/// Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and
+/// recovery routes without exposing server file-system paths.
+/// </summary>
+public sealed record StatementReconciliationReportWorkflowDto(
+    string WorkflowId = default!,
+    StatementReconciliationReportWorkflowStatusDto Status = default,
+    long Version = default,
+    string TenantId = default!,
+    string? CompanyId = default,
+    string SourceInstitution = default!,
+    string FundAccountId = default!,
+    string ExternalAccountId = default!,
+    DateOnly PeriodStart = default,
+    DateOnly PeriodEnd = default,
+    string? StatementRunId = default,
+    EvidenceVaultIdentityDto? EvidenceVaultIdentity = default,
+    IReadOnlyList<StatementReconciliationReportArtifactDto> RetainedArtifacts = default!,
+    IReadOnlyList<string> EvidenceReferences = default!,
+    int BreakCount = default,
+    int CaseCount = default,
+    DateTimeOffset CreatedAtUtc = default,
+    DateTimeOffset UpdatedAtUtc = default,
+    DateTimeOffset? CompletedAtUtc = default,
+    string? FailureReason = default,
+    string? RecoveryAction = default,
+    string StatusRoute = default!,
+    string ResumeRoute = default!);
+
+/// <summary>
+/// Source-compatibility status contract for clients compiled before the operation was renamed.
+/// Newly persisted and returned workflows use <see cref="StatementReconciliationReportWorkflowStatusDto"/>.
+/// </summary>
+[Obsolete("Use StatementReconciliationReportWorkflowStatusDto.")]
 [JsonConverter(typeof(JsonStringEnumConverter<StatementToReportWorkflowStatusDto>))]
 public enum StatementToReportWorkflowStatusDto : byte
 {
@@ -162,7 +218,8 @@ public enum StatementToReportWorkflowStatusDto : byte
     Failed = 5
 }
 
-/// <summary>One immutable, hash-verified artifact produced by the statement-to-report workflow.</summary>
+/// <summary>Source-compatibility artifact contract for pre-rename clients.</summary>
+[Obsolete("Use StatementReconciliationReportArtifactDto.")]
 public sealed record StatementToReportArtifactDto(
     string ArtifactId,
     string ArtifactKind,
@@ -174,9 +231,10 @@ public sealed record StatementToReportArtifactDto(
     DateTimeOffset RetainedAtUtc);
 
 /// <summary>
-/// Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and
-/// recovery routes without exposing server file-system paths.
+/// Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this
+/// wire shape directly over the canonical statement reconciliation report operation.
 /// </summary>
+[Obsolete("Use StatementReconciliationReportWorkflowDto.")]
 public sealed record StatementToReportWorkflowDto(
     string WorkflowId,
     StatementToReportWorkflowStatusDto Status,

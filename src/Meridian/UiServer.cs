@@ -941,6 +941,41 @@ public sealed class UiServer : IAsyncDisposable
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
+            "reporting-durability",
+            "Reporting durability",
+            productionPosture
+                ? LifecycleCheckRequirement.Required
+                : LifecycleCheckRequirement.Degradable,
+            _ =>
+            {
+                var capability = sp.GetService<IReportingDeploymentReadinessService>()?.Evaluate();
+                if (capability is null)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        productionPosture
+                            ? LifecycleCheckStatus.Failing
+                            : LifecycleCheckStatus.Degraded,
+                        "Reporting deployment capability is unavailable."));
+                }
+
+                if (capability.IsReady)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Governance, artifacts, certified runs, scheduling, client documents, and delivery receipts use the durable reporting authority."));
+                }
+
+                var missing = capability.Components
+                    .Where(static component => !component.IsReady)
+                    .Select(static component => component.ComponentId);
+                return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                    productionPosture
+                        ? LifecycleCheckStatus.Failing
+                        : LifecycleCheckStatus.Degraded,
+                    $"REPORTING: INCOMPLETE — unavailable durable components: {string.Join(", ", missing)}."));
+            }));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
             "event-pipeline",
             "Event pipeline",
             LifecycleCheckRequirement.Required,

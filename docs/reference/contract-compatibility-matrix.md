@@ -2,9 +2,9 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-27
+**Reviewed:** 2026-07-26
 
-Last reviewed: 2026-05-27
+Last reviewed: 2026-07-26
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -180,6 +180,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-05-27: Expanded evidence packet/workstation completeness contracts with additive diagnostics fields (`EvidenceCompletenessDto.BlockingIssueCount`, `WarningIssueCount`, `OrphanEvidenceIds`, plus matching `EvidenceCompletenessSummaryDto` counters) and retained-artifact canonical subject linkage (`EvidenceArtifactRefDto.CanonicalSubjectKind`/`CanonicalSubjectId`). Changes are additive-only; older clients may ignore new nullable fields but should treat new critical validation issues as blocking readiness/promotion gates.
 - 2026-05-28: Added additive statement reconciliation workstation DTOs for source/run evidence, normalized positions/cash/transactions, match summaries, breaks, validation issues, and operator cases. The payloads are contract-only and transport-safe; existing clients can ignore the new DTO family until route surfaces begin returning it.
 - 2026-07-03: Added contract-owned `InstrumentTypeDescriptorCatalog` metadata plus optional `InstrumentPassportDto.ClassificationProfile` carried by `InstrumentPassportClassificationProfileDto` for provider routing, validation, lifecycle, ledger, and risk hints. The existing `InstrumentType` enum values and positional `InstrumentPassportDto` constructor remain unchanged; older clients can ignore the optional profile while browser/WPF consumers adopt the additive fields.
+- 2026-07-26: Renamed the canonical statement workflow and routes from “statement-to-report” to “statement reconciliation report” until the complete statement-to-delivery authority is available. The existing `/api/workstation/reconciliation/statement-to-report` start, status, resume, and artifact routes remain mapped as compatibility aliases over the same canonical workflow; `StatementToReportWorkflowService`, DTOs, and enum remain obsolete source/wire adapters with no second renderer or workflow. New clients should adopt `/api/workstation/reconciliation/statement-reconciliation-report` and the `StatementReconciliationReport*` contracts. Newly added DTO parameters are default-backed for additive v1 deserialization, while server-side scope, evidence, artifact-hash, close, approval, and release validation remains fail-closed. Keep the legacy aliases for at least the normal two-minor-release or 60-day deprecation window before any removal review.
 
 ## Pull Request Author Checklist
 

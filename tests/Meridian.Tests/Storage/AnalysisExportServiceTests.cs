@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Storage.Export;
+using Parquet;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
@@ -73,6 +74,46 @@ public class AnalysisExportServiceTests : IDisposable
         archive.Entries.Should().Contain(e => e.FullName == "xl/workbook.xml");
         archive.Entries.Should().Contain(e => e.FullName == "xl/worksheets/sheet1.xml");
         archive.Entries.Should().Contain(e => e.FullName == "xl/sharedStrings.xml");
+    }
+
+    [Fact]
+    public async Task ExportToParquet_WithValidData_ShouldCreateReadableParquetFile()
+    {
+        await CreateTestJsonlFileAsync("SPY.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 },
+            new { Timestamp = "2026-01-03T10:00:01Z", Symbol = "SPY", Price = 450.50m, Size = 200 }
+        });
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            ProfileId = "python-pandas",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "SPY" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5)
+        });
+
+        result.Success.Should().BeTrue();
+        result.Files.Should().ContainSingle();
+        result.TotalRecords.Should().Be(2);
+
+        var parquetFile = result.Files.Single();
+        parquetFile.Format.Should().Be("parquet");
+        parquetFile.Path.Should().EndWith(".parquet");
+        File.Exists(parquetFile.Path).Should().BeTrue();
+
+        await using var stream = File.OpenRead(parquetFile.Path);
+        using var reader = await ParquetReader.CreateAsync(stream);
+        var rowCount = 0L;
+        for (var index = 0; index < reader.RowGroupCount; index++)
+        {
+            using var rowGroup = reader.OpenRowGroupReader(index);
+            rowCount += rowGroup.RowCount;
+        }
+
+        rowCount.Should().Be(2);
     }
 
     [Fact]

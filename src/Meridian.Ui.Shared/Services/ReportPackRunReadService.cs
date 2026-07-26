@@ -183,6 +183,7 @@ public sealed partial class ReportPackRunReadService
         var allWorkflowRecords = _workflowService?.ListRecords(200) ?? [];
         var allDeliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
         var allSchedules = _scheduleService?.ListSchedules(accessContext, 100) ?? [];
+        var runSnapshots = ListRunSnapshots(accessContext, 200);
         var starterKits = _starterKitService?.ListKits() ?? [];
         var starterKitState = _starterKitService?.GetState(accessContext);
         var templates = ApplyStarterKitTemplateFilter(BuildTemplates(accessContext), starterKitState);
@@ -203,12 +204,12 @@ public sealed partial class ReportPackRunReadService
             familyByTemplate,
             templatesById,
             workflowRecords,
-            accessContext);
+            runSnapshots);
         var deliveryAttempts = ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
             allDeliveryAttempts,
             accessContext,
             allWorkflowRecords,
-            _runStore?.ListRuns(500));
+            runSnapshots);
         var schedules = FilterSchedules(
             allSchedules,
             accessContext,
@@ -1623,16 +1624,8 @@ public sealed partial class ReportPackRunReadService
         IReadOnlyDictionary<string, string> familyByTemplate,
         IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById,
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
-        ReportAccessQueryContext? accessContext)
+        IReadOnlyList<ReportingRunSnapshot> genericSnapshots)
     {
-        IReadOnlyList<ReportingRunSnapshot> genericSnapshots = _runStore?.ListRuns(200) ?? [];
-        if (accessContext is not null)
-        {
-            genericSnapshots = genericSnapshots
-                .Where(snapshot => ReportAccessPolicyEvaluator.Evaluate(snapshot.Manifest, accessContext).IsAccessible)
-                .ToArray();
-        }
-
         var genericRuns = ProjectGenericRuns(genericSnapshots, familyByTemplate, templatesById);
         var workflowRuns = workflowRecords
             .Take(limit)
@@ -1644,6 +1637,48 @@ public sealed partial class ReportPackRunReadService
             .ThenBy(static run => run.Payload.RunId, StringComparer.Ordinal)
             .Take(limit)
             .ToArray();
+    }
+
+    private IReadOnlyList<ReportingRunSnapshot> ListRunSnapshots(
+        ReportAccessQueryContext? accessContext,
+        int limit)
+    {
+        if (_runStore is null)
+        {
+            return [];
+        }
+
+        if (string.IsNullOrWhiteSpace(accessContext?.TenantId))
+        {
+            var snapshots = _runStore.ListRuns(limit);
+            return accessContext is null
+                ? snapshots
+                : snapshots
+                    .Where(snapshot => ReportAccessPolicyEvaluator
+                        .Evaluate(snapshot.Manifest, accessContext)
+                        .IsAccessible)
+                    .ToArray();
+        }
+
+        const int pageSize = 200;
+        var visible = new List<ReportingRunSnapshot>(Math.Clamp(limit, 1, 200));
+        for (var offset = 0; visible.Count < limit; offset += pageSize)
+        {
+            var page = _runStore.ListRuns(
+                accessContext.TenantId.Trim(),
+                accessContext.CompanyId,
+                offset,
+                pageSize);
+            visible.AddRange(page.Where(snapshot => ReportAccessPolicyEvaluator
+                .Evaluate(snapshot.Manifest, accessContext)
+                .IsAccessible));
+            if (page.Count < pageSize)
+            {
+                break;
+            }
+        }
+
+        return visible.Take(Math.Clamp(limit, 1, 200)).ToArray();
     }
 
     public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(
@@ -2598,7 +2633,9 @@ public sealed partial class ReportPackRunReadService
             return null;
         }
 
-        var manifest = _runStore.GetManifest(record.ReportId.ToString("D", CultureInfo.InvariantCulture));
+        var manifest = _runStore.GetManifest(
+            record.TenantId,
+            record.ReportId.ToString("D", CultureInfo.InvariantCulture));
         var scope = manifest?.OperationalScope;
         var access = manifest?.ImmutableAccessScope;
         if (manifest is null

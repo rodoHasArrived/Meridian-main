@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting / Fund Operations
-**Reviewed:** 2026-07-15
+**Reviewed:** 2026-07-26
 
 This runbook is the production operator procedure for certified reporting runs, hard-close evidence,
 immutable reporting state, schedules, access grants, and secure delivery. Contract fields and wire
@@ -19,6 +19,27 @@ formats are defined in [Governed Accounting Reporting](../reference/accounting-r
 This runbook does not make legacy report-pack mutation routes authoritative. Those routes remain
 retired, and fixture or caller-supplied rows are not a production recovery mechanism.
 
+## Reporting capability gate
+
+`GET /api/workstation/reporting` is the independent Reporting workspace capability. It returns a
+typed `WorkstationReportingPayload`; it does not reuse an Accounting payload or a fixture fallback.
+The route returns `503 Service Unavailable` unless the deployment capability proves every component
+below:
+
+- PostgreSQL reporting governance and its maker-checker coordinator
+- PostgreSQL artifact bytes, catalog, access audit, and artifact vault
+- PostgreSQL certified run manifests and run audit
+- PostgreSQL reporting schedules
+- PostgreSQL access grants, delivery jobs, and retained receipts
+- an exact-scope recipient destination directory
+- the canonical client PDF/XLSX renderer and deterministic certified-artifact producer
+- managed checksummed reporting migrations
+
+The same capability is exposed in a successful Reporting payload as `deploymentCapability`. Local
+file run and schedule stores are development compatibility only and deliberately leave this gate
+blocked. Do not infer Reporting availability from Accounting workspace health, a configured
+connection string alone, a rendered preview, or the presence of retained JSON files.
+
 ## Production prerequisites
 
 Before enabling governed reporting, confirm all of the following:
@@ -30,11 +51,17 @@ Before enabling governed reporting, confirm all of the following:
 3. `MERIDIAN_REPORTING_CONNECTION_STRING` points to the production reporting database, or its
    documented fallback to the ledger connection is intentional. Configure
    `MERIDIAN_REPORTING_SCHEMA` when it is not `reporting`.
-4. The resolved `DataRoot` is durable and backed up. The complete
-   `<DataRoot>/workstation/reporting/` directory belongs to the reporting recovery set.
-5. Production does not run fixture or in-memory governance in place of the durable ledger,
+4. An authenticated `GET /api/workstation/reporting` returns `200` with
+   `deploymentCapability.isReady = true`. Preserve its component summaries with deployment
+   evidence. A `503` is a deployment blocker, not an empty Reporting workspace.
+5. The resolved `DataRoot` is durable and backed up. Include the complete
+   `<DataRoot>/workstation/reporting/` auxiliary state and any retained
+   `<DataRoot>/reporting/statement-reconciliation-report/` preprocessing workflows in the
+   coordinated reporting recovery set.
+6. Production does not run fixture or in-memory governance, or file-backed run/schedule
+   compatibility stores, in place of the durable ledger,
    fund-structure, reporting, and fund-account dependencies.
-6. If external notification is enabled, all relay, recipient-directory, external-access, receipt
+7. If external notification is enabled, all relay, recipient-directory, external-access, receipt
    HMAC, and delivery-grant HMAC settings pass the
    [HTTP relay contract](../reference/accounting-report-packs.md#http-relay-contract).
 
@@ -63,6 +90,30 @@ Use an authenticated operator in the intended tenant and company scope.
    binding. Confirm one durable job, a non-secret grant record, relay acceptance with a bounded
    provider message id, and an authenticated terminal receipt. Do not paste the one-time link into
    logs, tickets, screenshots, or retained notes.
+
+## Canonical statement-to-delivery handoff
+
+The [Statement Reconciliation Report](./statement-reconciliation-report-operations.md) is an
+upstream preprocessing result, not a governed reporting run. Keep the authoritative path on the
+existing seams:
+
+1. Retain and reconcile the source statement. Treat its JSON/CSV outputs as reconciliation support
+   evidence only.
+2. Route reconciliation, governed break/case disposition, accounting and ledger evidence, approval,
+   and close posture through Operations Continuity and its reconciliation bridge.
+3. Start a separate governed Reporting run through the canonical readiness and certification
+   services. Final certification requires the committed close/reconciliation receipt; a clean
+   statement workflow does not substitute for it.
+4. For a client package, use the Reporting `ClientPackage` output through the deterministic
+   certified-artifact producer and canonical client-document renderer. The package declares and
+   retains both PDF and XLSX primary outputs.
+5. After independent maker-checker approval and release, use secure Reporting distribution. Retain
+   the durable delivery job, scoped grant state, provider receipt, and audited download receipt as
+   applicable.
+
+The current Statement Reconciliation Report workflow does not automatically execute steps 2-5.
+Its `Completed` status therefore does not mean posted, closed, certified, approved, released, or
+delivered.
 
 ## Recover a pending hard-close evidence handoff
 
@@ -112,12 +163,18 @@ headers are deliberately rejected on that endpoint.
 
 ## Backup and recovery
 
-The reporting recovery set crosses two persistence mechanisms:
+The coordinated reporting recovery set crosses the production authority and auxiliary local state:
 
-- the configured PostgreSQL reporting schema
-- the entire `<DataRoot>/workstation/reporting/` directory, including the certified run snapshot,
-  schedule/release-handoff snapshot, custom templates, starter-kit state, and retained legacy
-  history
+- the configured PostgreSQL reporting schema, including governance, artifact, run, schedule,
+  access-grant, delivery-job, and receipt state
+- the entire `<DataRoot>/workstation/reporting/` directory, including custom templates, starter-kit
+  state, and any explicitly retained compatibility history
+- `<DataRoot>/reporting/statement-reconciliation-report/` when statement preprocessing workflows
+  are in use
+
+Production run and schedule authority does not come from `FileReportingRunStore` or
+`FileReportingScheduleStore`. Do not restore their local snapshots as a substitute for the
+PostgreSQL `reporting_run_snapshots` and `reporting_schedule_snapshots` state.
 
 Back up those locations at one approved recovery point. Encrypt the backup and restrict it as
 financial-reporting evidence: the files contain certified rows, parameters, scope, schedules, and
@@ -128,14 +185,15 @@ If a reporting file is unreadable or fails integrity validation:
 1. Stop the host so workers cannot advance schedules or deliveries during recovery.
 2. Preserve the critical error type and affected path, without copying report contents or recipient
    data into a ticket.
-3. Restore the affected state from the coordinated recovery set. Restore only one persistence side
-   when retained run, snapshot, package, schedule, handoff, checkpoint, and content-hash evidence
-   proves it agrees with the other side; otherwise restore both the PostgreSQL reporting schema and
-   complete local reporting directory from the same recovery point. Do not hand-edit JSON, delete
-   the corrupt file to force an empty state, or mix files from unrelated recovery points.
+3. Restore the affected state from the coordinated recovery set. Restore only one persistence
+   component when retained run, package, schedule, handoff, checkpoint, and content-hash evidence
+   proves it agrees with every other component; otherwise restore the PostgreSQL schema and
+   applicable local directories from the same recovery point. Do not hand-edit JSON, delete a
+   corrupt file to force an empty state, or mix files from unrelated recovery points.
 4. Restore the original service-account ownership and least-privilege file permissions.
-5. Start the host and confirm migrations complete without drift, run and schedule reads succeed,
-   immutable run/snapshot/package identities agree, and the transport catalog is truthful.
+5. Start the host and confirm migrations complete without drift, PostgreSQL run and schedule reads
+   succeed, immutable run/package identities agree, `/api/workstation/reporting` reports a ready
+   deployment capability, and the transport catalog is truthful.
 6. Re-evaluate readiness for one retained run and observe one controlled schedule or delivery retry
    before reopening normal report operations.
 
@@ -150,6 +208,8 @@ from corruption. Before deploying them, take the coordinated PostgreSQL and repo
 backup described above. Existing PostgreSQL governance rows are stamped v1; an older application
 that omits an explicit format version is rejected. Structurally valid unversioned run and schedule
 files can be inventoried as v1, but legacy schedules are frozen and never enter the hosted worker.
+This compatibility procedure does not make file-backed run or schedule state a production
+authority.
 
 When a verified-legacy/read-only exception is reported:
 
@@ -186,6 +246,8 @@ and must follow coordinated restore, not the legacy recertification path.
 
 ## Current residual limitations (P1)
 
+- Statement reconciliation preprocessing does not automatically create Operations Continuity close
+  work, a certified Reporting run, a release, or a delivery.
 - Coordinated PostgreSQL/file backup drills and state-reconciliation tooling are manual; there is no
   automated repair command.
 - Receipt and delivery-grant HMAC rotation is single-key and maintenance-window based.
@@ -201,5 +263,6 @@ and must follow coordinated restore, not the legacy recertification path.
 - [Database Schema](../reference/database-schema.md)
 - [Ledger Journal Store](../reference/ledger-journal-store.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
+- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Operator Preflight Checklist](./preflight-checklist.md)

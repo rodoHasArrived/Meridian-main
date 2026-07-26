@@ -52,9 +52,17 @@ public sealed class ReportingRunCertificationService
                 "No durable reconciliation/close evidence source is configured; certification is blocked.");
 
         var capture = await source
-            .CaptureAsync(readiness.ResolvedParameters, accessContext, cancellationToken)
+            .CaptureAsync(
+                readiness.ResolvedParameters,
+                accessContext,
+                ReportingAuthoritativeSourceCaptureIntent.FromTemplate(template),
+                cancellationToken)
             .ConfigureAwait(false);
         ValidateCapture(capture, readiness.ResolvedParameters, accessContext);
+        RequireCertifiedPresentationEvidence(
+            capture.Checkpoint,
+            template.TemplateId,
+            readiness.ResolvedParameters.OutputFormat);
         ReportingReconciliationEvidenceReceipt reconciliation;
         try
         {
@@ -73,6 +81,23 @@ public sealed class ReportingRunCertificationService
                     exception.Message,
                     invalid?.BlockingCount ?? 1,
                     invalid?.EvidenceReferences));
+        }
+        if (readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final)
+        {
+            try
+            {
+                ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
+            }
+            catch (ArgumentException exception)
+            {
+                throw new ReportingRunReadinessBlockedException(
+                    BuildMissingReconciliationReadiness(
+                        template,
+                        readiness,
+                        capture,
+                        exception.Message,
+                        reconciliationEvidence: reconciliation.EvidenceIds));
+            }
         }
 
         var parameters = NormalizeParameters(readiness.ResolvedParameters, capture.Checkpoint);
@@ -203,12 +228,14 @@ public sealed class ReportingRunCertificationService
     /// </summary>
     public async ValueTask RevalidateForReleaseAsync(
         ReportingRunParametersDto parameters,
+        string templateId,
         ReportingAuthoritativeSourceCheckpoint certifiedSource,
         ReportingCertifiedSnapshotScope certifiedSnapshot,
         ReportAccessQueryContext accessContext,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
         ArgumentNullException.ThrowIfNull(certifiedSource);
         ArgumentNullException.ThrowIfNull(certifiedSnapshot);
         ArgumentNullException.ThrowIfNull(accessContext);
@@ -222,10 +249,19 @@ public sealed class ReportingRunCertificationService
                 "No durable reconciliation/close evidence source is configured; final release revalidation is blocked.");
 
         var current = await source
-            .CaptureAsync(parameters, accessContext, cancellationToken)
+            .CaptureAsync(
+                parameters,
+                accessContext,
+                new ReportingAuthoritativeSourceCaptureIntent(templateId),
+                cancellationToken)
             .ConfigureAwait(false);
         ValidateCapture(current, parameters, accessContext);
-        if (!SameCertifiedSource(current.Checkpoint, certifiedSource, certifiedSnapshot))
+        if (!SameCertifiedSource(
+                current.Checkpoint,
+                certifiedSource,
+                certifiedSnapshot,
+                templateId,
+                parameters.OutputFormat))
         {
             throw new ReportingGovernanceException(
                 "Final release is blocked because the authoritative ledger source changed after certification. Regenerate and reapprove the report from a fresh certified snapshot.");
@@ -234,6 +270,15 @@ public sealed class ReportingRunCertificationService
         var reconciliation = await reconciliationSource
             .ResolveAsync(parameters, current.Checkpoint, accessContext, cancellationToken)
             .ConfigureAwait(false);
+        try
+        {
+            ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new ReportingGovernanceException(
+                $"Final release is blocked because committed accounting-close workflow evidence is unavailable or invalid: {exception.Message}");
+        }
         if (!string.Equals(
                 reconciliation.ReconciliationCheckpointId,
                 certifiedSnapshot.ReconciliationCheckpointId,
@@ -251,7 +296,9 @@ public sealed class ReportingRunCertificationService
     private static bool SameCertifiedSource(
         ReportingAuthoritativeSourceCheckpoint current,
         ReportingAuthoritativeSourceCheckpoint certified,
-        ReportingCertifiedSnapshotScope snapshot) =>
+        ReportingCertifiedSnapshotScope snapshot,
+        string templateId,
+        ReportingOutputFormatDto outputFormat) =>
         string.Equals(current.TenantId, certified.TenantId, StringComparison.Ordinal)
         && string.Equals(current.OrganizationId, certified.OrganizationId, StringComparison.Ordinal)
         && string.Equals(current.CompanyId, certified.CompanyId, StringComparison.Ordinal)
@@ -269,7 +316,41 @@ public sealed class ReportingRunCertificationService
         && string.Equals(current.LedgerBookId, snapshot.BookId, StringComparison.Ordinal)
         && string.Equals(current.AccountingPeriodId, snapshot.PeriodId, StringComparison.Ordinal)
         && string.Equals(current.CheckpointId, snapshot.SourceCheckpointId, StringComparison.Ordinal)
-        && string.Equals(current.CheckpointHash, snapshot.SourceCheckpointHash, StringComparison.Ordinal);
+        && string.Equals(current.CheckpointHash, snapshot.SourceCheckpointHash, StringComparison.Ordinal)
+        && HasSameRequiredPresentationEvidence(current, certified, templateId, outputFormat);
+
+    private static bool HasSameRequiredPresentationEvidence(
+        ReportingAuthoritativeSourceCheckpoint current,
+        ReportingAuthoritativeSourceCheckpoint certified,
+        string templateId,
+        ReportingOutputFormatDto outputFormat)
+    {
+        if (!ReportingCertifiedLedgerPresentationBinding.IsRequired(templateId, outputFormat))
+        {
+            return true;
+        }
+
+        var currentEvidence =
+            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(current);
+        var certifiedEvidence =
+            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(certified);
+        return currentEvidence is not null
+            && certifiedEvidence is not null
+            && string.Equals(currentEvidence, certifiedEvidence, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void RequireCertifiedPresentationEvidence(
+        ReportingAuthoritativeSourceCheckpoint checkpoint,
+        string templateId,
+        ReportingOutputFormatDto outputFormat)
+    {
+        if (ReportingCertifiedLedgerPresentationBinding.IsRequired(templateId, outputFormat)
+            && ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(checkpoint) is null)
+        {
+            throw new ReportingAuthoritativeSourceUnavailableException(
+                "Capital-account client-package certification is blocked because the authoritative source did not retain one signed canonical ledger-presentation checksum.");
+        }
+    }
 
     /// <summary>
     /// Compatibility signature retained so old callers fail closed instead of silently certifying

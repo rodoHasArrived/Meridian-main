@@ -13,17 +13,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Evidence;
 
-public sealed record StatementToReportStartCommand(
+public sealed record StatementReconciliationReportStartCommand(
     StatementImportCommitRequest Import,
     string TenantId,
     string? CompanyId);
 
-public sealed record StatementToReportWorkflowExecution(
+public sealed record StatementReconciliationReportWorkflowExecution(
     StatementImportCommitResultDto? ImportResult,
-    StatementToReportWorkflowDto Workflow);
+    StatementReconciliationReportWorkflowDto Workflow);
 
-public sealed record StatementToReportArtifactDownload(
-    StatementToReportArtifactDto Descriptor,
+public sealed record StatementReconciliationReportArtifactDownload(
+    StatementReconciliationReportArtifactDto Descriptor,
     byte[] Content);
 
 /// <summary>
@@ -31,9 +31,13 @@ public sealed record StatementToReportArtifactDownload(
 /// to immutable statement/reconciliation report artifacts. It pauses rather than reporting success
 /// while reconciliation breaks or cases remain open, and can resume from its last atomic checkpoint.
 /// </summary>
-public sealed class StatementToReportWorkflowService
+public sealed class StatementReconciliationReportWorkflowService
 {
     private const int SnapshotSchemaVersion = 1;
+    private const string WorkflowIdPrefix = "statement-reconciliation-report-";
+    private const string LegacyWorkflowIdPrefix = "statement-report-";
+    private const string WorkflowDirectoryName = "statement-reconciliation-report";
+    private const string LegacyWorkflowDirectoryName = "statement-to-report";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -45,33 +49,42 @@ public sealed class StatementToReportWorkflowService
     private readonly IStatementRunWorkflowService _statementRuns;
     private readonly string _dataRoot;
     private readonly string _workflowRoot;
-    private readonly ILogger<StatementToReportWorkflowService>? _logger;
+    private readonly string _legacyWorkflowRoot;
+    private readonly ILogger<StatementReconciliationReportWorkflowService>? _logger;
 
-    public StatementToReportWorkflowService(
+    public StatementReconciliationReportWorkflowService(
         IStatementImportCommitService imports,
         IStatementImportEvidenceRetainer evidence,
         IStatementRunWorkflowService statementRuns,
         string dataRoot,
-        ILogger<StatementToReportWorkflowService>? logger = null)
+        ILogger<StatementReconciliationReportWorkflowService>? logger = null)
     {
         _imports = imports ?? throw new ArgumentNullException(nameof(imports));
         _evidence = evidence ?? throw new ArgumentNullException(nameof(evidence));
         _statementRuns = statementRuns ?? throw new ArgumentNullException(nameof(statementRuns));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _dataRoot = Path.GetFullPath(dataRoot);
-        _workflowRoot = Path.Combine(_dataRoot, "reporting", "statement-to-report");
+        _workflowRoot = Path.Combine(_dataRoot, "reporting", WorkflowDirectoryName);
+        _legacyWorkflowRoot = Path.Combine(_dataRoot, "reporting", LegacyWorkflowDirectoryName);
         _logger = logger;
     }
 
-    public async Task<StatementToReportWorkflowExecution> StartAsync(
-        StatementToReportStartCommand command,
+    public async Task<StatementReconciliationReportWorkflowExecution> StartAsync(
+        StatementReconciliationReportStartCommand command,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(command);
         ValidateCommand(command);
 
-        var workflowId = BuildWorkflowId(command);
+        var workflowId = BuildWorkflowId(command, WorkflowIdPrefix);
         var directory = GetWorkflowDirectory(workflowId);
+        var legacyWorkflowId = BuildWorkflowId(command, LegacyWorkflowIdPrefix);
+        var legacyDirectory = GetWorkflowDirectory(legacyWorkflowId);
+        if (!Directory.Exists(directory) && Directory.Exists(legacyDirectory))
+        {
+            workflowId = legacyWorkflowId;
+            directory = legacyDirectory;
+        }
         Directory.CreateDirectory(directory);
         await using var ownership = await AcquireOwnershipAsync(directory, ct).ConfigureAwait(false);
 
@@ -94,7 +107,7 @@ public sealed class StatementToReportWorkflowService
         return await ContinueAsync(directory, snapshot, ct).ConfigureAwait(false);
     }
 
-    public async Task<StatementToReportWorkflowDto?> GetAsync(
+    public async Task<StatementReconciliationReportWorkflowDto?> GetAsync(
         string workflowId,
         string tenantId,
         string? companyId,
@@ -109,7 +122,7 @@ public sealed class StatementToReportWorkflowService
         return snapshot.Workflow;
     }
 
-    public async Task<StatementToReportWorkflowExecution?> ResumeAsync(
+    public async Task<StatementReconciliationReportWorkflowExecution?> ResumeAsync(
         string workflowId,
         string tenantId,
         string? companyId,
@@ -128,7 +141,7 @@ public sealed class StatementToReportWorkflowService
         return await ContinueAsync(directory, snapshot, ct).ConfigureAwait(false);
     }
 
-    public async Task<StatementToReportArtifactDownload?> DownloadArtifactAsync(
+    public async Task<StatementReconciliationReportArtifactDownload?> DownloadArtifactAsync(
         string workflowId,
         string artifactId,
         string tenantId,
@@ -148,23 +161,23 @@ public sealed class StatementToReportWorkflowService
         var content = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
         var actualHash = Convert.ToHexString(SHA256.HashData(content));
         if (!string.Equals(actualHash, descriptor.ContentHashSha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"Retained report artifact '{artifactId}' failed hash verification.");
-        return new StatementToReportArtifactDownload(descriptor, content);
+            throw new InvalidDataException($"Retained statement reconciliation report artifact '{artifactId}' failed hash verification.");
+        return new StatementReconciliationReportArtifactDownload(descriptor, content);
     }
 
-    private async Task<StatementToReportWorkflowExecution> ContinueAsync(
+    private async Task<StatementReconciliationReportWorkflowExecution> ContinueAsync(
         string directory,
         WorkflowSnapshot snapshot,
         CancellationToken ct)
     {
         try
         {
-            if (snapshot.Workflow.Status == StatementToReportWorkflowStatusDto.Completed)
+            if (snapshot.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Completed)
                 return RequireExecution(snapshot);
 
             if (snapshot.ImportResult is null)
             {
-                snapshot = Advance(snapshot, StatementToReportWorkflowStatusDto.Importing,
+                snapshot = Advance(snapshot, StatementReconciliationReportWorkflowStatusDto.Importing,
                     recoveryAction: "Retry the persisted statement import.");
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
                 var importRequest = BuildImportRequest(snapshot.Request);
@@ -199,7 +212,7 @@ public sealed class StatementToReportWorkflowService
             {
                 snapshot = Advance(
                     snapshot,
-                    StatementToReportWorkflowStatusDto.AwaitingReconciliation,
+                    StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
                     breakCount: openBreaks,
                     caseCount: openCases,
                     recoveryAction: "Resolve or disposition the linked reconciliation breaks and cases, then resume this workflow.");
@@ -207,7 +220,7 @@ public sealed class StatementToReportWorkflowService
                 return RequireExecution(snapshot);
             }
 
-            snapshot = Advance(snapshot, StatementToReportWorkflowStatusDto.RenderingReport,
+            snapshot = Advance(snapshot, StatementReconciliationReportWorkflowStatusDto.RenderingReconciliationReport,
                 breakCount: 0, caseCount: 0,
                 recoveryAction: "Retry report rendering from the retained statement and reconciliation evidence.");
             await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
@@ -224,13 +237,13 @@ public sealed class StatementToReportWorkflowService
         {
             var failed = Fail(snapshot, ex);
             await SaveSnapshotAsync(directory, failed, CancellationToken.None).ConfigureAwait(false);
-            _logger?.LogError(ex, "Statement-to-report workflow {WorkflowId} failed at status {Status}",
+            _logger?.LogError(ex, "Statement reconciliation report workflow {WorkflowId} failed at status {Status}",
                 snapshot.Workflow.WorkflowId, snapshot.Workflow.Status);
             return RequireExecution(failed);
         }
     }
 
-    private async Task<IReadOnlyList<StatementToReportArtifactDto>> RetainReportArtifactsAsync(
+    private async Task<IReadOnlyList<StatementReconciliationReportArtifactDto>> RetainReportArtifactsAsync(
         string directory,
         WorkflowSnapshot snapshot,
         StatementRunWorkflowResult? reconciliation,
@@ -287,7 +300,7 @@ public sealed class StatementToReportWorkflowService
         return descriptors;
     }
 
-    private async Task<StatementToReportArtifactDto> RetainArtifactAsync(
+    private async Task<StatementReconciliationReportArtifactDto> RetainArtifactAsync(
         string workflowId,
         string artifactId,
         string artifactKind,
@@ -299,7 +312,7 @@ public sealed class StatementToReportWorkflowService
     {
         var path = ResolveArtifactPath(workflowId, artifactId);
         await AtomicFileWriter.WriteAsync(path, content, ct).ConfigureAwait(false);
-        return new StatementToReportArtifactDto(
+        return new StatementReconciliationReportArtifactDto(
             artifactId,
             artifactKind,
             fileName,
@@ -308,7 +321,7 @@ public sealed class StatementToReportWorkflowService
             Convert.ToHexString(SHA256.HashData(content)),
             UiApiRoutes.WithParam(
                 UiApiRoutes.WithParam(
-                    UiApiRoutes.ReconciliationStatementToReportArtifact,
+                    UiApiRoutes.ReconciliationStatementReconciliationReportArtifact,
                     "workflowId",
                     workflowId),
                 "artifactId",
@@ -337,7 +350,7 @@ public sealed class StatementToReportWorkflowService
 
     private WorkflowSnapshot CreateSnapshot(
         string workflowId,
-        StatementToReportStartCommand command,
+        StatementReconciliationReportStartCommand command,
         string inputPath)
     {
         var now = DateTimeOffset.UtcNow;
@@ -356,9 +369,9 @@ public sealed class StatementToReportWorkflowService
             command.Import.PeriodEnd,
             command.Import.ToleranceProfileId,
             command.Import.ImportedBy);
-        var workflow = new StatementToReportWorkflowDto(
+        var workflow = new StatementReconciliationReportWorkflowDto(
             workflowId,
-            StatementToReportWorkflowStatusDto.InputRetained,
+            StatementReconciliationReportWorkflowStatusDto.InputRetained,
             Version: 1,
             command.TenantId.Trim(),
             Normalize(command.CompanyId),
@@ -406,7 +419,7 @@ public sealed class StatementToReportWorkflowService
 
     private static WorkflowSnapshot Advance(
         WorkflowSnapshot snapshot,
-        StatementToReportWorkflowStatusDto status,
+        StatementReconciliationReportWorkflowStatusDto status,
         int? breakCount = null,
         int? caseCount = null,
         string? recoveryAction = null)
@@ -430,7 +443,7 @@ public sealed class StatementToReportWorkflowService
 
     private static WorkflowSnapshot Complete(
         WorkflowSnapshot snapshot,
-        IReadOnlyList<StatementToReportArtifactDto> artifacts)
+        IReadOnlyList<StatementReconciliationReportArtifactDto> artifacts)
     {
         var now = DateTimeOffset.UtcNow;
         var import = snapshot.ImportResult!;
@@ -438,7 +451,7 @@ public sealed class StatementToReportWorkflowService
         {
             Workflow = snapshot.Workflow with
             {
-                Status = StatementToReportWorkflowStatusDto.Completed,
+                Status = StatementReconciliationReportWorkflowStatusDto.Completed,
                 Version = snapshot.Workflow.Version + 1,
                 StatementRunId = import.RunId,
                 EvidenceVaultIdentity = import.EvidenceVaultIdentity,
@@ -453,7 +466,7 @@ public sealed class StatementToReportWorkflowService
                 FailureReason = null,
                 RecoveryAction = null
             },
-            ResumeStatus = StatementToReportWorkflowStatusDto.Completed
+            ResumeStatus = StatementReconciliationReportWorkflowStatusDto.Completed
         };
     }
 
@@ -462,7 +475,7 @@ public sealed class StatementToReportWorkflowService
         {
             Workflow = snapshot.Workflow with
             {
-                Status = StatementToReportWorkflowStatusDto.Failed,
+                Status = StatementReconciliationReportWorkflowStatusDto.Failed,
                 Version = snapshot.Workflow.Version + 1,
                 UpdatedAtUtc = DateTimeOffset.UtcNow,
                 FailureReason = exception.Message,
@@ -493,12 +506,12 @@ public sealed class StatementToReportWorkflowService
            && !string.Equals(item.Status, "Waived", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(item.Status, "Superseded", StringComparison.OrdinalIgnoreCase);
 
-    private static StatementToReportWorkflowExecution RequireExecution(WorkflowSnapshot snapshot)
+    private static StatementReconciliationReportWorkflowExecution RequireExecution(WorkflowSnapshot snapshot)
         => new(
             snapshot.ImportResult,
             snapshot.Workflow);
 
-    private static string BuildWorkflowId(StatementToReportStartCommand command)
+    private static string BuildWorkflowId(StatementReconciliationReportStartCommand command, string prefix)
     {
         var contentHash = Convert.ToHexString(SHA256.HashData(command.Import.Document.Content.Span));
         var identity = string.Join('|',
@@ -515,14 +528,17 @@ public sealed class StatementToReportWorkflowService
             Normalize(command.Import.Document.ExternalAccountId),
             Normalize(command.Import.ToleranceProfileId),
             contentHash);
-        return "statement-report-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..32].ToLowerInvariant();
+        return prefix + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..32].ToLowerInvariant();
     }
 
     private string GetWorkflowDirectory(string workflowId)
     {
         if (!IsSafeWorkflowId(workflowId))
-            throw new ArgumentException("Statement-to-report workflow id is invalid.", nameof(workflowId));
-        return Path.Combine(_workflowRoot, workflowId);
+            throw new ArgumentException("Statement reconciliation report workflow id is invalid.", nameof(workflowId));
+        var root = workflowId.StartsWith(LegacyWorkflowIdPrefix, StringComparison.Ordinal)
+            ? _legacyWorkflowRoot
+            : _workflowRoot;
+        return Path.Combine(root, workflowId);
     }
 
     private string ResolveArtifactPath(string workflowId, string artifactId)
@@ -531,7 +547,7 @@ public sealed class StatementToReportWorkflowService
         {
             "reconciliation-report-json" => "statement-reconciliation-report.json",
             "kind-summary-csv" => "statement-kind-summary.csv",
-            _ => throw new ArgumentException("Unknown statement-to-report artifact id.", nameof(artifactId))
+            _ => throw new ArgumentException("Unknown statement reconciliation report artifact id.", nameof(artifactId))
         };
         return Path.Combine(GetWorkflowDirectory(workflowId), "artifacts", fileName);
     }
@@ -562,7 +578,7 @@ public sealed class StatementToReportWorkflowService
             }
             catch (IOException ex)
             {
-                throw new TimeoutException("Another process owns this statement-to-report workflow.", ex);
+                throw new TimeoutException("Another process owns this statement reconciliation report workflow.", ex);
             }
         }
     }
@@ -573,11 +589,15 @@ public sealed class StatementToReportWorkflowService
         if (!File.Exists(path))
             return null;
         var json = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
+        json = json.Replace(
+            "\"RenderingReport\"",
+            "\"RenderingReconciliationReport\"",
+            StringComparison.Ordinal);
         var snapshot = JsonSerializer.Deserialize<WorkflowSnapshot>(json, JsonOptions)
-            ?? throw new InvalidDataException("Statement-to-report workflow snapshot is empty.");
+            ?? throw new InvalidDataException("Statement reconciliation report workflow snapshot is empty.");
         if (snapshot.SchemaVersion != SnapshotSchemaVersion)
-            throw new InvalidDataException($"Unsupported statement-to-report snapshot schema {snapshot.SchemaVersion}.");
-        return snapshot;
+            throw new InvalidDataException($"Unsupported statement reconciliation report snapshot schema {snapshot.SchemaVersion}.");
+        return NormalizeLegacySnapshot(snapshot);
     }
 
     private static Task SaveSnapshotAsync(string directory, WorkflowSnapshot snapshot, CancellationToken ct)
@@ -586,7 +606,7 @@ public sealed class StatementToReportWorkflowService
             JsonSerializer.Serialize(snapshot, JsonOptions),
             ct);
 
-    private static void ValidateCommand(StatementToReportStartCommand command)
+    private static void ValidateCommand(StatementReconciliationReportStartCommand command)
     {
         ArgumentNullException.ThrowIfNull(command.Import);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.TenantId);
@@ -595,7 +615,7 @@ public sealed class StatementToReportWorkflowService
         ArgumentException.ThrowIfNullOrWhiteSpace(command.Import.ExternalAccountId);
         ArgumentException.ThrowIfNullOrWhiteSpace(command.Import.ImportedBy);
         if (command.Import.Document.Content.IsEmpty)
-            throw new ArgumentException("Statement-to-report workflow requires a non-empty statement document.", nameof(command));
+            throw new ArgumentException("Statement reconciliation report workflow requires a non-empty statement document.", nameof(command));
         if (command.Import.PeriodEnd < command.Import.PeriodStart)
             throw new ArgumentException("Statement period end must be on or after period start.", nameof(command));
     }
@@ -603,21 +623,29 @@ public sealed class StatementToReportWorkflowService
     private static void ValidateWorkflowLookup(string workflowId, string tenantId)
     {
         if (!IsSafeWorkflowId(workflowId))
-            throw new ArgumentException("Statement-to-report workflow id is invalid.", nameof(workflowId));
+            throw new ArgumentException("Statement reconciliation report workflow id is invalid.", nameof(workflowId));
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
     }
 
     private static bool IsSafeWorkflowId(string workflowId)
-        => !string.IsNullOrWhiteSpace(workflowId)
-           && workflowId.StartsWith("statement-report-", StringComparison.Ordinal)
-           && workflowId.Length == "statement-report-".Length + 32
-           && workflowId["statement-report-".Length..].All(Uri.IsHexDigit);
+    {
+        if (string.IsNullOrWhiteSpace(workflowId))
+            return false;
+        var prefix = workflowId.StartsWith(WorkflowIdPrefix, StringComparison.Ordinal)
+            ? WorkflowIdPrefix
+            : workflowId.StartsWith(LegacyWorkflowIdPrefix, StringComparison.Ordinal)
+                ? LegacyWorkflowIdPrefix
+                : null;
+        return prefix is not null
+               && workflowId.Length == prefix.Length + 32
+               && workflowId[prefix.Length..].All(Uri.IsHexDigit);
+    }
 
     private static void EnsureScopeMatches(WorkflowSnapshot snapshot, string tenantId, string? companyId)
     {
         if (!string.Equals(snapshot.Workflow.TenantId, tenantId.Trim(), StringComparison.Ordinal)
             || !string.Equals(snapshot.Workflow.CompanyId, Normalize(companyId), StringComparison.Ordinal))
-            throw new UnauthorizedAccessException("Statement-to-report workflow belongs to another tenant or company scope.");
+            throw new UnauthorizedAccessException("Statement reconciliation report workflow belongs to another tenant or company scope.");
     }
 
     private static string? Normalize(string? value)
@@ -634,17 +662,42 @@ public sealed class StatementToReportWorkflowService
     }
 
     private static string BuildStatusRoute(string workflowId)
-        => UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementToReportById, "workflowId", workflowId);
+        => UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementReconciliationReportById, "workflowId", workflowId);
 
     private static string BuildResumeRoute(string workflowId)
-        => UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementToReportResume, "workflowId", workflowId);
+        => UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementReconciliationReportResume, "workflowId", workflowId);
+
+    private static string BuildArtifactRoute(string workflowId, string artifactId)
+        => UiApiRoutes.WithParam(
+            UiApiRoutes.WithParam(
+                UiApiRoutes.ReconciliationStatementReconciliationReportArtifact,
+                "workflowId",
+                workflowId),
+            "artifactId",
+            artifactId);
+
+    private static WorkflowSnapshot NormalizeLegacySnapshot(WorkflowSnapshot snapshot)
+        => snapshot with
+        {
+            Workflow = snapshot.Workflow with
+            {
+                StatusRoute = BuildStatusRoute(snapshot.Workflow.WorkflowId),
+                ResumeRoute = BuildResumeRoute(snapshot.Workflow.WorkflowId),
+                RetainedArtifacts = snapshot.Workflow.RetainedArtifacts
+                    .Select(item => item with
+                    {
+                        DownloadRoute = BuildArtifactRoute(snapshot.Workflow.WorkflowId, item.ArtifactId)
+                    })
+                    .ToArray()
+            }
+        };
 
     private sealed record WorkflowSnapshot(
         int SchemaVersion,
         PersistedRequest Request,
-        StatementToReportWorkflowDto Workflow,
+        StatementReconciliationReportWorkflowDto Workflow,
         StatementImportCommitResultDto? ImportResult,
-        StatementToReportWorkflowStatusDto ResumeStatus);
+        StatementReconciliationReportWorkflowStatusDto ResumeStatus);
 
     private sealed record PersistedRequest(
         string RelativeInputPath,

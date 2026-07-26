@@ -3,6 +3,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,10 +32,12 @@ public static partial class WorkstationEndpoints
             return Results.Unauthorized();
         }
 
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
+        var casework = context.RequestServices.GetService<IStatementReconciliationCaseworkHandoffService>();
+        if (casework is null)
         {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            return Results.Problem(
+                "Authoritative reconciliation casework handoff is not registered.",
+                statusCode: StatusCodes.Status501NotImplemented);
         }
 
         // Authentication proves the executing operator. Origin and privilege are always derived
@@ -49,8 +52,18 @@ public static partial class WorkstationEndpoints
             ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
             ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
         };
-        var transition = await repository.ApplyCaseworkCommandAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
+        try
+        {
+            var transition = await casework.ApplyAsync(trusted, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
+        }
+        catch (StatementReconciliationCaseworkHandoffException exception)
+        {
+            return Results.Problem(
+                detail: $"{exception.Code}: {exception.Message}",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Statement reconciliation casework handoff failed");
+        }
     }
 
     private static async Task<IResult> ApplyReconciliationBulkEndpointAsync(
@@ -78,10 +91,12 @@ public static partial class WorkstationEndpoints
             return Results.Unauthorized();
         }
 
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
+        var casework = context.RequestServices.GetService<IStatementReconciliationCaseworkHandoffService>();
+        if (casework is null)
         {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            return Results.Problem(
+                "Authoritative reconciliation casework handoff is not registered.",
+                statusCode: StatusCodes.Status501NotImplemented);
         }
 
         var trusted = request with
@@ -92,8 +107,18 @@ public static partial class WorkstationEndpoints
             ApprovalActor = NormalizeApprovalEvidence(request.ApprovalActor),
             ApprovalReference = NormalizeApprovalEvidence(request.ApprovalReference)
         };
-        var result = await repository.ApplyBulkCaseworkAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return Results.Json(result, jsonOptions);
+        try
+        {
+            var result = await casework.ApplyBulkAsync(trusted, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        }
+        catch (StatementReconciliationCaseworkHandoffException exception)
+        {
+            return Results.Problem(
+                detail: $"{exception.Code}: {exception.Message}",
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Statement reconciliation bulk handoff failed");
+        }
     }
 
     private static ReconciliationCaseworkOperationResult ToReconciliationCaseworkOperationResult(

@@ -911,6 +911,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
 
             var now = DateTimeOffset.UtcNow;
             var next = ApplyCaseworkMutation(item, command, now);
+            next = StatementCaseworkHandoffObligation.MarkPending(item, command, next);
             next = StampComputedFields(next, now);
             var auditCount = _auditEvents.Count;
             _items[command.BreakId] = next;
@@ -1159,7 +1160,9 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 }
 
                 var now = DateTimeOffset.UtcNow;
-                var next = StampComputedFields(ApplyCaseworkMutation(entry.Item!, entry.Command!, now), now);
+                var next = ApplyCaseworkMutation(entry.Item!, entry.Command!, now);
+                next = StatementCaseworkHandoffObligation.MarkPending(entry.Item!, entry.Command!, next);
+                next = StampComputedFields(next, now);
                 _items![entry.BreakId] = next;
                 await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, next, now) with { EventType = "BulkActionCaseSucceeded" }, ct).ConfigureAwait(false);
                 if (HasSlaChanged(entry.Item!, next))

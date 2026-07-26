@@ -13,3 +13,6 @@ This status file has been migrated to [contract-compatibility-matrix.md](../../a
 
 Use the archive copy for history only; do not treat it as current truth.
 
+## Migration Notes
+
+- 2026-07-26: The canonical statement reconciliation report rename, compatibility aliases, consumer action, and deprecation window are recorded in the [current contract compatibility matrix](../reference/contract-compatibility-matrix.md#migration-notes). This legacy path mirrors only the gate-visible link; the reference document remains authoritative.

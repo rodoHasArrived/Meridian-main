@@ -9,11 +9,11 @@ using Meridian.Ui.Shared.Evidence;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class StatementToReportWorkflowServiceTests : IDisposable
+public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposable
 {
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
-        "meridian-statement-to-report-tests",
+        "meridian-statement-reconciliation-report-tests",
         Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -22,12 +22,12 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
         var imports = new FakeImportService(BuildImportResult());
         var evidence = new FakeEvidenceRetainer();
         var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
-        var service = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var service = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
         var command = BuildCommand();
 
         var first = await service.StartAsync(command);
 
-        first.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+        first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         first.Workflow.RetainedArtifacts.Should().HaveCount(2);
         first.Workflow.EvidenceVaultIdentity.Should().NotBeNull();
         imports.CommitCount.Should().Be(1);
@@ -45,7 +45,7 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
             .Should().Be(jsonArtifact.ContentHashSha256);
         Encoding.UTF8.GetString(download.Content).Should().Contain(first.Workflow.WorkflowId);
 
-        var restarted = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var restarted = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
         var repeated = await restarted.StartAsync(command);
 
         repeated.Workflow.WorkflowId.Should().Be(first.Workflow.WorkflowId);
@@ -60,23 +60,23 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
         var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
         var evidence = new FakeEvidenceRetainer();
         var runs = new FakeStatementRunWorkflowService();
-        var service = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var service = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
 
         var started = await service.StartAsync(BuildCommand());
 
-        started.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.AwaitingReconciliation);
+        started.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
         started.Workflow.RetainedArtifacts.Should().BeEmpty();
         started.Workflow.RecoveryAction.Should().Contain("Resolve or disposition");
 
         runs.ReturnReconciled = true;
-        var restarted = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var restarted = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
         var resumed = await restarted.ResumeAsync(
             started.Workflow.WorkflowId,
             "tenant-alpha",
             "company-alpha");
 
         resumed.Should().NotBeNull();
-        resumed!.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+        resumed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         resumed.Workflow.RetainedArtifacts.Should().HaveCount(2);
         imports.CommitCount.Should().Be(1, "resume must use the persisted import checkpoint");
         var report = await restarted.DownloadArtifactAsync(
@@ -94,21 +94,21 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
         var imports = new FakeImportService(BuildImportResult());
         var evidence = new FakeEvidenceRetainer { FailNext = true };
         var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
-        var service = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var service = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
 
         var failed = await service.StartAsync(BuildCommand());
 
-        failed.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.Failed);
+        failed.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
         failed.Workflow.RecoveryAction.Should().Contain("retained import");
         imports.CommitCount.Should().Be(1);
 
-        var restarted = new StatementToReportWorkflowService(imports, evidence, runs, _root);
+        var restarted = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
         var resumed = await restarted.ResumeAsync(
             failed.Workflow.WorkflowId,
             "tenant-alpha",
             "company-alpha");
 
-        resumed!.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+        resumed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         imports.CommitCount.Should().Be(1);
         evidence.RetainCount.Should().Be(2);
     }
@@ -116,7 +116,7 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
     [Fact]
     public async Task GetAsync_DifferentTenant_FailsClosed()
     {
-        var service = new StatementToReportWorkflowService(
+        var service = new StatementReconciliationReportWorkflowService(
             new FakeImportService(BuildImportResult()),
             new FakeEvidenceRetainer(),
             new FakeStatementRunWorkflowService { ReturnReconciled = true },
@@ -135,7 +135,7 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
     public async Task StartAsync_SameContentWithDifferentMappingPolicy_CreatesDistinctWorkflow()
     {
         var imports = new FakeImportService(BuildImportResult());
-        var service = new StatementToReportWorkflowService(
+        var service = new StatementReconciliationReportWorkflowService(
             imports,
             new FakeEvidenceRetainer(),
             new FakeStatementRunWorkflowService { ReturnReconciled = true },
@@ -157,7 +157,88 @@ public sealed class StatementToReportWorkflowServiceTests : IDisposable
         imports.CommitCount.Should().Be(2);
     }
 
-    private static StatementToReportStartCommand BuildCommand()
+    [Fact]
+    public async Task StartAsync_LegacyPersistedWorkflow_ResumesWithoutAdvertisingLegacyRoutes()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var service = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
+        var command = BuildCommand();
+        var completed = await service.StartAsync(command);
+        var legacyWorkflowId = completed.Workflow.WorkflowId.Replace(
+            "statement-reconciliation-report-",
+            "statement-report-",
+            StringComparison.Ordinal);
+        var currentDirectory = Path.Combine(
+            _root,
+            "reporting",
+            "statement-reconciliation-report",
+            completed.Workflow.WorkflowId);
+        var legacyDirectory = Path.Combine(
+            _root,
+            "reporting",
+            "statement-to-report",
+            legacyWorkflowId);
+        Directory.CreateDirectory(Path.GetDirectoryName(legacyDirectory)!);
+        Directory.Move(currentDirectory, legacyDirectory);
+        var snapshotPath = Path.Combine(legacyDirectory, "workflow.json");
+        var snapshot = await File.ReadAllTextAsync(snapshotPath);
+        snapshot = snapshot
+            .Replace(completed.Workflow.WorkflowId, legacyWorkflowId, StringComparison.Ordinal)
+            .Replace("RenderingReconciliationReport", "RenderingReport", StringComparison.Ordinal)
+            .Replace(
+                "/api/workstation/reconciliation/statement-reconciliation-report/",
+                "/api/workstation/reconciliation/statement-to-report/",
+                StringComparison.Ordinal);
+        await File.WriteAllTextAsync(snapshotPath, snapshot);
+
+        var restarted = new StatementReconciliationReportWorkflowService(imports, evidence, runs, _root);
+        var resumed = await restarted.StartAsync(command);
+
+        resumed.Workflow.WorkflowId.Should().Be(legacyWorkflowId);
+        resumed.Workflow.StatusRoute.Should().StartWith(
+            "/api/workstation/reconciliation/statement-reconciliation-report/");
+        resumed.Workflow.ResumeRoute.Should().StartWith(
+            "/api/workstation/reconciliation/statement-reconciliation-report/");
+        resumed.Workflow.RetainedArtifacts.Should().OnlyContain(artifact =>
+            artifact.DownloadRoute.StartsWith(
+                "/api/workstation/reconciliation/statement-reconciliation-report/",
+                StringComparison.Ordinal));
+        imports.CommitCount.Should().Be(1);
+        evidence.RetainCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PreRenameServiceAdapter_ShouldDelegateToCanonicalWorkflowAndProjectLegacyLinks()
+    {
+        var canonicalCommand = BuildCommand();
+#pragma warning disable CS0618 // Verifies source compatibility for pre-rename callers.
+        var service = new StatementToReportWorkflowService(
+            new FakeImportService(BuildImportResult()),
+            new FakeEvidenceRetainer(),
+            new FakeStatementRunWorkflowService { ReturnReconciled = true },
+            _root);
+
+        var completed = await service.StartAsync(
+            new StatementToReportStartCommand(
+                canonicalCommand.Import,
+                canonicalCommand.TenantId,
+                canonicalCommand.CompanyId));
+
+        completed.Workflow.Status.Should().Be(StatementToReportWorkflowStatusDto.Completed);
+        completed.Workflow.StatusRoute.Should().StartWith(
+            "/api/workstation/reconciliation/statement-to-report/");
+        completed.Workflow.ResumeRoute.Should().StartWith(
+            "/api/workstation/reconciliation/statement-to-report/");
+        completed.Workflow.RetainedArtifacts.Should().OnlyContain(artifact =>
+            artifact.DownloadRoute.StartsWith(
+                "/api/workstation/reconciliation/statement-to-report/",
+                StringComparison.Ordinal));
+#pragma warning restore CS0618
+    }
+
+    private static StatementReconciliationReportStartCommand BuildCommand()
         => new(
             new StatementImportCommitRequest(
                 new StatementSourceDocument(

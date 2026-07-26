@@ -1300,7 +1300,7 @@ export interface ReportingRunRequest {
 export type ReportingEntityScopeKind = "AllEntities" | "Entity" | "Portfolio" | "Investor";
 export type ReportingAccountingBasis = "Gaap" | "Tax" | "Management" | "Cash" | "Statutory";
 export type ReportingConsolidationLevel = "Fund" | "Entity" | "Portfolio" | "Investor";
-export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault";
+export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault" | "ClientPackage";
 export type ReportingFinality = "Draft" | "Final";
 export type ReportingRunReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
 
@@ -1483,6 +1483,27 @@ export interface ReportingAccessAuditSummary {
   denialReasons: string[];
 }
 
+export interface ReportingDeploymentComponent {
+  componentId: string;
+  displayName: string;
+  isReady: boolean;
+  summary: string;
+}
+
+export interface ReportingDeploymentCapability {
+  isReady: boolean;
+  durableGovernance: boolean;
+  durableArtifacts: boolean;
+  durableRuns: boolean;
+  durableScheduling: boolean;
+  durableDelivery: boolean;
+  recipientDestinationsConfigured: boolean;
+  clientDocumentsConfigured: boolean;
+  migrationsManaged: boolean;
+  components: ReportingDeploymentComponent[];
+  blockingReasons: string[];
+}
+
 export interface ReportingDailyWorkItem {
   workItemId: string;
   kind: string;
@@ -1528,6 +1549,7 @@ export interface AccountingReportingSummary {
   analyticsRows?: PortfolioReportingAnalyticsRow[];
   reportLineProvenanceExplorer?: FinancialRecordExplorerDto | null;
   accessAudit?: ReportingAccessAuditSummary | null;
+  deploymentCapability?: ReportingDeploymentCapability | null;
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
@@ -1556,7 +1578,7 @@ export interface AccountingWorkspaceResponse {
 }
 
 export type GovernanceWorkspaceResponse = AccountingWorkspaceResponse;
-export type ReportingWorkspaceResponse = AccountingWorkspaceResponse;
+export type ReportingWorkspaceResponse = AccountingReportingSummary;
 
 export interface ExportAnalysisResult {
   jobId: string | null;

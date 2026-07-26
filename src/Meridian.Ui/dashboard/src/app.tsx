@@ -653,7 +653,7 @@ function AppShell({
                   <Route path="/reporting/preview" element={<ReportPreviewValidationScreen data={reporting} />} />
                   <Route path="/reporting/runs/detail" element={<ReportRunDetailScreen data={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
-                  <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
+                  <Route path="/reporting/*" element={<ReportingScreen data={reporting} accounting={accounting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />

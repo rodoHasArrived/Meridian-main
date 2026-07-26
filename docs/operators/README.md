@@ -39,7 +39,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Daily operator controls | [Operators](./README.md) | this page |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
-| Statement intake through retained report | [Statement-to-Report Operations](./statement-to-report-operations.md) | persisted intake, reconciliation pause/resume, artifact verification, and recovery |
+| Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | persisted intake, reconciliation pause/resume, JSON/CSV artifact verification, and recovery |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
@@ -59,7 +59,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
-- [Statement-to-Report Operations](./statement-to-report-operations.md)
+- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
 - [Verified Outcome Recovery](./verified-outcome-recovery.md)
 
 ## High-Traffic Legacy Path Migration Status
@@ -145,7 +145,7 @@ Use this simple status model for operator-facing claims:
 ### Reconciliation and reliability
 
 - [Reconciliation Operations](./reconciliation-operations.md)
-- [Statement-to-Report Operations](./statement-to-report-operations.md)
+- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
 - [Governed Reporting Operations](./governed-reporting-operations.md)
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Failover and Recovery](./failover-and-recovery.md)

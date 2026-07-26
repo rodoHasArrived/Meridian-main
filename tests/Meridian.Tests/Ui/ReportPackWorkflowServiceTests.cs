@@ -16,6 +16,7 @@ using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
+using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;

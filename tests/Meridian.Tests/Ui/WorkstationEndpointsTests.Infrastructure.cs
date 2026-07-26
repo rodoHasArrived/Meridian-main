@@ -73,6 +73,9 @@ public sealed partial class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IReportingDeploymentReadinessService>(
+            new FixedReportingDeploymentReadinessService(
+                ReadyReportingDeploymentCapability()));
         builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
             new FileReconciliationBreakQueueRepository(
                 Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
@@ -143,6 +146,12 @@ public sealed partial class WorkstationEndpointsTests
         var fileName = Path.GetFileName(callerFilePath);
         return string.Equals(fileName, "WorkstationEndpointsTests.Wave4.cs", StringComparison.Ordinal) ||
             string.Equals(fileName, "WorkstationEndpointsTests.AccountingConfiguration.cs", StringComparison.Ordinal);
+    }
+
+    private sealed class FixedReportingDeploymentReadinessService(
+        ReportingDeploymentCapabilityDto capability) : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() => capability;
     }
 
     private static void RegisterRunReadServices(IServiceCollection services)
