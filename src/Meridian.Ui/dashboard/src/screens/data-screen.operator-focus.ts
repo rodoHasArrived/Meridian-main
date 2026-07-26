@@ -45,7 +45,7 @@ function buildOperatorFocusCandidateFromProvider(
     route: WORKSTATION_ROUTE_CATALOG.dataProviders,
     workspaceLabel: "Data",
     actionLabel: "Open provider trust",
-    tone: provider.status === "Degraded" ? "blocked" : "review",
+    tone: provider.status === "Degraded" || provider.status === "Blocked" ? "blocked" : "review",
     sourcePriority: 15,
     sourceIndex: index
   });

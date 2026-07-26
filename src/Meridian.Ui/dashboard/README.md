@@ -176,9 +176,10 @@ the shared quarantine replay endpoint for the currently retained quarantine batc
 backend-computed pending, decisioned, replay-requested, ignored, and cash-position posture counts
 after evidence reload.
 
-No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
-routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
-readiness, and provider setup, while keeping retry-to-live behavior available.
+No-host browser previews must keep fixture data visibly labeled as demo data. The masthead's compact,
+non-dismissable provenance strip routes operators through the typed demo evidence path: watchlist,
+live quote evidence, trading readiness, and provider setup, while keeping retry-to-live behavior
+available. Do not add a second full-width seeded-data warning below the masthead.
 The app-shell data-provenance badge combines the server-owned `/api/demo/mode` response with actual
 fixture usage. Explicit demo or fixture data always wins over a nominal live posture, and a missing
 or malformed mode response fails closed to simulated/unverified rather than being presented as real
@@ -1141,7 +1142,8 @@ now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, L
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
 queue, trust posture, linked context, and evidence events before the queued work, so the first screen
 explains why the operator should act, who owns the issue, what output is affected, which action is
-next, and which retained evidence supports it.
+next, and which retained evidence supports it. Scope, freshness, and provider-connectivity trust
+cards expose their remediation actions in the card that reports the warning.
 Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
 retained workspace alias path.
 The app shell exposes the active route as a named workbench landmark and marks that landmark busy
@@ -1197,14 +1199,11 @@ Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `W
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
-Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
-Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
-Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
-Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
-keeping close/accounting tasks distinct from governed report-output tasks.
-The Accounting task-mode route resolver, mode catalog, and launcher links live in
-`accounting-screen.task-mode-view-model.ts` so task-mode IA can evolve without adding more route
-state to `accounting-screen.view-model.ts`.
+Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped
+under Close, Records, Reconciliation, Review, and Administration; Accounting screens do not repeat
+those routes in a horizontal tab strip or task-mode launcher. Governed delivery evidence remains a
+Reporting handoff at `/reporting/evidence`, while `/accounting/reporting` is retained only as a
+non-navigable compatibility route.
 Accounting-specific split-pane, reference-panel, and journal-entry workstation styles live in
 `src/styles/accounting-screen.css`, imported by `accounting-screen.tsx`, keeping route styling out of
 the shared workstation stylesheet.

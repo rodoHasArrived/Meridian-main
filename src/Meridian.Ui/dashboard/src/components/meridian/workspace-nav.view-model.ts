@@ -12,6 +12,12 @@ import {
   WORKSTATION_ROUTE_CATALOG,
   workspacePath
 } from "@/lib/workspace";
+import {
+  ACCOUNTING_NAVIGATION_GROUPS,
+  appendAccountingNavigationContextToRoute,
+  isAccountingNavigationItemActive,
+  type AccountingNavigationItemDefinition
+} from "@/lib/accounting-navigation";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -22,24 +28,31 @@ export interface WorkspaceNavSubItemViewModel {
   ariaLabel: string;
 }
 
+export interface WorkspaceNavSubItemGroupViewModel {
+  id: string;
+  label: string;
+  items: WorkspaceNavSubItemViewModel[];
+}
+
 export interface WorkspaceNavItemViewModel {
   key: WorkspaceKey;
   label: string;
   description: string;
-  statusLabel: string;
-  statusTone: WorkspaceNavStatusTone;
+  maturityLabel: string;
+  maturityTone: WorkspaceNavMaturityTone;
   route: string;
   active: boolean;
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
   subItems: WorkspaceNavSubItemViewModel[];
+  subItemGroups: WorkspaceNavSubItemGroupViewModel[];
 }
 
 export interface WorkspaceNavCurrentWorkspaceViewModel {
   label: string;
   description: string;
-  statusLabel: string;
-  statusTone: WorkspaceNavStatusTone;
+  maturityLabel: string;
+  maturityTone: WorkspaceNavMaturityTone;
   route: string;
   routeAriaLabel: string;
   ariaLabel: string;
@@ -65,7 +78,7 @@ export interface WorkspaceNavViewModel {
   items: WorkspaceNavItemViewModel[];
 }
 
-export type WorkspaceNavStatusTone = "live" | "review" | "paper" | "preview" | "setup";
+export type WorkspaceNavMaturityTone = "available" | "preview" | "setup";
 
 type WorkspaceSubrouteDefinition = { label: string; route: string; match?: "exact" | "prefix" };
 
@@ -84,20 +97,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
     { label: "Cash ladder", route: WORKSTATION_ROUTE_CATALOG.portfolioCashLadder },
     { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
-  ],
-  accounting: [
-    { label: "Today", route: WORKSTATION_ROUTE_CATALOG.accounting, match: "exact" },
-    { label: "Close", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
-    { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
-    { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
-    { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
-    { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, match: "exact" },
-    { label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation },
-    { label: "Import statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport },
-    { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
-    { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
-    { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
-    { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
@@ -150,15 +149,23 @@ export function buildWorkspaceNavViewModel(
 
   const items = visibleWorkspaces.map<WorkspaceNavItemViewModel>((workspace) => {
     const active = isWorkspacePathActive(pathname, workspace.key);
-    const statusTone = workspaceStatusTone(workspace.status);
+    const maturityTone = workspaceMaturityTone(workspace.maturity);
     const workspaceCanonicalRoute = workspacePath(workspace.key);
     const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
-    const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
+    const workspaceRoute = buildWorkspaceNavigationRoute(
+      workspace.key,
+      workspaceCanonicalRoute,
+      operatingScope,
+      search
+    );
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
-    const rawSubRoutes = visibleWorkspaceSubroutes(workspace.key);
-    const subItems: WorkspaceNavSubItemViewModel[] = rawSubRoutes.map((sub) => {
-      const subActive = isSubRouteActive(pathname, sub.route, sub.match);
-      const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
+    const buildSubItem = (
+      sub: WorkspaceSubrouteDefinition | AccountingNavigationItemDefinition
+    ): WorkspaceNavSubItemViewModel => {
+      const subActive = workspace.key === "accounting"
+        ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
+        : isSubRouteActive(pathname, sub.route, sub.match);
+      const subRoute = buildWorkspaceNavigationRoute(workspace.key, sub.route, operatingScope, search);
       const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
       return {
         label: sub.label,
@@ -169,28 +176,39 @@ export function buildWorkspaceNavViewModel(
           ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(subScopeSummary)}`
           : `Open ${sub.label}${formatPreservedScopeAriaSuffix(subScopeSummary)}`
       };
-    });
+    };
+    const rawSubRouteGroups = visibleWorkspaceSubrouteGroups(workspace.key);
+    const subItemGroups = rawSubRouteGroups.map<WorkspaceNavSubItemGroupViewModel>((group) => ({
+      id: group.id,
+      label: group.label,
+      items: group.items.map(buildSubItem)
+    }));
+    const subItems = subItemGroups.length > 0
+      ? subItemGroups.flatMap((group) => group.items)
+      : visibleWorkspaceSubroutes(workspace.key).map(buildSubItem);
 
     return {
       key: workspace.key,
       label: workspace.label,
       description: workspace.description,
-      statusLabel: active ? `${workspace.status} · Current` : workspace.status,
-      statusTone,
+      maturityLabel: active ? `${workspace.maturity} · Current` : workspace.maturity,
+      maturityTone,
       route: workspaceRoute,
       active,
       ariaCurrent: exactWorkspaceActive ? "page" : undefined,
       ariaLabel: active
         ? exactWorkspaceActive
-          ? `${workspace.label} workspace, current route, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
-          : `${workspace.label} workspace, active section, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
-        : `Open ${workspace.label} workspace, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
-      subItems
+          ? `${workspace.label} workspace, current route, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+          : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+        : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
+      subItems,
+      subItemGroups
     };
   });
-  const currentRoute = appendOperatingScopeToRoute(workspacePath(currentWorkspace.key), operatingScope);
+  const currentRoute = items.find((item) => item.key === currentWorkspace.key)?.route
+    ?? buildWorkspaceNavigationRoute(currentWorkspace.key, workspacePath(currentWorkspace.key), operatingScope, search);
 
-  const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope);
+  const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
   return {
     brandTitle: "Meridian",
@@ -201,11 +219,11 @@ export function buildWorkspaceNavViewModel(
     currentWorkspace: {
       label: currentWorkspace.label,
       description: currentWorkspace.description,
-      statusLabel: `${currentWorkspace.status} posture`,
-      statusTone: workspaceStatusTone(currentWorkspace.status),
+      maturityLabel: `${currentWorkspace.maturity} product maturity`,
+      maturityTone: workspaceMaturityTone(currentWorkspace.maturity),
       route: currentRoute,
       routeAriaLabel: operatingScope.hasScope ? `Scoped route ${currentRoute}` : `Canonical route ${currentRoute}`,
-      ariaLabel: `Current workspace: ${currentWorkspace.label}, ${currentWorkspace.status} posture`
+      ariaLabel: `Current workspace: ${currentWorkspace.label}, ${currentWorkspace.maturity} product maturity`
     },
     operatingScopeLabel: operatingScope.hasScope ? operatingScope.summary : null,
     operatingScopeAriaLabel: operatingScope.hasScope ? `Navigation preserves operating scope: ${operatingScope.summary}` : null,
@@ -224,17 +242,35 @@ export function buildWorkspaceNavViewModel(
 }
 
 function visibleWorkspaceSubroutes(workspaceKey: WorkspaceKey): WorkspaceSubrouteDefinition[] {
+  if (workspaceKey === "accounting") {
+    return ACCOUNTING_NAVIGATION_GROUPS
+      .flatMap((group) => group.items)
+      .filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
+  }
+
   return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
+}
+
+function visibleWorkspaceSubrouteGroups(workspaceKey: WorkspaceKey) {
+  return workspaceKey === "accounting"
+    ? ACCOUNTING_NAVIGATION_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route))
+    })).filter((group) => group.items.length > 0)
+    : [];
 }
 
 function buildContextItems(
   pathname: string,
   workspaceKey: WorkspaceKey,
-  operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
+  operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>,
+  search: string
 ): WorkspaceNavSubItemViewModel[] {
   return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
-    const active = isSubRouteActive(pathname, sub.route, sub.match);
-    const route = appendOperatingScopeToRoute(sub.route, operatingScope);
+    const active = workspaceKey === "accounting"
+      ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
+      : isSubRouteActive(pathname, sub.route, sub.match);
+    const route = buildWorkspaceNavigationRoute(workspaceKey, sub.route, operatingScope, search);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
     return {
       label: sub.label,
@@ -246,6 +282,18 @@ function buildContextItems(
         : `Open ${sub.label}${formatPreservedScopeAriaSuffix(scopeSummary)}`
     };
   });
+}
+
+function buildWorkspaceNavigationRoute(
+  workspaceKey: WorkspaceKey,
+  route: string,
+  operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>,
+  search: string
+): string {
+  const scopedRoute = appendOperatingScopeToRoute(route, operatingScope);
+  return workspaceKey === "accounting"
+    ? appendAccountingNavigationContextToRoute(scopedRoute, search)
+    : scopedRoute;
 }
 
 function workspaceContextEyebrow(workspaceKey: WorkspaceKey): string {
@@ -306,18 +354,14 @@ function isExactRouteActive(pathname: string, route: string): boolean {
   return clean === cleanRoute;
 }
 
-function workspaceStatusTone(status: string): WorkspaceNavStatusTone {
-  switch (status.toLowerCase()) {
-    case "live":
-      return "live";
-    case "paper":
-      return "paper";
-    case "preview":
+function workspaceMaturityTone(maturity: WorkspaceSummary["maturity"]): WorkspaceNavMaturityTone {
+  switch (maturity) {
+    case "Available":
+      return "available";
+    case "Preview":
       return "preview";
-    case "setup":
+    case "Setup":
       return "setup";
-    default:
-      return "review";
   }
 }
 

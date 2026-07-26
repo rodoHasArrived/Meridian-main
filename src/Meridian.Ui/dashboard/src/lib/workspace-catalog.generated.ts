@@ -7,42 +7,42 @@ export const WORKSPACE_DEFINITIONS = [
     key: "trading",
     label: "Trading",
     description: "Paper cockpit readiness, sessions, orders, positions, replay, and promotion evidence.",
-    status: "Review"
+    maturity: "Available"
   },
   {
     key: "portfolio",
     label: "Portfolio",
     description: "Portfolio exposure, positions, attribution, fills, and run-level equity continuity.",
-    status: "Preview"
+    maturity: "Preview"
   },
   {
     key: "accounting",
     label: "Accounting",
     description: "Ledger, cash-flow, reconciliation, Security Master coverage, and fund-account evidence.",
-    status: "Review"
+    maturity: "Available"
   },
   {
     key: "reporting",
     label: "Reporting",
     description: "Report packs, governed exports, loader scripts, data dictionaries, and approval posture.",
-    status: "Review"
+    maturity: "Available"
   },
   {
     key: "strategy",
     label: "Strategy",
     description: "Backtest runs, comparisons, run diffing, and paper-promotion review.",
-    status: "Paper"
+    maturity: "Available"
   },
   {
     key: "data",
     label: "Data",
     description: "Provider posture, backfill queues, symbol readiness, and data-quality handoffs.",
-    status: "Live"
+    maturity: "Available"
   },
   {
     key: "settings",
     label: "Settings",
     description: "Operator session context, shell preferences, integrations, and workstation setup checks.",
-    status: "Setup"
+    maturity: "Setup"
   },
 ] as const;

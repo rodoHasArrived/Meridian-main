@@ -48,7 +48,6 @@ import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
-import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
 import {
   InstrumentPassportPanel,
@@ -2419,7 +2418,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 />
               ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
-              <AccountingTaskModeLauncher />
             </div>
           </TechnicalDetails>
         </>
@@ -4846,6 +4844,52 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
 }
 
 function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+  // While an amount input holds unparseable text, its raw string is kept here (keyed
+  // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
+  // reports means React never rewrites the node, so the user's in-progress text survives while
+  // the inline error shows - and the unparseable text is never coerced into the draft as zero.
+  // A key's presence is also the invalid marker; a successful parse clears the line's keys.
+  const [amountDrafts, setAmountDrafts] = useState<Readonly<Record<string, string>>>({});
+  // Pending raw text belongs to one revision of one draft. Switching drafts, refreshing, or
+  // applying a server result replaces the rows, so stale mirrors must not survive to mask the
+  // committed amount of a freshly mounted line. Local line edits leave these fields untouched.
+  const draftIdentity = `${view.draft?.journalEntryId ?? ""}:${view.draft?.version ?? 0}:${view.draft?.updatedAtUtc ?? ""}`;
+  useEffect(() => {
+    setAmountDrafts({});
+  }, [draftIdentity]);
+  const hasInvalidAmountEdits = Object.keys(amountDrafts).length > 0;
+  const invalidAmountReason = "Correct the flagged amount entries before continuing.";
+  const handleAmountChange = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
+    const amount = parseJournalAmount(input.value, input.validity.badInput);
+    setAmountDrafts((current) => {
+      if (amount === null) {
+        return { ...current, [`${lineId}:${side}`]: input.value };
+      }
+      const debitKey = `${lineId}:Debit`;
+      const creditKey = `${lineId}:Credit`;
+      if (!(debitKey in current) && !(creditKey in current)) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[debitKey];
+      delete next[creditKey];
+      return next;
+    });
+    if (amount === null) {
+      return;
+    }
+    view.updateLine(lineId, { side, amount });
+  };
+  const handleAmountBlur = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
+    // React swallows the badInput -> genuinely-empty transition (the node reports "" in both
+    // states, so no change event fires when the user clears bad text); re-evaluate on blur so a
+    // cleared field commits as zero and drops its error instead of staying flagged forever. The
+    // guard keeps ordinary blurs from re-running updateLine and voiding a fresh validation pass.
+    if (`${lineId}:${side}` in amountDrafts) {
+      handleAmountChange(lineId, side, input);
+    }
+  };
+
   if (!view.available) {
     return (
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
@@ -4902,17 +4946,31 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Refresh
           </Button>
-          <Button size="sm" variant="outline" busy={view.validateBusy} onClick={() => void view.validate()}>
+          <Button
+            size="sm"
+            variant="outline"
+            busy={view.validateBusy}
+            disabled={hasInvalidAmountEdits}
+            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : null}
+            onClick={() => void view.validate()}
+          >
             Validate
           </Button>
-          <Button size="sm" variant="outline" busy={view.saveBusy} onClick={() => void view.save()}>
+          <Button
+            size="sm"
+            variant="outline"
+            busy={view.saveBusy}
+            disabled={hasInvalidAmountEdits}
+            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : null}
+            onClick={() => void view.save()}
+          >
             Save draft
           </Button>
           <Button
             size="sm"
             busy={view.submitBusy}
-            disabled={!view.canSubmit}
-            disabledReason={view.submitDisabledReason}
+            disabled={!view.canSubmit || hasInvalidAmountEdits}
+            disabledReason={hasInvalidAmountEdits ? invalidAmountReason : view.submitDisabledReason}
             onClick={() => void view.submit()}
           >
             Submit approval
@@ -5053,20 +5111,30 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                             aria-label={`Debit amount for line ${line.lineId}`}
                             className="text-right font-mono"
                             type="number"
-                            value={isDebit ? line.amount : 0}
-                            onChange={(event) => view.updateLine(line.lineId, { side: "Debit", amount: parseJournalAmount(event.target.value) })}
+                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
+                            aria-invalid={`${line.lineId}:Debit` in amountDrafts || undefined}
+                            onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
+                            onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
                           />
+                          {`${line.lineId}:Debit` in amountDrafts ? (
+                            <p className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                          ) : null}
                         </td>
                         <td>
                           <input
                             aria-label={`Credit amount for line ${line.lineId}`}
                             className="text-right font-mono"
                             type="number"
-                            value={isDebit ? 0 : line.amount}
-                            onChange={(event) => view.updateLine(line.lineId, { side: "Credit", amount: parseJournalAmount(event.target.value) })}
+                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
+                            aria-invalid={`${line.lineId}:Credit` in amountDrafts || undefined}
+                            onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
+                            onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
                           />
+                          {`${line.lineId}:Credit` in amountDrafts ? (
+                            <p className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                          ) : null}
                         </td>
                         <td>
                           <button
@@ -5437,9 +5505,21 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
   );
 }
 
-function parseJournalAmount(value: string): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
+/**
+ * Parses a journal amount from a number input. Returns null (never a silent zero) when the field
+ * holds unparseable text - the DOM reports that via validity.badInput with an empty value - so a
+ * pasted "1,234.00" can never post a line as zero. A genuinely cleared field still parses as 0.
+ */
+function parseJournalAmount(value: string, badInput: boolean): number | null {
+  if (badInput) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return 0;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {

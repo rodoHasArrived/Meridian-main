@@ -2586,11 +2586,21 @@ export function SettingsScreen({
       return;
     }
 
+    const { payload: profileFields, invalidFields } = buildProfileFieldPayload(selected.fields, profileBackedSecurity.fieldValues);
+    if (invalidFields.length > 0) {
+      setProfileBackedSecurity((current) => ({
+        ...current,
+        message: "Correct the profile field values before creating the security.",
+        details: invalidFields,
+        tone: "warning"
+      }));
+      return;
+    }
+
     setProfileBackedSecurity((current) => ({ ...current, busy: true, message: null, details: [], tone: "default" }));
     try {
       const securityId = createBrowserGuid();
       const effectiveFrom = new Date().toISOString();
-      const profileFields = buildProfileFieldPayload(selected.fields, profileBackedSecurity.fieldValues);
       const result = await createSecurityMasterEntry({
         securityId,
         assetClass: "CustomAsset",
@@ -5295,32 +5305,54 @@ function defaultProfileFieldValue(field: SecurityAssetProfileFieldDefinition): s
   return "";
 }
 
+/**
+ * Builds the profile field payload for security creation. Values that fail to parse are reported
+ * in invalidFields instead of being emitted - Number.parseFloat("") is NaN, which JSON.stringify
+ * would silently serialize as null, and prefix-parsers would truncate values like "12,5" to 12.
+ */
 function buildProfileFieldPayload(
   fields: SecurityAssetProfileFieldDefinition[],
   values: Record<string, string>
-): Record<string, unknown> {
-  return fields.reduce<Record<string, unknown>>((acc, field) => {
+): { payload: Record<string, unknown>; invalidFields: string[] } {
+  const payload: Record<string, unknown> = {};
+  const invalidFields: string[] = [];
+  for (const field of fields) {
     const raw = values[field.key]?.trim() ?? "";
-    if (!raw && !field.isRequired) {
-      return acc;
+    if (!raw) {
+      if (field.isRequired) {
+        invalidFields.push(`${field.label}: a value is required.`);
+      }
+      continue;
     }
 
     switch (field.fieldType) {
-      case "Decimal":
-        acc[field.key] = Number.parseFloat(raw);
+      case "Decimal": {
+        const parsed = Number(raw);
+        if (!Number.isFinite(parsed)) {
+          invalidFields.push(`${field.label}: enter a valid number.`);
+          break;
+        }
+        payload[field.key] = parsed;
         break;
-      case "Integer":
-        acc[field.key] = Number.parseInt(raw, 10);
+      }
+      case "Integer": {
+        const parsed = Number(raw);
+        if (!Number.isInteger(parsed)) {
+          invalidFields.push(`${field.label}: enter a whole number.`);
+          break;
+        }
+        payload[field.key] = parsed;
         break;
+      }
       case "Boolean":
-        acc[field.key] = raw === "true";
+        payload[field.key] = raw === "true";
         break;
       default:
-        acc[field.key] = raw;
+        payload[field.key] = raw;
         break;
     }
-    return acc;
-  }, {});
+  }
+  return { payload, invalidFields };
 }
 
 function normalizeAssetProfileId(value: string): string {

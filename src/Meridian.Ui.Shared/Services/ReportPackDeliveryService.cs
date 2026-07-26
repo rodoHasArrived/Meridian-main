@@ -2305,7 +2305,9 @@ public sealed partial class ReportPackDeliveryService
         new("attemptCount", attemptCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
         new("sectionCount", sectionCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
         new("lineageLinkedSections", lineageLinkedSections?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
-        new("sourceArtifacts", string.Join(";", sourceArtifacts)),
+        // Neutralize each artifact name individually: spreadsheet tools configured with a
+        // semicolon list separator can split this cell, promoting a mid-list value to cell start.
+        new("sourceArtifacts", string.Join(";", sourceArtifacts.Select(SpreadsheetFormulaGuard.Neutralize))),
         new("distributionId", distributionId),
         new("artifactName", artifactName),
         new("format", format.ToString()),
@@ -2358,9 +2360,12 @@ public sealed partial class ReportPackDeliveryService
             return string.Empty;
         }
 
-        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
-            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
-            : value;
+        // Delivered report packs are opened directly in spreadsheet tools by recipients, so
+        // formula-looking cells must be neutralized before quoting.
+        var neutralized = SpreadsheetFormulaGuard.Neutralize(value);
+        return neutralized.IndexOfAny([',', '"', '\r', '\n']) >= 0
+            ? $"\"{neutralized.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
+            : neutralized;
     }
 
     private static byte[] BuildDeliveryArtifactHtml(

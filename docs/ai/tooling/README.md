@@ -32,6 +32,17 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
 | Run Codex-specific desktop quality scans | `tools/codex/*.ps1` | Use the nearest focused PowerShell tool, then report exact command/results |
 
+## Minimal-Discovery Selection Flow
+
+Use this flow before adding a tool or running a broad script batch:
+
+1. Read `ai-systems-inventory.md` and identify which AI systems/surfaces your task touches.
+2. Choose the smallest command set from the Fast Selection table that matches that surface.
+3. If the chosen validator is unavailable, use the nearest narrower scoped equivalent and record the fallback path in the handoff packet.
+4. Re-run only commands whose prerequisites changed after the edit (for example, no need to rerun inventory on a pure command-path update).
+
+This keeps token and runner usage proportional to evidence gained: minimal first, then expand only when required by failure gates.
+
 ## Tool Families
 
 ### Inventory And Catalog Drift
@@ -182,4 +193,5 @@ Use only when the task is Codex-specific and the narrower docs validators are no
 - [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md)
 - [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md)
 - [`../work-modes.md`](../work-modes.md)
+- [`../ai-systems-inventory.md`](../ai-systems-inventory.md)
 - [`../codex/quickstart.md`](../codex/quickstart.md)

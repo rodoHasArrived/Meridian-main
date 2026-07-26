@@ -31,8 +31,14 @@ export function buildDataLinkedContextItem(
       detail: providerAttention.recommendedAction || providerAttention.note || `${providerAttention.provider} requires review before trusting ${symbol}.`,
       route,
       workspaceLabel: "Data",
-      statusLabel: providerAttention.status === "Degraded" ? "Provider degraded" : "Provider review",
-      tone: providerAttention.status === "Degraded" ? "blocked" : "review"
+      statusLabel: providerAttention.status === "Blocked"
+        ? "Provider blocked"
+        : providerAttention.status === "Degraded"
+          ? "Provider degraded"
+          : "Provider review",
+      tone: providerAttention.status === "Degraded" || providerAttention.status === "Blocked"
+        ? "blocked"
+        : "review"
     });
   }
 

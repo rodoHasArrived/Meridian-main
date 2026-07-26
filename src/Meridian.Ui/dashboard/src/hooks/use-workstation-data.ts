@@ -276,9 +276,11 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     tradingRefreshLifecycle.status
   ]);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (
+    options: { includeDeferred?: boolean } = {}
+  ) => {
     const activeWorkspace = activeWorkspaceRef.current;
-    const shouldFetchDeferred = !hasPublishedBootstrapRef.current;
+    const shouldFetchDeferred = options.includeDeferred === true || !hasPublishedBootstrapRef.current;
     tradingRefreshLifecycle.invalidate();
     providerRoutingRefreshLifecycle.invalidate();
     portfolioRefreshLifecycle.invalidate();

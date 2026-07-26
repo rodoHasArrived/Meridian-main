@@ -687,7 +687,8 @@ public sealed class AnalysisQualityReportGenerator
     {
         if (string.IsNullOrEmpty(value))
             return "";
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+        // '\r' must be quoted too: a bare carriage return splits the record in most CSV readers.
+        if (value.IndexOfAny([',', '"', '\r', '\n']) >= 0)
             return $"\"{value.Replace("\"", "\"\"")}\"";
         return value;
     }

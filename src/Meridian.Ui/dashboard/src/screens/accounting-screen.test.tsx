@@ -1614,7 +1614,8 @@ describe("AccountingScreen", () => {
     await waitForAsyncEffects();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Accounting task modes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
   });
 
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
@@ -3459,12 +3460,7 @@ describe("AccountingScreen", () => {
     const caseQueue = screen.getByRole("region", { name: "Accounting case queue" });
     expect(caseQueue).not.toHaveTextContent("LEDGER_VALIDATION_REQUIRED");
     expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
-    // The recovery navigator is replaced by the route tab strip in the header.
-    const routeTabs = screen.getByRole("tablist", { name: "Accounting routes" });
-    expect(within(routeTabs).getByRole("tab", { name: "Close" })).toHaveAttribute("aria-selected", "true");
-    expect(within(routeTabs).getByRole("tab", { name: "Reconciliation" })).toBeInTheDocument();
-    expect(within(routeTabs).getByRole("tab", { name: "Adjustments" })).toBeInTheDocument();
-    expect(within(routeTabs).getByRole("tab", { name: "Configure" })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("System details"));
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
@@ -3479,23 +3475,7 @@ describe("AccountingScreen", () => {
       "href",
       "/accounting/reconciliation"
     );
-    const taskModes = screen.getByRole("navigation", { name: "Accounting task modes" });
-    expect(within(taskModes).getByRole("link", { name: "Open Reconciliation Casework accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/reconciliation"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Ledger Explorer accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Capital Accounts accounting task mode" })).toHaveAttribute(
-      "href",
-      "/accounting/capital-accounts"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Delivery Evidence accounting task mode" })).toHaveAttribute(
-      "href",
-      "/reporting/evidence"
-    );
+    expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ledger Explorer" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Reconciliation runs" })).not.toBeInTheDocument();
     expect(screen.queryByText("Reporting profiles")).not.toBeInTheDocument();
@@ -3629,6 +3609,93 @@ describe("AccountingScreen", () => {
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-alpha"
     });
+  });
+
+  it("keeps valid journal amount edits flowing into the draft", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    fireEvent.change(debitInput, { target: { value: "250.75" } });
+
+    expect(debitInput).toHaveValue(250.75);
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+  });
+
+  it("rejects unparseable journal amounts instead of silently posting them as zero", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    // A number input holding unparseable text (e.g. a pasted "1,234.00") reports an empty value
+    // with validity.badInput set; jsdom never sets badInput, so stub it for this element.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+    expect(debitInput).toHaveAttribute("aria-invalid", "true");
+    // The controlled value mirrors what the DOM reported, so React must not rewrite the node and
+    // wipe the user's in-progress text: no snap-back to the previous amount, and the unparsed
+    // text is never coerced into the draft as zero. (An empty number input has value null.)
+    expect(debitInput).toHaveValue(null);
+    // While an amount on screen diverges from the committed draft, every persistence action is
+    // blocked so a previously validated entry cannot be saved or submitted with a stale amount.
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Validate" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Correct the flagged amount entries before continuing."
+    );
+
+    // A valid edit clears the error, updates the draft, and restores the normal action gating.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "175" } });
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(175);
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Run Validate on the current draft before approval submission."
+    );
+  });
+
+  it("commits a cleared amount field on blur after invalid input", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+
+    // The user then clears the bad text. The DOM reports "" in both states, so React fires no
+    // change event for the transition - the blur re-evaluation must commit the cleared field as
+    // zero and drop the error instead of leaving the field flagged with a stale amount.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.blur(debitInput);
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(0);
   });
 
   it("presents retained evidence links as approval support without claiming evidence is missing", async () => {
@@ -4631,11 +4698,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(reportingData, "/accounting/reporting");
 
-    // The reporting workstream has its own tab: the Configure tab
-    // must not claim selection here, since activating it would navigate to
-    // /accounting/configure and hide this reporting-profile band.
-    expect(screen.getByRole("tab", { name: "Delivery evidence", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Configure", selected: false })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Delivery Evidence", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
 
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);

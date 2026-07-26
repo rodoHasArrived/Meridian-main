@@ -212,6 +212,28 @@
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
 
+    /* Compatibility bridge for shared design-system components. Keep these
+       aliases token-based so automatic and operator-selected themes inherit
+       the active workstation palette instead of falling back to light hexes. */
+    --theme-bg-canvas: var(--ws-page-bg);
+    --theme-bg-light: var(--ws-surface);
+    --theme-bg-hover: var(--ws-row-hover);
+    --theme-bg-active: var(--ws-row-selected);
+    --theme-border: var(--ws-border);
+    --theme-border-strong: var(--ws-border-strong);
+    --theme-primary-text: var(--ws-text);
+    --theme-secondary-text: var(--ws-text-secondary);
+    --theme-muted-text: var(--ws-text-muted);
+    --theme-accent: var(--ws-accent);
+    --text-primary: var(--theme-primary-text);
+    --text-secondary: var(--theme-secondary-text);
+    --text-muted: var(--theme-muted-text);
+    --sidebar-hover: var(--ws-row-hover);
+    --nav-item: var(--text-secondary);
+    --nav-item-hover: var(--text-primary);
+    --nav-item-active: var(--text-primary);
+    --nav-section-label: var(--text-muted);
+
     /* ─── Semantic palette (Tier 2) — Concrete steel/spruce/brick/ochre/slate.
        Single source of truth for one-off semantic color and the derived
        severity/state/mode layers below. ────────────────────────────────────*/
@@ -381,7 +403,7 @@
       --ws-border: #45505C;
       --ws-border-strong: #6E7C8A;
       --ws-text: #E5EAEF;
-      --ws-text-muted: #8893A0;
+      --ws-text-muted: #8F9AA7;
       --ws-text-secondary: #A5AFBC;
       --ws-masthead-bg: #0D1117;
       --ws-masthead-fg: #E6EAF0;
@@ -470,7 +492,7 @@
     --ws-border: #45505C;
     --ws-border-strong: #6E7C8A;
     --ws-text: #E5EAEF;
-    --ws-text-muted: #8893A0;
+    --ws-text-muted: #8F9AA7;
     --ws-text-secondary: #A5AFBC;
     --ws-masthead-bg: #0B0E10;
     --ws-masthead-fg: #E6EAF0;

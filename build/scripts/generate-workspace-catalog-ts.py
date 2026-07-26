@@ -36,6 +36,8 @@ WORKSPACE_NAMES = [
     "Settings",
 ]
 
+PRODUCT_MATURITY_VALUES = frozenset({"Preview", "Setup", "Available"})
+
 CONSTANT_PATTERN = re.compile(
     r"^\s*public\s+const\s+string\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"(?P<value>[^\"]*)\";",
     re.MULTILINE,
@@ -49,12 +51,19 @@ def extract_constants(source: str) -> dict[str, str]:
 def render(constants: dict[str, str]) -> str:
     entries: list[dict[str, str]] = []
     for name in WORKSPACE_NAMES:
+        maturity = constants[f"{name}BrowserMaturity"]
+        if maturity not in PRODUCT_MATURITY_VALUES:
+            allowed = ", ".join(sorted(PRODUCT_MATURITY_VALUES))
+            raise ValueError(
+                f"{name}BrowserMaturity must be one of {allowed}; found {maturity!r}."
+            )
+
         entries.append(
             {
                 "key": constants[f"{name}Key"],
                 "label": constants[f"{name}Label"],
                 "description": constants[f"{name}BrowserDescription"],
-                "status": constants[f"{name}BrowserStatus"],
+                "maturity": maturity,
             }
         )
 
@@ -70,7 +79,7 @@ def render(constants: dict[str, str]) -> str:
         lines.append(f"    key: {json.dumps(entry['key'])},")
         lines.append(f"    label: {json.dumps(entry['label'])},")
         lines.append(f"    description: {json.dumps(entry['description'])},")
-        lines.append(f"    status: {json.dumps(entry['status'])}")
+        lines.append(f"    maturity: {json.dumps(entry['maturity'])}")
         lines.append("  },")
     lines.extend(["] as const;", ""])
     return "\n".join(lines)

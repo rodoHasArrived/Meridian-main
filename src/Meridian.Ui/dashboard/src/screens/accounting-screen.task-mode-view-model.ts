@@ -24,8 +24,7 @@ export type AccountingTaskModeId =
   | "security-master"
   | "approvals"
   | "configure"
-  | "delivery-evidence"
-  | "governance";
+  | "delivery-evidence";
 
 export interface AccountingTaskModeViewModel {
   id: AccountingTaskModeId;
@@ -35,13 +34,6 @@ export interface AccountingTaskModeViewModel {
   href: string;
   workstream: AccountingWorkstream;
   ariaLabel: string;
-}
-
-export interface AccountingTaskModeLinkViewModel {
-  id: AccountingTaskModeId;
-  label: string;
-  description: string;
-  href: string;
 }
 
 export interface AccountingSectionVisibilityViewModel {
@@ -141,13 +133,6 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
     routeLabel: "Delivery Evidence",
     href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-  },
-  governance: {
-    id: "governance",
-    label: "Governance",
-    description: "Books, posting controls, Security Master readiness, source coverage, and activation gates stay in governed setup paths.",
-    routeLabel: "Governance",
-    href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
   }
 };
 
@@ -163,27 +148,6 @@ const accountingWorkstreamTaskModes: Record<AccountingWorkstream, AccountingTask
   approvals: "approvals",
   reporting: "delivery-evidence"
 };
-
-const accountingTaskModeLauncherOrder: AccountingTaskModeId[] = [
-  "reconciliation-casework",
-  "external-gl-reconciliation",
-  "ledger-explorer",
-  "journal-entry",
-  "capital-accounts",
-  "delivery-evidence",
-  "governance"
-];
-
-export const accountingTaskModeLauncherLinks: readonly AccountingTaskModeLinkViewModel[] =
-  accountingTaskModeLauncherOrder.map((id) => {
-    const definition = accountingTaskModeDefinitions[id];
-    return {
-      id,
-      label: definition.label,
-      description: definition.description,
-      href: definition.href
-    };
-  });
 
 export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
   if (pathname.includes("/reconciliation/external-gl")) {

@@ -290,7 +290,17 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    expect(await screen.findByTestId("data-provenance-seeded")).toHaveTextContent("SEEDED");
+    const strip = await screen.findByRole("region", {
+      name: "Workstation build, environment, provenance, and provider posture"
+    });
+    expect(strip).toHaveAttribute("aria-live", "polite");
+    await userEvent.click(within(strip).getByText("Trust"));
+    const trustDetails = within(strip).getByRole("group", {
+      name: "Environment, provenance, and provider details"
+    });
+    expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
+      .toHaveTextContent("ProvenanceSEEDED");
+    expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {
@@ -422,12 +432,17 @@ describe("App", () => {
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
-    const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
-    await userEvent.click(within(strip).getByText("Environment"));
-    expect(within(strip).getByLabelText("Build 0.1.0. Current Meridian web release.")).toHaveTextContent("Buildv0.1.0");
-    expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
-    expect(within(strip).getByLabelText("Data source Demo data. Demo data is visible; confirm live source status before making operating decisions.")).toHaveTextContent("SourceDemo data");
-    expect(within(strip).getByRole("link", {
+    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    await userEvent.click(within(strip).getByText("Trust"));
+    const trustDetails = within(strip).getByRole("group", {
+      name: "Environment, provenance, and provider details"
+    });
+    expect(within(trustDetails).getByLabelText("Build 0.1.0. Current Meridian web release."))
+      .toHaveTextContent("Buildv0.1.0");
+    expect(within(trustDetails).getByLabelText(/^Environment Paper\./)).toHaveTextContent("EnvironmentPaper");
+    expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
+      .toHaveTextContent("ProvenanceSEEDED");
+    expect(within(trustDetails).getByRole("link", {
       name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
     })).toHaveAttribute("href", "/data/providers");
   });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
@@ -85,16 +85,33 @@ const payload: AppShellWorkspacePayload = {
   workflowSummary: null
 };
 
-function renderScreen() {
+function renderScreen({
+  onEditOperatingScope = vi.fn(),
+  onRefresh = vi.fn(),
+  refreshing = false,
+  search = ""
+}: {
+  onEditOperatingScope?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  search?: string;
+} = {}) {
   const shell = buildAppShellViewState({
     pathname: "/",
+    search,
     loading: false,
     error: null,
     workspaceErrors: {},
     payload
   });
   return renderWithRouter(
-    <DailyControlTowerScreen viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip} />
+    <DailyControlTowerScreen
+      viewModel={shell.workflowContinuity}
+      trustStrip={shell.trustStrip}
+      onEditOperatingScope={onEditOperatingScope}
+      onRefresh={onRefresh}
+      refreshing={refreshing}
+    />
   );
 }
 
@@ -120,6 +137,32 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("exposes connectivity, scope, and freshness remediation in their owning cards", async () => {
+    const user = userEvent.setup();
+    const onEditOperatingScope = vi.fn();
+    const onRefresh = vi.fn();
+    renderScreen({ onEditOperatingScope, onRefresh });
+
+    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
+    expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
+    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
+      .toHaveAttribute("href", "/data/providers");
+
+    await user.click(within(confidence).getByRole("button", { name: "Set operating scope" }));
+    await user.click(within(confidence).getByRole("button", { name: "Refresh control tower evidence" }));
+
+    expect(onEditOperatingScope).toHaveBeenCalledTimes(1);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves compatible operating scope in connectivity recovery", () => {
+    renderScreen({ search: "?symbol=MSFT" });
+
+    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
+    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
+      .toHaveAttribute("href", "/data/providers?symbol=MSFT");
   });
 
   it("updates the evidence pane in place when another queue row is selected", async () => {

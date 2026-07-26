@@ -206,7 +206,7 @@ and choose the narrowest lane that matches the user's request:
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |
-| CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
+| CoS runtime / ADK (archived) | `cos-runtime-development` | Legacy/runtime-compatibility scaffold for historical out-of-process orchestration work; retained for historical reference, not default routing. |
 
 ## Solution Map
 
@@ -226,7 +226,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: strategy analytics scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
-- `tools/chief-of-staff-runtime/`: out-of-process Chief of Staff ADK node pipeline scaffold
+- `tools/chief-of-staff-runtime/`: archived out-of-process Chief of Staff ADK node pipeline scaffold; preserved for reference only
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
@@ -239,7 +239,7 @@ and choose the narrowest lane that matches the user's request:
 - Main host: `src/Meridian/Meridian.csproj`
 - Minimal MCP host: `src/Meridian.Mcp/Meridian.Mcp.csproj`
 - Market-data MCP host: `src/Meridian.McpServer/Meridian.McpServer.csproj`
-- CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
+- Archived CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
 - Active WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`

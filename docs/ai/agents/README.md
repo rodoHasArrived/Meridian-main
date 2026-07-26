@@ -223,14 +223,15 @@ The intended routing flow is:
 
 ```text
 Repo Navigation -> [Single-domain task]    -> Specialist Agent/Skill -> Implementation -> Review -> Testing/Assurance
-                -> [Multi-domain / gated]  -> CoS Runtime (ADK)      -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
+                -> [Multi-domain / gated]  -> Coordinator Escalation -> Specialist Agent/Skill -> Approval Gate -> Trace/Evidence
 ```
 
 Use repo navigation first whenever the main problem is "where should I start?" rather than "how do I implement this detail?"
 
-Choose the CoS runtime path when the task crosses multiple subsystems, requires an approval gate
-or operator sign-off, or needs a structured briefing with trace/evidence retention. See
-`tools/chief-of-staff-runtime/runtime.py` and the operator runbook guidance in `docs/operators/README.md`.
+Choose coordinator escalation for multi-domain work, explicit approval-gated changes, or operator-facing
+briefings that need trace/evidence retention. Use the shared handoff packet workflow plus the route and
+validation evidence required by `assistant-workflow-contract.md`; record required/context boundaries and
+rerun triggers before lane transition.
 
 Coordinator agents should assign one narrow concern, a compact file set, and a validation owner to
 each specialist lane. Specialist agents should load only the required context for that lane, return
@@ -267,7 +268,7 @@ retrying broad local scripts.
 | --- | --- | --- |
 | **Parallel** | Subtasks are independent — no output dependency between them | Code review + security scan simultaneously; investigating separate subsystems concurrently |
 | **Sequential** | Each step's output feeds the next | Repo Navigation → Specialist Implementation → Code Review → Assurance (default single-domain lane) |
-| **Hierarchical** | A coordinator delegates to specialist agents, aggregates evidence, and enforces approval gates | DK1 readiness: provider validation + replay verification + brokerage sync → approval gate → promotion via CoS runtime |
+| **Hierarchical** | A coordinator delegates to specialist agents, aggregates evidence, and enforces approval gates | DK1 readiness: provider validation + replay verification + brokerage sync → approval gate → evidence packet handoff |
 
 ---
 

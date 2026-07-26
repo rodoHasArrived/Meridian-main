@@ -69,7 +69,6 @@ import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
-import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
@@ -424,6 +423,7 @@ function AppShell({
     workflowError,
     workspaceErrors,
     usingDevelopmentFixtures,
+    dataProvenance,
     payload: {
       session,
       overview,
@@ -447,6 +447,7 @@ function AppShell({
     workflowError,
     workspaceErrors,
     usingDevelopmentFixtures,
+    dataProvenance,
     session,
     overview,
     strategy,
@@ -544,7 +545,6 @@ function AppShell({
       />
 
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
-      <DataProvenanceBanner provenance={dataProvenance} />
 
       <div className="workstation-shell">
         <WorkspaceNav
@@ -600,6 +600,11 @@ function AppShell({
                     <DailyControlTowerScreen
                       viewModel={shell.workflowContinuity}
                       trustStrip={shell.trustStrip}
+                      onEditOperatingScope={() => setScopePickerOpen(true)}
+                      onRefresh={() => {
+                        void refresh({ includeDeferred: true });
+                      }}
+                      refreshing={loading || refreshStatus.inFlight}
                     />
                   )} />
                   <Route path="/trading/readiness" element={(

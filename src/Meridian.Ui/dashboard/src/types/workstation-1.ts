@@ -728,11 +728,13 @@ export interface UserAccessAssignmentMutationResult {
   auditEvent: UserAccessAssignmentAuditEvent;
 }
 
+export type ProductMaturity = "Preview" | "Setup" | "Available";
+
 export interface WorkspaceSummary {
   key: WorkspaceKey;
   label: string;
   description: string;
-  status: string;
+  maturity: ProductMaturity;
 }
 
 export interface MetricSnapshot {

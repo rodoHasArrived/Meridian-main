@@ -1389,6 +1389,11 @@ apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigratio
 must require that additive capability rather than widening the general registry contract or
 falling back to per-definition writes.
 
+`WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
+`Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime
+operator state (`Ready`, `Review`, or `Blocked`) come from session, provenance, and readiness
+evidence; they must not be encoded in static workspace metadata.
+
 The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
 It does not replace Security Master identity, create an Instrument Master above Security Master,
 migrate direct-lending/portfolio/fund-account stores, or expose a route that accepts authoritative

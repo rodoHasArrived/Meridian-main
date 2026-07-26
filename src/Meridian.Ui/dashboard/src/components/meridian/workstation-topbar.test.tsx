@@ -81,8 +81,8 @@ describe("WorkstationTopbar", () => {
     await userEvent.click(command);
     expect(onOpenCommandPalette).toHaveBeenCalledTimes(1);
 
-    expect(screen.getByRole("region", { name: "Trust status" })).toBeInTheDocument();
-    await userEvent.click(screen.getByText("Environment"));
+    expect(screen.getByRole("region", { name: "Trust status" })).toHaveAttribute("aria-live", "polite");
+    await userEvent.click(screen.getByText("Trust"));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();
