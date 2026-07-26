@@ -604,7 +604,7 @@ function buildWorkspaceItems(
       description: workspace.description,
       route,
       routeLabel: route,
-      statusLabel: active ? "Current" : workspace.status,
+      statusLabel: active ? "Current" : workspace.maturity,
       statusTone: active ? "current" : "neutral",
       statusVisible: active,
       commandLabel: active ? `Stay in ${workspace.label}` : `Open ${workspace.label}`,

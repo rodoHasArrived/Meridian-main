@@ -48,7 +48,6 @@ import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
-import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
 import {
   InstrumentPassportPanel,
@@ -2419,7 +2418,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 />
               ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
-              <AccountingTaskModeLauncher />
             </div>
           </TechnicalDetails>
         </>

@@ -34,7 +34,6 @@ import {
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
 import {
-  accountingTaskModeLauncherLinks,
   buildAccountingTaskMode,
   resolveAccountingWorkstream
 } from "@/screens/accounting-screen.task-mode-view-model";
@@ -838,22 +837,13 @@ describe("accounting-screen view model", () => {
     const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.task-mode-view-model.ts"), "utf8");
 
     expect(taskModeSource).toContain("const accountingTaskModeDefinitions");
-    expect(taskModeSource).toContain("export const accountingTaskModeLauncherLinks");
     expect(taskModeSource).toContain("export function resolveAccountingWorkstream");
     expect(taskModeSource).toContain("export function buildAccountingTaskMode");
     expect(taskModeSource).toContain("export function accountingWorkstreamHref");
     expect(viewModelSource).not.toContain("const accountingTaskModeDefinitions");
     expect(viewModelSource).not.toContain("function normalizeAccountingTaskModePath");
     expect(viewModelSource).not.toContain("function buildAccountingTaskModeViewModel");
-    expect(accountingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
-      ["reconciliation-casework", "/accounting/reconciliation"],
-      ["external-gl-reconciliation", "/accounting/reconciliation/external-gl"],
-      ["ledger-explorer", "/accounting/ledger"],
-      ["journal-entry", "/accounting/journal-entries"],
-      ["capital-accounts", "/accounting/capital-accounts"],
-      ["delivery-evidence", "/reporting/evidence"],
-      ["governance", "/accounting/configure"]
-    ]);
+    expect(taskModeSource).not.toContain("accountingTaskModeLauncherLinks");
   });
 
   it("derives the accounting workstream and selected reconciliation run", () => {

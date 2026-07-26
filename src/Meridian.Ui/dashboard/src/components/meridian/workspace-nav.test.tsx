@@ -22,18 +22,18 @@ describe("WorkspaceNav", () => {
       "Data",
       "Settings"
     ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
-    expect(screen.getByText("Review · Current")).toBeInTheDocument();
+    expect(screen.getByText("Available · Current")).toBeInTheDocument();
   });
 
   it("announces the current workspace route", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/reconciliation"] });
 
     expect(screen.getByRole("navigation", { name: "Workspaces" })).toBeInTheDocument();
-    expect(screen.queryByLabelText("Current workspace: Accounting, Review posture")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Accounting workspace, active section, Review")).not.toHaveAttribute("aria-current");
-    expect(screen.getByLabelText("Reconciliation, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText("Review · Current")).toBeInTheDocument();
-    expect(screen.queryByText("Review posture")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Current workspace: Accounting, Available product maturity")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).not.toHaveAttribute("aria-current");
+    expect(screen.getByLabelText("Casework, current page")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByText("Available · Current")).toBeInTheDocument();
+    expect(screen.queryByText("Available product maturity")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Canonical route /accounting")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Open command palette with Control K")).not.toBeInTheDocument();
   });
@@ -47,7 +47,7 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Navigation preserves operating scope: Subject: AAPL / Provider: alpaca")).toHaveTextContent(
       "Subject: AAPL / Provider: alpaca"
     );
-    expect(screen.getByLabelText("Open Trading workspace, Review, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
+    expect(screen.getByLabelText("Open Trading workspace, Available product maturity, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
       "href",
       "/trading?symbol=AAPL&provider=alpaca"
     );
@@ -69,7 +69,7 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
   });
 
-  it("renders exactly the seven root workspaces and shows status pills only in detailed mode", () => {
+  it("renders exactly the seven root workspaces and shows maturity pills only in detailed mode", () => {
     const detailed = renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 
     const detailedItems = detailed.container.querySelectorAll(".operator-nav-item");
@@ -78,14 +78,14 @@ describe("WorkspaceNav", () => {
     expect(new Set(labels)).toEqual(
       new Set(["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"])
     );
-    // Detailed rail surfaces the per-workspace status pill.
+    // Detailed rail surfaces the per-workspace product-maturity pill.
     expect(detailed.container.querySelectorAll(".operator-nav-status").length).toBeGreaterThan(0);
 
     detailed.unmount();
 
     const compact = renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/trading"] });
     expect(compact.container.querySelectorAll(".operator-nav-item")).toHaveLength(7);
-    // Compact rail keeps the same seven workspaces but drops the status pills.
+    // Compact rail keeps the same seven workspaces but drops the maturity pills.
     expect(compact.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
   });
 
@@ -100,7 +100,12 @@ describe("WorkspaceNav", () => {
     await user.click(screen.getByRole("button", { name: "Expand Accounting pages" }));
 
     expect(accountingSections).toHaveAttribute("aria-hidden", "false");
-    expect(within(accountingSections!).getByLabelText("Open Ledger")).toHaveAttribute("href", "/accounting/ledger");
+    ["Close", "Records", "Reconciliation", "Review", "Administration"].forEach((label) => {
+      expect(within(accountingSections!).getByRole("group", { name: label })).toBeInTheDocument();
+    });
+    expect(within(accountingSections!).getByLabelText("Open Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
+    expect(within(accountingSections!).getByLabelText("Open Close calendar")).toHaveAttribute("href", "/accounting/close-calendar");
+    expect(within(accountingSections!).getByLabelText("Open Capital accounts")).toHaveAttribute("href", "/accounting/capital-accounts");
     expect(within(accountingSections!).getByLabelText("Open Approvals")).toHaveAttribute("href", "/accounting/approvals");
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
   });

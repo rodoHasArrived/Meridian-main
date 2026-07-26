@@ -31,7 +31,7 @@ describe("command palette view model", () => {
     });
     expect(model.items.find((item) => item.id === "trading")).toMatchObject({
       route: "/trading",
-      statusLabel: "Review",
+      statusLabel: "Available",
       commandLabel: "Open Trading",
       active: false
     });
@@ -240,19 +240,19 @@ describe("command palette view model", () => {
         key: "strategy",
         label: "Research",
         description: "Legacy research root label.",
-        status: "Preview"
+        maturity: "Preview"
       },
       {
         key: "accounting",
         label: "Governance",
         description: "Legacy governance root label.",
-        status: "Live"
+        maturity: "Setup"
       },
       {
         key: "data",
         label: "Data Operations",
         description: "Legacy data-operations root label.",
-        status: "Review"
+        maturity: "Available"
       }
     ];
 
@@ -263,7 +263,7 @@ describe("command palette view model", () => {
     expect(model.items.filter((item) => item.kind === "workspace").map((item) => [item.id, item.label, item.statusLabel])).toEqual([
       ["accounting", "Accounting", "Current"],
       ["strategy", "Strategy", "Preview"],
-      ["data", "Data", "Review"]
+      ["data", "Data", "Available"]
     ]);
     expect(model.items.map((item) => item.label)).not.toEqual(
       expect.arrayContaining(["Research", "Governance", "Data Operations"])

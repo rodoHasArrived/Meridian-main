@@ -5875,6 +5875,7 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
+│   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
@@ -6089,6 +6090,8 @@ Meridian-main
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── provider-setup
 │   │   │   │   │   │   └── use-provider-setup.ts
+│   │   │   │   │   ├── accounting-navigation.test.ts
+│   │   │   │   │   ├── accounting-navigation.ts
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
@@ -6202,7 +6205,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
-│   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
 │   │   │   │   │   ├── accounting-screen.tsx
 │   │   │   │   │   ├── accounting-screen.view-model.shared.test.ts
@@ -6468,7 +6470,9 @@ Meridian-main
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
 │   │   │   │   ├── app-shell.workflow-continuity-types.ts
+│   │   │   │   ├── app-shell.workflow-continuity-view-model.test.ts
 │   │   │   │   ├── app-shell.workflow-continuity-view-model.ts
+│   │   │   │   ├── app-shell.workflow-continuity.test.ts
 │   │   │   │   ├── app-shell.workflow-continuity.ts
 │   │   │   │   ├── app-shell.workflow-routing.ts
 │   │   │   │   ├── app.test.tsx

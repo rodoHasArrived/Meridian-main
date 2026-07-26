@@ -3473,7 +3473,7 @@
       ]
     }
   ],
-  "fingerprint": "749d75436a7a55cdf959151bfb77a0a26d0e2219b075e1c0d5467a378921d2e4",
+  "fingerprint": "8d5a6a9845754c5feff9ab3b420002e8081e2fe1179631cec06b37e0c058376f",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5586,7 +5586,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "b513717d7d6266b03ac5ed9ffa91044f0c0c16c5b84b0dcf67a3181f58e9e347",
+      "fingerprint": "89f4501d0c56c8197716f4cc43ac0c665a75c8e421bc4120d777668bbb3b28cc",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -356350,7 +356350,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "39bd796ce744f761749bf79b462654a5488923144323cf76a93e0a51e4b0b97e",
+      "fingerprint": "f09162d2b81e1ace94df9c560ad6df12bd1f53e4a6f668b9fcaf2b6e0010cafc",
       "full_name": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "id": "Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog",
       "kind": "class",
@@ -356367,7 +356367,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<WorkstationWorkspaceDefinition>",
-          "source_line": 81,
+          "source_line": 97,
           "type": "IReadOnlyList<WorkstationWorkspaceDefinition>"
         }
       ],
@@ -356379,12 +356379,12 @@
         "Meridian.Contracts.Workstation.WorkstationWorkspaceDefinition"
       ],
       "source": {
-        "line": 16,
+        "line": 18,
         "path": "src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs"
       },
       "sources": [
         {
-          "line": 16,
+          "line": 18,
           "path": "src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs"
         }
       ],
@@ -356400,7 +356400,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c3b01962fc2e8296ca0b2082c01c928b3d50e92f3d22c1aa0fc818b9740d3c66",
+      "fingerprint": "28313e53df55cf2f28a7c06110cdf2241e0b40476f703ce4a12965877ab40fd8",
       "full_name": "Meridian.Contracts.Workstation.WorkstationWorkspaceDefinition",
       "id": "Meridian.Contracts.Workstation.WorkstationWorkspaceDefinition",
       "kind": "record",
@@ -356431,7 +356431,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 10,
+          "source_line": 12,
           "type": "string"
         },
         {
@@ -356445,7 +356445,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 11,
+          "source_line": 13,
           "type": "string"
         },
         {
@@ -356459,7 +356459,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 14,
+          "source_line": 16,
           "type": "string"
         },
         {
@@ -356473,7 +356473,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 12,
+          "source_line": 14,
           "type": "string"
         },
         {
@@ -356487,7 +356487,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 13,
+          "source_line": 15,
           "type": "string"
         },
         {
