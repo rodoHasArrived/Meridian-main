@@ -5209,6 +5209,7 @@ Meridian-main
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Reporting.csproj
 │   │   ├── NavAttributionService.cs
+│   │   ├── PartnersCapitalProjection.cs
 │   │   ├── README.md
 │   │   ├── ReportGenerationService.cs
 │   │   ├── ReportingArtifactContracts.cs
@@ -6926,6 +6927,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingPartnersCapitalSource.cs
 │   │   │   ├── ReportingPrimaryDocumentRenderer.cs
 │   │   │   ├── ReportingReconciliationEvidenceSource.cs
 │   │   │   ├── ReportingReconciliationEvidenceStore.cs
