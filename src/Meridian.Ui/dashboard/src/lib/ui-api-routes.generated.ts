@@ -619,6 +619,8 @@ export const UI_API_ROUTES = {
   ReconciliationStatementRunReconcile: "/api/workstation/reconciliation/statement-runs/{runId}/reconcile",
   ReconciliationStatementExceptions: "/api/workstation/reconciliation/statement-exceptions",
   ReconciliationStatementBreaks: "/api/workstation/reconciliation/statement-breaks",
+  ReconciliationStatementBreakDisposition: "/api/workstation/reconciliation/statement-breaks/{breakId}/disposition",
+  ReconciliationStatementBreakAudit: "/api/workstation/reconciliation/statement-breaks/{breakId}/audit",
   ReconciliationStatementConnectors: "/api/workstation/reconciliation/statement-connectors",
   ReconciliationStatementMappingProfiles: "/api/workstation/reconciliation/statement-mapping-profiles",
   ReconciliationStatementMappingProfileById: "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}",

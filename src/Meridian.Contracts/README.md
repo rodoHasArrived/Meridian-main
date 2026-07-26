@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.Contracts
@@ -31,7 +31,10 @@ or provider implementations.
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted
-  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
+  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads, plus
+  statement break disposition requests/results and hash-chained decision-audit rows. The disposition
+  request carries `ExpectedVersion` and `CommandId` but no actor; the authenticated endpoint owns
+  actor attribution.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
@@ -1384,6 +1387,14 @@ operating fund account before the execution layer routes a broker order.
 `TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
 open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
 W7 live-readiness gate.
+
+`StatementBreakDispositionRequestDto` is the additive v1 command for resolving a statement break
+and its paired case. It requires the reviewed version, stable command ID, `Resolved`, `Waived`, or
+`Superseded` disposition, rationale, and evidence links; supersession also names a distinct successor
+break. Results distinguish `Applied`, `Resumed`, `IdempotentReplay`, `RecoveryPending`, not-found,
+version/command conflict, rejection, and unavailable-service outcomes while returning the retained
+transaction, server actor, terminal pair, and audit history. Existing statement break/case readers
+can ignore the additive version, disposition, transaction, successor, and audit-chain members.
 
 ## Validation
 

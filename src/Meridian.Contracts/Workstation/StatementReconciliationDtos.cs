@@ -197,7 +197,16 @@ public sealed record StatementBreakDto(
     string? SlaState = null,
     string? EscalationLabel = null,
     string? EscalationReason = null,
-    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null);
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null,
+    long Version = 0,
+    ReconciliationBreakDispositionDto? Disposition = null,
+    string? DispositionActor = null,
+    string? DispositionRationale = null,
+    IReadOnlyList<string>? DispositionEvidenceLinks = null,
+    string? DispositionEvidenceHash = null,
+    DateTimeOffset? DisposedAtUtc = null,
+    string? DispositionTransactionId = null,
+    string? SupersedingBreakId = null);
 
 /// <summary>
 /// Operator case opened to investigate and close one or more statement reconciliation breaks.
@@ -224,7 +233,9 @@ public sealed record StatementReconciliationCaseDto(
     IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null,
     IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null,
     StatementReconciliationBreakExplanationDto? BreakExplanation = null,
-    IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
+    IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null,
+    long Version = 0,
+    string? DispositionTransactionId = null);
 
 public sealed record StatementReconciliationCaseCommentThreadDto(
     string? ThreadId,
@@ -261,7 +272,72 @@ public sealed record StatementReconciliationCaseAuditEventDto(
     string? EventType,
     DateTimeOffset? OccurredAtUtc,
     string? Actor,
-    string? Detail);
+    string? Detail,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? Rationale = null,
+    string? TransactionId = null,
+    long Version = 0,
+    string? PreviousHash = null,
+    string? EntryHash = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<StatementBreakDispositionOutcomeDto>))]
+public enum StatementBreakDispositionOutcomeDto : byte
+{
+    Applied = 0,
+    Resumed = 1,
+    IdempotentReplay = 2,
+    RecoveryPending = 3,
+    NotFound = 4,
+    VersionConflict = 5,
+    CommandConflict = 6,
+    Rejected = 7,
+    NotConfigured = 8
+}
+
+/// <summary>
+/// Human-authorized command that dispositions a statement break and its linked case as one
+/// optimistic, retry-safe transaction. The authenticated endpoint supplies the actor.
+/// </summary>
+public sealed record StatementBreakDispositionRequestDto(
+    long ExpectedVersion,
+    string CommandId,
+    ReconciliationBreakDispositionDto Disposition,
+    string Rationale,
+    IReadOnlyList<string> EvidenceLinks,
+    string? SupersedingBreakId = null);
+
+public sealed record StatementBreakDispositionAuditEntryDto(
+    string AuditId,
+    long Sequence,
+    string TransactionId,
+    string CommandId,
+    string BreakId,
+    string CaseId,
+    long Version,
+    ReconciliationBreakDispositionDto Disposition,
+    string Actor,
+    string Rationale,
+    IReadOnlyList<string> EvidenceLinks,
+    DateTimeOffset OccurredAtUtc,
+    string? PreviousHash,
+    string EntryHash);
+
+public sealed record StatementBreakDispositionResultDto(
+    StatementBreakDispositionOutcomeDto Outcome,
+    string BreakId,
+    string? CaseId,
+    string? TransactionId,
+    string CommandId,
+    long Version,
+    ReconciliationBreakDispositionDto? Disposition,
+    string? Actor,
+    string? Rationale,
+    IReadOnlyList<string>? EvidenceLinks,
+    DateTimeOffset? DisposedAtUtc,
+    StatementBreakDto? Break,
+    StatementReconciliationCaseDto? Case,
+    IReadOnlyList<StatementBreakDispositionAuditEntryDto>? AuditHistory,
+    string? Error = null);
 
 /// <summary>
 /// Shared workstation payload for a statement reconciliation run and its normalized evidence.

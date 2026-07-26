@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-18
+**Reviewed:** 2026-07-21
 
 This lane is the canonical operator procedure page for reconciliation exception response, recovery prioritization, and evidence capture.
 
@@ -54,6 +54,37 @@ never asks for, displays, or persists API keys. A transient fetch failure leaves
 watermark unchanged so the schedule remains retryable; the schedule row shows a stable failure type
 without exposing upstream exception text.
 
+## Disposition A Statement Break
+
+Statement imports create an authoritative break and paired operator case. Both records must reach
+the same terminal disposition before the statement-to-report workflow can continue. This change
+adds the shared authenticated API transaction; it does not add a dedicated browser or WPF action.
+
+1. Read the open statement break and paired case, then retain the break's current `version`.
+2. Collect a specific rationale and at least one retained evidence link. Evidence should identify
+   the source statement, review artifact, or replacement break that supports the decision.
+3. Send `POST /api/workstation/reconciliation/statement-breaks/{breakId}/disposition` from an
+   authenticated workstation session with:
+   - `expectedVersion` set to the version reviewed by the operator;
+   - a new, stable `commandId` for this decision;
+   - `disposition` set to `Resolved`, `Waived`, or `Superseded`;
+   - the rationale and evidence links; and
+   - `supersedingBreakId` when the disposition is `Superseded`. The successor must identify a
+     different retained break.
+4. Do not send an actor in the payload. The endpoint records the authenticated session actor and
+   rejects a missing or unauthorized identity.
+5. Treat `Applied`, `Resumed`, or `IdempotentReplay` as successful terminal outcomes. An exact retry
+   of the same `commandId` and payload returns the retained result without another decision or audit
+   event. Reusing that command ID with changed input returns `CommandConflict`; submitting a stale
+   `expectedVersion` returns `VersionConflict`.
+6. If the response is `RecoveryPending`, retry the exact command. The decision is already retained
+   in `Prepared` state; the service resumes the break and case projections from their persisted
+   checkpoints after a retry or process restart. Do not create a second command ID for recovery.
+7. Verify that the response contains the same terminal disposition and version on the paired break
+   and case. Audit entries retain actor, rationale, evidence, transaction and command IDs, sequence,
+   and previous/current hashes. Once both projections complete, the open-break/open-case gate clears
+   and the persisted statement-to-report workflow can resume.
+
 ## Mandatory Checks
 
 - Confirm provider/provider-connection state is current.
@@ -69,6 +100,7 @@ without exposing upstream exception text.
 dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 curl http://localhost:8080/api/workstation/operator/inbox
 curl http://localhost:8080/api/workstation/reconciliation/queue
+curl http://localhost:8080/api/workstation/reconciliation/statement-breaks
 curl http://localhost:8080/api/workstation/reconciliation/statement-connectors
 curl http://localhost:8080/api/workstation/reconciliation/statement-fetch-schedules
 ```

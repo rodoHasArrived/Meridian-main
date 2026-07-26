@@ -1797,6 +1797,96 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StatementBreakDto>>(200)
         .Produces(501);
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreakDisposition), async (
+            string breakId,
+            StatementBreakDispositionRequestDto request,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (!EndpointAuthorization.TryResolveActor(context, out var authenticatedActor))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Reconciliation API service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await service
+                .DispositionStatementBreakAsync(
+                    breakId,
+                    request,
+                    authenticatedActor,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+
+            var statusCode = result.Outcome switch
+            {
+                StatementBreakDispositionOutcomeDto.Applied or
+                StatementBreakDispositionOutcomeDto.Resumed or
+                StatementBreakDispositionOutcomeDto.IdempotentReplay => StatusCodes.Status200OK,
+                StatementBreakDispositionOutcomeDto.NotFound => StatusCodes.Status404NotFound,
+                StatementBreakDispositionOutcomeDto.VersionConflict or
+                StatementBreakDispositionOutcomeDto.CommandConflict => StatusCodes.Status409Conflict,
+                StatementBreakDispositionOutcomeDto.Rejected => StatusCodes.Status400BadRequest,
+                StatementBreakDispositionOutcomeDto.RecoveryPending => StatusCodes.Status503ServiceUnavailable,
+                StatementBreakDispositionOutcomeDto.NotConfigured => StatusCodes.Status501NotImplemented,
+                _ => StatusCodes.Status500InternalServerError
+            };
+            return Results.Json(result, jsonOptions, statusCode: statusCode);
+        })
+        .WithName("DispositionStatementBreak")
+        .RequireAnyPermission(
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster)
+        .Produces<StatementBreakDispositionResultDto>(200)
+        .Produces<StatementBreakDispositionResultDto>(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces<StatementBreakDispositionResultDto>(404)
+        .Produces<StatementBreakDispositionResultDto>(409)
+        .Produces<StatementBreakDispositionResultDto>(501)
+        .Produces<StatementBreakDispositionResultDto>(503);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreakAudit), async (
+            string breakId,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (!EndpointAuthorization.TryResolveActor(context, out _))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Reconciliation API service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await service
+                .GetStatementBreakAuditHistoryAsync(breakId, context.RequestAborted)
+                .ConfigureAwait(false);
+            return history is null
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetStatementBreakAuditHistory")
+        .RequireAnyPermission(
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<StatementBreakDispositionAuditEntryDto>>(200)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationOpenCases), async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationApiService>();

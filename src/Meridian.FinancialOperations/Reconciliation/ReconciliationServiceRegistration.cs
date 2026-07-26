@@ -25,6 +25,9 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementBreakDispositionTransactionStore>(sp =>
+            new FileStatementBreakDispositionTransactionStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IStatementBreakDispositionService, StatementBreakDispositionService>();
         AddBrokerStatementServices(services);
         AddConnectorServices(services, static sp => sp.GetRequiredService<StorageOptions>().RootPath);
         return services;
@@ -43,6 +46,9 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
         services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
         services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
+        services.TryAddSingleton<IStatementBreakDispositionTransactionStore>(_ =>
+            new FileStatementBreakDispositionTransactionStore(dataRoot));
+        services.TryAddSingleton<IStatementBreakDispositionService, StatementBreakDispositionService>();
         AddBrokerStatementServices(services);
         AddConnectorServices(services, _ => dataRoot);
         return services;

@@ -741,6 +741,8 @@ public static class UiApiRoutes
     public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
     public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
+    public const string ReconciliationStatementBreakDisposition = "/api/workstation/reconciliation/statement-breaks/{breakId}/disposition";
+    public const string ReconciliationStatementBreakAudit = "/api/workstation/reconciliation/statement-breaks/{breakId}/audit";
     public const string ReconciliationStatementConnectors = "/api/workstation/reconciliation/statement-connectors";
     public const string ReconciliationStatementMappingProfiles = "/api/workstation/reconciliation/statement-mapping-profiles";
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";

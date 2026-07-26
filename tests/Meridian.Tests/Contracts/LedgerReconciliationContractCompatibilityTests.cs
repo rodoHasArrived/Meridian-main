@@ -160,13 +160,15 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             "BreakId", "BreakType", "Severity", "MatchTier", "StatementReference", "Description",
             "StatementAmount", "BookAmount", "Delta", "EscalationLabel", "EscalationReason", "Tolerance", "Currency", "CreatedAtUtc",
             "Status", "InternalReference", "Owner", "LastObservedAtUtc", "RecommendedAction", "EvidenceLink",
-            "SlaDueAtUtc", "SlaWarningAtUtc", "SlaBreachedAtUtc", "SlaState", "Measures");
+            "SlaDueAtUtc", "SlaWarningAtUtc", "SlaBreachedAtUtc", "SlaState", "Measures", "Version",
+            "Disposition", "DispositionActor", "DispositionRationale", "DispositionEvidenceLinks",
+            "DispositionEvidenceHash", "DisposedAtUtc", "DispositionTransactionId", "SupersedingBreakId");
 
         AssertMembers(typeof(StatementReconciliationCaseDto),
             "CaseId", "RunId", "Status", "Priority", "Title", "Summary", "BreakIds", "CreatedAtUtc",
             "LastUpdatedAtUtc", "LastUpdatedBy", "Owner", "DueAtUtc", "ResolvedAtUtc", "ResolutionCode",
             "ResolutionSummary", "EvidenceLink", "Disposition", "AgingDays", "CommentThreads",
-            "Attachments", "BreakExplanation", "AuditEvents");
+            "Attachments", "BreakExplanation", "AuditEvents", "Version", "DispositionTransactionId");
 
         AssertMembers(typeof(StatementReconciliationCaseCommentThreadDto),
             "ThreadId", "Subject", "Comments");
@@ -182,7 +184,36 @@ public sealed class LedgerReconciliationContractCompatibilityTests
             "EvidenceLinks");
 
         AssertMembers(typeof(StatementReconciliationCaseAuditEventDto),
-            "EventId", "EventType", "OccurredAtUtc", "Actor", "Detail");
+            "EventId", "EventType", "OccurredAtUtc", "Actor", "Detail", "EvidenceReferences", "Rationale",
+            "TransactionId", "Version", "PreviousHash", "EntryHash");
+
+        AssertMembers(typeof(StatementBreakDispositionRequestDto),
+            "ExpectedVersion", "CommandId", "Disposition", "Rationale", "EvidenceLinks", "SupersedingBreakId");
+
+        AssertMembers(typeof(StatementBreakDispositionAuditEntryDto),
+            "AuditId", "Sequence", "TransactionId", "CommandId", "BreakId", "CaseId", "Version",
+            "Disposition", "Actor", "Rationale", "EvidenceLinks", "OccurredAtUtc", "PreviousHash", "EntryHash");
+
+        AssertMembers(typeof(StatementBreakDispositionResultDto),
+            "Outcome", "BreakId", "CaseId", "TransactionId", "CommandId", "Version", "Disposition",
+            "Actor", "Rationale", "EvidenceLinks", "DisposedAtUtc", "Break", "Case", "AuditHistory", "Error");
+    }
+
+    [Fact]
+    public void StatementBreakDispositionRequest_DoesNotAcceptCallerControlledIdentityOrAuthority()
+    {
+        var forbiddenMembers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Actor", "User", "Origin", "Source", "Role", "Permission", "Privilege"
+        };
+
+        var callerControlledMembers = typeof(StatementBreakDispositionRequestDto)
+            .GetProperties()
+            .Select(property => property.Name)
+            .Where(forbiddenMembers.Contains)
+            .ToArray();
+
+        Assert.Empty(callerControlledMembers);
     }
 
     [Fact]

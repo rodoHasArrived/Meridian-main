@@ -8,7 +8,8 @@ public sealed class StatementRunWorkflowService(
     IReconciliationCaseStore caseStore,
     IReconciliationBreakStore breakStore,
     IBrokerStatementService brokerStatementService,
-    IStatementReconciliationValidationService validationService) : IStatementRunWorkflowService
+    IStatementReconciliationValidationService validationService,
+    IStatementBreakDispositionService? breakDispositionService = null) : IStatementRunWorkflowService
 {
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
         => importStore.ListImportsAsync(cancellationToken);
@@ -25,7 +26,8 @@ public sealed class StatementRunWorkflowService(
             .BuildBreakRecords(imported.Import.ImportId, imported.Import.ImportId, imported.Rows, outcomes)
             .Select(static item => item with
             {
-                EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}"
+                EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}",
+                Version = 1
             })
             .ToArray();
         await breakStore.WriteAsync(breaks, cancellationToken).ConfigureAwait(false);
@@ -64,11 +66,25 @@ public sealed class StatementRunWorkflowService(
             cases.Where(item => string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase)).ToArray());
     }
 
-    public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenBreaksAsync(CancellationToken cancellationToken = default)
-        => breakStore.ListOpenAsync(cancellationToken);
+    public async Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenBreaksAsync(CancellationToken cancellationToken = default)
+    {
+        if (breakDispositionService is not null)
+        {
+            await breakDispositionService.ResumePendingAsync(cancellationToken).ConfigureAwait(false);
+        }
 
-    public Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(CancellationToken cancellationToken = default)
-        => caseStore.ListAsync(cancellationToken);
+        return await breakStore.ListOpenAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(CancellationToken cancellationToken = default)
+    {
+        if (breakDispositionService is not null)
+        {
+            await breakDispositionService.ResumePendingAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return await caseStore.ListAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task<StatementRunRequest> NormalizeAndValidateAsync(StatementRunRequest request, CancellationToken cancellationToken)
     {
@@ -157,6 +173,8 @@ public sealed class StatementRunWorkflowService(
                     }
                 ])
             {
+                BreakId = breakRecord.BreakId,
+                Version = breakRecord.Version,
                 Owner = "fund-ops",
                 Priority = breakRecord.ToleranceBreached ? "High" : "Normal",
                 DueAtUtc = now.AddDays(breakRecord.ToleranceBreached ? 1 : 2),

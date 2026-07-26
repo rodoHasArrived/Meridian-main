@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.Ui.Shared
@@ -79,7 +79,16 @@ Operations. The golden-path `POST /api/workstation/reconciliation/statement-to-r
 persists the source before import, checkpoints every completed stage, pauses while reconciliation
 cases remain open, and resumes without repeating a committed import. Status, resume, and
 artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
-artifacts before serving them. `SecurityMasterWorkbenchQueryService` is published under
+artifacts before serving them.
+`POST /api/workstation/reconciliation/statement-breaks/{breakId}/disposition` adapts the shared
+Financial Operations transaction for both workstation lanes. It requires mutation permission,
+replaces any client attribution with the authenticated session actor, and passes `ExpectedVersion`,
+`CommandId`, rationale, evidence, disposition, and optional successor to the source-owned service.
+Exact command replay returns retained state; changed-command and stale-version conflicts remain
+distinct; `RecoveryPending` tells clients to retry the same command while durable break/case
+projection resumes. The paired audit route exposes the retained hash chain. This change publishes
+the API/read-model seam only and does not add a dedicated browser or WPF disposition action.
+`SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read

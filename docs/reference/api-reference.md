@@ -2,7 +2,7 @@
 title: API Reference
 status: active
 owner: core-team
-reviewed: 2026-06-02
+reviewed: 2026-07-21
 audience: developers-and-operators
 ---
 
@@ -598,8 +598,38 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 | POST | `/api/workstation/data/storage-assurance/actions/execute` | Execute an unexpired preview after permission, rationale, typed-confirmation, and candidate revalidation checks. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
+| GET | `/api/workstation/reconciliation/statement-breaks` | Open statement breaks with paired-case and disposition version metadata. |
+| POST | `/api/workstation/reconciliation/statement-breaks/{breakId}/disposition` | Authenticated, optimistic-concurrency transaction that dispositions the statement break and paired case. |
+| GET | `/api/workstation/reconciliation/statement-breaks/{breakId}/audit` | Hash-chained disposition audit history for one statement break. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |
 | GET | `/api/execution/sessions/{sessionId}/replay` | Replay explainability payload used for readiness verification evidence. |
+
+#### Statement break disposition transaction
+
+`POST /api/workstation/reconciliation/statement-breaks/{breakId}/disposition` accepts a
+`StatementBreakDispositionRequestDto` with `expectedVersion`, `commandId`, `disposition`,
+`rationale`, `evidenceLinks`, and optional `supersedingBreakId`. The request deliberately has no
+actor field: the endpoint requires a workstation mutation permission and supplies the actor from
+the authenticated session. Rationale and at least one evidence link are required. Valid dispositions
+are `Resolved`, `Waived`, and `Superseded`; `Superseded` also requires a different retained successor
+break ID.
+
+The transaction first retains one immutable `Prepared` authority record containing the break and
+case after-images, command receipt, evidence hash, and hash-chained audit entry. It then checkpoints
+the break and case projections before marking the transaction complete. A failure after preparation
+returns `RecoveryPending`; retrying the exact command, reading the source pair, or restarting the
+process resumes incomplete projections without writing another decision. Once both terminal
+projections complete, the open-break/open-case gate no longer blocks the persisted
+statement-to-report workflow.
+
+`commandId` is an idempotency boundary, while `expectedVersion` protects the operator's reviewed
+state. An exact command replay returns `IdempotentReplay` (or `Resumed` when it finishes pending
+projection work). Reusing a command ID with different input returns `CommandConflict`; a stale
+version returns `VersionConflict`. Successful results include the server-authenticated actor,
+rationale, evidence, resulting version, paired break and case, transaction ID, and audit history.
+The audit route returns the retained sequence with `previousHash` and `entryHash` values. This is an
+additive shared API surface; no dedicated browser or WPF disposition action is introduced by this
+change.
 
 See [Reconciliation Operations](../operators/reconciliation-operations.md),
 [Fund Operations Persistence Cutover](../operators/fund-ops-persistence-cutover.md), and

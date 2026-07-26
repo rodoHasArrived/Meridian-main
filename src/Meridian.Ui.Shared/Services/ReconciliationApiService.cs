@@ -8,7 +8,8 @@ using WorkstationStatementMatchTier = Meridian.Contracts.Workstation.StatementMa
 namespace Meridian.Ui.Shared.Services;
 
 public class ReconciliationApiService(
-    IStatementRunWorkflowService statementRunWorkflowService) : IReconciliationApiService
+    IStatementRunWorkflowService statementRunWorkflowService,
+    IStatementBreakDispositionService? statementBreakDispositionService = null) : IReconciliationApiService
 {
     public async Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         => (await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false))
@@ -136,6 +137,66 @@ public class ReconciliationApiService(
             .ToList();
     }
 
+    public async Task<StatementBreakDispositionResultDto> DispositionStatementBreakAsync(
+        string breakId,
+        StatementBreakDispositionRequestDto request,
+        string authenticatedActor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (statementBreakDispositionService is null)
+        {
+            return new StatementBreakDispositionResultDto(
+                StatementBreakDispositionOutcomeDto.NotConfigured,
+                breakId,
+                null,
+                null,
+                request.CommandId,
+                request.ExpectedVersion,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "Statement break disposition service is not configured.");
+        }
+
+        var result = await statementBreakDispositionService
+            .DispositionAsync(
+                new StatementBreakDispositionCommand(
+                    breakId,
+                    request.ExpectedVersion,
+                    request.CommandId,
+                    request.Disposition,
+                    authenticatedActor,
+                    request.Rationale,
+                    request.EvidenceLinks,
+                    request.SupersedingBreakId),
+                ct)
+            .ConfigureAwait(false);
+        return ToStatementBreakDispositionResultDto(result);
+    }
+
+    public async Task<IReadOnlyList<StatementBreakDispositionAuditEntryDto>?> GetStatementBreakAuditHistoryAsync(
+        string breakId,
+        CancellationToken ct = default)
+    {
+        if (statementBreakDispositionService is null)
+        {
+            return null;
+        }
+
+        var history = await statementBreakDispositionService
+            .GetAuditHistoryAsync(breakId, ct)
+            .ConfigureAwait(false);
+        return history.Count == 0
+            ? null
+            : history.Select(ToStatementBreakDispositionAuditEntryDto).ToArray();
+    }
+
     public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
         => (await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
             .Where(static item => string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase)
@@ -231,6 +292,12 @@ public class ReconciliationApiService(
 
     private static IEnumerable<string> ResolveCaseBreakIds(ReconciliationCase reconciliationCase)
     {
+        if (!string.IsNullOrWhiteSpace(reconciliationCase.BreakId))
+        {
+            yield return reconciliationCase.BreakId.Trim();
+            yield break;
+        }
+
         const string casePrefix = "case:";
         if (reconciliationCase.CaseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -273,7 +340,16 @@ public class ReconciliationApiService(
             SlaBreachedAtUtc: escalation.BreachedAtUtc,
             SlaState: escalation.SlaState,
             EscalationLabel: escalation.Label,
-            EscalationReason: escalation.Reason);
+            EscalationReason: escalation.Reason,
+            Version: item.Version,
+            Disposition: MapDisposition(item.Disposition),
+            DispositionActor: item.DispositionActor,
+            DispositionRationale: item.DispositionRationale,
+            DispositionEvidenceLinks: item.DispositionEvidenceLinks,
+            DispositionEvidenceHash: item.DispositionEvidenceHash,
+            DisposedAtUtc: item.DisposedAtUtc,
+            DispositionTransactionId: item.DispositionTransactionId,
+            SupersedingBreakId: item.SupersedingBreakId);
     }
 
     private static string ResolveStatementBreakEvidenceLink(
@@ -567,9 +643,7 @@ public class ReconciliationApiService(
             Priority: item.Priority,
             Title: item.Reason,
             Summary: item.BreakExplanation?.Summary ?? item.Rationale,
-            BreakIds: item.EvidenceReferences
-                .Where(static reference => reference.StartsWith("statement-row:", StringComparison.OrdinalIgnoreCase))
-                .ToArray(),
+            BreakIds: ResolveCaseBreakIds(item).ToArray(),
             CreatedAtUtc: item.CreatedAtUtc,
             LastUpdatedAtUtc: item.LastUpdatedAtUtc,
             LastUpdatedBy: item.LastUpdatedBy,
@@ -584,7 +658,9 @@ public class ReconciliationApiService(
             CommentThreads: item.CommentThreads.Select(ToStatementCaseCommentThreadDto).ToArray(),
             Attachments: item.Attachments.Select(ToStatementCaseAttachmentDto).ToArray(),
             BreakExplanation: item.BreakExplanation is null ? null : ToStatementBreakExplanationDto(item.BreakExplanation),
-            AuditEvents: item.AuditEvents.Select(ToStatementCaseAuditEventDto).ToArray());
+            AuditEvents: item.AuditEvents.Select(ToStatementCaseAuditEventDto).ToArray(),
+            Version: item.Version,
+            DispositionTransactionId: item.DispositionTransactionId);
 
     private static StatementReconciliationCaseCommentThreadDto ToStatementCaseCommentThreadDto(ReconciliationCaseCommentThread item) =>
         new(
@@ -623,7 +699,73 @@ public class ReconciliationApiService(
             item.EventType,
             item.OccurredAtUtc,
             item.Actor,
-            item.Detail);
+            item.Detail,
+            item.EvidenceReferences,
+            item.Rationale,
+            item.TransactionId,
+            item.Version,
+            item.PreviousHash,
+            item.EntryHash);
+
+    private static StatementBreakDispositionResultDto ToStatementBreakDispositionResultDto(
+        StatementBreakDispositionResult result)
+    {
+        var casesByBreakId = new Dictionary<string, ReconciliationCase>(StringComparer.OrdinalIgnoreCase);
+        if (result.Case is not null)
+        {
+            casesByBreakId[result.BreakId] = result.Case;
+        }
+
+        return new StatementBreakDispositionResultDto(
+            Outcome: MapDispositionOutcome(result.Outcome),
+            BreakId: result.BreakId,
+            CaseId: result.CaseId,
+            TransactionId: result.TransactionId,
+            CommandId: result.CommandId,
+            Version: result.Version,
+            Disposition: result.Disposition,
+            Actor: result.Actor,
+            Rationale: result.Rationale,
+            EvidenceLinks: result.EvidenceLinks,
+            DisposedAtUtc: result.DisposedAtUtc,
+            Break: result.Break is null ? null : ToStatementBreakDto(result.Break, casesByBreakId),
+            Case: result.Case is null ? null : ToStatementCaseDto(result.Case),
+            AuditHistory: result.AuditHistory?.Select(ToStatementBreakDispositionAuditEntryDto).ToArray(),
+            Error: result.Error);
+    }
+
+    private static StatementBreakDispositionAuditEntryDto ToStatementBreakDispositionAuditEntryDto(
+        StatementBreakDispositionAuditEntry item)
+        => new(
+            item.AuditId,
+            item.Sequence,
+            item.TransactionId,
+            item.CommandId,
+            item.BreakId,
+            item.CaseId,
+            item.Version,
+            item.Disposition,
+            item.Actor,
+            item.Rationale,
+            item.EvidenceLinks,
+            item.OccurredAtUtc,
+            item.PreviousHash,
+            item.EntryHash);
+
+    private static StatementBreakDispositionOutcomeDto MapDispositionOutcome(
+        StatementBreakDispositionOutcome outcome)
+        => outcome switch
+        {
+            StatementBreakDispositionOutcome.Applied => StatementBreakDispositionOutcomeDto.Applied,
+            StatementBreakDispositionOutcome.Resumed => StatementBreakDispositionOutcomeDto.Resumed,
+            StatementBreakDispositionOutcome.IdempotentReplay => StatementBreakDispositionOutcomeDto.IdempotentReplay,
+            StatementBreakDispositionOutcome.RecoveryPending => StatementBreakDispositionOutcomeDto.RecoveryPending,
+            StatementBreakDispositionOutcome.NotFound => StatementBreakDispositionOutcomeDto.NotFound,
+            StatementBreakDispositionOutcome.VersionConflict => StatementBreakDispositionOutcomeDto.VersionConflict,
+            StatementBreakDispositionOutcome.CommandConflict => StatementBreakDispositionOutcomeDto.CommandConflict,
+            StatementBreakDispositionOutcome.Rejected => StatementBreakDispositionOutcomeDto.Rejected,
+            _ => throw new ArgumentOutOfRangeException(nameof(outcome), outcome, null)
+        };
 
     private static ReconciliationCaseSummaryDto ToCaseSummary(ReconciliationCase item)
         => new(
@@ -644,7 +786,7 @@ public class ReconciliationApiService(
             ResolutionNote: item.Resolution?.Summary,
             SignedOffBy: item.Resolution?.SignedOffBy,
             SignedOffAtUtc: item.Resolution?.SignedOffAtUtc?.ToString("O"),
-            Version: item.History.Count + item.AuditEvents.Count);
+            Version: item.Version);
 
     private static void ValidateCreateRequest(StatementRunCreateDto request)
     {
@@ -701,4 +843,9 @@ public class ReconciliationApiService(
 
         return StatementBreakType.Unknown;
     }
+
+    private static ReconciliationBreakDispositionDto? MapDisposition(string? disposition)
+        => Enum.TryParse<ReconciliationBreakDispositionDto>(disposition, ignoreCase: true, out var parsed)
+            ? parsed
+            : null;
 }

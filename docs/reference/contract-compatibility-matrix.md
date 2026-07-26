@@ -2,9 +2,9 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-27
+**Reviewed:** 2026-07-21
 
-Last reviewed: 2026-05-27
+Last reviewed: 2026-07-21
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -63,6 +63,23 @@ Policy requirements:
    - compatibility shim/deprecation window (or waiver reference),
    - downstream consumer action required (desktop, web, automation, or external integrations).
 4. **PR evidence is mandatory.** PRs with non-additive continuity changes must include a contract-review packet artifact link plus a PR-body migration-note snippet summarizing consumer impact and rollout guidance.
+
+### Statement break disposition compatibility
+
+The statement-break disposition surface is an additive v1 route and DTO family. The request owns
+`expectedVersion` and `commandId` from its first release, so clients must preserve both values when
+retrying a decision. An exact command/payload replay is compatible and returns the retained outcome;
+the same command ID with changed input is a `CommandConflict`, while a stale expected version is a
+`VersionConflict`. The server-authenticated actor is response/audit data and is intentionally not a
+request field.
+
+Existing statement break and case payloads gain additive version, disposition, transaction, and
+audit-chain metadata. Browser and WPF consumers may ignore those fields until they implement a
+disposition experience. The shared endpoint and service contract are available to both lanes, but
+this contract change does not introduce a dedicated browser or WPF action. Clients that do expose
+the action must require rationale/evidence, require a distinct successor for `Superseded`, preserve
+`RecoveryPending` as a retry/resume state, and must not convert it into a failed or uncommitted
+decision.
 
 ## Deprecation and Migration Policy
 
@@ -180,6 +197,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-05-27: Expanded evidence packet/workstation completeness contracts with additive diagnostics fields (`EvidenceCompletenessDto.BlockingIssueCount`, `WarningIssueCount`, `OrphanEvidenceIds`, plus matching `EvidenceCompletenessSummaryDto` counters) and retained-artifact canonical subject linkage (`EvidenceArtifactRefDto.CanonicalSubjectKind`/`CanonicalSubjectId`). Changes are additive-only; older clients may ignore new nullable fields but should treat new critical validation issues as blocking readiness/promotion gates.
 - 2026-05-28: Added additive statement reconciliation workstation DTOs for source/run evidence, normalized positions/cash/transactions, match summaries, breaks, validation issues, and operator cases. The payloads are contract-only and transport-safe; existing clients can ignore the new DTO family until route surfaces begin returning it.
 - 2026-07-03: Added contract-owned `InstrumentTypeDescriptorCatalog` metadata plus optional `InstrumentPassportDto.ClassificationProfile` carried by `InstrumentPassportClassificationProfileDto` for provider routing, validation, lifecycle, ledger, and risk hints. The existing `InstrumentType` enum values and positional `InstrumentPassportDto` constructor remain unchanged; older clients can ignore the optional profile while browser/WPF consumers adopt the additive fields.
+- 2026-07-21: Added `POST /api/workstation/reconciliation/statement-breaks/{breakId}/disposition`, the paired audit-history route, and additive statement break/case disposition DTOs. The new request requires `expectedVersion`, `commandId`, rationale, and evidence from route inception; actor attribution remains server-authenticated. Existing routes are unchanged, and existing browser/WPF readers may ignore the new optional disposition, transaction, version, and audit-chain response fields. No dedicated client action ships in this change.
 
 ## Pull Request Author Checklist
 

@@ -134,13 +134,27 @@ public sealed record ReconciliationCase(
     public int AgingDays { get; init; } = 0;
     public IReadOnlyList<ReconciliationCaseAttachment> Attachments { get; init; } = [];
     public ReconciliationBreakExplanation? BreakExplanation { get; init; }
+    public string? BreakId { get; init; }
+    public long Version { get; init; }
+    public string? DispositionTransactionId { get; init; }
 }
 
 public sealed record ReconciliationCaseCommentThread(string ThreadId, string Subject, IReadOnlyList<ReconciliationCaseComment> Comments);
 
 public sealed record ReconciliationCaseComment(string CommentId, string Body, string Actor, DateTimeOffset CreatedAtUtc, string? ParentCommentId = null);
 
-public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
+public sealed record ReconciliationCaseAuditEvent(
+    string EventId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Detail,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? Rationale = null,
+    string? TransactionId = null,
+    long Version = 0,
+    string? PreviousHash = null,
+    string? EntryHash = null);
 
 public sealed record ReconciliationResolutionMetadata(string ResolutionCode, string Summary, string ResolvedBy, DateTimeOffset ResolvedAtUtc, string? SignedOffBy = null, DateTimeOffset? SignedOffAtUtc = null);
 
@@ -208,4 +222,13 @@ public sealed record ReconciliationBreakRecord(
     string Status)
 {
     public string? EvidenceLink { get; init; }
+    public long Version { get; init; }
+    public string? Disposition { get; init; }
+    public string? DispositionActor { get; init; }
+    public string? DispositionRationale { get; init; }
+    public IReadOnlyList<string> DispositionEvidenceLinks { get; init; } = [];
+    public string? DispositionEvidenceHash { get; init; }
+    public DateTimeOffset? DisposedAtUtc { get; init; }
+    public string? DispositionTransactionId { get; init; }
+    public string? SupersedingBreakId { get; init; }
 }

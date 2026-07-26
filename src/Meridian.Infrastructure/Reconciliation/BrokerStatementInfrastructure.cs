@@ -378,6 +378,11 @@ public sealed record StatementMatchingTolerance(decimal PositionQuantityToleranc
 public interface IReconciliationBreakStore
 {
     Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
+    Task WriteAsync(ReconciliationBreakRecord record, CancellationToken ct = default)
+        => WriteAsync([record], ct);
+    async Task<ReconciliationBreakRecord?> GetAsync(string breakId, CancellationToken ct = default)
+        => (await ListOpenAsync(ct).ConfigureAwait(false))
+            .FirstOrDefault(item => string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase));
     Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default);
 }
 
@@ -389,9 +394,37 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
     {
         foreach (var record in records)
         {
-            var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(record.BreakId)}.json");
-            await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
+            await WriteAsync(record, ct).ConfigureAwait(false);
         }
+    }
+
+    public Task WriteAsync(ReconciliationBreakRecord record, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(record.BreakId)}.json");
+        return AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct);
+    }
+
+    public async Task<ReconciliationBreakRecord?> GetAsync(string breakId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        ct.ThrowIfCancellationRequested();
+        var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(breakId)}.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            64 * 1024,
+            useAsync: true);
+        return await JsonSerializer
+            .DeserializeAsync<ReconciliationBreakRecord>(stream, cancellationToken: ct)
+            .ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default)

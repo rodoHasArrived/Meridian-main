@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.Domain
@@ -36,6 +36,11 @@ Use this module for domain behavior that should remain stable across providers, 
 ## API contract notes
 
 - Statement reconciliation domain models include typed normalized positions, cash balances, transactions, security references, and source-row references. Each normalized entity carries `StatementRunId`, `SourceRowNumber`, `SourceRowHash`, and `RawSnapshot` traceability fields so downstream reconciliation evidence can be tied back to the raw statement line.
+- Statement break and paired-case models carry optimistic `Version` values plus terminal disposition,
+  authenticated actor, rationale, evidence, transaction, successor, and timestamp metadata. Case
+  audit events retain transaction/version context and previous/current hashes so higher layers can
+  expose a verifiable decision history without moving authentication or persistence policy into the
+  Domain layer.
 - `IEventQuarantineSink` is the domain event-flow port for retaining market events that require
   quarantine or dead-letter review. Application supplies the concrete dead-letter implementation;
   Data Integration can depend on the port while keeping canonicalization free of Application

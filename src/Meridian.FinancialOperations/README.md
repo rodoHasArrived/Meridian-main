@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.FinancialOperations
@@ -61,6 +61,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
+- `Reconciliation/StatementBreakDispositionContracts.cs` - authenticated command, outcome,
+  versioned transaction, retained receipt, and hash-chained audit contracts for paired statement
+  break/case disposition.
+- `Reconciliation/StatementBreakDispositionService.cs` and its file-backed transaction store -
+  exclusive optimistic-concurrency decision commit, atomic `Prepared` authority persistence,
+  projection checkpoints, exact-command replay, and restart-safe completion.
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
   boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
   before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
@@ -93,6 +99,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Operations Continuity workflow state, command transitions, status derivation, persistence, audit hashing, reconciliation-break assignment/escalation, approval-policy rules, and close-calendar configuration live here so close, approval, report-pack, checklist-control, reviewer-independence, due-date, owner override, and retained audit policy remains part of Financial Operations rather than application orchestration or UI endpoints. The Financial Operations command-center read service also owns unified queue-row composition and deterministic status, owner, due/SLA, severity, blocker type, close/report impact, evidence, action, and route labels for browser and WPF clients.
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
+
+Statement break resolution uses one durable, versioned transaction for the authoritative break and
+its paired case. The service validates the operator-reviewed `ExpectedVersion`, binds `CommandId` to
+the exact normalized request, requires rationale and retained evidence, and accepts `Resolved`,
+`Waived`, or `Superseded` only from a server-authenticated actor; supersession requires a distinct
+successor break. It commits both terminal after-images, the command receipt, evidence hash, and one
+hash-chained audit entry in `Prepared` state before either source projection is written. Break and
+case checkpoints advance independently to `Completed`; a post-commit projection failure returns
+`RecoveryPending`, and the same command, a subsequent read, or a process restart resumes the
+remaining work without another decision or audit event. Only a completed terminal pair clears the
+statement-to-report open-break/open-case gate.
 
 The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type, preserves the prior success watermark, and remains due for safe retry.
 The commit result also carries the specific break ids and structured reconciliation case links

@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.Infrastructure
@@ -141,6 +141,10 @@ checked before sessions, listing, downloads, and each upload.
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source
 paths and original file names remain provenance metadata, not duplicate-detection inputs.
+The statement break and case stores provide atomic single-record projection writes and break
+lookup by stable ID for the Financial Operations disposition transaction. These files are
+materialized projections, not the transaction authority: a retained `Prepared` transaction can
+resume an interrupted break/case projection without duplicating the disposition or audit decision.
 
 ## Diagrams
 
