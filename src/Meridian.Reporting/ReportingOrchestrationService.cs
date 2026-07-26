@@ -74,6 +74,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly Func<DateTimeOffset> utcNow;
     private readonly IReportingRunStore? runStore;
     private readonly IReportingRunNotifier runNotifier;
+    private readonly IReportingPartnersCapitalSource? partnersCapitalSource;
     private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
     private readonly ConcurrentDictionary<string, object> auditLocks = new();
     private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
@@ -102,12 +103,44 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         Func<DateTimeOffset> utcNow,
         IReportingRunStore? runStore,
         IReportingRunNotifier? runNotifier)
+        : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource: null)
+    {
+    }
+
+    public ReportingOrchestrationService(
+        IReportingTemplateCatalog catalog,
+        IReportingSectionRenderer renderer,
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore,
+        IReportingRunNotifier? runNotifier,
+        IReportingPartnersCapitalSource? partnersCapitalSource)
     {
         this.catalog = catalog;
         this.renderer = renderer;
         this.utcNow = utcNow;
         this.runStore = runStore;
         this.runNotifier = runNotifier ?? NullReportingRunNotifier.Instance;
+        this.partnersCapitalSource = partnersCapitalSource;
+    }
+
+    // Sources the certified partners-capital roll-forward for Capital Account Statement runs from the
+    // same authoritative ledger scope. Null for every other template family (or when no source is
+    // registered), leaving the generic certified-dataset presentation unchanged.
+    private async Task<CertifiedPartnersCapitalProjection?> CapturePartnersCapitalAsync(
+        ReportingTemplateMetadata template,
+        ReportingJobContract contract,
+        CancellationToken cancellationToken)
+    {
+        if (partnersCapitalSource is null
+            || template.Family != ReportingTemplateFamily.CapitalAccountStatement
+            || contract.ResolvedParameters is not { } parameters)
+        {
+            return null;
+        }
+
+        return await partnersCapitalSource
+            .CaptureAsync(parameters, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
@@ -155,6 +188,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         : (int?)null;
                     var reportWriterGridDiffs = BuildReportWriterGridDiffs(version.PriorManifest, renderedReportWriterGrids);
                     var certifiedDatasetRows = FreezeCertifiedRows(contract);
+                    var certifiedPartnersCapital = await CapturePartnersCapitalAsync(
+                        template, contract, cancellationToken).ConfigureAwait(false);
 
                     var manifest = new ReportingOutputManifest(
                         runId,
@@ -188,7 +223,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         ImmutableAccessScope: contract.ImmutableAccessScope,
                         CertifiedSnapshot: contract.CertifiedSnapshot,
                         AuthoritativeSource: contract.AuthoritativeSource,
-                        CertifiedDatasetRows: certifiedDatasetRows);
+                        CertifiedDatasetRows: certifiedDatasetRows,
+                        CertifiedPartnersCapital: certifiedPartnersCapital);
 
                     manifests[ScopedKey(manifest.OperationalScope?.TenantId, runId)] = manifest;
                     AppendAudit(

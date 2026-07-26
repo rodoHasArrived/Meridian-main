@@ -41,6 +41,11 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimar
         var rowHash = DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(
             manifest.CertifiedDatasetRows);
 
+        if (manifest.CertifiedPartnersCapital is { } partnersCapital)
+        {
+            return BuildPartnersCapitalModel(manifest, partnersCapital, rowHash);
+        }
+
         var headerFields = new List<ReportDocumentField>
         {
             new("Run", manifest.RunId),
@@ -72,4 +77,78 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimar
             Subtitle: $"Governed report · run {manifest.RunId}",
             FooterNote: $"Certified row hash {(rowHash.Length <= 16 ? rowHash : rowHash[..16])}");
     }
+
+    // Bespoke Capital Account Statement layout: a per-partner + Total roll-forward table
+    // (opening -> contributions -> distributions -> allocated -> other -> ending) sourced from the
+    // certified partners-capital projection. Figures are pre-formatted culture-invariant for
+    // deterministic bytes.
+    private static ReportDocumentModel BuildPartnersCapitalModel(
+        ReportingOutputManifest manifest,
+        CertifiedPartnersCapitalProjection projection,
+        string rowHash)
+    {
+        var template = manifest.ResolvedTemplate!;
+        var headerFields = new List<ReportDocumentField>
+        {
+            new("Run", manifest.RunId),
+            new("Template", $"{template.Name} v{template.Version.ToString(CultureInfo.InvariantCulture)}"),
+            new("Period", $"{projection.PeriodStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} to {projection.AsOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}"),
+            new("As of", manifest.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+            new("Source checkpoint", manifest.AuthoritativeSource!.CheckpointId),
+            new("Snapshot", manifest.CertifiedSnapshot!.SnapshotId),
+            new("Reconciled", projection.IsReconciled
+                ? "Yes"
+                : $"No (variance {FormatMoney(projection.ReconciliationVariance)})"),
+        };
+
+        var headers = new[]
+        {
+            "Partner", "Beginning", "Contributions", "Distributions", "Allocated", "Other", "Ending",
+        };
+        var rows = new List<IReadOnlyList<string>>();
+        foreach (var account in projection.Accounts)
+        {
+            rows.Add(new[]
+            {
+                PartnerLabel(account),
+                FormatMoney(account.BeginningCapital),
+                FormatMoney(account.Contributions),
+                FormatMoney(account.Distributions),
+                FormatMoney(account.AllocatedResult),
+                FormatMoney(account.OtherMovements),
+                FormatMoney(account.EndingCapital),
+            });
+        }
+
+        rows.Add(new[]
+        {
+            "Total",
+            FormatMoney(projection.BeginningCapital),
+            FormatMoney(projection.Contributions),
+            FormatMoney(projection.Distributions),
+            FormatMoney(projection.AllocatedResult),
+            FormatMoney(projection.OtherMovements),
+            FormatMoney(projection.EndingCapital),
+        });
+
+        var tables = new List<ReportDocumentTable>
+        {
+            new("Statement of Changes in Partners' Capital", headers, rows),
+        };
+
+        return new ReportDocumentModel(
+            Title: template.Name,
+            HeaderFields: headerFields,
+            Tables: tables,
+            Subtitle: $"Partners' capital roll-forward - run {manifest.RunId}",
+            FooterNote: $"Certified row hash {(rowHash.Length <= 16 ? rowHash : rowHash[..16])}");
+    }
+
+    private static string PartnerLabel(CertifiedPartnersCapitalAccount account)
+        => string.IsNullOrWhiteSpace(account.InvestorId)
+            ? account.CapitalAccountName
+            : $"{account.CapitalAccountName} ({account.InvestorId})";
+
+    private static string FormatMoney(decimal value)
+        => value.ToString("N2", CultureInfo.InvariantCulture);
 }
