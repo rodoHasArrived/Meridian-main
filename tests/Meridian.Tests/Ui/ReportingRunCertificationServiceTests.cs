@@ -884,8 +884,10 @@ public sealed class ReportingRunCertificationServiceTests
     [Fact]
     public async Task ProduceAsync_ClientGradePartnersCapitalPdfIsValidAndByteStable()
     {
-        var manifest = (await BuildCertifiedManifestAsync("run-pc-pdf", ReportingOutputFormatDto.Pdf))
-            with { CertifiedPartnersCapital = SamplePartnersCapital() };
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-pc-pdf",
+            ReportingOutputFormatDto.Pdf,
+            partnersCapital: SamplePartnersCapital());
         var producer = new DeterministicReportingCertifiedArtifactProducer(
             new DocumentsReportingPrimaryDocumentRenderer());
 
@@ -902,8 +904,10 @@ public sealed class ReportingRunCertificationServiceTests
     [Fact]
     public async Task ProduceAsync_ClientGradePartnersCapitalXlsxRendersRollForwardRows()
     {
-        var manifest = (await BuildCertifiedManifestAsync("run-pc-xlsx", ReportingOutputFormatDto.Xlsx))
-            with { CertifiedPartnersCapital = SamplePartnersCapital() };
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-pc-xlsx",
+            ReportingOutputFormatDto.Xlsx,
+            partnersCapital: SamplePartnersCapital());
         var producer = new DeterministicReportingCertifiedArtifactProducer(
             new DocumentsReportingPrimaryDocumentRenderer());
 
@@ -1188,7 +1192,8 @@ public sealed class ReportingRunCertificationServiceTests
     private static async Task<ReportingOutputManifest> BuildCertifiedManifestAsync(
         string runId,
         ReportingOutputFormatDto outputFormat,
-        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
+        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default,
+        CertifiedPartnersCapitalProjection? partnersCapital = null)
     {
         var rows = certifiedRows.IsDefault ? Rows() : certifiedRows;
         var template = Template(reportWriterGrid: false);
@@ -1199,13 +1204,14 @@ public sealed class ReportingRunCertificationServiceTests
                 template,
                 Readiness("evaluation-artifact", CapturedAt, outputFormat),
                 Access());
-        return BuildManifest(runId, template, certified);
+        return BuildManifest(runId, template, certified, partnersCapital);
     }
 
     private static ReportingOutputManifest BuildManifest(
         string runId,
         ReportingTemplateMetadata template,
-        CertifiedReportingRunContext certified)
+        CertifiedReportingRunContext certified,
+        CertifiedPartnersCapitalProjection? partnersCapital = null)
     {
         var declarations = ReportingArtifactDeclaration.Build(
             runId,
@@ -1229,7 +1235,8 @@ public sealed class ReportingRunCertificationServiceTests
             ImmutableAccessScope: certified.AccessScope,
             CertifiedSnapshot: certified.Snapshot,
             AuthoritativeSource: certified.AuthoritativeSource,
-            CertifiedDatasetRows: certified.DatasetRows);
+            CertifiedDatasetRows: certified.DatasetRows,
+            CertifiedPartnersCapital: partnersCapital);
     }
 
     private static ReconciliationBreakQueueItem ScopedBreak(string breakId, string fundId, Guid bookId) => new(
