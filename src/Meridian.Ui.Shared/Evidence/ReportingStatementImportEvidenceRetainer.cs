@@ -279,7 +279,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                 source.Document,
                 canonical.Document,
                 runEvidence.Document);
-            return identity.Artifacts.SequenceEqual(expectedArtifacts);
+            return ArtifactsMatch(identity.Artifacts, expectedArtifacts);
         }
         catch (ReportingArtifactIntegrityException)
         {
@@ -315,6 +315,16 @@ public sealed class ReportingStatementImportEvidenceRetainer(
 
         return new VerifiedAuthorityDocument(document, content);
     }
+
+    private static bool ArtifactsMatch(
+        IReadOnlyList<EvidenceVaultArtifactDto> actual,
+        IReadOnlyList<EvidenceVaultArtifactDto> expected) =>
+        actual.Count == expected.Count
+        && actual.Zip(expected).All(static pair =>
+            JsonSerializer.Serialize(pair.First, JsonOptions)
+                .Equals(
+                    JsonSerializer.Serialize(pair.Second, JsonOptions),
+                    StringComparison.Ordinal));
 
     private string ResolveRetainedPath(string retainedPath, string kind)
     {

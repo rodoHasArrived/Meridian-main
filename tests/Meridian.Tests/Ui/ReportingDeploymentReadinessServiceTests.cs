@@ -1,7 +1,10 @@
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -50,6 +53,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
         PostgresReportingDeploymentProbe.StatementDocumentGuardTriggerName)]
     [InlineData(
         "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementDocumentTruncateGuardTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
         PostgresReportingDeploymentProbe.StatementDocumentRevisionTriggerName)]
     [InlineData(
         "statement-reconciliation-authority",
@@ -57,6 +63,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData(
         "statement-reconciliation-authority",
         PostgresReportingDeploymentProbe.StatementRevisionGuardTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementRevisionTruncateGuardTriggerName)]
     [InlineData("delivery", "trg_reporting_delivery_receipts_immutable")]
     public void HasRequiredSchema_MissingImmutableControlTrigger_ShouldFailClosed(
         string componentId,
@@ -143,6 +152,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
         "reporting_statement_reconciliation_documents.ck_reporting_statement_document_key")]
     [InlineData(
         "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents.ck_reporting_statement_document_identity_utf8_bytes")]
+    [InlineData(
+        "statement-reconciliation-authority",
         "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_blob")]
     [InlineData(
         "statement-reconciliation-authority",
@@ -150,6 +162,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData(
         "statement-reconciliation-authority",
         "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_identity_utf8_bytes")]
     public void HasRequiredSchema_MissingAuthorityConstraint_ShouldFailClosed(
         string componentId,
         string missingConstraint)
@@ -191,7 +206,7 @@ public sealed class ReportingDeploymentReadinessServiceTests
     }
 
     [Fact]
-    public void Evaluate_StatementAuthorityRequiresMarkerAndConcretePostgresStore()
+    public void Evaluate_StatementAuthorityRequiresMarkerStoreAndDurablyComposedWorkflow()
     {
         var probe = Substitute.For<IReportingDeploymentProbe>();
         probe.Probe().Returns(CompleteProbe());
@@ -201,13 +216,17 @@ public sealed class ReportingDeploymentReadinessServiceTests
                 "Host=localhost;Database=meridian_readiness;Username=meridian",
             Schema = "reporting"
         };
-        var artifactStore = Substitute.For<IReportingArtifactStore>();
+        var authority = new PostgresStatementReconciliationReportAuthorityStore(
+            options,
+            new PostgresReportingArtifactStore(options));
+        var evidence = new ReportingStatementImportEvidenceRetainer(
+            authority,
+            Path.GetTempPath());
         var services = new ServiceCollection();
         services.AddSingleton(probe);
-        services.AddSingleton<IStatementReconciliationReportAuthorityStore>(
-            new PostgresStatementReconciliationReportAuthorityStore(
-                options,
-                artifactStore));
+        services.AddSingleton<IStatementReconciliationReportAuthorityStore>(authority);
+        services.AddSingleton<IStatementImportEvidenceRetainer>(evidence);
+        services.AddSingleton(CreateDurableStatementWorkflow(authority, evidence));
         using var provider = services.BuildServiceProvider();
         var readiness = new ReportingDeploymentReadinessService(provider);
 
@@ -238,6 +257,72 @@ public sealed class ReportingDeploymentReadinessServiceTests
             .Single(static component =>
                 component.ComponentId == "statement-reconciliation-authority")
             .IsReady.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Evaluate_PostgresStatementStoreWithoutDurablyComposedWorkflow_ShouldFailClosed()
+    {
+        var probe = Substitute.For<IReportingDeploymentProbe>();
+        probe.Probe().Returns(CompleteProbe());
+        var options = new ReportingArtifactStoreOptions
+        {
+            ConnectionString =
+                "Host=localhost;Database=meridian_readiness;Username=meridian",
+            Schema = "reporting"
+        };
+        var services = new ServiceCollection();
+        services.AddSingleton(probe);
+        services.AddSingleton<IStatementReconciliationReportAuthorityStore>(
+            new PostgresStatementReconciliationReportAuthorityStore(
+                options,
+                new PostgresReportingArtifactStore(options)));
+        using var provider = services.BuildServiceProvider();
+
+        var capability = new ReportingDeploymentReadinessService(provider).Evaluate();
+
+        capability.Components
+            .Single(static component =>
+                component.ComponentId == "statement-reconciliation-authority")
+            .IsReady.Should().BeFalse(
+                "a durable store registration alone does not prove the workflow retains canonical run evidence through that exact authority");
+    }
+
+    [Fact]
+    public void Evaluate_WorkflowUsingDifferentDurableAuthorityInstance_ShouldFailClosed()
+    {
+        var probe = Substitute.For<IReportingDeploymentProbe>();
+        probe.Probe().Returns(CompleteProbe());
+        var options = new ReportingArtifactStoreOptions
+        {
+            ConnectionString =
+                "Host=localhost;Database=meridian_readiness;Username=meridian",
+            Schema = "reporting"
+        };
+        var registeredAuthority = new PostgresStatementReconciliationReportAuthorityStore(
+            options,
+            new PostgresReportingArtifactStore(options));
+        var workflowAuthority = new PostgresStatementReconciliationReportAuthorityStore(
+            options,
+            new PostgresReportingArtifactStore(options));
+        var workflowEvidence = new ReportingStatementImportEvidenceRetainer(
+            workflowAuthority,
+            Path.GetTempPath());
+        var services = new ServiceCollection();
+        services.AddSingleton(probe);
+        services.AddSingleton<IStatementReconciliationReportAuthorityStore>(
+            registeredAuthority);
+        services.AddSingleton<IStatementImportEvidenceRetainer>(workflowEvidence);
+        services.AddSingleton(
+            CreateDurableStatementWorkflow(workflowAuthority, workflowEvidence));
+        using var provider = services.BuildServiceProvider();
+
+        var capability = new ReportingDeploymentReadinessService(provider).Evaluate();
+
+        capability.Components
+            .Single(static component =>
+                component.ComponentId == "statement-reconciliation-authority")
+            .IsReady.Should().BeFalse(
+                "the probed store and workflow must share the exact authority instance");
     }
 
     [Fact]
@@ -934,6 +1019,19 @@ public sealed class ReportingDeploymentReadinessServiceTests
                 .StatementReconciliationAuthorityCompatibilityMarker
         ]
     };
+
+    private static StatementReconciliationReportWorkflowService CreateDurableStatementWorkflow(
+        IStatementReconciliationReportAuthorityStore authority,
+        ReportingStatementImportEvidenceRetainer evidence) =>
+        new(
+            Substitute.For<IStatementImportCommitService>(),
+            evidence,
+            Substitute.For<IStatementRunWorkflowService>(),
+            Path.GetTempPath(),
+            authority,
+            NullLogger<StatementReconciliationReportWorkflowService>.Instance,
+            breakQueue: null,
+            intakeAuthority: Substitute.For<IStatementReconciliationIntakeAuthority>());
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -44,6 +45,7 @@ public sealed record ReportingCloseWorkflowCompletionEvidence(
 /// Durable result of a reconciliation/close process. Reporting can consume only an exact retained
 /// receipt bound to the same authoritative source checkpoint; it must never synthesize one.
 /// </summary>
+[method: JsonConstructor]
 public sealed record ReportingReconciliationEvidenceReceipt(
     string TenantId,
     string OrganizationId,

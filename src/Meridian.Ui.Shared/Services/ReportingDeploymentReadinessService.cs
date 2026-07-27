@@ -3,6 +3,7 @@ using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Evidence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
@@ -262,9 +263,13 @@ public sealed class ReportingDeploymentReadinessService(
                     ],
                     [
                         PostgresReportingDeploymentProbe.StatementDocumentGuardTriggerName,
+                        PostgresReportingDeploymentProbe
+                            .StatementDocumentTruncateGuardTriggerName,
                         PostgresReportingDeploymentProbe.StatementDocumentRevisionTriggerName,
                         PostgresReportingDeploymentProbe.StatementRevisionAppendTriggerName,
-                        PostgresReportingDeploymentProbe.StatementRevisionGuardTriggerName
+                        PostgresReportingDeploymentProbe.StatementRevisionGuardTriggerName,
+                        PostgresReportingDeploymentProbe
+                            .StatementRevisionTruncateGuardTriggerName
                     ],
                     Columns:
                     [
@@ -297,9 +302,11 @@ public sealed class ReportingDeploymentReadinessService(
                     [
                         "reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob",
                         "reporting_statement_reconciliation_documents.ck_reporting_statement_document_key",
+                        "reporting_statement_reconciliation_documents.ck_reporting_statement_document_identity_utf8_bytes",
                         "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_blob",
                         "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob",
-                        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain"
+                        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain",
+                        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_identity_utf8_bytes"
                     ],
                     CompatibilityMarkers:
                     [
@@ -450,13 +457,19 @@ public sealed class ReportingDeploymentReadinessService(
         var durableReconciliationEvidence =
             durableReconciliationEvidenceStore
             && reconciliationCaseworkAuthority;
+        var statementReconciliationAuthority =
+            Resolve<IStatementReconciliationReportAuthorityStore>();
+        var statementReconciliationWorkflow =
+            Resolve<StatementReconciliationReportWorkflowService>();
         var durableStatementReconciliationAuthority =
             HasRequiredSchema(persistenceProbe, "statement-reconciliation-authority")
-            && Resolve<IStatementReconciliationReportAuthorityStore>()
+            && statementReconciliationAuthority
                 is PostgresStatementReconciliationReportAuthorityStore
             {
                 IsDurableAuthority: true
-            };
+            }
+            && statementReconciliationWorkflow?
+                .IsDurablyComposedWith(statementReconciliationAuthority) == true;
         var durableRuns =
             HasRequiredSchema(persistenceProbe, "runs")
             && IsImplementation<IReportingRunStore, PostgresReportingRunStore>();
@@ -554,8 +567,8 @@ public sealed class ReportingDeploymentReadinessService(
                 "statement-reconciliation-authority",
                 "Statement reconciliation authority",
                 durableStatementReconciliationAuthority,
-                "Statement workflow documents and revisions use the durable PostgreSQL reporting authority.",
-                "Statement workflow documents, immutable revision controls, or their PostgreSQL authority are not fully configured."),
+                "The statement workflow and its raw, canonical, and run evidence use one durable PostgreSQL authority.",
+                "The statement workflow, immutable raw/canonical/run evidence, revision controls, or their shared PostgreSQL authority are not fully configured."),
             Component(
                 "reconciliation-casework",
                 "Reconciliation casework authority",

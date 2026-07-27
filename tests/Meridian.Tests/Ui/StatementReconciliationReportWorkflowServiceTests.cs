@@ -223,7 +223,10 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         started.Workflow.EvidenceVaultIdentity!.SubjectId.Should().Be("statement-run-alpha");
         started.Workflow.EvidenceReferences.Should().Contain("statement-run:statement-run-alpha");
         started.Workflow.RetainedArtifacts.Should().BeEmpty();
-        started.Workflow.RecoveryAction.Should().Contain("Resolve or disposition");
+        started.Workflow.RecoveryAction.Should().Contain("canonical statement run is unavailable");
+        started.Workflow.RecoveryAction.Should().NotContain(
+            "Resolve or disposition",
+            "the exact queue obligation is already resolved with a completed handoff");
 
         runs.ReturnReconciled = true;
         var restarted = CreateService(imports, evidence, runs, queue);

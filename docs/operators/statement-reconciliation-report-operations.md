@@ -101,12 +101,15 @@ last-run timestamp.
 | `Failed` | Preserve `failureReason`; correct the named dependency and use the existing resume route. Do not begin an unrelated replacement import. |
 | `Completed` | Retrieve every retained artifact and retain the workflow response, exact accounting scope, Operations workflow link, and queue evidence. Do not treat it as posting, close, reporting certification, or delivery proof. |
 
-The coordinator persists the input before import and checkpoints a committed import before Evidence
-Vault linkage or rendering. After Evidence Vault retention, the intake authority starts or reuses
+The coordinator persists the input before import. In production, it checkpoints a committed import
+only after the raw statement, canonical statement records, and statement-run evidence have all
+been retained in the same durable reporting authority. The intake authority then starts or reuses
 the exact Operations Continuity workflow, attaches stable statement evidence, and projects every
 source break/case into the canonical queue with fund, book, period, and as-of scope. A retry after
 those checkpoints resumes from retained state rather than repeating the import. Concurrent
-processes serialize work on the same content-and-scope identity.
+processes serialize work on the same content-and-scope identity. Local file-backed compatibility
+composition retains source evidence through its existing Evidence Vault bridge and does not satisfy
+the production durable-composition readiness gate.
 
 Queue replay validates an already retained destination-scoped break directly. It does not seed an
 unscoped compatibility case when a process stops after the queue commit but before the statement
@@ -123,11 +126,13 @@ SHA-256 before workflow code receives bytes.
 
 Reporting deployment readiness remains blocked until the live schema probe verifies
 `reporting_statement_reconciliation_documents`,
-`reporting_statement_reconciliation_document_revisions`, all four migration-owned document and
-revision triggers, and the exact `reporting-statement-reconciliation-authority:v1` compatibility
-marker, and composition resolves the concrete
-`PostgresStatementReconciliationReportAuthorityStore`. The presence of migration 013 alone is not
-production-readiness evidence.
+`reporting_statement_reconciliation_document_revisions`, all six migration-owned document,
+revision, and truncate-guard triggers, both UTF-8 composite-identity constraints, and the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker. Composition must also
+resolve the concrete `PostgresStatementReconciliationReportAuthorityStore` together with the
+statement evidence retainer and workflow bound to that same PostgreSQL artifact authority. The
+presence of migration 013 or a durable store registration alone is not production-readiness
+evidence.
 
 Uploaded input, statement evidence, and historical artifact generations are immutable mappings.
 `workflow.json` and the current artifact mappings may advance, but each version points to immutable

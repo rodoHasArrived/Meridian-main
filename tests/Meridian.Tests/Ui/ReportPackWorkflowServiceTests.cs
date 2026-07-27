@@ -32,6 +32,7 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ReportPackWorkflowServiceTests
 {
+    private const string CertifiedAccountingPeriodId = "66666666-6666-6666-6666-666666666666";
     private const string TestTenantId = "tenant-a";
     private const string TestCompanyId = "company-a";
 
@@ -1516,7 +1517,7 @@ public sealed class ReportPackWorkflowServiceTests
         var record = workflow.Create(
             "fund-alpha",
             "acct-main",
-            "2026-05",
+            CertifiedAccountingPeriodId,
             new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
             "report.author",
             accessContext: new ReportAccessQueryContext(
@@ -1531,7 +1532,7 @@ public sealed class ReportPackWorkflowServiceTests
             "company-a",
             "fund-alpha",
             "book-main",
-            "2026-05");
+            CertifiedAccountingPeriodId);
         var access = new ReportingAccessScope(
             "legacy-pack-binding",
             "1",
@@ -1726,7 +1727,7 @@ public sealed class ReportPackWorkflowServiceTests
             "company-a",
             "fund-alpha",
             "book-main",
-            "2026-05");
+            CertifiedAccountingPeriodId);
         var access = new ReportingAccessScope(
             "policy-company-a",
             "1",
@@ -4612,33 +4613,46 @@ public sealed class ReportPackWorkflowServiceTests
                         Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")])
                 ],
                 AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
-            "owner.user");
-        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
-        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-GRID-PRIVATE-1"), "controller.admin");
+            "owner.user",
+            companyId: TestCompanyId,
+            tenantId: TestTenantId);
+        registry.Submit(
+            draft.Definition.TemplateId,
+            "owner.user",
+            "ready",
+            BoundAccessContext("owner.user"));
+        registry.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("approved", "APP-GRID-PRIVATE-1"),
+            "controller.admin",
+            BoundAccessContext("controller.admin"));
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "owner.user");
 
-        var orchestration = app.Services.GetRequiredService<IReportingOrchestrationService>();
-        var manifest = await orchestration.ExecuteAsync(
-            new ReportingJobContract(
-                "private-retained-grid",
+        var runResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
                 draft.Definition.TemplateId.Name,
                 new DateOnly(2026, 5, 5),
-                ReportingRunTrigger.AdHoc,
-                0,
-                "owner.user",
-                new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero),
-                DatasetRows:
-                [
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["sector"] = "Technology",
-                        ["pnl"] = "250"
-                    }
-                ]),
-            CancellationToken.None);
-        manifest.RenderedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
-        var client = app.GetTestClient();
+                JobId: "private-retained-grid",
+                Parameters: BuildEndpointScheduleRunParameters() with
+                {
+                    PeriodId = CertifiedAccountingPeriodId
+                }),
+            ServerJsonOptions);
 
-        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{manifest.RunId}/report-writer-grids/private-sector-pnl");
+        runResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "the private template owner should be able to create the governed run: {0}",
+            await runResponse.Content.ReadAsStringAsync());
+        var run = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.Run.GeneratedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
+
+        client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "viewer.user");
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/private-sector-pnl");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

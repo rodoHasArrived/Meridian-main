@@ -403,6 +403,82 @@ public sealed class StatementReconciliationProductionAuthorityTests : IDisposabl
     }
 
     [Fact]
+    public async Task EvidenceRetainer_UnmanifestedArtifactMetadata_IsNotAcceptedAsVerifiedIdentity()
+    {
+        var authority = new InMemoryDurableStatementAuthority();
+        var source = WriteRetainedSource();
+        var request = BuildEvidenceRequest();
+        var retainer = new ReportingStatementImportEvidenceRetainer(authority, _root);
+        var retained = await retainer.RetainAsync(
+            BuildImportResult() with { RetainedSourcePath = source },
+            request);
+        var identity = retained.EvidenceVaultIdentity!;
+        var artifact = identity.Artifacts[0];
+        EvidenceVaultArtifactDto[] tamperedArtifacts =
+        [
+            artifact with
+            {
+                Capture = new EvidenceArtifactCaptureDto(
+                    "tampered",
+                    "unmanifested",
+                    DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+                    "operator",
+                    "source",
+                    new string('b', 64),
+                    EvidenceDocumentIntakeChannelDto.Api)
+            },
+            artifact with
+            {
+                ExtractedFields =
+                [
+                    new EvidenceArtifactExtractionFieldDto(
+                        "tampered",
+                        "value",
+                        null,
+                        1m,
+                        "Unreviewed",
+                        EvidenceStatusDto.Ready,
+                        null,
+                        null,
+                        null)
+                ]
+            },
+            artifact with
+            {
+                Document = new EvidenceDocumentDto(
+                    "tampered-document",
+                    "tampered.pdf",
+                    EvidenceDocumentClassificationDto.Statement,
+                    new string('c', 64),
+                    DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+                    "api",
+                    null,
+                    "tenant-alpha",
+                    "company-alpha",
+                    EvidenceExtractionStatusDto.NotExtracted,
+                    [],
+                    new EvidenceDocumentReviewStateDto(
+                        EvidenceDocumentReviewStatusDto.Unreviewed),
+                    [])
+            }
+        ];
+
+        foreach (var tamperedArtifact in tamperedArtifacts)
+        {
+            var artifacts = identity.Artifacts.ToArray();
+            artifacts[0] = tamperedArtifact;
+            var tampered = retained with
+            {
+                EvidenceVaultIdentity = identity with { Artifacts = artifacts }
+            };
+
+            (await retainer.HasVerifiedCanonicalRunEvidenceAsync(tampered, request))
+                .Should().BeFalse(
+                    "canonical recovery must reject artifact metadata not retained by its manifest");
+        }
+    }
+
+    [Fact]
     public async Task EvidenceRetainer_RetainedSourceFileLink_IsRejectedWithoutReadingExternalTarget()
     {
         var authority = new InMemoryDurableStatementAuthority();
