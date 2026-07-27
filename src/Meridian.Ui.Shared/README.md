@@ -136,6 +136,9 @@ The canonical reconciliation queue publishes explicit assign, resolve, waive, an
 actions. Waive and supersede routes preserve the authenticated operator, approval and successor
 lineage, typed Value/Quantity/CostBasis measures, blocked outputs, and disposition evidence hashes;
 browser API contracts mirror these fields rather than inferring terminal state from queue status.
+Queue reads and casework mutations never materialize cases from tenantless strategy-run or statement
+lists. A source workflow must retain the exact tenant and company and publish the scoped case before
+it can appear in the operator inbox or accept casework; legacy unscoped rows remain inaccessible.
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close

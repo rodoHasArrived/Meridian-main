@@ -75,13 +75,13 @@ public sealed class StatementReconciliationReportFetchIngestionAuthorityTests : 
 
         await ingest.Should()
             .ThrowAsync<InvalidOperationException>()
-            .WithMessage("*did not retain its Operations workflow and exact accounting scope*");
+            .WithMessage("*authoritative statement intake service is not configured*");
         intake.ScopeRequests.Should().ContainSingle();
         intake.ScopeRequests.Single().RequestedScope.Should().Be(exactScope);
         intake.PublishCount.Should().Be(0);
-        imports.CommitCount.Should().Be(1,
-            "the adapter must withhold success even when import completed before Operations authority was found absent");
-        imports.LastRequest!.AccountingScope.Should().Be(exactScope);
+        imports.CommitCount.Should().Be(0,
+            "missing Operations authority must fail before statement bytes or derived records are retained");
+        imports.LastRequest.Should().BeNull();
     }
 
     private StatementReconciliationReportWorkflowService BuildWorkflow(

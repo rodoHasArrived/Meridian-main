@@ -2544,7 +2544,11 @@ public sealed partial class WorkstationEndpointsTests
         var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
-        await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var inbox = await app
             .GetTestClient()
@@ -3057,6 +3061,7 @@ public sealed partial class WorkstationEndpointsTests
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var inbox = await client
             .GetFromJsonAsync<OperatorInboxDto>(
@@ -3098,6 +3103,7 @@ public sealed partial class WorkstationEndpointsTests
             .GetRequiredService<IReconciliationRunService>()
             .RunAsync(new ReconciliationRunRequest(runId));
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
         var client = app.GetTestClient();
@@ -3171,7 +3177,11 @@ public sealed partial class WorkstationEndpointsTests
         var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
-        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
@@ -3205,7 +3215,11 @@ public sealed partial class WorkstationEndpointsTests
         var runId = $"run-inbox-mixed-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
-        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
@@ -3577,8 +3591,14 @@ public sealed partial class WorkstationEndpointsTests
         await store.RecordRunAsync(BuildReconciliationMismatchRun("run-governance-breaks"));
 
         var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
-        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-balanced"));
-        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-breaks"));
+        var balanced = await reconciliationService.RunAsync(
+            new ReconciliationRunRequest("run-governance-balanced"));
+        var mismatch = await reconciliationService.RunAsync(
+            new ReconciliationRunRequest("run-governance-breaks"));
+        balanced.Should().NotBeNull();
+        mismatch.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, "run-governance-balanced", balanced!);
+        await RetainScopedReconciliationBreaksAsync(app, "run-governance-breaks", mismatch!);
 
         var client = app.GetTestClient();
         using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
@@ -3971,10 +3991,14 @@ public sealed partial class WorkstationEndpointsTests
         created.Breaks.Should().Contain(breakRow =>
             breakRow.Category == ReconciliationBreakCategory.AmountMismatch ||
             breakRow.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        (await repository.GetAllAsync(TestReconciliationQueueScope))
+            .Should()
+            .BeEmpty("generic reconciliation runs are comparison-only and do not own tenant/accounting scope");
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldHydrateQueueWithoutGovernanceBootstrap()
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldReadAuthoritativelyRetainedScopedCasework()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -3993,6 +4017,7 @@ public sealed partial class WorkstationEndpointsTests
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var response = await client.GetAsync("/api/workstation/reconciliation/break-queue");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -4046,6 +4071,25 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueUnavailable_ShouldFailClosedInsteadOfReportingHealthyEmpty()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationBreakQueueRepository>(_ => null!);
+        });
+
+        var client = app.GetTestClient();
+        using var queue = await client.GetAsync(UiApiRoutes.ReconciliationBreakQueue);
+        using var calibration = await client.GetAsync(UiApiRoutes.ReconciliationCalibrationSummary);
+        using var accounting = await client.GetAsync(UiApiRoutes.WorkstationAccounting);
+
+        queue.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+        calibration.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+        accounting.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_AccountingPayload_WithLedgerBookId_ShouldScopeBreakQueueAndOpenBreakMetrics()
     {
         await using var app = await CreateAppAsync(services =>
@@ -4064,9 +4108,15 @@ public sealed partial class WorkstationEndpointsTests
             startedAt: new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero)));
 
         var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-selected", ledgerBookId));
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-other", otherLedgerBookId));
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-unscoped", ledgerBookId: null));
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("scope-selected", ledgerBookId));
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("scope-other", otherLedgerBookId));
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("scope-unscoped", ledgerBookId: null));
 
         var client = app.GetTestClient();
         using var breakQueueResponse = await client.GetAsync($"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={ledgerBookId:D}");
@@ -4104,7 +4154,47 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_StatementReconcile_ShouldPublishStatementBreaksOnceWithSourceMetadata()
+    public async Task MapWorkstationEndpoints_AccountingPayload_WithNoStrategyRuns_ShouldExposeScopedStatementCasework()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("statement-only-case", Guid.NewGuid()) with
+            {
+                RunId = "statement-intake-run",
+                StrategyName = "Statement reconciliation report",
+                SourceType = "statement-reconciliation",
+                SourceSystem = "statement-intake",
+                SourceReference = "statement-run-1",
+                SourceFingerprint = "statement-fingerprint"
+            });
+
+        using var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationAccounting);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var root = payload.RootElement;
+
+        root.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(0);
+        root.GetProperty("breakQueue").EnumerateArray()
+            .Should()
+            .ContainSingle(item => item.GetProperty("breakId").GetString() == "statement-only-case");
+        root.GetProperty("metrics").EnumerateArray()
+            .Single(item => item.GetProperty("id").GetString() == "open-breaks")
+            .GetProperty("value")
+            .GetString()
+            .Should()
+            .Be("1");
+        root.GetProperty("workspace").GetProperty("openBreaks").GetInt32().Should().Be(1);
+        root.GetProperty("controlCenter").GetProperty("ownerWorkload").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementReconcile_ShouldNotPublishCaseworkOutsideAuthoritativeIntake()
     {
         var service = new StubReconciliationApiService();
         await using var app = await CreateAppAsync(services =>
@@ -4127,36 +4217,9 @@ public sealed partial class WorkstationEndpointsTests
 
         first.Should().NotBeNull();
         second.Should().NotBeNull();
-        service.ListOpenStatementBreaksCallCount.Should().Be(1);
-        second!.Should().ContainSingle(item =>
-            item.SourceType == "statement" &&
-            item.SourceSystem == "statement-reconciliation" &&
-            item.SourceImportId == "import-1" &&
-            item.SourceBreakId == "break-1" &&
-            item.SourceReference == "import-1:row-42" &&
-            item.BreakId.StartsWith("statement:", StringComparison.OrdinalIgnoreCase) &&
-            item.AssignedTo == "statement-owner" &&
-            item.Severity == ReconciliationBreakSeverity.High &&
-            item.ToleranceBand == 1m &&
-            item.RequiredSignoffRole == "Fund operations lead" &&
-            item.SignoffStatus == "pending-signoff" &&
-            item.ResolutionNote == null);
-        first!.Count(item => item.SourceType == "statement").Should().Be(1);
-        second.Count(item => item.SourceType == "statement").Should().Be(1);
-
-        var statementBreak = second.Single(item => item.SourceType == "statement");
-        statementBreak.Measures.Should().ContainSingle(measure =>
-            measure.Kind == ReconciliationBreakMeasureKindDto.Value &&
-            measure.Expected == 20m &&
-            measure.Actual == 10m &&
-            measure.Variance == -10m);
-        var retainedEvidence = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(statementBreak);
-        retainedEvidence.Measures.Should().ContainSingle(measure =>
-            measure.Kind == ReconciliationBreakMeasureKindDto.Value && measure.Variance == -10m);
-        var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
-            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
-            ServerJsonOptions);
-        audit.Should().ContainSingle(e => e.EventType == "CaseCreated" && e.Source == "statement");
+        service.ListOpenStatementBreaksCallCount.Should().Be(0);
+        first.Should().BeEmpty();
+        second.Should().BeEmpty();
     }
 
     [Fact]
@@ -4179,6 +4242,7 @@ public sealed partial class WorkstationEndpointsTests
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var summary = await client
             .GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
@@ -4225,6 +4289,7 @@ public sealed partial class WorkstationEndpointsTests
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var queue = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
             UiApiRoutes.ReconciliationBreakQueue,
@@ -4294,6 +4359,7 @@ public sealed partial class WorkstationEndpointsTests
         var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
         var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
         var client = app.GetTestClient();
@@ -4335,6 +4401,7 @@ public sealed partial class WorkstationEndpointsTests
         var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
         var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
         reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
 
         var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
         var client = app.GetTestClient();
@@ -4381,7 +4448,12 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_BreakQueueDispositionRoutes_ShouldDeriveExecutorAndRetainIndependentApprovalEvidence()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
+                new StatementReconciliationCaseworkHandoffService(
+                    sp.GetRequiredService<IReconciliationBreakQueueRepository>()));
+        });
         var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
         var measures = new[]
         {
@@ -4389,33 +4461,41 @@ public sealed partial class WorkstationEndpointsTests
             new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Quantity, null, null, null, null, "units", "Quantity was not supplied."),
             new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.CostBasis, null, null, null, null, "USD", "Cost basis was not supplied.")
         };
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-waive-route", null) with
-        {
-            Measures = measures,
-            BlockedOutputs = ["FinalReport", "PeriodClose"]
-        });
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-supersede-route", null) with
-        {
-            Measures = measures,
-            BlockedOutputs = ["FinalReport"]
-        });
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("replacement-break-route", null) with
-        {
-            Severity = ReconciliationBreakSeverity.Low,
-            Measures = measures,
-            BlockedOutputs = ["FinalReport"]
-        });
-        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-nonmaterial-route", null) with
-        {
-            Severity = ReconciliationBreakSeverity.Low,
-            Variance = 0.1m,
-            ToleranceBand = 1m,
-            Measures = measures,
-            BlockedOutputs = ["FinalReport"]
-        });
-        var waiveCurrent = (await repository.GetByIdAsync("break-waive-route"))!;
-        var supersedeCurrent = (await repository.GetByIdAsync("break-supersede-route"))!;
-        var nonMaterialCurrent = (await repository.GetByIdAsync("break-nonmaterial-route"))!;
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("break-waive-route", null) with
+            {
+                Measures = measures,
+                BlockedOutputs = ["FinalReport", "PeriodClose"]
+            });
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("break-supersede-route", null) with
+            {
+                Measures = measures,
+                BlockedOutputs = ["FinalReport"]
+            });
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("replacement-break-route", null) with
+            {
+                Severity = ReconciliationBreakSeverity.Low,
+                Measures = measures,
+                BlockedOutputs = ["FinalReport"]
+            });
+        await repository.CreateIfMissingAsync(
+            TestReconciliationQueueScope,
+            BuildBreakQueueItem("break-nonmaterial-route", null) with
+            {
+                Severity = ReconciliationBreakSeverity.Low,
+                Variance = 0.1m,
+                ToleranceBand = 1m,
+                Measures = measures,
+                BlockedOutputs = ["FinalReport"]
+            });
+        var waiveCurrent = (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-waive-route"))!;
+        var supersedeCurrent = (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-supersede-route"))!;
+        var nonMaterialCurrent = (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-nonmaterial-route"))!;
         var client = app.GetTestClient();
 
         var waiveResponse = await client.PostAsJsonAsync(
@@ -7494,6 +7574,45 @@ public sealed partial class WorkstationEndpointsTests
         };
     }
 
+    private static readonly ReconciliationBreakQueueScope TestReconciliationQueueScope =
+        new("tenant-test", "tenant-test");
+
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> RetainScopedReconciliationBreaksAsync(
+        WebApplication app,
+        string runId,
+        ReconciliationRunDetail reconciliation)
+    {
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        var retained = reconciliation.Breaks
+            .Select(sourceBreak => BuildBreakQueueItem($"{runId}:{sourceBreak.CheckId}", ledgerBookId: null) with
+            {
+                RunId = runId,
+                StrategyName = "Reconciliation Break Strategy",
+                Category = sourceBreak.Category,
+                Variance = Math.Abs(sourceBreak.Variance),
+                Reason = sourceBreak.Reason,
+                Severity = sourceBreak.Severity,
+                SourceReference = sourceBreak.CheckId,
+                SourceBreakId = sourceBreak.CheckId,
+                SourceFingerprint = $"fingerprint-{runId}-{sourceBreak.CheckId}",
+                Measures = sourceBreak.Measures
+                    ?? ReconciliationBreakQueueProjection.BuildDefaultMeasures(
+                        sourceBreak.ExpectedAmount,
+                        sourceBreak.ActualAmount,
+                        sourceBreak.Variance,
+                        reconciliation.Summary.AmountTolerance,
+                        "currency")
+            })
+            .ToArray();
+
+        foreach (var item in retained)
+        {
+            await repository.CreateIfMissingAsync(TestReconciliationQueueScope, item);
+        }
+
+        return retained;
+    }
+
     private static ReconciliationBreakQueueItem BuildBreakQueueItem(string breakId, Guid? ledgerBookId)
     {
         var detectedAt = new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero);
@@ -7510,13 +7629,49 @@ public sealed partial class WorkstationEndpointsTests
             LastUpdatedAt: detectedAt,
             Severity: ReconciliationBreakSeverity.High,
             ExceptionRoute: "accounting-variance-escalation",
+            ToleranceProfileId: "critical-zero-tolerance",
+            ToleranceBand: 0m,
+            RequiredSignoffRole: "Accounting sign-off",
+            SignoffStatus: "pending-signoff",
             FundAccountId: "fund-alpha",
             SourceType: "provider-ledger",
             SourceSystem: "provider-ledger-reconciliation",
             SourceReference: breakId,
             SourceBreakId: breakId,
             SourceFingerprint: $"fingerprint-{breakId}",
-            LedgerBookId: ledgerBookId);
+            LedgerBookId: ledgerBookId,
+            Measures:
+            [
+                new ReconciliationBreakMeasureDto(
+                    ReconciliationBreakMeasureKindDto.Value,
+                    null,
+                    null,
+                    null,
+                    0m,
+                    "currency",
+                    "The source fixture does not provide a comparable value pair."),
+                new ReconciliationBreakMeasureDto(
+                    ReconciliationBreakMeasureKindDto.Quantity,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "units",
+                    "The source fixture does not provide comparable quantities."),
+                new ReconciliationBreakMeasureDto(
+                    ReconciliationBreakMeasureKindDto.CostBasis,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "currency",
+                    "The source fixture does not provide comparable cost basis.")
+            ],
+            BlockedOutputs: ["FinalReport", "PeriodClose"])
+        {
+            TenantId = TestReconciliationQueueScope.TenantId,
+            CompanyId = TestReconciliationQueueScope.CompanyId
+        };
     }
 
     private static StrategyRunEntry BuildActivePaperRun(string runId, bool withBreaks)

@@ -26,6 +26,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid DefaultFundStructureNodeId =
         Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly ReconciliationBreakQueueScope QueueScope =
+        new("tenant-statement-authority", "company-statement-authority");
 
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
@@ -66,8 +68,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        var first = await service.ApplyAsync(command);
-        var replay = await service.ApplyAsync(command);
+        var first = await service.ApplyAsync(QueueScope, command);
+        var replay = await service.ApplyAsync(QueueScope, command);
 
         first.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         replay.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
@@ -138,7 +140,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        await service.ApplyAsync(command);
+        await service.ApplyAsync(QueueScope, command);
 
         (await breakStore.GetAsync(sourceBreak.BreakId))!.Status.Should().Be("Open");
         var retainedCase = await caseStore.GetAsync(sourceCase.CaseId);
@@ -181,7 +183,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        var first = () => service.ApplyAsync(command);
+        var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
         failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
         journalStore.Invocations.Should().BeEmpty(
@@ -191,7 +193,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             .Should().ContainSingle(audit => audit.EventType == "StatementBreakDisposed");
 
         await operationsRepository.SaveAsync(BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)));
-        var replay = await service.ApplyAsync(command);
+        var replay = await service.ApplyAsync(QueueScope, command);
 
         replay.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         (await caseStore.GetAsync(sourceCase.CaseId))!.AuditEvents
@@ -244,7 +246,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        await service.ApplyAsync(BuildCommand(item, ReconciliationCaseworkAction.Resolve));
+        await service.ApplyAsync(QueueScope, BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
         var workflow = (await operations.ListAsync(
                 fundAccountId,
@@ -302,6 +304,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             journalStore.Object);
 
         var apply = () => service.ApplyAsync(
+            QueueScope,
             BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
         var failure = await apply
@@ -360,6 +363,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             journalStore.Object);
 
         var apply = () => service.ApplyAsync(
+            QueueScope,
             BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
         var failure = await apply
@@ -435,7 +439,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             EvidenceLinks: ["statement:corrected-cash-row"],
             ActionOrigin: OperationsActionOriginDto.HumanOperator);
 
-        var result = await service.ApplyBulkAsync(request);
+        var result = await service.ApplyBulkAsync(QueueScope, request);
 
         result.Results.Should().ContainSingle();
         var projected = result.Results[0].Item;
@@ -536,7 +540,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        var first = () => service.ApplyAsync(command);
+        var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
 
         failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
@@ -632,7 +636,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             operations,
             journalStore.Object);
 
-        var replay = await restartedService.ApplyAsync(command);
+        var replay = await restartedService.ApplyAsync(QueueScope, command);
 
         replay.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         replay.Item.Should().NotBeNull();
@@ -857,7 +861,9 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             AccountingPeriodId: scope.AccountingPeriodId.ToString("D"),
             AsOfDate: scope.AsOfDate)
         {
-            FundProfileId = scope.FundProfileId
+            FundProfileId = scope.FundProfileId,
+            TenantId = QueueScope.TenantId,
+            CompanyId = QueueScope.CompanyId
         };
     }
 

@@ -46,6 +46,8 @@ public sealed class StatementToDeliveryAuthorityTests
         Guid.Parse("44444444-4444-4444-4444-444444444444");
     private static readonly Guid FundProfileId =
         Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly ReconciliationBreakQueueScope QueueScope =
+        new("tenant-alpha", "company-alpha");
 
     [Fact]
     public async Task Scenario_MonthEndClose_CertifiedClientPackageReleasesAndRetainsDeliveryReceipt()
@@ -73,10 +75,11 @@ public sealed class StatementToDeliveryAuthorityTests
         importedOperations.Should().NotBeNull();
         importedOperations!.BrokerIntakeState.Should().Be(OperationsBrokerIntakeStateDto.Imported);
 
-        var queuedCase = (await statementIntake.Queue.GetAllAsync(ct: ct))
+        var queuedCase = (await statementIntake.Queue.GetAllAsync(QueueScope, ct: ct))
             .Should().ContainSingle("one retained statement variance requires governed casework")
             .Which;
         var assigned = await statementIntake.Casework.ApplyAsync(
+            QueueScope,
             CaseworkCommand(queuedCase, ReconciliationCaseworkAction.Assign, "assign") with
             {
                 Assignee = "fund-ops"
@@ -84,6 +87,7 @@ public sealed class StatementToDeliveryAuthorityTests
             ct);
         assigned.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         var investigating = await statementIntake.Casework.ApplyAsync(
+            QueueScope,
             CaseworkCommand(
                 assigned.Item!,
                 ReconciliationCaseworkAction.TransitionStatus,
@@ -94,6 +98,7 @@ public sealed class StatementToDeliveryAuthorityTests
             ct);
         investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         var resolvedCase = await statementIntake.Casework.ApplyAsync(
+            QueueScope,
             CaseworkCommand(
                 investigating.Item!,
                 ReconciliationCaseworkAction.Resolve,

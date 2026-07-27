@@ -1,12 +1,12 @@
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
-/// Compatibility wrappers for queue projection helpers used by the workstation endpoint partials.
-/// The canonical projection lives in the shared application layer so statement intake can publish
-/// casework without requiring an operator to open a GET route first.
+/// Resolves the immutable tenant and company scope used by all reconciliation queue reads and
+/// mutations. Queue publication belongs to the authoritative source workflow and never to a
+/// workstation read or casework request.
 /// </summary>
 public static partial class WorkstationEndpoints
 {
@@ -25,37 +25,4 @@ public static partial class WorkstationEndpoints
         scope = new ReconciliationBreakQueueScope(tenantId, companyId);
         return true;
     }
-
-    private static ReconciliationBreakQueueItem MapStatementBreakToQueueItem(
-        StatementBreakDto statementBreak)
-        => ReconciliationBreakQueueProjection.ProjectStatement(statementBreak);
-
-    private static IReadOnlyList<ReconciliationBreakMeasureDto> BuildDefaultBreakMeasures(
-        decimal? expected,
-        decimal? actual,
-        decimal variance,
-        decimal? tolerance,
-        string unit)
-        => ReconciliationBreakQueueProjection.BuildDefaultMeasures(
-            expected,
-            actual,
-            variance,
-            tolerance,
-            unit);
-
-    private static bool IsOpenStatementBreak(string? status)
-        => ReconciliationBreakQueueProjection.IsOpenStatementBreak(status);
-
-    private static string ComputeStatementBreakLegacyFingerprint(StatementBreakDto statementBreak)
-        => ReconciliationBreakQueueProjection.ComputeStatementBreakLegacyFingerprint(statementBreak);
-
-    private static string ComputeReconciliationSourceFingerprint(params string?[] parts)
-        => ReconciliationBreakQueueProjection.ComputeSourceFingerprint(parts);
-
-    private static ReconciliationBreakQueueProjection.ReconciliationExceptionRouting
-        ResolveReconciliationExceptionRouting(
-            ReconciliationBreakCategory category,
-            ReconciliationBreakSeverity severity,
-            decimal variance)
-        => ReconciliationBreakQueueProjection.ResolveRouting(category, severity, variance);
 }

@@ -154,7 +154,9 @@ public sealed partial class WorkstationEndpointsTests
             RootCauseCode = "BrokerCashTiming",
             ResolutionCode = null,
             Version = 7,
-            EvidenceLinks = ["statement:evidence-retained"]
+            EvidenceLinks = ["statement:evidence-retained"],
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
         };
 
     private sealed class RecordingStatementQueueRepository(ReconciliationBreakQueueItem item)
@@ -170,7 +172,11 @@ public sealed partial class WorkstationEndpointsTests
             params ReconciliationBreakQueueAuditEvent[] audit)
         {
             _item = current;
-            _audit = audit;
+            _audit = audit.Select(entry => entry with
+            {
+                TenantId = current.TenantId,
+                CompanyId = current.CompanyId
+            }).ToArray();
         }
 
         public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
@@ -228,6 +234,7 @@ public sealed partial class WorkstationEndpointsTests
         public List<ReconciliationCaseworkCommand> Commands { get; } = [];
 
         public Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
+            ReconciliationBreakQueueScope scope,
             ReconciliationCaseworkCommand command,
             CancellationToken ct = default)
         {
@@ -242,6 +249,7 @@ public sealed partial class WorkstationEndpointsTests
         }
 
         public Task<ReconciliationBulkCaseworkResult> ApplyBulkAsync(
+            ReconciliationBreakQueueScope scope,
             ReconciliationBulkCaseworkRequest request,
             CancellationToken ct = default)
             => throw new NotSupportedException();

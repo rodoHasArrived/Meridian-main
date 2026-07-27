@@ -264,7 +264,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var migrate = () => repo.CreateOrMigrateAsync(incoming, legacy.BreakId);
 
         await migrate.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*different accounting close scope*");
+            .WithMessage("*different tenant, company, or accounting close scope*");
         (await repo.GetByIdAsync(legacy.BreakId)).Should().NotBeNull();
         (await repo.GetByIdAsync(incoming.BreakId)).Should().BeNull();
     }
@@ -376,7 +376,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         using (var doc = JsonDocument.Parse(await File.ReadAllTextAsync(snapshotPath)))
         {
             var snapshot = doc.RootElement;
-            snapshot.GetProperty("schemaVersion").GetInt32().Should().Be(4);
+            snapshot.GetProperty("schemaVersion").GetInt32().Should().Be(5);
             snapshot.GetProperty("contentHashSha256").GetString().Should().MatchRegex("^[0-9a-f]{64}$");
             var retainedEvents = snapshot.GetProperty("auditEvents");
             retainedEvents.GetArrayLength().Should().Be(history.Count);
@@ -426,6 +426,140 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var onlyOpen = await repo.GetAllAsync(ReconciliationBreakQueueStatus.Open);
         onlyOpen.Should().ContainSingle(i => i.BreakId == open.BreakId);
         onlyOpen.Should().NotContain(i => i.BreakId == review.BreakId);
+    }
+
+    [Fact]
+    public async Task ScopedQueueOperations_TwoTenantMonthEndCasework_PreventCrossTenantVisibilityAndMutation()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var repo = CreateRepository(out var root);
+        var tenantA = new ReconciliationBreakQueueScope("tenant-alpha", "company-alpha");
+        var tenantB = new ReconciliationBreakQueueScope("tenant-beta", "company-beta");
+        var itemA = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-0001",
+            TenantId = tenantA.TenantId,
+            CompanyId = tenantA.CompanyId
+        };
+        var itemB = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-0002",
+            TenantId = tenantB.TenantId,
+            CompanyId = tenantB.CompanyId
+        };
+        var legacyUnscoped = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-legacy"
+        };
+
+        try
+        {
+            (await repo.CreateIfMissingAsync(tenantA, itemA, ct)).Should().BeTrue();
+            (await repo.CreateIfMissingAsync(tenantB, itemB, ct)).Should().BeTrue();
+            (await repo.CreateIfMissingAsync(legacyUnscoped, ct)).Should().BeTrue();
+
+            (await repo.GetAllAsync(tenantA, ct: ct))
+                .Should().ContainSingle()
+                .Which.BreakId.Should().Be(itemA.BreakId);
+            (await repo.GetAllAsync(tenantB, ct: ct))
+                .Should().ContainSingle()
+                .Which.BreakId.Should().Be(itemB.BreakId);
+
+            var retainedA = await repo.GetByIdAsync(tenantA, itemA.BreakId, ct);
+            var retainedB = await repo.GetByIdAsync(tenantB, itemB.BreakId, ct);
+            retainedA.Should().NotBeNull();
+            retainedB.Should().NotBeNull();
+            (await repo.GetByIdAsync(tenantA, itemB.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, itemA.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantA, legacyUnscoped.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, legacyUnscoped.BreakId, ct)).Should().BeNull();
+
+            var tenantAAudit = await repo.GetAuditHistoryAsync(tenantA, itemA.BreakId, ct);
+            tenantAAudit.Should().ContainSingle(entry => entry.EventType == "CaseCreated");
+            tenantAAudit.Should().OnlyContain(entry =>
+                entry.TenantId == tenantA.TenantId && entry.CompanyId == tenantA.CompanyId);
+            (await repo.GetAuditHistoryAsync(tenantB, itemA.BreakId, ct)).Should().BeEmpty();
+            (await repo.GetAuditHistoryAsync(tenantA, itemB.BreakId, ct)).Should().BeEmpty();
+            (await repo.GetAuditHistoryAsync(tenantA, legacyUnscoped.BreakId, ct)).Should().BeEmpty();
+
+            var foreignSingleCommand = Command(retainedA!, ReconciliationCaseworkAction.Assign) with
+            {
+                CommandId = "tenant-beta-cross-tenant-single",
+                CorrelationId = "tenant-beta-cross-tenant-single",
+                Actor = "tenant-beta-operator",
+                Assignee = "tenant-beta-operator"
+            };
+            var foreignSingle = await repo.ApplyCaseworkCommandAsync(
+                tenantB,
+                foreignSingleCommand,
+                ct);
+            foreignSingle.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.NotFound);
+            foreignSingle.Item.Should().BeNull();
+            (await repo.GetByIdAsync(tenantA, itemA.BreakId, ct))!.AssignedTo.Should().BeNull();
+
+            var tenantASingleCommand = Command(retainedA!, ReconciliationCaseworkAction.Assign) with
+            {
+                CommandId = "tenant-alpha-own-single",
+                CorrelationId = "tenant-alpha-own-single",
+                Actor = "tenant-alpha-operator",
+                Assignee = "tenant-alpha-operator"
+            };
+            var tenantASingle = await repo.ApplyCaseworkCommandAsync(
+                tenantA,
+                tenantASingleCommand,
+                ct);
+            tenantASingle.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+            tenantASingle.Item!.AssignedTo.Should().Be("tenant-alpha-operator");
+
+            var bulkRequest = new ReconciliationBulkCaseworkRequest(
+                BreakIds: [itemA.BreakId, itemB.BreakId],
+                Action: ReconciliationCaseworkAction.ChangePriority,
+                Actor: "tenant-alpha-operator",
+                CommandId: "tenant-alpha-mixed-scope-bulk",
+                CorrelationId: "tenant-alpha-mixed-scope-bulk",
+                Source: "tenant-isolation-test",
+                IdempotencyKey: "tenant-alpha-mixed-scope-bulk",
+                DryRun: false,
+                AllowPartialSuccess: true,
+                Reason: "Escalate the tenant-alpha month-end break.",
+                Priority: ReconciliationCasePriority.Critical);
+            var bulk = await repo.ApplyBulkCaseworkAsync(tenantA, bulkRequest, ct);
+
+            bulk.SucceededCount.Should().Be(1);
+            bulk.FailedCount.Should().Be(1);
+            bulk.Results.Single(result => result.BreakId == itemA.BreakId)
+                .Should().Match<ReconciliationBulkCaseworkCaseResult>(
+                    result => result.Succeeded
+                              && result.Item != null
+                              && result.Item.Priority == ReconciliationCasePriority.Critical);
+            bulk.Results.Single(result => result.BreakId == itemB.BreakId)
+                .Should().Match<ReconciliationBulkCaseworkCaseResult>(
+                    result => !result.Succeeded && result.Item == null);
+
+            (await repo.GetByIdAsync(tenantA, itemA.BreakId, ct))!.Priority
+                .Should().Be(ReconciliationCasePriority.Critical);
+            var tenantBFinal = await repo.GetByIdAsync(tenantB, itemB.BreakId, ct);
+            tenantBFinal!.Priority.Should().Be(ReconciliationCasePriority.Normal);
+            tenantBFinal.AssignedTo.Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, itemA.BreakId, ct)).Should().BeNull();
+
+            (await repo.GetBulkCaseworkResultAsync(tenantA, bulkRequest.CommandId, ct))
+                .Should().NotBeNull();
+            (await repo.GetBulkCaseworkResultAsync(tenantB, bulkRequest.CommandId, ct))
+                .Should().BeNull();
+            (await repo.GetAuditHistoryAsync(tenantB, itemB.BreakId, ct))
+                .Should().NotContain(entry =>
+                    entry.CommandId == foreignSingleCommand.CommandId
+                    || entry.CommandId == bulkRequest.CommandId);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 
 
@@ -1789,7 +1923,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
             issue.Code == ReconciliationBreakQueueTransitionErrorCode.IdempotencyConflict.ToString());
 
         var upgraded = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!.AsObject();
-        upgraded["schemaVersion"]!.GetValue<int>().Should().Be(4);
+        upgraded["schemaVersion"]!.GetValue<int>().Should().Be(5);
         upgraded["contentHashSha256"]!.GetValue<string>().Should().HaveLength(64);
         upgraded["auditEvents"]!.AsArray().Select(node => node!["sequence"]!.GetValue<long>())
             .Should().Equal(Enumerable.Range(1, upgraded["auditEvents"]!.AsArray().Count).Select(static value => (long)value));

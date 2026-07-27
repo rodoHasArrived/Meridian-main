@@ -22,6 +22,11 @@ public static partial class WorkstationEndpoints
             return EndpointHelpers.Forbidden();
         }
 
+        if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
         if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
         {
             return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
@@ -54,7 +59,7 @@ public static partial class WorkstationEndpoints
         };
         try
         {
-            var transition = await casework.ApplyAsync(trusted, context.RequestAborted).ConfigureAwait(false);
+            var transition = await casework.ApplyAsync(queueScope, trusted, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         }
         catch (StatementReconciliationCaseworkHandoffException exception)
@@ -72,6 +77,11 @@ public static partial class WorkstationEndpoints
         JsonSerializerOptions jsonOptions)
     {
         if (!CanMutateReconciliationBreakQueue(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
         {
             return EndpointHelpers.Forbidden();
         }
@@ -109,7 +119,7 @@ public static partial class WorkstationEndpoints
         };
         try
         {
-            var result = await casework.ApplyBulkAsync(trusted, context.RequestAborted).ConfigureAwait(false);
+            var result = await casework.ApplyBulkAsync(queueScope, trusted, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         }
         catch (StatementReconciliationCaseworkHandoffException exception)
