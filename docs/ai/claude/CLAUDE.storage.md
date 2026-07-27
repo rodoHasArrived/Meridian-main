@@ -289,6 +289,29 @@ using var decompressedStream = profile.CreateDecompressionStream(inputStream);
 ### Purpose
 WAL ensures crash-safe persistence by writing events to a durable log before committing to storage files.
 
+### Ingest Durability Ordering
+
+`EventPipeline` processes each consumer batch in a fixed, resumable order:
+
+```
+validate → reserve (dedup, memory-only) → WAL append → WAL flush
+        → sink append → sink flush → dedup commit/flush → WAL commit
+```
+
+- **Producer-channel acceptance is admission-only.** A successful `TryPublish`/`PublishAsync`
+  means the event entered the in-memory queue, not that it is durable. Durability begins at the
+  batch's WAL flush.
+- **Dedup identities are reservation-based.** Pending reservations are memory-only; identities
+  are durably committed as version-2 ("sink durability confirmed") entries only after the sink
+  flush. Legacy version-1 ledger lines (no `"v"` field) still suppress live-ingress duplicates
+  but are untrusted during WAL recovery: their records are replayed, then upgraded.
+- **Crash semantics are at-least-once.** A crash after the sink flush but before the dedup
+  commit may replay a duplicate on the next startup; it can never silently lose an event. A sink
+  failure never causes a premature dedup mark, and a dedup failure never re-appends the sink.
+- **Recovery fails closed.** Sink or dedup-store failures during `RecoverAsync` propagate
+  instead of acknowledging records that were not replayed; checksum-valid records with
+  undeserializable payloads follow `WalOptions.CorruptionMode` (`Halt` throws).
+
 ### WAL Sync Modes
 
 | Mode | Description | Durability | Performance |

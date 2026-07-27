@@ -26,13 +26,22 @@ namespace Meridian.Application.Pipeline;
 /// Write-Ahead Log (WAL) integration for crash-safe durability.
 /// </summary>
 /// <remarks>
-/// When a <see cref="WriteAheadLog"/> is provided, the pipeline ensures events are
-/// persisted to the WAL before being written to the primary storage sink. On startup,
-/// <see cref="RecoverAsync"/> replays any uncommitted WAL records to the sink, preventing
-/// data loss from crashes. The consumer writes each event to the WAL, then to the sink,
-/// and commits the WAL after each batch is flushed. Both <see cref="TryPublish"/> and
-/// <see cref="PublishAsync"/> defer WAL writes to the consumer to ensure each event is
-/// recorded exactly once, preventing duplicate records during recovery.
+/// <para>
+/// Producer-channel acceptance is <b>admission-only</b>: a successful <see cref="TryPublish"/>
+/// or <see cref="PublishAsync"/> means the event entered the in-memory queue, not that it is
+/// durable. Durability is established exclusively by the consumer, which processes each batch as
+/// <c>validate → reserve → WAL append → WAL flush → sink append → sink flush →
+/// dedup commit/flush → WAL commit</c>. A crash between admission and the WAL flush can drop
+/// queued events; a crash after the WAL flush is recovered by <see cref="RecoverAsync"/>, which
+/// replays uncommitted WAL records to the sink (at-least-once: a crash after the sink flush but
+/// before the dedup commit may replay a duplicate, but can never lose an event).
+/// </para>
+/// <para>
+/// When a dedup store is configured, duplicate suppression is reservation-based: identities are
+/// claimed in memory during admission and durably committed (as version-2, durability-confirmed
+/// entries) only after the sink flush. During recovery only durability-confirmed entries suppress
+/// replay; legacy version-1 entries are untrusted and their records are replayed, then upgraded.
+/// </para>
 /// </remarks>
 public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IBackpressureSignal, IAsyncDisposable, IFlushable, IFlushableQueueDiagnostics
 {
@@ -50,7 +59,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     private readonly IEventMetrics _metrics;
     private readonly IEventValidator? _validator;
     private readonly DeadLetterSink? _deadLetterSink;
-    private readonly PersistentDedupLedger? _dedupLedger;
+    private readonly IDedupStore? _dedupLedger;
     private readonly int _consumerCount;
     private readonly bool _includePerEventLogScopes;
     private int _disposed;
@@ -140,7 +149,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         TimeSpan? sinkFlushTimeout = null,
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
-        PersistentDedupLedger? dedupLedger = null,
+        IDedupStore? dedupLedger = null,
         int consumerCount = 1)
         : this(
             sink,
@@ -194,7 +203,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         TimeSpan? sinkFlushTimeout = null,
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
-        PersistentDedupLedger? dedupLedger = null,
+        IDedupStore? dedupLedger = null,
         int consumerCount = 1)
     {
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
@@ -249,7 +258,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         WriteAheadLog? wal,
         IEventValidator? validator,
         DeadLetterSink? deadLetterSink,
-        PersistentDedupLedger? dedupLedger,
+        IDedupStore? dedupLedger,
         ILogger<EventPipeline> logger)
     {
         if (requestedConsumerCount < 1)
@@ -353,9 +362,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     /// data from a prior crash is not lost.
     /// </summary>
     /// <remarks>
-    /// This method initializes the WAL and reads any records that were written
-    /// but not committed (i.e., not yet confirmed persisted to the primary sink).
-    /// Each recovered event is written to the sink and then the WAL is committed.
+    /// This method initializes the WAL and reads any records that were written but not committed
+    /// (i.e., not yet confirmed persisted to the primary sink). Replay honours the dedup trust
+    /// rules: only durability-confirmed (version 2) entries suppress a record; legacy version-1
+    /// identities are untrusted here, so their records are replayed to the sink and upgraded to
+    /// version 2 only after the sink flush succeeds. Sink failures propagate — recovery fails
+    /// closed rather than acknowledging records it could not replay. A replay interrupted before
+    /// its durable boundary releases all pending identity claims so it can be retried.
     /// If no WAL is configured, this method is a no-op.
     /// </remarks>
     public async Task RecoverAsync(CancellationToken ct = default)
@@ -373,77 +386,136 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
         var recovered = 0;
         var skipped = 0;
+        var unrecoverable = 0;
         long maxRecoveredSequence = 0;
+        var heldReservations = new List<DedupReservation>();
 
-        await foreach (var walRecord in _wal.GetUncommittedRecordsAsync(ct).ConfigureAwait(false))
+        try
         {
-            if (walRecord.RecordType == "COMMIT")
-                continue;
-
-            try
+            await foreach (var walRecord in _wal.GetUncommittedRecordsAsync(ct).ConfigureAwait(false))
             {
-                var evt = walRecord.DeserializePayload<MarketEvent>();
-                if (evt != null)
+                if (walRecord.RecordType == "COMMIT")
+                    continue;
+
+                MarketEvent? evt;
+                try
                 {
-                    // [3.4] Idempotent writes: skip events already persisted to the sink.
-                    // This guards against duplicates when the sink was partially flushed
-                    // before the crash and the dedup ledger survived on disk.
-                    if (_dedupLedger != null && await _dedupLedger.IsDuplicateAsync(evt, ct).ConfigureAwait(false))
+                    evt = walRecord.DeserializePayload<MarketEvent>();
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    unrecoverable++;
+                    if (_wal.CorruptionMode == WalCorruptionMode.Halt)
+                    {
+                        throw new InvalidDataException(
+                            $"WAL recovery halted: record {walRecord.Sequence} has a checksum-valid but " +
+                            "undeserializable payload. Repair or remove the record before restarting.", ex);
+                    }
+
+                    _logger.LogError(ex,
+                        "WAL record {Sequence} has an undeserializable payload and cannot be replayed; " +
+                        "it will be dropped once the recovery horizon is committed",
+                        walRecord.Sequence);
+                    continue;
+                }
+
+                if (evt == null)
+                {
+                    unrecoverable++;
+                    _logger.LogError(
+                        "WAL record {Sequence} deserialized to a null event and cannot be replayed",
+                        walRecord.Sequence);
+                    continue;
+                }
+
+                if (_dedupLedger != null)
+                {
+                    // Recovery-scope lookup: only durability-confirmed identities (or an earlier
+                    // record in this same pass) suppress the replay. Legacy version-1 identities
+                    // fall through and are replayed, then upgraded at the commit below.
+                    var reservationResult = await _dedupLedger
+                        .TryReserveAsync(evt, DedupLookupScope.WalRecovery, ct).ConfigureAwait(false);
+                    if (reservationResult.IsSuppressed)
                     {
                         skipped++;
                         maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
                         continue;
                     }
 
-                    await _sink.AppendAsync(evt, ct).ConfigureAwait(false);
-                    maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
-                    recovered++;
+                    heldReservations.Add(reservationResult.Reservation);
+                }
+
+                // Sink failures propagate: recovery must fail closed instead of acknowledging
+                // records it could not replay.
+                await _sink.AppendAsync(evt, ct).ConfigureAwait(false);
+                maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
+                recovered++;
+            }
+
+            recoveryActivity?.SetTag("pipeline.recovered_count", recovered);
+            recoveryActivity?.SetTag("pipeline.skipped_dedup_count", skipped);
+            recoveryActivity?.SetTag("pipeline.unrecoverable_count", unrecoverable);
+
+            if (recovered > 0 || skipped > 0)
+            {
+                if (recovered > 0)
+                    await _sink.FlushAsync(ct).ConfigureAwait(false);
+
+                // Replayed identities become durability-confirmed only after the sink flush
+                // above. An unavailable dedup store fails recovery closed here; the sink data
+                // is durable, so a retried recovery replays at most a duplicate, never a loss.
+                if (_dedupLedger != null && heldReservations.Count > 0)
+                {
+                    await _dedupLedger.CommitDurableAsync(heldReservations, ct).ConfigureAwait(false);
+                    heldReservations.Clear();
+                }
+
+                // [1.2] WAL-sink transaction: update local sequence tracking BEFORE committing the
+                // WAL.  If CommitAsync fails (e.g. transient disk error), _lastCommittedWalSequence
+                // still reflects the successfully flushed extent so the next startup does not
+                // re-replay already-persisted events.  The commit itself is best-effort: a failure
+                // here is non-fatal because sink data is already durable.
+                _lastCommittedWalSequence = maxRecoveredSequence;
+
+                try
+                {
+                    await _wal.CommitAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
+                    await _wal.TruncateAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogWarning(ex,
+                        "WAL commit/truncate failed after successful sink flush during recovery (sequence {Seq}). " +
+                        "Sink data is safe; WAL records may be replayed again on the next startup but are " +
+                        "suppressed by their durability-confirmed dedup entries when a dedup store is configured",
+                        maxRecoveredSequence);
+                }
+
+                Interlocked.Add(ref _recoveredCount, recovered);
+
+                _logger.LogInformation(
+                    "Recovered {RecoveredCount} uncommitted events from WAL through sequence {MaxSequence} " +
+                    "({SkippedCount} suppressed as durability-confirmed duplicates, {UnrecoverableCount} unrecoverable)",
+                    recovered, maxRecoveredSequence, skipped, unrecoverable);
+            }
+            else
+            {
+                _logger.LogInformation("WAL recovery complete, no uncommitted events found");
+            }
+        }
+        catch
+        {
+            // Recovery failed before its durable boundary: release the pending identity claims
+            // so a retried recovery (or live ingress) can process these events again.
+            if (_dedupLedger != null)
+            {
+                foreach (var reservation in heldReservations)
+                {
+                    _dedupLedger.Release(in reservation);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to deserialize WAL record {Sequence} during recovery", walRecord.Sequence);
-            }
-        }
 
-        recoveryActivity?.SetTag("pipeline.recovered_count", recovered);
-        recoveryActivity?.SetTag("pipeline.skipped_dedup_count", skipped);
-
-        if (recovered > 0 || skipped > 0)
-        {
-            if (recovered > 0)
-                await _sink.FlushAsync(ct).ConfigureAwait(false);
-
-            // [1.2] WAL-sink transaction: update local sequence tracking BEFORE committing the
-            // WAL.  If CommitAsync fails (e.g. transient disk error), _lastCommittedWalSequence
-            // still reflects the successfully flushed extent so the next startup does not
-            // re-replay already-persisted events.  The commit itself is best-effort: a failure
-            // here is non-fatal because sink data is already durable.
-            _lastCommittedWalSequence = maxRecoveredSequence;
-
-            try
-            {
-                await _wal.CommitAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
-                await _wal.TruncateAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogWarning(ex,
-                    "WAL commit/truncate failed after successful sink flush during recovery (sequence {Seq}). " +
-                    "Sink data is safe; WAL records may be replayed again on the next startup but will be " +
-                    "deduplicated if a dedup ledger is configured",
-                    maxRecoveredSequence);
-            }
-
-            Interlocked.Add(ref _recoveredCount, recovered);
-
-            _logger.LogInformation(
-                "Recovered {RecoveredCount} uncommitted events from WAL through sequence {MaxSequence} ({SkippedCount} skipped as duplicates)",
-                recovered, maxRecoveredSequence, skipped);
-        }
-        else
-        {
-            _logger.LogInformation("WAL recovery complete, no uncommitted events found");
+            throw;
         }
 
         // Emit WAL recovery metrics to Prometheus
@@ -456,6 +528,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     /// Attempts to publish an event to the pipeline without blocking.
     /// Returns false if the queue is full (event will be dropped based on FullMode).
     /// </summary>
+    /// <remarks>
+    /// A <see langword="true"/> result is admission-only, not a durable acknowledgement: the
+    /// event entered the in-memory queue and becomes durable only once the consumer takes it
+    /// through the WAL-flush/sink-flush boundary.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
@@ -540,13 +617,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
     /// <summary>
     /// Publishes an event to the pipeline, waiting if necessary.
-    /// When WAL is enabled, the event is appended to the WAL before the queue handoff
-    /// so a successful publish is crash-safe even if the consumer has not run yet.
     /// </summary>
+    /// <remarks>
+    /// Producer-channel acceptance is admission-only, not a durable acknowledgement: the event
+    /// has entered the in-memory queue and becomes durable only when the consumer takes it
+    /// through the WAL-flush/sink-flush boundary. Appending to the WAL at publish time is
+    /// deliberately avoided — a publish-time record could receive a lower sequence than a
+    /// concurrently consumed event and then be acknowledged by that batch's cumulative WAL
+    /// commit while still sitting in the queue, silently losing it on a crash.
+    /// </remarks>
     public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default)
     {
-        var tracedEvent = await PrepareTracedEventForPublishAsync(evt, ct).ConfigureAwait(false);
-        await _channel.Writer.WriteAsync(tracedEvent, ct).ConfigureAwait(false);
+        await _channel.Writer.WriteAsync(CaptureTraceContext(evt), ct).ConfigureAwait(false);
         var count = Interlocked.Increment(ref _publishedCount);
         if (_metricsEnabled)
         {
@@ -707,8 +789,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         try
         {
             var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
+            var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
             var retryPendingBatch = false;
+            var admittedThroughIndex = 0;
             var nextPendingEventIndex = 0;
+            var walBatchFlushed = false;
+            var sinkBatchFlushed = false;
+            var dedupBatchCommitted = false;
 
             while (retryPendingBatch || await _channel.Reader.WaitToReadAsync(_cts.Token).ConfigureAwait(false))
             {
@@ -719,13 +806,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 {
                     var targetBatchSize = GetAdaptiveBatchSize();
 
-                    // Drain up to _batchSize events from the channel. A WAL-backed batch that
-                    // failed after its records were appended is retried before reading later
-                    // events, because WAL commits are cumulative through a sequence number.
+                    // Drain up to the target batch size from the channel. A batch that failed
+                    // mid-way is retried with its phase and per-event progress retained before
+                    // any later events are read, because WAL commits are cumulative through a
+                    // sequence number and dedup reservations must resolve exactly once.
                     if (!retryPendingBatch)
                     {
                         batchBuffer.Clear();
+                        admittedThroughIndex = 0;
                         nextPendingEventIndex = 0;
+                        walBatchFlushed = false;
+                        sinkBatchFlushed = false;
+                        dedupBatchCommitted = false;
                         while (batchBuffer.Count < targetBatchSize && _channel.Reader.TryRead(out var evt))
                         {
                             batchBuffer.Add(evt);
@@ -736,10 +828,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     // cycle appears as a structured span in distributed traces.
                     using var batchActivity = MarketDataTracing.StartBatchConsumeActivity(batchBuffer.Count);
 
-                    long maxWalSequence = _lastCommittedWalSequence;
-
-                    // Write each event: dedup → validate → WAL (if enabled) → sink
-                    for (var i = nextPendingEventIndex; i < batchBuffer.Count; i++)
+                    // Phase 1 — admission (resumable per event): validate, reserve the dedup
+                    // identity, then append to the WAL. Validation precedes the dedup claim so a
+                    // rejected payload can never consume the identity of a later corrected event.
+                    // Reservations are memory-only, so no identity is durably recorded before the
+                    // sink flush that proves it.
+                    for (var i = admittedThroughIndex; i < batchBuffer.Count; i++)
                     {
                         var tracedEvent = batchBuffer[i];
                         var evt = tracedEvent.Event;
@@ -753,15 +847,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
                         using var logScope = BeginEventLogScope(evt, tracedEvent.TraceContext, processActivity);
 
-                        // Deduplication check (when a dedup ledger is configured)
-                        if (_dedupLedger != null)
+                        // Remember the admission span so the storage span in the later sink pass
+                        // stays parented under it (provider → process → store).
+                        if (processActivity is not null)
                         {
-                            if (await _dedupLedger.IsDuplicateAsync(evt, _cts.Token).ConfigureAwait(false))
-                            {
-                                Interlocked.Increment(ref _deduplicatedCount);
-                                nextPendingEventIndex = i + 1;
-                                continue; // Skip duplicate events
-                            }
+                            tracedEvent = tracedEvent with { ProcessContext = processActivity.Context };
+                            batchBuffer[i] = tracedEvent;
                         }
 
                         // Validate event before persistence (when a validator is configured)
@@ -770,32 +861,95 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             var validationResult = _validator.Validate(in evt);
                             if (!validationResult.IsValid)
                             {
-                                Interlocked.Increment(ref _rejectedCount);
                                 if (_deadLetterSink != null)
                                 {
                                     await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
                                 }
-                                nextPendingEventIndex = i + 1;
+
+                                Interlocked.Increment(ref _rejectedCount);
+                                batchBuffer[i] = tracedEvent with { Suppressed = true };
+                                admittedThroughIndex = i + 1;
                                 continue; // Skip persisting invalid events
                             }
                         }
 
-                        if (tracedEvent.WalSequence > 0)
+                        // Reserve the dedup identity (when a dedup store is configured). The
+                        // claim is pending and memory-only until the sink flush confirms it.
+                        if (_dedupLedger != null)
                         {
-                            maxWalSequence = Math.Max(maxWalSequence, tracedEvent.WalSequence);
-                        }
-                        else if (_wal != null)
-                        {
-                            var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
-                            tracedEvent = tracedEvent with { WalSequence = walRecord.Sequence };
+                            var reservationResult = await _dedupLedger
+                                .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
+                            if (reservationResult.IsSuppressed)
+                            {
+                                Interlocked.Increment(ref _deduplicatedCount);
+                                batchBuffer[i] = tracedEvent with { Suppressed = true };
+                                admittedThroughIndex = i + 1;
+                                continue; // Skip duplicate events
+                            }
+
+                            tracedEvent = tracedEvent with { Reservation = reservationResult.Reservation };
                             batchBuffer[i] = tracedEvent;
-                            maxWalSequence = Math.Max(maxWalSequence, walRecord.Sequence);
                         }
 
+                        if (_wal != null && tracedEvent.WalSequence == 0)
+                        {
+                            try
+                            {
+                                var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
+                                batchBuffer[i] = tracedEvent with { WalSequence = walRecord.Sequence };
+                            }
+                            catch
+                            {
+                                // The identity claim must not outlive a failed admission: release
+                                // it so the in-process retry can claim it again.
+                                ReleaseReservationAt(batchBuffer, i);
+                                throw;
+                            }
+                        }
+
+                        admittedThroughIndex = i + 1;
+                    }
+
+                    long maxWalSequence = _lastCommittedWalSequence;
+                    var heldReservationCount = 0;
+                    for (var i = 0; i < batchBuffer.Count; i++)
+                    {
+                        if (batchBuffer[i].WalSequence > maxWalSequence)
+                            maxWalSequence = batchBuffer[i].WalSequence;
+                        if (batchBuffer[i].Reservation.IsHeld)
+                            heldReservationCount++;
+                    }
+
+                    var walAdvanced = _wal != null && maxWalSequence > _lastCommittedWalSequence;
+
+                    // Phase 2 — WAL flush: the batch's records must be durable in the WAL before
+                    // the first sink append so the WAL always remains a superset of the sink and
+                    // a crash can only ever replay, never lose.
+                    if (walAdvanced && !walBatchFlushed)
+                    {
+                        await _wal!.FlushAsync(_cts.Token).ConfigureAwait(false);
+                        walBatchFlushed = true;
+                    }
+
+                    // Phase 3 — sink appends (resumable per event). A failure here retries from
+                    // the same index without touching the dedup ledger: a sink failure must not
+                    // cause a premature dedup mark.
+                    for (var i = nextPendingEventIndex; i < batchBuffer.Count; i++)
+                    {
+                        var tracedEvent = batchBuffer[i];
+                        if (tracedEvent.Suppressed)
+                        {
+                            nextPendingEventIndex = i + 1;
+                            continue;
+                        }
+
+                        var evt = tracedEvent.Event;
                         using var storageActivity = MarketDataTracing.StartStorageActivity(
                             _sink.GetType().Name,
                             evt.EffectiveSymbol,
-                            processActivity?.Context ?? tracedEvent.TraceContext.ParentContext);
+                            tracedEvent.ProcessContext != default
+                                ? tracedEvent.ProcessContext
+                                : tracedEvent.TraceContext.ParentContext);
                         storageActivity?.SetTag("event.type", GetEventTypeName(evt.Type));
                         storageActivity?.SetTag("event.source", evt.Source);
 
@@ -806,34 +960,64 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         nextPendingEventIndex = i + 1;
                     }
 
-                    // [1.2] WAL-sink transaction: flush the sink first, then update local sequence
-                    // tracking BEFORE committing the WAL.  Ordering matters:
-                    //   1. Sink.FlushAsync  – makes events durable in the sink.
-                    //   2. _lastCommittedWalSequence update – prevents re-flushing the same batch
-                    //      on the next iteration if CommitAsync fails.
-                    //   3. Wal.CommitAsync  – best-effort cleanup; failure here is non-fatal
-                    //      because the sink already has the data and the dedup ledger will filter
-                    //      any re-played records on a future startup.
-                    if (_wal != null && maxWalSequence > _lastCommittedWalSequence)
+                    // Phase 4 — sink flush: the batch's events become durable in primary storage.
+                    // Required before any dedup identity may be durably committed, whether or not
+                    // a WAL is configured.
+                    if ((walAdvanced || heldReservationCount > 0) && !sinkBatchFlushed)
                     {
                         await _sink.FlushAsync(_cts.Token).ConfigureAwait(false);
+                        sinkBatchFlushed = true;
+                    }
+
+                    // Phase 5 — dedup commit/flush: identities become durability-confirmed
+                    // (version 2) only now that the sink flush proved them. A failure here
+                    // retries just this phase — the sink is never re-appended.
+                    if (_dedupLedger != null && heldReservationCount > 0 && !dedupBatchCommitted)
+                    {
+                        reservationScratch.Clear();
+                        for (var i = 0; i < batchBuffer.Count; i++)
+                        {
+                            if (batchBuffer[i].Reservation.IsHeld)
+                                reservationScratch.Add(batchBuffer[i].Reservation);
+                        }
+
+                        await _dedupLedger.CommitDurableAsync(reservationScratch, _cts.Token).ConfigureAwait(false);
+                        dedupBatchCommitted = true;
+                        reservationScratch.Clear();
+
+                        // The claims are resolved; clear them so an abandon path cannot try to
+                        // release identities that are already durably committed.
+                        for (var i = 0; i < batchBuffer.Count; i++)
+                        {
+                            if (batchBuffer[i].Reservation.IsHeld)
+                                batchBuffer[i] = batchBuffer[i] with { Reservation = default };
+                        }
+                    }
+
+                    // Phase 6 — WAL commit: best-effort cleanup. Local sequence tracking updates
+                    // first so a commit failure cannot re-flush the same batch; replayed records
+                    // are suppressed on the next startup by their durability-confirmed entries.
+                    if (walAdvanced)
+                    {
                         _lastCommittedWalSequence = maxWalSequence;
                         try
                         {
-                            await _wal.CommitAsync(maxWalSequence, _cts.Token).ConfigureAwait(false);
+                            await _wal!.CommitAsync(maxWalSequence, _cts.Token).ConfigureAwait(false);
                         }
                         catch (Exception ex) when (ex is not OperationCanceledException)
                         {
                             _logger.LogWarning(ex,
                                 "WAL commit failed after successful sink flush for sequence {Seq}. " +
                                 "Events are safe in the sink; WAL records may be replayed on next startup " +
-                                "but will be deduplicated if a dedup ledger is configured",
+                                "but are suppressed by their durability-confirmed dedup entries when a " +
+                                "dedup store is configured",
                                 maxWalSequence);
                         }
                     }
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
                     retryPendingBatch = false;
+                    admittedThroughIndex = 0;
                     nextPendingEventIndex = 0;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
@@ -843,7 +1027,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     // only at disposal) while producers kept publishing into a channel nobody
                     // drained. A WAL-backed batch that has appended records must be retried
                     // before later batches: committing a later WAL sequence would otherwise
-                    // cumulatively acknowledge the failed records.
+                    // cumulatively acknowledge the failed records. Phase flags and per-event
+                    // progress are retained so the retry resumes exactly where it failed.
                     Interlocked.Increment(ref _consumerIterationFailures);
                     Interlocked.Exchange(ref _lastConsumerFaultTicks, DateTimeOffset.UtcNow.UtcTicks);
                     retryPendingBatch = _wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0);
@@ -854,20 +1039,33 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             ? "the WAL-backed batch will retry before later batches are committed"
                             : "WAL commit withheld and consumer continuing");
 
-                    if (_deadLetterSink != null && !retryPendingBatch)
+                    if (!retryPendingBatch)
                     {
-                        foreach (var traced in batchBuffer)
+                        // The batch is being abandoned: pending identity claims must not outlive
+                        // it, otherwise a legitimate upstream re-send of the same event would be
+                        // suppressed as an in-flight duplicate forever.
+                        ReleaseAllReservations(batchBuffer);
+
+                        if (_deadLetterSink != null)
                         {
-                            try
+                            foreach (var traced in batchBuffer)
                             {
-                                await _deadLetterSink.RecordAsync(
-                                    traced.Event,
-                                    new[] { $"pipeline-persist-failure: {ex.GetType().Name}: {ex.Message}" },
-                                    CancellationToken.None).ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // DeadLetterSink logs its own failures; recording is best-effort.
+                                // Suppressed events were already dead-lettered by validation or
+                                // are duplicates of retained data — do not record them twice.
+                                if (traced.Suppressed)
+                                    continue;
+
+                                try
+                                {
+                                    await _deadLetterSink.RecordAsync(
+                                        traced.Event,
+                                        new[] { $"pipeline-persist-failure: {ex.GetType().Name}: {ex.Message}" },
+                                        CancellationToken.None).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    // DeadLetterSink logs its own failures; recording is best-effort.
+                                }
                             }
                         }
                     }
@@ -1099,22 +1297,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         return new TracedMarketEvent(tracedEvent, traceContext);
     }
 
-    private async ValueTask<TracedMarketEvent> PrepareTracedEventForPublishAsync(MarketEvent evt, CancellationToken ct)
-    {
-        var tracedEvent = CaptureTraceContext(evt);
-        if (_wal == null)
-        {
-            return tracedEvent;
-        }
-
-        var walRecord = await _wal.AppendAsync(
-            tracedEvent.Event,
-            GetEventTypeName(tracedEvent.Event.Type),
-            ct).ConfigureAwait(false);
-
-        return tracedEvent with { WalSequence = walRecord.Sequence };
-    }
-
     private static Dictionary<string, object?> CreateLogScope(
         MarketEvent evt,
         EventTraceContext traceContext,
@@ -1173,8 +1355,41 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         }
     }
 
+    private void ReleaseReservationAt(List<TracedMarketEvent> batchBuffer, int index)
+    {
+        if (_dedupLedger == null)
+            return;
+
+        var reservation = batchBuffer[index].Reservation;
+        if (reservation.IsHeld)
+        {
+            _dedupLedger.Release(in reservation);
+            batchBuffer[index] = batchBuffer[index] with { Reservation = default };
+        }
+    }
+
+    private void ReleaseAllReservations(List<TracedMarketEvent> batchBuffer)
+    {
+        if (_dedupLedger == null)
+            return;
+
+        for (var i = 0; i < batchBuffer.Count; i++)
+        {
+            ReleaseReservationAt(batchBuffer, i);
+        }
+    }
+
+    /// <summary>
+    /// A channel item and its per-batch persistence progress: the WAL sequence assigned at
+    /// admission, the pending dedup reservation (memory-only), whether the event was suppressed
+    /// (validation-rejected or duplicate) and must skip persistence, and the admission span
+    /// context that parents the storage span.
+    /// </summary>
     private readonly record struct TracedMarketEvent(
         MarketEvent Event,
         EventTraceContext TraceContext,
-        long WalSequence = 0);
+        long WalSequence = 0,
+        DedupReservation Reservation = default,
+        bool Suppressed = false,
+        ActivityContext ProcessContext = default);
 }

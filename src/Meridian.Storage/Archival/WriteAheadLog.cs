@@ -90,6 +90,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
     public long SkippedRecordCount => Interlocked.Read(ref _skippedRecordCount);
 
     /// <summary>
+    /// Gets the configured corruption response mode so replay consumers can apply the same
+    /// policy to records whose checksum validates but whose payload cannot be deserialized.
+    /// </summary>
+    public WalCorruptionMode CorruptionMode => _options.CorruptionMode;
+
+    /// <summary>
     /// Raised when a corrupted WAL record is detected during recovery, provided
     /// <see cref="WalOptions.CorruptionMode"/> is <see cref="WalCorruptionMode.Alert"/>.
     /// The argument is the number of corrupted records found in the current recovery pass.

@@ -95,7 +95,7 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             builder.WebHost.UseTestServer();
             builder.Services.DeclareMeridianDeploymentPosture(
                 MeridianDeploymentPosture.ProductionApi);
-            builder.Services.AddSingleton(new ConfigStore(configPath));
+            builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
             RegisterPostgresLedgerPresentationSources(
                 builder.Services,
                 database.ConnectionString);
@@ -189,7 +189,7 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
                 ConnectionString = connectionString,
                 Schema = PostgresTestSchema.NewSchemaName("reporting_source_accounts")
             }));
-        services.AddSingleton<IFundStructureService>(
+        services.AddSingleton<Meridian.Contracts.Services.IFundStructureService>(
             new PostgresFundStructureService(
                 new PostgresFundStructureStore(new FundStructureStoreOptions
                 {
