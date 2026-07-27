@@ -110,28 +110,36 @@ public static class PartnersCapitalStatementLayoutBuilder
     {
         ArgumentNullException.ThrowIfNull(statement);
 
-        // Ownership is a partner's share of total ending partners' capital. Dividing every line by
-        // the same total means the column foots to 100% (each line = lineEnding / totalEnding, and the
-        // line endings sum to the total by construction). A fully-distributed fund has no capital to
-        // apportion, so every share is zero.
-        var totalEnding = statement.EndingCapital;
+        // Classify each account once: role drives both the presentation label and whether the account
+        // participates in ownership.
+        var classified = statement.Accounts
+            .Select(account => (account, role: ClassifyRole(account.AccountName)))
+            .ToList();
 
-        var lines = statement.Accounts
-            .Select(account => new PartnersCapitalStatementLine(
-                PartnerLabel: string.IsNullOrWhiteSpace(account.InvestorId)
-                    ? account.AccountName
-                    : account.InvestorId,
-                Role: ClassifyRole(account.AccountName),
-                BeginningCapital: account.BeginningCapital,
-                Contributions: account.Contributions,
-                Distributions: account.Distributions,
-                IncomeGainAllocations: account.IncomeGainAllocations,
-                ExpenseAllocations: account.ExpenseAllocations,
-                FeeAllocations: account.FeeAllocations,
-                AllocatedResult: account.AllocatedResult,
-                OtherMovements: account.OtherMovements,
-                EndingCapital: account.EndingCapital,
-                OwnershipPercent: OwnershipShare(account.EndingCapital, totalEnding)))
+        // Ownership is a named partner's share of the capital held by named partners (LP + GP). Fund-level
+        // results not yet closed to a partner (undistributed net income) and undesignated fund capital are
+        // not partners: counting them let a partner exceed 100% while the undistributed line showed a
+        // negative share. They are excluded from both numerator and denominator and carry no ownership.
+        var partnerEndingCapital = classified
+            .Where(entry => IsNamedPartner(entry.role))
+            .Sum(entry => entry.account.EndingCapital);
+
+        var lines = classified
+            .Select(entry => new PartnersCapitalStatementLine(
+                PartnerLabel: PartnerLabelFor(entry.role, entry.account.InvestorId, entry.account.AccountName),
+                Role: entry.role,
+                BeginningCapital: entry.account.BeginningCapital,
+                Contributions: entry.account.Contributions,
+                Distributions: entry.account.Distributions,
+                IncomeGainAllocations: entry.account.IncomeGainAllocations,
+                ExpenseAllocations: entry.account.ExpenseAllocations,
+                FeeAllocations: entry.account.FeeAllocations,
+                AllocatedResult: entry.account.AllocatedResult,
+                OtherMovements: entry.account.OtherMovements,
+                EndingCapital: entry.account.EndingCapital,
+                OwnershipPercent: IsNamedPartner(entry.role)
+                    ? OwnershipShare(entry.account.EndingCapital, partnerEndingCapital)
+                    : 0m))
             .OrderBy(static line => line.Role)
             .ThenBy(static line => line.PartnerLabel, StringComparer.Ordinal)
             .ToList();
@@ -164,6 +172,19 @@ public static class PartnersCapitalStatementLayoutBuilder
 
     private static decimal OwnershipShare(decimal endingCapital, decimal totalEndingCapital)
         => totalEndingCapital == 0m ? 0m : endingCapital / totalEndingCapital * 100m;
+
+    // Only limited and general partners hold an ownership stake in the fund's capital.
+    private static bool IsNamedPartner(PartnersCapitalPartnerRole role)
+        => role is PartnersCapitalPartnerRole.LimitedPartner or PartnersCapitalPartnerRole.GeneralPartner;
+
+    // A limited-partner account carries a trustworthy investor identity, so it is labelled by that id.
+    // Every other role is labelled by its ledger account-name caption: the distribution-waterfall posting
+    // reuses the LP's investorId on the GP carried-interest line, so surfacing InvestorId for a non-LP
+    // role would print the LP's id as the general partner.
+    private static string PartnerLabelFor(PartnersCapitalPartnerRole role, string? investorId, string accountName)
+        => role == PartnersCapitalPartnerRole.LimitedPartner && !string.IsNullOrWhiteSpace(investorId)
+            ? investorId
+            : accountName;
 
     // Role is derived from the stable account names minted by LedgerAccounts. It is a caption only:
     // an unrecognized capital account falls back to GeneralCapital and its figures are untouched.

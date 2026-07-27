@@ -57,26 +57,42 @@ public sealed class PartnersCapitalStatementLayoutTests
     }
 
     [Fact]
-    public void Build_OwnershipShares_FootToOneHundredPercent()
+    public void Build_Ownership_ExcludesNonPartnerEquityAndBoundsPartners()
     {
         var layout = PartnersCapitalStatementLayoutBuilder.Build(
             LedgerReportPackTestData.BuildContributionPack());
 
-        layout.Lines.Sum(line => line.OwnershipPercent).Should().BeApproximately(100m, 0.0001m);
+        // The undistributed net income line is a fund-level result, not a partner: it holds no ownership.
+        // (Before the fix its negative capital produced a negative "ownership" share.)
+        var undistributed = layout.Lines.Should()
+            .ContainSingle(line => line.Role == PartnersCapitalPartnerRole.UndistributedResult).Which;
+        undistributed.OwnershipPercent.Should().Be(0m);
+
+        // Named partners hold 100% between them and none is reported above 100%. (Before the fix the LP
+        // read ~102% because the negative undistributed line sat in the denominator.)
+        var lp = layout.Lines.Should()
+            .ContainSingle(line => line.Role == PartnersCapitalPartnerRole.LimitedPartner).Which;
+        lp.OwnershipPercent.Should().BeApproximately(100m, 0.0001m);
+        layout.Lines.Should().OnlyContain(line => line.OwnershipPercent <= 100m);
         layout.Total.OwnershipPercent.Should().BeApproximately(100m, 0.0001m);
     }
 
     [Fact]
-    public void Build_CarriedInterestAllocation_ClassifiedAsGeneralPartner()
+    public void Build_CarriedInterestAllocation_LabelledByCaptionNotTheLimitedPartnerId()
     {
+        // The distribution-waterfall factory posts the GP carried-interest line under the *LP's* investor
+        // id (BuildDistributionWaterfallDraft reuses its single investorId for both legs). Reproduce that
+        // by scoping the carry account to the LP id, then prove the layout never surfaces it as the GP.
+        const string lpId = "lp-1";
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(new DateTimeOffset(2025, 6, 15, 0, 0, 0, TimeSpan.Zero), "opening contribution",
-            [(LedgerAccounts.Cash, 5_000_000m, 0m), (LedgerAccounts.InvestorCapitalFor("lp-1"), 0m, 5_000_000m)]);
+            [(LedgerAccounts.Cash, 5_000_000m, 0m), (LedgerAccounts.InvestorCapitalFor(lpId), 0m, 5_000_000m)]);
         ledger.PostLines(new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero), "realized gain",
             [(LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGainFor("fund-a"), 0m, 1_000_000m)]);
-        // Close part of the gain into the GP's carried-interest capital account.
+        // Close part of the gain into the carried-interest capital account, scoped to the LP id exactly
+        // as the waterfall factory posts it.
         ledger.PostLines(new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero), "carry allocation",
-            [(LedgerAccounts.RealizedGainFor("fund-a"), 200_000m, 0m), (LedgerAccounts.CarriedInterestAllocationFor("gp-1"), 0m, 200_000m)]);
+            [(LedgerAccounts.RealizedGainFor("fund-a"), 200_000m, 0m), (LedgerAccounts.CarriedInterestAllocationFor(lpId), 0m, 200_000m)]);
 
         var statements = LedgerFinancialStatementBuilder.BuildForPeriod(ledger, PeriodStart, AsOf);
         var layout = PartnersCapitalStatementLayoutBuilder.Build(
@@ -84,8 +100,10 @@ public sealed class PartnersCapitalStatementLayoutTests
 
         var gp = layout.Lines.Should()
             .ContainSingle(line => line.Role == PartnersCapitalPartnerRole.GeneralPartner).Which;
-        gp.PartnerLabel.Should().Be("gp-1");
         gp.EndingCapital.Should().Be(200_000m);
+        // The GP row is labelled by its role caption, never the limited partner's investor id.
+        gp.PartnerLabel.Should().Be("Carried Interest Allocation");
+        gp.PartnerLabel.Should().NotBe(lpId);
         layout.Lines.Should().Contain(line => line.Role == PartnersCapitalPartnerRole.LimitedPartner);
         layout.TiesToNetAssets.Should().BeTrue();
     }
