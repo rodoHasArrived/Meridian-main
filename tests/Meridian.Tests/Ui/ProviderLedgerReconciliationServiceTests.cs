@@ -1597,17 +1597,26 @@ public sealed class ProviderLedgerReconciliationServiceTests
             var createCalls = 0;
             var intentExistedBeforeFirstCase = false;
 
-            repository.GetByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            repository.GetByIdAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(call => Task.FromResult(
-                    cases.TryGetValue(call.ArgAt<string>(0), out var item)
+                    cases.TryGetValue(call.ArgAt<string>(1), out var item)
                         ? item
                         : null));
-            repository.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+            repository.GetAllAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<ReconciliationBreakQueueStatus?>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(_ => Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(cases.Values.ToArray()));
-            repository.CreateIfMissingAsync(Arg.Any<ReconciliationBreakQueueItem>(), Arg.Any<CancellationToken>())
+            repository.CreateIfMissingAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<ReconciliationBreakQueueItem>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(call =>
                 {
-                    var item = call.ArgAt<ReconciliationBreakQueueItem>(0);
+                    var item = call.ArgAt<ReconciliationBreakQueueItem>(1);
                     createCalls++;
                     var operationKey = Convert.ToHexString(
                             System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(operationId)))
@@ -2077,7 +2086,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 component.Key == "security-master-completeness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked);
             readiness.Blockers.Should().Contain(blocker =>
-                blocker.Code == "close.security_master.blocked" &&
+                blocker.Code == "close.security_master.casework_blocked" &&
                 blocker.Category == "SecurityMaster" &&
                 blocker.Severity == "Critical");
         }
@@ -2450,9 +2459,13 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
             await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
-            await fixture.RunReconciliationAsync(
+            var reconciliation = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
+            reconciliation.SecurityMasterPassports.Should().ContainSingle(passport =>
+                passport.Symbol == "AAPL" &&
+                passport.Status == ProviderSecurityMasterPassportStatusDto.Resolved &&
+                passport.ProviderIsStale);
 
             var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
@@ -2462,14 +2475,14 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "security-master-completeness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
-                component.BlockingReason.Contains("stale provider evidence", StringComparison.OrdinalIgnoreCase));
+                component.BlockingReason.Contains("remain open for steward review", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().Contain(blocker =>
-                blocker.Code == "close.security_master.stale_provider_mapping" &&
+                blocker.Code == "close.security_master.casework_review" &&
                 blocker.Category == "SecurityMaster" &&
                 blocker.Severity == "Warning" &&
                 blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.NextActions.Should().Contain(action =>
-                action.Code == "close.security_master.stale_provider_mapping" &&
+                action.Code == "close.security_master.casework_review" &&
                 action.Label == "Resolve Security Master coverage");
         }
         finally

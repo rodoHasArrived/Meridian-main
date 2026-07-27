@@ -898,6 +898,100 @@ public sealed class StatementReconciliationReportAuthorityStoreValidationTests
         artifactStore.StoreCallCount.Should().Be(0);
     }
 
+    [Fact]
+    public async Task WriteDocumentAsync_PostgresArtifactStoreForDifferentDatabaseFailsClosed()
+    {
+        var artifactStore = new PostgresReportingArtifactStore(
+            new ReportingArtifactStoreOptions
+            {
+                ConnectionString =
+                    "Host=127.0.0.1;Database=other_meridian;Username=meridian;Password=meridian",
+                Schema = Options.Schema
+            });
+        var store = new PostgresStatementReconciliationReportAuthorityStore(
+            Options,
+            artifactStore);
+        var scope = new StatementReconciliationReportAuthorityScope(
+            "tenant",
+            "company",
+            "workflow");
+
+        var write = () => store.WriteDocumentAsync(
+            scope,
+            "workflow.json",
+            Encoding.UTF8.GetBytes("statement"),
+            isImmutable: false).AsTask();
+
+        store.IsDurableAuthority.Should().BeFalse();
+        await write.Should()
+            .ThrowAsync<StatementReconciliationReportAuthorityUnavailableException>()
+            .WithMessage("*transactionally compose immutable bytes*");
+    }
+
+    [Theory]
+    [InlineData(
+        "Host=primary.example,standby.example;Database=meridian;Username=meridian;Password=meridian;Target Session Attributes=standby;SSL Mode=Require")]
+    [InlineData(
+        "Host=primary.example,standby.example;Database=meridian;Username=meridian;Password=meridian;Target Session Attributes=read-write;SSL Mode=Disable")]
+    public async Task WriteDocumentAsync_PostgresArtifactStoreForDifferentConnectionPolicyFailsClosed(
+        string artifactConnectionString)
+    {
+        var authorityOptions = new ReportingArtifactStoreOptions
+        {
+            ConnectionString =
+                "Host=primary.example,standby.example;Database=meridian;Username=meridian;Password=meridian;Target Session Attributes=read-write;SSL Mode=Require",
+            Schema = Options.Schema
+        };
+        var artifactStore = new PostgresReportingArtifactStore(
+            new ReportingArtifactStoreOptions
+            {
+                ConnectionString = artifactConnectionString,
+                Schema = Options.Schema
+            });
+        var store = new PostgresStatementReconciliationReportAuthorityStore(
+            authorityOptions,
+            artifactStore);
+        var scope = new StatementReconciliationReportAuthorityScope(
+            "tenant",
+            "company",
+            "workflow");
+
+        var write = () => store.WriteDocumentAsync(
+            scope,
+            "workflow.json",
+            Encoding.UTF8.GetBytes("statement"),
+            isImmutable: false).AsTask();
+
+        store.IsDurableAuthority.Should().BeFalse();
+        await write.Should()
+            .ThrowAsync<StatementReconciliationReportAuthorityUnavailableException>()
+            .WithMessage("*transactionally compose immutable bytes*");
+    }
+
+    [Fact]
+    public void Constructor_PostgresArtifactStoreWithEquivalentReorderedSettingsIsDurable()
+    {
+        var authorityOptions = new ReportingArtifactStoreOptions
+        {
+            ConnectionString =
+                "Host=primary.example,standby.example;Database=meridian;Username=meridian;Password=meridian;Target Session Attributes=read-write;SSL Mode=Require",
+            Schema = Options.Schema
+        };
+        var artifactStore = new PostgresReportingArtifactStore(
+            new ReportingArtifactStoreOptions
+            {
+                ConnectionString =
+                    "Password=meridian;SSL Mode=Require;Username=meridian;Host=primary.example,standby.example;Target Session Attributes=read-write;Database=meridian",
+                Schema = Options.Schema
+            });
+
+        var store = new PostgresStatementReconciliationReportAuthorityStore(
+            authorityOptions,
+            artifactStore);
+
+        store.IsDurableAuthority.Should().BeTrue();
+    }
+
     private sealed class UnsupportedArtifactStore : IReportingArtifactStore
     {
         public int StoreCallCount { get; private set; }

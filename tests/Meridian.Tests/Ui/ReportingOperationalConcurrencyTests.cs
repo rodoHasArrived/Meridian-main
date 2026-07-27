@@ -19,6 +19,8 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ReportingOperationalConcurrencyTests
 {
+    private const string CertifiedAccountingPeriodId = "66666666-6666-6666-6666-666666666666";
+
     private static readonly DateTimeOffset FixedNow =
         new(2026, 7, 26, 12, 0, 0, TimeSpan.Zero);
 
@@ -99,7 +101,7 @@ public sealed class ReportingOperationalConcurrencyTests
             "tenant-a",
             "company-a",
             "fund-a",
-            "2026-07",
+            CertifiedAccountingPeriodId,
             new string('a', 64));
 
         try
@@ -110,7 +112,7 @@ public sealed class ReportingOperationalConcurrencyTests
                 "tenant-a",
                 "company-b",
                 "fund-b",
-                "2026-07",
+                CertifiedAccountingPeriodId,
                 new string('b', 64));
             await store.SaveAsync(foreign.Manifest, foreign.AuditTrail);
 
@@ -1055,7 +1057,7 @@ public sealed class ReportingOperationalConcurrencyTests
             tenantId: "tenant-a",
             companyId: "company-a",
             fundId: "fund-a",
-            periodId: "2026-07",
+            periodId: CertifiedAccountingPeriodId,
             policyHash: new string('a', 64)).Manifest;
         return new ReportingJobContract(
             jobId,

@@ -47,7 +47,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         ValidateIdentifier(_options.Schema, nameof(options.Schema));
         _transactionalArtifactStore = artifactStore as PostgresReportingArtifactStore;
         if (_transactionalArtifactStore is not null
-            && !_transactionalArtifactStore.SupportsTransactionalComposition(_options.Schema))
+            && !_transactionalArtifactStore.SupportsTransactionalComposition(_options))
         {
             _transactionalArtifactStore = null;
         }
