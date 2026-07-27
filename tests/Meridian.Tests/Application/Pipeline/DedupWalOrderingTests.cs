@@ -602,6 +602,52 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await ledger.DisposeAsync();
     }
 
+    [Fact]
+    public async Task Recovery_ChunkFailure_CountsCommittedChunks_AndResumesFromTheFailedChunk()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_chunk_fail");
+        Directory.CreateDirectory(walDir);
+
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await wal1.InitializeAsync();
+        const int backlog = 25;
+        for (var i = 0; i < backlog; i++)
+        {
+            var evt = CreateTradeEvent($"CHF{i}", 200 + i);
+            await wal1.AppendAsync(evt, evt.Type.ToString());
+        }
+
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        // First recovery fails inside the second chunk (append #15 of 25, chunk size 10).
+        var ledger = await CreateLedgerAsync("ledger_chunk_fail");
+        var failingSink = new FaultSink { FailOnAppendNumber = 15 };
+        var wal2 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var pipeline1 = new EventPipeline(
+            failingSink, capacity: 100, enablePeriodicFlush: false, wal: wal2, dedupLedger: ledger);
+        pipeline1.RecoveryCommitBatchSize = 10;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline1.RecoverAsync());
+        pipeline1.RecoveredCount.Should().Be(10,
+            "the first chunk crossed its durable boundary and must be counted even though a later chunk failed");
+        await pipeline1.DisposeAsync();
+
+        // Second recovery resumes from the failed chunk: only the 15 uncommitted records replay.
+        var healthySink = new FaultSink();
+        var wal3 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using var pipeline2 = new EventPipeline(
+            healthySink, capacity: 100, enablePeriodicFlush: false, wal: wal3, dedupLedger: ledger);
+        pipeline2.RecoveryCommitBatchSize = 10;
+
+        await pipeline2.RecoverAsync();
+
+        pipeline2.RecoveredCount.Should().Be(backlog - 10,
+            "records committed by the first pass must not replay; everything after the horizon must");
+        healthySink.AppendedEvents.Should().HaveCount(backlog - 10);
+        await ledger.DisposeAsync();
+    }
+
     #endregion
 
     #region Helpers and fakes
@@ -665,6 +711,10 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         private int _appendFailuresRemaining;
         private int _flushFailuresRemaining;
         private int _successfulFlushCount;
+        private int _appendAttempts;
+
+        /// <summary>Fails exactly the Nth (1-based) append attempt; 0 disables.</summary>
+        public int FailOnAppendNumber { get; set; }
 
         public int AppendFailuresRemaining
         {
@@ -687,6 +737,12 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
 
         public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
         {
+            var attempt = Interlocked.Increment(ref _appendAttempts);
+            if (FailOnAppendNumber > 0 && attempt == FailOnAppendNumber)
+            {
+                throw new InvalidOperationException("Injected sink append failure (positional)");
+            }
+
             if (Volatile.Read(ref _appendFailuresRemaining) > 0)
             {
                 Interlocked.Decrement(ref _appendFailuresRemaining);

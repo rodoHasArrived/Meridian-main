@@ -437,6 +437,15 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 }
             }
 
+            // Publish the statistic per committed chunk: these events crossed their durable
+            // boundary and their WAL records will not be enumerated again, so deferring the
+            // count to the end of the pass would permanently underreport them if a later
+            // chunk fails.
+            if (chunkAppended > 0)
+            {
+                Interlocked.Add(ref _recoveredCount, chunkAppended);
+            }
+
             chunkAppended = 0;
             chunkProcessed = 0;
         }
@@ -544,8 +553,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         "committed segments are reclaimed by a later periodic truncation",
                         _lastCommittedWalSequence);
                 }
-
-                Interlocked.Add(ref _recoveredCount, recovered);
 
                 _logger.LogInformation(
                     "Recovered {RecoveredCount} uncommitted events from WAL through sequence {MaxSequence} " +

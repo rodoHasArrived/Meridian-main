@@ -106,6 +106,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
         Interlocked.Increment(ref _corruptedRecordCount);
         Interlocked.Increment(ref _skippedRecordCount);
 
+        // Keep metric-based alerting in step with the Alert-mode event: semantic payload
+        // corruption counts toward the same Prometheus series as record-level corruption.
+        // Monotonicity with InitializeAsync's IncTo is preserved — the instance counter
+        // incremented above feeds any later IncTo, which only ever raises the metric.
+        WalRecoveryCorruptedTotal.Inc();
+
         if (_options.CorruptionMode == WalCorruptionMode.Alert)
         {
             try
