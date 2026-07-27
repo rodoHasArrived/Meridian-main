@@ -359,7 +359,7 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    ["Source", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
+    ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
       expect(within(confidence).getByText(label)).toBeInTheDocument();
     });
     expect(confidence).toHaveTextContent("4 ranked items");
@@ -399,6 +399,20 @@ describe("App", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+  });
+
+  it("hides workflow continuity on an unrecognized route", async () => {
+    mockDailyControlTowerData();
+
+    const { container } = renderWithRouter(<App />, { initialEntries: ["/not-a-workstation-route"] });
+
+    expect(await screen.findByRole(
+      "alert",
+      { name: "Workbench route not found" },
+      { timeout: 10_000 }
+    )).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Daily Control Tower" })).toHaveAttribute("href", "/");
+    expect(container.querySelector(".workflow-continuity-dock")).not.toBeInTheDocument();
   });
 
   it("renders build, environment, data-source, and provider trust in the masthead", async () => {
@@ -823,7 +837,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
   it("redirects legacy Research and Governance wildcard routes to canonical workspaces", async () => {
@@ -843,13 +857,13 @@ describe("App", () => {
     renderWithRouter(<Harness />, { initialEntries: ["/research/run-library"] });
 
     await waitFor(() => expect(document.title).toBe("Strategy Workstation - Meridian"));
-    expect(screen.getByLabelText("Strategy workspace, active section, Paper")).toBeInTheDocument();
+    expect(screen.getByLabelText("Strategy workspace, active section, Available product maturity")).toBeInTheDocument();
 
     document.title = "Meridian";
     await user.click(screen.getByRole("button", { name: "Open legacy governance" }));
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
   it("announces route changes and moves focus to the workbench", async () => {
@@ -948,7 +962,7 @@ describe("App", () => {
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
     expect(within(navigationDialog).getByLabelText("Meridian navigation")).toHaveAttribute("data-design-system-component", "NavRail");
-    expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Review")).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Available product maturity")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();

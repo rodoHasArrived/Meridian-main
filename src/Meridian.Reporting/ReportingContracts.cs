@@ -114,7 +114,8 @@ public sealed record ReportingOutputManifest(
     ReportingAccessScope? ImmutableAccessScope = null,
     ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
     ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
-    ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default);
+    ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default,
+    CertifiedPartnersCapitalProjection? CertifiedPartnersCapital = null);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,

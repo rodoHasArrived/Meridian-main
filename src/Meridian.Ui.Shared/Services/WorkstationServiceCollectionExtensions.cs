@@ -542,6 +542,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportWriterDatasetSourceService>();
         services.TryAddSingleton<ReportWriterGridArtifactService>();
+        services.TryAddSingleton<IReportingPartnersCapitalSource>(sp =>
+            new LedgerReportingPartnersCapitalSource(sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
@@ -550,7 +552,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingRunStore>(),
                 // Null until the report-run stream broadcaster is registered (D1d); the null-object
                 // default keeps run execution unaffected in the meantime.
-                sp.GetService<IReportingRunNotifier>()));
+                sp.GetService<IReportingRunNotifier>(),
+                sp.GetService<IReportingPartnersCapitalSource>()));
         services.TryAddSingleton<ReportingScheduleStoreOptions>(sp =>
             new ReportingScheduleStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-schedules.json")));
         services.TryAddSingleton<IReportingScheduleStore>(sp =>

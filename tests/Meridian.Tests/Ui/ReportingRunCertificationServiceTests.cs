@@ -882,6 +882,75 @@ public sealed class ReportingRunCertificationServiceTests
     }
 
     [Fact]
+    public async Task ProduceAsync_ClientGradePartnersCapitalPdfIsValidAndByteStable()
+    {
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-pc-pdf",
+            ReportingOutputFormatDto.Pdf,
+            partnersCapital: SamplePartnersCapital());
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer());
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        var firstPdf = first.Artifacts.Single(artifact => artifact.FileName == "run-pc-pdf.pdf").Content.ToArray();
+        var secondPdf = second.Artifacts.Single(artifact => artifact.FileName == "run-pc-pdf.pdf").Content.ToArray();
+
+        Encoding.ASCII.GetString(firstPdf, 0, 5).Should().Be("%PDF-");
+        firstPdf.Should().Equal(secondPdf, "partners-capital PDF bytes must be deterministic for hash verification");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_ClientGradePartnersCapitalXlsxRendersRollForwardRows()
+    {
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-pc-xlsx",
+            ReportingOutputFormatDto.Xlsx,
+            partnersCapital: SamplePartnersCapital());
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer());
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        var firstXlsx = first.Artifacts.Single(artifact => artifact.FileName == "run-pc-xlsx.xlsx").Content.ToArray();
+        var secondXlsx = second.Artifacts.Single(artifact => artifact.FileName == "run-pc-xlsx.xlsx").Content.ToArray();
+
+        using (var archive = new ZipArchive(new MemoryStream(firstXlsx), ZipArchiveMode.Read))
+        {
+            archive.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            using var reader = new StreamReader(
+                archive.GetEntry("xl/sharedStrings.xml")!.Open(),
+                Encoding.UTF8);
+            var sharedStrings = await reader.ReadToEndAsync();
+            sharedStrings.Should().Contain("Partner");
+            sharedStrings.Should().Contain("LP One (investor-1)");
+            sharedStrings.Should().Contain("860.00");
+            sharedStrings.Should().Contain("Total");
+        }
+
+        firstXlsx.Should().Equal(secondXlsx, "partners-capital XLSX bytes must be deterministic for hash verification");
+    }
+
+    private static CertifiedPartnersCapitalProjection SamplePartnersCapital() => new(
+        new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+        new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero),
+        BeginningCapital: 1000m,
+        Contributions: 500m,
+        Distributions: 200m,
+        AllocatedResult: 100m,
+        OtherMovements: 0m,
+        EndingCapital: 1400m,
+        ReconciliationVariance: 0m,
+        IsReconciled: true,
+        Accounts: new[]
+        {
+            new CertifiedPartnersCapitalAccount("LP One", "investor-1", 600m, 300m, 100m, 60m, 0m, 860m, 0m),
+            new CertifiedPartnersCapitalAccount("LP Two", "investor-2", 400m, 200m, 100m, 40m, 0m, 540m, 0m),
+        });
+
+    [Fact]
     public async Task ProduceAsync_PdfPaginatesEveryAccountSummaryWithinVisiblePageBounds()
     {
         const int accountCount = 120;
@@ -1123,7 +1192,8 @@ public sealed class ReportingRunCertificationServiceTests
     private static async Task<ReportingOutputManifest> BuildCertifiedManifestAsync(
         string runId,
         ReportingOutputFormatDto outputFormat,
-        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
+        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default,
+        CertifiedPartnersCapitalProjection? partnersCapital = null)
     {
         var rows = certifiedRows.IsDefault ? Rows() : certifiedRows;
         var template = Template(reportWriterGrid: false);
@@ -1134,13 +1204,14 @@ public sealed class ReportingRunCertificationServiceTests
                 template,
                 Readiness("evaluation-artifact", CapturedAt, outputFormat),
                 Access());
-        return BuildManifest(runId, template, certified);
+        return BuildManifest(runId, template, certified, partnersCapital);
     }
 
     private static ReportingOutputManifest BuildManifest(
         string runId,
         ReportingTemplateMetadata template,
-        CertifiedReportingRunContext certified)
+        CertifiedReportingRunContext certified,
+        CertifiedPartnersCapitalProjection? partnersCapital = null)
     {
         var declarations = ReportingArtifactDeclaration.Build(
             runId,
@@ -1164,7 +1235,8 @@ public sealed class ReportingRunCertificationServiceTests
             ImmutableAccessScope: certified.AccessScope,
             CertifiedSnapshot: certified.Snapshot,
             AuthoritativeSource: certified.AuthoritativeSource,
-            CertifiedDatasetRows: certified.DatasetRows);
+            CertifiedDatasetRows: certified.DatasetRows,
+            CertifiedPartnersCapital: partnersCapital);
     }
 
     private static ReconciliationBreakQueueItem ScopedBreak(string breakId, string fundId, Guid bookId) => new(
