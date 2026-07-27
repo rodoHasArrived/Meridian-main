@@ -12,6 +12,30 @@ namespace Meridian.Strategies.Services;
 
 public sealed partial class FileReconciliationBreakQueueRepository
 {
+    public async Task VerifyAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ResetCachedState();
+            try
+            {
+                await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // A failed legacy migration or integrity check can populate only part of the
+                // in-memory state. Never let a later readiness check reuse that partial state.
+                ResetCachedState();
+                throw;
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private async Task EnsureLoadedAsync(CancellationToken ct)
     {
         if (_items is not null)
@@ -136,11 +160,15 @@ public sealed partial class FileReconciliationBreakQueueRepository
         _closeScopeLocks.Clear();
         foreach (var closeScopeLock in snapshot?.CloseScopeLocks ?? [])
         {
-            ValidateCloseScopeLock(closeScopeLock);
-            if (!_closeScopeLocks.TryAdd(closeScopeLock.ScopeKey, closeScopeLock))
+            var retainedCloseScopeLock =
+                snapshot is { SchemaVersion: < 6 } && closeScopeLock.Generation <= 0
+                    ? closeScopeLock with { Generation = 1 }
+                    : closeScopeLock;
+            ValidateCloseScopeLock(retainedCloseScopeLock);
+            if (!_closeScopeLocks.TryAdd(retainedCloseScopeLock.ScopeKey, retainedCloseScopeLock))
             {
                 throw new InvalidDataException(
-                    $"Duplicate reconciliation close-scope lock '{closeScopeLock.ScopeKey}' was retained in the snapshot.");
+                    $"Duplicate reconciliation close-scope lock '{retainedCloseScopeLock.ScopeKey}' was retained in the snapshot.");
             }
         }
 

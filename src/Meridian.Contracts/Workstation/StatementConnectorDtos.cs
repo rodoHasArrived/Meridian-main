@@ -178,6 +178,22 @@ public sealed record StatementReconciliationReportArtifactDto(
     DateTimeOffset RetainedAtUtc = default);
 
 /// <summary>
+/// One superseded artifact generation retained for immutable workflow and audit history.
+/// Artifact descriptors preserve the exact metadata that was current for the generation; their
+/// original download routes are audit metadata and do not authorize historical download.
+/// </summary>
+public sealed record StatementReconciliationReportArtifactGenerationDto(
+    int Generation = default,
+    IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts = default!,
+    string ManifestFileName = default!,
+    long ManifestByteLength = default,
+    string ManifestContentHashSha256 = default!,
+    DateTimeOffset GeneratedAtUtc = default,
+    DateTimeOffset ArchivedAtUtc = default,
+    IReadOnlyList<string> EvidenceReferences = default!,
+    string ArchiveReceiptContentHashSha256 = default!);
+
+/// <summary>
 /// Exact accounting authority bound to a statement import before it can enter close casework.
 /// </summary>
 public sealed record StatementReconciliationAccountingScopeDto(
@@ -226,6 +242,19 @@ public sealed record StatementReconciliationReportWorkflowDto(
     /// The statement operation does not duplicate that lifecycle.
     /// </summary>
     public Guid? OperationsWorkflowId { get; init; }
+
+    /// <summary>
+    /// Monotonic number of the latest artifact generation produced by this workflow. When the
+    /// workflow is awaiting reconciliation after a reopen, the latest generation is historical and
+    /// <see cref="RetainedArtifacts"/> remains empty until a new current generation completes.
+    /// </summary>
+    public int ArtifactGeneration { get; init; }
+
+    /// <summary>
+    /// Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact
+    /// generations. Current artifact authority remains exclusively in <see cref="RetainedArtifacts"/>.
+    /// </summary>
+    public IReadOnlyList<StatementReconciliationReportArtifactGenerationDto> ArtifactHistory { get; init; } = [];
 }
 
 /// <summary>

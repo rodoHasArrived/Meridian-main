@@ -41,6 +41,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -221,6 +223,16 @@ public sealed partial class WorkstationEndpointsTests
 
     private static void RegisterOperationsContinuityServices(IServiceCollection services)
     {
+        var reconciliationAuthority = Substitute.For<IReconciliationApiService>();
+        reconciliationAuthority
+            .GetAuthorizedFundAccountAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<ReconciliationBreakQueueScope>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+                call.ArgAt<Guid>(0),
+                "test-fund-profile"));
+        services.AddSingleton(reconciliationAuthority);
         services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
         services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
@@ -233,11 +245,22 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
+                sp.GetService<IReconciliationRunService>(),
+                statementReconciliation: sp.GetService<IReconciliationApiService>()));
     }
 
     private static void RegisterDurableOperationsContinuityServices(IServiceCollection services, string dataRoot)
     {
+        var reconciliationAuthority = Substitute.For<IReconciliationApiService>();
+        reconciliationAuthority
+            .GetAuthorizedFundAccountAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<ReconciliationBreakQueueScope>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+                call.ArgAt<Guid>(0),
+                "test-fund-profile"));
+        services.AddSingleton(reconciliationAuthority);
         services.AddSingleton(new StorageOptions { RootPath = dataRoot });
         services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.AddSingleton<IOperationsContinuityRepository>(sp =>
@@ -258,7 +281,8 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
+                sp.GetService<IReconciliationRunService>(),
+                statementReconciliation: sp.GetService<IReconciliationApiService>()));
     }
 
     private static void RegisterConfigStores(IServiceCollection services, string configPath)

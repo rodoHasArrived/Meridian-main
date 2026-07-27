@@ -48,7 +48,7 @@ public sealed record ReportingRetainedManifestDocument(
 
 /// <summary>
 /// Production deterministic artifact implementation. Every byte is derived from the completed
-/// certified manifest and, for a partners-capital client package, an exact checkpoint-bound
+/// certified manifest and, for a partners-capital primary document, an exact checkpoint-bound
 /// canonical ledger presentation. Output uses stable ordering and is emitted exactly as declared
 /// according to <see cref="ReportingRunParametersDto.OutputFormat"/> and the optional
 /// evidence/schedule flags.
@@ -68,10 +68,11 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     /// Constructs the producer with an optional client-grade primary-document renderer and an
     /// optional exact canonical-ledger-presentation source. When the renderer is null
     /// (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX
-    /// rendering is used. A capital-account client package requires both a presentation-capable
+    /// rendering is used. A capital-account primary document requires both a presentation-capable
     /// renderer and a checkpoint-bound canonical ledger report pack; it never falls back to
-    /// recalculating partners' capital from certified display rows. Every other artifact (CSV,
-    /// evidence vault, preview, manifest, grids) is unaffected by this choice.
+    /// recalculating partners' capital from certified display rows. Capital-account PDF, XLSX, and
+    /// ClientPackage outputs all select bytes from that same canonical pair. Every other artifact
+    /// (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice.
     /// </summary>
     public DeterministicReportingCertifiedArtifactProducer(
         IReportingPrimaryDocumentRenderer? primaryRenderer = null,
@@ -100,7 +101,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             throw new ReportingGovernanceException(
                 $"Certified manifest '{manifest.RunId}' artifact declaration drifted before byte production.");
         }
-        var clientDocumentPackage = RenderCertifiedClientPackage(
+        var canonicalLedgerDocuments = RenderCertifiedLedgerDocuments(
             manifest,
             declarations,
             certifiedLedgerPresentation);
@@ -114,7 +115,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                      artifact.Kind != ReportingDeclaredArtifactKind.Manifest))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var content = RenderArtifact(manifest, declaration, clientDocumentPackage);
+            var content = RenderArtifact(manifest, declaration, canonicalLedgerDocuments);
             if (content.Length == 0)
             {
                 throw new ReportingGovernanceException(
@@ -255,19 +256,19 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     private byte[] RenderArtifact(
         ReportingOutputManifest manifest,
         ReportingDeclaredArtifact declaration,
-        LedgerClientReportDocumentPackage? clientDocumentPackage) => declaration.Kind switch
+        LedgerClientReportDocumentPackage? canonicalLedgerDocuments) => declaration.Kind switch
         {
             ReportingDeclaredArtifactKind.PrimaryOutput => declaration.ContentType switch
             {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
-                    clientDocumentPackage is { } package
+                    canonicalLedgerDocuments is { } package
                     ? package.Workbook
                     : _primaryRenderer is { } workbookRenderer
                     ? workbookRenderer.RenderWorkbook(manifest)
                     : RenderXlsx(manifest),
                 "text/csv" => RenderPrimaryCsv(manifest),
                 "application/vnd.meridian.reporting-evidence+json" => RenderEvidenceVault(manifest),
-                "application/pdf" => clientDocumentPackage is { } package
+                "application/pdf" => canonicalLedgerDocuments is { } package
                     ? package.Pdf
                     : _primaryRenderer is { } documentRenderer
                     ? documentRenderer.RenderPdf(manifest)
@@ -288,7 +289,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         ReportingOutputManifest manifest,
         CancellationToken cancellationToken)
     {
-        if (!RequiresPartnersCapitalClientPackage(manifest))
+        if (!RequiresCertifiedLedgerPresentation(manifest))
         {
             return null;
         }
@@ -296,7 +297,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         if (_primaryRenderer is not IReportingPrimaryDocumentRendererWithLedgerReportPack)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because the configured primary-document renderer cannot consume the exact checkpoint-bound ledger report pack.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because the configured primary-document renderer cannot consume the exact checkpoint-bound ledger report pack.");
         }
 
         var input = _ledgerPresentationSource is null
@@ -307,13 +308,13 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         if (input is null)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because no exact checkpoint-bound canonical ledger presentation is available. Partners' capital was not recalculated from incomplete certified display rows.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because no exact checkpoint-bound canonical ledger presentation is available. Partners' capital was not recalculated from incomplete certified display rows.");
         }
         ValidateCertifiedLedgerPresentation(manifest, input);
         return input;
     }
 
-    private LedgerClientReportDocumentPackage? RenderCertifiedClientPackage(
+    private LedgerClientReportDocumentPackage? RenderCertifiedLedgerDocuments(
         ReportingOutputManifest manifest,
         ImmutableArray<ReportingDeclaredArtifact> declarations,
         ReportingCertifiedLedgerPresentationInput? certifiedLedgerPresentation)
@@ -326,17 +327,28 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         var primaryDocuments = declarations
             .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
             .ToArray();
-        if (primaryDocuments.Length != 2
-            || primaryDocuments.Count(static artifact =>
-                string.Equals(artifact.ContentType, "application/pdf", StringComparison.Ordinal)) != 1
-            || primaryDocuments.Count(static artifact =>
-                string.Equals(
-                    artifact.ContentType,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    StringComparison.Ordinal)) != 1)
+        var outputFormat = manifest.ResolvedParameters!.OutputFormat;
+        var pdfCount = primaryDocuments.Count(static artifact =>
+            string.Equals(artifact.ContentType, "application/pdf", StringComparison.Ordinal));
+        var workbookCount = primaryDocuments.Count(static artifact =>
+            string.Equals(
+                artifact.ContentType,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                StringComparison.Ordinal));
+        var declarationsMatch = outputFormat switch
+        {
+            ReportingOutputFormatDto.Pdf =>
+                primaryDocuments.Length == 1 && pdfCount == 1 && workbookCount == 0,
+            ReportingOutputFormatDto.Xlsx =>
+                primaryDocuments.Length == 1 && pdfCount == 0 && workbookCount == 1,
+            ReportingOutputFormatDto.ClientPackage =>
+                primaryDocuments.Length == 2 && pdfCount == 1 && workbookCount == 1,
+            _ => false
+        };
+        if (!declarationsMatch)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' must declare exactly one PDF and one XLSX primary artifact before rendering.");
+                $"Capital-account primary document '{manifest.RunId}' has declarations that do not match output format '{outputFormat}'.");
         }
 
         var renderer = (IReportingPrimaryDocumentRendererWithLedgerReportPack)_primaryRenderer!;
@@ -346,7 +358,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         if (package.Pdf.Length == 0 || package.Workbook.Length == 0)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' did not render both PDF and XLSX bytes.");
+                $"Capital-account primary document '{manifest.RunId}' did not render the complete canonical PDF/XLSX pair.");
         }
 
         return package;
@@ -361,7 +373,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
         var parameters = manifest.ResolvedParameters!;
         var reportPack = input.ReportPack
             ?? throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' has no canonical ledger report pack.");
+                $"Capital-account primary document '{manifest.RunId}' has no canonical ledger report pack.");
         var expectedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows);
 
         if (!string.Equals(source.SourceKind, DurableLedgerSourceKind, StringComparison.Ordinal)
@@ -375,7 +387,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its canonical ledger presentation is not bound to the exact certified source checkpoint and dataset hash.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger presentation is not bound to the exact certified source checkpoint and dataset hash.");
         }
 
         var request = reportPack.Request;
@@ -388,7 +400,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its canonical ledger report pack does not match the certified fund, period, as-of date, and presentation currency.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger report pack does not match the certified fund, period, as-of date, and presentation currency.");
         }
 
         ValidateLedgerReportPackIntegrity(manifest.RunId, reportPack);
@@ -403,12 +415,12 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its signed ledger presentation checksum is missing from or changed relative to the certified source evidence.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its signed ledger presentation checksum is missing from or changed relative to the certified source evidence.");
         }
 
         var partnersCapital = reportPack.Statements.PartnersCapital
             ?? throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its canonical ledger report pack has no partners-capital statement.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger report pack has no partners-capital statement.");
         if (partnersCapital.Accounts.Count == 0
             || partnersCapital.PeriodStart != request.PeriodStart
             || partnersCapital.AsOf != request.AsOf
@@ -421,7 +433,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             || !reportPack.IsBalanced)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its canonical partners-capital roll-forward is incomplete, unbalanced, or unreconciled.");
+                $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical partners-capital roll-forward is incomplete, unbalanced, or unreconciled.");
         }
     }
 
@@ -443,7 +455,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 .Count() != reportPack.Artifacts.Count)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{runId}' is blocked because its canonical ledger report pack signature or artifact declaration is incomplete.");
+                $"Capital-account primary document '{runId}' is blocked because its canonical ledger report pack signature or artifact declaration is incomplete.");
         }
 
         foreach (var artifact in reportPack.Artifacts)
@@ -454,7 +466,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new ReportingGovernanceException(
-                    $"Capital-account client package '{runId}' is blocked because canonical ledger report artifact '{artifact.Name}' failed checksum validation.");
+                    $"Capital-account primary document '{runId}' is blocked because canonical ledger report artifact '{artifact.Name}' failed checksum validation.");
             }
         }
 
@@ -469,11 +481,11 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{runId}' is blocked because its canonical ledger report pack signature does not match its exact artifacts.");
+                $"Capital-account primary document '{runId}' is blocked because its canonical ledger report pack signature does not match its exact artifacts.");
         }
     }
 
-    private static bool RequiresPartnersCapitalClientPackage(ReportingOutputManifest manifest) =>
+    private static bool RequiresCertifiedLedgerPresentation(ReportingOutputManifest manifest) =>
         ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest);
 
     private static byte[] RenderPreview(ReportingOutputManifest manifest)

@@ -486,9 +486,10 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_StatementRunRoutes_ShouldReturnListDetailExceptionsAndNotFound()
     {
+        var service = new StubReconciliationApiService();
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+            services.AddSingleton<IReconciliationApiService>(service);
         });
         var client = app.GetTestClient();
 
@@ -511,6 +512,9 @@ public sealed partial class WorkstationEndpointsTests
         detail!.RunId.Should().Be("statement-run-1");
         exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1" && item.ToleranceBreached);
         missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        service.ObservedScopes.Should().OnlyContain(scope =>
+            scope.TenantId == "tenant-test" &&
+            scope.CompanyId == "tenant-test");
     }
 
     [Fact]
@@ -564,6 +568,24 @@ public sealed partial class WorkstationEndpointsTests
         service.ReconciledRequests.Should().ContainSingle();
         service.ReconciledRequests[0].RunId.Should().Be("statement-run-1");
         service.ReconciledRequests[0].Request.Actor.Should().Be("ops-user");
+        service.ObservedScopes.Should().OnlyContain(scope =>
+            scope.TenantId == "tenant-test" &&
+            scope.CompanyId == "tenant-test");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunRoutes_WithoutCompanyScope_ShouldFailClosed()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IReconciliationApiService>(service),
+            currentUserCompanyId: null,
+            currentUserTenantId: "tenant-only");
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.ReconciliationStatementRuns);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        service.ObservedScopes.Should().BeEmpty();
     }
 
     [Fact]

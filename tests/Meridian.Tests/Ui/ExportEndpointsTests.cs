@@ -97,6 +97,7 @@ public sealed class ExportEndpointsTests
     [Theory]
     [InlineData("python-pandas", "parquet", ".parquet")]
     [InlineData("excel", "xlsx", ".xlsx")]
+    [InlineData("arrow-feather", "arrow", ".arrow")]
     public async Task MapExportEndpoints_Analysis_ShouldReturnActualGeneratedFormat(
         string profileId,
         string format,
@@ -137,6 +138,36 @@ public sealed class ExportEndpointsTests
             DeleteDirectory(outputDirectory);
             DeleteDirectory(dataRoot);
         }
+    }
+
+    [Fact]
+    public void CreateExportResponse_WithProfileFormatMismatch_ShouldFailClosed()
+    {
+        var result = ExportResult.CreateSuccess("excel", "managed-output");
+        result.Files =
+        [
+            new ExportedFile
+            {
+                Path = Path.Combine("managed-output", "SPY.csv"),
+                RelativePath = "SPY.csv",
+                Symbol = "SPY",
+                Format = "csv",
+                SizeBytes = 128,
+                RecordCount = 2
+            }
+        ];
+        result.FilesGenerated = 1;
+        result.TotalRecords = 2;
+        result.TotalBytes = 128;
+        result.CompletedAt = DateTime.UtcNow;
+
+        var response = ExportEndpoints.CreateExportResponse(result, ExportProfile.Excel);
+
+        response.Success.Should().BeFalse();
+        response.Status.Should().Be("failed");
+        response.Error.Should().Contain("expected 'xlsx'");
+        response.Error.Should().Contain("reported 'csv'");
+        response.Files.Should().ContainSingle(file => file.Format == "csv");
     }
 
     [Theory]
@@ -272,12 +303,46 @@ public sealed class ExportEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task MapExportEndpoints_QualityReport_ShouldFailClosedWithoutRawArtifacts()
+    {
+        var dataRoot = CreateDataRoot();
+
+        try
+        {
+            await using var app = await CreateAppAsync(new AnalysisExportService(dataRoot));
+            var response = await app.GetTestClient().PostAsJsonAsync(
+                UiApiRoutes.ExportQualityReport,
+                new
+                {
+                    symbols = new[] { "SPY" },
+                    format = "csv",
+                    includeCharts = false,
+                    includeMetadata = true
+                });
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+            var payload = await response.Content.ReadFromJsonAsync<SpecializedExportApiResponse>(JsonOptions);
+            payload.Should().NotBeNull();
+            payload!.Success.Should().BeFalse();
+            payload.Status.Should().Be("unavailable");
+            payload.Format.Should().Be("csv");
+            payload.Error.Should().Contain("not connected");
+            payload.Error.Should().Contain("No raw analysis extract was produced");
+            payload.FilesGenerated.Should().Be(0);
+            payload.TotalRecords.Should().Be(0);
+            payload.TotalBytes.Should().Be(0);
+            payload.OutputDirectory.Should().BeNull();
+            payload.Files.Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteDirectory(dataRoot);
+        }
+    }
+
     public static TheoryData<string, string> SpecializedNoDataRequests => new()
     {
-        {
-            UiApiRoutes.ExportQualityReport,
-            """{"symbols":["SPY"],"format":"csv","includeCharts":false,"includeMetadata":true}"""
-        },
         {
             UiApiRoutes.ExportOrderflow,
             """{"symbols":["SPY"],"format":"parquet","aggregation":"raw","includeMetadata":true}"""
@@ -327,11 +392,6 @@ public sealed class ExportEndpointsTests
     public static TheoryData<string, string, string> UnsupportedSpecializedOptions => new()
     {
         {
-            UiApiRoutes.ExportQualityReport,
-            """{"symbols":["SPY"],"format":"csv","includeCharts":true}""",
-            "charts"
-        },
-        {
             UiApiRoutes.ExportOrderflow,
             """{"symbols":["SPY"],"format":"parquet","aggregation":"Minute"}""",
             "aggregation"
@@ -378,7 +438,6 @@ public sealed class ExportEndpointsTests
     }
 
     [Theory]
-    [InlineData("/api/export/quality-report", "html")]
     [InlineData("/api/export/orderflow", "jsonl")]
     [InlineData("/api/export/strategy-package", "hdf5")]
     public async Task MapExportEndpoints_UnsupportedSpecializedFormat_ShouldReturnBadRequest(

@@ -2,9 +2,9 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-07-26
+**Reviewed:** 2026-07-27
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-07-27
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -187,6 +187,7 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-07-26: Added exact statement-to-close scope evidence without replacing established v1 constructors: `StatementReconciliationAccountingScopeDto` is default-backed in statement workflow payloads, and `ReconciliationCaseworkCloseScopeDto` is init-only on the existing casework command. Older clients may omit both; the server resolves and verifies the authoritative fund, ledger-book, accounting-period, and as-of scope and fails closed when it cannot do so.
 - 2026-07-26: Hardened statement replay without changing route or DTO shapes. Start probes the scoped canonical, scoped legacy, pre-scope canonical, and pre-scope legacy workflow identities, reuses exactly one verified retained snapshot, and atomically binds missing server-resolved accounting scope; ambiguity or identity/scope conflict fails closed. Queue replay validates an already retained destination-scoped break and no longer creates an unscoped compatibility case after a queue-commit/workflow-checkpoint interruption. Legacy IDs and storage locations remain compatibility inputs, while returned status, resume, and artifact routes remain canonical.
 - 2026-07-26: Kept `POST /api/workstation/reconciliation/statement-imports/commit` and statement-fetch schedule routes as compatibility adapters over the canonical Statement Reconciliation Report workflow. `StatementImportCommitResultDto` adds nullable workflow ID/status route, Operations workflow ID, and exact accounting-scope fields; existing clients may ignore them, while authority-aware clients must require them before treating ingestion as retained casework. `StatementFetchScheduleDto` adds default-backed period and accounting-scope fields, and the upsert DTO adds nullable period inputs for wire compatibility. Saving or running a schedule now requires server-verified tenant/company ownership, an exact period, and resolved fund/book/accounting-period scope. Retained legacy unscoped schedules intentionally fail closed before remote fetch or raw ingestion until re-saved with authoritative scope.
+- 2026-07-27: Kept Reporting routes, DTOs, and `Pdf`/`Xlsx`/`ClientPackage` format values unchanged while removing the parallel partners-capital projection renderer. New capital-account PDF and XLSX artifacts are selected from the exact checkpoint-bound pair produced by the existing `LedgerClientReportExportService`/`FinancialReportDocumentRenderer` seam; `ClientPackage` still retains both documents atomically. Already released immutable artifact bytes remain readable and are never rerendered in place. An unreleased legacy capital-account run that lacks the signed ledger-presentation binding must be regenerated as a new governed run, reviewed, and approved rather than mutating its retained identity. Reporting capability consumers may also see additive `release-consistency`, `reconciliation-casework`, `scheduling-worker`, and `delivery-worker` component ids and should continue treating unknown not-ready components as blockers.
 
 ## Pull Request Author Checklist
 

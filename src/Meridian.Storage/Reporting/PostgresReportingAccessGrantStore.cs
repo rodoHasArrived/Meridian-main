@@ -95,6 +95,7 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 package_id,
                 allow_package_read,
                 artifact_ids,
+                consumed_artifact_ids,
                 created_at_utc,
                 expires_at_utc,
                 max_uses,
@@ -114,6 +115,7 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 @package_id,
                 @allow_package_read,
                 @artifact_ids,
+                @consumed_artifact_ids,
                 @created_at_utc,
                 @expires_at_utc,
                 @max_uses,
@@ -162,44 +164,14 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
             return false;
         }
 
-        ValidateTransition(current, updatedGrant);
-
-        await using var update = connection.CreateCommand();
-        update.Transaction = transaction;
-        update.CommandText =
-            $"""
-            update {_grantTable}
-            set use_count = @use_count,
-                last_used_at_utc = @last_used_at_utc,
-                revoked_at_utc = @revoked_at_utc,
-                revoked_by = @revoked_by,
-                revocation_reason = @revocation_reason,
-                version = @next_version
-            where grant_id = @grant_id
-              and version = @expected_version;
-            """;
-        update.Parameters.AddWithValue("grant_id", NpgsqlDbType.Text, normalizedGrantId);
-        update.Parameters.AddWithValue("expected_version", NpgsqlDbType.Bigint, expectedVersion);
-        update.Parameters.AddWithValue("next_version", NpgsqlDbType.Bigint, updatedGrant.Version);
-        update.Parameters.AddWithValue("use_count", NpgsqlDbType.Integer, updatedGrant.UseCount);
-        AddNullableTimestamp(update, "last_used_at_utc", updatedGrant.LastUsedAtUtc);
-        AddNullableTimestamp(update, "revoked_at_utc", updatedGrant.RevokedAtUtc);
-        AddNullableText(update, "revoked_by", updatedGrant.RevokedBy);
-        AddNullableText(update, "revocation_reason", updatedGrant.RevocationReason);
-
-        if (await update.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
-        {
-            throw new ReportingDistributionStateCorruptionException(
-                "access grant",
-                normalizedGrantId,
-                "its locked version disappeared before the atomic state update");
-        }
+        await ApplyLockedUpdateAsync(connection, transaction, current, updatedGrant, ct)
+            .ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return true;
     }
 
-    private async Task<ReportingAccessGrantRecord?> ReadForUpdateAsync(
+    internal async Task<ReportingAccessGrantRecord?> ReadForUpdateAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         string grantId,
@@ -211,6 +183,60 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         return await reader.ReadAsync(ct).ConfigureAwait(false)
             ? ReadGrant(reader)
             : null;
+    }
+
+    internal async Task ApplyLockedUpdateAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingAccessGrantRecord current,
+        ReportingAccessGrantRecord updated,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(transaction);
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(updated);
+        ValidateGrant(updated, checked(current.Version + 1), requireExactVersion: true);
+        if (!string.Equals(current.GrantId, updated.GrantId, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Updated reporting access grant id does not match the locked grant.",
+                nameof(updated));
+        }
+
+        ValidateTransition(current, updated);
+        await using var update = connection.CreateCommand();
+        update.Transaction = transaction;
+        update.CommandText =
+            $"""
+            update {_grantTable}
+            set use_count = @use_count,
+                last_used_at_utc = @last_used_at_utc,
+                consumed_artifact_ids = @consumed_artifact_ids,
+                revoked_at_utc = @revoked_at_utc,
+                revoked_by = @revoked_by,
+                revocation_reason = @revocation_reason,
+                version = @next_version
+            where grant_id = @grant_id
+              and version = @expected_version;
+            """;
+        update.Parameters.AddWithValue("grant_id", NpgsqlDbType.Text, current.GrantId);
+        update.Parameters.AddWithValue("expected_version", NpgsqlDbType.Bigint, current.Version);
+        update.Parameters.AddWithValue("next_version", NpgsqlDbType.Bigint, updated.Version);
+        update.Parameters.AddWithValue("use_count", NpgsqlDbType.Integer, updated.UseCount);
+        AddNullableTimestamp(update, "last_used_at_utc", updated.LastUsedAtUtc);
+        AddNullableTextArray(update, "consumed_artifact_ids", updated.ConsumedArtifactIds);
+        AddNullableTimestamp(update, "revoked_at_utc", updated.RevokedAtUtc);
+        AddNullableText(update, "revoked_by", updated.RevokedBy);
+        AddNullableText(update, "revocation_reason", updated.RevocationReason);
+
+        if (await update.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+        {
+            throw new ReportingDistributionStateCorruptionException(
+                "access grant",
+                current.GrantId,
+                "its locked version disappeared before the atomic state update");
+        }
     }
 
     private NpgsqlCommand CreateSelectCommand(
@@ -233,7 +259,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
     private static string GrantSelectList() =>
         "grant_id, token_hash_sha256, tenant_id, audience, audience_kind, run_id, package_id, "
         + "allow_package_read, artifact_ids, created_at_utc, expires_at_utc, max_uses, "
-        + "use_count, last_used_at_utc, revoked_at_utc, revoked_by, revocation_reason, version";
+        + "use_count, last_used_at_utc, revoked_at_utc, revoked_by, revocation_reason, version, "
+        + "consumed_artifact_ids";
 
     private static ReportingAccessGrantRecord ReadGrant(NpgsqlDataReader reader)
     {
@@ -258,7 +285,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 reader.IsDBNull(15) ? null : reader.GetString(15),
                 reader.IsDBNull(16) ? null : reader.GetString(16),
                 reader.GetInt64(17),
-                (ReportingAccessPrincipalKind)reader.GetInt32(4));
+                (ReportingAccessPrincipalKind)reader.GetInt32(4),
+                reader.IsDBNull(18) ? null : reader.GetFieldValue<string[]>(18));
             ValidateGrant(grant, expectedVersion: null, requireExactVersion: false);
             return grant;
         }
@@ -293,6 +321,29 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         ReportingDistributionStoreGuard.NormalizeRequired(grant.RunId, nameof(grant.RunId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(grant.PackageId, nameof(grant.PackageId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.ValidateStringSet(grant.ArtifactIds, nameof(grant.ArtifactIds), 512);
+        if (grant.ConsumedArtifactIds is not null)
+        {
+            ReportingDistributionStoreGuard.ValidateStringSet(
+                grant.ConsumedArtifactIds,
+                nameof(grant.ConsumedArtifactIds),
+                512);
+            if (!grant.ConsumedArtifactIds.SequenceEqual(
+                    grant.ConsumedArtifactIds.OrderBy(
+                        static artifactId => artifactId,
+                        StringComparer.Ordinal),
+                    StringComparer.Ordinal)
+                || grant.ConsumedArtifactIds.Any(consumedArtifactId =>
+                    !grant.ArtifactIds.Contains(consumedArtifactId, StringComparer.Ordinal))
+                || grant.ConsumedArtifactIds.Count > grant.UseCount
+                || (grant.UseCount > 0
+                    && grant.ArtifactIds.Count > 0
+                    && grant.ConsumedArtifactIds.Count == 0))
+            {
+                throw new ArgumentException(
+                    "Reporting access grant consumed-artifact tracking is invalid.",
+                    nameof(grant));
+            }
+        }
         ReportingDistributionStoreGuard.RequireUtc(grant.CreatedAtUtc, nameof(grant.CreatedAtUtc));
         ReportingDistributionStoreGuard.RequireUtc(grant.ExpiresAtUtc, nameof(grant.ExpiresAtUtc));
         if (grant.ExpiresAtUtc <= grant.CreatedAtUtc)
@@ -364,6 +415,7 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         {
             throw new InvalidOperationException("Reporting access grant use count can only advance by one atomically.");
         }
+        ValidateConsumedArtifactTransition(current, updated);
 
         if (updated.UseCount == current.UseCount)
         {
@@ -395,6 +447,67 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         }
     }
 
+    private static void ValidateConsumedArtifactTransition(
+        ReportingAccessGrantRecord current,
+        ReportingAccessGrantRecord updated)
+    {
+        if (updated.UseCount > current.UseCount
+            && current.ArtifactIds.Count > 0
+            && (updated.ConsumedArtifactIds?.Count ?? 0) == 0)
+        {
+            throw new InvalidOperationException(
+                "An artifact-scoped grant use must atomically retain at least one exact consumed artifact.");
+        }
+
+        if (current.ConsumedArtifactIds is null)
+        {
+            if (updated.UseCount > current.UseCount
+                && updated.ConsumedArtifactIds is null)
+            {
+                throw new InvalidOperationException(
+                    "A legacy reporting access grant use must atomically initialize one exact consumed artifact.");
+            }
+
+            if (updated.ConsumedArtifactIds is not null
+                && (updated.ConsumedArtifactIds.Count != 1
+                    || (current.UseCount > 0
+                        && current.ArtifactIds.Count > 1)))
+            {
+                throw new InvalidOperationException(
+                    "Legacy consumed-artifact tracking can initialize only with one exact artifact from an unambiguous use.");
+            }
+        }
+        else if (updated.ConsumedArtifactIds is null
+                 || current.ConsumedArtifactIds.Any(consumedArtifactId =>
+                     !updated.ConsumedArtifactIds.Contains(
+                         consumedArtifactId,
+                         StringComparer.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "Reporting access grant consumed-artifact tracking is append-only.");
+        }
+
+        var currentCount = current.ConsumedArtifactIds?.Count ?? 0;
+        var updatedCount = updated.ConsumedArtifactIds?.Count ?? 0;
+        if (updated.UseCount == current.UseCount)
+        {
+            if ((current.ConsumedArtifactIds is null) != (updated.ConsumedArtifactIds is null)
+                || currentCount != updatedCount
+                || !(current.ConsumedArtifactIds ?? []).SequenceEqual(
+                    updated.ConsumedArtifactIds ?? [],
+                    StringComparer.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "Consumed artifact ids cannot change without consuming a grant use.");
+            }
+        }
+        else if (updatedCount > currentCount + 1)
+        {
+            throw new InvalidOperationException(
+                "A reporting access grant use can append at most one consumed artifact id.");
+        }
+    }
+
     private static void AddGrantParameters(NpgsqlCommand command, ReportingAccessGrantRecord grant)
     {
         command.Parameters.AddWithValue("grant_id", NpgsqlDbType.Text, grant.GrantId);
@@ -406,6 +519,7 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, grant.PackageId);
         command.Parameters.AddWithValue("allow_package_read", NpgsqlDbType.Boolean, grant.AllowPackageRead);
         command.Parameters.AddWithValue("artifact_ids", NpgsqlDbType.Array | NpgsqlDbType.Text, grant.ArtifactIds.ToArray());
+        AddNullableTextArray(command, "consumed_artifact_ids", grant.ConsumedArtifactIds);
         command.Parameters.AddWithValue("created_at_utc", NpgsqlDbType.TimestampTz, grant.CreatedAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("expires_at_utc", NpgsqlDbType.TimestampTz, grant.ExpiresAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("max_uses", NpgsqlDbType.Integer, grant.MaxUses);
@@ -427,6 +541,15 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
     {
         var parameter = command.Parameters.Add(name, NpgsqlDbType.Text);
         parameter.Value = value is null ? DBNull.Value : value;
+    }
+
+    private static void AddNullableTextArray(
+        NpgsqlCommand command,
+        string name,
+        IReadOnlyList<string>? values)
+    {
+        var parameter = command.Parameters.Add(name, NpgsqlDbType.Array | NpgsqlDbType.Text);
+        parameter.Value = values is null ? DBNull.Value : values.ToArray();
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

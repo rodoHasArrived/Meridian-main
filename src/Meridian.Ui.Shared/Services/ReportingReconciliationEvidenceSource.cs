@@ -67,6 +67,8 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         _breakQueue = breakQueue;
     }
 
+    internal IReconciliationBreakQueueRepository? BreakQueueAuthority => _breakQueue;
+
     public async ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
         ReportingRunParametersDto parameters,
         ReportingAuthoritativeSourceCheckpoint source,

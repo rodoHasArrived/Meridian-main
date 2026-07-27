@@ -116,8 +116,9 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             "reporting-readiness",
             Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
+        var dataRoot = Path.Combine(root, "data");
         var configPath = Path.Combine(root, "appsettings.json");
-        File.WriteAllText(configPath, "{}");
+        File.WriteAllText(configPath, JsonSerializer.Serialize(new { DataRoot = dataRoot }));
 
         try
         {
@@ -137,13 +138,39 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             builder.Services.AddWorkstationSharedServices();
 
             // The test drives the real cancellable migration startup seam itself and avoids
-            // starting unrelated workstation polling loops.
+            // starting unrelated workstation polling loops. Keep both server-owned reporting
+            // workers because schedule execution and durable delivery are authoritative readiness.
             builder.Services.RemoveAll<IHostedService>();
+            builder.Services.AddSingleton<IHostedService, ReportingSecureDistributionHostedService>();
+            builder.Services.AddSingleton<IHostedService, ReportingScheduleHostedService>();
 
             await using var app = builder.Build();
-            await app.Services
-                .GetRequiredService<IReportingMigrationStartup>()
-                .EnsureReadyAsync();
+            var caseworkDirectory = Path.Combine(dataRoot, "workstation");
+            Directory.CreateDirectory(caseworkDirectory);
+            var caseworkSnapshotPath = Path.Combine(
+                caseworkDirectory,
+                "reconciliation-break-queue.json");
+            await File.WriteAllTextAsync(caseworkSnapshotPath, "{not-json}");
+            var reportingStartup = app.Services
+                .GetRequiredService<IReportingMigrationStartup>();
+
+            Func<Task> startWithCorruptCasework = () => reportingStartup.EnsureReadyAsync();
+            await startWithCorruptCasework.Should().ThrowAsync<JsonException>(
+                "production reporting startup must verify the casework authority needed by hard close and final certification");
+            app.Services.GetRequiredService<ReportingMigrationReadinessState>()
+                .IsReady.Should().BeTrue(
+                    "successful PostgreSQL migrations remain independently diagnosable");
+            app.Services.GetRequiredService<ReconciliationCaseworkAuthorityReadinessState>()
+                .IsReady.Should().BeFalse();
+            var corruptCaseworkCapability = app.Services
+                .GetRequiredService<IReportingDeploymentReadinessService>()
+                .Evaluate();
+            corruptCaseworkCapability.Components
+                .Single(static component => component.ComponentId == "reconciliation-casework")
+                .IsReady.Should().BeFalse();
+
+            File.Delete(caseworkSnapshotPath);
+            await reportingStartup.EnsureReadyAsync();
 
             var sourceMigrationReceipt = app.Services
                 .GetRequiredService<DatabaseMigrationReadinessReceipt>();
@@ -160,7 +187,7 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
                 "registered PostgreSQL source types are not sufficient without completed source-schema migrations");
             beforeSourceMigrations.IsReady.Should().BeFalse();
             beforeSourceMigrations.Components
-                .Single(static component => component.Id == "client-documents")
+                .Single(static component => component.ComponentId == "client-documents")
                 .IsReady.Should().BeFalse();
 
             await LedgerStartup.EnsureDatabaseReadyAsync(app.Services);
@@ -171,22 +198,20 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             sourceMigrationReceipt.FundAccountsReady.Should().BeTrue();
             sourceMigrationReceipt.FundStructureReady.Should().BeTrue();
 
-            var capability = app.Services
+            var beforeWorkerStart = app.Services
                 .GetRequiredService<IReportingDeploymentReadinessService>()
                 .Evaluate();
-
-            capability.IsReady.Should().BeTrue(
-                string.Join("; ", capability.BlockingReasons));
-            capability.DurableGovernance.Should().BeTrue();
-            capability.DurableArtifacts.Should().BeTrue();
-            capability.DurableReconciliationEvidence.Should().BeTrue();
-            capability.DurableRuns.Should().BeTrue();
-            capability.DurableScheduling.Should().BeTrue();
-            capability.DurableDelivery.Should().BeTrue();
-            capability.RecipientDestinationsConfigured.Should().BeTrue();
-            capability.ClientDocumentsConfigured.Should().BeTrue();
-            capability.MigrationsManaged.Should().BeTrue();
-            capability.Components.Should().OnlyContain(static component => component.IsReady);
+            beforeWorkerStart.IsReady.Should().BeFalse(
+                "registered schedules are not operational until the server-owned worker starts");
+            beforeWorkerStart.Components
+                .Single(static component => component.ComponentId == "scheduling-worker")
+                .IsReady.Should().BeFalse();
+            beforeWorkerStart.Components
+                .Single(static component => component.ComponentId == "delivery-worker")
+                .IsReady.Should().BeFalse();
+            beforeWorkerStart.Components
+                .Single(static component => component.ComponentId == "release-consistency")
+                .IsReady.Should().BeTrue();
 
             app.Use(async (context, next) =>
             {
@@ -202,6 +227,31 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             app.MapWorkstationEndpoints(
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
             await app.StartAsync();
+
+            var capability = app.Services
+                .GetRequiredService<IReportingDeploymentReadinessService>()
+                .Evaluate();
+            capability.IsReady.Should().BeTrue(
+                string.Join("; ", capability.BlockingReasons));
+            capability.DurableGovernance.Should().BeTrue();
+            capability.DurableArtifacts.Should().BeTrue();
+            capability.DurableReconciliationEvidence.Should().BeTrue();
+            capability.DurableRuns.Should().BeTrue();
+            capability.DurableScheduling.Should().BeTrue();
+            capability.DurableDelivery.Should().BeTrue();
+            capability.RecipientDestinationsConfigured.Should().BeTrue();
+            capability.ClientDocumentsConfigured.Should().BeTrue();
+            capability.MigrationsManaged.Should().BeTrue();
+            capability.Components.Should().OnlyContain(static component => component.IsReady);
+            capability.Components
+                .Single(static component => component.ComponentId == "reconciliation-casework")
+                .IsReady.Should().BeTrue();
+            capability.Components
+                .Single(static component => component.ComponentId == "scheduling-worker")
+                .IsReady.Should().BeTrue();
+            capability.Components
+                .Single(static component => component.ComponentId == "delivery-worker")
+                .IsReady.Should().BeTrue();
 
             using var response = await app.GetTestClient()
                 .GetAsync("/api/workstation/reporting");

@@ -1001,7 +1001,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task LedgerCloseManagementEndpoints_AccountingUserCannotConfigureOrSignOffElevatedCloseApprovalRole()
+    public async Task LedgerCloseManagementEndpoints_AccountingUserCannotConfigureSignOffOrHardCloseAsController()
     {
         await using var app = await CreateAppAsync(
             RegisterOperationsContinuityServices,
@@ -1051,6 +1051,18 @@ public sealed partial class WorkstationEndpointsTests
                 "Attempted elevated CFO sign-off.",
                 EvidenceLinks: [$"evidence:close-task:{taskId}:CFO:2026-08:book:{ledgerBookId:D}:cfo-signoff"]));
         signOffResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var hardCloseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                start.Workflow.Version,
+                "accounting-user",
+                "Attempted to self-assert Controller authority for hard close.",
+                "report-pack-2026-08",
+                [$"evidence:close-package:{workflowId:D}:2026-08:book:{ledgerBookId:D}:period-lock"],
+                ControllerRole: "Fund Controller"));
+        hardCloseResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -1064,7 +1076,8 @@ public sealed partial class WorkstationEndpointsTests
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-08");
             },
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller);
         var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
@@ -1197,7 +1210,8 @@ public sealed partial class WorkstationEndpointsTests
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-09");
             },
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller);
         var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
@@ -1479,7 +1493,8 @@ public sealed partial class WorkstationEndpointsTests
         lockResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reopenResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         await service.Received(1).LockClosePeriodScopedAsync(
-            Arg.Any<LockClosePeriodRequestDto>(),
+            Arg.Is<LockClosePeriodRequestDto>(request =>
+                request.ControllerRole == "Controller"),
             "ops-user",
             "tenant-alpha",
             "tenant-alpha",

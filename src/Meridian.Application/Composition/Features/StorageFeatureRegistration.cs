@@ -248,7 +248,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<AnalysisExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new AnalysisExportService(storageOptions.RootPath);
+            return new AnalysisExportService(storageOptions);
         });
 
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));

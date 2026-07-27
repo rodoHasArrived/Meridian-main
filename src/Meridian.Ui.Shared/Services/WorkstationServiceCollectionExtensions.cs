@@ -481,6 +481,11 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
                 new PostgresReportingGovernanceRepository(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
+            services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
+                new PostgresReportingReleaseConsistencyGate(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>()));
+            services.TryAddSingleton<IReportingReleaseConsistencyGate>(sp =>
+                sp.GetRequiredService<PostgresReportingReleaseConsistencyGate>());
             services.TryAddSingleton<ReportingGovernanceService>();
             services.TryAddSingleton<PostgresReportingReconciliationEvidenceStore>(sp =>
                 new PostgresReportingReconciliationEvidenceStore(
@@ -588,6 +593,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportWriterDatasetSourceService>();
         services.TryAddSingleton<ReportWriterGridArtifactService>();
+        // Retained as a compatibility service for callers compiled against the earlier projection
+        // seam. Canonical capital-account primary documents use the exact certified ledger pack.
         services.TryAddSingleton<IReportingPartnersCapitalSource>(sp =>
             new LedgerReportingPartnersCapitalSource(sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
@@ -598,8 +605,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingRunStore>(),
                 // Null until the report-run stream broadcaster is registered (D1d); the null-object
                 // default keeps run execution unaffected in the meantime.
-                sp.GetService<IReportingRunNotifier>(),
-                sp.GetService<IReportingPartnersCapitalSource>()));
+                sp.GetService<IReportingRunNotifier>()));
         if (!isProductionComposition)
         {
             services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
@@ -626,11 +632,13 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IReportingRecipientDestinationResolver>(),
                 sp.GetRequiredService<IReportingDeploymentReadinessService>()));
         services.TryAddSingleton(ReportingScheduleWorkerOptions.Default);
+        services.TryAddSingleton<ReportingScheduleWorkerReadinessState>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, ReportingScheduleHostedService>());
         services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<ReportingMigrationReadinessState>();
+        services.TryAddSingleton<ReconciliationCaseworkAuthorityReadinessState>();
         services.TryAddSingleton<IReportingDeploymentReadinessService, ReportingDeploymentReadinessService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         if (!isProductionComposition)
@@ -818,7 +826,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
                 sp.GetService<IFundProfileTenancyRegistry>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<IOperationsContinuityWorkflowService>()));
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReportingReleaseConsistencyGate>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
@@ -869,7 +878,11 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService, ReconciliationApiService>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(sp =>
+            new ReconciliationApiService(
+                sp.GetRequiredService<IStatementRunWorkflowService>(),
+                sp.GetService<IAccountQueryService>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
         services.TryAddSingleton<IStatementReconciliationIntakeAuthority>(sp =>
             new StatementReconciliationIntakeAuthority(
                 sp.GetService<IAccountQueryService>(),
@@ -883,7 +896,8 @@ public static class WorkstationServiceCollectionExtensions
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IReconciliationRunService>(),
-                sp.GetService<IReconciliationBreakQueueRepository>()));
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 
@@ -1058,13 +1072,15 @@ public interface IReportingMigrationStartup
 /// </summary>
 internal sealed class ReportingMigrationStartup(
     ReportingMigrationRunner runner,
-    ReportingMigrationReadinessState readiness) : IReportingMigrationStartup
+    ReportingMigrationReadinessState readiness,
+    ReconciliationCaseworkAuthorityReadinessState caseworkReadiness,
+    IReconciliationBreakQueueRepository breakQueue) : IReportingMigrationStartup
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken = default)
     {
-        if (readiness.IsReady)
+        if (readiness.IsReady && caseworkReadiness.IsReady)
         {
             return;
         }
@@ -1072,14 +1088,27 @@ internal sealed class ReportingMigrationStartup(
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (readiness.IsReady)
+            if (readiness.IsReady && caseworkReadiness.IsReady)
             {
                 return;
             }
 
-            readiness.MarkNotReady();
-            await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
-            readiness.MarkReady();
+            if (!readiness.IsReady)
+            {
+                readiness.MarkNotReady();
+                await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+                readiness.MarkReady();
+            }
+
+            caseworkReadiness.MarkNotReady();
+            if (breakQueue is not IReconciliationBreakQueueAuthorityProbe authorityProbe)
+            {
+                throw new InvalidOperationException(
+                    "The configured reconciliation casework authority cannot verify its durable queue state.");
+            }
+
+            await authorityProbe.VerifyAsync(cancellationToken).ConfigureAwait(false);
+            caseworkReadiness.MarkReady();
         }
         finally
         {
@@ -1090,7 +1119,8 @@ internal sealed class ReportingMigrationStartup(
 
 internal sealed class WorkstationReportingMigrationHostedService(
     IReportingMigrationStartup startup,
-    ReportingMigrationReadinessState readiness) : IHostedService
+    ReportingMigrationReadinessState readiness,
+    ReconciliationCaseworkAuthorityReadinessState caseworkReadiness) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken) =>
         startup.EnsureReadyAsync(cancellationToken);
@@ -1098,6 +1128,7 @@ internal sealed class WorkstationReportingMigrationHostedService(
     public Task StopAsync(CancellationToken cancellationToken)
     {
         readiness.MarkNotReady();
+        caseworkReadiness.MarkNotReady();
         return Task.CompletedTask;
     }
 }

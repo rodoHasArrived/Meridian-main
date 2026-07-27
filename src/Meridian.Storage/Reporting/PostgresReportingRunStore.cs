@@ -537,7 +537,9 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
         var auditJson = ReportingOperationalStoreJson.SerializeCanonical(retainedAudit, nameof(auditTrail));
         var manifestHash = ReportingOperationalStoreJson.ComputeSha256(manifestJson);
         var auditHash = ReportingOperationalStoreJson.ComputeSha256(auditJson);
-        var certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows);
+        var certifiedDatasetHash =
+            ReportingCertifiedManifestValidation.ComputeCertifiedRowsHash(
+                manifest.CertifiedDatasetRows);
         var stateHash = ComputeStateHash(
             identity.TenantId,
             identity.RunIdKey,
@@ -1068,7 +1070,9 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
                 ReportingOperationalStoreJson.SerializeCanonical(manifest, nameof(manifest)));
             var auditHash = ReportingOperationalStoreJson.ComputeSha256(
                 ReportingOperationalStoreJson.SerializeCanonical(audit, nameof(audit)));
-            var certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows);
+            var certifiedDatasetHash =
+                ReportingCertifiedManifestValidation.ComputeCertifiedRowsHash(
+                    manifest.CertifiedDatasetRows);
             var stateHash = ComputeStateHash(
                 identity.TenantId,
                 identity.RunIdKey,
@@ -1135,6 +1139,7 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
             throw new ArgumentException("Reporting run manifest state is incomplete.", nameof(manifest));
         }
 
+        ReportingCertifiedManifestValidation.Validate(manifest);
         var scope = manifest.OperationalScope
             ?? throw new ArgumentException(
                 "PostgreSQL reporting run persistence requires an immutable tenant scope.",
@@ -1218,32 +1223,6 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
                     certifiedDatasetHash
                 },
                 "reporting run state"));
-
-    private static string ComputeCertifiedRowsHash(
-        ImmutableArray<IReadOnlyDictionary<string, string>> rows)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartArray();
-            foreach (var row in rows.IsDefault
-                         ? ImmutableArray<IReadOnlyDictionary<string, string>>.Empty
-                         : rows)
-            {
-                writer.WriteStartObject();
-                foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-                {
-                    writer.WriteString(pair.Key, pair.Value);
-                }
-
-                writer.WriteEndObject();
-            }
-
-            writer.WriteEndArray();
-        }
-
-        return ReportingOperationalStoreJson.ComputeSha256(stream.ToArray());
-    }
 
     private static ReportingOutputManifest NormalizeManifestArrays(
         ReportingOutputManifest manifest) =>

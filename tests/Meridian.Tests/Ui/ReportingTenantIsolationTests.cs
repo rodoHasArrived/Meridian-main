@@ -150,6 +150,101 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
+    public async Task HostedBridge_ReadinessTracksTheDeliveryWorkerLifecycle()
+    {
+        var readiness = new ReportingDeliveryWorkerReadinessState();
+        var scheduleService = CreateScheduleService(new StubReportingScheduleStore([]));
+        var queue = new RecordingScheduledHandoffQueue();
+        using var worker = new ReportingSecureDistributionHostedService(
+            scheduleService,
+            queue.QueueAsync,
+            NullLogger<ReportingSecureDistributionHostedService>.Instance,
+            readiness: readiness);
+
+        readiness.IsReady.Should().BeFalse();
+        using var startup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await worker.StartAsync(startup.Token);
+        try
+        {
+            readiness.IsReady.Should().BeTrue(
+                "readiness is earned only after the secure distribution worker enters its loop");
+        }
+        finally
+        {
+            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await worker.StopAsync(shutdown.Token);
+        }
+
+        readiness.IsReady.Should().BeFalse(
+            "a stopped delivery worker cannot satisfy deployment readiness");
+    }
+
+    [Fact]
+    public void ScheduledClientPackageEmailHandoff_GrantsOneUsePerPrimaryArtifact()
+    {
+        var accessPolicy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.CompanyWide,
+            CompanyId: "company-shared");
+        ReportingScheduleDeliveryTargetDto[] targets =
+        [
+            new(
+                "client-package-email",
+                [
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    GovernanceReportArtifactFormatDto.Xlsx
+                ],
+                ReportPackDeliveryModeDto.EmailLink,
+                RecipientPrincipalId: "recipient-a",
+                RecipientPrincipalKind: ReportAccessPrincipalKindDto.User)
+        ];
+        var parameters = BuildExactRunParameters() with
+        {
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
+        var schedule = new ReportingScheduleRecordDto(
+            "client-package-schedule",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            parameters.AsOfDate,
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            ReportingScheduleStateDto.Active,
+            FixedNow,
+            FixedNow,
+            RunParameters: parameters,
+            TenantId: "tenant-a",
+            CompanyId: "company-shared",
+            AccessPolicySnapshot: accessPolicy,
+            DeliveryTargets: targets,
+            AccessPolicySnapshotHash:
+                ReportingScheduleService.ComputeAccessPolicySnapshotHash(accessPolicy),
+            DeliveryTargetsSnapshotHash:
+                ReportingScheduleService.ComputeDeliveryTargetsSnapshotHash(targets));
+        var manifest = BuildRunSnapshot(
+                "client-package-run",
+                "tenant-a",
+                "company-shared")
+            .Manifest with
+            {
+                Trigger = ReportingRunTrigger.Scheduled,
+                ScheduleId = schedule.ScheduleId,
+                ResolvedParameters = parameters
+            };
+
+        var handoff = ReportingScheduleService
+            .BuildReleaseDeliveryHandoffs(schedule, manifest)
+            .Should()
+            .ContainSingle()
+            .Subject;
+
+        handoff.ArtifactIds.Should().Equal(
+            "client-package-run.pdf",
+            "client-package-run.xlsx");
+        handoff.GrantMaxUses.Should().Be(2);
+    }
+
+    [Fact]
     public async Task HostedBridge_UnreleasedHandoffCreatesNoJob_ThenReleasedArtifactQueuesExactlyOnce()
     {
         var handoff = BuildReleaseHandoff();

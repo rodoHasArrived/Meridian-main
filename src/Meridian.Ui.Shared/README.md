@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Ui.Shared
@@ -1233,21 +1233,27 @@ reason, and changed/added/removed report-writer line counts from the retained Re
 artifact-vault, immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and
 receipt schemas and their concrete store graph. It also requires exact-scope recipient
 destinations, the canonical PDF/XLSX client-document renderer, deterministic certified-artifact
-production, a configured durable ledger-presentation source, and both a complete schema probe and
-the current process's successful migration receipt. `GET /api/workstation/reporting` returns `503`
+production, a configured durable ledger-presentation source, the exact PostgreSQL
+accounting-period release-consistency gate, and both a complete schema probe and the current
+process's successful reporting, ledger, fund-account, and fund-structure migration receipts.
+Reporting startup also integrity-reloads the one reconciliation queue shared by statement
+casework, Operations Continuity, hard close, and Final evidence; readiness requires that receipt and
+the running schedule and secure-delivery workers with valid options. PostgreSQL-shaped source
+registrations without those completed source migrations remain blocked.
+`GET /api/workstation/reporting` returns `503`
 when any component is missing instead of inheriting Accounting health or a fallback Reporting
 payload; workstation structured Reporting exports apply the same fail-closed posture. A successful
 payload includes the sanitized `deploymentCapability`.
-`ReportingOutputFormatDto.ClientPackage` declares exactly one `<runId>.pdf` and one
-`<runId>.xlsx` primary output. When the package requires the canonical ledger presentation, the
-deterministic certified-artifact producer keeps the verified checkpoint-bound
-`LedgerFinancialReportPack` intact and asks the existing `LedgerClientReportExportService` for the
-complete pair. That shared service uses the composition-root
+Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs keep the verified checkpoint-bound
+`LedgerFinancialReportPack` intact and ask the existing `LedgerClientReportExportService` for the
+same canonical PDF/XLSX pair. That shared service uses the composition-root
 `FinancialReportDocumentRenderer`; `DocumentsReportingPrimaryDocumentRenderer` is only an adapter
-and does not rebuild the partners-capital presentation with `ClientGradeReportRenderer`. The
-producer retains both exact hashes and sizes from the same certified manifest. Governance release
-requires the complete retained PDF/XLSX pair, and secure distribution rejects commands that select
-only one primary document from a `ClientPackage`.
+and does not rebuild the partners-capital presentation with `ClientGradeReportRenderer`. A
+standalone `Pdf` or `Xlsx` output retains the corresponding canonical document, while
+`ClientPackage` declares exactly one `<runId>.pdf` and one `<runId>.xlsx` and retains both exact
+hashes and sizes from the same certified manifest. Governance release requires the complete
+retained pair for `ClientPackage`, and secure distribution rejects commands that select only one
+primary document from that package.
 Before ledger hard close, `AccountingClosePostingWorkbenchBridge` acquires an exact-scope lease from
 `IReconciliationBreakQueueRepository`. The file repository freezes the fund/book/period/as-of queue
 head and its hash into the integrity-validated reconciliation snapshot before ledger commit, blocks

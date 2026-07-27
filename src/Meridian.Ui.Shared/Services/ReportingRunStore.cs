@@ -901,101 +901,8 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
         ValidateManifest(run.Manifest);
     }
 
-    private static void ValidateManifest(ReportingOutputManifest manifest)
-    {
-        if (string.IsNullOrWhiteSpace(manifest.RunId)
-            || string.IsNullOrWhiteSpace(manifest.TemplateId)
-            || manifest.CertifiedDatasetRows.IsDefault)
-        {
-            throw new InvalidDataException("A retained reporting manifest is incomplete.");
-        }
-
-        var hasCertifiedState = manifest.OperationalScope is not null
-            || manifest.ImmutableAccessScope is not null
-            || manifest.CertifiedSnapshot is not null
-            || manifest.AuthoritativeSource is not null;
-        if (!hasCertifiedState)
-        {
-            return;
-        }
-
-        if (manifest.OperationalScope is not { } scope
-            || manifest.ImmutableAccessScope is not { } access
-            || manifest.CertifiedSnapshot is not { } snapshot
-            || manifest.AuthoritativeSource is not { } source
-            || manifest.ResolvedTemplate is null
-            || manifest.ResolvedParameters is null
-            || manifest.Readiness is null
-            || !IsSha256(manifest.Readiness.EvidenceHash)
-            || manifest.Readiness.EvaluatedAtUtc == default
-            || manifest.Readiness.EvaluatedAtUtc.Offset != TimeSpan.Zero
-            || manifest.CertifiedDatasetRows.Length != source.LedgerLineCount
-            || !string.Equals(source.TenantId, scope.TenantId, StringComparison.Ordinal)
-            || !string.Equals(source.OrganizationId, scope.OrganizationId, StringComparison.Ordinal)
-            || !string.Equals(source.CompanyId, scope.CompanyId, StringComparison.Ordinal)
-            || !string.Equals(source.FundId, scope.FundId, StringComparison.Ordinal)
-            || !string.Equals(source.LedgerBookId, scope.BookId, StringComparison.Ordinal)
-            || !string.Equals(source.AccountingPeriodId, scope.PeriodId, StringComparison.Ordinal)
-            || !string.Equals(snapshot.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
-            || !string.Equals(snapshot.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(source.CheckpointHash)
-            || source.EvidenceIds.IsDefaultOrEmpty
-            || !source.EvidenceIds.Contains(
-                $"reporting-source-checkpoint:{source.CheckpointId}:{source.CheckpointHash}",
-                StringComparer.Ordinal))
-        {
-            throw new InvalidDataException(
-                "A retained certified reporting manifest has incomplete or mismatched source bindings.");
-        }
-
-        ReportingGovernanceCanonicalValidation.ValidateScope(scope);
-        ReportingGovernanceCanonicalValidation.ValidateAccess(access);
-        ReportingGovernanceCanonicalValidation.ValidateSnapshot(snapshot, scope);
-        var expectedSnapshotHash = ComputeSnapshotHash(manifest);
-        if (!FixedHashEquals(snapshot.SnapshotHash, expectedSnapshotHash))
-        {
-            throw new InvalidDataException(
-                "The retained certified snapshot hash does not match its template, scope, access, parameters, source, reconciliation, and readiness binding.");
-        }
-    }
-
-    private static string ComputeSnapshotHash(ReportingOutputManifest manifest) =>
-        manifest.CertifiedSnapshot!.RequiresCertifiedLedgerPresentation
-            ? ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-            {
-                template = new
-                {
-                    manifest.ResolvedTemplate!.Name,
-                    manifest.ResolvedTemplate.Version
-                },
-                scope = manifest.OperationalScope,
-                access = manifest.ImmutableAccessScope,
-                parametersHash = manifest.CertifiedSnapshot.ParametersHash,
-                sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
-                sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
-                reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
-                reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
-                readinessHash = manifest.Readiness!.EvidenceHash,
-                certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
-                requiresCertifiedLedgerPresentation = true
-            })))
-            : ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-            {
-                template = new
-                {
-                    manifest.ResolvedTemplate!.Name,
-                    manifest.ResolvedTemplate.Version
-                },
-                scope = manifest.OperationalScope,
-                access = manifest.ImmutableAccessScope,
-                parametersHash = manifest.CertifiedSnapshot.ParametersHash,
-                sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
-                sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
-                reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
-                reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
-                readinessHash = manifest.Readiness!.EvidenceHash,
-                certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
-            })));
+    private static void ValidateManifest(ReportingOutputManifest manifest) =>
+        ReportingCertifiedManifestValidation.Validate(manifest);
 
     // Normalizes before hashing as well as at the SaveAsync entry point. Save-side manifests are
     // already normalized, so this is a no-op there; on the load/verification path a manifest
@@ -1239,27 +1146,8 @@ public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOn
     }
 
     internal static string ComputeCertifiedRowsHash(
-        ImmutableArray<IReadOnlyDictionary<string, string>> rows)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartArray();
-            foreach (var row in rows.IsDefault
-                         ? ImmutableArray<IReadOnlyDictionary<string, string>>.Empty
-                         : rows)
-            {
-                writer.WriteStartObject();
-                foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-                {
-                    writer.WriteString(pair.Key, pair.Value);
-                }
-                writer.WriteEndObject();
-            }
-            writer.WriteEndArray();
-        }
-        return ComputeSha256(stream.ToArray());
-    }
+        ImmutableArray<IReadOnlyDictionary<string, string>> rows) =>
+        ReportingCertifiedManifestValidation.ComputeCertifiedRowsHash(rows);
 
     private static void EnsureUniqueIdentities(IReadOnlyList<ReportingRunSnapshot> runs)
     {

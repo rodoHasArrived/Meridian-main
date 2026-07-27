@@ -62,6 +62,8 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         _ledgerJournalStore = ledgerJournalStore;
     }
 
+    internal IReconciliationBreakQueueRepository BreakQueueAuthority => _queueRepository;
+
     public async Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
         ReconciliationBreakQueueScope scope,
         ReconciliationCaseworkCommand command,

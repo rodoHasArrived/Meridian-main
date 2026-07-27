@@ -22,6 +22,8 @@ public sealed class AnalysisExportViewModelTests
         viewModel.SavePresetTooltip.Should().Contain("no configured preset store");
         viewModel.ExportActionInspector.Facts.Should().Contain(fact => fact.Label == "Run export" && fact.Value.Contains("Export blocked"));
         viewModel.RecentExportsStateText.Should().Be("No verified analysis export history is available in this desktop screen.");
+        viewModel.Formats.Should().Equal("CSV", "Parquet", "Excel", "Apache Arrow");
+        viewModel.Formats.Should().NotContain("JSON");
     }
 
     [Fact]

@@ -397,7 +397,7 @@ public sealed class ReportingRunCertificationService
             && ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(checkpoint) is null)
         {
             throw new ReportingAuthoritativeSourceUnavailableException(
-                "Capital-account client-package certification is blocked because the authoritative source did not retain one signed canonical ledger-presentation checksum.");
+                "Capital-account primary-document certification is blocked because the authoritative source did not retain one signed canonical ledger-presentation checksum.");
         }
     }
 
@@ -732,48 +732,10 @@ public sealed class ReportingRunCertificationService
 
     private static string SerializeParameters(
         ReportingRunParametersDto parameters,
-        bool requiresCertifiedLedgerPresentation = false)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartObject();
-            writer.WriteStartObject("scope");
-            writer.WriteString("fundProfileId", parameters.Scope.FundProfileId);
-            writer.WriteString("entityScopeKind", parameters.Scope.EntityScopeKind.ToString());
-            WriteOptional(writer, "entityId", parameters.Scope.EntityId);
-            WriteOptional(writer, "portfolioId", parameters.Scope.PortfolioId);
-            WriteOptional(writer, "investorId", parameters.Scope.InvestorId);
-            writer.WritePropertyName("dimensions");
-            JsonSerializer.Serialize(writer, parameters.Scope.Dimensions);
-            writer.WriteEndObject();
-            writer.WriteString("periodId", parameters.PeriodId);
-            writer.WriteString("asOfDate", parameters.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
-            writer.WriteString("ledgerBookId", parameters.LedgerBook.LedgerBookId?.ToString("D"));
-            WriteOptional(writer, "ledgerBookCode", parameters.LedgerBook.LedgerBookCode);
-            writer.WriteString("accountingBasis", parameters.AccountingBasis.ToString());
-            writer.WriteString("presentationCurrency", parameters.PresentationCurrency);
-            writer.WriteString("consolidationLevel", parameters.ConsolidationLevel.ToString());
-            writer.WriteString("outputFormat", parameters.OutputFormat.ToString());
-            writer.WriteString("finality", parameters.Finality.ToString());
-            if (requiresCertifiedLedgerPresentation)
-            {
-                writer.WriteBoolean(
-                    "requiresCertifiedLedgerPresentation",
-                    true);
-            }
-            writer.WriteBoolean("includeSupportingSchedules", parameters.IncludeSupportingSchedules);
-            writer.WriteBoolean("includeEvidenceAppendix", parameters.IncludeEvidenceAppendix);
-            writer.WriteStartObject("templateParameters");
-            foreach (var pair in parameters.TemplateParameters.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-            {
-                writer.WriteString(pair.Key, pair.Value);
-            }
-            writer.WriteEndObject();
-            writer.WriteEndObject();
-        }
-        return Encoding.UTF8.GetString(stream.ToArray());
-    }
+        bool requiresCertifiedLedgerPresentation = false) =>
+        ReportingCanonicalParameterSerializer.Serialize(
+            parameters,
+            requiresCertifiedLedgerPresentation);
 
     internal static ReportingRunParametersDto DeserializeParameters(string canonicalJson)
     {
@@ -894,7 +856,9 @@ public sealed class ReportingRunCertificationService
     private static string ComputeParametersHash(
         ReportingRunParametersDto parameters,
         bool requiresCertifiedLedgerPresentation = false) =>
-        ComputeHash(SerializeParameters(parameters, requiresCertifiedLedgerPresentation));
+        ReportingCanonicalParameterSerializer.ComputeHash(
+            parameters,
+            requiresCertifiedLedgerPresentation);
 
     internal static string ComputeCertifiedRowsHash(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows)
@@ -936,18 +900,6 @@ public sealed class ReportingRunCertificationService
     {
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
-
-    private static void WriteOptional(Utf8JsonWriter writer, string propertyName, string? value)
-    {
-        if (value is null)
-        {
-            writer.WriteNull(propertyName);
-        }
-        else
-        {
-            writer.WriteString(propertyName, value);
-        }
     }
 
     private static string? ReadOptional(JsonElement element, string propertyName) =>

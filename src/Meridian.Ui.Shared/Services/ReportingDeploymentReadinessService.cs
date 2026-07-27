@@ -1,6 +1,8 @@
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
+using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
@@ -26,6 +28,149 @@ public sealed class ReportingMigrationReadinessState
     internal void MarkReady() => Volatile.Write(ref _ready, 1);
 
     internal void MarkNotReady() => Volatile.Write(ref _ready, 0);
+}
+
+/// <summary>
+/// Process-local receipt that the canonical reconciliation queue was fully reloaded and passed its
+/// integrity checks during reporting startup.
+/// </summary>
+public sealed class ReconciliationCaseworkAuthorityReadinessState
+{
+    private int _ready;
+
+    public bool IsReady => Volatile.Read(ref _ready) == 1;
+
+    internal void MarkReady() => Volatile.Write(ref _ready, 1);
+
+    internal void MarkNotReady() => Volatile.Write(ref _ready, 0);
+}
+
+/// <summary>
+/// Process-local liveness receipt for the server-owned reporting schedule worker. Readiness is
+/// earned only by a successful cycle and is cleared by a cycle-level failure or worker stop.
+/// </summary>
+public sealed class ReportingScheduleWorkerReadinessState
+{
+    private int _ready;
+    private int _consecutiveFailures;
+    private long _lastSuccessfulCycleUtcTicks;
+
+    public bool IsReady => Volatile.Read(ref _ready) == 1;
+
+    public int ConsecutiveFailures => Volatile.Read(ref _consecutiveFailures);
+
+    public DateTimeOffset? LastSuccessfulCycleUtc =>
+        ReadTimestamp(ref _lastSuccessfulCycleUtcTicks);
+
+    public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =>
+        WorkerReadinessState.IsHealthy(
+            IsReady,
+            ConsecutiveFailures,
+            LastSuccessfulCycleUtc,
+            nowUtc,
+            maximumHeartbeatAge);
+
+    internal void MarkReady(DateTimeOffset? completedAtUtc = null) =>
+        WorkerReadinessState.MarkReady(
+            ref _ready,
+            ref _consecutiveFailures,
+            ref _lastSuccessfulCycleUtcTicks,
+            completedAtUtc);
+
+    internal void MarkCycleFailed()
+    {
+        Interlocked.Increment(ref _consecutiveFailures);
+        Volatile.Write(ref _ready, 0);
+    }
+
+    internal void MarkNotReady() => Volatile.Write(ref _ready, 0);
+
+    private static DateTimeOffset? ReadTimestamp(ref long ticks)
+    {
+        var value = Interlocked.Read(ref ticks);
+        return value == 0 ? null : new DateTimeOffset(value, TimeSpan.Zero);
+    }
+}
+
+/// <summary>
+/// Process-local liveness receipt for the server-owned secure reporting distribution worker.
+/// Readiness is earned only by a successful cycle and is cleared by a cycle-level failure or stop.
+/// </summary>
+public sealed class ReportingDeliveryWorkerReadinessState
+{
+    private int _ready;
+    private int _consecutiveFailures;
+    private long _lastSuccessfulCycleUtcTicks;
+
+    public bool IsReady => Volatile.Read(ref _ready) == 1;
+
+    public int ConsecutiveFailures => Volatile.Read(ref _consecutiveFailures);
+
+    public DateTimeOffset? LastSuccessfulCycleUtc =>
+        ReadTimestamp(ref _lastSuccessfulCycleUtcTicks);
+
+    public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =>
+        WorkerReadinessState.IsHealthy(
+            IsReady,
+            ConsecutiveFailures,
+            LastSuccessfulCycleUtc,
+            nowUtc,
+            maximumHeartbeatAge);
+
+    internal void MarkReady(DateTimeOffset? completedAtUtc = null) =>
+        WorkerReadinessState.MarkReady(
+            ref _ready,
+            ref _consecutiveFailures,
+            ref _lastSuccessfulCycleUtcTicks,
+            completedAtUtc);
+
+    internal void MarkCycleFailed()
+    {
+        Interlocked.Increment(ref _consecutiveFailures);
+        Volatile.Write(ref _ready, 0);
+    }
+
+    internal void MarkNotReady() => Volatile.Write(ref _ready, 0);
+
+    private static DateTimeOffset? ReadTimestamp(ref long ticks)
+    {
+        var value = Interlocked.Read(ref ticks);
+        return value == 0 ? null : new DateTimeOffset(value, TimeSpan.Zero);
+    }
+}
+
+internal static class WorkerReadinessState
+{
+    internal static void MarkReady(
+        ref int ready,
+        ref int consecutiveFailures,
+        ref long lastSuccessfulCycleUtcTicks,
+        DateTimeOffset? completedAtUtc)
+    {
+        var completed = (completedAtUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
+        Interlocked.Exchange(ref lastSuccessfulCycleUtcTicks, completed.Ticks);
+        Volatile.Write(ref consecutiveFailures, 0);
+        Volatile.Write(ref ready, 1);
+    }
+
+    internal static bool IsHealthy(
+        bool isReady,
+        int consecutiveFailures,
+        DateTimeOffset? lastSuccessfulCycleUtc,
+        DateTimeOffset nowUtc,
+        TimeSpan maximumHeartbeatAge)
+    {
+        if (!isReady
+            || consecutiveFailures != 0
+            || lastSuccessfulCycleUtc is null
+            || maximumHeartbeatAge <= TimeSpan.Zero)
+        {
+            return false;
+        }
+
+        var age = nowUtc.ToUniversalTime() - lastSuccessfulCycleUtc.Value;
+        return age >= TimeSpan.Zero && age <= maximumHeartbeatAge;
+    }
 }
 
 /// <summary>
@@ -136,9 +281,23 @@ public sealed class ReportingDeploymentReadinessService(
                         "reporting_delivery_receipts"
                     ],
                     [
-                        "trg_reporting_access_grants_guard",
+                        PostgresReportingDeploymentProbe
+                            .AccessGrantArtifactConsumptionTriggerName,
                         "trg_reporting_delivery_jobs_guard",
                         "trg_reporting_delivery_receipts_immutable"
+                    ],
+                    Columns:
+                    [
+                        "reporting_access_grants.consumed_artifact_ids"
+                    ],
+                    Constraints:
+                    [
+                        "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts"
+                    ],
+                    CompatibilityMarkers:
+                    [
+                        PostgresReportingDeploymentProbe
+                            .AccessGrantArtifactConsumptionCompatibilityMarker
                     ],
                     UniqueKeys:
                     [
@@ -166,18 +325,29 @@ public sealed class ReportingDeploymentReadinessService(
     {
         var persistenceProbe = Resolve<IReportingDeploymentProbe>()?.Probe();
         var persistenceReady = persistenceProbe?.IsComplete == true;
-        var durableGovernance =
+        var applicationVersionCompatible =
+            persistenceProbe?.HasCompatibilityMarker(
+                PostgresReportingDeploymentProbe
+                    .AccessGrantArtifactConsumptionCompatibilityMarker) == true;
+        var durableGovernanceStore =
             HasRequiredSchema(persistenceProbe, "governance")
             && IsImplementation<IReportingGovernanceRepository, PostgresReportingGovernanceRepository>()
             && Resolve<ReportingGovernanceService>() is not null
             && Resolve<IReportingGovernanceEndpointCoordinator>() is not null;
+        var releaseConsistency =
+            IsImplementation<
+                IReportingReleaseConsistencyGate,
+                PostgresReportingReleaseConsistencyGate>();
+        var durableGovernance =
+            durableGovernanceStore
+            && releaseConsistency;
         var durableArtifacts =
             HasRequiredSchema(persistenceProbe, "artifacts")
             && IsImplementation<IReportingArtifactStore, PostgresReportingArtifactStore>()
             && IsImplementation<IReportingArtifactCatalog, PostgresReportingArtifactCatalog>()
             && IsImplementation<IReportingArtifactAuditStore, PostgresReportingArtifactAuditStore>()
             && Resolve<ReportingArtifactVaultService>() is not null;
-        var durableReconciliationEvidence =
+        var durableReconciliationEvidenceStore =
             HasRequiredSchema(persistenceProbe, "reconciliation-evidence")
             && IsImplementation<
                 IReportingReconciliationEvidenceStore,
@@ -186,19 +356,84 @@ public sealed class ReportingDeploymentReadinessService(
                 IReportingReconciliationEvidenceRetentionStore,
                 PostgresReportingReconciliationEvidenceStore>()
             && Resolve<ReportingReconciliationEvidenceRetentionService>() is not null;
+        var breakQueue = Resolve<IReconciliationBreakQueueRepository>();
+        var caseworkHandoff =
+            Resolve<IStatementReconciliationCaseworkHandoffService>()
+                as StatementReconciliationCaseworkHandoffService;
+        var operationsBridge =
+            Resolve<IOperationsContinuityReconciliationBridge>()
+                as OperationsContinuityReconciliationBridge;
+        var closeBridge =
+            Resolve<IAccountingClosePostingWorkbench>()
+                as AccountingClosePostingWorkbenchBridge;
+        var finalEvidenceSource =
+            Resolve<IReportingReconciliationEvidenceSource>()
+                as ReportingReconciliationEvidenceSource;
+        var reconciliationCaseworkAuthority =
+            breakQueue is IReconciliationBreakQueueAuthorityProbe
+            && Resolve<ReconciliationCaseworkAuthorityReadinessState>()?.IsReady == true
+            && ReferenceEquals(caseworkHandoff?.BreakQueueAuthority, breakQueue)
+            && ReferenceEquals(operationsBridge?.BreakQueueAuthority, breakQueue)
+            && ReferenceEquals(closeBridge?.BreakQueueAuthority, breakQueue)
+            && ReferenceEquals(finalEvidenceSource?.BreakQueueAuthority, breakQueue);
+        var durableReconciliationEvidence =
+            durableReconciliationEvidenceStore
+            && reconciliationCaseworkAuthority;
         var durableRuns =
             HasRequiredSchema(persistenceProbe, "runs")
             && IsImplementation<IReportingRunStore, PostgresReportingRunStore>();
         var durableScheduling =
             HasRequiredSchema(persistenceProbe, "scheduling")
             && IsImplementation<Meridian.Reporting.IReportingScheduleStore, PostgresReportingScheduleStore>();
-        var durableDelivery =
+        var nowUtc = (Resolve<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
+        var scheduleWorkerOptions = Resolve<ReportingScheduleWorkerOptions>();
+        var schedulingWorkerConfigured =
+            scheduleWorkerOptions is not null
+            && scheduleWorkerOptions.PollInterval >= TimeSpan.FromMilliseconds(250)
+            && scheduleWorkerOptions.PollInterval <= TimeSpan.FromMinutes(5)
+            && Resolve<ReportingScheduleWorkerReadinessState>()?.IsHealthy(
+                nowUtc,
+                WorkerHeartbeatMaximumAge(scheduleWorkerOptions.PollInterval)) == true;
+        var distributionApplication =
+            Resolve<ReportingSecureDistributionApplicationService>();
+        var durableDeliveryStore =
             HasRequiredSchema(persistenceProbe, "delivery")
             && IsImplementation<IReportingAccessGrantStore, PostgresReportingAccessGrantStore>()
             && IsImplementation<IReportingDeliveryStore, PostgresReportingDeliveryStore>()
-            && Resolve<ReportingSecureDistributionApplicationService>() is not null;
-        var recipientDestinationsConfigured =
-            Resolve<IReportingRecipientDestinationResolver>()?.IsConfigured == true;
+            && Resolve<IReportingDeliveryStore>()
+                is IReportingDeliveryGrantDownloadCommitter
+            && distributionApplication is not null;
+        var distributionOptions = Resolve<SecureReportingDistributionOptions>();
+        var deliveryWorkerConfigured =
+            distributionOptions is not null
+            && !string.IsNullOrWhiteSpace(distributionOptions.WorkerId)
+            && distributionOptions.WorkerPollInterval >= TimeSpan.FromMilliseconds(250)
+            && distributionOptions.WorkerPollInterval <= TimeSpan.FromMinutes(5)
+            && Resolve<ReportingDeliveryWorkerReadinessState>()?.IsHealthy(
+                nowUtc,
+                WorkerHeartbeatMaximumAge(distributionOptions.WorkerPollInterval)) == true;
+        var destinationResolver = Resolve<IReportingRecipientDestinationResolver>();
+        var recipientDestinationsConfigured = destinationResolver?.IsConfigured == true;
+        var configuredRecipientTransports = destinationResolver?.ConfiguredTransportIds?
+            .Where(static transportId => !string.IsNullOrWhiteSpace(transportId))
+            .Select(static transportId => transportId.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+        var transportCapabilities = Resolve<IReportingTransportInfrastructureReadiness>()?
+            .GetTransportInfrastructureCapabilities();
+        var recipientTransportInfrastructureReady =
+            recipientDestinationsConfigured
+            && configuredRecipientTransports.Length > 0
+            && configuredRecipientTransports.All(transportId =>
+                transportCapabilities?.SingleOrDefault(capability =>
+                    string.Equals(
+                        capability.TransportId,
+                        transportId,
+                        StringComparison.OrdinalIgnoreCase))
+                    is { IsInfrastructureReady: true });
+        var durableDelivery =
+            durableDeliveryStore
+            && recipientTransportInfrastructureReady;
         var clientDocumentsConfigured =
             IsImplementation<IReportingPrimaryDocumentRenderer, DocumentsReportingPrimaryDocumentRenderer>()
             && Resolve<LedgerClientReportExportService>()?.HasClientGradeRenderer == true
@@ -216,9 +451,15 @@ public sealed class ReportingDeploymentReadinessService(
             Component(
                 "governance",
                 "Governance",
-                durableGovernance,
+                durableGovernanceStore,
                 "PostgreSQL governed-run lifecycle and maker-checker audit are configured.",
                 "Durable PostgreSQL reporting governance is not configured."),
+            Component(
+                "release-consistency",
+                "Release consistency",
+                releaseConsistency,
+                "Final release uses the PostgreSQL accounting-period consistency gate.",
+                "The PostgreSQL final-release/accounting-period consistency gate is not configured."),
             Component(
                 "artifacts",
                 "Artifact vault",
@@ -228,9 +469,15 @@ public sealed class ReportingDeploymentReadinessService(
             Component(
                 "reconciliation-evidence",
                 "Reconciliation evidence",
-                durableReconciliationEvidence,
+                durableReconciliationEvidenceStore,
                 "PostgreSQL close and reconciliation evidence, including immutable controls, is configured.",
                 "Durable close and reconciliation evidence or its immutable database controls are not fully configured."),
+            Component(
+                "reconciliation-casework",
+                "Reconciliation casework authority",
+                reconciliationCaseworkAuthority,
+                "The canonical reconciliation queue, casework handoff, Operations bridge, and final-certification evidence source are configured.",
+                "The reconciliation casework authority required by hard close and final reporting is not fully configured."),
             Component(
                 "runs",
                 "Run history",
@@ -244,17 +491,45 @@ public sealed class ReportingDeploymentReadinessService(
                 "PostgreSQL reporting schedules are configured.",
                 "Reporting schedules are not backed by the PostgreSQL authority."),
             Component(
+                "scheduling-worker",
+                "Scheduling worker",
+                schedulingWorkerConfigured,
+                "The server-owned reporting schedule worker is running with a positive poll interval.",
+                "The server-owned reporting schedule worker is missing, stopped, or has invalid configuration."),
+            Component(
                 "delivery",
                 "Delivery",
                 durableDelivery,
-                "PostgreSQL access grants, delivery jobs, and immutable receipts are configured.",
-                "Durable reporting distribution and receipts are not fully configured."),
+                "PostgreSQL access grants, delivery jobs, immutable receipts, atomic download accounting, and every recipient transport are configured.",
+                ResolveDeliveryBlocker(
+                    persistenceProbe,
+                    applicationVersionCompatible,
+                    durableDeliveryStore,
+                    recipientTransportInfrastructureReady)),
+            Component(
+                "application-schema-compatibility",
+                "Application/schema compatibility",
+                applicationVersionCompatible,
+                "This application and the PostgreSQL reporting schema agree on migration 012 access-grant artifact consumption.",
+                ResolveApplicationCompatibilityBlocker(persistenceProbe)),
+            Component(
+                "delivery-worker",
+                "Delivery worker",
+                deliveryWorkerConfigured,
+                "The server-owned secure distribution worker is running with valid worker options.",
+                "The server-owned secure distribution worker is missing, stopped, or has invalid configuration."),
             Component(
                 "recipient-destinations",
                 "Recipient destinations",
                 recipientDestinationsConfigured,
                 "Exact-scope reporting recipient destinations are configured.",
                 "No exact-scope reporting recipient destination directory is configured."),
+            Component(
+                "recipient-transports",
+                "Recipient transport infrastructure",
+                recipientTransportInfrastructureReady,
+                "Every transport referenced by the recipient directory is infrastructure-ready.",
+                "One or more recipient-directory transports has no ready delivery adapter or required infrastructure."),
             Component(
                 "client-documents",
                 "Client documents",
@@ -266,17 +541,7 @@ public sealed class ReportingDeploymentReadinessService(
                 "Reporting migrations",
                 migrationsManaged,
                 "Checksummed reporting migrations are managed as a startup prerequisite.",
-                persistenceProbe is { IsReachable: false }
-                    ? "The PostgreSQL reporting authority is unreachable."
-                    : persistenceProbe is { MissingTriggers.Count: > 0 }
-                        ? "The PostgreSQL reporting schema is missing required immutable-control triggers."
-                        : persistenceProbe is { MissingColumns.Count: > 0 }
-                            ? "The PostgreSQL reporting schema is missing required operational-authority columns."
-                            : persistenceProbe is { MissingUniqueKeys.Count: > 0 }
-                                ? "The PostgreSQL reporting schema is missing required durable identity keys."
-                                : persistenceProbe is { MissingTables.Count: > 0 }
-                                    ? "The PostgreSQL reporting schema is incomplete."
-                                    : "Reporting migrations have not completed for this process.")
+                ResolveMigrationBlocker(persistenceProbe))
         };
         var blockers = components
             .Where(static component => !component.IsReady)
@@ -306,6 +571,117 @@ public sealed class ReportingDeploymentReadinessService(
         string blockedSummary) =>
         new(id, displayName, isReady, isReady ? readySummary : blockedSummary);
 
+    private static string ResolveApplicationCompatibilityBlocker(
+        ReportingDeploymentProbeResult? probe)
+    {
+        if (probe?.FailureCode
+            == PostgresReportingDeploymentProbe.BinaryMigrationAssetUnavailableFailureCode)
+        {
+            return "This application cannot verify migration 012 because its deployed migration asset is unavailable; delivery remains blocked.";
+        }
+
+        if (probe?.FailureCode
+            == PostgresReportingDeploymentProbe.SchemaIncompleteFailureCode)
+        {
+            return "Application/schema compatibility cannot be verified because the PostgreSQL reporting schema or migration ledger is incomplete; delivery remains blocked.";
+        }
+
+        return probe is { IsReachable: false }
+            ? "Application/schema compatibility cannot be verified while the PostgreSQL reporting authority is unreachable."
+            : "This application version is incompatible with the PostgreSQL reporting schema: the exact migration 012 access-grant artifact-consumption marker is absent or mismatched; delivery remains blocked.";
+    }
+
+    private static string ResolveDeliveryBlocker(
+        ReportingDeploymentProbeResult? probe,
+        bool applicationVersionCompatible,
+        bool durableDeliveryStore,
+        bool recipientTransportInfrastructureReady)
+    {
+        if (!durableDeliveryStore)
+        {
+            if (applicationVersionCompatible)
+            {
+                return "Durable reporting distribution, receipts, or atomic download accounting are not fully configured.";
+            }
+
+            if (probe?.FailureCode
+                == PostgresReportingDeploymentProbe.BinaryMigrationAssetUnavailableFailureCode)
+            {
+                return "Delivery is blocked because this application cannot verify its migration 012 compatibility asset.";
+            }
+
+            if (probe?.FailureCode
+                == PostgresReportingDeploymentProbe.SchemaIncompleteFailureCode)
+            {
+                return "Delivery is blocked because the PostgreSQL reporting schema or migration ledger is incomplete.";
+            }
+
+            return probe is { IsReachable: false }
+                ? "Delivery is blocked because application/schema compatibility cannot be verified while the PostgreSQL reporting authority is unreachable."
+                : "Delivery is blocked because the PostgreSQL access-grant schema is incompatible with this application version.";
+        }
+
+        return recipientTransportInfrastructureReady
+            ? "Durable reporting delivery is not fully configured."
+            : "Delivery is blocked because one or more recipient-directory transports has no ready adapter or required infrastructure.";
+    }
+
+    private static TimeSpan WorkerHeartbeatMaximumAge(TimeSpan pollInterval) =>
+        TimeSpan.FromTicks(checked((pollInterval.Ticks * 3) + TimeSpan.FromSeconds(10).Ticks));
+
+    private static string ResolveMigrationBlocker(
+        ReportingDeploymentProbeResult? probe)
+    {
+        if (probe?.FailureCode
+            == PostgresReportingDeploymentProbe.BinaryMigrationAssetUnavailableFailureCode)
+        {
+            return "The deployed application is missing the migration 012 asset required to verify database compatibility.";
+        }
+
+        if (probe?.FailureCode
+            == PostgresReportingDeploymentProbe.SchemaIncompleteFailureCode)
+        {
+            return "The PostgreSQL reporting schema or migration ledger is incomplete.";
+        }
+
+        if (probe is { IsReachable: false })
+        {
+            return "The PostgreSQL reporting authority is unreachable.";
+        }
+
+        if (probe is null
+            || !probe.HasCompatibilityMarker(
+                PostgresReportingDeploymentProbe
+                    .AccessGrantArtifactConsumptionCompatibilityMarker))
+        {
+            return "The PostgreSQL reporting schema is incompatible with this application version because migration 012's exact access-grant artifact-consumption marker is absent or mismatched.";
+        }
+
+        if (probe.MissingTriggers.Count > 0)
+        {
+            return "The PostgreSQL reporting schema is missing required immutable-control triggers.";
+        }
+
+        if (probe.MissingConstraints.Count > 0)
+        {
+            return "The PostgreSQL reporting schema is missing required database constraints.";
+        }
+
+        if (probe.MissingColumns.Count > 0)
+        {
+            return "The PostgreSQL reporting schema is missing required operational-authority columns.";
+        }
+
+        if (probe.MissingUniqueKeys.Count > 0)
+        {
+            return "The PostgreSQL reporting schema is missing required durable identity keys.";
+        }
+
+        return probe.MissingTables.Count > 0
+            ? "The PostgreSQL reporting schema is incomplete."
+            : "Reporting migrations have not completed for this process.";
+    }
+
     internal static bool HasRequiredSchema(
         ReportingDeploymentProbeResult? probe,
         string componentId)
@@ -327,7 +703,9 @@ public sealed class ReportingDeploymentReadinessService(
                               column[..separator],
                               column[(separator + 1)..]);
                }) ?? true)
-               && (requirement.UniqueKeys?.All(probe.HasUniqueKey) ?? true);
+               && (requirement.UniqueKeys?.All(probe.HasUniqueKey) ?? true)
+               && (requirement.Constraints?.All(probe.HasConstraint) ?? true)
+               && (requirement.CompatibilityMarkers?.All(probe.HasCompatibilityMarker) ?? true);
     }
 
     private T? Resolve<T>()
@@ -352,5 +730,7 @@ public sealed class ReportingDeploymentReadinessService(
         IReadOnlyList<string> Tables,
         IReadOnlyList<string> Triggers,
         IReadOnlyList<string>? Columns = null,
-        IReadOnlyList<string>? UniqueKeys = null);
+        IReadOnlyList<string>? UniqueKeys = null,
+        IReadOnlyList<string>? Constraints = null,
+        IReadOnlyList<string>? CompatibilityMarkers = null);
 }

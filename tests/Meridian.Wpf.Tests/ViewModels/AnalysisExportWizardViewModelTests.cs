@@ -21,6 +21,8 @@ public sealed class AnalysisExportWizardViewModelTests
         viewModel.ValidationVisibility.Should().Be(Visibility.Visible);
         viewModel.PrimaryActionCommand.CanExecute(null).Should().BeFalse();
         viewModel.AddSymbolCommand.CanExecute(null).Should().BeFalse();
+        viewModel.Formats.Should().Equal("CSV", "Parquet", "Excel", "Apache Arrow");
+        viewModel.Formats.Should().NotContain("JSON");
     }
 
     [Fact]

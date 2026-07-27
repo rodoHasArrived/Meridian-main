@@ -157,6 +157,11 @@ public sealed class StatementImportService(
             throw new InvalidDataException("Statement produced no canonical records; nothing to import.");
         }
 
+        EnsureParsedAccountAuthority(
+            capturedDocument,
+            parse.Records,
+            request.ExternalAccountId);
+
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
         // Key the retained evidence on both the raw content and its canonical rendering. Keying on the
@@ -366,6 +371,37 @@ public sealed class StatementImportService(
 
         return await fetching.FetchAsync(request, ct).ConfigureAwait(false);
     }
+
+    private static void EnsureParsedAccountAuthority(
+        StatementSourceDocument document,
+        IReadOnlyList<StatementCanonicalRecord> records,
+        string externalAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(externalAccountId))
+        {
+            throw new InvalidDataException(
+                "Statement import requires an authorized external account before parsed records can be retained.");
+        }
+
+        var authorizedAccountId = externalAccountId.Trim();
+        if (!string.IsNullOrWhiteSpace(document.ExternalAccountId)
+            && !AccountsMatch(document.ExternalAccountId, authorizedAccountId))
+        {
+            throw new InvalidDataException(
+                "The uploaded statement account scope conflicts with the authorized external account.");
+        }
+
+        if (records.Any(record =>
+                string.IsNullOrWhiteSpace(record.Account)
+                || !AccountsMatch(record.Account, authorizedAccountId)))
+        {
+            throw new InvalidDataException(
+                "Statement contains a missing or conflicting parsed account identity; every row must match the authorized external account.");
+        }
+    }
+
+    private static bool AccountsMatch(string? left, string? right)
+        => string.Equals(left?.Trim(), right?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private (IStatementConnector? Connector, StatementParseIssue? Issue) ResolveConnector(
         StatementSourceDocument document,

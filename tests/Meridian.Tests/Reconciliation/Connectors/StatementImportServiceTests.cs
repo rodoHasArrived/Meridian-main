@@ -178,6 +178,66 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_MixedParsedAccounts_FailsBeforeEvidenceRetentionOrMatching()
+    {
+        const string source =
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n" +
+            "FUND-B,MSFT,1,200,-200,trade,2026-06-03\n";
+        var document = new StatementSourceDocument(
+            "mixed-accounts.csv",
+            Encoding.UTF8.GetBytes(source),
+            ExternalAccountId: "FUND-A");
+
+        var commit = () => _service.CommitAsync(CommitRequest(document));
+
+        await commit.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*parsed account identity*authorized external account*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports"))
+            .Should()
+            .BeFalse("conflicting account rows must fail before raw or canonical evidence is retained");
+        (await _workflow.ListImportsAsync()).Should().BeEmpty(
+            "conflicting account rows must fail before matching or casework begins");
+    }
+
+    [Fact]
+    public async Task Commit_ConnectorOmitsParsedAccount_FailsBeforeEvidenceRetentionOrMatching()
+    {
+        var connector = new FixedRecordConnector(
+            new StatementCanonicalRecord(
+                StatementRecordKind.Transaction,
+                Account: string.Empty,
+                Symbol: "AAPL",
+                Quantity: 1m,
+                Price: 100m,
+                CashAmount: -100m,
+                ActivityType: "trade",
+                TradeDate: new DateOnly(2026, 6, 2)));
+        var service = new StatementImportService(
+            new StatementConnectorRegistry([connector]),
+            _catalog,
+            _workflow,
+            _root);
+        var document = new StatementSourceDocument(
+            "missing-account.fixed",
+            "fixed"u8.ToArray(),
+            ExternalAccountId: "FUND-A");
+
+        var commit = () => service.CommitAsync(
+            CommitRequest(document, connectorId: connector.Descriptor.ConnectorId));
+
+        await commit.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*missing or conflicting parsed account identity*");
+        Directory.Exists(Path.Combine(_root, "reconciliation", "statement-connector-imports"))
+            .Should()
+            .BeFalse("missing account identity must fail before raw or canonical evidence is retained");
+        (await _workflow.ListImportsAsync()).Should().BeEmpty(
+            "missing account identity must fail before matching or casework begins");
+    }
+
+    [Fact]
     public async Task Commit_CanonicalArtifactQuotesDelimiterAndQuoteCharactersWithoutCollisions()
     {
         const string source =
@@ -712,6 +772,13 @@ public sealed class StatementImportServiceTests : IDisposable
         ingestion.LastCommand.PeriodStart.Should().Be(periodStart);
         ingestion.LastCommand.PeriodEnd.Should().Be(periodEnd);
         ingestion.LastCommand.AccountingScope.Should().Be(accountingScope);
+        ingestion.LastAuthorizationCommand.Should().NotBeNull();
+        ingestion.LastAuthorizationCommand!.TenantId.Should().Be("tenant-scheduled");
+        ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
+        ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
+        ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.LastAuthorizationCommand.SourceInstitution.Should().Be("Fake Custodian");
+        ingestion.LastAuthorizationCommand.AccountingScope.Should().Be(accountingScope);
         _fetchingConnector.LastRequest.Should().NotBeNull();
         _fetchingConnector.LastRequest!.Since.Should().Be(
             new DateTimeOffset(periodStart, TimeOnly.MinValue, TimeSpan.Zero),
@@ -726,6 +793,40 @@ public sealed class StatementImportServiceTests : IDisposable
         // Just ran: not due again until the cadence elapses.
         (await runner.RunDueSchedulesAsync(now.AddHours(1))).Should().Be(0);
         (await runner.RunDueSchedulesAsync(now.AddHours(25))).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ScheduleRunner_ReauthorizationFailure_BlocksProviderAccessAndIngestion()
+    {
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(
+            CreateScopedSchedule(
+                "ownership-revoked",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)));
+        var ingestion = new RecordingStatementFetchIngestionAuthority(
+            _service,
+            authorizationFailure: new InvalidOperationException("Statement account ownership was revoked."));
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion);
+        var now = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
+
+        var result = await runner.RunScheduleAsync(schedule, now);
+
+        result.Should().BeNull();
+        ingestion.LastAuthorizationCommand.Should().NotBeNull();
+        ingestion.LastAuthorizationCommand!.TenantId.Should().Be("tenant-scheduled");
+        ingestion.LastAuthorizationCommand.CompanyId.Should().Be("company-scheduled");
+        ingestion.LastAuthorizationCommand.FundAccountId.Should().Be("FUND-SCHED");
+        ingestion.LastAuthorizationCommand.ExternalAccountId.Should().Be("EXT-001");
+        ingestion.LastCommand.Should().BeNull(
+            "a revoked account must never enter the statement ingestion workflow");
+        _fetchingConnector.LastRequest.Should().BeNull(
+            "tenant, company, fund-account, and external-account ownership must be reauthorized before provider access");
+        (await scheduleStore.ListAsync())
+            .Single()
+            .LastRunStatus
+            .Should()
+            .Be("Failed: InvalidOperationException");
     }
 
     [Fact]
@@ -800,10 +901,24 @@ public sealed class StatementImportServiceTests : IDisposable
                 Guid.Parse("22222222-2222-2222-2222-222222222222"),
                 periodEnd));
 
-    private sealed class RecordingStatementFetchIngestionAuthority(StatementImportService imports)
+    private sealed class RecordingStatementFetchIngestionAuthority(
+        StatementImportService imports,
+        Exception? authorizationFailure = null)
         : IStatementFetchIngestionAuthority
     {
+        public StatementFetchAuthorizationCommand? LastAuthorizationCommand { get; private set; }
         public StatementFetchIngestionCommand? LastCommand { get; private set; }
+
+        public Task<StatementAccountingScope> AuthorizeAsync(
+            StatementFetchAuthorizationCommand command,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LastAuthorizationCommand = command;
+            return authorizationFailure is null
+                ? Task.FromResult(command.AccountingScope)
+                : Task.FromException<StatementAccountingScope>(authorizationFailure);
+        }
 
         public async Task<StatementImportCommitResultDto> IngestAsync(
             StatementFetchIngestionCommand command,
@@ -827,6 +942,45 @@ public sealed class StatementImportServiceTests : IDisposable
                     },
                     ct)
                 .ConfigureAwait(false);
+        }
+    }
+
+    private sealed class FixedRecordConnector : IStatementConnector
+    {
+        private readonly IReadOnlyList<StatementCanonicalRecord> _records;
+
+        public FixedRecordConnector(params StatementCanonicalRecord[] records)
+        {
+            _records = records;
+        }
+
+        public StatementConnectorDescriptor Descriptor { get; } = new(
+            "fixed-record",
+            "Fixed record connector",
+            [".fixed"],
+            SupportsFileImport: true,
+            SupportsRemoteFetch: false,
+            RequiresMappingProfile: false,
+            DefaultProfileId: null);
+
+        public bool CanHandle(StatementSourceDocument document) => true;
+
+        public Task<StatementParseResult> ParseAsync(
+            StatementSourceDocument document,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new StatementParseResult(
+                Descriptor.ConnectorId,
+                ProfileId: null,
+                DetectedColumns: [],
+                ColumnMappings: [],
+                Records: _records,
+                Issues: [],
+                Fingerprint: new StatementFormatFingerprint(
+                    new string('A', 64),
+                    NormalizedColumns: [],
+                    Delimiter: string.Empty)));
         }
     }
 

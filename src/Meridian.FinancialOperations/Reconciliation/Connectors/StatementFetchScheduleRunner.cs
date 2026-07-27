@@ -4,6 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
+public sealed record StatementFetchAuthorizationCommand(
+    string TenantId,
+    string CompanyId,
+    string FundAccountId,
+    string ExternalAccountId,
+    string SourceInstitution,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    StatementAccountingScope AccountingScope);
+
 public sealed record StatementFetchIngestionCommand(
     StatementSourceDocument Document,
     string ConnectorId,
@@ -17,14 +27,31 @@ public sealed record StatementFetchIngestionCommand(
     string ImportedBy,
     string TenantId,
     string CompanyId,
-    StatementAccountingScope AccountingScope);
+    StatementAccountingScope AccountingScope)
+{
+    public StatementFetchAuthorizationCommand ToAuthorizationCommand()
+        => new(
+            TenantId,
+            CompanyId,
+            FundAccountId,
+            ExternalAccountId,
+            SourceInstitution,
+            PeriodStart,
+            PeriodEnd,
+            AccountingScope);
+}
 
 /// <summary>
-/// Compatibility seam used by the connector scheduler to enter the existing statement
-/// reconciliation report workflow. Implementations must not commit through a parallel import path.
+/// Compatibility seam used by the connector scheduler to reauthorize retained account ownership
+/// before provider access and then enter the existing statement reconciliation report workflow.
+/// Implementations must not commit through a parallel import path.
 /// </summary>
 public interface IStatementFetchIngestionAuthority
 {
+    Task<StatementAccountingScope> AuthorizeAsync(
+        StatementFetchAuthorizationCommand command,
+        CancellationToken ct = default);
+
     Task<StatementImportCommitResultDto> IngestAsync(
         StatementFetchIngestionCommand command,
         CancellationToken ct = default);
@@ -98,6 +125,25 @@ public sealed class StatementFetchScheduleRunner(
                     "Statement reconciliation report ingestion authority is not registered.");
             }
 
+            var authorizedScope = await ingestionAuthority
+                .AuthorizeAsync(
+                    new StatementFetchAuthorizationCommand(
+                        schedule.TenantId!,
+                        schedule.CompanyId!,
+                        schedule.FundAccountId,
+                        schedule.ExternalAccountId,
+                        schedule.SourceInstitution,
+                        schedule.PeriodStart!.Value,
+                        schedule.PeriodEnd!.Value,
+                        schedule.AccountingScope!),
+                    ct)
+                .ConfigureAwait(false);
+            if (!AccountingScopesEqual(authorizedScope, schedule.AccountingScope!))
+            {
+                throw new InvalidOperationException(
+                    "Statement fetch schedule account authority changed before provider access.");
+            }
+
             var periodStartUtc = new DateTimeOffset(
                 schedule.PeriodStart!.Value,
                 TimeOnly.MinValue,
@@ -131,7 +177,7 @@ public sealed class StatementFetchScheduleRunner(
                         "statement-fetch-scheduler",
                         schedule.TenantId!,
                         schedule.CompanyId!,
-                        schedule.AccountingScope!),
+                        authorizedScope),
                     ct)
                 .ConfigureAwait(false);
 
@@ -174,4 +220,12 @@ public sealed class StatementFetchScheduleRunner(
                 "Statement fetch schedule does not retain exact tenant, company, fund, book, and accounting-period authority. Edit and save the schedule before running it.");
         }
     }
+
+    private static bool AccountingScopesEqual(
+        StatementAccountingScope left,
+        StatementAccountingScope right)
+        => string.Equals(left.FundProfileId, right.FundProfileId, StringComparison.OrdinalIgnoreCase)
+           && left.LedgerBookId == right.LedgerBookId
+           && left.AccountingPeriodId == right.AccountingPeriodId
+           && left.AsOfDate == right.AsOfDate;
 }

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Storage
@@ -84,10 +84,11 @@ lookup paths, and evidence trails those layers rely on.
   digests and indexed identity checks. The live deployment probe also verifies the reporting
   migration-ledger key and non-null checksum, immediate non-expression conflict/idempotency keys,
   and the predicate-bound access-grant delivery key. When the reporting connection is absent, UI
-  Shared can register file-backed run, schedule, custom-template, starter-kit, workflow, and
-  delivery compatibility stores for local development, but production omits them and the
-  independent Reporting deployment capability remains blocked; those files are not production
-  recovery authority.
+  Shared can register file-backed run, schedule, custom-template, and starter-kit compatibility
+  stores for local development, but the independent Reporting deployment capability remains
+  blocked. Legacy file workflow and delivery-history repositories are not part of the default host
+  composition and remain available only to explicitly constructed compatibility callers.
+  Production omits all of these file authorities; they are not production recovery authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.

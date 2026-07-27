@@ -97,7 +97,9 @@ public interface IAccountingCloseManagementService
         string? tenantId,
         string? companyId,
         CancellationToken ct = default)
-        => LockClosePeriodAsync(request, actor, ct);
+        => Task.FromException<ClosePeriodLockResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped hard close."));
 
     Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
         ReopenClosePeriodRequestDto request,
@@ -112,7 +114,9 @@ public interface IAccountingCloseManagementService
         string? tenantId,
         string? companyId,
         CancellationToken ct = default)
-        => ReopenClosePeriodAsync(request, actor, ct);
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped reopen."));
 }
 
 public sealed partial class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -133,6 +137,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
 
     private readonly IOperationsContinuityWorkflowService _workflowService;
     private readonly IAccountingClosePostingWorkbench? _postingWorkbench;
+    private readonly IAccountingCloseMutationGate? _mutationGate;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
@@ -152,6 +157,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         : this(workflowService)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
     }
 
     public AccountingCloseManagementService(
@@ -170,6 +176,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         : this(workflowService, storageOptions)
     {
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
     }
 
     public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(
@@ -739,7 +746,22 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         LockClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default)
-        => LockClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            return Task.FromException<ClosePeriodLockResultDto?>(
+                new InvalidOperationException(
+                    "Governed hard close requires an authenticated tenant and company scope. Use the scoped close-period operation."));
+        }
+
+        return LockClosePeriodScopedAsync(
+            request,
+            actor,
+            tenantId: null,
+            companyId: null,
+            ct: ct);
+    }
 
     public async Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
         LockClosePeriodRequestDto request,
@@ -755,6 +777,14 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
 
+        var controllerRole = request.PrepareClosingEntriesOnly
+            ? null
+            : RequireControllerRole(request.ControllerRole);
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            RequireCompleteMutationScope(tenantId, companyId);
+        }
+
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -766,9 +796,50 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             }
 
             var plan = BuildPeriodPlan(workflow);
+            if (!request.PrepareClosingEntriesOnly && _mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var closeConsistencyLease =
+                !request.PrepareClosingEntriesOnly
+                    ? await _mutationGate!
+                        .AcquireAsync(
+                            RequirePostingContext(workflow, plan, tenantId, companyId),
+                            ct)
+                        .ConfigureAwait(false)
+                    : null;
+            var consistencyLeaseHeld = closeConsistencyLease is not null;
+            if (!request.PrepareClosingEntriesOnly && !consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
             if (plan.IsPeriodLocked)
             {
-                if (_postingWorkbench is not null)
+                if (_postingWorkbench is not null && !request.PrepareClosingEntriesOnly)
                 {
                     try
                     {
@@ -779,8 +850,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                                     RequireText(request.Rationale, "Rationale"),
                                     NormalizeEvidenceLinks(request.EvidenceLinks),
                                     request.ActionOrigin,
-                                    Role: "Fund Controller",
-                                    CorrelationId: request.CorrelationId),
+                                    Role: controllerRole!,
+                                    CorrelationId: request.CorrelationId)
+                                {
+                                    ConsistencyLeaseHeld = consistencyLeaseHeld
+                                },
                                 ct)
                             .ConfigureAwait(false);
                     }
@@ -915,8 +989,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                             RequireText(request.Rationale, "Rationale"),
                             NormalizeEvidenceLinks(request.EvidenceLinks),
                             request.ActionOrigin,
-                            Role: "Fund Controller",
-                            CorrelationId: request.CorrelationId),
+                            Role: controllerRole!,
+                            CorrelationId: request.CorrelationId)
+                        {
+                            ConsistencyLeaseHeld = consistencyLeaseHeld
+                        },
                         ct)
                     .ConfigureAwait(false);
             }
@@ -986,8 +1063,11 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                                 RequireText(request.Rationale, "Rationale"),
                                 NormalizeEvidenceLinks(request.EvidenceLinks),
                                 request.ActionOrigin,
-                                Role: "Fund Controller",
-                                CorrelationId: request.CorrelationId),
+                                Role: controllerRole!,
+                                CorrelationId: request.CorrelationId)
+                            {
+                                ConsistencyLeaseHeld = consistencyLeaseHeld
+                            },
                             ct)
                         .ConfigureAwait(false);
                 }
@@ -1043,7 +1123,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         ReopenClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default)
-        => ReopenClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new InvalidOperationException(
+                "Governed close-period reopen requires an authenticated tenant and company scope. Use the scoped close-period operation."));
 
     public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
         ReopenClosePeriodRequestDto request,
@@ -1058,6 +1140,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
         {
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
+        RequireCompleteMutationScope(tenantId, companyId);
 
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -1125,6 +1208,46 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                     [ClosingEntriesIssue(unavailable)]);
             }
 
+            if (_mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var reopenConsistencyLease = await _mutationGate
+                .AcquireAsync(
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
+                    ct)
+                .ConfigureAwait(false);
+            var consistencyLeaseHeld = reopenConsistencyLease is not null;
+            if (!consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
             // Re-read immediately before the durable ledger reopen. This prevents a stale version from
             // reopening the ledger after another close-plan mutation completed while the request waited.
             var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
@@ -1176,7 +1299,10 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                         request.ActionOrigin,
                         role,
                         RequireText(request.ApprovalReference, "ApprovalReference"),
-                        request.CorrelationId),
+                        request.CorrelationId)
+                    {
+                        ConsistencyLeaseHeld = consistencyLeaseHeld
+                    },
                     ct)
                 .ConfigureAwait(false);
 
@@ -1399,6 +1525,24 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             gate.Detail,
             gate.GateId,
             "Open the Post closing entries gate, review the net-income roll, and independently approve/post the governed draft before period lock.");
+
+    private static AccountingConfigurationValidationIssueDto MutationConsistencyGateUnavailableIssue(
+        ClosePeriodPlanDto plan)
+        => new(
+            "ClosePeriodMutationConsistencyGateUnavailable",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            "The durable accounting-period mutation fence is unavailable; ledger close/reopen and the Operations workflow transition cannot be committed as one governed outcome.",
+            plan.ClosePlanId,
+            "Configure the canonical cross-host reporting release/close consistency authority, then retry the unchanged close or reopen command.");
+
+    private static void RequireCompleteMutationScope(string? tenantId, string? companyId)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
+        {
+            throw new ArgumentException(
+                "Governed accounting-period mutation requires authenticated tenant and company scope.");
+        }
+    }
 
     private static IReadOnlyList<CloseOperatingCoverageItemDto> BuildOperatingCoverage(
         OperationsContinuityWorkflowDto workflow,

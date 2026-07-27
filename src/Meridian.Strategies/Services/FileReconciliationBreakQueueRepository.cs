@@ -10,10 +10,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Services;
 
-public sealed partial class FileReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
+public sealed partial class FileReconciliationBreakQueueRepository :
+    IReconciliationBreakQueueRepository,
+    IReconciliationBreakQueueAuthorityProbe
 {
     private const int MaximumBulkCaseCount = 100;
-    private const int CurrentSnapshotSchemaVersion = 5;
+    private const int CurrentSnapshotSchemaVersion = 6;
     private readonly string _snapshotPath;
     private readonly string _auditPath;
     private readonly string _mutationLockPath;

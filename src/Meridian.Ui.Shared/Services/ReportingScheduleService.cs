@@ -2172,7 +2172,9 @@ public sealed partial class ReportingScheduleService
                 artifactSelection.Formats,
                 artifactSelection.ArtifactIds,
                 GrantLifetimeSeconds: transportId == "http-relay" ? 1_800 : null,
-                GrantMaxUses: transportId == "http-relay" ? 1 : null,
+                GrantMaxUses: transportId == "http-relay"
+                    ? artifactSelection.ArtifactIds.Count
+                    : null,
                 MaxAttempts: Math.Max(1, schedule.MaxRetries + 1),
                 CreatedAtUtc: createdAtUtc,
                 RecipientPrincipalKind: recipient.Kind.ToString(),
@@ -3342,21 +3344,60 @@ internal sealed record ReportingScheduleWorkerBatchResult(
 /// </summary>
 public sealed class ReportingScheduleHostedService : BackgroundService
 {
-    private readonly ReportingScheduleService _scheduleService;
+    private readonly Func<
+        DateTimeOffset,
+        CancellationToken,
+        Task<ReportingScheduleWorkerBatchResult>> _runDueAsync;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<ReportingScheduleHostedService> _logger;
     private readonly ReportingScheduleWorkerOptions _options;
+    private readonly ReportingScheduleWorkerReadinessState _readiness;
 
     public ReportingScheduleHostedService(
         ReportingScheduleService scheduleService,
         TimeProvider timeProvider,
         ILogger<ReportingScheduleHostedService> logger,
         ReportingScheduleWorkerOptions? options = null)
+        : this(scheduleService, timeProvider, logger, options, readiness: null)
     {
-        _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
+    }
+
+    public ReportingScheduleHostedService(
+        ReportingScheduleService scheduleService,
+        TimeProvider timeProvider,
+        ILogger<ReportingScheduleHostedService> logger,
+        ReportingScheduleWorkerOptions? options,
+        ReportingScheduleWorkerReadinessState? readiness)
+    {
+        ArgumentNullException.ThrowIfNull(scheduleService);
+        _runDueAsync = scheduleService.RunDueForWorkerAsync;
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? ReportingScheduleWorkerOptions.Default;
+        _readiness = readiness ?? new ReportingScheduleWorkerReadinessState();
+        if (_options.PollInterval <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options),
+                "The reporting schedule worker poll interval must be positive.");
+        }
+    }
+
+    internal ReportingScheduleHostedService(
+        Func<
+            DateTimeOffset,
+            CancellationToken,
+            Task<ReportingScheduleWorkerBatchResult>> runDueAsync,
+        TimeProvider timeProvider,
+        ILogger<ReportingScheduleHostedService> logger,
+        ReportingScheduleWorkerOptions options,
+        ReportingScheduleWorkerReadinessState readiness)
+    {
+        _runDueAsync = runDueAsync ?? throw new ArgumentNullException(nameof(runDueAsync));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _readiness = readiness ?? throw new ArgumentNullException(nameof(readiness));
         if (_options.PollInterval <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(
@@ -3367,36 +3408,47 @@ public sealed class ReportingScheduleHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(_options.PollInterval);
-        do
+        try
         {
-            try
+            using var timer = new PeriodicTimer(_options.PollInterval);
+            do
             {
-                var batch = await _scheduleService
-                    .RunDueForWorkerAsync(_timeProvider.GetUtcNow(), stoppingToken)
-                    .ConfigureAwait(false);
-                foreach (var failure in batch.Failures)
+                try
                 {
+                    var batch = await _runDueAsync(
+                            _timeProvider.GetUtcNow(),
+                            stoppingToken)
+                        .ConfigureAwait(false);
+                    foreach (var failure in batch.Failures)
+                    {
+                        _logger.LogError(
+                            "Scheduled report {ScheduleId} failed closed for tenant {TenantId} and company {CompanyId} with error type {ErrorType}; failure recording error type was {FailureRecordingErrorType}; other due schedules continued.",
+                            failure.ScheduleId,
+                            failure.TenantId,
+                            failure.CompanyId,
+                            failure.ErrorType,
+                            failure.FailureRecordingErrorType ?? "none");
+                    }
+
+                    _readiness.MarkReady(_timeProvider.GetUtcNow());
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    _readiness.MarkCycleFailed();
                     _logger.LogError(
-                        "Scheduled report {ScheduleId} failed closed for tenant {TenantId} and company {CompanyId} with error type {ErrorType}; failure recording error type was {FailureRecordingErrorType}; other due schedules continued.",
-                        failure.ScheduleId,
-                        failure.TenantId,
-                        failure.CompanyId,
-                        failure.ErrorType,
-                        failure.FailureRecordingErrorType ?? "none");
+                        "Scheduled reporting cycle failed closed with error type {ErrorType}.",
+                        exception.GetType().Name);
                 }
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(
-                    "Scheduled reporting cycle failed closed with error type {ErrorType}.",
-                    exception.GetType().Name);
-            }
+            while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
         }
-        while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
+        finally
+        {
+            _readiness.MarkNotReady();
+        }
     }
 }

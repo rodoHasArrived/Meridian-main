@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -14,6 +16,43 @@ public interface IReportingDeploymentProbe
 /// </summary>
 public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
 {
+    public const string AccessGrantArtifactConsumptionCompatibilityMarker =
+        "reporting-access-grant-artifact-consumption:v1";
+
+    public const string AccessGrantArtifactConsumptionTriggerName =
+        "trg_reporting_access_grants_guard_v012";
+
+    public const string SchemaIncompleteFailureCode =
+        "REPORTING_SCHEMA_INCOMPLETE";
+
+    public const string BinaryMigrationAssetUnavailableFailureCode =
+        "REPORTING_BINARY_MIGRATION_ASSET_UNAVAILABLE";
+
+    internal const string AccessGrantArtifactConsumptionMigrationFileName =
+        "012_reporting_access_grant_artifact_consumption.sql";
+
+    internal const int BeforeRowInsertUpdateDeleteTriggerTypeMask =
+        ReportingTriggerType.Row
+        | ReportingTriggerType.Before
+        | ReportingTriggerType.Insert
+        | ReportingTriggerType.Delete
+        | ReportingTriggerType.Update;
+
+    internal const string ConsumedArtifactConstraintDefinitionFragment =
+        "consumed_artifact_ids <@ artifact_ids "
+        + "and cardinality(consumed_artifact_ids) <= use_count "
+        + "and (use_count = 0 "
+        + "or cardinality(artifact_ids) = 0 "
+        + "or cardinality(consumed_artifact_ids) > 0)";
+
+    internal const string AccessGrantInsertCompatibilityDefinitionFragment =
+        "tg_op = 'INSERT' and new.consumed_artifact_ids is null";
+
+    internal const string AccessGrantLegacyUseCompatibilityDefinitionFragment =
+        "new.use_count = old.use_count + 1 "
+        + "and old.consumed_artifact_ids is null "
+        + "and new.consumed_artifact_ids is null";
+
     internal static readonly string[] RequiredTables =
     [
         "reporting_schema_migrations",
@@ -58,9 +97,13 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             "reporting_governance_audit",
             "reject_reporting_governance_audit_mutation"),
         new(
-            "trg_reporting_access_grants_guard",
+            AccessGrantArtifactConsumptionTriggerName,
             "reporting_access_grants",
-            "guard_reporting_access_grant_mutation"),
+            "guard_reporting_access_grant_mutation",
+            RequiredTypeMask: BeforeRowInsertUpdateDeleteTriggerTypeMask,
+            DefinitionFragment: AccessGrantInsertCompatibilityDefinitionFragment,
+            AdditionalDefinitionFragment:
+                AccessGrantLegacyUseCompatibilityDefinitionFragment),
         new(
             "trg_reporting_delivery_jobs_guard",
             "reporting_delivery_jobs",
@@ -109,6 +152,10 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         new("reporting_run_create_claims", "claimed_at_utc"),
         new("reporting_run_create_claims", "lease_expires_at_utc"),
         new("reporting_run_create_claims", "lease_version"),
+        new(
+            "reporting_access_grants",
+            "consumed_artifact_ids",
+            MustHaveNoDefault: true),
         new("reporting_schedule_snapshots", "due_at_utc"),
         new("reporting_schedule_snapshots", "lease_owner"),
         new("reporting_schedule_snapshots", "lease_expires_at_utc"),
@@ -155,6 +202,42 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         new("reporting_delivery_receipts", ["job_id", "receipt_id"])
     ];
 
+    internal static readonly ReportingConstraintBinding[] RequiredConstraintBindings =
+    [
+        new(
+            "reporting_access_grants",
+            "ck_reporting_access_grant_consumed_artifacts",
+            ConstraintType: "c",
+            DefinitionFragment: ConsumedArtifactConstraintDefinitionFragment)
+    ];
+
+    internal static readonly ReportingApplicationCompatibilityBinding[]
+        RequiredApplicationCompatibilityBindings =
+        [
+            new(
+                AccessGrantArtifactConsumptionCompatibilityMarker,
+                AccessGrantArtifactConsumptionMigrationFileName,
+                RequiredColumns:
+                [
+                    "reporting_access_grants.consumed_artifact_ids"
+                ],
+                RequiredTriggers:
+                [
+                    AccessGrantArtifactConsumptionTriggerName
+                ],
+                RequiredConstraints:
+                [
+                    "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts"
+                ])
+        ];
+
+    private static readonly Lazy<string[]> RequiredApplicationCompatibilityMigrationChecksums =
+        new(() =>
+            RequiredApplicationCompatibilityBindings
+                .Select(static binding =>
+                    ComputeMigrationChecksum(ReadMigration(binding.MigrationFileName)))
+                .ToArray());
+
     internal const string ProbeCommandText =
         """
         select required.table_name
@@ -169,13 +252,28 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         from unnest(
             @required_triggers::text[],
             @required_trigger_tables::text[],
-            @required_trigger_functions::text[])
-            as required(trigger_name, table_name, function_name)
+            @required_trigger_functions::text[],
+            @required_trigger_type_masks::integer[],
+            @required_trigger_definition_fragments::text[],
+            @required_trigger_additional_definition_fragments::text[])
+            as required(
+                trigger_name,
+                table_name,
+                function_name,
+                required_type_mask,
+                normalized_definition_fragment,
+                normalized_additional_definition_fragment)
         left join (
             select
                 trigger_row.tgname as trigger_name,
                 target_table.relname as table_name,
-                trigger_function.proname as function_name
+                trigger_function.proname as function_name,
+                trigger_row.tgtype::integer as trigger_type,
+                regexp_replace(
+                    lower(pg_catalog.pg_get_functiondef(trigger_function.oid)),
+                    '[[:space:]()]',
+                    '',
+                    'g') as normalized_definition
             from pg_catalog.pg_trigger trigger_row
             join pg_catalog.pg_class target_table
               on target_table.oid = trigger_row.tgrelid
@@ -193,6 +291,17 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
           on existing.trigger_name = required.trigger_name
          and existing.table_name = required.table_name
          and existing.function_name = required.function_name
+         and (required.required_type_mask = 0
+             or (existing.trigger_type & required.required_type_mask)
+                = required.required_type_mask)
+         and (required.normalized_definition_fragment = ''
+              or position(
+                  required.normalized_definition_fragment
+                  in existing.normalized_definition) > 0)
+         and (required.normalized_additional_definition_fragment = ''
+              or position(
+                  required.normalized_additional_definition_fragment
+                  in existing.normalized_definition) > 0)
         where existing.trigger_name is null
         order by required.trigger_name;
 
@@ -200,13 +309,15 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         from unnest(
             @required_column_tables::text[],
             @required_columns::text[],
-            @required_column_not_null::boolean[])
-            as required(table_name, column_name, must_be_not_null)
+            @required_column_not_null::boolean[],
+            @required_column_no_default::boolean[])
+            as required(table_name, column_name, must_be_not_null, must_have_no_default)
         left join (
             select
                 target_table.relname as table_name,
                 column_row.attname as column_name,
-                column_row.attnotnull as is_not_null
+                column_row.attnotnull as is_not_null,
+                column_row.atthasdef as has_default
             from pg_catalog.pg_attribute column_row
             join pg_catalog.pg_class target_table
               on target_table.oid = column_row.attrelid
@@ -220,6 +331,7 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
          and existing.column_name = required.column_name
         where existing.column_name is null
            or (required.must_be_not_null and not existing.is_not_null)
+           or (required.must_have_no_default and existing.has_default)
         order by required.table_name, required.column_name;
 
         select required.signature
@@ -273,6 +385,62 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
          and existing.predicate = required.predicate
         where existing.table_name is null
         order by required.signature;
+
+        select required.signature
+        from unnest(
+            @required_constraint_tables::text[],
+            @required_constraints::text[],
+            @required_constraint_types::text[],
+            @required_constraint_definitions::text[],
+            @required_constraint_signatures::text[])
+            as required(
+                table_name,
+                constraint_name,
+                constraint_type,
+                normalized_definition_fragment,
+                signature)
+        left join (
+            select
+                target_table.relname as table_name,
+                constraint_row.conname as constraint_name,
+                constraint_row.contype::text as constraint_type,
+                constraint_row.convalidated as is_validated,
+                regexp_replace(
+                    lower(pg_catalog.pg_get_constraintdef(constraint_row.oid)),
+                    '[[:space:]()]',
+                    '',
+                    'g') as normalized_definition
+            from pg_catalog.pg_constraint constraint_row
+            join pg_catalog.pg_class target_table
+              on target_table.oid = constraint_row.conrelid
+            join pg_catalog.pg_namespace target_schema
+              on target_schema.oid = target_table.relnamespace
+            where target_schema.nspname = @schema
+        ) existing
+          on existing.table_name = required.table_name
+         and existing.constraint_name = required.constraint_name
+         and existing.constraint_type = required.constraint_type
+         and existing.is_validated
+         and position(
+             required.normalized_definition_fragment
+             in existing.normalized_definition) > 0
+        where existing.constraint_name is null
+        order by required.signature;
+
+        select required.compatibility_marker
+        from unnest(
+            @required_compatibility_markers::text[],
+            @required_compatibility_migration_files::text[],
+            @required_compatibility_migration_checksums::text[])
+            as required(
+                compatibility_marker,
+                migration_file,
+                migration_checksum)
+        left join __SCHEMA__.reporting_schema_migrations existing
+          on existing.filename = required.migration_file
+         and existing.checksum = required.migration_checksum
+        where existing.filename is null
+        order by required.compatibility_marker;
         """;
 
     private readonly string _connectionString;
@@ -303,7 +471,10 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
             using var command = connection.CreateCommand();
-            command.CommandText = ProbeCommandText;
+            command.CommandText = ProbeCommandText.Replace(
+                "__SCHEMA__",
+                $"\"{_schema}\"",
+                StringComparison.Ordinal);
             command.Parameters.AddWithValue(
                 "required_tables",
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
@@ -321,6 +492,22 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
                 RequiredTriggerBindings.Select(static binding => binding.FunctionName).ToArray());
             command.Parameters.AddWithValue(
+                "required_trigger_type_masks",
+                NpgsqlDbType.Array | NpgsqlDbType.Integer,
+                RequiredTriggerBindings.Select(static binding => binding.RequiredTypeMask).ToArray());
+            command.Parameters.AddWithValue(
+                "required_trigger_definition_fragments",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredTriggerBindings
+                    .Select(static binding => binding.NormalizedDefinitionFragment)
+                    .ToArray());
+            command.Parameters.AddWithValue(
+                "required_trigger_additional_definition_fragments",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredTriggerBindings
+                    .Select(static binding => binding.NormalizedAdditionalDefinitionFragment)
+                    .ToArray());
+            command.Parameters.AddWithValue(
                 "required_column_tables",
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
                 RequiredColumnBindings.Select(static binding => binding.TableName).ToArray());
@@ -332,6 +519,10 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 "required_column_not_null",
                 NpgsqlDbType.Array | NpgsqlDbType.Boolean,
                 RequiredColumnBindings.Select(static binding => binding.MustBeNotNull).ToArray());
+            command.Parameters.AddWithValue(
+                "required_column_no_default",
+                NpgsqlDbType.Array | NpgsqlDbType.Boolean,
+                RequiredColumnBindings.Select(static binding => binding.MustHaveNoDefault).ToArray());
             command.Parameters.AddWithValue(
                 "required_unique_key_tables",
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
@@ -348,6 +539,44 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 "required_unique_key_signatures",
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
                 RequiredUniqueKeyBindings.Select(static binding => binding.Signature).ToArray());
+            command.Parameters.AddWithValue(
+                "required_constraint_tables",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredConstraintBindings.Select(static binding => binding.TableName).ToArray());
+            command.Parameters.AddWithValue(
+                "required_constraints",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredConstraintBindings.Select(static binding => binding.ConstraintName).ToArray());
+            command.Parameters.AddWithValue(
+                "required_constraint_types",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredConstraintBindings.Select(static binding => binding.ConstraintType).ToArray());
+            command.Parameters.AddWithValue(
+                "required_constraint_definitions",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredConstraintBindings
+                    .Select(static binding => binding.NormalizedDefinitionFragment)
+                    .ToArray());
+            command.Parameters.AddWithValue(
+                "required_constraint_signatures",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredConstraintBindings.Select(static binding => binding.Signature).ToArray());
+            command.Parameters.AddWithValue(
+                "required_compatibility_markers",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredApplicationCompatibilityBindings
+                    .Select(static binding => binding.CompatibilityMarker)
+                    .ToArray());
+            command.Parameters.AddWithValue(
+                "required_compatibility_migration_files",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredApplicationCompatibilityBindings
+                    .Select(static binding => binding.MigrationFileName)
+                    .ToArray());
+            command.Parameters.AddWithValue(
+                "required_compatibility_migration_checksums",
+                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                RequiredApplicationCompatibilityMigrationChecksums.Value);
             command.Parameters.AddWithValue("schema", NpgsqlDbType.Text, _schema);
 
             var missingTables = new List<string>();
@@ -390,6 +619,41 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 missingUniqueKeys.Add(reader.GetString(0));
             }
 
+            var missingConstraints = new List<string>();
+            if (!reader.NextResult())
+            {
+                throw new InvalidDataException(
+                    "The reporting deployment probe did not return its constraint verification result.");
+            }
+            while (reader.Read())
+            {
+                missingConstraints.Add(reader.GetString(0));
+            }
+
+            var missingCompatibilityMarkers = new List<string>();
+            if (!reader.NextResult())
+            {
+                throw new InvalidDataException(
+                    "The reporting deployment probe did not return its application-compatibility verification result.");
+            }
+            while (reader.Read())
+            {
+                missingCompatibilityMarkers.Add(reader.GetString(0));
+            }
+
+            missingCompatibilityMarkers = ResolveMissingCompatibilityMarkers(
+                    missingCompatibilityMarkers,
+                    missingColumns,
+                    missingTriggers,
+                    missingConstraints)
+                .ToList();
+            var verifiedCompatibilityMarkers =
+                RequiredApplicationCompatibilityBindings
+                    .Select(static binding => binding.CompatibilityMarker)
+                    .Except(missingCompatibilityMarkers, StringComparer.Ordinal)
+                    .Order(StringComparer.Ordinal)
+                    .ToArray();
+
             return new ReportingDeploymentProbeResult(
                 IsReachable: true,
                 MissingTables: missingTables,
@@ -397,42 +661,185 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 FailureCode: null)
             {
                 MissingColumns = missingColumns,
-                MissingUniqueKeys = missingUniqueKeys
+                MissingUniqueKeys = missingUniqueKeys,
+                MissingConstraints = missingConstraints,
+                MissingCompatibilityMarkers = missingCompatibilityMarkers,
+                VerifiedCompatibilityMarkers = verifiedCompatibilityMarkers
             };
+        }
+        catch (PostgresException exception)
+            when (IsIncompleteSchemaError(exception.SqlState))
+        {
+            return CreateFailureResult(
+                isReachable: true,
+                SchemaIncompleteFailureCode);
         }
         catch (Exception exception) when (exception is NpgsqlException
             or TimeoutException
             or InvalidOperationException
-            or InvalidDataException)
+            or InvalidDataException
+            or IOException
+            or UnauthorizedAccessException)
         {
-            return new ReportingDeploymentProbeResult(
-                IsReachable: false,
-                MissingTables: RequiredTables,
-                MissingTriggers: RequiredTriggers,
-                FailureCode: "REPORTING_POSTGRES_UNREACHABLE")
-            {
-                MissingColumns = RequiredColumnBindings
-                    .Select(static binding => binding.QualifiedName)
-                    .ToArray(),
-                MissingUniqueKeys = RequiredUniqueKeyBindings
-                    .Select(static binding => binding.Signature)
-                    .ToArray()
-            };
+            var compatibilityAssetUnavailable =
+                exception is IOException or UnauthorizedAccessException;
+            return CreateFailureResult(
+                isReachable: false,
+                compatibilityAssetUnavailable
+                    ? BinaryMigrationAssetUnavailableFailureCode
+                    : "REPORTING_POSTGRES_UNREACHABLE");
         }
     }
+
+    internal static bool IsIncompleteSchemaError(string? sqlState) =>
+        sqlState is "42P01" // undefined_table
+            or "42703"; // undefined_column
+
+    internal static ReportingDeploymentProbeResult CreateFailureResult(
+        bool isReachable,
+        string failureCode) =>
+        new(
+            IsReachable: isReachable,
+            MissingTables: RequiredTables,
+            MissingTriggers: RequiredTriggers,
+            FailureCode: failureCode)
+        {
+            MissingColumns = RequiredColumnBindings
+                .Select(static binding => binding.QualifiedName)
+                .ToArray(),
+            MissingUniqueKeys = RequiredUniqueKeyBindings
+                .Select(static binding => binding.Signature)
+                .ToArray(),
+            MissingConstraints = RequiredConstraintBindings
+                .Select(static binding => binding.Signature)
+                .ToArray(),
+            MissingCompatibilityMarkers = RequiredApplicationCompatibilityBindings
+                .Select(static binding => binding.CompatibilityMarker)
+                .ToArray()
+        };
+
+    internal static string ComputeMigrationChecksum(string sql)
+    {
+        ArgumentNullException.ThrowIfNull(sql);
+        return Convert.ToHexString(
+                SHA256.HashData(Encoding.UTF8.GetBytes(sql)))
+            .ToLowerInvariant();
+    }
+
+    internal static IReadOnlyList<string> ResolveMissingCompatibilityMarkers(
+        IReadOnlyCollection<string> missingMigrationMarkers,
+        IReadOnlyCollection<string> missingColumns,
+        IReadOnlyCollection<string> missingTriggers,
+        IReadOnlyCollection<string> missingConstraints)
+    {
+        ArgumentNullException.ThrowIfNull(missingMigrationMarkers);
+        ArgumentNullException.ThrowIfNull(missingColumns);
+        ArgumentNullException.ThrowIfNull(missingTriggers);
+        ArgumentNullException.ThrowIfNull(missingConstraints);
+
+        var missing = new HashSet<string>(
+            missingMigrationMarkers,
+            StringComparer.Ordinal);
+        foreach (var binding in RequiredApplicationCompatibilityBindings)
+        {
+            if (binding.RequiredColumns.Any(missingColumns.Contains)
+                || binding.RequiredTriggers.Any(missingTriggers.Contains)
+                || binding.RequiredConstraints.Any(missingConstraints.Contains))
+            {
+                missing.Add(binding.CompatibilityMarker);
+            }
+        }
+
+        return missing.Order(StringComparer.Ordinal).ToArray();
+    }
+
+    private static string ReadMigration(string fileName) =>
+        File.ReadAllText(
+            Path.Combine(
+                AppContext.BaseDirectory,
+                "Reporting",
+                "Migrations",
+                fileName));
 }
 
 internal sealed record ReportingTriggerBinding(
     string TriggerName,
     string TableName,
-    string FunctionName);
+    string FunctionName,
+    int RequiredTypeMask = 0,
+    string? DefinitionFragment = null,
+    string? AdditionalDefinitionFragment = null)
+{
+    internal string NormalizedDefinitionFragment =>
+        NormalizeSqlFragment(DefinitionFragment);
+
+    internal string NormalizedAdditionalDefinitionFragment =>
+        NormalizeSqlFragment(AdditionalDefinitionFragment);
+
+    internal bool MatchesDefinition(string functionDefinition)
+    {
+        var normalizedDefinition = NormalizeSqlFragment(functionDefinition);
+        return ContainsFragment(normalizedDefinition, NormalizedDefinitionFragment)
+            && ContainsFragment(
+                normalizedDefinition,
+                NormalizedAdditionalDefinitionFragment);
+    }
+
+    private static bool ContainsFragment(
+        string normalizedDefinition,
+        string normalizedFragment) =>
+        normalizedFragment.Length == 0
+        || normalizedDefinition.Contains(normalizedFragment, StringComparison.Ordinal);
+
+    private static string NormalizeSqlFragment(string? value) =>
+        string.Concat((value ?? string.Empty)
+            .Where(static character =>
+                !char.IsWhiteSpace(character)
+                && character is not '('
+                && character is not ')'))
+            .ToLowerInvariant();
+}
 
 internal sealed record ReportingColumnBinding(
     string TableName,
     string ColumnName,
-    bool MustBeNotNull = false)
+    bool MustBeNotNull = false,
+    bool MustHaveNoDefault = false)
 {
     internal string QualifiedName => $"{TableName}.{ColumnName}";
+}
+
+internal sealed record ReportingConstraintBinding(
+    string TableName,
+    string ConstraintName,
+    string ConstraintType,
+    string DefinitionFragment)
+{
+    internal string Signature => $"{TableName}.{ConstraintName}";
+
+    internal string NormalizedDefinitionFragment =>
+        string.Concat(DefinitionFragment
+            .Where(static character =>
+                !char.IsWhiteSpace(character)
+                && character is not '('
+                && character is not ')'))
+            .ToLowerInvariant();
+}
+
+internal sealed record ReportingApplicationCompatibilityBinding(
+    string CompatibilityMarker,
+    string MigrationFileName,
+    IReadOnlyList<string> RequiredColumns,
+    IReadOnlyList<string> RequiredTriggers,
+    IReadOnlyList<string> RequiredConstraints);
+
+internal static class ReportingTriggerType
+{
+    internal const int Row = 1;
+    internal const int Before = 2;
+    internal const int Insert = 4;
+    internal const int Delete = 8;
+    internal const int Update = 16;
 }
 
 internal sealed record ReportingUniqueKeyBinding(
@@ -469,28 +876,64 @@ public sealed record ReportingDeploymentProbeResult(
 
     public IReadOnlyList<string> MissingUniqueKeys { get; init; } = [];
 
+    public IReadOnlyList<string> MissingConstraints { get; init; } = [];
+
+    public IReadOnlyList<string> MissingCompatibilityMarkers { get; init; } = [];
+
+    public IReadOnlyList<string> VerifiedCompatibilityMarkers { get; init; } = [];
+
     public bool IsComplete =>
         IsReachable
         && MissingTables.Count == 0
         && MissingTriggers.Count == 0
         && MissingColumns.Count == 0
-        && MissingUniqueKeys.Count == 0;
+        && MissingUniqueKeys.Count == 0
+        && MissingConstraints.Count == 0
+        && MissingCompatibilityMarkers.Count == 0
+        && PostgresReportingDeploymentProbe.RequiredApplicationCompatibilityBindings
+            .All(binding => HasCompatibilityMarker(binding.CompatibilityMarker));
 
     public bool HasTable(string tableName) =>
-        IsReachable &&
-        !MissingTables.Contains(tableName, StringComparer.Ordinal);
+        IsReachable
+        && PostgresReportingDeploymentProbe.RequiredTables.Contains(
+            tableName,
+            StringComparer.Ordinal)
+        && !MissingTables.Contains(tableName, StringComparer.Ordinal);
 
     public bool HasTrigger(string triggerName) =>
-        IsReachable &&
-        !MissingTriggers.Contains(triggerName, StringComparer.Ordinal);
+        IsReachable
+        && PostgresReportingDeploymentProbe.RequiredTriggers.Contains(
+            triggerName,
+            StringComparer.Ordinal)
+        && !MissingTriggers.Contains(triggerName, StringComparer.Ordinal);
 
     public bool HasColumn(string tableName, string columnName) =>
-        IsReachable &&
-        !MissingColumns.Contains(
+        IsReachable
+        && PostgresReportingDeploymentProbe.RequiredColumnBindings.Any(binding =>
+            string.Equals(binding.TableName, tableName, StringComparison.Ordinal)
+            && string.Equals(binding.ColumnName, columnName, StringComparison.Ordinal))
+        && !MissingColumns.Contains(
             $"{tableName}.{columnName}",
             StringComparer.Ordinal);
 
     public bool HasUniqueKey(string signature) =>
+        IsReachable
+        && PostgresReportingDeploymentProbe.RequiredUniqueKeyBindings.Any(binding =>
+            string.Equals(binding.Signature, signature, StringComparison.Ordinal))
+        && !MissingUniqueKeys.Contains(signature, StringComparer.Ordinal);
+
+    public bool HasConstraint(string signature) =>
+        IsReachable
+        && PostgresReportingDeploymentProbe.RequiredConstraintBindings.Any(binding =>
+            string.Equals(binding.Signature, signature, StringComparison.Ordinal))
+        && !MissingConstraints.Contains(signature, StringComparer.Ordinal);
+
+    public bool HasCompatibilityMarker(string compatibilityMarker) =>
         IsReachable &&
-        !MissingUniqueKeys.Contains(signature, StringComparer.Ordinal);
+        VerifiedCompatibilityMarkers.Contains(
+            compatibilityMarker,
+            StringComparer.Ordinal)
+        && !MissingCompatibilityMarkers.Contains(
+            compatibilityMarker,
+            StringComparer.Ordinal);
 }

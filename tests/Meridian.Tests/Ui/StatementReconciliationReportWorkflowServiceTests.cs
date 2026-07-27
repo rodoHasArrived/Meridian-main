@@ -45,6 +45,8 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
 
         first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         first.Workflow.RetainedArtifacts.Should().HaveCount(2);
+        first.Workflow.ArtifactGeneration.Should().Be(1);
+        first.Workflow.ArtifactHistory.Should().BeEmpty();
         first.Workflow.EvidenceVaultIdentity.Should().NotBeNull();
         first.Workflow.AccountingScope.Should().BeEquivalentTo(
             new StatementReconciliationAccountingScopeDto(
@@ -83,6 +85,103 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "artifact access and restart both revalidate the retained accounting authority");
         intake.PublishCount.Should().Be(1,
             "an authoritative completed workflow must not publish Operations continuity twice");
+    }
+
+    [Fact]
+    public async Task GetAsync_CompletedWorkflowWithModifiedCurrentManifest_FailsClosed()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var completed = await service.StartAsync(BuildCommand(), ct);
+        var manifestPath = Path.Combine(
+            Path.GetDirectoryName(ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId))!,
+            "artifacts",
+            "manifest.json");
+        await File.AppendAllTextAsync(manifestPath, Environment.NewLine, ct);
+
+        Func<Task> readModifiedManifest = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha",
+                ct);
+        };
+
+        await readModifiedManifest.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*current artifact manifest failed generation or hash verification*");
+    }
+
+    [Fact]
+    public async Task StartAsync_CompletedWorkflowWithMissingCurrentArtifact_FailsBeforeReplay()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var command = BuildCommand();
+        var completed = await service.StartAsync(command, ct);
+        var missingArtifact = completed.Workflow.RetainedArtifacts.Single(item =>
+            item.ArtifactId == "kind-summary-csv");
+        var artifactPath = Path.Combine(
+            Path.GetDirectoryName(ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId))!,
+            "artifacts",
+            missingArtifact.FileName);
+        File.Delete(artifactPath);
+        var restarted = CreateService(imports, evidence, runs, intakeAuthority: intake);
+
+        Func<Task> replayCompletedWorkflow = async () =>
+        {
+            _ = await restarted.StartAsync(command, ct);
+        };
+
+        await replayCompletedWorkflow.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*current artifact 'kind-summary-csv' is missing*");
+        imports.CommitCount.Should().Be(1,
+            "a corrupt completed generation must fail closed before import or workflow replay");
+        evidence.RetainCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task StartAsync_CompletedWorkflowWithRemovedArtifactAuthority_FailsBeforeReplay()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService { ReturnReconciled = true };
+        var intake = new ResolvingIntakeAuthority(AccountingScope);
+        var service = CreateService(imports, evidence, runs, intakeAuthority: intake);
+        var command = BuildCommand();
+        var completed = await service.StartAsync(command);
+        var snapshotPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var retainedSnapshot = JsonNode.Parse(
+            await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        var workflow = retainedSnapshot["workflow"]!.AsObject();
+        workflow["retainedArtifacts"] = new JsonArray();
+        workflow["artifactGeneration"] = 0;
+        workflow["artifactHistory"] = new JsonArray();
+        await File.WriteAllTextAsync(snapshotPath, retainedSnapshot.ToJsonString());
+        var restarted = CreateService(imports, evidence, runs, intakeAuthority: intake);
+
+        Func<Task> replayCompletedWorkflow = async () =>
+        {
+            _ = await restarted.StartAsync(command);
+        };
+
+        await replayCompletedWorkflow.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*Completed*has no current artifact authority*");
+        imports.CommitCount.Should().Be(1);
+        evidence.RetainCount.Should().Be(1);
     }
 
     [Fact]
@@ -173,7 +272,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     }
 
     [Fact]
-    public async Task GetAndResumeAsync_CompletedCaseworkReopens_SuppressesAndReplacesStaleArtifactAuthority()
+    public async Task GetAndResumeAsync_CompletedCaseworkReopens_ArchivesPriorGenerationAndKeepsCurrentDownloadAuthoritative()
     {
         var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
         var evidence = new FakeEvidenceRetainer();
@@ -187,11 +286,28 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var service = CreateService(imports, evidence, runs, queue, intake);
         var completed = await service.StartAsync(BuildCommand());
         var workflowPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var workflowDirectory = Path.GetDirectoryName(workflowPath)!;
+        var artifactDirectory = Path.Combine(workflowDirectory, "artifacts");
         var persistedBeforeRead = await File.ReadAllBytesAsync(workflowPath);
+        var originalDescriptors = completed.Workflow.RetainedArtifacts.ToArray();
+        var originalArtifactBytes = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        foreach (var descriptor in originalDescriptors)
+        {
+            originalArtifactBytes.Add(
+                descriptor.ArtifactId,
+                await File.ReadAllBytesAsync(Path.Combine(artifactDirectory, descriptor.FileName)));
+        }
+
+        var originalManifestBytes = await File.ReadAllBytesAsync(
+            Path.Combine(artifactDirectory, "manifest.json"));
+        completed.Workflow.ArtifactGeneration.Should().Be(1);
+        completed.Workflow.ArtifactHistory.Should().BeEmpty();
         var originalJsonArtifact = completed.Workflow.RetainedArtifacts.Single(item =>
             item.ArtifactId == "reconciliation-report-json");
         var originalJsonEvidence =
             $"artifact:{originalJsonArtifact.ArtifactId}:sha256:{originalJsonArtifact.ContentHashSha256}";
+        var originalJsonGenerationEvidence =
+            $"artifact-generation:1:artifact:{originalJsonArtifact.ArtifactId}:sha256:{originalJsonArtifact.ContentHashSha256}";
         var retained = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
         retained.Should().NotBeNull();
         await queue.SaveAsync(retained! with
@@ -217,6 +333,9 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         projected.RetainedArtifacts.Should().BeEmpty(
             "a read projection must not advertise artifacts invalidated by current casework");
         projected.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        projected.ArtifactGeneration.Should().Be(1);
+        projected.ArtifactHistory.Should().BeEmpty(
+            "GET projects the reopen without mutating or claiming that the durable archive receipt exists");
         (await File.ReadAllBytesAsync(workflowPath)).Should().Equal(
             persistedBeforeRead,
             "GET may project current authority but must not mutate the retained checkpoint");
@@ -237,10 +356,59 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
         reopened.Workflow.RetainedArtifacts.Should().BeEmpty();
         reopened.Workflow.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        reopened.Workflow.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
+        reopened.Workflow.ArtifactGeneration.Should().Be(1);
+        reopened.Workflow.ArtifactHistory.Should().ContainSingle();
+        var archivedGeneration = reopened.Workflow.ArtifactHistory.Single();
+        archivedGeneration.Generation.Should().Be(1);
+        archivedGeneration.Artifacts.Should().Equal(originalDescriptors,
+            "the exact formerly-current descriptors are immutable audit history");
+        archivedGeneration.ManifestFileName.Should().Be("manifest.json");
+        archivedGeneration.ManifestByteLength.Should().Be(originalManifestBytes.LongLength);
+        archivedGeneration.ManifestContentHashSha256.Should().Be(
+            Convert.ToHexString(SHA256.HashData(originalManifestBytes)));
+        archivedGeneration.GeneratedAtUtc.Should().Be(originalJsonArtifact.RetainedAtUtc);
+        archivedGeneration.EvidenceReferences.Should().Contain(originalJsonEvidence);
+        archivedGeneration.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
+        archivedGeneration.EvidenceReferences.Should().Contain(reference =>
+            reference.StartsWith(
+                "artifact-generation:1:archive-receipt:sha256:",
+                StringComparison.Ordinal));
+        archivedGeneration.ArchiveReceiptContentHashSha256.Should().NotBeNullOrWhiteSpace();
+
+        var generationDirectory = Path.Combine(
+            artifactDirectory,
+            "history",
+            "generation-000001");
+        foreach (var descriptor in originalDescriptors)
+        {
+            (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, descriptor.FileName)))
+                .Should().Equal(originalArtifactBytes[descriptor.ArtifactId]);
+        }
+
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "manifest.json")))
+            .Should().Equal(originalManifestBytes);
+        var originalReceiptBytes = await File.ReadAllBytesAsync(
+            Path.Combine(generationDirectory, "archive-receipt.json"));
+        Convert.ToHexString(SHA256.HashData(originalReceiptBytes))
+            .Should().Be(archivedGeneration.ArchiveReceiptContentHashSha256);
         intake.PublishCount.Should().Be(1,
             "reopening current casework must use the retained Operations intake authority");
         imports.CommitCount.Should().Be(1,
             "reopening current casework must use the retained statement import");
+
+        var exactRetry = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+
+        exactRetry.Should().NotBeNull();
+        exactRetry!.Workflow.ArtifactHistory.Should().ContainSingle(
+            "retrying the same reopened checkpoint must not append the same generation twice");
+        exactRetry.Workflow.ArtifactHistory.Single().Should().BeEquivalentTo(archivedGeneration);
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "archive-receipt.json")))
+            .Should().Equal(originalReceiptBytes,
+                "an exact retry must reuse the immutable generation receipt");
 
         var reopenedQueueItem = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
         await queue.SaveAsync(reopenedQueueItem! with
@@ -265,19 +433,125 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         reResolved.Should().NotBeNull();
         reResolved!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
         reResolved.Workflow.RetainedArtifacts.Should().HaveCount(2);
+        reResolved.Workflow.ArtifactGeneration.Should().Be(2);
+        reResolved.Workflow.ArtifactHistory.Should().ContainSingle();
+        reResolved.Workflow.ArtifactHistory.Single().Should().BeEquivalentTo(archivedGeneration);
         var currentJsonArtifact = reResolved.Workflow.RetainedArtifacts.Single(item =>
             item.ArtifactId == "reconciliation-report-json");
         currentJsonArtifact.ContentHashSha256.Should().NotBe(
             originalJsonArtifact.ContentHashSha256,
             "the re-resolved report carries the current reconciliation case identity");
         reResolved.Workflow.EvidenceReferences.Should().NotContain(originalJsonEvidence);
+        reResolved.Workflow.EvidenceReferences.Should().Contain(originalJsonGenerationEvidence);
         reResolved.Workflow.EvidenceReferences.Should().Contain(
             $"artifact:{currentJsonArtifact.ArtifactId}:sha256:{currentJsonArtifact.ContentHashSha256}");
         reResolved.Workflow.EvidenceReferences
             .Count(reference => reference.StartsWith("artifact:", StringComparison.Ordinal))
             .Should().Be(2, "only the current artifact hashes remain active");
+        var currentDownload = await service.DownloadArtifactAsync(
+            reResolved.Workflow.WorkflowId,
+            currentJsonArtifact.ArtifactId,
+            "tenant-alpha",
+            "company-alpha");
+        currentDownload.Should().NotBeNull();
+        Convert.ToHexString(SHA256.HashData(currentDownload!.Content))
+            .Should().Be(currentJsonArtifact.ContentHashSha256);
+        currentDownload.Content
+            .SequenceEqual(originalArtifactBytes[originalJsonArtifact.ArtifactId])
+            .Should()
+            .BeFalse("the logical download id remains bound to the new current generation");
+        foreach (var descriptor in originalDescriptors)
+        {
+            (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, descriptor.FileName)))
+                .Should().Equal(originalArtifactBytes[descriptor.ArtifactId],
+                    "a later current generation must not overwrite archived bytes");
+        }
+
+        (await File.ReadAllBytesAsync(Path.Combine(generationDirectory, "manifest.json")))
+            .Should().Equal(originalManifestBytes);
+        var currentManifest = JsonNode.Parse(
+            await File.ReadAllTextAsync(Path.Combine(artifactDirectory, "manifest.json")))!.AsObject();
+        currentManifest["artifactGeneration"]!.GetValue<int>().Should().Be(2);
+        var currentReport = JsonNode.Parse(Encoding.UTF8.GetString(currentDownload.Content))!.AsObject();
+        currentReport["artifactGeneration"]!.GetValue<int>().Should().Be(2);
         intake.PublishCount.Should().Be(1);
         imports.CommitCount.Should().Be(1);
+
+        var archivedJsonPath = Path.Combine(
+            generationDirectory,
+            originalJsonArtifact.FileName);
+        await File.WriteAllBytesAsync(
+            archivedJsonPath,
+            originalArtifactBytes[originalJsonArtifact.ArtifactId]
+                .Append((byte)0)
+                .ToArray());
+        Func<Task> readCorruptHistory = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha");
+        };
+        await readCorruptHistory.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*failed immutable generation verification*");
+    }
+
+    [Fact]
+    public async Task GetAsync_WorkflowSnapshotOmitsArchivedGeneration_FailsClosed()
+    {
+        var imports = new FakeImportService(BuildImportResult(breakCount: 1, caseCount: 1));
+        var evidence = new FakeEvidenceRetainer();
+        var runs = new FakeStatementRunWorkflowService
+        {
+            ReturnReconciled = true,
+            Cases = [BuildReconciliationCase("resolved-case-v1", "Resolved")]
+        };
+        var queue = await CreateStatementQueueAsync(handoffCompleted: true);
+        var service = CreateService(
+            imports,
+            evidence,
+            runs,
+            queue,
+            new ResolvingIntakeAuthority(AccountingScope));
+        var completed = await service.StartAsync(BuildCommand());
+        var retained = await queue.GetByIdAsync(QueueScope, "queue-break-alpha");
+        await queue.SaveAsync(retained! with
+        {
+            Status = ReconciliationBreakQueueStatus.Open,
+            LifecycleState = ReconciliationCaseLifecycleState.Reopened,
+            LastUpdatedAt = DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+            EvidenceLinks =
+            [
+                StatementCaseworkHandoffObligation.CreatePendingMarker("resolve-alpha")
+            ],
+            BlockedOutputs = ["FinalReport", "PeriodClose"]
+        });
+        runs.Cases = [BuildReconciliationCase("reopened-case-v2", "Open")];
+        var reopened = await service.ResumeAsync(
+            completed.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha");
+        reopened!.Workflow.ArtifactHistory.Should().ContainSingle();
+        var snapshotPath = ResolveWorkflowSnapshotPath(completed.Workflow.WorkflowId);
+        var retainedSnapshot = JsonNode.Parse(
+            await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        var workflow = retainedSnapshot["workflow"]!.AsObject();
+        workflow["artifactHistory"] = new JsonArray();
+        workflow["artifactGeneration"] = 0;
+        await File.WriteAllTextAsync(snapshotPath, retainedSnapshot.ToJsonString());
+
+        Func<Task> readOmittedHistory = async () =>
+        {
+            _ = await service.GetAsync(
+                completed.Workflow.WorkflowId,
+                "tenant-alpha",
+                "company-alpha");
+        };
+
+        await readOmittedHistory.Should()
+            .ThrowAsync<InvalidDataException>()
+            .WithMessage("*omits retained artifact history generation 1*");
     }
 
     [Fact]

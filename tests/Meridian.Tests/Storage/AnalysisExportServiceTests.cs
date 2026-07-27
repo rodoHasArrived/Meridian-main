@@ -1,6 +1,9 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using Apache.Arrow;
+using Apache.Arrow.Ipc;
+using Apache.Arrow.Types;
 using FluentAssertions;
 using Meridian.Storage.Export;
 using Parquet;
@@ -117,6 +120,74 @@ public class AnalysisExportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportToArrow_WithValidData_ShouldCreateReadableArrowFile()
+    {
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await CreateTestJsonlFileAsync("SPY.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 },
+            new { Timestamp = "2026-01-03T10:00:01Z", Symbol = "SPY", Price = 450.50m, Size = 200 }
+        });
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            ProfileId = "arrow-feather",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "SPY" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5)
+        }, cancellation.Token);
+
+        result.Success.Should().BeTrue();
+        result.Files.Should().ContainSingle();
+        result.TotalRecords.Should().Be(2);
+
+        var arrowFile = result.Files.Single();
+        arrowFile.Format.Should().Be("arrow");
+        arrowFile.Path.Should().EndWith(".arrow");
+        File.Exists(arrowFile.Path).Should().BeTrue();
+
+        await using var stream = File.OpenRead(arrowFile.Path);
+        using var reader = new ArrowFileReader(stream);
+        reader.IsFileValid.Should().BeTrue();
+        (await reader.RecordBatchCountAsync()).Should().Be(1);
+
+        using var batch = await reader.ReadRecordBatchAsync(0, cancellation.Token);
+        batch.Length.Should().Be(2);
+        batch.Schema.FieldsList.Select(field => field.Name)
+            .Should().Equal("Timestamp", "Symbol", "Price", "Size");
+
+        var timestampField = batch.Schema.FieldsList.Single(field => field.Name == "Timestamp");
+        timestampField.DataType.Should().BeOfType<TimestampType>();
+        var timestampType = (TimestampType)timestampField.DataType;
+        timestampType.Unit.Should().Be(TimeUnit.Nanosecond);
+        timestampType.Timezone.Should().Be("UTC");
+
+        var expectedFirstTimestamp = new DateTimeOffset(
+            2026,
+            1,
+            3,
+            10,
+            0,
+            0,
+            TimeSpan.Zero);
+        var timestamps = (TimestampArray)batch.Column("Timestamp");
+        timestamps.GetTimestamp(0).Should().Be(expectedFirstTimestamp);
+        timestamps.GetTimestamp(1).Should().Be(expectedFirstTimestamp.AddSeconds(1));
+        timestamps.GetValue(0).Should().Be(
+            expectedFirstTimestamp.ToUnixTimeMilliseconds() * 1_000_000L);
+
+        var symbols = (StringArray)batch.Column("Symbol");
+        symbols.GetString(0).Should().Be("SPY");
+        symbols.GetString(1).Should().Be("SPY");
+
+        var prices = (DoubleArray)batch.Column("Price");
+        prices.GetValue(0).Should().Be(450.25d);
+        prices.GetValue(1).Should().Be(450.50d);
+    }
+
+    [Fact]
     public async Task ExportAsync_WithNoMatchingSourceData_ShouldFailWithoutArtifact()
     {
         // Arrange
@@ -163,6 +234,274 @@ public class AnalysisExportServiceTests : IDisposable
         result.FilesGenerated.Should().Be(0);
         result.Files.Should().BeEmpty();
         Directory.EnumerateFiles(_testOutputDir, "*.xlsx", SearchOption.AllDirectories)
+            .Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Arrow, ".arrow")]
+    [InlineData(ExportFormat.Parquet, ".parquet")]
+    [InlineData(ExportFormat.Xlsx, ".xlsx")]
+    public async Task ExportAsync_WhenDeterministicArtifactExistsAndOverwriteIsFalse_PreservesExistingBytes(
+        ExportFormat format,
+        string extension)
+    {
+        await CreateTestJsonlFileAsync("AAPL.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        var existingBytes = Encoding.UTF8.GetBytes("retained-certified-export");
+        var existingPath = Path.Combine(
+            _testOutputDir,
+            $"AAPL_{DateTime.UtcNow:yyyyMMdd}{extension}");
+        await File.WriteAllBytesAsync(existingPath, existingBytes);
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            CustomProfile = CreateFormatProfile(format, "collision-no-overwrite"),
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "AAPL" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            OverwriteExisting = false,
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("already exists");
+        result.Files.Should().BeEmpty();
+        (await File.ReadAllBytesAsync(existingPath)).Should().Equal(existingBytes);
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories)
+            .Should().ContainSingle()
+            .Which.Should().Be(existingPath);
+    }
+
+    [Theory]
+    [InlineData(ExportFormat.Arrow, ".arrow")]
+    [InlineData(ExportFormat.Parquet, ".parquet")]
+    [InlineData(ExportFormat.Xlsx, ".xlsx")]
+    public async Task ExportAsync_WhenLaterSymbolFailsAfterOverwrite_RestoresPreExistingArtifact(
+        ExportFormat format,
+        string extension)
+    {
+        await CreateTestJsonlFileAsync("AAPL.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        await File.WriteAllTextAsync(
+            Path.Combine(_testDataRoot, "ZZZ.Trade.jsonl"),
+            "{ malformed-json");
+
+        var existingBytes = Encoding.UTF8.GetBytes("previous-approved-export");
+        var existingPath = Path.Combine(
+            _testOutputDir,
+            $"AAPL_{DateTime.UtcNow:yyyyMMdd}{extension}");
+        await File.WriteAllBytesAsync(existingPath, existingBytes);
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            CustomProfile = CreateFormatProfile(format, "collision-rollback"),
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "AAPL", "ZZZ" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            OverwriteExisting = true,
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().NotBeNullOrWhiteSpace();
+        result.Files.Should().BeEmpty();
+        (await File.ReadAllBytesAsync(existingPath)).Should().Equal(existingBytes);
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories)
+            .Should().ContainSingle()
+            .Which.Should().Be(existingPath);
+    }
+
+    [Fact]
+    public async Task ExportAsync_BySymbolGzipSource_ShouldDiscoverValidateAndExport()
+    {
+        await CreateBySymbolGzipJsonlFileAsync(
+            "SPY",
+            "Trade",
+            new DateTime(2026, 1, 3),
+            new[]
+            {
+                new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 },
+                new { Timestamp = "2026-01-03T10:00:01Z", Symbol = "SPY", Price = 450.50m, Size = 200 }
+            });
+
+        var request = new ExportRequest
+        {
+            ProfileId = "r-stats",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "SPY" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidateBeforeExport = true,
+            ValidationRules = new ExportValidationRulesRequest { RequireData = true }
+        };
+
+        var preview = await _service.PreviewAsync(request, sampleSize: 1);
+        var result = await _service.ExportAsync(request);
+
+        preview.Error.Should().BeNull();
+        preview.SourceFileCount.Should().Be(1);
+        preview.TotalRecords.Should().Be(2);
+        preview.Symbols.Should().Equal("SPY");
+        preview.EventTypes.Should().Equal("Trade");
+        preview.DateRange!.Start.Date.Should().Be(new DateTime(2026, 1, 3));
+
+        result.Success.Should().BeTrue();
+        result.TotalRecords.Should().Be(2);
+        result.Files.Should().ContainSingle();
+        result.Files[0].Format.Should().Be("csv");
+        File.Exists(result.Files[0].Path).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExportAsync_JsonlProfileWithCompressedSource_ShouldWriteDecompressedJsonl()
+    {
+        await CreateBySymbolGzipJsonlFileAsync(
+            "SPY",
+            "Trade",
+            new DateTime(2026, 1, 3),
+            new[]
+            {
+                new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 }
+            });
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            CustomProfile = new ExportProfile
+            {
+                Id = "jsonl-uncompressed",
+                Name = "JSONL uncompressed",
+                Format = ExportFormat.Jsonl,
+                Compression = new CompressionSettings { Type = CompressionType.None },
+                IncludeDataDictionary = false,
+                IncludeLoaderScript = false
+            },
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "SPY" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeTrue();
+        result.Files.Should().ContainSingle();
+        result.Files[0].Path.Should().EndWith(".jsonl");
+        result.Files[0].Path.Should().NotEndWith(".jsonl.gz");
+        (await File.ReadAllTextAsync(result.Files[0].Path)).Should().Contain("\"Symbol\":\"SPY\"");
+    }
+
+    [Theory]
+    [InlineData(".jsonl.zst")]
+    [InlineData(".jsonl.lz4")]
+    public async Task ExportAsync_BySymbolTierCopyWithCodecSuffixAndRawJsonl_ShouldReadActualContent(
+        string suffix)
+    {
+        var directory = Path.Combine(_testDataRoot, "SPY", "Trade");
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, $"2026-01-03{suffix}"),
+            """
+            {"Timestamp":"2026-01-03T10:00:00Z","Symbol":"SPY","Price":450.25,"Size":100}
+
+            """);
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            ProfileId = "excel",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "SPY" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeTrue();
+        result.TotalRecords.Should().Be(1);
+        result.Files.Should().ContainSingle(file => file.Format == "xlsx");
+    }
+
+    [Fact]
+    public async Task ExportAsync_WhenLaterSymbolIsMalformed_ShouldRemoveNewArtifactsAndPreserveExistingFile()
+    {
+        var sentinel = Path.Combine(_testOutputDir, "keep.txt");
+        await File.WriteAllTextAsync(sentinel, "pre-existing");
+        await CreateTestJsonlFileAsync("AAPL.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        await File.WriteAllTextAsync(
+            Path.Combine(_testDataRoot, "ZZZ.Trade.jsonl"),
+            "{ malformed-json");
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            CustomProfile = new ExportProfile
+            {
+                Id = "cleanup-failure",
+                Name = "Cleanup failure",
+                Format = ExportFormat.Xlsx,
+                SplitBySymbol = true,
+                IncludeDataDictionary = false,
+                IncludeLoaderScript = false
+            },
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "AAPL", "ZZZ" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().NotBeNullOrWhiteSpace();
+        result.FilesGenerated.Should().Be(0);
+        result.Files.Should().BeEmpty();
+        File.Exists(sentinel).Should().BeTrue();
+        (await File.ReadAllTextAsync(sentinel)).Should().Be("pre-existing");
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories)
+            .Should().ContainSingle()
+            .Which.Should().Be(sentinel);
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithPreCancelledToken_ShouldThrowAndCreateNoArtifact()
+    {
+        await CreateTestJsonlFileAsync("AAPL.Trade.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "AAPL", Price = 185.50m, Size = 100 }
+        });
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var act = () => _service.ExportAsync(
+            new ExportRequest
+            {
+                ProfileId = "excel",
+                OutputDirectory = _testOutputDir,
+                EventTypes = new[] { "Trade" },
+                Symbols = new[] { "AAPL" },
+                StartDate = new DateTime(2026, 1, 1),
+                EndDate = new DateTime(2026, 1, 5)
+            },
+            cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        Directory.EnumerateFiles(_testOutputDir, "*", SearchOption.AllDirectories)
             .Should().BeEmpty();
     }
 
@@ -564,6 +903,39 @@ public class AnalysisExportServiceTests : IDisposable
 
         await File.WriteAllTextAsync(filePath, sb.ToString());
     }
+
+    private async Task CreateBySymbolGzipJsonlFileAsync<T>(
+        string symbol,
+        string eventType,
+        DateTime date,
+        T[] records)
+    {
+        var directory = Path.Combine(_testDataRoot, symbol, eventType);
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"{date:yyyy-MM-dd}.jsonl.gz");
+
+        await using var file = File.Create(path);
+        await using var gzip = new GZipStream(file, CompressionLevel.SmallestSize);
+        await using var writer = new StreamWriter(gzip, Encoding.UTF8);
+        foreach (var record in records)
+            await writer.WriteLineAsync(JsonSerializer.Serialize(record));
+    }
+
+    private static ExportProfile CreateFormatProfile(ExportFormat format, string id) => new()
+    {
+        Id = id,
+        Name = id,
+        Format = format,
+        SplitBySymbol = true,
+        IncludeDataDictionary = false,
+        IncludeLoaderScript = false,
+        TimestampSettings = new TimestampSettings
+        {
+            Format = TimestampFormat.UnixNanoseconds,
+            Timezone = "UTC",
+            IncludeNanoseconds = true
+        }
+    };
 
     [Fact]
     public void ExportProfile_WithFormat_ShouldPreserveAllSettingsExceptFormat()

@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Strategies
@@ -99,6 +99,11 @@ Break records carry explicit Value, Quantity, and CostBasis comparisons. A sourc
 provide a measure retains an unavailable reason instead of substituting zero. Governed casework
 supports assign, resolve, waive, and supersede dispositions with evidence hashes, independent
 approval for material dispositions, successor lineage, idempotency, and append-only audit history.
+The file-backed queue exposes a separate startup authority probe for production Reporting
+readiness. The probe discards process cache, reloads the retained snapshot, and reruns envelope,
+snapshot, audit-chain, and close-scope integrity checks. A failed probe clears the attempted cache
+again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
+does not silently accept the last in-memory state.
 
 ## Diagrams
 

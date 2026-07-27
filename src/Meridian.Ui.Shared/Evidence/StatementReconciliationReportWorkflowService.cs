@@ -33,13 +33,17 @@ public sealed record StatementReconciliationReportArtifactDownload(
 /// to immutable statement/reconciliation report artifacts. It pauses rather than reporting success
 /// while reconciliation breaks or cases remain open, and can resume from its last atomic checkpoint.
 /// </summary>
-public sealed class StatementReconciliationReportWorkflowService
+public sealed partial class StatementReconciliationReportWorkflowService
 {
     private const int SnapshotSchemaVersion = 1;
+    private const int ArtifactManifestSchemaVersion = 2;
+    private const int ArtifactArchiveReceiptSchemaVersion = 1;
     private const string WorkflowIdPrefix = "statement-reconciliation-report-";
     private const string LegacyWorkflowIdPrefix = "statement-report-";
     private const string WorkflowDirectoryName = "statement-reconciliation-report";
     private const string LegacyWorkflowDirectoryName = "statement-to-report";
+    private const string ArtifactManifestFileName = "manifest.json";
+    private const string ArtifactArchiveReceiptFileName = "archive-receipt.json";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -192,6 +196,7 @@ public sealed class StatementReconciliationReportWorkflowService
         else
         {
             EnsureScopeMatches(snapshot, command.TenantId, command.CompanyId);
+            await VerifyRetainedArtifactAuthorityAsync(directory, snapshot, ct).ConfigureAwait(false);
             var migratedSnapshot = NormalizeRetainedInputLocation(snapshot, directory);
             await EnsureRequestIdentityMatchesAsync(migratedSnapshot, preScopeCommand, ct).ConfigureAwait(false);
             var scopeBoundSnapshot = BindResolvedAccountingScope(
@@ -220,17 +225,26 @@ public sealed class StatementReconciliationReportWorkflowService
         if (snapshot is null)
             return null;
         EnsureScopeMatches(snapshot, tenantId, companyId);
+        await VerifyRetainedArtifactAuthorityAsync(directory, snapshot, ct).ConfigureAwait(false);
         if (snapshot.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Completed)
         {
             EnsureAuthoritativeIntake(snapshot);
-            var authorizedScope = await ResolveRetainedAccountingScopeAsync(
-                    snapshot,
-                    tenantId,
-                    companyId,
-                    ct)
-                .ConfigureAwait(false);
-            var authorizedSnapshot = BindResolvedAccountingScope(snapshot, authorizedScope);
-            EnsureAuthoritativeIntake(authorizedSnapshot);
+        }
+        if (snapshot.Workflow.RetainedArtifacts is { Count: > 0 })
+        {
+            var authorizedSnapshot = snapshot;
+            if (HasAuthoritativeIntake(snapshot))
+            {
+                var authorizedScope = await ResolveRetainedAccountingScopeAsync(
+                        snapshot,
+                        tenantId,
+                        companyId,
+                        ct)
+                    .ConfigureAwait(false);
+                authorizedSnapshot = BindResolvedAccountingScope(snapshot, authorizedScope);
+                EnsureAuthoritativeIntake(authorizedSnapshot);
+            }
+
             var reconciliationGate = await EvaluateCurrentReconciliationAsync(
                     authorizedSnapshot,
                     ct)
@@ -266,6 +280,7 @@ public sealed class StatementReconciliationReportWorkflowService
         if (snapshot is null)
             return null;
         EnsureScopeMatches(snapshot, tenantId, companyId);
+        await VerifyRetainedArtifactAuthorityAsync(directory, snapshot, ct).ConfigureAwait(false);
         var authorizedScope = await ResolveRetainedAccountingScopeAsync(
                 snapshot,
                 tenantId,
@@ -290,7 +305,8 @@ public sealed class StatementReconciliationReportWorkflowService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(artifactId);
         var workflow = await GetAsync(workflowId, tenantId, companyId, ct).ConfigureAwait(false);
-        if (workflow is null)
+        if (workflow is null
+            || workflow.Status != StatementReconciliationReportWorkflowStatusDto.Completed)
             return null;
         var descriptor = workflow.RetainedArtifacts.FirstOrDefault(item =>
             string.Equals(item.ArtifactId, artifactId, StringComparison.Ordinal));
@@ -299,9 +315,7 @@ public sealed class StatementReconciliationReportWorkflowService
 
         var path = ResolveArtifactPath(workflowId, descriptor.ArtifactId);
         var content = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
-        var actualHash = Convert.ToHexString(SHA256.HashData(content));
-        if (!string.Equals(actualHash, descriptor.ContentHashSha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException($"Retained statement reconciliation report artifact '{artifactId}' failed hash verification.");
+        ValidateArtifactContent(descriptor, content);
         return new StatementReconciliationReportArtifactDownload(descriptor, content);
     }
 
@@ -313,22 +327,31 @@ public sealed class StatementReconciliationReportWorkflowService
         var intakeAuthority = RequireIntakeAuthority();
         try
         {
-            if (snapshot.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Completed
-                && HasAuthoritativeIntake(snapshot))
+            if (snapshot.Workflow.RetainedArtifacts is { Count: > 0 })
             {
                 var completedGate = await EvaluateCurrentReconciliationAsync(snapshot, ct)
                     .ConfigureAwait(false);
-                if (completedGate.IsSatisfied)
+                if (snapshot.Workflow.Status
+                        == StatementReconciliationReportWorkflowStatusDto.Completed
+                    && completedGate.IsSatisfied
+                    && HasAuthoritativeIntake(snapshot))
                 {
                     return RequireExecution(snapshot);
                 }
 
+                var archivedGeneration = await ArchiveCurrentArtifactGenerationAsync(
+                        directory,
+                        snapshot,
+                        ct)
+                    .ConfigureAwait(false);
                 snapshot = AwaitReconciliation(
                     snapshot,
                     completedGate,
-                    advanceVersion: true);
+                    advanceVersion: true,
+                    archivedGeneration: archivedGeneration);
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
-                return RequireExecution(snapshot);
+                if (!completedGate.IsSatisfied)
+                    return RequireExecution(snapshot);
             }
 
             if (snapshot.ImportResult is null)
@@ -336,7 +359,7 @@ public sealed class StatementReconciliationReportWorkflowService
                 snapshot = Advance(snapshot, StatementReconciliationReportWorkflowStatusDto.Importing,
                     recoveryAction: "Retry the persisted statement import.");
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
-                var importRequest = BuildImportRequest(snapshot);
+                var importRequest = await BuildImportRequestAsync(snapshot, ct).ConfigureAwait(false);
                 var imported = await _imports.CommitAsync(importRequest, ct).ConfigureAwait(false);
                 snapshot = snapshot with { ImportResult = imported };
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
@@ -417,13 +440,13 @@ public sealed class StatementReconciliationReportWorkflowService
                 breakCount: 0, caseCount: 0,
                 recoveryAction: "Retry report rendering from the retained statement and reconciliation evidence.");
             await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
-            var artifacts = await RetainReportArtifactsAsync(
+            var artifactSet = await RetainReportArtifactsAsync(
                     directory,
                     snapshot,
                     reconciliationGate.Reconciliation,
                     ct)
                 .ConfigureAwait(false);
-            snapshot = Complete(snapshot, artifacts);
+            snapshot = Complete(snapshot, artifactSet);
             await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
             return RequireExecution(snapshot);
         }
@@ -628,13 +651,14 @@ public sealed class StatementReconciliationReportWorkflowService
             new(false, count, count, recoveryAction);
     }
 
-    private async Task<IReadOnlyList<StatementReconciliationReportArtifactDto>> RetainReportArtifactsAsync(
+    private async Task<RetainedArtifactSet> RetainReportArtifactsAsync(
         string directory,
         WorkflowSnapshot snapshot,
         StatementRunWorkflowResult? reconciliation,
         CancellationToken ct)
     {
         var import = snapshot.ImportResult!;
+        var generation = GetNextArtifactGeneration(snapshot.Workflow);
         var retainedAt = snapshot.RenderingReconciliationReportAtUtc
             ?? throw new InvalidDataException(
                 $"Statement reconciliation report workflow '{snapshot.Workflow.WorkflowId}' has no persisted rendering checkpoint timestamp.");
@@ -646,6 +670,7 @@ public sealed class StatementReconciliationReportWorkflowService
         var report = new StatementReconciliationReport(
             SchemaVersion: 1,
             WorkflowId: snapshot.Workflow.WorkflowId,
+            ArtifactGeneration: generation,
             StatementRunId: import.RunId,
             TenantId: snapshot.Workflow.TenantId,
             CompanyId: snapshot.Workflow.CompanyId,
@@ -678,17 +703,360 @@ public sealed class StatementReconciliationReportWorkflowService
             await RetainArtifactAsync(snapshot.Workflow.WorkflowId, "kind-summary-csv", "StatementKindSummary",
                 "statement-kind-summary.csv", "text/csv", csvBytes, retainedAt, ct)
         };
-        var manifestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        {
-            schemaVersion = 1,
-            snapshot.Workflow.WorkflowId,
-            statementRunId = import.RunId,
-            artifacts = descriptors,
-            evidenceReferences
-        }, JsonOptions));
-        await AtomicFileWriter.WriteAsync(Path.Combine(artifactDirectory, "manifest.json"), manifestBytes, ct)
+        var manifestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
+            new ArtifactGenerationManifest(
+                ArtifactManifestSchemaVersion,
+                generation,
+                snapshot.Workflow.WorkflowId,
+                import.RunId,
+                descriptors,
+                evidenceReferences),
+            JsonOptions));
+        await AtomicFileWriter.WriteAsync(
+                Path.Combine(artifactDirectory, ArtifactManifestFileName),
+                manifestBytes,
+                ct)
             .ConfigureAwait(false);
-        return descriptors;
+        return new RetainedArtifactSet(
+            generation,
+            descriptors,
+            Convert.ToHexString(SHA256.HashData(manifestBytes)));
+    }
+
+    private async Task<StatementReconciliationReportArtifactGenerationDto> ArchiveCurrentArtifactGenerationAsync(
+        string directory,
+        WorkflowSnapshot snapshot,
+        CancellationToken ct)
+    {
+        var workflow = snapshot.Workflow;
+        if (workflow.RetainedArtifacts is not { Count: > 0 })
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' has no current artifact generation to archive.");
+        }
+
+        var generation = workflow.ArtifactGeneration;
+        if (generation <= 0)
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' has no valid current artifact generation.");
+        }
+
+        if ((workflow.ArtifactHistory ?? []).Any(item => item.Generation == generation))
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' already records artifact generation {generation} as historical while it is still current.");
+        }
+
+        var generatedAtValues = workflow.RetainedArtifacts
+            .Select(static item => item.RetainedAtUtc)
+            .Distinct()
+            .ToArray();
+        if (generatedAtValues.Length != 1)
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact descriptors do not share one generation timestamp.");
+        }
+
+        var payloads = new List<ArtifactArchivePayload>(workflow.RetainedArtifacts.Count);
+        foreach (var descriptor in workflow.RetainedArtifacts)
+        {
+            var sourcePath = ResolveArtifactPath(workflow.WorkflowId, descriptor.ArtifactId);
+            var archiveFileName = ValidateArchiveFileName(descriptor.FileName);
+            if (!string.Equals(
+                    Path.GetFileName(sourcePath),
+                    archiveFileName,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Statement reconciliation report artifact '{descriptor.ArtifactId}' file name no longer matches its retained descriptor.");
+            }
+
+            var content = await File.ReadAllBytesAsync(sourcePath, ct).ConfigureAwait(false);
+            ValidateArtifactContent(descriptor, content);
+            payloads.Add(new ArtifactArchivePayload(archiveFileName, content));
+        }
+
+        var manifestPath = Path.Combine(directory, "artifacts", ArtifactManifestFileName);
+        if (!File.Exists(manifestPath))
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest is missing.");
+        }
+
+        var manifestBytes = await File.ReadAllBytesAsync(manifestPath, ct).ConfigureAwait(false);
+        var manifestHash = Convert.ToHexString(SHA256.HashData(manifestBytes));
+        ValidateCurrentArtifactManifest(manifestBytes, manifestHash, workflow);
+        var archiveDirectory = GetArtifactGenerationArchiveDirectory(directory, generation);
+        Directory.CreateDirectory(archiveDirectory);
+        foreach (var payload in payloads)
+        {
+            await WriteImmutableFileAsync(
+                    Path.Combine(archiveDirectory, payload.FileName),
+                    payload.Content,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        await WriteImmutableFileAsync(
+                Path.Combine(archiveDirectory, ArtifactManifestFileName),
+                manifestBytes,
+                ct)
+            .ConfigureAwait(false);
+
+        var receiptPath = Path.Combine(archiveDirectory, ArtifactArchiveReceiptFileName);
+        ArtifactGenerationArchiveReceipt receipt;
+        if (File.Exists(receiptPath))
+        {
+            var retainedReceiptBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
+            receipt = JsonSerializer.Deserialize<ArtifactGenerationArchiveReceipt>(
+                    retainedReceiptBytes,
+                    JsonOptions)
+                ?? throw new InvalidDataException(
+                    $"Statement reconciliation report artifact generation {generation} archive receipt is empty.");
+        }
+        else
+        {
+            receipt = new ArtifactGenerationArchiveReceipt(
+                ArtifactArchiveReceiptSchemaVersion,
+                generation,
+                workflow.RetainedArtifacts.ToArray(),
+                ArtifactManifestFileName,
+                manifestBytes.LongLength,
+                manifestHash,
+                generatedAtValues[0],
+                DateTimeOffset.UtcNow,
+                (workflow.EvidenceReferences ?? []).ToArray());
+            var newReceiptBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(receipt, JsonOptions));
+            await WriteImmutableFileAsync(receiptPath, newReceiptBytes, ct).ConfigureAwait(false);
+        }
+
+        ValidateArchiveReceipt(
+            receipt,
+            generation,
+            workflow.RetainedArtifacts,
+            manifestBytes.LongLength,
+            manifestHash,
+            generatedAtValues[0],
+            workflow.EvidenceReferences ?? []);
+        var receiptBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
+        var receiptHash = Convert.ToHexString(SHA256.HashData(receiptBytes));
+        var auditEvidence = receipt.EvidenceReferences
+            .Concat(BuildArtifactGenerationEvidenceReferences(
+                generation,
+                receipt.Artifacts,
+                receipt.ManifestContentHashSha256))
+            .Append(
+                $"artifact-generation:{generation}:archive-receipt:sha256:{receiptHash}")
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static item => item, StringComparer.Ordinal)
+            .ToArray();
+        return new StatementReconciliationReportArtifactGenerationDto(
+            generation,
+            receipt.Artifacts,
+            receipt.ManifestFileName,
+            receipt.ManifestByteLength,
+            receipt.ManifestContentHashSha256,
+            receipt.GeneratedAtUtc,
+            receipt.ArchivedAtUtc,
+            auditEvidence,
+            receiptHash);
+    }
+
+    private static async Task WriteImmutableFileAsync(
+        string path,
+        byte[] content,
+        CancellationToken ct)
+    {
+        if (File.Exists(path))
+        {
+            var existing = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+            if (!existing.AsSpan().SequenceEqual(content))
+            {
+                throw new InvalidDataException(
+                    $"Immutable statement reconciliation report history file '{Path.GetFileName(path)}' conflicts with retained bytes.");
+            }
+
+            return;
+        }
+
+        await AtomicFileWriter.WriteAsync(path, content, ct).ConfigureAwait(false);
+    }
+
+    private static void ValidateArchiveReceipt(
+        ArtifactGenerationArchiveReceipt receipt,
+        int generation,
+        IReadOnlyList<StatementReconciliationReportArtifactDto> artifacts,
+        long manifestByteLength,
+        string manifestHash,
+        DateTimeOffset generatedAtUtc,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        if (receipt.SchemaVersion != ArtifactArchiveReceiptSchemaVersion
+            || receipt.Generation != generation
+            || !ArtifactDescriptorsMatch(receipt.Artifacts, artifacts)
+            || receipt.EvidenceReferences is null
+            || !string.Equals(
+                receipt.ManifestFileName,
+                ArtifactManifestFileName,
+                StringComparison.Ordinal)
+            || receipt.ManifestByteLength != manifestByteLength
+            || !string.Equals(
+                receipt.ManifestContentHashSha256,
+                manifestHash,
+                StringComparison.OrdinalIgnoreCase)
+            || receipt.GeneratedAtUtc != generatedAtUtc
+            || !receipt.EvidenceReferences.SequenceEqual(
+                evidenceReferences,
+                StringComparer.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report artifact generation {generation} archive receipt conflicts with the current immutable generation.");
+        }
+    }
+
+    private static void ValidateCurrentArtifactManifest(
+        byte[] manifestBytes,
+        string manifestHash,
+        StatementReconciliationReportWorkflowDto workflow)
+    {
+        ArtifactGenerationManifest manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<ArtifactGenerationManifest>(
+                    manifestBytes,
+                    JsonOptions)
+                ?? throw new InvalidDataException(
+                    $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest is empty.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest is invalid.",
+                ex);
+        }
+
+        if ((manifest.SchemaVersion != 1
+             && manifest.SchemaVersion != ArtifactManifestSchemaVersion)
+            || !WorkflowIdentitiesMatch(manifest.WorkflowId, workflow.WorkflowId)
+            || !string.Equals(
+                manifest.StatementRunId,
+                workflow.StatementRunId,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest conflicts with retained workflow identity.");
+        }
+
+        // Current workflow evidence can evolve during legacy scope publication or casework reopen.
+        // The v2 manifest remains immutable because its retained SHA-256 is verified below.
+        if (!CurrentArtifactDescriptorsMatch(manifest.Artifacts, workflow.RetainedArtifacts)
+            || manifest.EvidenceReferences is null)
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest conflicts with retained artifact evidence.");
+        }
+
+        if (manifest.SchemaVersion == 1)
+            return;
+
+        var manifestEvidencePrefix =
+            $"artifact-generation:{workflow.ArtifactGeneration}:manifest:sha256:";
+        var retainedManifestHashes = (workflow.EvidenceReferences ?? [])
+            .Where(item => item.StartsWith(manifestEvidencePrefix, StringComparison.Ordinal))
+            .Select(item => item[manifestEvidencePrefix.Length..])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (manifest.ArtifactGeneration != workflow.ArtifactGeneration
+            || retainedManifestHashes.Length != 1
+            || !string.Equals(
+                retainedManifestHashes[0],
+                manifestHash,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{workflow.WorkflowId}' current artifact manifest failed generation or hash verification.");
+        }
+    }
+
+    private static bool WorkflowIdentitiesMatch(string manifestWorkflowId, string workflowId)
+    {
+        if (string.Equals(manifestWorkflowId, workflowId, StringComparison.Ordinal))
+            return true;
+        if (!IsSafeWorkflowId(manifestWorkflowId) || !IsSafeWorkflowId(workflowId))
+            return false;
+
+        return string.Equals(
+            ExtractWorkflowIdentityHash(manifestWorkflowId),
+            ExtractWorkflowIdentityHash(workflowId),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ExtractWorkflowIdentityHash(string workflowId)
+        => workflowId.StartsWith(WorkflowIdPrefix, StringComparison.Ordinal)
+            ? workflowId[WorkflowIdPrefix.Length..]
+            : workflowId[LegacyWorkflowIdPrefix.Length..];
+
+    private static bool CurrentArtifactDescriptorsMatch(
+        IReadOnlyList<StatementReconciliationReportArtifactDto>? left,
+        IReadOnlyList<StatementReconciliationReportArtifactDto>? right)
+    {
+        if (left is null || right is null || left.Count != right.Count)
+            return false;
+        for (var index = 0; index < left.Count; index++)
+        {
+            if ((left[index] with { DownloadRoute = string.Empty })
+                != (right[index] with { DownloadRoute = string.Empty }))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ArtifactDescriptorsMatch(
+        IReadOnlyList<StatementReconciliationReportArtifactDto>? left,
+        IReadOnlyList<StatementReconciliationReportArtifactDto>? right)
+    {
+        if (left is null || right is null || left.Count != right.Count)
+            return false;
+        for (var index = 0; index < left.Count; index++)
+        {
+            if (left[index] != right[index])
+                return false;
+        }
+
+        return true;
+    }
+
+    private static IEnumerable<string> BuildArtifactGenerationEvidenceReferences(
+        int generation,
+        IReadOnlyList<StatementReconciliationReportArtifactDto> artifacts,
+        string manifestHash)
+    {
+        yield return $"artifact-generation:{generation}:manifest:sha256:{manifestHash}";
+        foreach (var artifact in artifacts)
+        {
+            yield return
+                $"artifact-generation:{generation}:artifact:{artifact.ArtifactId}:sha256:{artifact.ContentHashSha256}";
+        }
+    }
+
+    private static void ValidateArtifactContent(
+        StatementReconciliationReportArtifactDto descriptor,
+        byte[] content)
+    {
+        var actualHash = Convert.ToHexString(SHA256.HashData(content));
+        if (content.LongLength != descriptor.ByteLength
+            || !string.Equals(
+                actualHash,
+                descriptor.ContentHashSha256,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Retained statement reconciliation report artifact '{descriptor.ArtifactId}' failed immutable generation verification.");
+        }
     }
 
     private async Task<StatementReconciliationReportArtifactDto> RetainArtifactAsync(
@@ -793,11 +1161,13 @@ public sealed class StatementReconciliationReportWorkflowService
         return new WorkflowSnapshot(SnapshotSchemaVersion, request, workflow, ImportResult: null, ResumeStatus: workflow.Status);
     }
 
-    private StatementImportCommitRequest BuildImportRequest(WorkflowSnapshot snapshot)
+    private async Task<StatementImportCommitRequest> BuildImportRequestAsync(
+        WorkflowSnapshot snapshot,
+        CancellationToken ct)
     {
         var request = snapshot.Request;
         var inputPath = ResolveDataRootPath(request.RelativeInputPath);
-        var content = File.ReadAllBytes(inputPath);
+        var content = await File.ReadAllBytesAsync(inputPath, ct).ConfigureAwait(false);
         var importRequest = new StatementImportCommitRequest(
             new StatementSourceDocument(
                 request.FileName,
@@ -882,12 +1252,29 @@ public sealed class StatementReconciliationReportWorkflowService
         };
     }
 
+    private static int GetNextArtifactGeneration(
+        StatementReconciliationReportWorkflowDto workflow)
+    {
+        var latestHistoryGeneration = (workflow.ArtifactHistory ?? [])
+            .Select(static item => item.Generation)
+            .DefaultIfEmpty(0)
+            .Max();
+        return checked(Math.Max(workflow.ArtifactGeneration, latestHistoryGeneration) + 1);
+    }
+
     private static WorkflowSnapshot Complete(
         WorkflowSnapshot snapshot,
-        IReadOnlyList<StatementReconciliationReportArtifactDto> artifacts)
+        RetainedArtifactSet artifactSet)
     {
         var now = DateTimeOffset.UtcNow;
         var import = snapshot.ImportResult!;
+        var expectedGeneration = GetNextArtifactGeneration(snapshot.Workflow);
+        if (artifactSet.Generation != expectedGeneration)
+        {
+            throw new InvalidDataException(
+                $"Statement reconciliation report artifact generation {artifactSet.Generation} does not match expected generation {expectedGeneration}.");
+        }
+
         return snapshot with
         {
             Workflow = snapshot.Workflow with
@@ -896,10 +1283,15 @@ public sealed class StatementReconciliationReportWorkflowService
                 Version = snapshot.Workflow.Version + 1,
                 StatementRunId = import.RunId,
                 EvidenceVaultIdentity = import.EvidenceVaultIdentity,
-                RetainedArtifacts = artifacts,
+                RetainedArtifacts = artifactSet.Artifacts,
                 EvidenceReferences = snapshot.Workflow.EvidenceReferences
                     .Concat(BuildEvidenceReferences(import))
-                    .Concat(artifacts.Select(static item => $"artifact:{item.ArtifactId}:sha256:{item.ContentHashSha256}"))
+                    .Concat(artifactSet.Artifacts.Select(static item =>
+                        $"artifact:{item.ArtifactId}:sha256:{item.ContentHashSha256}"))
+                    .Concat(BuildArtifactGenerationEvidenceReferences(
+                        artifactSet.Generation,
+                        artifactSet.Artifacts,
+                        artifactSet.ManifestContentHashSha256))
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static item => item, StringComparer.Ordinal)
                     .ToArray(),
@@ -908,7 +1300,8 @@ public sealed class StatementReconciliationReportWorkflowService
                 UpdatedAtUtc = now,
                 CompletedAtUtc = now,
                 FailureReason = null,
-                RecoveryAction = null
+                RecoveryAction = null,
+                ArtifactGeneration = artifactSet.Generation
             },
             ResumeStatus = StatementReconciliationReportWorkflowStatusDto.Completed
         };
@@ -999,8 +1392,24 @@ public sealed class StatementReconciliationReportWorkflowService
     private static WorkflowSnapshot AwaitReconciliation(
         WorkflowSnapshot snapshot,
         CurrentReconciliationGate gate,
-        bool advanceVersion)
+        bool advanceVersion,
+        StatementReconciliationReportArtifactGenerationDto? archivedGeneration = null)
     {
+        var artifactHistory = (snapshot.Workflow.ArtifactHistory ?? []).ToList();
+        if (archivedGeneration is not null
+            && artifactHistory.All(item => item.Generation != archivedGeneration.Generation))
+        {
+            artifactHistory.Add(archivedGeneration);
+        }
+
+        artifactHistory.Sort(static (left, right) => left.Generation.CompareTo(right.Generation));
+        var evidenceReferences = snapshot.Workflow.EvidenceReferences
+            .Concat(archivedGeneration?.EvidenceReferences ?? [])
+            .Where(static item =>
+                !item.StartsWith("artifact:", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static item => item, StringComparer.Ordinal)
+            .ToArray();
         var workflow = snapshot.Workflow with
         {
             Status = StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
@@ -1008,10 +1417,7 @@ public sealed class StatementReconciliationReportWorkflowService
                 ? snapshot.Workflow.Version + 1
                 : snapshot.Workflow.Version,
             RetainedArtifacts = [],
-            EvidenceReferences = snapshot.Workflow.EvidenceReferences
-                .Where(static item =>
-                    !item.StartsWith("artifact:", StringComparison.Ordinal))
-                .ToArray(),
+            EvidenceReferences = evidenceReferences,
             BreakCount = gate.OpenBreakCount,
             CaseCount = gate.OpenCaseCount,
             UpdatedAtUtc = advanceVersion
@@ -1019,7 +1425,11 @@ public sealed class StatementReconciliationReportWorkflowService
                 : snapshot.Workflow.UpdatedAtUtc,
             CompletedAtUtc = null,
             FailureReason = null,
-            RecoveryAction = gate.RecoveryAction
+            RecoveryAction = gate.RecoveryAction,
+            ArtifactGeneration = Math.Max(
+                snapshot.Workflow.ArtifactGeneration,
+                archivedGeneration?.Generation ?? 0),
+            ArtifactHistory = artifactHistory
         };
         return snapshot with
         {
@@ -1369,20 +1779,60 @@ public sealed class StatementReconciliationReportWorkflowService
             artifactId);
 
     private static WorkflowSnapshot NormalizeLegacySnapshot(WorkflowSnapshot snapshot)
-        => snapshot with
+    {
+        var retainedArtifacts = snapshot.Workflow.RetainedArtifacts ?? [];
+        var artifactHistory = snapshot.Workflow.ArtifactHistory ?? [];
+        var artifactGeneration = snapshot.Workflow.ArtifactGeneration;
+        if (artifactGeneration <= 0 && retainedArtifacts.Count > 0)
+            artifactGeneration = 1;
+        else if (artifactGeneration <= 0 && artifactHistory.Count > 0)
+            artifactGeneration = artifactHistory.Max(static item => item.Generation);
+
+        return snapshot with
         {
             Workflow = snapshot.Workflow with
             {
                 StatusRoute = BuildStatusRoute(snapshot.Workflow.WorkflowId),
                 ResumeRoute = BuildResumeRoute(snapshot.Workflow.WorkflowId),
-                RetainedArtifacts = snapshot.Workflow.RetainedArtifacts
+                RetainedArtifacts = retainedArtifacts
                     .Select(item => item with
                     {
                         DownloadRoute = BuildArtifactRoute(snapshot.Workflow.WorkflowId, item.ArtifactId)
                     })
-                    .ToArray()
+                    .ToArray(),
+                ArtifactGeneration = artifactGeneration,
+                ArtifactHistory = artifactHistory
             }
         };
+    }
+
+    private sealed record RetainedArtifactSet(
+        int Generation,
+        IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts,
+        string ManifestContentHashSha256);
+
+    private sealed record ArtifactArchivePayload(
+        string FileName,
+        byte[] Content);
+
+    private sealed record ArtifactGenerationArchiveReceipt(
+        int SchemaVersion,
+        int Generation,
+        IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts,
+        string ManifestFileName,
+        long ManifestByteLength,
+        string ManifestContentHashSha256,
+        DateTimeOffset GeneratedAtUtc,
+        DateTimeOffset ArchivedAtUtc,
+        IReadOnlyList<string> EvidenceReferences);
+
+    private sealed record ArtifactGenerationManifest(
+        int SchemaVersion,
+        int ArtifactGeneration,
+        string WorkflowId,
+        string StatementRunId,
+        IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts,
+        IReadOnlyList<string> EvidenceReferences);
 
     private sealed record WorkflowSnapshot(
         int SchemaVersion,
@@ -1425,6 +1875,7 @@ public sealed class StatementReconciliationReportWorkflowService
     private sealed record StatementReconciliationReport(
         int SchemaVersion,
         string WorkflowId,
+        int ArtifactGeneration,
         string StatementRunId,
         string TenantId,
         string? CompanyId,

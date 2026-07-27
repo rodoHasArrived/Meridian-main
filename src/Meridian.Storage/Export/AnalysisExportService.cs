@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Core.Logging;
+using Meridian.Storage.Policies;
+using Meridian.Storage.Replay;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;
@@ -17,17 +19,36 @@ namespace Meridian.Storage.Export;
 /// </summary>
 public sealed partial class AnalysisExportService
 {
+    private static readonly string[] JsonlSourcePatterns =
+    [
+        "*.jsonl",
+        "*.jsonl.gz",
+        "*.jsonl.gzip",
+        "*.jsonl.zst",
+        "*.jsonl.lz4",
+        "*.jsonl.br"
+    ];
+
     private readonly ILogger _log = LoggingSetup.ForContext<AnalysisExportService>();
     private readonly string _dataRoot;
     private readonly Dictionary<string, ExportProfile> _profiles;
+    private readonly JsonlStoragePolicy _storagePolicy;
     private readonly ExportValidator _validator;
 
     public AnalysisExportService(string dataRoot)
+        : this(new StorageOptions { RootPath = dataRoot })
     {
-        _dataRoot = dataRoot;
+    }
+
+    public AnalysisExportService(StorageOptions storageOptions)
+    {
+        ArgumentNullException.ThrowIfNull(storageOptions);
+
+        _dataRoot = storageOptions.RootPath;
         _profiles = ExportProfile.GetBuiltInProfiles()
             .ToDictionary(p => p.Id, p => p);
-        _validator = new ExportValidator(dataRoot);
+        _storagePolicy = new JsonlStoragePolicy(storageOptions);
+        _validator = new ExportValidator(storageOptions);
     }
 
     /// <summary>
@@ -204,9 +225,13 @@ public sealed partial class AnalysisExportService
             return ExportResult.CreateFailure(request.ProfileId, $"Unknown profile: {request.ProfileId}");
 
         var result = ExportResult.CreateSuccess(profile.Id, request.OutputDirectory);
+        OutputArtifactSnapshot? outputSnapshot = null;
+        var exportSucceeded = false;
 
         try
         {
+            outputSnapshot = OutputArtifactSnapshot.Capture(request.OutputDirectory);
+
             _log.Information("Starting export with profile {ProfileId} to {OutputDir}",
                 profile.Id, request.OutputDirectory);
 
@@ -252,7 +277,12 @@ public sealed partial class AnalysisExportService
                     exportedFiles = await ExportToCsvAsync(sourceFiles, request, profile, ct);
                     break;
                 case ExportFormat.Parquet:
-                    exportedFiles = await ExportToParquetAsync(sourceFiles, request, profile, ct);
+                    exportedFiles = await ExportToParquetAsync(
+                        sourceFiles,
+                        request,
+                        profile,
+                        outputSnapshot,
+                        ct);
                     break;
                 case ExportFormat.Jsonl:
                     exportedFiles = await ExportToJsonlAsync(sourceFiles, request, profile, ct);
@@ -264,10 +294,20 @@ public sealed partial class AnalysisExportService
                     exportedFiles = await ExportToSqlAsync(sourceFiles, request, profile, ct);
                     break;
                 case ExportFormat.Xlsx:
-                    exportedFiles = await ExportToXlsxAsync(sourceFiles, request, profile, ct);
+                    exportedFiles = await ExportToXlsxAsync(
+                        sourceFiles,
+                        request,
+                        profile,
+                        outputSnapshot,
+                        ct);
                     break;
                 case ExportFormat.Arrow:
-                    exportedFiles = await ExportToArrowAsync(sourceFiles, request, profile, ct);
+                    exportedFiles = await ExportToArrowAsync(
+                        sourceFiles,
+                        request,
+                        profile,
+                        outputSnapshot,
+                        ct);
                     break;
                 default:
                     throw new NotSupportedException($"Format {profile.Format} is not supported");
@@ -275,13 +315,16 @@ public sealed partial class AnalysisExportService
 
             if (exportedFiles.Count == 0 || exportedFiles.Sum(static file => file.RecordCount) == 0)
             {
-                DeleteEmptyExportArtifacts(exportedFiles, request.OutputDirectory);
                 result.Success = false;
                 result.Error = "No exportable records were found in the selected source data.";
                 result.Warnings = [.. result.Warnings, result.Error];
                 result.CompletedAt = DateTime.UtcNow;
                 return result;
             }
+
+            var formatEvidenceError = ValidateArtifactFormatEvidence(profile.Format, exportedFiles);
+            if (formatEvidenceError is not null)
+                throw new InvalidOperationException(formatEvidenceError);
 
             result.Files = exportedFiles.ToArray();
             result.FilesGenerated = exportedFiles.Count;
@@ -325,11 +368,17 @@ public sealed partial class AnalysisExportService
 
             result.CompletedAt = DateTime.UtcNow;
             result.Success = true;
+            exportSucceeded = true;
 
             _log.Information("Export completed: {FileCount} files, {RecordCount:N0} records, {Bytes:N0} bytes",
                 result.FilesGenerated, result.TotalRecords, result.TotalBytes);
 
             return result;
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Information("Export cancelled for profile {ProfileId}", profile.Id);
+            throw;
         }
         catch (Exception ex)
         {
@@ -337,7 +386,15 @@ public sealed partial class AnalysisExportService
             result.Success = false;
             result.Error = ex.Message;
             result.CompletedAt = DateTime.UtcNow;
+            ResetArtifactEvidence(result);
             return result;
+        }
+        finally
+        {
+            if (!exportSucceeded)
+                CleanupNewExportArtifacts(outputSnapshot);
+            else
+                outputSnapshot?.DiscardBackups();
         }
     }
 
@@ -346,9 +403,10 @@ public sealed partial class AnalysisExportService
         if (!Directory.Exists(_dataRoot))
             return new List<SourceFile>();
 
-        return new[] { "*.jsonl", "*.jsonl.gz" }
+        return JsonlSourcePatterns
             .SelectMany(pattern => Directory.GetFiles(_dataRoot, pattern, SearchOption.AllDirectories))
-            .Select(ParseFileName)
+            .Distinct(GetPathComparer())
+            .Select(ParseSourceFile)
             .Where(f => f is not null)
             .Select(f => f!)
             .Where(f => request.Symbols is not { Length: > 0 } ||
@@ -362,7 +420,25 @@ public sealed partial class AnalysisExportService
             .ToList();
     }
 
-    private SourceFile? ParseFileName(string path)
+    private SourceFile? ParseSourceFile(string path)
+    {
+        var metadata = _storagePolicy.TryParsePath(path);
+        if (metadata is not null)
+        {
+            return new SourceFile
+            {
+                Path = path,
+                Symbol = metadata.Symbol,
+                EventType = metadata.EventType,
+                Date = metadata.Date?.UtcDateTime,
+                IsCompressed = CompressedJsonlStream.IsCompressed(path)
+            };
+        }
+
+        return ParseLegacyFileName(path);
+    }
+
+    private static SourceFile? ParseLegacyFileName(string path)
     {
         var fileName = Path.GetFileName(path);
         var parts = fileName.Split('.');
@@ -374,7 +450,7 @@ public sealed partial class AnalysisExportService
         var result = new SourceFile
         {
             Path = path,
-            IsCompressed = fileName.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+            IsCompressed = CompressedJsonlStream.IsCompressed(path)
         };
 
         // Try to extract symbol and event type
@@ -403,35 +479,6 @@ public sealed partial class AnalysisExportService
                 count++;
         }
         return count;
-    }
-
-    private void DeleteEmptyExportArtifacts(
-        IEnumerable<ExportedFile> exportedFiles,
-        string outputDirectory)
-    {
-        var normalizedOutputDirectory = Path.GetFullPath(outputDirectory)
-            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            + Path.DirectorySeparatorChar;
-
-        foreach (var exportedFile in exportedFiles)
-        {
-            try
-            {
-                var normalizedPath = Path.GetFullPath(exportedFile.Path);
-                if (normalizedPath.StartsWith(normalizedOutputDirectory, StringComparison.OrdinalIgnoreCase) &&
-                    File.Exists(normalizedPath))
-                {
-                    File.Delete(normalizedPath);
-                }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                _log.Warning(
-                    ex,
-                    "Could not remove empty export artifact {ExportArtifactPath}",
-                    exportedFile.Path);
-            }
-        }
     }
 
     /// <summary>

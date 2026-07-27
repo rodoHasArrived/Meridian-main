@@ -11,6 +11,7 @@ using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Npgsql;
@@ -250,7 +251,8 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             ledgerBookService,
             retention,
             tenancy,
-            breakQueue);
+            breakQueue,
+            new ImmediateReportingReleaseConsistencyGate());
 
         var closeContext = new AccountingClosePostingContext(
                 Guid.NewGuid(),

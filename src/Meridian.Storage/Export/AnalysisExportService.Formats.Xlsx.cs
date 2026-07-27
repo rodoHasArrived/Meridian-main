@@ -11,6 +11,7 @@ public sealed partial class AnalysisExportService
         List<SourceFile> sourceFiles,
         ExportRequest request,
         ExportProfile profile,
+        OutputArtifactSnapshot? outputSnapshot,
         CancellationToken ct)
     {
         var exportedFiles = new List<ExportedFile>();
@@ -22,20 +23,41 @@ public sealed partial class AnalysisExportService
             var outputPath = Path.Combine(
                 request.OutputDirectory,
                 $"{symbol}_{DateTime.UtcNow:yyyyMMdd}.xlsx");
+            EnsureExportArtifactMayBeWritten(outputPath, request.OverwriteExisting);
+            var stagedPath = CreateExportArtifactStagingPath(outputPath);
 
-            var recordCount = await CreateXlsxFileAsync(outputPath, group.ToList(), profile, ct);
-
-            var fileInfo = new FileInfo(outputPath);
-            exportedFiles.Add(new ExportedFile
+            try
             {
-                Path = outputPath,
-                RelativePath = Path.GetFileName(outputPath),
-                Symbol = symbol,
-                Format = "xlsx",
-                SizeBytes = fileInfo.Length,
-                RecordCount = recordCount,
-                ChecksumSha256 = await ComputeChecksumAsync(outputPath, ct)
-            });
+                var recordCount = await CreateXlsxFileAsync(
+                    stagedPath,
+                    group.ToList(),
+                    profile,
+                    ct);
+
+                var fileInfo = new FileInfo(stagedPath);
+                var checksum = await ComputeChecksumAsync(stagedPath, ct);
+                ct.ThrowIfCancellationRequested();
+                CommitStagedExportArtifact(
+                    stagedPath,
+                    outputPath,
+                    request.OverwriteExisting,
+                    outputSnapshot);
+
+                exportedFiles.Add(new ExportedFile
+                {
+                    Path = outputPath,
+                    RelativePath = Path.GetFileName(outputPath),
+                    Symbol = symbol,
+                    Format = "xlsx",
+                    SizeBytes = fileInfo.Length,
+                    RecordCount = recordCount,
+                    ChecksumSha256 = checksum
+                });
+            }
+            finally
+            {
+                DeleteStagedExportArtifact(stagedPath);
+            }
         }
 
         return exportedFiles;

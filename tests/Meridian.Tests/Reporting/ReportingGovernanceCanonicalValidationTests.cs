@@ -7,6 +7,7 @@ using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -440,7 +441,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
-    public async Task Coordinator_FinalReleaseRevalidatesAndBlocksWhenCanonicalQueueReopensAfterCertification()
+    public async Task Coordinator_ReopenFenceFirst_BlocksReleaseUntilReopenCompletesThenRevalidates()
     {
         var template = CoordinatorTemplate();
         var source = new VersionedCoordinatorSource();
@@ -458,6 +459,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             CoordinatorJob("job-release-revalidation", template, certified),
             CancellationToken.None);
         var repository = new MemoryGovernanceRepository();
+        var releaseConsistencyGate = new ControllableReportingReleaseConsistencyGate();
         var coordinator = CreateCoordinator(
             repository,
             certification,
@@ -466,7 +468,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             new RestartableArtifactCatalog(),
             new RestartableArtifactAuditStore(),
             new DeterministicReportingCertifiedArtifactProducer(),
-            template);
+            template,
+            releaseConsistencyGate);
         var maker = CoordinatorCaller("maker-a");
         var approver = CoordinatorCaller("approver-b");
         var releaser = CoordinatorCaller("releaser-c");
@@ -478,9 +481,17 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             run.Version,
             "Independent review completed before the later queue change",
             approver);
-        reconciliation.CanonicalQueueReopened = true;
 
-        Func<Task> release = () => coordinator.ReleaseAsync(run.RunId, run.Version, releaser);
+        var reopenLease = await releaseConsistencyGate.AcquireAsync(run.Snapshot.PeriodId);
+        var releaseTask = coordinator.ReleaseAsync(run.RunId, run.Version, releaser);
+        await releaseConsistencyGate.WaitForAttemptAsync(2)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        releaseTask.IsCompleted.Should().BeFalse(
+            "a governed reopen already owns the exact accounting-period fence");
+
+        reconciliation.CanonicalQueueReopened = true;
+        await reopenLease.DisposeAsync();
+        Func<Task> release = async () => await releaseTask;
 
         await release.Should().ThrowAsync<ReportingReconciliationEvidenceInvalidException>()
             .WithMessage("*reopened after certification*");
@@ -1084,7 +1095,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         RestartableArtifactCatalog artifactCatalog,
         RestartableArtifactAuditStore artifactAudit,
         IReportingCertifiedArtifactProducer producer,
-        ReportingTemplateMetadata template) =>
+        ReportingTemplateMetadata template,
+        IReportingReleaseConsistencyGate? releaseConsistencyGate = null) =>
         new(
             new ReportingGovernanceService(
                 repository,
@@ -1101,7 +1113,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             producer,
             new ReportingArtifactRetentionAuthorityProvider(),
             new GovernedReportingRestatementChangedLineResolver(),
-            new CoordinatorRestatementCertificationInputProvider(template));
+            new CoordinatorRestatementCertificationInputProvider(template),
+            releaseConsistencyGate ?? new ImmediateReportingReleaseConsistencyGate());
 
     private static ReportingTemplateMetadata CoordinatorTemplate() => new(
         "coordinator-report",

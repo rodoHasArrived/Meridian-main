@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Contracts
@@ -31,8 +31,8 @@ or provider implementations.
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
 - `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
-  reconciliation report status, stage, retained JSON/CSV artifact, evidence-link, and recovery
-  payloads.
+  reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
+  superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.

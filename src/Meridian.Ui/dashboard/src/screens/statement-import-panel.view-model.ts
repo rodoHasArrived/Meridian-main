@@ -368,7 +368,7 @@ export function useStatementImportPanelViewModel(
     };
   }, [services]);
 
-  const runPreview = useCallback(async (args: { file: File | null; connectorId: string; profileId: string }) => {
+  const runPreview = useCallback(async (args: { file: File; connectorId: string; profileId: string }) => {
     if (Object.keys(validateStatementImportCommitForm(commitFormRef.current, args.file)).length > 0) {
       previewRevisionRef.current += 1;
       setPreview(null);
@@ -429,17 +429,18 @@ export function useStatementImportPanelViewModel(
     setPreviewBusy(false);
     setSelectedKind(null);
 
-    if (Object.keys(validateStatementImportCommitForm(commitForm, selectedFile)).length > 0) {
+    if (!selectedFile || Object.keys(validateStatementImportCommitForm(commitForm, selectedFile)).length > 0) {
       return;
     }
 
+    const previewFile = selectedFile;
     const timer = window.setTimeout(() => {
       if (previewRevisionRef.current !== pendingRevision) {
         return;
       }
 
       void runPreview({
-        file: selectedFile,
+        file: previewFile,
         connectorId: selectedConnectorId,
         profileId: selectedProfileId
       });

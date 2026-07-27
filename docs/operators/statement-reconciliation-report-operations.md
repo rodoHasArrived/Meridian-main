@@ -2,7 +2,7 @@
 title: Statement Reconciliation Report Operations
 status: active
 owner: financial-operations
-reviewed: 2026-07-26
+reviewed: 2026-07-27
 audience: operators
 ---
 
@@ -92,7 +92,7 @@ last-run timestamp.
 | Status | Operator action |
 | --- | --- |
 | `InputRetained`, `Importing`, `RenderingReconciliationReport` | Poll the status route; do not upload a modified file under the same business event. |
-| `AwaitingReconciliation` | Work the canonical queue entries. Resolve or govern disposition and complete their source/Operations evidence handoff, then call the resume route. |
+| `AwaitingReconciliation` | Work the canonical queue entries. Resolve or govern disposition and complete their source/Operations evidence handoff, then call the resume route. If a completed case was governed-reopened, current `retainedArtifacts` are empty and the superseded generation is retained in `artifactHistory`. |
 | `Failed` | Preserve `failureReason`; correct the named dependency and use the existing resume route. Do not begin an unrelated replacement import. |
 | `Completed` | Retrieve every retained artifact and retain the workflow response, exact accounting scope, Operations workflow link, and queue evidence. Do not treat it as posting, close, reporting certification, or delivery proof. |
 
@@ -115,8 +115,23 @@ queue's create-replay validation.
 - Download an artifact from the `downloadRoute` in each `retainedArtifacts` entry.
 
 Artifact downloads are served only inside the authenticated tenant/company scope. The server hashes
-the retained bytes again and refuses delivery if they differ from `contentHashSha256`. The workflow
-retains:
+the retained bytes again and refuses delivery if their length or hash differs from the current
+descriptor. Only a `Completed` workflow's `retainedArtifacts` authorize download. A governed reopen
+removes that current authority before any replacement render.
+
+`artifactGeneration` is the monotonic number of the latest generated set. After a governed reopen,
+the service copies every formerly current byte and the exact `manifest.json` into
+`artifacts/history/generation-<number>/` with atomic file writes, writes an immutable hash-addressed
+archive receipt, and then atomically checkpoints one `artifactHistory` entry in the existing
+workflow/status response. That entry preserves the generation's exact descriptors, manifest length
+and hash, generation and archive timestamps, and audit evidence. The descriptors' original
+`downloadRoute` values are historical audit metadata; do not use them to request superseded bytes.
+Current download authority remains exclusively in `retainedArtifacts`.
+
+Resuming the same reopened checkpoint is idempotent: it reuses the existing archive receipt and
+does not append another history entry. Once casework is resolved again, rendering creates the next
+generation at the normal current paths while all prior generation bytes, manifests, descriptors,
+hashes, and receipt evidence remain unchanged. The workflow retains:
 
 - `statement-reconciliation-report.json` with scope, period, run, reconciliation, case lineage, and
   Evidence Vault references;
@@ -144,10 +159,12 @@ Continue through the existing governed seams; do not create a parallel renderer 
 5. Start a separate governed Reporting run through canonical readiness, certification, governance,
    and release. Statement JSON/CSV is support evidence only and is not a certified run input by
    itself.
-6. For `ClientPackage`, the canonical renderer and certified-artifact producer retain both PDF and
-   XLSX primary outputs from the same certified manifest. Secure Reporting distribution remains
-   authoritative for grants, delivery jobs, provider receipts, and audited downloads after release,
-   and it rejects a PDF-only or XLSX-only primary subset.
+6. Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs use the same canonical renderer and
+   certified-artifact producer. Standalone formats select their exact document from the canonical
+   PDF/XLSX pair; `ClientPackage` retains both primary outputs from the same certified manifest.
+   Secure Reporting distribution remains authoritative for grants, delivery jobs, provider
+   receipts, and audited downloads after release, and it rejects a PDF-only or XLSX-only primary
+   subset of a `ClientPackage`.
 
 The automatic transition ends at scoped Operations Continuity and canonical queue handoff. Verify
 posting, close, Reporting, release, and distribution independently in
@@ -165,14 +182,17 @@ posting, close, Reporting, release, and distribution independently in
    copy an Operations workflow ID from another scope.
 5. If intake reports a closed exact Operations workflow, reopen it only through governed close
    controls before retrying the statement handoff.
-6. If an artifact hash fails, stop downstream delivery, retain the workflow snapshot and affected
-   bytes, and escalate as a durability incident. Do not replace the bytes or edit the manifest.
+6. If a current artifact, historical generation, manifest, or archive-receipt hash fails, stop
+   downstream delivery, retain the workflow snapshot and affected bytes, and escalate as a
+   durability incident. Do not replace the bytes, descriptor, manifest, or archive receipt.
 7. If access is denied, confirm the authenticated company and tenant rather than copying artifacts
    across scopes.
 
 The server data root retains new workflow state under `reporting/statement-reconciliation-report/<workflowId>/`.
-Treat `workflow.json`, `input/`, `artifacts/`, and the lock file as service-owned data. Include that
-directory in the supported data-root backup and restore drill; operators must not edit it directly.
+Treat `workflow.json`, `input/`, `artifacts/`, `artifacts/history/`, and the lock file as
+service-owned data. Include that directory in the supported data-root backup and restore drill;
+operators must not edit it directly or restore a historical generation independently of its
+workflow snapshot.
 The canonical casework handoff is retained separately under
 `<DataRoot>/workstation/reconciliation-break-queue.json`. That integrity-validated snapshot also
 retains command receipts, audit evidence, and any exact close-scope checkpoint frozen before hard

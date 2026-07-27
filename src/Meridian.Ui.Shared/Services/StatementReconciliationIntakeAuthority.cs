@@ -275,7 +275,7 @@ public sealed class StatementReconciliationIntakeAuthority : IStatementReconcili
             .ConfigureAwait(false);
 
         var sourceBreaks = (await _reconciliation!
-                .ListOpenStatementBreaksAsync(ct)
+                .ListOpenStatementBreaksAsync(queueScope, ct)
                 .ConfigureAwait(false))
             .Where(item => IsForImport(item, import.RunId))
             .ToArray();

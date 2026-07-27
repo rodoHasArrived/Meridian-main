@@ -828,22 +828,52 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_OperationsContinuityReconciliationRun_ShouldBridgeRealReconciliationOutputsIntoGatePosture()
     {
         var bankEntityId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var accountingPeriodId = Guid.NewGuid();
+        var accountingAsOf = new DateOnly(2026, 5, 31);
         var reconciliation = BuildOperationsContinuityReconciliationDetail("recon-ops-1", "run-ops-1");
         var reconciliationService = new StaticReconciliationRunService(reconciliation);
+        var statementAuthority = Substitute.For<IReconciliationApiService>();
+        statementAuthority
+            .GetAuthorizedFundAccountAsync(
+                fundAccountId,
+                Arg.Any<ReconciliationBreakQueueScope>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+                fundAccountId,
+                "test-fund-profile"));
+        statementAuthority
+            .GetStatementRunAuthorizationAsync(
+                "run-ops-1",
+                Arg.Any<ReconciliationBreakQueueScope>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.StatementReconciliationRunAuthorization(
+                "run-ops-1",
+                fundAccountId,
+                "test-fund-profile",
+                ledgerBookId,
+                accountingPeriodId,
+                accountingAsOf,
+                new DateOnly(2026, 5, 1),
+                accountingAsOf));
         await using var app = await CreateAppAsync(services =>
         {
             RegisterOperationsContinuityServices(services);
             services.RemoveAll<IReconciliationRunService>();
             services.AddSingleton<IReconciliationRunService>(reconciliationService);
+            services.RemoveAll<IReconciliationApiService>();
+            services.AddSingleton(statementAuthority);
         });
         var client = app.GetTestClient();
 
         var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
-            Guid.NewGuid(),
-            "2026-05",
+            fundAccountId,
+            accountingPeriodId.ToString("D"),
             null,
             "custodian",
-            "spoofed-user"));
+            "spoofed-user",
+            LedgerBookId: ledgerBookId));
         var workflowId = start.Workflow!.WorkflowId;
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
             new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
@@ -863,6 +893,29 @@ public sealed partial class WorkstationEndpointsTests
                 "period-close",
                 true,
                 JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
+        await app.Services
+            .GetRequiredService<IOperationsWorkflowAuditStore>()
+            .AppendAsync(new OperationsWorkflowAuditDraft(
+                workflowId,
+                fundAccountId,
+                accountingPeriodId.ToString("D"),
+                "StatementIntakeRetained",
+                OperationsWorkflowStatusDto.InProgress,
+                OperationsWorkflowStatusDto.InProgress,
+                OperationsGateKeyDto.BrokerIngest,
+                OperationsGateStatusDto.Passed,
+                OperationsGateStatusDto.Passed,
+                "statement-intake",
+                "Retained statement intake for the exact Operations workflow.",
+                "run-ops-1",
+                [
+                    new OperationsEvidenceLinkDto(
+                        "statement-intake:run-ops-1",
+                        "Retained statement",
+                        "/api/workstation/reconciliation/statement-reconciliation-report/run-ops-1",
+                        "statement-reconciliation-report",
+                        new DateTimeOffset(2026, 5, 31, 23, 59, 0, TimeSpan.Zero))
+                ]));
 
         var bridged = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(
@@ -6551,6 +6604,33 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ReportingWorkspace_WhenReadinessProbeThrows_ShouldFailClosedBeforeStoreRead()
+    {
+        var readiness = Substitute.For<IReportingDeploymentReadinessService>();
+        readiness.Evaluate().Returns(_ =>
+            throw new InvalidOperationException("Simulated reporting readiness probe failure."));
+        var runStore = Substitute.For<IReportingRunStore>();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(readiness);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog(),
+                    runStore));
+            },
+            currentUserPermissions: UserPermission.ViewReporting);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/reporting");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(ServerJsonOptions);
+        problem.GetProperty("detail").GetString()
+            .Should().Contain("reporting deployment capability");
+        runStore.ReceivedCalls().Should().BeEmpty(
+            "the independent readiness gate must fail before any authoritative reporting-store read");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReportingStoreFailure_ShouldFailReportingClosedAndDegradeAccountingSection()
     {
         var runStore = Substitute.For<IReportingRunStore>();
@@ -9220,11 +9300,15 @@ public sealed partial class WorkstationEndpointsTests
         public List<StatementRunCreateDto> CreatedRequests { get; } = [];
         public List<string> ReconciledRunIds { get; } = [];
         public List<(string RunId, StatementRunReconcileRequestDto Request)> ReconciledRequests { get; } = [];
+        public List<ReconciliationBreakQueueScope> ObservedScopes { get; } = [];
         public int ListOpenStatementBreaksCallCount { get; private set; }
 
-        public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<StatementImportSummaryDto>>(
             [
                 new(
@@ -9237,49 +9321,83 @@ public sealed partial class WorkstationEndpointsTests
             ]);
         }
 
-        public Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([StatementRun]);
         }
 
-        public Task<StatementRunDto?> CreateStatementRunAsync(StatementRunCreateDto request, CancellationToken ct = default)
+        public Task<StatementRunDto?> CreateStatementRunAsync(
+            StatementRunCreateDto request,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             CreatedRequests.Add(request);
             return Task.FromResult<StatementRunDto?>(BuildRunDto("created-statement-run", StatementRunStatus.Completed));
         }
 
-        public Task<StatementRunDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        public Task<bool> OwnsStatementRunAsync(
+            string runId,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
+            return Task.FromResult(string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public Task<StatementRunDto?> GetStatementRunAsync(
+            string runId,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
                     ? BuildRunDto(StatementRun.RunId, StatementRun.Status)
                     : null);
         }
 
-        public Task<StatementRunValidationDto?> GetStatementRunValidationAsync(string runId, CancellationToken ct = default)
+        public Task<StatementRunValidationDto?> GetStatementRunValidationAsync(
+            string runId,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<StatementRunValidationDto?>(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
                     ? new StatementRunValidationDto(runId, [], IsBlocked: false)
                     : null);
         }
 
-        public Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(string runId, CancellationToken ct = default)
+        public Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(
+            string runId,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<StatementRunBreakDto>?>(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
                     ? [BuildBreakDto()]
                     : null);
         }
 
-        public Task<StatementRunDto?> ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, CancellationToken ct = default)
+        public Task<StatementRunDto?> ReconcileStatementRunAsync(
+            string runId,
+            StatementRunReconcileRequestDto request,
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             ReconciledRunIds.Add(runId);
             ReconciledRequests.Add((runId, request));
             return Task.FromResult<StatementRunDto?>(
@@ -9288,9 +9406,12 @@ public sealed partial class WorkstationEndpointsTests
                     : null);
         }
 
-        public Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>(
             [
                 new(
@@ -9308,9 +9429,12 @@ public sealed partial class WorkstationEndpointsTests
             ]);
         }
 
-        public Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             ListOpenStatementBreaksCallCount++;
             var run = BuildRunDto(StatementRun.RunId, StatementRun.Status);
             var statementBreak = run.Breaks!.Single() with
@@ -9384,15 +9508,21 @@ public sealed partial class WorkstationEndpointsTests
             CreatedAtUtc: new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
             Status: "Open");
 
-        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
         }
 
-        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
+        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(
+            ReconciliationBreakQueueScope accessScope,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ObservedScopes.Add(accessScope);
             return Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
         }
     }

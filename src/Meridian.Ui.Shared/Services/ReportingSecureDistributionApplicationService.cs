@@ -110,6 +110,15 @@ public sealed record SecureReportingDistributionCapabilityCatalog(
     IReadOnlyList<SecureReportingTransportCapability> Transports);
 
 /// <summary>
+/// Credential-free transport infrastructure truth consumed by deployment readiness. It grants no
+/// delivery authority and exposes no recipient destinations or transport credentials.
+/// </summary>
+public interface IReportingTransportInfrastructureReadiness
+{
+    IReadOnlyList<SecureReportingTransportCapability> GetTransportInfrastructureCapabilities();
+}
+
+/// <summary>
 /// Complete server-side identity used to resolve an external notification destination. The
 /// public delivery command may assert the resolved value, but it is never authoritative.
 /// </summary>
@@ -135,6 +144,13 @@ public sealed record ReportingRecipientDestinationBinding(
 public interface IReportingRecipientDestinationResolver
 {
     bool IsConfigured { get; }
+
+    /// <summary>
+    /// Transport ids referenced by the deployment-owned recipient directory. A resolver that
+    /// cannot enumerate its configured transports leaves this empty so deployment readiness fails
+    /// closed instead of assuming an adapter exists.
+    /// </summary>
+    IReadOnlyCollection<string> ConfiguredTransportIds => Array.Empty<string>();
 
     ValueTask<string?> ResolveDestinationAsync(
         ReportingRecipientDestinationRequest request,
@@ -162,6 +178,7 @@ public sealed class RejectingReportingRecipientDestinationResolver : IReportingR
 public sealed class ConfiguredReportingRecipientDestinationResolver : IReportingRecipientDestinationResolver
 {
     private readonly IReadOnlyDictionary<DestinationKey, string> _destinations;
+    private readonly string[] _configuredTransportIds;
 
     public ConfiguredReportingRecipientDestinationResolver(
         IEnumerable<ReportingRecipientDestinationBinding> bindings)
@@ -204,9 +221,16 @@ public sealed class ConfiguredReportingRecipientDestinationResolver : IReporting
         }
 
         _destinations = destinations;
+        _configuredTransportIds = destinations.Keys
+            .Select(static key => key.TransportId)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static transportId => transportId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public bool IsConfigured => true;
+
+    public IReadOnlyCollection<string> ConfiguredTransportIds => _configuredTransportIds;
 
     public ValueTask<string?> ResolveDestinationAsync(
         ReportingRecipientDestinationRequest request,
@@ -328,14 +352,17 @@ public sealed class SecureReportingAccessGrantDeniedException : UnauthorizedAcce
 /// reconstructs release authority from governed state, and requires tenant-keyed artifact catalog
 /// matches before creating any outbox job or access grant.
 /// </summary>
-public sealed class ReportingSecureDistributionApplicationService
+public sealed class ReportingSecureDistributionApplicationService :
+    IReportingTransportInfrastructureReadiness
 {
     private const int MaximumTextLength = 16_384;
     private const int MaximumDestinationLength = 2_048;
+    private const int MaximumGrantDownloadCommitAttempts = 8;
     private readonly IReportingGovernanceRepository _governanceRepository;
     private readonly IReportingArtifactCatalog _artifactCatalog;
     private readonly ReportingDeliveryDispatcher _dispatcher;
     private readonly IReportingDeliveryStore _deliveryStore;
+    private readonly IReportingDeliveryGrantDownloadCommitter? _grantDownloadCommitter;
     private readonly ReportingAccessGrantService _accessGrantService;
     private readonly IReportingAccessGrantStore _accessGrantStore;
     private readonly ReportingArtifactVaultService _artifactVault;
@@ -357,12 +384,15 @@ public sealed class ReportingSecureDistributionApplicationService
         IReportingProviderReceiptAuthenticator receiptAuthenticator,
         TimeProvider? timeProvider = null,
         SecureReportingDistributionOptions? options = null,
-        IReportingRecipientDestinationResolver? destinationResolver = null)
+        IReportingRecipientDestinationResolver? destinationResolver = null,
+        IReportingDeliveryGrantDownloadCommitter? grantDownloadCommitter = null)
     {
         _governanceRepository = governanceRepository ?? throw new ArgumentNullException(nameof(governanceRepository));
         _artifactCatalog = artifactCatalog ?? throw new ArgumentNullException(nameof(artifactCatalog));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _deliveryStore = deliveryStore ?? throw new ArgumentNullException(nameof(deliveryStore));
+        _grantDownloadCommitter = grantDownloadCommitter
+            ?? deliveryStore as IReportingDeliveryGrantDownloadCommitter;
         _accessGrantService = accessGrantService ?? throw new ArgumentNullException(nameof(accessGrantService));
         _accessGrantStore = accessGrantStore ?? throw new ArgumentNullException(nameof(accessGrantStore));
         _artifactVault = artifactVault ?? throw new ArgumentNullException(nameof(artifactVault));
@@ -415,7 +445,7 @@ public sealed class ReportingSecureDistributionApplicationService
                 ResolveLifetime(command.GrantLifetimeSeconds),
                 AllowPackageRead: false,
                 artifacts.Select(static artifact => artifact.ArtifactId).ToArray(),
-                ResolveMaxUses(command.GrantMaxUses),
+                ResolveMaxUses(command.GrantMaxUses, run.Snapshot, artifacts.Count),
                 audience.Kind);
         }
 
@@ -493,8 +523,20 @@ public sealed class ReportingSecureDistributionApplicationService
         return BuildTransportCapabilities(authority);
     }
 
+    /// <summary>
+    /// Credential-free infrastructure truth used by the deployment gate. This does not authorize
+    /// delivery; it only reports whether each adapter and its deployment-owned dependencies are
+    /// configured.
+    /// </summary>
+    public IReadOnlyList<SecureReportingTransportCapability> GetTransportInfrastructureCapabilities() =>
+        BuildTransportCapabilities(canDeliver: true);
+
     private IReadOnlyList<SecureReportingTransportCapability> BuildTransportCapabilities(
-        ReportingDistributionAuthority authority)
+        ReportingDistributionAuthority authority) =>
+        BuildTransportCapabilities(authority.CanDeliver);
+
+    private IReadOnlyList<SecureReportingTransportCapability> BuildTransportCapabilities(
+        bool canDeliver)
     {
         var configured = _dispatcher.ConfiguredTransportIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ids = configured
@@ -523,8 +565,8 @@ public sealed class ReportingSecureDistributionApplicationService
                         : !receiptAuthenticationReady
                             ? "PROVIDER_RECEIPT_AUTH_NOT_CONFIGURED"
                             : "RECIPIENT_DESTINATION_DIRECTORY_NOT_CONFIGURED";
-            var isReady = isInfrastructureReady && authority.CanDeliver;
-            var reason = !authority.CanDeliver
+            var isReady = isInfrastructureReady && canDeliver;
+            var reason = !canDeliver
                 ? "DELIVER_PERMISSION_REQUIRED"
                 : infrastructureReason;
             var isHttpRelay = string.Equals(id, "http-relay", StringComparison.OrdinalIgnoreCase);
@@ -769,7 +811,7 @@ public sealed class ReportingSecureDistributionApplicationService
                 expiresAt,
                 AllowPackageRead: false,
                 artifactIds,
-                ResolveMaxUses(command.MaxUses),
+                ResolveMaxUses(command.MaxUses, run.Snapshot, artifactIds.Length),
                 audience.Kind),
             ct).ConfigureAwait(false);
 
@@ -918,6 +960,15 @@ public sealed class ReportingSecureDistributionApplicationService
         {
             throw new SecureReportingAccessGrantDeniedException(ReportingAccessGrantValidationStatus.PackageMismatch);
         }
+        if (linkedDelivery is not null)
+        {
+            ValidateDeliveryGrantBinding(linkedDelivery, grant, expectedPackageId);
+            if (_grantDownloadCommitter is null)
+            {
+                throw new InvalidOperationException(
+                    "Delivery-linked reporting grant exchange requires the atomic PostgreSQL distribution boundary.");
+            }
+        }
 
         var artifact = await _artifactCatalog
             .GetArtifactAsync(grant.TenantId, grant.PackageId, artifactId, ct)
@@ -947,37 +998,123 @@ public sealed class ReportingSecureDistributionApplicationService
         var download = await _artifactVault
             .ReadForDownloadAsync(expectedPackageId, artifactId, access, ct)
             .ConfigureAwait(false);
-        var consumption = await _accessGrantService.ValidateAsync(
-            new ReportingAccessGrantValidationRequest(
-                normalizedGrantId,
-                command.BearerToken,
-                grant.TenantId,
-                grant.Audience,
-                grant.RunId,
-                grant.PackageId,
-                artifactId,
-                ConsumeUse: true,
-                grant.AudienceKind),
-            ct).ConfigureAwait(false);
-        if (!consumption.IsValid)
+        var consumptionRequest = new ReportingAccessGrantValidationRequest(
+            normalizedGrantId,
+            command.BearerToken,
+            grant.TenantId,
+            grant.Audience,
+            grant.RunId,
+            grant.PackageId,
+            artifactId,
+            ConsumeUse: true,
+            grant.AudienceKind);
+        var delivery = await _deliveryStore
+            .GetByAccessGrantIdAsync(grant.GrantId, ct)
+            .ConfigureAwait(false);
+        if (delivery is null)
         {
-            throw new SecureReportingAccessGrantDeniedException(consumption.Status);
-        }
-
-        var delivery = linkedDelivery;
-        if (delivery is not null)
-        {
-            if (!Same(delivery.TenantId, grant.TenantId)
-                || !Same(delivery.PackageId, expectedPackageId)
-                || !Same(delivery.AccessGrantId, grant.GrantId))
+            if (linkedDelivery is not null)
             {
-                throw new InvalidDataException("Delivery access-grant linkage failed immutable scope verification.");
+                throw new InvalidDataException(
+                    "Delivery-linked reporting grant lost its immutable delivery job before commit.");
             }
 
-            await AppendAuditedDownloadReceiptAsync(delivery, download, ct).ConfigureAwait(false);
+            var consumption = await _accessGrantService
+                .ValidateAsync(consumptionRequest, ct)
+                .ConfigureAwait(false);
+            if (!consumption.IsValid)
+            {
+                throw new SecureReportingAccessGrantDeniedException(consumption.Status);
+            }
+
+            return download;
+        }
+        if (_grantDownloadCommitter is null)
+        {
+            throw new InvalidOperationException(
+                "Delivery-linked reporting grant exchange requires the atomic PostgreSQL distribution boundary.");
         }
 
-        return download;
+        for (var attempt = 0; attempt < MaximumGrantDownloadCommitAttempts; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (attempt > 0)
+            {
+                delivery = await _deliveryStore
+                    .GetByAccessGrantIdAsync(grant.GrantId, ct)
+                    .ConfigureAwait(false)
+                    ?? throw new InvalidDataException(
+                        "Delivery-linked reporting grant lost its immutable delivery job before commit.");
+            }
+
+            if (RequiresAccessGrantRevocation(delivery))
+            {
+                _ = await _accessGrantService.RevokeAsync(
+                        grant.GrantId,
+                        grant.TenantId,
+                        "reporting-grant-exchange-reconciler",
+                        $"Denied access after retained failed provider receipt for delivery {delivery.JobId}.",
+                        ct)
+                    .ConfigureAwait(false);
+                throw new SecureReportingAccessGrantDeniedException(
+                    ReportingAccessGrantValidationStatus.Revoked);
+            }
+            ValidateDeliveryGrantBinding(delivery, grant, expectedPackageId);
+
+            var preparation = await _accessGrantService
+                .PrepareConsumptionAsync(consumptionRequest, download.AccessedAtUtc, ct)
+                .ConfigureAwait(false);
+            if (!preparation.IsValid)
+            {
+                throw new SecureReportingAccessGrantDeniedException(preparation.Status);
+            }
+
+            grant = preparation.CurrentGrant!;
+            ValidateDeliveryGrantBinding(delivery, grant, expectedPackageId);
+            var receipt = BuildAuditedDownloadReceipt(delivery, download);
+            var deliveryWithReceipt = _dispatcher.PrepareGrantDownloadReceiptAppend(
+                delivery,
+                delivery.TenantId,
+                receipt);
+            if (deliveryWithReceipt.Version == delivery.Version)
+            {
+                throw new InvalidDataException(
+                    "The deterministic Downloaded receipt already exists without a matching atomic grant-use commit.");
+            }
+
+            var commitStatus = await _grantDownloadCommitter
+                .TryCommitAsync(
+                    new ReportingDeliveryGrantDownloadCommit(
+                        artifactId,
+                        grant.Version,
+                        preparation.ConsumedGrant!,
+                        delivery.Version,
+                        deliveryWithReceipt),
+                    ct)
+                .ConfigureAwait(false);
+            if (commitStatus == ReportingDeliveryGrantDownloadCommitStatus.Committed)
+            {
+                return download;
+            }
+        }
+
+        throw new SecureReportingAccessGrantDeniedException(
+            ReportingAccessGrantValidationStatus.ConcurrencyConflict);
+    }
+
+    private static void ValidateDeliveryGrantBinding(
+        ReportingDeliveryJobRecord delivery,
+        ReportingAccessGrantRecord grant,
+        string expectedPackageId)
+    {
+        if (!Same(delivery.TenantId, grant.TenantId)
+            || !Same(delivery.PackageId, expectedPackageId)
+            || !Same(delivery.ReleaseAuthorization.RunId, grant.RunId)
+            || !Same(delivery.AccessGrantId, grant.GrantId))
+        {
+            throw new InvalidDataException(
+                "Delivery access-grant linkage failed immutable scope verification.");
+        }
     }
 
     private static bool RequiresAccessGrantRevocation(ReportingDeliveryJobRecord delivery) =>
@@ -1045,25 +1182,20 @@ public sealed class ReportingSecureDistributionApplicationService
         EnsureAuthorityCanAccessRun(run, authority);
     }
 
-    private Task<ReportingDeliveryJobRecord> AppendAuditedDownloadReceiptAsync(
+    private static ReportingDeliveryReceipt BuildAuditedDownloadReceipt(
         ReportingDeliveryJobRecord delivery,
-        ReportingArtifactDownload download,
-        CancellationToken ct)
-    {
-        var receipt = new ReportingDeliveryReceipt(
-            ComputeSha256(string.Join(
-                "\u001f",
+        ReportingArtifactDownload download) =>
+        new(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
                 delivery.JobId,
                 download.Artifact.ArtifactId,
-                download.AuditEventId)),
+                download.AuditEventId),
             ReportingDeliveryReceiptKind.Downloaded,
             download.AccessedAtUtc,
             delivery.TransportId,
             delivery.ProviderMessageId,
             download.AuditEventId,
             "Exact retained bytes were integrity-verified and access-audited before download.");
-        return _dispatcher.AppendReceiptAsync(delivery.JobId, delivery.TenantId, receipt, ct);
-    }
 
     private async Task<GovernedReportingRun> GetReleasedRunAsync(
         string tenantId,
@@ -1119,7 +1251,13 @@ public sealed class ReportingSecureDistributionApplicationService
                 ? "Expired"
                 : grant.UseCount >= grant.MaxUses
                     ? "Exhausted"
-                    : "Active";
+                    : grant.ConsumedArtifactIds is null && grant.ArtifactIds.Count == 0
+                        ? "LegacyScopeIndeterminate"
+                        : grant.ConsumedArtifactIds is null
+                          && grant.ArtifactIds.Count > 1
+                          && grant.UseCount > 0
+                            ? "LegacyConsumptionIndeterminate"
+                            : "Active";
         return new SecureReportingAccessGrantSummary(
             grant.GrantId,
             grant.RunId,
@@ -1574,12 +1712,32 @@ public sealed class ReportingSecureDistributionApplicationService
         return lifetime;
     }
 
-    private int ResolveMaxUses(int? maxUses)
+    private int ResolveMaxUses(
+        int? maxUses,
+        ReportingCertifiedSnapshotScope snapshot,
+        int selectedArtifactCount)
     {
-        var value = maxUses ?? _options.DefaultGrantMaxUses;
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (selectedArtifactCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(selectedArtifactCount),
+                "Access grants require at least one selected artifact.");
+        }
+
+        var minimumUses = ReportingGovernanceCanonicalValidation.IsClientPackage(snapshot)
+            ? selectedArtifactCount
+            : 1;
+        var value = maxUses ?? Math.Max(_options.DefaultGrantMaxUses, minimumUses);
         if (value <= 0 || value > _options.MaximumGrantMaxUses)
         {
             throw new ArgumentOutOfRangeException(nameof(maxUses), "Access-grant use limit is outside the configured range.");
+        }
+        if (value < minimumUses)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maxUses),
+                $"ClientPackage access-grant use limit must allow all {minimumUses} selected artifacts.");
         }
 
         return value;

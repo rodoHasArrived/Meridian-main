@@ -6,8 +6,8 @@ using Meridian.Wpf.Workstation.Models;
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
-/// ViewModel for the Analysis Export page, managing export configuration, validation,
-/// and recent export history.
+/// ViewModel for the Analysis Export page, presenting export configuration and
+/// fail-closed availability until the desktop workflow is connected to canonical services.
 /// </summary>
 public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
 {
@@ -31,8 +31,8 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     private string _recentExportsStateText = string.Empty;
     private ExportSummary? _selectedRecentExport;
     private InspectorPanelModel _exportReadinessInspector = BuildExportReadinessInspector(
-        "Export setup incomplete",
-        "Complete export setup before running an analysis export.",
+        "Export unavailable",
+        ExportExecutionUnavailableReason,
         canRunExport: false,
         selectedMetricCount: 0,
         selectedSymbolCount: 0,
@@ -41,13 +41,13 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     private InspectorPanelModel _exportActionInspector = BuildExportActionInspector(
         canRunExport: false,
         canSavePreset: false,
-        runTooltip: "Complete export setup before running an analysis export.",
-        savePresetTooltip: "Name the export before saving it as a preset.",
+        runTooltip: $"Export blocked: {ExportExecutionUnavailableReason}",
+        savePresetTooltip: PresetPersistenceUnavailableReason,
         statusMessage: string.Empty);
 
     public AnalysisExportViewModel()
     {
-        Formats = new ObservableCollection<string> { "CSV", "Parquet", "JSON", "Excel" };
+        Formats = new ObservableCollection<string> { "CSV", "Parquet", "Excel", "Apache Arrow" };
         SelectedSymbols = new ObservableCollection<string>();
         Metrics = new ObservableCollection<MetricOption>
         {

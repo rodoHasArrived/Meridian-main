@@ -35,7 +35,7 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         SelectedSymbols = new ObservableCollection<string>();
         SelectedSymbols.CollectionChanged += SelectedSymbols_CollectionChanged;
 
-        Formats = new ObservableCollection<string> { "CSV", "Parquet", "JSON", "Excel" };
+        Formats = new ObservableCollection<string> { "CSV", "Parquet", "Excel", "Apache Arrow" };
         Metrics = new ObservableCollection<MetricOption>
         {
             new("Volatility"),
@@ -228,14 +228,14 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         ? Visibility.Collapsed
         : Visibility.Visible;
 
-    /// <summary>Pre-export validation report displayed on the review step.</summary>
+    /// <summary>Availability evidence displayed on the review step.</summary>
     public string PreExportReport
     {
         get => _preExportReport;
         private set => SetProperty(ref _preExportReport, value);
     }
 
-    /// <summary>Estimated file size for the export.</summary>
+    /// <summary>Estimated file size when supplied by a verified export workflow.</summary>
     public string EstimatedSize
     {
         get => _estimatedSize;

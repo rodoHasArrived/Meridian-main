@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Reporting
@@ -77,27 +77,36 @@ Production reporting is also fail-closed at the workspace boundary. The independ
 immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and receipt stores
 are active and their required tables, immutable-control triggers, operational lease columns,
 checksummed migration-ledger key, and immediate predicate-compatible unique/idempotency keys pass
-the schema probe. Exact-scope recipient destinations, the canonical client-document renderer, the
-configured durable ledger-presentation source, and the current process's successful managed
-migration receipt are also required. File-backed run, schedule, custom-template, starter-kit,
-workflow, and delivery stores remain local/development compatibility; production omits them and
-they do not satisfy the capability. Production composition requires a Reporting or documented
-ledger PostgreSQL connection and does not silently substitute those file stores. With a database
-configured, checksummed Reporting migrations finish before the HTTP host
-and hosted workers start; an unreachable database or migration failure stops startup. Other
-incomplete authority leaves production reporting `Required/NotReady` and its reads/mutations
-service-unavailable. Local/development may start on file compatibility stores with a degraded
-reporting lifecycle, but those stores still do not make authoritative Reporting routes ready.
+the schema probe. The exact PostgreSQL accounting-period release-consistency gate, exact-scope
+recipient destinations, the canonical client-document renderer, the configured durable
+ledger-presentation source, atomic grant-use/download-receipt accounting, the current process's
+successful managed Reporting migration receipt, and successful ledger, fund-account, and
+fund-structure migration receipts are also required. Startup must integrity-reload the canonical
+reconciliation queue used by statement
+casework, Operations Continuity, hard close, and Final certification; both the reporting schedule
+worker and secure delivery worker must have valid options and be running. File-backed run, schedule,
+custom-template, and starter-kit stores remain local/development compatibility and do not satisfy
+the capability. Legacy file workflow and delivery-history repositories are not registered by the
+default host and remain available only to explicitly constructed compatibility callers. Production
+composition requires a
+Reporting or documented ledger PostgreSQL connection and does not silently substitute those file
+stores. With a database configured, checksummed Reporting migrations and the casework integrity
+probe finish before the HTTP host and hosted workers start; an unreachable database, migration
+failure, or corrupt casework snapshot stops startup. Other incomplete authority leaves production
+reporting `Required/NotReady` and its reads/mutations service-unavailable. Local/development may
+start on file compatibility stores with a degraded reporting lifecycle, but those stores still do
+not make authoritative Reporting routes ready.
 
-`ReportingOutputFormatDto.ClientPackage` declares exactly one `<runId>.pdf` and one
-`<runId>.xlsx` primary output. For a capital-account package, UI Shared verifies the exact
-checkpoint-bound `LedgerFinancialReportPack`, then passes that pack intact through the existing
+Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs all use the exact checkpoint-bound
+`LedgerFinancialReportPack`. UI Shared passes that pack intact through the existing
 `LedgerClientReportExportService` to the registered
-`Meridian.Documents.FinancialReportDocumentRenderer`. The producer receives both documents from one
-in-memory package build and applies the Reporting declarations, byte lengths, and SHA-256 hashes; it
-does not rebuild partners-capital tables through a parallel renderer. Release and distribution
-treat that primary pair atomically: neither a missing, duplicated, PDF-only, nor XLSX-only subset is
-a releasable or deliverable `ClientPackage`.
+`Meridian.Documents.FinancialReportDocumentRenderer` and receives the canonical PDF/XLSX pair from
+one in-memory package build. A standalone `Pdf` or `Xlsx` declaration retains only the matching
+canonical document; `ClientPackage` declares and retains exactly one `<runId>.pdf` and one
+`<runId>.xlsx`. The producer applies the Reporting declarations, byte lengths, and SHA-256 hashes;
+it does not rebuild partners-capital tables through a parallel renderer. Release and distribution
+treat the `ClientPackage` primary pair atomically: neither a missing, duplicated, PDF-only, nor
+XLSX-only subset is releasable or deliverable.
 
 The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
 durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts

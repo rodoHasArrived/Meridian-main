@@ -963,7 +963,7 @@ public sealed class UiServer : IAsyncDisposable
                 {
                     return ValueTask.FromResult(new RuntimeReadinessCheckResult(
                         LifecycleCheckStatus.Passing,
-                        "Governance, artifacts, certified runs, scheduling, client documents, and delivery receipts use the durable reporting authority."));
+                        "Governance, release consistency, casework evidence, certified runs, scheduling, client documents, delivery workers, and receipts use the durable reporting authority."));
                 }
 
                 var missing = capability.Components

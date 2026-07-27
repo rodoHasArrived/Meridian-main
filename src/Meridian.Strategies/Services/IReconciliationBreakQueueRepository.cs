@@ -5,6 +5,15 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>
+/// Verifies that the configured reconciliation queue can load and integrity-check the durable
+/// casework and close-scope state required by hard close and final reporting.
+/// </summary>
+public interface IReconciliationBreakQueueAuthorityProbe
+{
+    Task VerifyAsync(CancellationToken ct = default);
+}
+
 public interface IReconciliationBreakQueueRepository
 {
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);
@@ -242,6 +251,29 @@ public interface IReconciliationBreakQueueRepository
             new NotSupportedException(
                 "This reconciliation queue cannot recover a durable hard-close checkpoint."));
 
+    /// <summary>
+    /// Versions and unseals the exact hard-closed reconciliation scope after the authoritative
+    /// ledger has entered a governed reopen. Implementations must retain the prior checkpoint and
+    /// exact reopen command as immutable history, reject non-identical retries, and fail closed when
+    /// no sealed checkpoint exists.
+    /// </summary>
+    Task<ReconciliationCloseScopeReopenReceipt> ReopenCloseScopeAsync(
+        ReconciliationCloseScope scope,
+        ReconciliationCloseScopeReopenCommand command,
+        CancellationToken ct = default)
+        => Task.FromException<ReconciliationCloseScopeReopenReceipt>(
+            new NotSupportedException(
+                "This reconciliation queue cannot retain a governed close-scope reopen."));
+
+    /// <summary>
+    /// Returns immutable prior close generations for one exact scope. The active generation is
+    /// included only after it has been governed-reopened.
+    /// </summary>
+    Task<IReadOnlyList<ReconciliationCloseScopeHistoryEntry>> ListCloseScopeHistoryAsync(
+        ReconciliationCloseScope scope,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ReconciliationCloseScopeHistoryEntry>>([]);
+
     private static ReconciliationBreakQueueTransitionResult ScopeNotFound()
         => new(
             ReconciliationBreakQueueTransitionStatus.NotFound,
@@ -258,7 +290,41 @@ public sealed record ReconciliationCloseScope(
 public sealed record ReconciliationCloseScopeCheckpoint(
     ReconciliationCloseScope Scope,
     IReadOnlyList<ReconciliationBreakQueueItem> Items,
-    string CheckpointHashSha256);
+    string CheckpointHashSha256,
+    long Generation = 1);
+
+public sealed record ReconciliationCloseScopeReopenCommand(
+    string Actor,
+    string Role,
+    string Reason,
+    string ApprovalReference,
+    string CorrelationId,
+    IReadOnlyList<string> EvidenceLinks,
+    long ReopenedLedgerPeriodVersion,
+    string CommandHashSha256);
+
+public sealed record ReconciliationCloseScopeReopenReceipt(
+    ReconciliationCloseScope Scope,
+    long CheckpointGeneration,
+    string CheckpointHashSha256,
+    long ReopenedLedgerPeriodVersion,
+    string Actor,
+    string Role,
+    string Reason,
+    string ApprovalReference,
+    string CorrelationId,
+    IReadOnlyList<string> EvidenceLinks,
+    string CommandHashSha256,
+    DateTimeOffset ReopenedAtUtc,
+    bool WasAlreadyReopened = false);
+
+public sealed record ReconciliationCloseScopeHistoryEntry(
+    ReconciliationCloseScope Scope,
+    long CheckpointGeneration,
+    string CheckpointHashSha256,
+    IReadOnlyList<ReconciliationBreakQueueItem> Items,
+    DateTimeOffset SealedAtUtc,
+    ReconciliationCloseScopeReopenReceipt ReopenReceipt);
 
 public interface IReconciliationCloseScopeLease : IAsyncDisposable
 {
@@ -267,6 +333,8 @@ public interface IReconciliationCloseScopeLease : IAsyncDisposable
     IReadOnlyList<ReconciliationBreakQueueItem> Items { get; }
 
     string CheckpointHashSha256 { get; }
+
+    long Generation => 1;
 
     /// <summary>
     /// Seals the exact scope after the ledger hard close has committed. If sealing fails, the

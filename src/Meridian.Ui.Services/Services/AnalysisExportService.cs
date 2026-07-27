@@ -53,7 +53,7 @@ public sealed class AnalysisExportService
             ct);
 
         if (success && data != null)
-            return MapCanonicalExportResponse(data);
+            return MapCanonicalExportResponse(data, request.Format);
 
         return new AnalysisExportResult { Success = false, Error = errorMessage ?? "Export failed" };
     }
@@ -269,7 +269,9 @@ public sealed class AnalysisExportService
         }
     }
 
-    internal static AnalysisExportResult MapCanonicalExportResponse(ExportAnalysisApiResponse response)
+    internal static AnalysisExportResult MapCanonicalExportResponse(
+        ExportAnalysisApiResponse response,
+        string? expectedFormat = null)
     {
         ArgumentNullException.ThrowIfNull(response);
 
@@ -279,7 +281,7 @@ public sealed class AnalysisExportService
                     ? file.Path
                     : Path.Combine(response.OutputDirectory, file.Path))
             .ToList();
-        var payloadError = ValidateCanonicalPayload(response);
+        var payloadError = ValidateCanonicalPayload(response, expectedFormat);
 
         return new AnalysisExportResult
         {
@@ -455,7 +457,9 @@ public sealed class AnalysisExportService
         => format?.Trim().ToLowerInvariant() is
             "csv" or "parquet" or "xlsx" or "excel" or "arrow" or "feather";
 
-    private static string? ValidateCanonicalPayload(ExportAnalysisApiResponse response)
+    private static string? ValidateCanonicalPayload(
+        ExportAnalysisApiResponse response,
+        string? expectedFormat)
     {
         if (!response.Success)
             return response.Error ?? "The export operation failed.";
@@ -467,6 +471,37 @@ public sealed class AnalysisExportService
             return "The export response file count does not match its artifact evidence.";
         if (response.TotalRecords <= 0)
             return "The export response claimed success without any exported record.";
+
+        var missingFormat = response.Files.FirstOrDefault(
+            static file => string.IsNullOrWhiteSpace(file.Format));
+        if (missingFormat is not null)
+            return $"Export artifact '{missingFormat.Path}' did not identify its generated format.";
+
+        var formats = response.Files
+            .Select(static file => NormalizeCanonicalFormat(file.Format))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (formats.Length > 1)
+        {
+            return "The export response reported mixed artifact formats: " +
+                   string.Join(", ", formats) +
+                   ".";
+        }
+
+        if (!string.IsNullOrWhiteSpace(expectedFormat))
+        {
+            var expected = NormalizeCanonicalFormat(expectedFormat);
+            var mismatch = response.Files.FirstOrDefault(file =>
+                !string.Equals(
+                    NormalizeCanonicalFormat(file.Format),
+                    expected,
+                    StringComparison.OrdinalIgnoreCase));
+            if (mismatch is not null)
+            {
+                return $"The requested export format '{expected}' does not match artifact " +
+                       $"'{mismatch.Path}' format '{NormalizeCanonicalFormat(mismatch.Format)}'.";
+            }
+        }
 
         return null;
     }
@@ -509,7 +544,7 @@ public sealed class AnalysisExportService
     private static string? ResolveResponseFormat(IReadOnlyList<ExportAnalysisApiFile> files)
     {
         var formats = files
-            .Select(static file => file.Format)
+            .Select(static file => NormalizeCanonicalFormat(file.Format))
             .Where(static format => !string.IsNullOrWhiteSpace(format))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -520,6 +555,15 @@ public sealed class AnalysisExportService
             _ => "mixed"
         };
     }
+
+    private static string NormalizeCanonicalFormat(string? format) =>
+        format?.Trim().ToLowerInvariant() switch
+        {
+            "excel" => "xlsx",
+            "feather" => "arrow",
+            { } value => value,
+            _ => string.Empty
+        };
 
     private static DateTime? ToUtcDateTime(DateOnly? date) =>
         date.HasValue

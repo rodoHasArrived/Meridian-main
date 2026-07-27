@@ -6,7 +6,7 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian
@@ -68,6 +68,11 @@ are presented as readiness evidence.
 Financial Operations-backed `IReconciliationApiService` adapter instead of a host-local override,
 so browser and desktop composition resolve the same statement-run, break, case, and queue-status
 projection path.
+
+The workstation deployment-health projection treats governed reporting as independently
+fail-closed. It reports ready only when durable governance, release consistency, casework evidence,
+certified artifacts, scheduling, client-document packaging, active delivery workers, and delivery
+receipts share the configured reporting authority.
 
 `UiServer.StartAsync` is the cancellable startup boundary for database migrations and one-time
 legacy imports. The parent workstation host owns all configured domain database initialization,

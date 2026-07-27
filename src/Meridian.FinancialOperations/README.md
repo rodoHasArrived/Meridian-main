@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.FinancialOperations
@@ -45,7 +45,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   decisions, service-owned operating coverage rows for close setup, dependency graph, sign-off
   matrix, late adjustments, blocker review, and period lock, plus a governed
   close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
-  Operations Continuity close-package publication gate.
+  Operations Continuity close-package publication gate. Hard close requires explicit Controller or
+  Fund Controller authority; preparation-only closing-entry requests do not acquire that authority
+  or seal the reconciliation queue.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
@@ -66,7 +68,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
   boundary used by the persisted statement reconciliation report coordinator; a committed import is
   checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
-  recovery cannot silently repeat the import.
+  recovery cannot silently repeat the import. Commit rejects any parsed row or uploaded-document
+  account identity that differs from the authorized external account.
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
@@ -89,7 +92,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
   persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
   transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
-  watermark.
+  watermark. Scheduled fetches reauthorize the retained tenant, company, fund, book, period, and
+  external-account scope before provider access.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 

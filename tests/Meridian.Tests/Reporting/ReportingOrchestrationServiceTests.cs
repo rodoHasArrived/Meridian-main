@@ -34,6 +34,48 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_CapitalAccountManifestDoesNotInvokeLegacyProjectionSource()
+    {
+        var legacyProjectionSource = new RecordingPartnersCapitalSource();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore: null,
+            runNotifier: null,
+            partnersCapitalSource: legacyProjectionSource);
+        var asOf = new DateOnly(2026, 5, 31);
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto("fund-alpha"),
+            "period-2026-05",
+            asOf,
+            new ReportingLedgerBookSelectionDto(Guid.NewGuid(), "PRIMARY"),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: false,
+            IncludeEvidenceAppendix: false);
+
+        var manifest = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "capital-canonical",
+                "capital-account-statement",
+                asOf,
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow,
+                ResolvedParameters: parameters),
+            CancellationToken.None);
+
+        legacyProjectionSource.CaptureCount.Should().Be(0,
+            "capital-account bytes are sourced later from the exact certified ledger report pack");
+        manifest.CertifiedPartnersCapital.Should().BeNull();
+    }
+
+    [Fact]
     public async Task TransitionApprovalAsync_EnforcesGateAndRole()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
@@ -417,6 +459,19 @@ public sealed class ReportingOrchestrationServiceTests
     private sealed class ThrowingRunNotifier : IReportingRunNotifier
     {
         public void NotifyRunChanged(string runId) => throw new InvalidOperationException("notifier boom");
+    }
+
+    private sealed class RecordingPartnersCapitalSource : IReportingPartnersCapitalSource
+    {
+        public int CaptureCount { get; private set; }
+
+        public Task<CertifiedPartnersCapitalProjection?> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CaptureCount++;
+            return Task.FromResult<CertifiedPartnersCapitalProjection?>(null);
+        }
     }
 
     private sealed class FailingOnceRenderer : IReportingSectionRenderer

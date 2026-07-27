@@ -236,6 +236,92 @@ public sealed class AnalysisExportServiceTests
     }
 
     [Fact]
+    public void MapCanonicalExportResponse_WithSuccessButNoArtifact_ShouldFailClosed()
+    {
+        var response = new ExportAnalysisApiResponse(
+            JobId: "job-empty",
+            Success: true,
+            Status: "completed",
+            ProfileId: "python-pandas",
+            Symbols: Array.Empty<string>(),
+            FilesGenerated: 0,
+            TotalRecords: 0,
+            TotalBytes: 0,
+            OutputDirectory: Path.Combine(Path.GetTempPath(), "analysis-export-empty"),
+            DurationSeconds: 0.1,
+            Error: null,
+            Warnings: Array.Empty<string>(),
+            Files: Array.Empty<ExportAnalysisApiFile>(),
+            Timestamp: DateTimeOffset.UtcNow);
+
+        var result = AnalysisExportService.MapCanonicalExportResponse(response);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("without any generated artifact");
+        result.FilesCreated.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MapCanonicalExportResponse_WithRequestedFormatMismatch_ShouldFailClosed()
+    {
+        var response = new ExportAnalysisApiResponse(
+            JobId: "job-format-mismatch",
+            Success: true,
+            Status: "completed",
+            ProfileId: "excel",
+            Symbols: new[] { "SPY" },
+            FilesGenerated: 1,
+            TotalRecords: 2,
+            TotalBytes: 128,
+            OutputDirectory: Path.Combine(Path.GetTempPath(), "analysis-export-format-mismatch"),
+            DurationSeconds: 0.1,
+            Error: null,
+            Warnings: Array.Empty<string>(),
+            Files:
+            [
+                new ExportAnalysisApiFile("SPY.csv", "SPY", "csv", 128, 2)
+            ],
+            Timestamp: DateTimeOffset.UtcNow);
+
+        var result = AnalysisExportService.MapCanonicalExportResponse(response, "xlsx");
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("requested export format 'xlsx'");
+        result.Error.Should().Contain("format 'csv'");
+        result.Format.Should().Be("csv");
+    }
+
+    [Fact]
+    public void MapCanonicalExportResponse_WithMixedArtifactFormats_ShouldFailClosed()
+    {
+        var response = new ExportAnalysisApiResponse(
+            JobId: "job-mixed-formats",
+            Success: true,
+            Status: "completed",
+            ProfileId: "excel",
+            Symbols: new[] { "SPY", "QQQ" },
+            FilesGenerated: 2,
+            TotalRecords: 4,
+            TotalBytes: 256,
+            OutputDirectory: Path.Combine(Path.GetTempPath(), "analysis-export-mixed-formats"),
+            DurationSeconds: 0.1,
+            Error: null,
+            Warnings: Array.Empty<string>(),
+            Files:
+            [
+                new ExportAnalysisApiFile("SPY.xlsx", "SPY", "xlsx", 128, 2),
+                new ExportAnalysisApiFile("QQQ.csv", "QQQ", "csv", 128, 2)
+            ],
+            Timestamp: DateTimeOffset.UtcNow);
+
+        var result = AnalysisExportService.MapCanonicalExportResponse(response, "xlsx");
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("mixed artifact formats");
+        result.Format.Should().Be("mixed");
+    }
+
+    [Fact]
     public void MapSpecializedExportResponse_WithFailedPayload_ShouldNotPromoteTransportSuccess()
     {
         var response = CreateSpecializedResponse(

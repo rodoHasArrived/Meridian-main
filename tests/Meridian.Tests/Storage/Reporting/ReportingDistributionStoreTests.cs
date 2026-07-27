@@ -3,6 +3,7 @@ using System.Text;
 using FluentAssertions;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
+using Meridian.Ui.Shared.Services;
 using Npgsql;
 using NpgsqlTypes;
 using Xunit;
@@ -25,9 +26,26 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
     }
 
     [ReportingDatabaseFact]
-    public async Task ReportingDistributionMigration_IndexesCanonicalTenantRunHistory()
+    public async Task ReportingDistributionMigration_RetainsReadIndexAndGrantConsumptionAuthority()
     {
         (await _database.HasMigrationAsync("011_reporting_delivery_run_read_index.sql"))
+            .Should().BeTrue();
+        (await _database.HasMigrationAsync("012_reporting_access_grant_artifact_consumption.sql"))
+            .Should().BeTrue();
+
+        var probe = new PostgresReportingDeploymentProbe(_database.Options).Probe();
+        probe.IsReachable.Should().BeTrue();
+        probe.HasColumn("reporting_access_grants", "consumed_artifact_ids")
+            .Should().BeTrue("the nullable legacy marker must have no database default");
+        probe.HasTrigger(
+                PostgresReportingDeploymentProbe
+                    .AccessGrantArtifactConsumptionTriggerName)
+            .Should().BeTrue("insert, update, and delete must share the canonical grant guard");
+        (await HasTriggerAsync("trg_reporting_access_grants_guard"))
+            .Should().BeFalse(
+                "the pre-012 trigger name must remain absent as a reverse-version readiness sentinel");
+        probe.HasConstraint(
+                "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts")
             .Should().BeTrue();
     }
 
@@ -51,6 +69,7 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         {
             UseCount = 1,
             LastUsedAtUtc = FixedNow.AddMinutes(1),
+            ConsumedArtifactIds = ["statement.pdf"],
             Version = 1
         };
         var second = first with { LastUsedAtUtc = FixedNow.AddMinutes(2) };
@@ -72,6 +91,204 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
             ("used", NpgsqlDbType.TimestampTz, FixedNow.AddMinutes(3).UtcDateTime),
             ("id", NpgsqlDbType.Text, grant.GrantId));
         (await skipUseCounter.Should().ThrowAsync<PostgresException>()).Which.SqlState.Should().Be("55000");
+    }
+
+    [ReportingDatabaseFact]
+    public async Task AccessGrantStore_ConsumedArtifactsUseOrdinalAppendOnlyAuthority()
+    {
+        var grant = BuildGrant(
+            NewTenantId(),
+            new string('a', 64),
+            ["Z-client-package.pdf", "a-client-package.xlsx"],
+            maxUses: 2);
+        (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
+
+        Func<Task> laggingWriterUse = () => ExecuteAsync(
+            $"""
+            update {QualifiedGrantTable}
+            set use_count = 1,
+                last_used_at_utc = @used,
+                version = 1
+            where grant_id = @id;
+            """,
+            ("used", NpgsqlDbType.TimestampTz, FixedNow.AddMinutes(1).UtcDateTime),
+            ("id", NpgsqlDbType.Text, grant.GrantId));
+        (await laggingWriterUse.Should().ThrowAsync<PostgresException>())
+            .Which.SqlState.Should().Be(
+                "55000",
+                "a pre-012 writer cannot consume a new tracked grant without its exact artifact transition");
+
+        var first = grant with
+        {
+            UseCount = 1,
+            LastUsedAtUtc = FixedNow.AddMinutes(1),
+            ConsumedArtifactIds = ["Z-client-package.pdf"],
+            Version = 1
+        };
+        (await _grantStore.TryUpdateAsync(grant.GrantId, grant.Version, first))
+            .Should().BeTrue();
+        var second = first with
+        {
+            UseCount = 2,
+            LastUsedAtUtc = FixedNow.AddMinutes(2),
+            ConsumedArtifactIds = ["Z-client-package.pdf", "a-client-package.xlsx"],
+            Version = 2
+        };
+        (await _grantStore.TryUpdateAsync(grant.GrantId, first.Version, second))
+            .Should().BeTrue();
+        (await _grantStore.GetAsync(grant.GrantId)).Should().Be(second);
+
+        Func<Task> removeConsumedArtifact = () => ExecuteAsync(
+            $"""
+            update {QualifiedGrantTable}
+            set consumed_artifact_ids = array['a-client-package.xlsx'],
+                use_count = use_count,
+                last_used_at_utc = last_used_at_utc,
+                version = version + 1
+            where grant_id = @id;
+            """,
+            ("id", NpgsqlDbType.Text, grant.GrantId));
+        (await removeConsumedArtifact.Should().ThrowAsync<PostgresException>())
+            .Which.SqlState.Should().Be("55000");
+    }
+
+    [ReportingDatabaseFact]
+    public async Task AccessGrantStore_LegacyTrackingInitializesOnlyWithOneExactArtifact()
+    {
+        var legacy = BuildGrant(
+                NewTenantId(),
+                new string('a', 64),
+                ["client-package.pdf", "client-package.xlsx"],
+                maxUses: 2)
+            with
+            {
+                ConsumedArtifactIds = null
+            };
+        await InsertRetainedPre012GrantAsync(legacy);
+
+        Func<Task> initializeWithoutExactArtifact = () => ExecuteAsync(
+            $"""
+            update {QualifiedGrantTable}
+            set consumed_artifact_ids = array[]::text[],
+                use_count = 1,
+                last_used_at_utc = @used,
+                version = 1
+            where grant_id = @id;
+            """,
+            ("used", NpgsqlDbType.TimestampTz, FixedNow.AddMinutes(1).UtcDateTime),
+            ("id", NpgsqlDbType.Text, legacy.GrantId));
+        (await initializeWithoutExactArtifact.Should().ThrowAsync<PostgresException>())
+            .Which.SqlState.Should().Be("55000");
+
+        var initialized = legacy with
+        {
+            UseCount = 1,
+            LastUsedAtUtc = FixedNow.AddMinutes(1),
+            ConsumedArtifactIds = ["client-package.pdf"],
+            Version = 1
+        };
+        (await _grantStore.TryUpdateAsync(legacy.GrantId, legacy.Version, initialized))
+            .Should().BeTrue();
+        (await _grantStore.GetAsync(legacy.GrantId)).Should().Be(initialized);
+    }
+
+    [ReportingDatabaseFact]
+    public async Task AccessGrantStore_Pre012RetainedGrantUseIsFencedAndNewReaderInitializesExactTracking()
+    {
+        var rawToken = Enumerable.Repeat((byte)0x2c, 32).ToArray();
+        var token = Convert.ToHexString(rawToken).ToLowerInvariant();
+        var legacy = BuildGrant(
+                NewTenantId(),
+                Convert.ToHexString(SHA256.HashData(rawToken)).ToLowerInvariant(),
+                ["client-package.pdf", "client-package.xlsx"],
+                maxUses: 2)
+            with
+            {
+                ConsumedArtifactIds = null
+            };
+        await InsertRetainedPre012GrantAsync(legacy);
+
+        var inserted = (await _grantStore.GetAsync(legacy.GrantId))!;
+        inserted.ConsumedArtifactIds.Should().BeNull(
+            "a row retained before migration 012 must remain distinguishable as legacy");
+        Func<Task> laggingWriterUse = () => ExecuteAsync(
+            $"""
+            update {QualifiedGrantTable}
+            set use_count = 1,
+                last_used_at_utc = @used,
+                version = 1
+            where grant_id = @id;
+            """,
+            ("used", NpgsqlDbType.TimestampTz, FixedNow.AddMinutes(1).UtcDateTime),
+            ("id", NpgsqlDbType.Text, legacy.GrantId));
+        (await laggingWriterUse.Should().ThrowAsync<PostgresException>())
+            .Which.SqlState.Should().Be("55000");
+
+        var service = new ReportingAccessGrantService(
+            _grantStore,
+            new FixedTimeProvider(FixedNow.AddMinutes(2)));
+        var package = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            legacy.GrantId,
+            token,
+            legacy.TenantId,
+            legacy.Audience,
+            legacy.RunId,
+            legacy.PackageId,
+            ArtifactId: null));
+        var exact = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            legacy.GrantId,
+            token,
+            legacy.TenantId,
+            legacy.Audience,
+            legacy.RunId,
+            legacy.PackageId,
+            "client-package.pdf"));
+
+        package.Status.Should().Be(ReportingAccessGrantValidationStatus.ArtifactOutOfScope);
+        exact.Status.Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        var retained = (await _grantStore.GetAsync(legacy.GrantId))!;
+        retained.UseCount.Should().Be(1);
+        retained.ConsumedArtifactIds.Should().Equal("client-package.pdf");
+
+        var singleLegacy = legacy with
+        {
+            GrantId = $"grant_{Guid.NewGuid():N}",
+            ArtifactIds = ["statement.pdf"]
+        };
+        await InsertRetainedPre012GrantAsync(singleLegacy);
+        var singlePackage = await service.ValidateAsync(
+            new ReportingAccessGrantValidationRequest(
+                singleLegacy.GrantId,
+                token,
+                singleLegacy.TenantId,
+                singleLegacy.Audience,
+                singleLegacy.RunId,
+                singleLegacy.PackageId,
+                ArtifactId: null));
+
+        singlePackage.Status.Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        singlePackage.Grant!.ConsumedArtifactIds.Should().Equal("statement.pdf");
+    }
+
+    [ReportingDatabaseFact]
+    public async Task AccessGrantStore_Pre012WriterShapedInsertIsRejectedByDatabaseVersionFence()
+    {
+        var oldWriterGrant = BuildGrant(
+                NewTenantId(),
+                new string('b', 64),
+                ["client-package.pdf"],
+                maxUses: 1)
+            with
+            {
+                ConsumedArtifactIds = null
+            };
+
+        Func<Task> insert = () => InsertGrantLikeOldWriterAsync(oldWriterGrant);
+
+        var failure = await insert.Should().ThrowAsync<PostgresException>();
+        failure.Which.SqlState.Should().Be("55000");
+        failure.Which.MessageText.Should().Contain("012-compatible application writer");
+        (await _grantStore.GetAsync(oldWriterGrant.GrantId)).Should().BeNull();
     }
 
     [ReportingDatabaseFact]
@@ -139,6 +356,274 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
 
         Func<Task> corruptRead = () => _grantStore.GetAsync(grant.GrantId);
         await corruptRead.Should().ThrowAsync<ReportingDistributionStateCorruptionException>();
+    }
+
+    [ReportingDatabaseFact]
+    public async Task DistributionStore_AtomicallyConsumesLinkedGrantAndAppendsDownloadedReceipt()
+    {
+        var job = BuildJob(NewTenantId());
+        var grant = BuildGrant(job.TenantId, new string('a', 64), ["statement.pdf"], maxUses: 2) with
+        {
+            RunId = job.ReleaseAuthorization.RunId,
+            PackageId = job.PackageId
+        };
+        job = BuildLinkedSentJob(job, grant);
+        (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
+        (await _deliveryStore.TryCreateAsync(job)).Should().BeTrue();
+
+        var accessedAtUtc = FixedNow.AddMinutes(1);
+        const string auditEventId = "artifact-audit-event";
+        var receipt = new ReportingDeliveryReceipt(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
+                job.JobId,
+                "statement.pdf",
+                auditEventId),
+            ReportingDeliveryReceiptKind.Downloaded,
+            accessedAtUtc,
+            job.TransportId,
+            EvidenceReference: auditEventId);
+        var consumedGrant = grant with
+        {
+            UseCount = 1,
+            LastUsedAtUtc = accessedAtUtc,
+            ConsumedArtifactIds = ["statement.pdf"],
+            Version = 1
+        };
+        var deliveryWithReceipt = job with
+        {
+            State = ReportingDeliveryState.Delivered,
+            UpdatedAtUtc = accessedAtUtc,
+            Receipts = [receipt],
+            Version = 1
+        };
+
+        var status = await _deliveryStore.TryCommitAsync(
+            new ReportingDeliveryGrantDownloadCommit(
+                "statement.pdf",
+                grant.Version,
+                consumedGrant,
+                job.Version,
+                deliveryWithReceipt));
+
+        status.Should().Be(ReportingDeliveryGrantDownloadCommitStatus.Committed);
+        (await _grantStore.GetAsync(grant.GrantId)).Should().Be(consumedGrant);
+        (await _deliveryStore.GetAsync(job.JobId)).Should().Be(deliveryWithReceipt);
+    }
+
+    [ReportingDatabaseFact]
+    public async Task DistributionStore_OutOfOrderConcurrentReadPreservesLatestGrantUseTime()
+    {
+        var job = BuildJob(NewTenantId());
+        job = job with
+        {
+            ReleaseAuthorization = job.ReleaseAuthorization with
+            {
+                Artifacts =
+                [
+                    .. job.ReleaseAuthorization.Artifacts,
+                    new ReportingReleasedArtifactReference(
+                        "statement.xlsx",
+                        $"reporting-artifact://{job.TenantId}/{new string('d', 64)}",
+                        new string('d', 64),
+                        2048)
+                ]
+            }
+        };
+        var grant = BuildGrant(
+                job.TenantId,
+                new string('a', 64),
+                ["statement.pdf", "statement.xlsx"],
+                maxUses: 2)
+            with
+            {
+                RunId = job.ReleaseAuthorization.RunId,
+                PackageId = job.PackageId
+            };
+        job = BuildLinkedSentJob(job, grant);
+        (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
+        (await _deliveryStore.TryCreateAsync(job)).Should().BeTrue();
+
+        var laterAccessedAtUtc = FixedNow.AddMinutes(2);
+        const string laterAuditEventId = "later-read-audit-event";
+        var laterReceipt = new ReportingDeliveryReceipt(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
+                job.JobId,
+                "statement.pdf",
+                laterAuditEventId),
+            ReportingDeliveryReceiptKind.Downloaded,
+            laterAccessedAtUtc,
+            job.TransportId,
+            EvidenceReference: laterAuditEventId);
+        var firstConsumedGrant = grant with
+        {
+            UseCount = 1,
+            LastUsedAtUtc = laterAccessedAtUtc,
+            ConsumedArtifactIds = ["statement.pdf"],
+            Version = 1
+        };
+        var firstDelivery = job with
+        {
+            State = ReportingDeliveryState.Delivered,
+            UpdatedAtUtc = laterAccessedAtUtc,
+            Receipts = [laterReceipt],
+            Version = 1
+        };
+        (await _deliveryStore.TryCommitAsync(
+            new ReportingDeliveryGrantDownloadCommit(
+                "statement.pdf",
+                grant.Version,
+                firstConsumedGrant,
+                job.Version,
+                firstDelivery))).Should().Be(
+                    ReportingDeliveryGrantDownloadCommitStatus.Committed);
+
+        var earlierAccessedAtUtc = FixedNow.AddMinutes(1);
+        const string earlierAuditEventId = "earlier-read-audit-event";
+        var earlierReceipt = new ReportingDeliveryReceipt(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
+                job.JobId,
+                "statement.xlsx",
+                earlierAuditEventId),
+            ReportingDeliveryReceiptKind.Downloaded,
+            earlierAccessedAtUtc,
+            job.TransportId,
+            EvidenceReference: earlierAuditEventId);
+        var secondConsumedGrant = firstConsumedGrant with
+        {
+            UseCount = 2,
+            LastUsedAtUtc = laterAccessedAtUtc,
+            ConsumedArtifactIds = ["statement.pdf", "statement.xlsx"],
+            Version = 2
+        };
+        var secondDelivery = firstDelivery with
+        {
+            UpdatedAtUtc = laterAccessedAtUtc,
+            Receipts = [laterReceipt, earlierReceipt],
+            Version = 2
+        };
+
+        var status = await _deliveryStore.TryCommitAsync(
+            new ReportingDeliveryGrantDownloadCommit(
+                "statement.xlsx",
+                firstConsumedGrant.Version,
+                secondConsumedGrant,
+                firstDelivery.Version,
+                secondDelivery));
+
+        status.Should().Be(ReportingDeliveryGrantDownloadCommitStatus.Committed);
+        (await _grantStore.GetAsync(grant.GrantId))!.LastUsedAtUtc
+            .Should().Be(laterAccessedAtUtc);
+        (await _deliveryStore.GetAsync(job.JobId))!.Receipts
+            .Select(static receipt => receipt.OccurredAtUtc)
+            .Should().Equal(laterAccessedAtUtc, earlierAccessedAtUtc);
+    }
+
+    [ReportingDatabaseFact]
+    public async Task DeliveryStore_GenericUpdateCannotAppendDownloadedReceipt()
+    {
+        var job = BuildJob(NewTenantId());
+        var grant = BuildGrant(job.TenantId, new string('a', 64), ["statement.pdf"], maxUses: 2) with
+        {
+            RunId = job.ReleaseAuthorization.RunId,
+            PackageId = job.PackageId
+        };
+        job = BuildLinkedSentJob(job, grant);
+        (await _deliveryStore.TryCreateAsync(job)).Should().BeTrue();
+
+        var downloaded = new ReportingDeliveryReceipt(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
+                job.JobId,
+                "statement.pdf",
+                "generic-update-audit-event"),
+            ReportingDeliveryReceiptKind.Downloaded,
+            FixedNow.AddMinutes(1),
+            job.TransportId,
+            EvidenceReference: "generic-update-audit-event");
+        var forgedUpdate = job with
+        {
+            State = ReportingDeliveryState.Delivered,
+            UpdatedAtUtc = downloaded.OccurredAtUtc,
+            Receipts = [downloaded],
+            Version = 1
+        };
+
+        var update = () => _deliveryStore.TryUpdateAsync(
+            job.JobId,
+            job.Version,
+            forgedUpdate);
+
+        await update.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*atomic access-grant consumption boundary*");
+        var retained = await _deliveryStore.GetAsync(job.JobId);
+        retained!.State.Should().Be(job.State);
+        retained.Version.Should().Be(job.Version);
+        retained.Receipts.Should().BeEmpty();
+    }
+
+    [ReportingDatabaseFact]
+    public async Task DistributionStore_DeliveryConflictFailsClosedBeforeConsumingGrant()
+    {
+        var job = BuildJob(NewTenantId());
+        var grant = BuildGrant(job.TenantId, new string('a', 64), ["statement.pdf"], maxUses: 2) with
+        {
+            RunId = job.ReleaseAuthorization.RunId,
+            PackageId = job.PackageId
+        };
+        job = BuildLinkedSentJob(job, grant);
+        (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
+        (await _deliveryStore.TryCreateAsync(job)).Should().BeTrue();
+
+        var providerReceipt = new ReportingDeliveryReceipt(
+            $"receipt-{Guid.NewGuid():N}",
+            ReportingDeliveryReceiptKind.Accepted,
+            FixedNow.AddSeconds(30),
+            job.TransportId);
+        var concurrentlyUpdated = job with
+        {
+            UpdatedAtUtc = providerReceipt.OccurredAtUtc,
+            Receipts = [providerReceipt],
+            Version = 1
+        };
+        (await _deliveryStore.TryUpdateAsync(job.JobId, job.Version, concurrentlyUpdated))
+            .Should().BeTrue();
+
+        var accessedAtUtc = FixedNow.AddMinutes(1);
+        const string auditEventId = "conflicted-artifact-audit-event";
+        var downloaded = new ReportingDeliveryReceipt(
+            ReportingDeliveryDownloadReceiptIdentity.Create(
+                job.JobId,
+                "statement.pdf",
+                auditEventId),
+            ReportingDeliveryReceiptKind.Downloaded,
+            accessedAtUtc,
+            job.TransportId,
+            EvidenceReference: auditEventId);
+        var staleDeliveryWithReceipt = job with
+        {
+            State = ReportingDeliveryState.Delivered,
+            UpdatedAtUtc = accessedAtUtc,
+            Receipts = [downloaded],
+            Version = 1
+        };
+        var consumedGrant = grant with
+        {
+            UseCount = 1,
+            LastUsedAtUtc = accessedAtUtc,
+            ConsumedArtifactIds = ["statement.pdf"],
+            Version = 1
+        };
+
+        var status = await _deliveryStore.TryCommitAsync(
+            new ReportingDeliveryGrantDownloadCommit(
+                "statement.pdf",
+                grant.Version,
+                consumedGrant,
+                job.Version,
+                staleDeliveryWithReceipt));
+
+        status.Should().Be(ReportingDeliveryGrantDownloadCommitStatus.ConcurrencyConflict);
+        (await _grantStore.GetAsync(grant.GrantId))!.UseCount.Should().Be(0);
+        (await _deliveryStore.GetAsync(job.JobId))!.Receipts.Should().Equal(providerReceipt);
     }
 
     [ReportingDatabaseFact]
@@ -646,6 +1131,142 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         return (string)(await command.ExecuteScalarAsync() ?? string.Empty);
     }
 
+    private async Task<bool> HasTriggerAsync(string triggerName)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select exists (
+                select 1
+                from pg_catalog.pg_trigger trigger_row
+                join pg_catalog.pg_class target_table
+                  on target_table.oid = trigger_row.tgrelid
+                join pg_catalog.pg_namespace target_schema
+                  on target_schema.oid = target_table.relnamespace
+                where target_schema.nspname = @schema
+                  and target_table.relname = 'reporting_access_grants'
+                  and trigger_row.tgname = @trigger_name
+                  and not trigger_row.tgisinternal);
+            """;
+        command.Parameters.AddWithValue("schema", _database.Options.Schema);
+        command.Parameters.AddWithValue("trigger_name", triggerName);
+        return (bool)(await command.ExecuteScalarAsync() ?? false);
+    }
+
+    private async Task InsertGrantLikeOldWriterAsync(ReportingAccessGrantRecord grant)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await InsertGrantLikeOldWriterAsync(connection, null, grant);
+    }
+
+    private async Task InsertRetainedPre012GrantAsync(ReportingAccessGrantRecord grant)
+    {
+        await using var connection = new NpgsqlConnection(_database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        await using (var disableTrigger = connection.CreateCommand())
+        {
+            disableTrigger.Transaction = transaction;
+            disableTrigger.CommandText =
+                $"alter table {QualifiedGrantTable} disable trigger "
+                + $"{PostgresReportingDeploymentProbe.AccessGrantArtifactConsumptionTriggerName};";
+            await disableTrigger.ExecuteNonQueryAsync();
+        }
+
+        await InsertGrantLikeOldWriterAsync(connection, transaction, grant);
+
+        await using (var enableTrigger = connection.CreateCommand())
+        {
+            enableTrigger.Transaction = transaction;
+            enableTrigger.CommandText =
+                $"alter table {QualifiedGrantTable} enable trigger "
+                + $"{PostgresReportingDeploymentProbe.AccessGrantArtifactConsumptionTriggerName};";
+            await enableTrigger.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
+    }
+
+    private async Task InsertGrantLikeOldWriterAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        ReportingAccessGrantRecord grant)
+    {
+        grant.ConsumedArtifactIds.Should().BeNull();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {QualifiedGrantTable} (
+                grant_id,
+                token_hash_sha256,
+                tenant_id,
+                audience,
+                audience_kind,
+                run_id,
+                package_id,
+                allow_package_read,
+                artifact_ids,
+                created_at_utc,
+                expires_at_utc,
+                max_uses,
+                use_count,
+                version)
+            values (
+                @grant_id,
+                @token_hash_sha256,
+                @tenant_id,
+                @audience,
+                @audience_kind,
+                @run_id,
+                @package_id,
+                @allow_package_read,
+                @artifact_ids,
+                @created_at_utc,
+                @expires_at_utc,
+                @max_uses,
+                @use_count,
+                @version);
+            """;
+        command.Parameters.AddWithValue("grant_id", NpgsqlDbType.Text, grant.GrantId);
+        command.Parameters.AddWithValue(
+            "token_hash_sha256",
+            NpgsqlDbType.Text,
+            grant.TokenHashSha256);
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, grant.TenantId);
+        command.Parameters.AddWithValue("audience", NpgsqlDbType.Text, grant.Audience);
+        command.Parameters.AddWithValue(
+            "audience_kind",
+            NpgsqlDbType.Integer,
+            (int)grant.AudienceKind);
+        command.Parameters.AddWithValue("run_id", NpgsqlDbType.Text, grant.RunId);
+        command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, grant.PackageId);
+        command.Parameters.AddWithValue(
+            "allow_package_read",
+            NpgsqlDbType.Boolean,
+            grant.AllowPackageRead);
+        command.Parameters.AddWithValue(
+            "artifact_ids",
+            NpgsqlDbType.Array | NpgsqlDbType.Text,
+            grant.ArtifactIds.ToArray());
+        command.Parameters.AddWithValue(
+            "created_at_utc",
+            NpgsqlDbType.TimestampTz,
+            grant.CreatedAtUtc.UtcDateTime);
+        command.Parameters.AddWithValue(
+            "expires_at_utc",
+            NpgsqlDbType.TimestampTz,
+            grant.ExpiresAtUtc.UtcDateTime);
+        command.Parameters.AddWithValue("max_uses", NpgsqlDbType.Integer, grant.MaxUses);
+        command.Parameters.AddWithValue("use_count", NpgsqlDbType.Integer, grant.UseCount);
+        command.Parameters.AddWithValue("version", NpgsqlDbType.Bigint, grant.Version);
+        await command.ExecuteNonQueryAsync();
+    }
+
     private async Task ExecuteAsync(
         string sql,
         params (string Name, NpgsqlDbType Type, object Value)[] parameters)
@@ -681,7 +1302,13 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
             FixedNow.AddHours(1),
             MaxUses: maxUses,
             UseCount: 0,
-            AudienceKind: audienceKind);
+            AudienceKind: audienceKind,
+            ConsumedArtifactIds: []);
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     private static ReportingDeliveryJobRecord BuildJob(string tenantId, int maxAttempts = 3)
     {
@@ -750,6 +1377,18 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
             AccessGrantId: null,
             Receipts: []);
     }
+
+    private static ReportingDeliveryJobRecord BuildLinkedSentJob(
+        ReportingDeliveryJobRecord job,
+        ReportingAccessGrantRecord grant) =>
+        job with
+        {
+            State = ReportingDeliveryState.Sent,
+            AttemptCount = 1,
+            UpdatedAtUtc = FixedNow,
+            NextAttemptAtUtc = null,
+            AccessGrantId = grant.GrantId
+        };
 
     private static string NewTenantId() => $"tenant-{Guid.NewGuid():N}";
 }

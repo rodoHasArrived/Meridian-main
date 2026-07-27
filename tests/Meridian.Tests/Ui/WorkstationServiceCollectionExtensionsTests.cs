@@ -9,12 +9,14 @@ using Meridian.Execution.Services;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.Reporting;
+using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
@@ -316,6 +318,13 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         services.Should().Contain(descriptor =>
             descriptor.ServiceType == typeof(IHostedService) &&
             descriptor.ImplementationType == typeof(WorkstationReportingMigrationHostedService));
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(ReportingScheduleHostedService));
+        services.Count(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService) &&
+                descriptor.ImplementationType == typeof(ReportingSecureDistributionHostedService))
+            .Should().Be(1, "one server-owned delivery worker owns each process readiness receipt");
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<IReportingMigrationStartup>()
             .Should().NotBeNull(
@@ -325,6 +334,9 @@ public sealed class WorkstationServiceCollectionExtensionsTests
                 "resolving a store must not synchronously open a database connection");
         provider.GetRequiredService<IReportingRunStore>()
             .Should().BeOfType<PostgresReportingRunStore>();
+        provider.GetRequiredService<IReportingReleaseConsistencyGate>()
+            .Should().BeOfType<PostgresReportingReleaseConsistencyGate>(
+                "final release must share the PostgreSQL accounting-period fence");
         var canonicalScheduleStore = provider.GetRequiredService<IReportingScheduleStore>();
         canonicalScheduleStore
             .Should().BeOfType<PostgresReportingScheduleStore>();
@@ -335,12 +347,35 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         legacyScheduleStore.Should().BeAssignableTo<IReportingScheduleStore>();
         provider.GetService<IReportPackWorkflowRecordStore>().Should().BeNull();
         provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull();
-        provider.GetRequiredService<IReportingDeploymentReadinessService>()
-            .Evaluate()
-            .IsReady
+        var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()
+            .Evaluate();
+        capability.IsReady
             .Should()
             .BeFalse(
                 "registered PostgreSQL adapters are not deployment proof until migrations complete and the authority is reachable");
+        capability.Components
+            .Single(static component => component.ComponentId == "reconciliation-casework")
+            .IsReady.Should().BeFalse(
+                "registration alone is not proof that the canonical queue passed its startup integrity check");
+        provider.GetRequiredService<IReconciliationBreakQueueRepository>()
+            .Should().BeAssignableTo<IReconciliationBreakQueueAuthorityProbe>();
+        capability.Components
+            .Single(static component => component.ComponentId == "scheduling-worker")
+            .IsReady.Should().BeFalse(
+                "durable schedules are not operational until the configured server-owned worker starts");
+        provider.GetRequiredService<ReportingScheduleWorkerOptions>()
+            .PollInterval.Should().BeGreaterThan(TimeSpan.Zero);
+        capability.Components
+            .Single(static component => component.ComponentId == "delivery-worker")
+            .IsReady.Should().BeFalse(
+                "durable delivery is not operational until the configured server-owned worker starts");
+        var distributionOptions =
+            provider.GetRequiredService<SecureReportingDistributionOptions>();
+        distributionOptions.WorkerId.Should().NotBeNullOrWhiteSpace();
+        distributionOptions.WorkerPollInterval
+            .Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(250));
+        distributionOptions.WorkerPollInterval
+            .Should().BeLessThanOrEqualTo(TimeSpan.FromMinutes(5));
         var migration = ActivatorUtilities.CreateInstance<WorkstationReportingMigrationHostedService>(
             provider);
         using var canceled = new CancellationTokenSource();
@@ -350,6 +385,34 @@ public sealed class WorkstationServiceCollectionExtensionsTests
 
         await start.Should().ThrowAsync<OperationCanceledException>(
             "the host startup token must reach reporting migrations");
+    }
+
+    [Fact]
+    public void ReportingDeploymentReadiness_MissingCaseworkAuthority_FailsClosed()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=1");
+        var services = CreateMinimalWorkstationServices();
+        services.AddWorkstationSharedServices();
+        services.RemoveAll<IReconciliationBreakQueueRepository>();
+        using var provider = services.BuildServiceProvider();
+
+        var capability = provider.GetRequiredService<IReportingDeploymentReadinessService>()
+            .Evaluate();
+
+        capability.IsReady.Should().BeFalse();
+        capability.Components
+            .Single(static component => component.ComponentId == "reconciliation-casework")
+            .IsReady.Should().BeFalse();
+        capability.BlockingReasons.Should().Contain(reason =>
+            reason.Contains("casework authority", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
