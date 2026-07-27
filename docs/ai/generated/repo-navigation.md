@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-12T02:50:18Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-07-27T10:13:03Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -107,6 +107,7 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | From | To | Why it matters |
 |---|---|---|
 | `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
+| `Meridian` | `Meridian.Backtesting` | Meridian references Meridian.Backtesting directly via project reference. |
 | `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
 | `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
 | `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
@@ -125,7 +126,6 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
 | `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
 | `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
-| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
 
 ## What Changed Recently
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `80cd751e` (2026-07-12T00:56:51+00:00) | 18 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 5 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs` | Providers and Storage | `29839b47` (2026-07-11T17:19:54-07:00) | 8 |
-| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `29839b47` (2026-07-11T17:19:54-07:00) | 6 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 9 |
-| `src/Meridian.Ledger/LedgerTaxLot.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefInput.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
-| `src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
+| `src/Meridian.Application/README.md` | Host and Composition | `7213dcce0` (2026-07-27T08:20:58+00:00) | 16 |
+| `src/Meridian.Storage/Archival/WriteAheadLog.cs` | Providers and Storage | `7213dcce0` (2026-07-27T08:20:58+00:00) | 16 |
+| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `7213dcce0` (2026-07-27T08:20:58+00:00) | 12 |
+| `src/Meridian.Application/Pipeline/PersistentDedupLedger.cs` | Host and Composition | `7213dcce0` (2026-07-27T08:20:58+00:00) | 10 |
+| `src/Meridian.Application/Pipeline/IDedupStore.cs` | Host and Composition | `7213dcce0` (2026-07-27T08:20:58+00:00) | 9 |
+| `src/Meridian.Application/Pipeline/DedupReservation.cs` | Host and Composition | `7213dcce0` (2026-07-27T08:20:58+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 21 |
+| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 13 |
+| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 13 |
+| `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 11 |
+| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 11 |
+| `src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 9 |
+| `src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 9 |
+| `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 9 |
+| `src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 9 |
 

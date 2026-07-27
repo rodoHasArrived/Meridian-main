@@ -96,6 +96,28 @@ public sealed class WriteAheadLog : IAsyncDisposable
     public WalCorruptionMode CorruptionMode => _options.CorruptionMode;
 
     /// <summary>
+    /// Records a checksum-valid record whose payload a replay consumer could not deserialize,
+    /// applying the same corruption counters and Alert-mode signal as record-level corruption
+    /// so semantic payload failures are never dropped without a monitoring signal.
+    /// Callers enforcing <see cref="WalCorruptionMode.Halt"/> should throw instead.
+    /// </summary>
+    public void ReportUnreadablePayload()
+    {
+        Interlocked.Increment(ref _corruptedRecordCount);
+        Interlocked.Increment(ref _skippedRecordCount);
+
+        if (_options.CorruptionMode == WalCorruptionMode.Alert)
+        {
+            try
+            { CorruptionDetected?.Invoke(1); }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Exception in CorruptionDetected event handler; ignoring to continue recovery");
+            }
+        }
+    }
+
+    /// <summary>
     /// Raised when a corrupted WAL record is detected during recovery, provided
     /// <see cref="WalOptions.CorruptionMode"/> is <see cref="WalCorruptionMode.Alert"/>.
     /// The argument is the number of corrupted records found in the current recovery pass.

@@ -283,6 +283,20 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 new DedupReservationResult(DedupReservationStatus.PendingElsewhere, default));
         }
 
+        // Double-check after acquiring the pending slot: a concurrent commit may have published
+        // this identity between the cache read above and the TryAdd. Commits publish the cache
+        // entry BEFORE releasing their pending token, so once the slot was free the confirmation
+        // is guaranteed visible here — a reservation can never be granted for an identity that
+        // is already durability-confirmed in the requested scope.
+        if (_cache.TryGetValue(key, out existing) && nowTicks - existing.Ticks < _entryTtl.Ticks &&
+            (scope == DedupLookupScope.LiveIngress || existing.Version == EntryVersionSinkDurable))
+        {
+            ReleaseCore(key, token);
+            Interlocked.Increment(ref _totalDuplicates);
+            return ValueTask.FromResult(
+                new DedupReservationResult(DedupReservationStatus.Duplicate, default));
+        }
+
         return ValueTask.FromResult(new DedupReservationResult(
             DedupReservationStatus.Reserved,
             new DedupReservation(key, token)));
@@ -304,11 +318,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             var nowTicks = DateTimeOffset.UtcNow.Ticks;
 
             // Stage 1: append a durability-confirmed line for every reservation that is still
-            // held by its token. Nothing in memory changes yet, so a failure here (or in the
-            // flush below) leaves the pending claims intact and the commit can simply be
-            // retried; a repeated line is harmless because loads are last-write-wins.
-            foreach (var reservation in reservations)
+            // held by its token, remembering which ones qualified. Nothing in memory changes
+            // yet, so a failure here (or in the flush below) leaves the pending claims intact
+            // and the commit can simply be retried; a repeated line is harmless because loads
+            // are last-write-wins.
+            var validatedIndexes = new List<int>(reservations.Count);
+            for (var i = 0; i < reservations.Count; i++)
             {
+                var reservation = reservations[i];
                 if (!IsReservationHeld(reservation))
                 {
                     _log.Error(
@@ -319,20 +336,23 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
                 var line = CreateLedgerLine(reservation.Key, nowTicks, EntryVersionSinkDurable);
                 await _writer!.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
+                validatedIndexes.Add(i);
             }
 
             // Stage 2: make the committed identities durable before publishing them.
             await _writer!.FlushAsync(ct).ConfigureAwait(false);
 
-            // Stage 3: post-durability bookkeeping — publish the committed entries and drop the
-            // pending claims. Token-checked removal keeps a claim that was concurrently
-            // re-issued to another holder untouched.
-            foreach (var reservation in reservations)
+            // Stage 3: post-durability bookkeeping. Publish each committed entry BEFORE dropping
+            // its pending claim: a concurrent TryReserveAsync that wins the freed slot re-checks
+            // the cache after its TryAdd, so this ordering guarantees it observes the
+            // durability confirmation instead of re-claiming an already-committed identity.
+            // The cache write is unconditional for validated entries — their line is durably
+            // flushed — while the release stays token-checked.
+            foreach (var index in validatedIndexes)
             {
-                if (ReleaseCore(reservation.Key, reservation.Token))
-                {
-                    _cache[reservation.Key] = new DedupCacheEntry(nowTicks, EntryVersionSinkDurable);
-                }
+                var reservation = reservations[index];
+                _cache[reservation.Key] = new DedupCacheEntry(nowTicks, EntryVersionSinkDurable);
+                ReleaseCore(reservation.Key, reservation.Token);
             }
         }
         finally

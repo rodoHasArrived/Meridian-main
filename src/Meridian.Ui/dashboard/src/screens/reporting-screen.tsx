@@ -68,8 +68,7 @@ import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.expo
 import {
   buildDefaultReportRunParameterDraft,
   validateAndBuildReportingRunParameters,
-  type ReportRunParameterDraftField,
-  type ReportRunParameterDraftState
+  type ReportRunParameterDraftField
 } from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {

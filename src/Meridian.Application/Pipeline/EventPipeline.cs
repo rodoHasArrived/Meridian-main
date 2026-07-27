@@ -83,6 +83,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     // WAL tracking: last sequence committed to primary storage
     private long _lastCommittedWalSequence;
 
+    // Recovery commits its sink/dedup/WAL horizon in bounded chunks so pending dedup
+    // reservations never accumulate across an arbitrarily large uncommitted backlog.
+    // Internal (not const) only so recovery tests can exercise the multi-chunk path.
+    internal int RecoveryCommitBatchSize = 10_000;
+
     // Configuration
     private readonly TimeSpan _flushInterval;
     private readonly int _batchSize;
@@ -388,7 +393,53 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         var skipped = 0;
         var unrecoverable = 0;
         long maxRecoveredSequence = 0;
+        var chunkAppended = 0;
+        var chunkProcessed = 0;
         var heldReservations = new List<DedupReservation>();
+
+        // Drives the current chunk through its durable boundary: sink flush, then dedup commit,
+        // then a best-effort cumulative WAL commit through the horizon processed so far.
+        // GetUncommittedRecordsAsync yields records in sequence order, so every record at or
+        // below the horizon has already been flushed, suppressed, or reported unrecoverable.
+        async Task CommitRecoveredChunkAsync()
+        {
+            if (chunkAppended > 0)
+                await _sink.FlushAsync(ct).ConfigureAwait(false);
+
+            // Replayed identities become durability-confirmed only after the sink flush above.
+            // An unavailable dedup store fails recovery closed here; the sink data is durable,
+            // so a retried recovery replays at most a duplicate, never a loss.
+            if (_dedupLedger != null && heldReservations.Count > 0)
+            {
+                await _dedupLedger.CommitDurableAsync(heldReservations, ct).ConfigureAwait(false);
+                heldReservations.Clear();
+            }
+
+            // [1.2] WAL-sink transaction: update local sequence tracking BEFORE committing the
+            // WAL.  If CommitAsync fails (e.g. transient disk error), _lastCommittedWalSequence
+            // still reflects the successfully flushed extent so the next startup does not
+            // re-replay already-persisted events.  The commit itself is best-effort: a failure
+            // here is non-fatal because sink data is already durable.
+            if (maxRecoveredSequence > _lastCommittedWalSequence)
+            {
+                _lastCommittedWalSequence = maxRecoveredSequence;
+                try
+                {
+                    await _wal.CommitAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogWarning(ex,
+                        "WAL commit failed after successful sink flush during recovery (sequence {Seq}). " +
+                        "Sink data is safe; WAL records may be replayed again on the next startup but are " +
+                        "suppressed by their durability-confirmed dedup entries when a dedup store is configured",
+                        maxRecoveredSequence);
+                }
+            }
+
+            chunkAppended = 0;
+            chunkProcessed = 0;
+        }
 
         try
         {
@@ -396,6 +447,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             {
                 if (walRecord.RecordType == "COMMIT")
                     continue;
+
+                chunkProcessed++;
 
                 MarketEvent? evt;
                 try
@@ -412,6 +465,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             "undeserializable payload. Repair or remove the record before restarting.", ex);
                     }
 
+                    // Route the semantic payload failure through the WAL corruption policy so
+                    // Alert mode raises its monitoring signal before the horizon can drop it.
+                    _wal.ReportUnreadablePayload();
                     _logger.LogError(ex,
                         "WAL record {Sequence} has an undeserializable payload and cannot be replayed; " +
                         "it will be dropped once the recovery horizon is committed",
@@ -422,6 +478,14 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 if (evt == null)
                 {
                     unrecoverable++;
+                    if (_wal.CorruptionMode == WalCorruptionMode.Halt)
+                    {
+                        throw new InvalidDataException(
+                            $"WAL recovery halted: record {walRecord.Sequence} deserialized to a null event. " +
+                            "Repair or remove the record before restarting.");
+                    }
+
+                    _wal.ReportUnreadablePayload();
                     _logger.LogError(
                         "WAL record {Sequence} deserialized to a null event and cannot be replayed",
                         walRecord.Sequence);
@@ -432,7 +496,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 {
                     // Recovery-scope lookup: only durability-confirmed identities (or an earlier
                     // record in this same pass) suppress the replay. Legacy version-1 identities
-                    // fall through and are replayed, then upgraded at the commit below.
+                    // fall through and are replayed, then upgraded at the chunk commit.
                     var reservationResult = await _dedupLedger
                         .TryReserveAsync(evt, DedupLookupScope.WalRecovery, ct).ConfigureAwait(false);
                     if (reservationResult.IsSuppressed)
@@ -450,6 +514,15 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 await _sink.AppendAsync(evt, ct).ConfigureAwait(false);
                 maxRecoveredSequence = Math.Max(maxRecoveredSequence, walRecord.Sequence);
                 recovered++;
+                chunkAppended++;
+
+                // Bounded chunks keep pending reservations and the recovery horizon from
+                // accumulating across an arbitrarily large backlog — exactly the startup
+                // scenario recovery exists for.
+                if (chunkProcessed >= RecoveryCommitBatchSize)
+                {
+                    await CommitRecoveredChunkAsync().ConfigureAwait(false);
+                }
             }
 
             recoveryActivity?.SetTag("pipeline.recovered_count", recovered);
@@ -458,37 +531,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
             if (recovered > 0 || skipped > 0)
             {
-                if (recovered > 0)
-                    await _sink.FlushAsync(ct).ConfigureAwait(false);
-
-                // Replayed identities become durability-confirmed only after the sink flush
-                // above. An unavailable dedup store fails recovery closed here; the sink data
-                // is durable, so a retried recovery replays at most a duplicate, never a loss.
-                if (_dedupLedger != null && heldReservations.Count > 0)
-                {
-                    await _dedupLedger.CommitDurableAsync(heldReservations, ct).ConfigureAwait(false);
-                    heldReservations.Clear();
-                }
-
-                // [1.2] WAL-sink transaction: update local sequence tracking BEFORE committing the
-                // WAL.  If CommitAsync fails (e.g. transient disk error), _lastCommittedWalSequence
-                // still reflects the successfully flushed extent so the next startup does not
-                // re-replay already-persisted events.  The commit itself is best-effort: a failure
-                // here is non-fatal because sink data is already durable.
-                _lastCommittedWalSequence = maxRecoveredSequence;
+                await CommitRecoveredChunkAsync().ConfigureAwait(false);
 
                 try
                 {
-                    await _wal.CommitAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
-                    await _wal.TruncateAsync(maxRecoveredSequence, ct).ConfigureAwait(false);
+                    await _wal.TruncateAsync(_lastCommittedWalSequence, ct).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogWarning(ex,
-                        "WAL commit/truncate failed after successful sink flush during recovery (sequence {Seq}). " +
-                        "Sink data is safe; WAL records may be replayed again on the next startup but are " +
-                        "suppressed by their durability-confirmed dedup entries when a dedup store is configured",
-                        maxRecoveredSequence);
+                        "WAL truncate failed after recovery committed through sequence {Seq}; " +
+                        "committed segments are reclaimed by a later periodic truncation",
+                        _lastCommittedWalSequence);
                 }
 
                 Interlocked.Add(ref _recoveredCount, recovered);
@@ -505,8 +559,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         }
         catch
         {
-            // Recovery failed before its durable boundary: release the pending identity claims
-            // so a retried recovery (or live ingress) can process these events again.
+            // Recovery failed before the current chunk's durable boundary: release its pending
+            // identity claims so a retried recovery (or live ingress) can process these events
+            // again. Earlier chunks already committed and are unaffected.
             if (_dedupLedger != null)
             {
                 foreach (var reservation in heldReservations)
@@ -1031,12 +1086,20 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     // progress are retained so the retry resumes exactly where it failed.
                     Interlocked.Increment(ref _consumerIterationFailures);
                     Interlocked.Exchange(ref _lastConsumerFaultTicks, DateTimeOffset.UtcNow.UtcTicks);
-                    retryPendingBatch = _wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0);
+                    // Retry (rather than abandon) when the batch has WAL-appended records — a
+                    // cumulative later commit would acknowledge them — or when the sink flush
+                    // already succeeded and only the dedup commit is outstanding: those events
+                    // are durable, so the batch must retry the commit-only phase even without a
+                    // WAL instead of releasing claims for identities that are already stored.
+                    retryPendingBatch =
+                        (_wal != null && batchBuffer.Any(static traced => traced.WalSequence > 0)) ||
+                        (sinkBatchFlushed && _dedupLedger != null && !dedupBatchCommitted &&
+                         batchBuffer.Any(static traced => traced.Reservation.IsHeld));
                     _logger.LogError(ex,
                         "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; {RecoveryAction}",
                         batchBuffer.Count,
                         retryPendingBatch
-                            ? "the WAL-backed batch will retry before later batches are committed"
+                            ? "the batch will retry from its retained phase before later batches are committed"
                             : "WAL commit withheld and consumer continuing");
 
                     if (!retryPendingBatch)

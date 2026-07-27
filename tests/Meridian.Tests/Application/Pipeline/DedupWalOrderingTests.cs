@@ -464,6 +464,144 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         await ledger.DisposeAsync();
     }
 
+    [Fact]
+    public async Task Recovery_UnreadablePayload_AlertMode_SignalsCorruptionAndContinues()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_poison_alert");
+        Directory.CreateDirectory(walDir);
+
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal1.InitializeAsync();
+        var healthy = CreateTradeEvent("OK1", 80);
+        await wal1.AppendAsync(healthy, healthy.Type.ToString());
+        // Checksum-valid record whose payload is not a MarketEvent — a semantic poison record.
+        await wal1.AppendAsync("not-a-market-event", "Trade");
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        var wal2 = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Alert
+        });
+        long corruptionSignals = 0;
+        wal2.CorruptionDetected += count => Interlocked.Add(ref corruptionSignals, count);
+
+        var sink = new FaultSink();
+        await using var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2);
+
+        await pipeline.RecoverAsync();
+
+        sink.AppendedEvents.Should().ContainSingle("the healthy record must still be replayed");
+        Interlocked.Read(ref corruptionSignals).Should().BeGreaterThanOrEqualTo(1,
+            "Alert mode must raise the corruption signal for an undeserializable payload");
+        wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
+            "the semantic payload failure must be counted as corruption, never dropped silently");
+    }
+
+    [Fact]
+    public async Task Recovery_UnreadablePayload_HaltMode_FailsClosed()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_poison_halt");
+        Directory.CreateDirectory(walDir);
+
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal1.InitializeAsync();
+        await wal1.AppendAsync("not-a-market-event", "Trade");
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        var wal2 = new WriteAheadLog(walDir, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Halt
+        });
+        var sink = new FaultSink();
+        await using var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => pipeline.RecoverAsync());
+        sink.AppendedEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Consumer_NoWal_DedupCommitFailureAfterSinkFlush_RetriesCommitOnly()
+    {
+        // No WAL: after a successful sink flush, a transient dedup commit failure must retry
+        // just the commit phase — never abandon the batch and release claims for identities
+        // that are already durable in the sink.
+        var innerLedger = await CreateLedgerAsync("ledger_nowal_commit");
+        var sink = new FaultSink();
+        var dedupStore = new ObservingDedupStore(innerLedger) { CommitFailuresRemaining = 1 };
+
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, dedupLedger: dedupStore))
+        {
+            var evt = CreateTradeEvent("NWC", 90);
+            pipeline.TryPublish(evt);
+
+            await WaitUntilAsync(() => dedupStore.CommitSuccesses >= 1);
+
+            sink.AppendedEvents.Should().ContainSingle(
+                "the commit-only retry must never re-append the already-flushed sink");
+            pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+            dedupStore.CommitAttempts.Should().BeGreaterThanOrEqualTo(2);
+
+            // The identity stayed claimed through the retry and is now durability-confirmed.
+            pipeline.TryPublish(evt);
+            await WaitUntilAsync(() => pipeline.DeduplicatedCount >= 1);
+            sink.AppendedEvents.Should().ContainSingle();
+        }
+
+        await innerLedger.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Recovery_LargeBacklog_CommitsInBoundedChunks()
+    {
+        var walDir = Path.Combine(_rootDir, "wal_chunks");
+        Directory.CreateDirectory(walDir);
+
+        var wal1 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await wal1.InitializeAsync();
+        const int backlog = 25;
+        for (var i = 0; i < backlog; i++)
+        {
+            var evt = CreateTradeEvent($"CHK{i}", 100 + i);
+            await wal1.AppendAsync(evt, evt.Type.ToString());
+        }
+
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        var ledger = await CreateLedgerAsync("ledger_chunks");
+        var sink = new FaultSink();
+        var wal2 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await using (var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false, wal: wal2, dedupLedger: ledger))
+        {
+            pipeline.RecoveryCommitBatchSize = 10;
+            await pipeline.RecoverAsync();
+
+            pipeline.RecoveredCount.Should().Be(backlog);
+            sink.AppendedEvents.Should().HaveCount(backlog);
+            sink.SuccessfulFlushCount.Should().BeGreaterThanOrEqualTo(3,
+                "a 25-record backlog with a 10-record chunk size must reach the durable boundary per chunk");
+        }
+
+        // Every chunk committed its WAL horizon: a fresh recovery finds nothing uncommitted.
+        var wal3 = new WriteAheadLog(walDir, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var sink2 = new FaultSink();
+        await using (var pipeline2 = new EventPipeline(
+            sink2, capacity: 100, enablePeriodicFlush: false, wal: wal3, dedupLedger: ledger))
+        {
+            await pipeline2.RecoverAsync();
+            pipeline2.RecoveredCount.Should().Be(0);
+            sink2.AppendedEvents.Should().BeEmpty();
+        }
+
+        await ledger.DisposeAsync();
+    }
+
     #endregion
 
     #region Helpers and fakes
