@@ -396,6 +396,18 @@ public sealed class ReportingDeploymentReadinessService(
 
     public ReportingDeploymentCapabilityDto Evaluate()
     {
+        // A DI resolution exception is a composition defect, not an unconfigured capability.
+        // Capture each failure so the blocking reasons name the service and cause instead of
+        // reporting an indistinguishable "not configured" component.
+        var resolutionErrors = new List<string>();
+        T? Resolve<T>()
+            where T : class
+            => ResolveService<T>(resolutionErrors);
+        bool IsImplementation<TService, TImplementation>()
+            where TService : class
+            where TImplementation : class, TService
+            => ResolveService<TService>(resolutionErrors) is TImplementation;
+
         var persistenceProbe = Resolve<IReportingDeploymentProbe>()?.Probe();
         var persistenceReady = persistenceProbe?.IsComplete == true;
         var accessGrantVersionCompatible =
@@ -643,10 +655,17 @@ public sealed class ReportingDeploymentReadinessService(
         var blockers = components
             .Where(static component => !component.IsReady)
             .Select(static component => component.Summary)
-            .ToArray();
+            .ToList();
+        foreach (var resolutionError in resolutionErrors)
+        {
+            if (!blockers.Contains(resolutionError, StringComparer.Ordinal))
+            {
+                blockers.Add(resolutionError);
+            }
+        }
 
         return new ReportingDeploymentCapabilityDto(
-            IsReady: blockers.Length == 0,
+            IsReady: blockers.Count == 0,
             DurableGovernance: durableGovernance,
             DurableArtifacts: durableArtifacts,
             DurableReconciliationEvidence: durableReconciliationEvidence,
@@ -873,7 +892,7 @@ public sealed class ReportingDeploymentReadinessService(
                && (requirement.CompatibilityMarkers?.All(probe.HasCompatibilityMarker) ?? true);
     }
 
-    private T? Resolve<T>()
+    private T? ResolveService<T>(ICollection<string> resolutionErrors)
         where T : class
     {
         try
@@ -882,14 +901,11 @@ public sealed class ReportingDeploymentReadinessService(
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
+            resolutionErrors.Add(
+                $"Reporting deployment readiness could not resolve {typeof(T).Name}: {exception.Message}");
             return null;
         }
     }
-
-    private bool IsImplementation<TService, TImplementation>()
-        where TService : class
-        where TImplementation : class, TService
-        => Resolve<TService>() is TImplementation;
 
     private sealed record ReportingDeploymentSchemaRequirement(
         IReadOnlyList<string> Tables,
