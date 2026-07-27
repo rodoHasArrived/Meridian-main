@@ -25,6 +25,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `FinancialReportDocumentRenderer.cs` - client-grade QuestPDF (PDF) + ClosedXML (XLSX) renderer that
   implements the ledger's `ILedgerReportBinaryRenderer` seam. Output is made deterministic (fixed
   document metadata/timestamps, canonical zip ordering) so re-rendering a pack reproduces the bytes.
+  The statement of changes in partners' capital renders through a bespoke layout (from the ledger's
+  `PartnersCapitalStatementLayout`) rather than the generic table: a fund-economics NAV context strip,
+  role-labelled per-partner rows, an ownership-share column, a bold total, and a reconciliation note in
+  the PDF, and a dedicated XLSX sheet whose money and ownership cells are typed numbers (accounting and
+  percent formats) so the deliverable can be summed and pivoted without retyping. Every other statement
+  keeps the generic tabular rendering.
 - `DocumentsServiceCollectionExtensions.cs` - `AddFinancialReportDocumentRenderer` composition helper
   that registers the renderer for the `ILedgerReportBinaryRenderer` seam. The workstation host calls
   it (see `WorkstationServiceCollectionExtensions`), flipping governed ledger exports off the
