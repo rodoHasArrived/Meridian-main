@@ -9,8 +9,6 @@ import type {
   OperationsReconciliationLaneSummary,
   OperationsWorkflowBlocker,
   OperationsWorkflowStatus,
-  OperatorWorkItem,
-  OperatorWorkItemTone,
   PrivateCapitalCloseCockpit,
   TradingAcceptanceGateStatus,
   WorkflowAction,
@@ -1028,127 +1026,6 @@ export interface EvidenceVaultLookupRequest {
   accountingRecordId?: string | null;
   reportPackDeliveryAttemptId?: string | null;
   reportPackDeliveryPackageId?: string | null;
-}
-
-export type ChiefOfStaffIntentKind =
-  | "Unknown"
-  | "AccountingReconciliationReview"
-  | "TradingReadinessReview"
-  | "ReportPackApproval"
-  | "GovernanceAuditTrailReview"
-  | "GeneralOperatorAssistance";
-
-export type ChiefOfStaffSessionStatus =
-  | "Created"
-  | "ReviewRequired"
-  | "Blocked"
-  | "AwaitingOperatorDecision"
-  | "Approved"
-  | "Rejected"
-  | "Deferred";
-
-export type ChiefOfStaffDecisionKind = "Approve" | "Reject" | "Defer";
-
-export type ChiefOfStaffRuntimeHealthStatus = "Healthy" | "Degraded" | "Unavailable";
-
-export interface ChiefOfStaffActionCandidate {
-  actionId: string;
-  label: string;
-  targetWorkflow: string;
-  targetRoute: string | null;
-  targetPageTag: string | null;
-  requiredSignoffRole: string | null;
-  approvalRequired: boolean;
-  impactSummary: string;
-  evidencePrerequisites: string[];
-}
-
-export interface ChiefOfStaffRecommendation {
-  recommendationId: string;
-  title: string;
-  detail: string;
-  tone: OperatorWorkItemTone;
-  actions: ChiefOfStaffActionCandidate[];
-}
-
-export interface ChiefOfStaffTraceSummary {
-  traceId: string;
-  runtimeName: string;
-  runtimeVersion: string | null;
-  capturedAt: string;
-  warningCodes: string[];
-}
-
-export interface ChiefOfStaffEvidenceBundle {
-  subjects: EvidenceSubject[];
-  packets: EvidencePacket[];
-  workItems: OperatorWorkItem[];
-  relatedReconciliationRunIds: string[];
-  relatedWorkflowIds: string[];
-  traceArtifacts: EvidenceArtifactRef[];
-  completenessStatus: EvidenceStatus;
-  warnings: string[];
-}
-
-export interface ChiefOfStaffSession {
-  sessionId: string;
-  intentKind: ChiefOfStaffIntentKind;
-  operatorRequest: string;
-  markdownSummary: string;
-  structuredPayload: unknown;
-  evidenceBundle: ChiefOfStaffEvidenceBundle;
-  recommendations: ChiefOfStaffRecommendation[];
-  actions: ChiefOfStaffActionCandidate[];
-  traceSummary: ChiefOfStaffTraceSummary;
-  freshnessAsOf: string;
-  status: ChiefOfStaffSessionStatus;
-  pendingApproval: boolean;
-  routedWorkflowReferences: string[];
-  warnings: string[];
-}
-
-export interface ChiefOfStaffSessionSummary {
-  sessionId: string;
-  intentKind: ChiefOfStaffIntentKind;
-  operatorRequest: string;
-  status: ChiefOfStaffSessionStatus;
-  freshnessAsOf: string;
-  pendingApproval: boolean;
-  warnings: string[];
-}
-
-export interface ChiefOfStaffSessionQuery {
-  workspace?: string;
-  fundProfileId?: string;
-  fundAccountId?: string;
-  status?: ChiefOfStaffSessionStatus;
-  limit?: number;
-}
-
-export interface ChiefOfStaffDecisionRequest {
-  decision: ChiefOfStaffDecisionKind;
-  actor: string;
-  selectedActionId?: string | null;
-  rationale?: string | null;
-  correlationId?: string | null;
-}
-
-export interface ChiefOfStaffRuntimeHealth {
-  status: ChiefOfStaffRuntimeHealthStatus;
-  detail: string;
-  checkedAt: string;
-}
-
-export interface ChiefOfStaffTraceExportRequest {
-  requestedBy: string;
-  reason?: string | null;
-  includeWarnings?: boolean;
-}
-
-export interface ChiefOfStaffEvidenceExport {
-  sessionId: string;
-  manifest: EvidencePacketExportResponse;
-  traceSummary: ChiefOfStaffTraceSummary;
 }
 
 export interface TradingAcceptanceGate {

@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Storage;
 using NSubstitute;
 using Xunit;
 
@@ -1779,6 +1781,114 @@ public sealed class AccountingCloseServicesTests
             "March financial statements and downstream reports require recertification.",
             ["evidence:restatement:2026-03:reopen-approval-2026-03"],
             "reopen-correlation-2026-03");
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileFailsClosedInsteadOfReportingAnEmptyClose()
+    {
+        var workflowId = Guid.Parse("5c5c5c5c-5c5c-5c5c-5c5c-5c5c5c5c5c5c");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await File.WriteAllTextAsync(storage.CloseManagementPath, "{\"LateAdjustments\":[");
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("unreadable", StringComparison.Ordinal))
+            .WithInnerException<InvalidDataException, JsonException>();
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileIsNotOverwrittenByTheNextSignOff()
+    {
+        var workflowId = Guid.Parse("5d5d5d5d-5d5d-5d5d-5d5d-5d5d5d5d5d5d");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        // Record a real sign-off so the snapshot on disk holds close-governance evidence.
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var persisted = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        persisted.Should().Contain("reconciliation-review");
+
+        // Simulate a torn write: the tail of the snapshot is lost, so it no longer parses.
+        var torn = persisted[..(persisted.Length / 2)];
+        await File.WriteAllTextAsync(storage.CloseManagementPath, torn);
+
+        var secondSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>();
+
+        // The mutation must not have rewritten the snapshot. Every close mutation re-reads the
+        // collections it is not changing and saves all four, so an empty fallback here would
+        // have atomically replaced the file with one holding only the new sign-off.
+        var afterFailedMutation = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        afterFailedMutation.Should().Be(torn);
+    }
+
+    private static AccountingCloseManagementService BuildPersistedCloseService(
+        Guid workflowId,
+        TemporaryStorageRoot storage,
+        out IOperationsContinuityWorkflowService workflowService)
+    {
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        return new AccountingCloseManagementService(
+            workflowService,
+            new StorageOptions { RootPath = storage.RootPath });
+    }
+
+    /// <summary>
+    /// Isolated storage root so persistence-path close tests never share the snapshot file.
+    /// </summary>
+    private sealed class TemporaryStorageRoot : IDisposable
+    {
+        public TemporaryStorageRoot()
+        {
+            RootPath = Path.Combine(Path.GetTempPath(), $"meridian-close-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(Path.Combine(RootPath, "accounting"));
+        }
+
+        public string RootPath { get; }
+
+        public string CloseManagementPath
+            => Path.Combine(RootPath, "accounting", "close-management-late-adjustments.json");
+
+        public void Dispose()
+        {
+            try
+            {
+                if (Directory.Exists(RootPath))
+                {
+                    Directory.Delete(RootPath, recursive: true);
+                }
+            }
+            catch (IOException)
+            {
+                // A leftover temp directory must not fail an otherwise passing test run.
+            }
+        }
+    }
 
     private static async Task ApproveRequiredCloseTasksAsync(
         AccountingCloseManagementService service,

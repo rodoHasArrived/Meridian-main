@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Core.Scheduling;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Scheduling;
@@ -393,7 +394,7 @@ public sealed class BackfillScheduleManager
 
             var filePath = GetScheduleFilePath(schedule.ScheduleId);
             var json = JsonSerializer.Serialize(schedule, _jsonOptions);
-            await File.WriteAllTextAsync(filePath, json, ct);
+            await AtomicFileWriter.WriteAsync(filePath, json, ct).ConfigureAwait(false);
         }
         finally
         {

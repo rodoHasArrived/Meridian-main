@@ -1552,25 +1552,51 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadLateAdjustments()
+        => ReadPersistedSlice(
+            static snapshot => snapshot.LateAdjustments,
+            ReadInMemoryLateAdjustments);
+
+    /// <summary>
+    /// Reads one collection out of the persisted close-management snapshot, falling back to the
+    /// in-memory set when no persistence path is configured or the file does not exist yet.
+    /// </summary>
+    /// <remarks>
+    /// An unreadable snapshot throws rather than yielding an empty set. Every close mutation
+    /// re-reads the three collections it is not changing and rewrites all four
+    /// (see <see cref="SaveCloseManagementAsync"/>), so an empty fallback would let the next
+    /// routine sign-off atomically overwrite the file with a snapshot missing every previously
+    /// recorded late adjustment, task sign-off, plan configuration, and evidence review.
+    /// Failing closed leaves the unreadable file intact on disk for recovery.
+    /// </remarks>
+    private IReadOnlyList<T> ReadPersistedSlice<T>(
+        Func<CloseManagementSnapshot, IReadOnlyList<T>?> select,
+        Func<IReadOnlyList<T>> readInMemory)
     {
         if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
         {
-            return ReadInMemoryLateAdjustments();
+            return readInMemory();
         }
 
         lock (_readGate)
         {
+            CloseManagementSnapshot? snapshot;
             try
             {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
+                snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
                     File.ReadAllText(_persistencePath),
                     JsonOptions);
-                return snapshot?.LateAdjustments ?? [];
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                return [];
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is unreadable. Refusing to " +
+                    "continue with an empty close-management set: the next close mutation would " +
+                    "overwrite this file and permanently discard the recorded late adjustments, " +
+                    "task sign-offs, plan configurations, and evidence reviews.",
+                    ex);
             }
+
+            return snapshot is null ? [] : select(snapshot) ?? [];
         }
     }
 
@@ -1650,27 +1676,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .ToArray();
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadTaskSignOffs()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryTaskSignOffs();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.TaskSignOffs ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.TaskSignOffs,
+            ReadInMemoryTaskSignOffs);
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadInMemoryTaskSignOffs()
     {
@@ -1687,27 +1695,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .FirstOrDefault(configuration => configuration.WorkflowId == workflowId);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadPlanConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryPlanConfigurations();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.PlanConfigurations ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.PlanConfigurations,
+            ReadInMemoryPlanConfigurations);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadInMemoryPlanConfigurations()
     {
@@ -1720,27 +1710,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadEvidenceReviews()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryEvidenceReviews();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.EvidenceReviews ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.EvidenceReviews,
+            ReadInMemoryEvidenceReviews);
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadInMemoryEvidenceReviews()
     {

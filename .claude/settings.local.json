@@ -95,7 +95,16 @@
       "Bash(git -C D:/Meridian-headless-host-lifecycle status --porcelain)",
       "Read(//d/Meridian-headless-host-lifecycle/**)",
       "Bash(mkdir -p D:/meridian-branch-backups)",
-      "Bash(git bundle *)"
+      "Bash(git bundle *)",
+      "PowerShell(foreach \\($r in @\\('D:\\\\Meridian-main-direct-push-repair','D:\\\\Meridian-statement-connectors-complete'\\)\\) { $t = Join-Path $r 'src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools'; $i = Get-Item -LiteralPath $t -Force; \"$t -> linkType=$\\($i.LinkType\\) target=$\\($i.Target\\)\"; [System.IO.Directory]::Delete\\($t, $false\\); \"  deleted: $\\(-not \\(Test-Path -LiteralPath $t\\)\\)\" })",
+      "Bash(git fetch *)",
+      "Bash(python build/python/cli/buildctl.py validation-status --summary)",
+      "PowerShell(& \"C:\\\\Users\\\\Andrew James Rowden\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Meridian-main\\\\2a28265b-d830-4174-b53b-d04d2b0d9d22\\\\scratchpad\\\\sweep-c.ps1\")",
+      "Bash(grep -rn \"meridian-report-delivery-artifacts\\\\|C:\\\\\\\\\\\\\\\\tmp\\\\|/tmp/nuget\" --include=*.cs --include=*.json --include=*.props --include=*.targets --include=*.md --include=*.py --include=*.sh --include=*.yml .)",
+      "Bash(git -C \"D:/Meridian-main\" worktree list --porcelain)",
+      "Bash(cd \"D:/Meridian-repository-defect-sweep\" *)",
+      "Bash(dotnet test *)",
+      "Bash(git ls-tree *)"
     ]
   }
 }
