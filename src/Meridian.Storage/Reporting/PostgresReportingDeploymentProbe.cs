@@ -22,6 +22,27 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
     public const string AccessGrantArtifactConsumptionTriggerName =
         "trg_reporting_access_grants_guard_v012";
 
+    public const string StatementReconciliationAuthorityCompatibilityMarker =
+        "reporting-statement-reconciliation-authority:v1";
+
+    public const string StatementDocumentGuardTriggerName =
+        "trg_reporting_statement_document_guard";
+
+    public const string StatementDocumentRevisionTriggerName =
+        "trg_reporting_statement_document_revision";
+
+    public const string StatementDocumentTruncateGuardTriggerName =
+        "trg_reporting_statement_document_truncate_guard";
+
+    public const string StatementRevisionAppendTriggerName =
+        "trg_reporting_statement_revision_append";
+
+    public const string StatementRevisionGuardTriggerName =
+        "trg_reporting_statement_revision_guard";
+
+    public const string StatementRevisionTruncateGuardTriggerName =
+        "trg_reporting_statement_revision_truncate_guard";
+
     public const string SchemaIncompleteFailureCode =
         "REPORTING_SCHEMA_INCOMPLETE";
 
@@ -31,12 +52,35 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
     internal const string AccessGrantArtifactConsumptionMigrationFileName =
         "012_reporting_access_grant_artifact_consumption.sql";
 
+    internal const string StatementReconciliationAuthorityMigrationFileName =
+        "013_reporting_statement_reconciliation_authority.sql";
+
     internal const int BeforeRowInsertUpdateDeleteTriggerTypeMask =
         ReportingTriggerType.Row
         | ReportingTriggerType.Before
         | ReportingTriggerType.Insert
         | ReportingTriggerType.Delete
         | ReportingTriggerType.Update;
+
+    internal const int BeforeRowUpdateDeleteTriggerTypeMask =
+        ReportingTriggerType.Row
+        | ReportingTriggerType.Before
+        | ReportingTriggerType.Delete
+        | ReportingTriggerType.Update;
+
+    internal const int AfterRowInsertUpdateTriggerTypeMask =
+        ReportingTriggerType.Row
+        | ReportingTriggerType.Insert
+        | ReportingTriggerType.Update;
+
+    internal const int BeforeRowInsertTriggerTypeMask =
+        ReportingTriggerType.Row
+        | ReportingTriggerType.Before
+        | ReportingTriggerType.Insert;
+
+    internal const int BeforeStatementTruncateTriggerTypeMask =
+        ReportingTriggerType.Before
+        | ReportingTriggerType.Truncate;
 
     internal const string ConsumedArtifactConstraintDefinitionFragment =
         "consumed_artifact_ids <@ artifact_ids "
@@ -52,6 +96,10 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         "new.use_count = old.use_count + 1 "
         + "and old.consumed_artifact_ids is null "
         + "and new.consumed_artifact_ids is null";
+
+    internal const string StatementIdentityUtf8ByteBudgetDefinitionFragment =
+        "octet_length(tenant_id) + octet_length(company_id) "
+        + "+ octet_length(workflow_id) + octet_length(document_key) <= 2048";
 
     internal static readonly string[] RequiredTables =
     [
@@ -71,7 +119,9 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         "reporting_schedule_snapshots",
         "reporting_access_grants",
         "reporting_delivery_jobs",
-        "reporting_delivery_receipts"
+        "reporting_delivery_receipts",
+        "reporting_statement_reconciliation_documents",
+        "reporting_statement_reconciliation_document_revisions"
     ];
 
     internal static readonly ReportingTriggerBinding[] RequiredTriggerBindings =
@@ -101,6 +151,9 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             "reporting_access_grants",
             "guard_reporting_access_grant_mutation",
             RequiredTypeMask: BeforeRowInsertUpdateDeleteTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Truncate
+                | ReportingTriggerType.Instead,
             DefinitionFragment: AccessGrantInsertCompatibilityDefinitionFragment,
             AdditionalDefinitionFragment:
                 AccessGrantLegacyUseCompatibilityDefinitionFragment),
@@ -135,7 +188,83 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         new(
             "reporting_reconciliation_evidence_v2_append",
             "reporting_reconciliation_evidence_v2",
-            "guard_reporting_reconciliation_evidence_v2_append")
+            "guard_reporting_reconciliation_evidence_v2_append"),
+        new(
+            StatementDocumentGuardTriggerName,
+            "reporting_statement_reconciliation_documents",
+            "guard_reporting_statement_document_mutation",
+            RequiredTypeMask: BeforeRowUpdateDeleteTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Insert
+                | ReportingTriggerType.Truncate
+                | ReportingTriggerType.Instead,
+            DefinitionFragment: "old.is_immutable",
+            AdditionalDefinitionFragment:
+                "new.document_version <> old.document_version + 1"),
+        new(
+            StatementDocumentTruncateGuardTriggerName,
+            "reporting_statement_reconciliation_documents",
+            "reject_reporting_statement_document_truncate",
+            RequiredTypeMask: BeforeStatementTruncateTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Row
+                | ReportingTriggerType.Insert
+                | ReportingTriggerType.Delete
+                | ReportingTriggerType.Update
+                | ReportingTriggerType.Instead,
+            DefinitionFragment:
+                "statement reconciliation authority mappings cannot be truncated"),
+        new(
+            StatementDocumentRevisionTriggerName,
+            "reporting_statement_reconciliation_documents",
+            "retain_reporting_statement_document_revision",
+            RequiredTypeMask: AfterRowInsertUpdateTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Before
+                | ReportingTriggerType.Delete
+                | ReportingTriggerType.Truncate
+                | ReportingTriggerType.Instead,
+            DefinitionFragment:
+                "reporting_statement_reconciliation_document_revisions",
+            AdditionalDefinitionFragment: "new.document_version"),
+        new(
+            StatementRevisionAppendTriggerName,
+            "reporting_statement_reconciliation_document_revisions",
+            "validate_reporting_statement_revision_append",
+            RequiredTypeMask: BeforeRowInsertTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Delete
+                | ReportingTriggerType.Update
+                | ReportingTriggerType.Truncate
+                | ReportingTriggerType.Instead,
+            DefinitionFragment:
+                "new.document_version is distinct from current_mapping.document_version",
+            AdditionalDefinitionFragment:
+                "new.previous_content_hash_sha256 is distinct from previous_revision.content_hash_sha256"),
+        new(
+            StatementRevisionGuardTriggerName,
+            "reporting_statement_reconciliation_document_revisions",
+            "guard_reporting_statement_revision_mutation",
+            RequiredTypeMask: BeforeRowUpdateDeleteTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Insert
+                | ReportingTriggerType.Truncate
+                | ReportingTriggerType.Instead,
+            DefinitionFragment:
+                "statement reconciliation document revisions are append-only"),
+        new(
+            StatementRevisionTruncateGuardTriggerName,
+            "reporting_statement_reconciliation_document_revisions",
+            "reject_reporting_statement_revision_truncate",
+            RequiredTypeMask: BeforeStatementTruncateTriggerTypeMask,
+            ForbiddenTypeMask:
+                ReportingTriggerType.Row
+                | ReportingTriggerType.Insert
+                | ReportingTriggerType.Delete
+                | ReportingTriggerType.Update
+                | ReportingTriggerType.Instead,
+            DefinitionFragment:
+                "statement reconciliation document revisions cannot be truncated")
     ];
 
     internal static readonly string[] RequiredTriggers =
@@ -159,7 +288,31 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
         new("reporting_schedule_snapshots", "due_at_utc"),
         new("reporting_schedule_snapshots", "lease_owner"),
         new("reporting_schedule_snapshots", "lease_expires_at_utc"),
-        new("reporting_schedule_snapshots", "lease_version")
+        new("reporting_schedule_snapshots", "lease_version"),
+        new("reporting_statement_reconciliation_documents", "tenant_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "company_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "workflow_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "document_key", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "content_hash_sha256", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "byte_size", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "is_immutable", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "document_version", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "stored_at_utc", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_documents", "updated_at_utc", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "tenant_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "company_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "workflow_id", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "document_key", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "document_version", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "previous_content_hash_sha256"),
+        new("reporting_statement_reconciliation_document_revisions", "previous_byte_size"),
+        new("reporting_statement_reconciliation_document_revisions", "previous_updated_at_utc"),
+        new("reporting_statement_reconciliation_document_revisions", "content_hash_sha256", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "byte_size", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "is_immutable", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "mapping_stored_at_utc", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "mapping_updated_at_utc", MustBeNotNull: true),
+        new("reporting_statement_reconciliation_document_revisions", "recorded_at_utc", MustBeNotNull: true)
     ];
 
     internal static readonly ReportingUniqueKeyBinding[] RequiredUniqueKeyBindings =
@@ -199,7 +352,13 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             "reporting_delivery_jobs",
             ["access_grant_id"],
             "access_grant_id IS NOT NULL"),
-        new("reporting_delivery_receipts", ["job_id", "receipt_id"])
+        new("reporting_delivery_receipts", ["job_id", "receipt_id"]),
+        new(
+            "reporting_statement_reconciliation_documents",
+            ["tenant_id", "company_id", "workflow_id", "document_key"]),
+        new(
+            "reporting_statement_reconciliation_document_revisions",
+            ["tenant_id", "company_id", "workflow_id", "document_key", "document_version"])
     ];
 
     internal static readonly ReportingConstraintBinding[] RequiredConstraintBindings =
@@ -208,7 +367,46 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             "reporting_access_grants",
             "ck_reporting_access_grant_consumed_artifacts",
             ConstraintType: "c",
-            DefinitionFragment: ConsumedArtifactConstraintDefinitionFragment)
+            DefinitionFragment: ConsumedArtifactConstraintDefinitionFragment),
+        new(
+            "reporting_statement_reconciliation_documents",
+            "fk_reporting_statement_document_blob",
+            ConstraintType: "f",
+            DefinitionFragment: "FOREIGN KEY (tenant_id, content_hash_sha256)"),
+        new(
+            "reporting_statement_reconciliation_documents",
+            "ck_reporting_statement_document_key",
+            ConstraintType: "c",
+            DefinitionFragment: "document_key = btrim(document_key)"),
+        new(
+            "reporting_statement_reconciliation_documents",
+            "ck_reporting_statement_document_identity_utf8_bytes",
+            ConstraintType: "c",
+            DefinitionFragment:
+                StatementIdentityUtf8ByteBudgetDefinitionFragment),
+        new(
+            "reporting_statement_reconciliation_document_revisions",
+            "fk_reporting_statement_revision_blob",
+            ConstraintType: "f",
+            DefinitionFragment: "FOREIGN KEY (tenant_id, content_hash_sha256)"),
+        new(
+            "reporting_statement_reconciliation_document_revisions",
+            "fk_reporting_statement_revision_previous_blob",
+            ConstraintType: "f",
+            DefinitionFragment:
+                "FOREIGN KEY (tenant_id, previous_content_hash_sha256)"),
+        new(
+            "reporting_statement_reconciliation_document_revisions",
+            "ck_reporting_statement_revision_chain",
+            ConstraintType: "c",
+            DefinitionFragment:
+                "document_version = 1 and previous_content_hash_sha256 is null"),
+        new(
+            "reporting_statement_reconciliation_document_revisions",
+            "ck_reporting_statement_revision_identity_utf8_bytes",
+            ConstraintType: "c",
+            DefinitionFragment:
+                StatementIdentityUtf8ByteBudgetDefinitionFragment)
     ];
 
     internal static readonly ReportingApplicationCompatibilityBinding[]
@@ -228,6 +426,45 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 RequiredConstraints:
                 [
                     "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts"
+                ]),
+            new(
+                StatementReconciliationAuthorityCompatibilityMarker,
+                StatementReconciliationAuthorityMigrationFileName,
+                RequiredColumns:
+                [
+                    "reporting_statement_reconciliation_documents.tenant_id",
+                    "reporting_statement_reconciliation_documents.company_id",
+                    "reporting_statement_reconciliation_documents.workflow_id",
+                    "reporting_statement_reconciliation_documents.document_key",
+                    "reporting_statement_reconciliation_documents.content_hash_sha256",
+                    "reporting_statement_reconciliation_documents.byte_size",
+                    "reporting_statement_reconciliation_documents.is_immutable",
+                    "reporting_statement_reconciliation_documents.document_version",
+                    "reporting_statement_reconciliation_documents.stored_at_utc",
+                    "reporting_statement_reconciliation_documents.updated_at_utc",
+                    "reporting_statement_reconciliation_document_revisions.document_version",
+                    "reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256",
+                    "reporting_statement_reconciliation_document_revisions.content_hash_sha256",
+                    "reporting_statement_reconciliation_document_revisions.recorded_at_utc"
+                ],
+                RequiredTriggers:
+                [
+                    StatementDocumentGuardTriggerName,
+                    StatementDocumentTruncateGuardTriggerName,
+                    StatementDocumentRevisionTriggerName,
+                    StatementRevisionAppendTriggerName,
+                    StatementRevisionGuardTriggerName,
+                    StatementRevisionTruncateGuardTriggerName
+                ],
+                RequiredConstraints:
+                [
+                    "reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob",
+                    "reporting_statement_reconciliation_documents.ck_reporting_statement_document_key",
+                    "reporting_statement_reconciliation_documents.ck_reporting_statement_document_identity_utf8_bytes",
+                    "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_blob",
+                    "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob",
+                    "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain",
+                    "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_identity_utf8_bytes"
                 ])
         ];
 
@@ -254,6 +491,7 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
             @required_trigger_tables::text[],
             @required_trigger_functions::text[],
             @required_trigger_type_masks::integer[],
+            @required_trigger_forbidden_type_masks::integer[],
             @required_trigger_definition_fragments::text[],
             @required_trigger_additional_definition_fragments::text[])
             as required(
@@ -261,6 +499,7 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 table_name,
                 function_name,
                 required_type_mask,
+                forbidden_type_mask,
                 normalized_definition_fragment,
                 normalized_additional_definition_fragment)
         left join (
@@ -294,6 +533,8 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
          and (required.required_type_mask = 0
              or (existing.trigger_type & required.required_type_mask)
                 = required.required_type_mask)
+         and (required.forbidden_type_mask = 0
+             or (existing.trigger_type & required.forbidden_type_mask) = 0)
          and (required.normalized_definition_fragment = ''
               or position(
                   required.normalized_definition_fragment
@@ -495,6 +736,10 @@ public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
                 "required_trigger_type_masks",
                 NpgsqlDbType.Array | NpgsqlDbType.Integer,
                 RequiredTriggerBindings.Select(static binding => binding.RequiredTypeMask).ToArray());
+            command.Parameters.AddWithValue(
+                "required_trigger_forbidden_type_masks",
+                NpgsqlDbType.Array | NpgsqlDbType.Integer,
+                RequiredTriggerBindings.Select(static binding => binding.ForbiddenTypeMask).ToArray());
             command.Parameters.AddWithValue(
                 "required_trigger_definition_fragments",
                 NpgsqlDbType.Array | NpgsqlDbType.Text,
@@ -767,6 +1012,7 @@ internal sealed record ReportingTriggerBinding(
     string TableName,
     string FunctionName,
     int RequiredTypeMask = 0,
+    int ForbiddenTypeMask = 0,
     string? DefinitionFragment = null,
     string? AdditionalDefinitionFragment = null)
 {
@@ -840,6 +1086,8 @@ internal static class ReportingTriggerType
     internal const int Insert = 4;
     internal const int Delete = 8;
     internal const int Update = 16;
+    internal const int Truncate = 32;
+    internal const int Instead = 64;
 }
 
 internal sealed record ReportingUniqueKeyBinding(

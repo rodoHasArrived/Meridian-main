@@ -6,32 +6,32 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
-using Meridian.FinancialOperations.AccountingClose;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.ProviderSdk;
+using Meridian.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Storage;
-using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -291,14 +291,16 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate(Guid? aggregateId = null)
+    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate(
+        Guid? aggregateId = null,
+        Guid? periodId = null)
     {
         var securityId = Guid.Parse("2C0F364F-6020-4675-A7E2-27448950C5AF");
         var idempotencyKey = $"{securityId:N}:operations-continuity:20260531:AccrueInterestIncome:test-source-hash";
         return new OperationsLedgerJournalCandidateDto(
             JournalEntryId: null,
             AggregateId: aggregateId ?? Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
+            PeriodId: periodId ?? Guid.NewGuid(),
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity endpoint posting",
             Lines:

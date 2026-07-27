@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
@@ -568,14 +568,16 @@ public sealed class OperationsContinuityReconciliationBridgeTests
     private static Task RetainStatementBindingAsync(
         IOperationsWorkflowAuditStore auditStore,
         OperationsContinuityWorkflow workflow,
-        string runId) =>
-        auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
+        string runId)
+    {
+        var workflowStatus = new OperationsStatusDerivationService().Derive(workflow);
+        return auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
             workflow.WorkflowId,
             workflow.FundAccountId,
             workflow.PeriodId,
             "StatementIntakeRetained",
-            OperationsWorkflowStatusDto.InProgress,
-            OperationsWorkflowStatusDto.InProgress,
+            workflowStatus,
+            workflowStatus,
             OperationsGateKeyDto.BrokerIngest,
             OperationsGateStatusDto.Passed,
             OperationsGateStatusDto.Passed,
@@ -590,6 +592,7 @@ public sealed class OperationsContinuityReconciliationBridgeTests
                     "statement-reconciliation-report",
                     DateTimeOffset.UtcNow)
             ]));
+    }
 
     private static ReconciliationBreakQueueItem CreateBreakQueueItem(
         ReconciliationRunDetail detail,

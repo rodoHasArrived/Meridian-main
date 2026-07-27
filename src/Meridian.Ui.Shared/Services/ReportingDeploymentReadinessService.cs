@@ -13,6 +13,14 @@ namespace Meridian.Ui.Shared.Services;
 public interface IReportingDeploymentReadinessService
 {
     ReportingDeploymentCapabilityDto Evaluate();
+
+    /// <summary>
+    /// Returns deployment blockers for the schedule worker's own polling cycle. Implementations
+    /// may exclude only their scheduling-worker liveness receipt so that the first successful
+    /// cycle can earn that receipt. The default remains fully fail-closed.
+    /// </summary>
+    IReadOnlyList<string> GetScheduleWorkerCycleBlockingReasons() =>
+        ReportingDeploymentReadinessService.ResolveCapabilityBlockingReasons(Evaluate());
 }
 
 /// <summary>
@@ -181,6 +189,8 @@ internal static class WorkerReadinessState
 public sealed class ReportingDeploymentReadinessService(
     IServiceProvider services) : IReportingDeploymentReadinessService
 {
+    internal const string SchedulingWorkerComponentId = "scheduling-worker";
+
     private static readonly IReadOnlyDictionary<string, ReportingDeploymentSchemaRequirement>
         SchemaRequirements =
             new Dictionary<string, ReportingDeploymentSchemaRequirement>(StringComparer.Ordinal)
@@ -244,6 +254,62 @@ public sealed class ReportingDeploymentReadinessService(
                         "reporting_reconciliation_evidence(tenant_id,reconciliation_checkpoint_id,reconciliation_checkpoint_hash)",
                         "reporting_reconciliation_evidence_v2(tenant_id,receipt_key_sha256)",
                         "reporting_reconciliation_evidence_v2(tenant_id,reconciliation_checkpoint_id,reconciliation_checkpoint_hash)"
+                    ]),
+                ["statement-reconciliation-authority"] = new(
+                    [
+                        "reporting_statement_reconciliation_documents",
+                        "reporting_statement_reconciliation_document_revisions"
+                    ],
+                    [
+                        PostgresReportingDeploymentProbe.StatementDocumentGuardTriggerName,
+                        PostgresReportingDeploymentProbe.StatementDocumentRevisionTriggerName,
+                        PostgresReportingDeploymentProbe.StatementRevisionAppendTriggerName,
+                        PostgresReportingDeploymentProbe.StatementRevisionGuardTriggerName
+                    ],
+                    Columns:
+                    [
+                        "reporting_statement_reconciliation_documents.tenant_id",
+                        "reporting_statement_reconciliation_documents.company_id",
+                        "reporting_statement_reconciliation_documents.workflow_id",
+                        "reporting_statement_reconciliation_documents.document_key",
+                        "reporting_statement_reconciliation_documents.content_hash_sha256",
+                        "reporting_statement_reconciliation_documents.byte_size",
+                        "reporting_statement_reconciliation_documents.is_immutable",
+                        "reporting_statement_reconciliation_documents.document_version",
+                        "reporting_statement_reconciliation_documents.stored_at_utc",
+                        "reporting_statement_reconciliation_documents.updated_at_utc",
+                        "reporting_statement_reconciliation_document_revisions.tenant_id",
+                        "reporting_statement_reconciliation_document_revisions.company_id",
+                        "reporting_statement_reconciliation_document_revisions.workflow_id",
+                        "reporting_statement_reconciliation_document_revisions.document_key",
+                        "reporting_statement_reconciliation_document_revisions.document_version",
+                        "reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256",
+                        "reporting_statement_reconciliation_document_revisions.previous_byte_size",
+                        "reporting_statement_reconciliation_document_revisions.previous_updated_at_utc",
+                        "reporting_statement_reconciliation_document_revisions.content_hash_sha256",
+                        "reporting_statement_reconciliation_document_revisions.byte_size",
+                        "reporting_statement_reconciliation_document_revisions.is_immutable",
+                        "reporting_statement_reconciliation_document_revisions.mapping_stored_at_utc",
+                        "reporting_statement_reconciliation_document_revisions.mapping_updated_at_utc",
+                        "reporting_statement_reconciliation_document_revisions.recorded_at_utc"
+                    ],
+                    Constraints:
+                    [
+                        "reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob",
+                        "reporting_statement_reconciliation_documents.ck_reporting_statement_document_key",
+                        "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_blob",
+                        "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob",
+                        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain"
+                    ],
+                    CompatibilityMarkers:
+                    [
+                        PostgresReportingDeploymentProbe
+                            .StatementReconciliationAuthorityCompatibilityMarker
+                    ],
+                    UniqueKeys:
+                    [
+                        "reporting_statement_reconciliation_documents(tenant_id,company_id,workflow_id,document_key)",
+                        "reporting_statement_reconciliation_document_revisions(tenant_id,company_id,workflow_id,document_key,document_version)"
                     ]),
                 ["runs"] = new(
                     [
@@ -325,10 +391,15 @@ public sealed class ReportingDeploymentReadinessService(
     {
         var persistenceProbe = Resolve<IReportingDeploymentProbe>()?.Probe();
         var persistenceReady = persistenceProbe?.IsComplete == true;
-        var applicationVersionCompatible =
+        var accessGrantVersionCompatible =
             persistenceProbe?.HasCompatibilityMarker(
                 PostgresReportingDeploymentProbe
                     .AccessGrantArtifactConsumptionCompatibilityMarker) == true;
+        var applicationVersionCompatible =
+            accessGrantVersionCompatible
+            && persistenceProbe?.HasCompatibilityMarker(
+                PostgresReportingDeploymentProbe
+                    .StatementReconciliationAuthorityCompatibilityMarker) == true;
         var durableGovernanceStore =
             HasRequiredSchema(persistenceProbe, "governance")
             && IsImplementation<IReportingGovernanceRepository, PostgresReportingGovernanceRepository>()
@@ -379,6 +450,13 @@ public sealed class ReportingDeploymentReadinessService(
         var durableReconciliationEvidence =
             durableReconciliationEvidenceStore
             && reconciliationCaseworkAuthority;
+        var durableStatementReconciliationAuthority =
+            HasRequiredSchema(persistenceProbe, "statement-reconciliation-authority")
+            && Resolve<IStatementReconciliationReportAuthorityStore>()
+                is PostgresStatementReconciliationReportAuthorityStore
+            {
+                IsDurableAuthority: true
+            };
         var durableRuns =
             HasRequiredSchema(persistenceProbe, "runs")
             && IsImplementation<IReportingRunStore, PostgresReportingRunStore>();
@@ -473,6 +551,12 @@ public sealed class ReportingDeploymentReadinessService(
                 "PostgreSQL close and reconciliation evidence, including immutable controls, is configured.",
                 "Durable close and reconciliation evidence or its immutable database controls are not fully configured."),
             Component(
+                "statement-reconciliation-authority",
+                "Statement reconciliation authority",
+                durableStatementReconciliationAuthority,
+                "Statement workflow documents and revisions use the durable PostgreSQL reporting authority.",
+                "Statement workflow documents, immutable revision controls, or their PostgreSQL authority are not fully configured."),
+            Component(
                 "reconciliation-casework",
                 "Reconciliation casework authority",
                 reconciliationCaseworkAuthority,
@@ -494,8 +578,8 @@ public sealed class ReportingDeploymentReadinessService(
                 "scheduling-worker",
                 "Scheduling worker",
                 schedulingWorkerConfigured,
-                "The server-owned reporting schedule worker is running with a positive poll interval.",
-                "The server-owned reporting schedule worker is missing, stopped, or has invalid configuration."),
+                "The server-owned reporting schedule worker has a recent successful cycle and valid polling configuration.",
+                "The server-owned reporting schedule worker is missing, stopped, stale, failed its latest cycle, or has invalid configuration."),
             Component(
                 "delivery",
                 "Delivery",
@@ -503,21 +587,21 @@ public sealed class ReportingDeploymentReadinessService(
                 "PostgreSQL access grants, delivery jobs, immutable receipts, atomic download accounting, and every recipient transport are configured.",
                 ResolveDeliveryBlocker(
                     persistenceProbe,
-                    applicationVersionCompatible,
+                    accessGrantVersionCompatible,
                     durableDeliveryStore,
                     recipientTransportInfrastructureReady)),
             Component(
                 "application-schema-compatibility",
                 "Application/schema compatibility",
                 applicationVersionCompatible,
-                "This application and the PostgreSQL reporting schema agree on migration 012 access-grant artifact consumption.",
+                "This application and the PostgreSQL reporting schema agree on every required reporting migration capability.",
                 ResolveApplicationCompatibilityBlocker(persistenceProbe)),
             Component(
                 "delivery-worker",
                 "Delivery worker",
                 deliveryWorkerConfigured,
-                "The server-owned secure distribution worker is running with valid worker options.",
-                "The server-owned secure distribution worker is missing, stopped, or has invalid configuration."),
+                "The server-owned secure distribution worker has a recent successful cycle and valid worker options.",
+                "The server-owned secure distribution worker is missing, stopped, stale, failed its latest cycle, or has invalid configuration."),
             Component(
                 "recipient-destinations",
                 "Recipient destinations",
@@ -563,6 +647,71 @@ public sealed class ReportingDeploymentReadinessService(
             BlockingReasons: blockers);
     }
 
+    public IReadOnlyList<string> GetScheduleWorkerCycleBlockingReasons()
+        => ResolveScheduleWorkerCycleBlockingReasons(Evaluate());
+
+    internal static IReadOnlyList<string> ResolveScheduleWorkerCycleBlockingReasons(
+        ReportingDeploymentCapabilityDto capability)
+    {
+        var blockers = ResolveCapabilityBlockingReasons(capability).ToList();
+        var schedulingWorker = capability.Components.SingleOrDefault(component =>
+            string.Equals(
+                component.ComponentId,
+                SchedulingWorkerComponentId,
+                StringComparison.Ordinal));
+        if (schedulingWorker is null)
+        {
+            blockers.Add(
+                "Reporting deployment readiness omitted the scheduling-worker component.");
+            return blockers;
+        }
+
+        if (!schedulingWorker.IsReady)
+        {
+            var selfBlockerIndex = blockers.FindIndex(reason =>
+                string.Equals(
+                    reason,
+                    schedulingWorker.Summary,
+                    StringComparison.Ordinal));
+            if (selfBlockerIndex >= 0)
+            {
+                blockers.RemoveAt(selfBlockerIndex);
+            }
+        }
+
+        return blockers;
+    }
+
+    internal static IReadOnlyList<string> ResolveCapabilityBlockingReasons(
+        ReportingDeploymentCapabilityDto capability)
+    {
+        ArgumentNullException.ThrowIfNull(capability);
+        var componentBlockers = capability.Components
+            .Where(static component => !component.IsReady)
+            .Select(static component => component.Summary)
+            .ToArray();
+        if (capability.IsReady)
+        {
+            return capability.BlockingReasons.Count == 0
+                   && componentBlockers.Length == 0
+                ? []
+                : ["Reporting deployment readiness returned an inconsistent ready capability."];
+        }
+
+        var blockers = capability.BlockingReasons.ToList();
+        foreach (var componentBlocker in componentBlockers)
+        {
+            if (!blockers.Contains(componentBlocker, StringComparer.Ordinal))
+            {
+                blockers.Add(componentBlocker);
+            }
+        }
+
+        return blockers.Count > 0
+            ? blockers
+            : ["Reporting deployment readiness returned a blocked capability without a reason."];
+    }
+
     private static ReportingDeploymentComponentDto Component(
         string id,
         string displayName,
@@ -577,18 +726,18 @@ public sealed class ReportingDeploymentReadinessService(
         if (probe?.FailureCode
             == PostgresReportingDeploymentProbe.BinaryMigrationAssetUnavailableFailureCode)
         {
-            return "This application cannot verify migration 012 because its deployed migration asset is unavailable; delivery remains blocked.";
+            return "This application cannot verify one or more required reporting migrations because a deployed migration asset is unavailable; the reporting chain remains blocked.";
         }
 
         if (probe?.FailureCode
             == PostgresReportingDeploymentProbe.SchemaIncompleteFailureCode)
         {
-            return "Application/schema compatibility cannot be verified because the PostgreSQL reporting schema or migration ledger is incomplete; delivery remains blocked.";
+            return "Application/schema compatibility cannot be verified because the PostgreSQL reporting schema or migration ledger is incomplete; the reporting chain remains blocked.";
         }
 
         return probe is { IsReachable: false }
             ? "Application/schema compatibility cannot be verified while the PostgreSQL reporting authority is unreachable."
-            : "This application version is incompatible with the PostgreSQL reporting schema: the exact migration 012 access-grant artifact-consumption marker is absent or mismatched; delivery remains blocked.";
+            : "This application version is incompatible with the PostgreSQL reporting schema: one or more exact required migration capability markers are absent or mismatched; the reporting chain remains blocked.";
     }
 
     private static string ResolveDeliveryBlocker(
@@ -635,7 +784,7 @@ public sealed class ReportingDeploymentReadinessService(
         if (probe?.FailureCode
             == PostgresReportingDeploymentProbe.BinaryMigrationAssetUnavailableFailureCode)
         {
-            return "The deployed application is missing the migration 012 asset required to verify database compatibility.";
+            return "The deployed application is missing one or more reporting migration assets required to verify database compatibility.";
         }
 
         if (probe?.FailureCode
@@ -652,9 +801,12 @@ public sealed class ReportingDeploymentReadinessService(
         if (probe is null
             || !probe.HasCompatibilityMarker(
                 PostgresReportingDeploymentProbe
-                    .AccessGrantArtifactConsumptionCompatibilityMarker))
+                    .AccessGrantArtifactConsumptionCompatibilityMarker)
+            || !probe.HasCompatibilityMarker(
+                PostgresReportingDeploymentProbe
+                    .StatementReconciliationAuthorityCompatibilityMarker))
         {
-            return "The PostgreSQL reporting schema is incompatible with this application version because migration 012's exact access-grant artifact-consumption marker is absent or mismatched.";
+            return "The PostgreSQL reporting schema is incompatible with this application version because one or more exact required migration capability markers are absent or mismatched.";
         }
 
         if (probe.MissingTriggers.Count > 0)

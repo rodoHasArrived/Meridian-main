@@ -29,6 +29,8 @@ internal sealed class ReportingScheduleStoreCompatibilityAdapter(
     private readonly Meridian.Reporting.IReportingScheduleStore _inner =
         inner ?? throw new ArgumentNullException(nameof(inner));
 
+    public bool IsDurableAuthority => _inner.IsDurableAuthority;
+
     public IReadOnlyList<ReportingScheduleRecordDto> Load() => _inner.Load();
 
     public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules) =>
@@ -1555,8 +1557,17 @@ public sealed partial class ReportingScheduleService
         }
     }
 
-    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
-        => (await RunDueForWorkerAsync(nowUtc, ct).ConfigureAwait(false)).Result;
+    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken ct = default)
+        => (await RunDueCoreAsync(
+                nowUtc,
+            accessContext: null,
+            processAllTenants: true,
+            continueAfterScheduleFailure: true,
+            allowSchedulingWorkerBootstrap: false,
+            ct)
+            .ConfigureAwait(false)).Result;
 
     internal Task<ReportingScheduleWorkerBatchResult> RunDueForWorkerAsync(
         DateTimeOffset nowUtc,
@@ -1566,6 +1577,7 @@ public sealed partial class ReportingScheduleService
             accessContext: null,
             processAllTenants: true,
             continueAfterScheduleFailure: true,
+            allowSchedulingWorkerBootstrap: true,
             ct);
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
@@ -1577,6 +1589,7 @@ public sealed partial class ReportingScheduleService
                 accessContext,
                 processAllTenants: false,
                 continueAfterScheduleFailure: false,
+                allowSchedulingWorkerBootstrap: false,
                 ct)
             .ConfigureAwait(false)).Result;
 
@@ -1585,9 +1598,12 @@ public sealed partial class ReportingScheduleService
         ReportAccessQueryContext? accessContext,
         bool processAllTenants,
         bool continueAfterScheduleFailure,
+        bool allowSchedulingWorkerBootstrap,
         CancellationToken ct)
     {
-        EnsureReportingDeploymentReady("execute due reporting schedules");
+        EnsureReportingDeploymentReady(
+            "execute due reporting schedules",
+            allowSchedulingWorkerBootstrap);
         RefreshSchedulesFromStore();
         KeyValuePair<ReportingScheduleIdentity, ReportingScheduleRecordDto>[] dueSchedules;
         lock (_gate)

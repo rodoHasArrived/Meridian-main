@@ -34,6 +34,8 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
         _scheduleTable = $"\"{_options.Schema}\".\"reporting_schedule_snapshots\"";
     }
 
+    public bool IsDurableAuthority => true;
+
     public IReadOnlyList<ReportingScheduleRecordDto> Load()
     {
         lock (_legacySnapshotGate)

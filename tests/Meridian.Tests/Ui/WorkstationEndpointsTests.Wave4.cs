@@ -5,12 +5,12 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -1204,11 +1204,32 @@ public sealed partial class WorkstationEndpointsTests
     {
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
+        var postingWorkbench =
+            Substitute.For<IAccountingClosePostingWorkbench, IAccountingCloseMutationGate>();
+        var consistencyLease = Substitute.For<IAsyncDisposable>();
+        consistencyLease.DisposeAsync().Returns(ValueTask.CompletedTask);
+        ((IAccountingCloseMutationGate)postingWorkbench)
+            .AcquireAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult(consistencyLease));
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:endpoint-blockers",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Closing entries are already posted."));
         await using var app = await CreateAppAsync(
             services =>
             {
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-09");
+                services.AddSingleton<IAccountingClosePostingWorkbench>(postingWorkbench);
             },
             currentUserPermissions: UserPermission.AdminMaintenance,
             currentUserRole: UserRole.Controller);
@@ -1369,7 +1390,7 @@ public sealed partial class WorkstationEndpointsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task LedgerCloseManagementEndpoints_MissingLedgerOrOwnershipService_FailsClosed(bool registerLedger)
+    public async Task LedgerCloseManagementEndpoints_MissingLedgerOrOwnershipAuthority_FailsClosed(bool registerLedger)
     {
         var workflowId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -1390,6 +1411,7 @@ public sealed partial class WorkstationEndpointsTests
                 if (registerLedger)
                 {
                     services.AddSingleton(BuildScopedCloseLedger(ledgerBookId, fundAccountId));
+                    services.AddSingleton(Substitute.For<IFundProfileTenancyRegistry>());
                 }
             },
             currentUserPermissions: UserPermission.AdminMaintenance,

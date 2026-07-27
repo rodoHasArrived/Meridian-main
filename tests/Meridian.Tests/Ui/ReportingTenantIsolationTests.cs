@@ -166,8 +166,11 @@ public sealed class ReportingTenantIsolationTests
         await worker.StartAsync(startup.Token);
         try
         {
-            readiness.IsReady.Should().BeTrue(
-                "readiness is earned only after the secure distribution worker enters its loop");
+            SpinWait.SpinUntil(
+                    () => readiness.IsReady,
+                    TimeSpan.FromSeconds(5))
+                .Should().BeTrue(
+                    "readiness is earned only after a successful secure distribution cycle");
         }
         finally
         {
@@ -226,11 +229,11 @@ public sealed class ReportingTenantIsolationTests
                 "tenant-a",
                 "company-shared")
             .Manifest with
-            {
-                Trigger = ReportingRunTrigger.Scheduled,
-                ScheduleId = schedule.ScheduleId,
-                ResolvedParameters = parameters
-            };
+        {
+            Trigger = ReportingRunTrigger.Scheduled,
+            ScheduleId = schedule.ScheduleId,
+            ResolvedParameters = parameters
+        };
 
         var handoff = ReportingScheduleService
             .BuildReleaseDeliveryHandoffs(schedule, manifest)
@@ -260,7 +263,8 @@ public sealed class ReportingTenantIsolationTests
 
         unreleased.Attempted.Should().Be(1);
         unreleased.Enqueued.Should().Be(0);
-        unreleased.Failed.Should().Be(1);
+        unreleased.AwaitingRelease.Should().Be(1);
+        unreleased.Failed.Should().Be(0);
         queue.CreatedJobCount.Should().Be(0);
         scheduleService.ListPendingReleaseHandoffsForWorker().Should().ContainSingle();
 
@@ -1204,7 +1208,7 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
-    public void ReportWriterGridRead_CrossTenantAdminIsDeniedBeforeArtifactLookup()
+    public void ReportWriterGridRead_CrossTenantAdminDoesNotDiscloseForeignRun()
     {
         var snapshot = BuildRunSnapshot("tenant-a-grid", "tenant-a", "company-shared");
         var orchestration = new ReportingOrchestrationService(
@@ -1217,8 +1221,8 @@ public sealed class ReportingTenantIsolationTests
 
         var read = () => service.GetGrid(snapshot.Manifest.RunId, "any-grid", tenantBAdmin);
 
-        read.Should().Throw<UnauthorizedAccessException>()
-            .WithMessage("*another tenant or company*");
+        read.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*was not found*");
     }
 
     [Fact]
@@ -1601,7 +1605,7 @@ public sealed class ReportingTenantIsolationTests
             }
             if (!_releasedArtifacts.TryGetValue(command.RunId, out var released))
             {
-                throw new InvalidOperationException("The governed run is not released.");
+                throw new ReportingRunAwaitingReleaseException(command.RunId);
             }
             if (command.ArtifactIds is not { Count: > 0 }
                 || command.ArtifactIds.Any(artifactId => !released.Contains(artifactId)))

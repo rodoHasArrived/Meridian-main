@@ -54,7 +54,7 @@ public sealed partial class AnalysisExportService
                     await WriteEmptyArrowFileAsync(stagedPath, ct);
                 }
 
-                var fileInfo = new FileInfo(stagedPath);
+                var sizeBytes = new FileInfo(stagedPath).Length;
                 var checksum = await ComputeChecksumAsync(stagedPath, ct);
                 ct.ThrowIfCancellationRequested();
                 CommitStagedExportArtifact(
@@ -69,7 +69,7 @@ public sealed partial class AnalysisExportService
                     RelativePath = Path.GetFileName(outputPath),
                     Symbol = symbol,
                     Format = "arrow",
-                    SizeBytes = fileInfo.Length,
+                    SizeBytes = sizeBytes,
                     RecordCount = records.Count,
                     ChecksumSha256 = checksum
                 });
@@ -161,15 +161,15 @@ public sealed partial class AnalysisExportService
         var dataType = IsTimestampValue(name, value)
             ? CreateTimestampType(timestampSettings)
             : value switch
-        {
-            int => Int32Type.Default as IArrowType,
-            long => Int64Type.Default,
-            float => FloatType.Default,
-            double => DoubleType.Default,
-            decimal => DoubleType.Default, // Arrow has no native decimal; use double
-            bool => BooleanType.Default,
-            _ => StringType.Default
-        };
+            {
+                int => Int32Type.Default as IArrowType,
+                long => Int64Type.Default,
+                float => FloatType.Default,
+                double => DoubleType.Default,
+                decimal => DoubleType.Default, // Arrow has no native decimal; use double
+                bool => BooleanType.Default,
+                _ => StringType.Default
+            };
 
         return new Apache.Arrow.Field(name, dataType, nullable: true);
     }

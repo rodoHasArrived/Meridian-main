@@ -1208,8 +1208,7 @@ public sealed class ReportingSecureDistributionApplicationService :
             || run.GovernanceState != GovernedReportingState.Released
             || run.Release is null)
         {
-            throw new InvalidOperationException(
-                $"Reporting run '{run.RunId}' is not Released and cannot be distributed.");
+            throw new ReportingRunAwaitingReleaseException(run.RunId);
         }
 
         ReportingGovernanceCanonicalValidation.ValidateCompleteClientPackageRelease(

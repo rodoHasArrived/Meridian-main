@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
@@ -14,6 +15,12 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData("governance", "reporting_restatement_requests")]
     [InlineData("artifacts", "reporting_artifact_packages")]
     [InlineData("reconciliation-evidence", "reporting_reconciliation_evidence_v2")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions")]
     [InlineData("runs", "reporting_run_snapshots")]
     [InlineData("scheduling", "reporting_schedule_snapshots")]
     [InlineData("delivery", "reporting_delivery_receipts")]
@@ -38,6 +45,18 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData(
         "delivery",
         PostgresReportingDeploymentProbe.AccessGrantArtifactConsumptionTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementDocumentGuardTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementDocumentRevisionTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementRevisionAppendTriggerName)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementRevisionGuardTriggerName)]
     [InlineData("delivery", "trg_reporting_delivery_receipts_immutable")]
     public void HasRequiredSchema_MissingImmutableControlTrigger_ShouldFailClosed(
         string componentId,
@@ -62,6 +81,12 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData("scheduling", "reporting_schedule_snapshots.lease_expires_at_utc")]
     [InlineData("scheduling", "reporting_schedule_snapshots.lease_version")]
     [InlineData("delivery", "reporting_access_grants.consumed_artifact_ids")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents.document_version")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions.previous_content_hash_sha256")]
     public void HasRequiredSchema_MissingOperationalAuthorityColumn_ShouldFailClosed(
         string componentId,
         string missingColumn)
@@ -85,6 +110,12 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData("scheduling", "reporting_schedule_snapshots(tenant_id,company_id,schedule_id_key)")]
     [InlineData("delivery", "reporting_delivery_jobs(idempotency_key)")]
     [InlineData("delivery", "reporting_delivery_jobs(access_grant_id) where access_grant_id IS NOT NULL")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents(tenant_id,company_id,workflow_id,document_key)")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions(tenant_id,company_id,workflow_id,document_key,document_version)")]
     [InlineData("migrations", "reporting_schema_migrations(filename)")]
     public void HasRequiredSchema_MissingUniqueAuthorityKey_ShouldFailClosed(
         string componentId,
@@ -100,38 +131,113 @@ public sealed class ReportingDeploymentReadinessServiceTests
             .Should().BeFalse();
     }
 
-    [Fact]
-    public void HasRequiredSchema_MissingConsumedArtifactConstraint_ShouldFailClosed()
+    [Theory]
+    [InlineData(
+        "delivery",
+        "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_documents.ck_reporting_statement_document_key")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_blob")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob")]
+    [InlineData(
+        "statement-reconciliation-authority",
+        "reporting_statement_reconciliation_document_revisions.ck_reporting_statement_revision_chain")]
+    public void HasRequiredSchema_MissingAuthorityConstraint_ShouldFailClosed(
+        string componentId,
+        string missingConstraint)
     {
         var probe = CompleteProbe() with
         {
-            MissingConstraints =
-            [
-                "reporting_access_grants.ck_reporting_access_grant_consumed_artifacts"
-            ]
+            MissingConstraints = [missingConstraint]
         };
 
         probe.IsComplete.Should().BeFalse();
-        ReportingDeploymentReadinessService.HasRequiredSchema(probe, "delivery")
+        ReportingDeploymentReadinessService.HasRequiredSchema(probe, componentId)
+            .Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(
+        "delivery",
+        PostgresReportingDeploymentProbe.AccessGrantArtifactConsumptionCompatibilityMarker)]
+    [InlineData(
+        "statement-reconciliation-authority",
+        PostgresReportingDeploymentProbe.StatementReconciliationAuthorityCompatibilityMarker)]
+    public void HasRequiredSchema_MissingApplicationCompatibilityMarker_ShouldFailClosed(
+        string componentId,
+        string missingMarker)
+    {
+        var complete = CompleteProbe();
+        var probe = CompleteProbe() with
+        {
+            MissingCompatibilityMarkers = [missingMarker],
+            VerifiedCompatibilityMarkers = complete.VerifiedCompatibilityMarkers
+                .Where(marker =>
+                    !string.Equals(marker, missingMarker, StringComparison.Ordinal))
+                .ToArray()
+        };
+
+        probe.IsComplete.Should().BeFalse();
+        ReportingDeploymentReadinessService.HasRequiredSchema(probe, componentId)
             .Should().BeFalse();
     }
 
     [Fact]
-    public void HasRequiredSchema_MissingApplicationCompatibilityMarker_ShouldBlockDelivery()
+    public void Evaluate_StatementAuthorityRequiresMarkerAndConcretePostgresStore()
     {
-        var probe = CompleteProbe() with
+        var probe = Substitute.For<IReportingDeploymentProbe>();
+        probe.Probe().Returns(CompleteProbe());
+        var options = new ReportingArtifactStoreOptions
+        {
+            ConnectionString =
+                "Host=localhost;Database=meridian_readiness;Username=meridian",
+            Schema = "reporting"
+        };
+        var artifactStore = Substitute.For<IReportingArtifactStore>();
+        var services = new ServiceCollection();
+        services.AddSingleton(probe);
+        services.AddSingleton<IStatementReconciliationReportAuthorityStore>(
+            new PostgresStatementReconciliationReportAuthorityStore(
+                options,
+                artifactStore));
+        using var provider = services.BuildServiceProvider();
+        var readiness = new ReportingDeploymentReadinessService(provider);
+
+        readiness.Evaluate().Components
+            .Single(static component =>
+                component.ComponentId == "statement-reconciliation-authority")
+            .IsReady.Should().BeTrue();
+
+        var complete = CompleteProbe();
+        probe.Probe().Returns(complete with
         {
             MissingCompatibilityMarkers =
             [
                 PostgresReportingDeploymentProbe
-                    .AccessGrantArtifactConsumptionCompatibilityMarker
+                    .StatementReconciliationAuthorityCompatibilityMarker
             ],
-            VerifiedCompatibilityMarkers = []
-        };
+            VerifiedCompatibilityMarkers = complete.VerifiedCompatibilityMarkers
+                .Where(marker =>
+                    !string.Equals(
+                        marker,
+                        PostgresReportingDeploymentProbe
+                            .StatementReconciliationAuthorityCompatibilityMarker,
+                        StringComparison.Ordinal))
+                .ToArray()
+        });
 
-        probe.IsComplete.Should().BeFalse();
-        ReportingDeploymentReadinessService.HasRequiredSchema(probe, "delivery")
-            .Should().BeFalse();
+        readiness.Evaluate().Components
+            .Single(static component =>
+                component.ComponentId == "statement-reconciliation-authority")
+            .IsReady.Should().BeFalse();
     }
 
     [Fact]
@@ -181,16 +287,20 @@ public sealed class ReportingDeploymentReadinessServiceTests
         capability.Components
             .Single(static component =>
                 component.ComponentId == "application-schema-compatibility")
-            .Summary.Should().Contain("incompatible")
-            .And.Contain("migration 012")
-            .And.Contain("delivery remains blocked");
+            .Summary.Should()
+            .Contain("one or more exact required migration capability markers")
+            .And.Contain("reporting chain remains blocked")
+            .And.NotContain("migration 012");
         capability.Components
             .Single(static component => component.ComponentId == "delivery")
-            .Summary.Should().Contain("incompatible with this application version");
+            .Summary.Should().Contain("access-grant schema")
+            .And.Contain("incompatible with this application version");
         capability.Components
             .Single(static component => component.ComponentId == "migrations")
-            .Summary.Should().Contain("migration 012's exact")
-            .And.Contain("absent or mismatched");
+            .Summary.Should()
+            .Contain("one or more exact required migration capability markers")
+            .And.Contain("absent or mismatched")
+            .And.NotContain("migration 012");
     }
 
     [Fact]
@@ -208,7 +318,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
             MissingCompatibilityMarkers =
             [
                 PostgresReportingDeploymentProbe
-                    .AccessGrantArtifactConsumptionCompatibilityMarker
+                    .AccessGrantArtifactConsumptionCompatibilityMarker,
+                PostgresReportingDeploymentProbe
+                    .StatementReconciliationAuthorityCompatibilityMarker
             ]
         });
         var services = new ServiceCollection();
@@ -220,11 +332,14 @@ public sealed class ReportingDeploymentReadinessServiceTests
         capability.Components
             .Single(static component => component.ComponentId == "migrations")
             .Summary.Should().Be(
-                "The deployed application is missing the migration 012 asset required to verify database compatibility.");
+                "The deployed application is missing one or more reporting migration assets required to verify database compatibility.");
         capability.Components
             .Single(static component =>
                 component.ComponentId == "application-schema-compatibility")
-            .Summary.Should().Contain("migration asset is unavailable")
+            .Summary.Should()
+            .Contain("one or more required reporting migrations")
+            .And.Contain("a deployed migration asset is unavailable")
+            .And.NotContain("migration 012")
             .And.NotContain("PostgreSQL reporting authority is unreachable");
         capability.Components
             .Single(static component => component.ComponentId == "delivery")
@@ -261,6 +376,7 @@ public sealed class ReportingDeploymentReadinessServiceTests
     [InlineData("governance")]
     [InlineData("artifacts")]
     [InlineData("reconciliation-evidence")]
+    [InlineData("statement-reconciliation-authority")]
     [InlineData("runs")]
     [InlineData("scheduling")]
     [InlineData("delivery")]
@@ -354,12 +470,14 @@ public sealed class ReportingDeploymentReadinessServiceTests
         var readiness = new ReportingScheduleWorkerReadinessState();
         var failed = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowRecovery = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
         var recovered = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
-        Task<ReportingScheduleWorkerBatchResult> RunDueAsync(
+        async Task<ReportingScheduleWorkerBatchResult> RunDueAsync(
             DateTimeOffset _,
-            CancellationToken __)
+            CancellationToken cancellationToken)
         {
             if (Interlocked.Increment(ref calls) == 1)
             {
@@ -367,8 +485,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
                 throw new InvalidOperationException("simulated schedule-store outage");
             }
 
+            await allowRecovery.Task.WaitAsync(cancellationToken);
             recovered.TrySetResult();
-            return Task.FromResult(new ReportingScheduleWorkerBatchResult(default!, []));
+            return new ReportingScheduleWorkerBatchResult(default!, []);
         }
 
         using var worker = new ReportingScheduleHostedService(
@@ -386,6 +505,7 @@ public sealed class ReportingDeploymentReadinessServiceTests
             readiness.IsReady.Should().BeFalse(
                 "entering the worker loop is not proof of one successful schedule cycle");
 
+            allowRecovery.TrySetResult();
             await recovered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             await WaitUntilAsync(() => readiness.IsReady);
             readiness.ConsecutiveFailures.Should().Be(0);
@@ -400,15 +520,143 @@ public sealed class ReportingDeploymentReadinessServiceTests
     }
 
     [Fact]
+    public async Task ScheduleWorker_FirstCycleDoesNotDependOnItsOwnHeartbeat()
+    {
+        var deploymentReadiness = Substitute.For<IReportingDeploymentReadinessService>();
+        deploymentReadiness.Evaluate().Returns(new ReportingDeploymentCapabilityDto(
+            IsReady: false,
+            DurableGovernance: true,
+            DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
+            DurableRuns: true,
+            DurableScheduling: true,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: true,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components:
+            [
+                new ReportingDeploymentComponentDto(
+                    "scheduling-worker",
+                    "Scheduling worker",
+                    IsReady: false,
+                    "The scheduling worker has not completed its first successful cycle.")
+            ],
+            BlockingReasons:
+            [
+                "The scheduling worker has not completed its first successful cycle."
+            ]));
+        deploymentReadiness.GetScheduleWorkerCycleBlockingReasons().Returns([]);
+        var service = new ReportingScheduleService(
+            Substitute.For<IReportingOrchestrationService>(),
+            (Meridian.Reporting.IReportingScheduleStore?)null,
+            deliveryService: null,
+            governedTemplateCatalog: null,
+            datasetSourceService: null,
+            readinessService: null,
+            certificationService: null,
+            governanceCoordinator: null,
+            destinationResolver: null,
+            deploymentReadinessService: deploymentReadiness);
+
+        var workerCycle = await service.RunDueForWorkerAsync(
+            DateTimeOffset.UtcNow,
+            CancellationToken.None);
+
+        workerCycle.Result.Runs.Should().BeEmpty();
+        var publicCycle = async () =>
+            await service.RunDueAsync(DateTimeOffset.UtcNow, CancellationToken.None);
+        await publicCycle.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*scheduling worker has not completed*");
+    }
+
+    [Fact]
+    public void ScheduleWorkerCycleBlockers_PreserveUnrepresentedAndInconsistentFailures()
+    {
+        var schedulingSummary =
+            "The scheduling worker has not completed its first successful cycle.";
+        var capability = new ReportingDeploymentCapabilityDto(
+            IsReady: false,
+            DurableGovernance: false,
+            DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
+            DurableRuns: true,
+            DurableScheduling: true,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: true,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components:
+            [
+                new ReportingDeploymentComponentDto(
+                    "scheduling-worker",
+                    "Scheduling worker",
+                    IsReady: false,
+                    schedulingSummary),
+                new ReportingDeploymentComponentDto(
+                    "governance",
+                    "Governance",
+                    IsReady: false,
+                    "Governance component is not ready.")
+            ],
+            BlockingReasons:
+            [
+                schedulingSummary,
+                "Durable PostgreSQL reporting governance is not configured."
+            ]);
+
+        ReportingDeploymentReadinessService
+            .ResolveCapabilityBlockingReasons(capability)
+            .Should().HaveCount(3);
+        ReportingDeploymentReadinessService
+            .ResolveScheduleWorkerCycleBlockingReasons(capability)
+            .Should().BeEquivalentTo(
+                "Durable PostgreSQL reporting governance is not configured.",
+                "Governance component is not ready.");
+
+        var inconsistent = capability with
+        {
+            Components = [],
+            BlockingReasons = []
+        };
+
+        ReportingDeploymentReadinessService
+            .ResolveCapabilityBlockingReasons(inconsistent)
+            .Should().ContainSingle()
+            .Which.Should().Contain("without a reason");
+    }
+
+    [Fact]
+    public async Task ScheduleService_DurableStoreWithoutDeploymentGateFailsClosed()
+    {
+        var store = Substitute.For<Meridian.Reporting.IReportingScheduleStore>();
+        store.IsDurableAuthority.Returns(true);
+        store.Load().Returns([]);
+        var service = new ReportingScheduleService(
+            Substitute.For<IReportingOrchestrationService>(),
+            store);
+
+        var workerCycle = async () =>
+            await service.RunDueForWorkerAsync(
+                DateTimeOffset.UtcNow,
+                CancellationToken.None);
+
+        await workerCycle.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*durable reporting schedule authority requires*readiness gate*");
+    }
+
+    [Fact]
     public async Task DeliveryWorker_FirstCycleFailureStaysUnreadyAndLaterSuccessRecovers()
     {
         var readiness = new ReportingDeliveryWorkerReadinessState();
         var failed = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowRecovery = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
         var recovered = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
-        Task DispatchAsync(string _, CancellationToken __)
+        async Task DispatchAsync(string _, CancellationToken cancellationToken)
         {
             if (Interlocked.Increment(ref calls) == 1)
             {
@@ -416,8 +664,8 @@ public sealed class ReportingDeploymentReadinessServiceTests
                 throw new InvalidOperationException("simulated delivery-store outage");
             }
 
+            await allowRecovery.Task.WaitAsync(cancellationToken);
             recovered.TrySetResult();
-            return Task.CompletedTask;
         }
 
         var scheduleService = new ReportingScheduleService(
@@ -442,6 +690,7 @@ public sealed class ReportingDeploymentReadinessServiceTests
             readiness.IsReady.Should().BeFalse(
                 "entering the worker loop is not proof of one successful delivery cycle");
 
+            allowRecovery.TrySetResult();
             await recovered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             await WaitUntilAsync(() => readiness.IsReady);
             readiness.ConsecutiveFailures.Should().Be(0);
@@ -453,6 +702,88 @@ public sealed class ReportingDeploymentReadinessServiceTests
         }
 
         readiness.IsReady.Should().BeFalse();
+    }
+
+    [Fact]
+    public void DeliveryWorker_HandoffFailuresBlockReadinessButAwaitingReleaseDoesNot()
+    {
+        var awaitingRelease = new ReportingScheduledHandoffBridgeResult(
+            Attempted: 1,
+            Enqueued: 0,
+            AwaitingRelease: 1,
+            Failed: 0,
+            NextCursor: null);
+        var operationalFailure = awaitingRelease with
+        {
+            AwaitingRelease = 0,
+            Failed = 1
+        };
+
+        var expectedWait = () =>
+            ReportingSecureDistributionHostedService.EnsureHandoffCycleHealthy(
+                awaitingRelease);
+        var failedCycle = () =>
+            ReportingSecureDistributionHostedService.EnsureHandoffCycleHealthy(
+                operationalFailure);
+
+        expectedWait.Should().NotThrow(
+            "independent approval and release is an expected pending state");
+        failedCycle.Should().Throw<ReportingScheduledHandoffCycleException>()
+            .WithMessage("*could not persist or queue 1 scheduled handoff*");
+    }
+
+    [Fact]
+    public async Task DeliveryWorker_HandoffFailureDoesNotStarveGrantReconciliationOrDispatch()
+    {
+        var readiness = new ReportingDeliveryWorkerReadinessState();
+        var reconciled = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var dispatched = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var scheduleService = new ReportingScheduleService(
+            Substitute.For<IReportingOrchestrationService>(),
+            (Meridian.Reporting.IReportingScheduleStore?)null);
+        using var worker = new ReportingSecureDistributionHostedService(
+            scheduleService,
+            static (_, _, _) => Task.FromResult("unused-job"),
+            NullLogger<ReportingSecureDistributionHostedService>.Instance,
+            readiness: readiness,
+            dispatchDueAsync: (_, _) =>
+            {
+                dispatched.TrySetResult();
+                return Task.CompletedTask;
+            },
+            reconcileFailedGrantsAsync: _ =>
+            {
+                reconciled.TrySetResult();
+                return Task.FromResult(0);
+            },
+            options: SecureReportingDistributionOptions.Default with
+            {
+                WorkerPollInterval = TimeSpan.FromMinutes(1)
+            },
+            enqueueReleasedHandoffsAsync: _ => Task.FromResult(
+                new ReportingScheduledHandoffBridgeResult(
+                    Attempted: 1,
+                    Enqueued: 0,
+                    AwaitingRelease: 0,
+                    Failed: 1,
+                    NextCursor: null)));
+        using var startup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await worker.StartAsync(startup.Token);
+        try
+        {
+            await Task.WhenAll(
+                reconciled.Task.WaitAsync(TimeSpan.FromSeconds(5)),
+                dispatched.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            await WaitUntilAsync(() => readiness.ConsecutiveFailures == 1);
+            readiness.IsReady.Should().BeFalse();
+        }
+        finally
+        {
+            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await worker.StopAsync(shutdown.Token);
+        }
     }
 
     [Fact]
@@ -598,7 +929,9 @@ public sealed class ReportingDeploymentReadinessServiceTests
         VerifiedCompatibilityMarkers =
         [
             PostgresReportingDeploymentProbe
-                .AccessGrantArtifactConsumptionCompatibilityMarker
+                .AccessGrantArtifactConsumptionCompatibilityMarker,
+            PostgresReportingDeploymentProbe
+                .StatementReconciliationAuthorityCompatibilityMarker
         ]
     };
 

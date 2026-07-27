@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Reporting;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -85,6 +86,25 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "artifact access and restart both revalidate the retained accounting authority");
         intake.PublishCount.Should().Be(1,
             "an authoritative completed workflow must not publish Operations continuity twice");
+    }
+
+    [Fact]
+    public async Task StartAsync_CanonicalRunUnavailableWithoutDurableEvidence_AwaitsRecoveryAndDoesNotRender()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var service = CreateService(
+            imports,
+            new FakeEvidenceRetainer(),
+            new FakeStatementRunWorkflowService());
+
+        var result = await service.StartAsync(BuildCommand());
+
+        result.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        result.Workflow.RetainedArtifacts.Should().BeEmpty();
+        result.Workflow.RecoveryAction.Should().Contain("canonical statement run is unavailable");
+        result.Workflow.RecoveryAction.Should().Contain("durable raw, canonical, and run-evidence");
+        imports.CommitCount.Should().Be(1);
     }
 
     [Fact]
@@ -196,6 +216,12 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var started = await service.StartAsync(BuildCommand());
 
         started.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        started.Workflow.StatementRunId.Should().Be("statement-run-alpha",
+            "paused casework must retain the canonical statement-run correlation");
+        started.Workflow.EvidenceVaultIdentity.Should().NotBeNull(
+            "paused casework must expose its retained statement evidence");
+        started.Workflow.EvidenceVaultIdentity!.SubjectId.Should().Be("statement-run-alpha");
+        started.Workflow.EvidenceReferences.Should().Contain("statement-run:statement-run-alpha");
         started.Workflow.RetainedArtifacts.Should().BeEmpty();
         started.Workflow.RecoveryAction.Should().Contain("Resolve or disposition");
 
@@ -621,7 +647,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     }
 
     [Fact]
-    public async Task ResumeAsync_AfterEvidenceFailure_DoesNotRepeatCommittedImport()
+    public async Task ResumeAsync_AfterEvidenceFailure_ReimportsBecauseNoNodeLocalResultWasCheckpointed()
     {
         var imports = new FakeImportService(BuildImportResult());
         var evidence = new FakeEvidenceRetainer { FailNext = true };
@@ -631,7 +657,9 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var failed = await service.StartAsync(BuildCommand());
 
         failed.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
-        failed.Workflow.RecoveryAction.Should().Contain("retained import");
+        failed.ImportResult.Should().BeNull(
+            "an import result is not authoritative until raw and canonical evidence retention succeeds");
+        failed.Workflow.RecoveryAction.Should().Contain("Retry the persisted statement import");
         imports.CommitCount.Should().Be(1);
 
         var restarted = CreateService(imports, evidence, runs);
@@ -641,7 +669,34 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             "company-alpha");
 
         resumed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Completed);
-        imports.CommitCount.Should().Be(1);
+        imports.CommitCount.Should().Be(2,
+            "retry must rebuild node-local import outputs from the authoritative retained input");
+        evidence.RetainCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task StartAsync_OneShotEvidenceAuthorityOutage_PropagatesAndRetryReimports()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var evidence = new FakeEvidenceRetainer { AuthorityUnavailableNext = true };
+        var service = CreateService(
+            imports,
+            evidence,
+            new FakeStatementRunWorkflowService { ReturnReconciled = true });
+        var command = BuildCommand();
+
+        var outage = () => service.StartAsync(command);
+
+        await outage.Should()
+            .ThrowAsync<StatementReconciliationReportAuthorityUnavailableException>()
+            .WithMessage("*temporarily unavailable*");
+
+        var retried = await service.StartAsync(command);
+
+        retried.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.Completed);
+        imports.CommitCount.Should().Be(2,
+            "an outage before durable evidence retention must leave the input re-importable");
         evidence.RetainCount.Should().Be(2);
     }
 
@@ -749,6 +804,58 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         second.Workflow.WorkflowId.Should().NotBe(first.Workflow.WorkflowId,
             "mapping policy is part of the authoritative import identity");
         imports.CommitCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task StartAsync_CasingOnlySemanticIdentityRetry_ReusesTheSameWorkflow()
+    {
+        var imports = new FakeImportService(BuildImportResult());
+        var service = CreateService(
+            imports,
+            new FakeEvidenceRetainer(),
+            new FakeStatementRunWorkflowService { ReturnReconciled = true });
+        var command = BuildCommand();
+        var firstCommand = command with
+        {
+            Import = command.Import with
+            {
+                ConnectorId = "Csv-Alpha",
+                SourceKind = "Broker",
+                SourceInstitution = "Broker Alpha",
+                FundAccountId = "Fund-Account-Alpha",
+                ExternalAccountId = "External-Alpha",
+                ToleranceProfileId = "Tolerance-Alpha",
+                Document = command.Import.Document with
+                {
+                    MappingProfileId = "Mapping-Alpha",
+                    ExternalAccountId = "Document-External-Alpha"
+                }
+            }
+        };
+        var retry = firstCommand with
+        {
+            Import = firstCommand.Import with
+            {
+                ConnectorId = "CSV-ALPHA",
+                SourceKind = "BROKER",
+                SourceInstitution = "BROKER ALPHA",
+                FundAccountId = "FUND-ACCOUNT-ALPHA",
+                ExternalAccountId = "EXTERNAL-ALPHA",
+                ToleranceProfileId = "TOLERANCE-ALPHA",
+                Document = firstCommand.Import.Document with
+                {
+                    MappingProfileId = "MAPPING-ALPHA",
+                    ExternalAccountId = "DOCUMENT-EXTERNAL-ALPHA"
+                }
+            }
+        };
+
+        var first = await service.StartAsync(firstCommand);
+        var repeated = await service.StartAsync(retry);
+
+        repeated.Workflow.WorkflowId.Should().Be(first.Workflow.WorkflowId);
+        imports.CommitCount.Should().Be(1,
+            "case-insensitive statement identity fields must not create a duplicate import");
     }
 
     [Fact]
@@ -1169,6 +1276,7 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
     {
         public int RetainCount { get; private set; }
         public bool FailNext { get; set; }
+        public bool AuthorityUnavailableNext { get; set; }
 
         public Task<StatementImportCommitResultDto> RetainAsync(
             StatementImportCommitResultDto result,
@@ -1176,6 +1284,12 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             CancellationToken ct = default)
         {
             RetainCount++;
+            if (AuthorityUnavailableNext)
+            {
+                AuthorityUnavailableNext = false;
+                throw new StatementReconciliationReportAuthorityUnavailableException(
+                    "Statement evidence authority is temporarily unavailable.");
+            }
             if (FailNext)
             {
                 FailNext = false;

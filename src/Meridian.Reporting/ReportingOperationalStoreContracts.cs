@@ -25,6 +25,12 @@ public sealed class ReportingScheduleExecutionLeaseException(
 /// </summary>
 public interface IReportingScheduleStore
 {
+    /// <summary>
+    /// True only for a shared, restart-safe schedule authority. Durable implementations require
+    /// the reporting deployment gate before any schedule mutation or execution.
+    /// </summary>
+    bool IsDurableAuthority => false;
+
     IReadOnlyList<ReportingScheduleRecordDto> Load();
 
     void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules);

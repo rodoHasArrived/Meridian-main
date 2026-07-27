@@ -8,6 +8,10 @@ audience: operators
 
 # Statement Reconciliation Report Operations
 
+**Status:** active
+**Owner:** Financial Operations
+**Reviewed:** 2026-07-27
+
 Use this authoritative intake adapter for retained broker or custodian statement ingestion,
 server-resolved accounting scope, Evidence Vault linkage, publication into the canonical
 reconciliation queue, Operations Continuity linkage, and hash-verifiable JSON/CSV reconciliation
@@ -57,7 +61,8 @@ workflow evidence.
 The start response is `201` when the reconciliation report completes immediately, `202` when
 reconciliation or another durable stage remains, or `500` with the retained workflow projection
 when a durable stage fails. Pre-retention account, ledger-book, or period mismatch or ambiguity
-returns `409`; a missing intake-authority dependency returns `503`. A closed or ambiguous exact
+returns `409`; a missing intake-authority dependency, missing production statement authority, or
+unavailable production authority returns `503` without falling back to local files. A closed or ambiguous exact
 Operations workflow or incomplete queue publication fails after retention and returns the retained
 `Failed` projection with `500`. Record `workflowId`, `statusRoute`, and `resumeRoute` from the
 response when a workflow was retained.
@@ -107,6 +112,35 @@ Queue replay validates an already retained destination-scoped break directly. It
 unscoped compatibility case when a process stops after the queue commit but before the statement
 workflow records `operationsWorkflowId`; immutable source or scope conflicts still fail through the
 queue's create-replay validation.
+
+### Production persistence and restart authority
+
+Production requires the PostgreSQL statement-reconciliation authority installed by reporting
+migration `013_reporting_statement_reconciliation_authority.sql`. Every lookup and write uses the
+complete `(tenant_id, company_id, workflow_id, document_key)` key. Document mappings refer to the
+existing tenant-scoped, content-addressed `reporting_artifact_blobs`; reads verify retained size and
+SHA-256 before workflow code receives bytes.
+
+Reporting deployment readiness remains blocked until the live schema probe verifies
+`reporting_statement_reconciliation_documents`,
+`reporting_statement_reconciliation_document_revisions`, all four migration-owned document and
+revision triggers, and the exact `reporting-statement-reconciliation-authority:v1` compatibility
+marker, and composition resolves the concrete
+`PostgresStatementReconciliationReportAuthorityStore`. The presence of migration 013 alone is not
+production-readiness evidence.
+
+Uploaded input, statement evidence, and historical artifact generations are immutable mappings.
+`workflow.json` and the current artifact mappings may advance, but each version points to immutable
+blob bytes and the append-only document revision history preserves superseded hashes. A PostgreSQL
+advisory lease serializes a workflow across hosts. The workflow snapshot mapping is written only
+after its input, evidence, manifest, and artifact mappings, so a restart cannot observe a checkpoint
+that refers to unretained bytes.
+
+Rendering still uses the existing statement workflow and renderer. For production it operates on a
+service-owned runtime cache hydrated from verified authority bytes under the exact workflow lease.
+Hydration reconstructs that cache exactly and removes unlisted local remnants before continuation;
+a file created by an interrupted attempt is not imported into authority on resume. Do not back up,
+restore, inspect, or repair this runtime cache as workflow truth.
 
 ## Resume and retrieve artifacts
 
@@ -174,8 +208,9 @@ posting, close, Reporting, release, and distribution independently in
 
 1. Reuse the recorded workflow ID and status route after process restart.
 2. If reconciliation is pending, resolve or disposition every linked break/case before resume.
-3. If Evidence Vault or storage was unavailable, restore that dependency and call resume; verify the
-   statement-run ID did not change.
+3. If statement authority, Evidence Vault linkage, or storage was unavailable, restore PostgreSQL
+   reporting authority and call resume; verify the statement-run ID did not change. A `503` is an
+   availability stop, not permission to switch production to a file store.
 4. If scope resolution reports no match, ambiguity, or a closed ledger period, repair the
    fund-account ownership, primary ledger-book, or exact ledger-period configuration. Reopen a
    period only through governed accounting close controls; do not choose an approximate period or
@@ -188,11 +223,15 @@ posting, close, Reporting, release, and distribution independently in
 7. If access is denied, confirm the authenticated company and tenant rather than copying artifacts
    across scopes.
 
-The server data root retains new workflow state under `reporting/statement-reconciliation-report/<workflowId>/`.
-Treat `workflow.json`, `input/`, `artifacts/`, `artifacts/history/`, and the lock file as
-service-owned data. Include that directory in the supported data-root backup and restore drill;
-operators must not edit it directly or restore a historical generation independently of its
-workflow snapshot.
+Local/development compatibility composition retains workflow state under
+`reporting/statement-reconciliation-report/<workflowId>/`. Treat `workflow.json`, `input/`,
+`artifacts/`, `artifacts/history/`, authority metadata, and the lock file as service-owned data.
+Include that directory in a local-development backup only when that environment intentionally uses
+file authority; operators must not edit it directly or restore a historical generation
+independently of its workflow snapshot. Production recovery instead restores the PostgreSQL
+statement document mappings, append-only revisions, and referenced `reporting_artifact_blobs` as
+one coordinated authority. The production data-root runtime workspace is disposable cache and must
+not be used as backup or recovery evidence.
 The canonical casework handoff is retained separately under
 `<DataRoot>/workstation/reconciliation-break-queue.json`. That integrity-validated snapshot also
 retains command receipts, audit evidence, and any exact close-scope checkpoint frozen before hard

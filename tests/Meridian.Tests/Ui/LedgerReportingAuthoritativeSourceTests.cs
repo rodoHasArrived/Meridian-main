@@ -257,6 +257,12 @@ public sealed class LedgerReportingAuthoritativeSourceTests
         {
             OutputFormat = ReportingOutputFormatDto.Csv
         };
+        fixture.JournalStore.Records.Add(Record(
+            fixture,
+            new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero),
+            11,
+            debitCostCenterId: "cost-center-a",
+            creditCostCenterId: "cost-center-a"));
 
         var capture = await fixture.Source.CaptureAsync(
             fixture.Parameters,

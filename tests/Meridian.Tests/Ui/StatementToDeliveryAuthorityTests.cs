@@ -57,7 +57,11 @@ public sealed class StatementToDeliveryAuthorityTests
         var fundAccountId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         using var statementIntake = await StartStatementWorkflowAsync(fundAccountId, ct);
         var statementRunId = statementIntake.Execution.Workflow.StatementRunId
-            ?? throw new InvalidOperationException("The real statement import did not retain a run id.");
+            ?? throw new InvalidOperationException(
+                "The real statement import did not retain a run id. "
+                + $"Status={statementIntake.Execution.Workflow.Status}; "
+                + $"failure={statementIntake.Execution.Workflow.FailureReason}; "
+                + $"recovery={statementIntake.Execution.Workflow.RecoveryAction}.");
         statementIntake.Execution.Workflow.Status.Should().Be(
             StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
         statementIntake.Execution.Workflow.EvidenceVaultIdentity.Should().NotBeNull();
@@ -772,7 +776,7 @@ public sealed class StatementToDeliveryAuthorityTests
                         "northstar-june-2026.csv",
                         "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\nCUSTODY-7842,,0,0,250000,cashbalance,2026-06-30,2026-06-30,USD,0,CASH-JUNE-2026"u8
                             .ToArray()),
-                    ConnectorId: "csv",
+                    ConnectorId: CsvStatementConnector.ConnectorId,
                     SourceKind: "custodian",
                     SourceInstitution: "Northstar Custody",
                     FundAccountId: fundAccountId.ToString("D"),
@@ -1138,16 +1142,6 @@ public sealed class StatementToDeliveryAuthorityTests
         AccountingCloseManagementService service, OperationsContinuityWorkflowDto workflow,
         CancellationToken ct)
     {
-        foreach (var taskId in new[] { "reconciliation-review", "report-certification" })
-        {
-            await service.SignOffCloseTaskScopedAsync(
-                new SignOffCloseTaskRequestDto(
-                    workflow.WorkflowId, taskId, "Controller", ManualJournalEntryStatusDto.Approved,
-                    "fund-controller",
-                    $"Controller retained the {taskId} close control.",
-                    [$"evidence:close-task:{taskId}:Controller:{workflow.PeriodId}:book:{LedgerBookId:D}:control-signoff"]),
-                "fund-controller", "tenant-alpha", "company-alpha", ct);
-        }
         var plan = await service.GetPeriodPlanScopedAsync(
                 workflow.WorkflowId, "tenant-alpha", "company-alpha", ct)
             ?? throw new InvalidOperationException("The governed close plan was not retained.");
@@ -1747,7 +1741,7 @@ public sealed class StatementToDeliveryAuthorityTests
             var timestamp = new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero);
             var dimensions = Dimensions();
             _records.Add(new LedgerJournalEntryRecord(
-                new JournalEntry(
+                new Meridian.Ledger.JournalEntry(
                     journalId,
                     timestamp,
                     "Retained beginning partners capital",

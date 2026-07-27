@@ -12,19 +12,31 @@ public sealed partial class ReportingScheduleService
         $"reporting-schedule:{Environment.ProcessId}:{Guid.NewGuid():N}";
     private readonly IReportingDeploymentReadinessService? _deploymentReadinessService;
 
-    private void EnsureReportingDeploymentReady(string operation)
+    private void EnsureReportingDeploymentReady(
+        string operation,
+        bool allowSchedulingWorkerBootstrap = false)
     {
         if (_deploymentReadinessService is null)
         {
+            if (_store?.IsDurableAuthority == true)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot {operation}: a durable reporting schedule authority requires the " +
+                    "reporting deployment readiness gate.");
+            }
+
             return;
         }
 
-        var capability = _deploymentReadinessService.Evaluate();
-        if (!capability.IsReady)
+        var blockers = allowSchedulingWorkerBootstrap
+            ? _deploymentReadinessService.GetScheduleWorkerCycleBlockingReasons()
+            : ReportingDeploymentReadinessService.ResolveCapabilityBlockingReasons(
+                _deploymentReadinessService.Evaluate());
+        if (blockers.Count > 0)
         {
             throw new InvalidOperationException(
                 $"Cannot {operation} until the authoritative reporting deployment is ready: " +
-                string.Join(" ", capability.BlockingReasons));
+                string.Join(" ", blockers));
         }
     }
 

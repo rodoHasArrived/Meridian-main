@@ -1,39 +1,39 @@
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.ProviderSdk;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -45,9 +45,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
 using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
@@ -892,7 +892,9 @@ public sealed partial class WorkstationEndpointsTests
                 "ledger-batch-1",
                 "period-close",
                 true,
-                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(
+                    start.Workflow!.FundAccountId,
+                    accountingPeriodId)));
         await app.Services
             .GetRequiredService<IOperationsWorkflowAuditStore>()
             .AppendAsync(new OperationsWorkflowAuditDraft(
@@ -900,8 +902,8 @@ public sealed partial class WorkstationEndpointsTests
                 fundAccountId,
                 accountingPeriodId.ToString("D"),
                 "StatementIntakeRetained",
-                OperationsWorkflowStatusDto.InProgress,
-                OperationsWorkflowStatusDto.InProgress,
+                posted.Workflow!.Status,
+                posted.Workflow!.Status,
                 OperationsGateKeyDto.BrokerIngest,
                 OperationsGateStatusDto.Passed,
                 OperationsGateStatusDto.Passed,
@@ -926,11 +928,10 @@ public sealed partial class WorkstationEndpointsTests
                 AmountTolerance: 0.05m,
                 MaxAsOfDriftMinutes: 10));
 
-        reconciliationService.LastRunRequest.Should().NotBeNull();
-        reconciliationService.LastRunRequest!.RunId.Should().Be("run-ops-1");
-        reconciliationService.LastRunRequest.BankEntityId.Should().Be(bankEntityId);
-        reconciliationService.LastRunRequest.AmountTolerance.Should().Be(0.05m);
-        reconciliationService.LastRunRequest.MaxAsOfDriftMinutes.Should().Be(10);
+        reconciliationService.RunAsyncCallCount.Should().Be(0,
+            "the Operations bridge must project the retained reconciliation result instead of starting another run");
+        reconciliationService.GetLatestForRunCallCount.Should().Be(1);
+        reconciliationService.LastRunRequest.Should().BeNull();
         bridged.Success.Should().BeTrue();
         bridged.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
         bridged.Workflow.BreakCases.Should().ContainSingle(breakCase =>
@@ -7480,9 +7481,12 @@ public sealed partial class WorkstationEndpointsTests
     private sealed class StaticReconciliationRunService(ReconciliationRunDetail detail) : IReconciliationRunService
     {
         public ReconciliationRunRequest? LastRunRequest { get; private set; }
+        public int RunAsyncCallCount { get; private set; }
+        public int GetLatestForRunCallCount { get; private set; }
 
         public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
         {
+            RunAsyncCallCount++;
             LastRunRequest = request;
             return Task.FromResult<ReconciliationRunDetail?>(detail);
         }
@@ -7492,10 +7496,13 @@ public sealed partial class WorkstationEndpointsTests
                 ? Task.FromResult<ReconciliationRunDetail?>(detail)
                 : Task.FromResult<ReconciliationRunDetail?>(null);
 
-        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default) =>
-            string.Equals(runId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase)
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default)
+        {
+            GetLatestForRunCallCount++;
+            return string.Equals(runId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase)
                 ? Task.FromResult<ReconciliationRunDetail?>(detail)
                 : Task.FromResult<ReconciliationRunDetail?>(null);
+        }
 
         public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>(
@@ -7633,8 +7640,14 @@ public sealed partial class WorkstationEndpointsTests
     private static async Task<OperationsTransitionResultDto> PostTransitionAsync(HttpClient client, string path, object payload)
     {
         var response = await client.PostAsJsonAsync(path, payload, ServerJsonOptions);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "the transition response body was: {0}",
+            responseBody);
+        var result = JsonSerializer.Deserialize<OperationsTransitionResultDto>(
+            responseBody,
+            ServerJsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue(result.ErrorMessage);
         result.Workflow.Should().NotBeNull();

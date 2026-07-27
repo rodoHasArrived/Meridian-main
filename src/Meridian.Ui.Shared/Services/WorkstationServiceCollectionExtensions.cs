@@ -1,35 +1,33 @@
-using Meridian.Application.Config.Credentials;
-using Meridian.Application.Composition;
 using Meridian.Application.Accounting;
-using Meridian.Core.Contracts;
+using Meridian.Application.Composition;
+using Meridian.Application.Config.Credentials;
 using Meridian.Application.DirectLending;
-using Meridian.DataIntegration.Credentials;
-using Meridian.Documents;
-using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Reconciliation;
-using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
-using Meridian.Domain.Collectors;
-using Meridian.Ui.Shared.Streaming;
+using Meridian.Audit.Compliance;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
-using Meridian.Contracts.Ledger;
-using Meridian.Contracts.Operations;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.Plaid;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
-using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Contracts;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.DataIntegration.Credentials;
+using Meridian.Documents;
+using Meridian.Domain.Collectors;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
@@ -37,14 +35,15 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Adapters.Plaid;
-using Meridian.Infrastructure.Adapters.InteractiveBrokers;
-using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Instruments.AssetOperations;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Reporting;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -61,6 +60,7 @@ using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Extensibility;
 using Meridian.Ui.Shared.Services.Acceptance;
 using Meridian.Ui.Shared.Services.CoveredCall;
+using Meridian.Ui.Shared.Streaming;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -473,6 +473,16 @@ public static class WorkstationServiceCollectionExtensions
                     WorkstationReportingMigrationHostedService>());
             services.TryAddSingleton<IReportingArtifactStore>(sp =>
                 new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>()));
+            if (!services.Any(static descriptor =>
+                    descriptor.ServiceType
+                    == typeof(IStatementReconciliationReportAuthorityStore)))
+            {
+                services.AddSingleton<IStatementReconciliationReportAuthorityStore>(sp =>
+                    new PostgresStatementReconciliationReportAuthorityStore(
+                        sp.GetRequiredService<ReportingArtifactStoreOptions>(),
+                        sp.GetRequiredService<IReportingArtifactStore>()));
+                services.TryAddSingleton<DurableStatementReconciliationAuthorityRegistration>();
+            }
             services.TryAddSingleton<IReportingArtifactCatalog>(sp =>
                 new PostgresReportingArtifactCatalog(sp.GetRequiredService<ReportingArtifactStoreOptions>()));
             services.TryAddSingleton<IReportingArtifactAuditStore>(sp =>
@@ -917,7 +927,7 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 sp.GetRequiredService<ILogger<FileExtensibilityConfigurationStore>>()));
         services.AddExtensibilityCatalog();
-        services.AddEvidenceWorkflowFabric();
+        services.AddEvidenceWorkflowFabric(isProductionComposition);
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();

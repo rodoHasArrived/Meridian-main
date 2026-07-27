@@ -47,7 +47,7 @@ public sealed partial class AnalysisExportService
                 else
                     await WriteEmptyParquetFileAsync(stagedPath, ct);
 
-                var fileInfo = new FileInfo(stagedPath);
+                var sizeBytes = new FileInfo(stagedPath).Length;
                 var checksum = await ComputeChecksumAsync(stagedPath, ct);
                 ct.ThrowIfCancellationRequested();
                 CommitStagedExportArtifact(
@@ -62,7 +62,7 @@ public sealed partial class AnalysisExportService
                     RelativePath = Path.GetFileName(outputPath),
                     Symbol = symbol,
                     Format = "parquet",
-                    SizeBytes = fileInfo.Length,
+                    SizeBytes = sizeBytes,
                     RecordCount = recordCount,
                     ChecksumSha256 = checksum
                 });

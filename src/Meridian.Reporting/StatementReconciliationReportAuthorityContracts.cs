@@ -78,3 +78,17 @@ public interface IStatementReconciliationReportAuthorityStore
     ValueTask ProbeAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Raised when the configured statement authority cannot prove durable availability. API callers
+/// should fail closed and may retry after operators restore the authority.
+/// </summary>
+public sealed class StatementReconciliationReportAuthorityUnavailableException
+    : InvalidOperationException
+{
+    public StatementReconciliationReportAuthorityUnavailableException(
+        string message,
+        Exception? innerException = null)
+        : base(message, innerException)
+    {
+    }
+}

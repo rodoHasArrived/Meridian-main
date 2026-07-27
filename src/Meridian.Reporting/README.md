@@ -77,7 +77,11 @@ Production reporting is also fail-closed at the workspace boundary. The independ
 immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and receipt stores
 are active and their required tables, immutable-control triggers, operational lease columns,
 checksummed migration-ledger key, and immediate predicate-compatible unique/idempotency keys pass
-the schema probe. The exact PostgreSQL accounting-period release-consistency gate, exact-scope
+the schema probe. This includes migration 013's statement document and revision tables, its four
+document/revision guard and append triggers, and the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker; composition must also
+resolve `PostgresStatementReconciliationReportAuthorityStore`. The exact PostgreSQL
+accounting-period release-consistency gate, exact-scope
 recipient destinations, the canonical client-document renderer, the configured durable
 ledger-presentation source, atomic grant-use/download-receipt accounting, the current process's
 successful managed Reporting migration receipt, and successful ledger, fund-account, and
@@ -223,6 +227,13 @@ reporting behavior. Report-pack generation and NAV attribution also moved from
 Master query seam. Reporting operational-store interfaces also live here; PostgreSQL run and
 schedule implementations remain Storage-owned, while file implementations are compatibility
 adapters rather than production authority.
+`IStatementReconciliationReportAuthorityStore` is the backend-neutral authority contract for the
+existing statement-reconciliation workflow. Its full tenant/company/workflow scope is mandatory;
+immutable input/evidence/history documents and mutable checkpoint/current-artifact mappings all
+resolve to content-addressed Reporting identities. Storage owns the PostgreSQL implementation and
+UI Shared owns the non-production file adapter and existing-workflow composition. A deployment is
+not production ready from this contract or migration 013 alone: the probed tables, revision
+controls, exact compatibility marker, and concrete PostgreSQL implementation must all be present.
 
 ## Change rules
 

@@ -89,6 +89,16 @@ lookup paths, and evidence trails those layers rely on.
   blocked. Legacy file workflow and delivery-history repositories are not part of the default host
   composition and remain available only to explicitly constructed compatibility callers.
   Production omits all of these file authorities; they are not production recovery authority.
+  Migration `013_reporting_statement_reconciliation_authority.sql` adds the exact
+  tenant/company/workflow/document mapping and append-only mapping revisions for statement intake,
+  evidence, snapshots, and JSON/CSV support artifacts. Those mappings reference the existing
+  immutable artifact blobs; `PostgresStatementReconciliationReportAuthorityStore` verifies bytes on
+  read and holds a session advisory lease while one host advances a workflow. The live deployment
+  probe requires both statement-authority tables, the document guard/revision and revision
+  append/guard triggers, and the exact `reporting-statement-reconciliation-authority:v1`
+  compatibility marker. Production readiness additionally requires the concrete PostgreSQL store;
+  a migration receipt or compatible-looking schema without that store does not certify the
+  statement authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.

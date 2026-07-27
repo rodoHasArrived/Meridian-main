@@ -161,9 +161,9 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                 ["client-package.pdf", "client-package.xlsx"],
                 maxUses: 2)
             with
-            {
-                ConsumedArtifactIds = null
-            };
+        {
+            ConsumedArtifactIds = null
+        };
         await InsertRetainedPre012GrantAsync(legacy);
 
         Func<Task> initializeWithoutExactArtifact = () => ExecuteAsync(
@@ -203,9 +203,9 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                 ["client-package.pdf", "client-package.xlsx"],
                 maxUses: 2)
             with
-            {
-                ConsumedArtifactIds = null
-            };
+        {
+            ConsumedArtifactIds = null
+        };
         await InsertRetainedPre012GrantAsync(legacy);
 
         var inserted = (await _grantStore.GetAsync(legacy.GrantId))!;
@@ -279,9 +279,9 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                 ["client-package.pdf"],
                 maxUses: 1)
             with
-            {
-                ConsumedArtifactIds = null
-            };
+        {
+            ConsumedArtifactIds = null
+        };
 
         Func<Task> insert = () => InsertGrantLikeOldWriterAsync(oldWriterGrant);
 
@@ -435,10 +435,10 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                 ["statement.pdf", "statement.xlsx"],
                 maxUses: 2)
             with
-            {
-                RunId = job.ReleaseAuthorization.RunId,
-                PackageId = job.PackageId
-            };
+        {
+            RunId = job.ReleaseAuthorization.RunId,
+            PackageId = job.PackageId
+        };
         job = BuildLinkedSentJob(job, grant);
         (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
         (await _deliveryStore.TryCreateAsync(job)).Should().BeTrue();

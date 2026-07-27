@@ -150,8 +150,8 @@ public class AnalysisExportServiceTests : IDisposable
 
         await using var stream = File.OpenRead(arrowFile.Path);
         using var reader = new ArrowFileReader(stream);
-        reader.IsFileValid.Should().BeTrue();
         (await reader.RecordBatchCountAsync()).Should().Be(1);
+        reader.IsFileValid.Should().BeTrue();
 
         using var batch = await reader.ReadRecordBatchAsync(0, cancellation.Token);
         batch.Length.Should().Be(2);

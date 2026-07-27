@@ -1358,7 +1358,7 @@ public sealed class AccountingCloseViewModelTests
         "Your desktop session does not have permission to queue closing entries.")]
     [InlineData(
         AccountingCloseMutation.LockClosePeriod,
-        "Your desktop session does not have permission to lock the close period.")]
+        "Locking the close period requires an authenticated Controller or Fund Controller session.")]
     public async Task AccountingCloseMutationCommands_WhenDesktopUserIsReadOnly_AreDisabledAndDoNotCallService(
         AccountingCloseMutation mutation,
         string expectedStatus)

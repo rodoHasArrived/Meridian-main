@@ -34,7 +34,7 @@ public sealed partial class AnalysisExportService
                     profile,
                     ct);
 
-                var fileInfo = new FileInfo(stagedPath);
+                var sizeBytes = new FileInfo(stagedPath).Length;
                 var checksum = await ComputeChecksumAsync(stagedPath, ct);
                 ct.ThrowIfCancellationRequested();
                 CommitStagedExportArtifact(
@@ -49,7 +49,7 @@ public sealed partial class AnalysisExportService
                     RelativePath = Path.GetFileName(outputPath),
                     Symbol = symbol,
                     Format = "xlsx",
-                    SizeBytes = fileInfo.Length,
+                    SizeBytes = sizeBytes,
                     RecordCount = recordCount,
                     ChecksumSha256 = checksum
                 });

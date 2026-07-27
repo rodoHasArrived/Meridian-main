@@ -1236,6 +1236,11 @@ destinations, the canonical PDF/XLSX client-document renderer, deterministic cer
 production, a configured durable ledger-presentation source, the exact PostgreSQL
 accounting-period release-consistency gate, and both a complete schema probe and the current
 process's successful reporting, ledger, fund-account, and fund-structure migration receipts.
+The same readiness graph requires migration 013's statement document/revision tables, all four
+document and revision triggers, the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker, and a concrete
+`PostgresStatementReconciliationReportAuthorityStore`; registration of the backend-neutral
+contract or a file adapter cannot satisfy that component.
 Reporting startup also integrity-reloads the one reconciliation queue shared by statement
 casework, Operations Continuity, hard close, and Final evidence; readiness requires that receipt and
 the running schedule and secure-delivery workers with valid options. PostgreSQL-shaped source
@@ -1576,6 +1581,15 @@ Retained vault bundles are also first-class Evidence Workbench subjects through 
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
 linkage for browser/WPF parity.
+Production statement-reconciliation composition does not route statement authority through that
+file-backed Evidence Workbench store. `ReportingStatementImportEvidenceRetainer` copies the
+Statement Import service's retained source into the durable, exact-scope Reporting statement
+authority, verifies any identity before reuse, and migrates a legacy identity only from the retained
+source bytes. The existing `StatementReconciliationReportWorkflowService` then hydrates a
+service-owned exact cache under the authority lease and checkpoints document mappings with
+`workflow.json` last. Missing or non-durable production statement authority omits this workflow
+registration so its optional endpoints return `503`; local/development constructors retain their
+file compatibility behavior.
 
 The Data workstation exposes shared operational surfaces at
 `/api/workstation/data/ingestion-operations` and

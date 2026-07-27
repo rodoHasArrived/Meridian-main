@@ -618,6 +618,17 @@ public sealed class AccountingCloseServicesTests
         workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
             .Returns(workflow);
         var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:signoffs-missing",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Closing entries are already posted."));
         var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
 
         var result = await LockClosePeriodScopedAsync(
