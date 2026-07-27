@@ -170,7 +170,7 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
     private static readonly string[] PartnersCapitalPdfColumns =
     [
         "Partner", "Beginning", "Contributions", "Distributions",
-        "Income & Gains", "Expenses", "Fees", "Ending", "Ownership %"
+        "Income & Gains", "Expenses", "Fees", "Other", "Ending", "Ownership %"
     ];
 
     private static readonly string[] PartnersCapitalSheetColumns =
@@ -257,6 +257,7 @@ public sealed class FinancialReportDocumentRenderer : ILedgerReportBinaryRendere
         RenderPartnersCapitalNumber(grid, Money(line.IncomeGainAllocations), background, isTotal);
         RenderPartnersCapitalNumber(grid, Money(line.ExpenseAllocations), background, isTotal);
         RenderPartnersCapitalNumber(grid, Money(line.FeeAllocations), background, isTotal);
+        RenderPartnersCapitalNumber(grid, Money(line.OtherMovements), background, isTotal);
         RenderPartnersCapitalNumber(grid, Money(line.EndingCapital), background, isTotal);
         RenderPartnersCapitalNumber(grid, Percent(line.OwnershipPercent), background, isTotal);
     }
