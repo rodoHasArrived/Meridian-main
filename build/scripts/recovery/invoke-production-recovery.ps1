@@ -235,7 +235,10 @@ function Unprotect-RecoveryFile([string]$InputPath, [string]$OutputPath, [byte[]
 
 function Get-ConnectionParts([string]$Value) {
     $builder = [Data.Common.DbConnectionStringBuilder]::new()
-    $builder.ConnectionString = $Value
+    # PowerShell adapts DbConnectionStringBuilder as a dictionary, so a property-style assignment
+    # would store one literal "ConnectionString" entry instead of parsing Host/Database/Username.
+    # Invoking the CLR setter keeps the parsed key/value semantics.
+    $builder.set_ConnectionString($Value)
     function Value-For([string[]]$Names, [string]$Default = "") {
         foreach ($name in $Names) {
             if ($builder.ContainsKey($name)) { return [string]$builder[$name] }
