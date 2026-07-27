@@ -141,6 +141,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
+    private int _hasEstablishedPersistedSnapshot;
     private readonly ConcurrentDictionary<Guid, List<LateAdjustmentRequestDto>> _lateAdjustments = new();
     private readonly ConcurrentDictionary<Guid, List<WorkflowCloseTaskSignOffRecord>> _taskSignOffs = new();
     private readonly ConcurrentDictionary<Guid, ClosePeriodPlanConfigurationDto> _planConfigurations = new();
@@ -167,6 +168,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "close-management-late-adjustments.json");
+        _hasEstablishedPersistedSnapshot = File.Exists(_persistencePath) ? 1 : 0;
     }
 
     public AccountingCloseManagementService(
@@ -1728,26 +1730,258 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadLateAdjustments()
+        => ReadPersistedSlice(
+            static snapshot => snapshot.LateAdjustments,
+            ReadInMemoryLateAdjustments);
+
+    /// <summary>
+    /// Reads one collection out of the persisted close-management snapshot, falling back to the
+    /// in-memory set when no persistence path is configured or the file has never been initialized.
+    /// </summary>
+    /// <remarks>
+    /// An unreadable snapshot throws rather than yielding an empty set. Every close mutation
+    /// re-reads the three collections it is not changing and rewrites all four
+    /// (see <see cref="SaveCloseManagementAsync"/>), so an empty fallback would let the next
+    /// routine sign-off atomically overwrite the file with a snapshot missing every previously
+    /// recorded late adjustment, task sign-off, plan configuration, and evidence review.
+    /// Failing closed leaves the unreadable file intact on disk for recovery.
+    /// </remarks>
+    private IReadOnlyList<T> ReadPersistedSlice<T>(
+        Func<CloseManagementSnapshot, IReadOnlyList<T>?> select,
+        Func<IReadOnlyList<T>> readInMemory)
     {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
+        if (string.IsNullOrWhiteSpace(_persistencePath))
         {
-            return ReadInMemoryLateAdjustments();
+            return readInMemory();
         }
 
         lock (_readGate)
         {
+            if (!File.Exists(_persistencePath))
+            {
+                if (Volatile.Read(ref _hasEstablishedPersistedSnapshot) != 0)
+                {
+                    throw new InvalidDataException(
+                        $"Close-management snapshot '{_persistencePath}' is missing after durable " +
+                        "close-management state was previously persisted or observed. Refusing to " +
+                        "continue with an empty close-management set because the next close mutation " +
+                        "would permanently discard retained close evidence.");
+                }
+
+                return readInMemory();
+            }
+
+            CloseManagementSnapshot normalizedSnapshot;
             try
             {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.LateAdjustments ?? [];
+                using var document = JsonDocument.Parse(File.ReadAllText(_persistencePath));
+                var version = ReadPersistedSnapshotVersion(document.RootElement);
+                var snapshot = document.RootElement.Deserialize<CloseManagementSnapshot>(JsonOptions);
+                normalizedSnapshot = NormalizePersistedSnapshot(snapshot, version);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                return [];
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is unreadable. Refusing to " +
+                    "continue with an empty close-management set: the next close mutation would " +
+                    "overwrite this file and permanently discard the recorded late adjustments, " +
+                    "task sign-offs, plan configurations, and evidence reviews.",
+                    ex);
+            }
+
+            var slice = select(normalizedSnapshot)
+                ?? throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                    "Refusing to continue because the next close mutation would overwrite retained " +
+                    "late adjustments, task sign-offs, plan configurations, or evidence reviews.");
+            Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
+            return slice;
+        }
+    }
+
+    /// <summary>
+    /// Normalizes snapshots written before task sign-offs, plan configurations, and evidence
+    /// reviews were added to the persisted close-management record.
+    /// </summary>
+    /// <remarks>
+    /// Late adjustments are the original persisted authority and remain mandatory. A null root or
+    /// missing late-adjustment collection is therefore incomplete and fails closed. Repository
+    /// history contains three additive legacy generations: late adjustments only, then task
+    /// sign-offs, then plan configurations. Only those exact contiguous prefixes may omit later
+    /// collections; explicit nulls, unknown properties, and gapped shapes fail before typed
+    /// normalization. The next mutation persists the fully normalized four-collection snapshot
+    /// through <see cref="SaveCloseManagementAsync"/>.
+    /// </remarks>
+    private CloseManagementSnapshot NormalizePersistedSnapshot(
+        CloseManagementSnapshot? snapshot,
+        CloseManagementSnapshotVersion version)
+    {
+        if (snapshot?.LateAdjustments is null)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority and must " +
+                "be present before retained close-management state can be read or rewritten.");
+        }
+
+        return version switch
+        {
+            CloseManagementSnapshotVersion.LateAdjustmentsOnly => snapshot with
+            {
+                TaskSignOffs = [],
+                PlanConfigurations = [],
+                EvidenceReviews = []
+            },
+            CloseManagementSnapshotVersion.ThroughTaskSignOffs
+                when snapshot.TaskSignOffs is not null => snapshot with
+                {
+                    PlanConfigurations = [],
+                    EvidenceReviews = []
+                },
+            CloseManagementSnapshotVersion.ThroughPlanConfigurations
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null => snapshot with
+                     {
+                         EvidenceReviews = []
+                     },
+            CloseManagementSnapshotVersion.Current
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null
+                     && snapshot.EvidenceReviews is not null => snapshot,
+            _ => throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state for " +
+                $"recognized persisted generation '{version}'. Refusing to infer retained close " +
+                "state from an incomplete typed snapshot.")
+        };
+    }
+
+    private CloseManagementSnapshotVersion ReadPersistedSnapshotVersion(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The persisted root must be a JSON object.");
+        }
+
+        var presentCollections = new bool[4];
+        foreach (var property in root.EnumerateObject())
+        {
+            var index = GetPersistedCollectionIndex(property.Name);
+            if (index < 0)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Property '{property.Name}' is not part of a recognized persisted " +
+                    "close-management generation.");
+            }
+
+            if (presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Collection '{property.Name}' appears more than once.");
+            }
+
+            if (property.Value.ValueKind == JsonValueKind.Null)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' contains explicit null for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            if (property.Value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has invalid state for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            presentCollections[index] = true;
+        }
+
+        if (!presentCollections[0])
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority.");
+        }
+
+        var lastPresentIndex = 0;
+        for (var index = 1; index < presentCollections.Length; index++)
+        {
+            if (presentCollections[index])
+            {
+                lastPresentIndex = index;
             }
         }
+
+        for (var index = 0; index <= lastPresentIndex; index++)
+        {
+            if (!presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported gapped " +
+                    $"state shape. Collection '{GetPersistedCollectionName(index)}' is omitted " +
+                    "before a later-generation collection.");
+            }
+        }
+
+        return (CloseManagementSnapshotVersion)(lastPresentIndex + 1);
+    }
+
+    private static int GetPersistedCollectionIndex(string propertyName)
+    {
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.LateAdjustments),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.TaskSignOffs),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.PlanConfigurations),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        return string.Equals(
+            propertyName,
+            nameof(CloseManagementSnapshot.EvidenceReviews),
+            StringComparison.OrdinalIgnoreCase)
+            ? 3
+            : -1;
+    }
+
+    private static string GetPersistedCollectionName(int index)
+        => index switch
+        {
+            0 => nameof(CloseManagementSnapshot.LateAdjustments),
+            1 => nameof(CloseManagementSnapshot.TaskSignOffs),
+            2 => nameof(CloseManagementSnapshot.PlanConfigurations),
+            3 => nameof(CloseManagementSnapshot.EvidenceReviews),
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
+
+    private enum CloseManagementSnapshotVersion
+    {
+        LateAdjustmentsOnly = 1,
+        ThroughTaskSignOffs = 2,
+        ThroughPlanConfigurations = 3,
+        Current = 4
     }
 
     private async Task SaveCloseManagementAsync(
@@ -1807,6 +2041,7 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
+        Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadInMemoryLateAdjustments()
@@ -1826,27 +2061,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .ToArray();
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadTaskSignOffs()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryTaskSignOffs();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.TaskSignOffs ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.TaskSignOffs,
+            ReadInMemoryTaskSignOffs);
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadInMemoryTaskSignOffs()
     {
@@ -1863,27 +2080,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             .FirstOrDefault(configuration => configuration.WorkflowId == workflowId);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadPlanConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryPlanConfigurations();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.PlanConfigurations ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.PlanConfigurations,
+            ReadInMemoryPlanConfigurations);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadInMemoryPlanConfigurations()
     {
@@ -1896,27 +2095,9 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
     }
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadEvidenceReviews()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryEvidenceReviews();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.EvidenceReviews ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.EvidenceReviews,
+            ReadInMemoryEvidenceReviews);
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadInMemoryEvidenceReviews()
     {

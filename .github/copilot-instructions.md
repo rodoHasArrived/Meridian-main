@@ -133,6 +133,7 @@ Relevant examples:
 
 - [`CLAUDE.md`](../CLAUDE.md) — comprehensive project context, architecture, conventions
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
+- [`docs/ai/ai-systems-inventory.md`](../docs/ai/ai-systems-inventory.md) — cross-provider system and compatibility inventory for multi-surface AI work
 - [`docs/architecture/meridian-development-intelligence-framework.md`](../docs/architecture/meridian-development-intelligence-framework.md) — MDIF context spine for broad generation and architecture-sensitive work
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
 - [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — compact Copilot host guide and routing links

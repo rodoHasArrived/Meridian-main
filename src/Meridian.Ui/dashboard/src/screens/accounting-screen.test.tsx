@@ -3611,6 +3611,93 @@ describe("AccountingScreen", () => {
     });
   });
 
+  it("keeps valid journal amount edits flowing into the draft", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    fireEvent.change(debitInput, { target: { value: "250.75" } });
+
+    expect(debitInput).toHaveValue(250.75);
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+  });
+
+  it("rejects unparseable journal amounts instead of silently posting them as zero", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    // A number input holding unparseable text (e.g. a pasted "1,234.00") reports an empty value
+    // with validity.badInput set; jsdom never sets badInput, so stub it for this element.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+    expect(debitInput).toHaveAttribute("aria-invalid", "true");
+    // The controlled value mirrors what the DOM reported, so React must not rewrite the node and
+    // wipe the user's in-progress text: no snap-back to the previous amount, and the unparsed
+    // text is never coerced into the draft as zero. (An empty number input has value null.)
+    expect(debitInput).toHaveValue(null);
+    // While an amount on screen diverges from the committed draft, every persistence action is
+    // blocked so a previously validated entry cannot be saved or submitted with a stale amount.
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Validate" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Correct the flagged amount entries before continuing."
+    );
+
+    // A valid edit clears the error, updates the draft, and restores the normal action gating.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "175" } });
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(175);
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Run Validate on the current draft before approval submission."
+    );
+  });
+
+  it("commits a cleared amount field on blur after invalid input", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    const debitInput = screen.getByLabelText("Debit amount for line line-debit");
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: true },
+      configurable: true
+    });
+    fireEvent.change(debitInput, { target: { value: "" } });
+    expect(screen.getByText("Enter a valid amount.")).toBeInTheDocument();
+
+    // The user then clears the bad text. The DOM reports "" in both states, so React fires no
+    // change event for the transition - the blur re-evaluation must commit the cleared field as
+    // zero and drop the error instead of leaving the field flagged with a stale amount.
+    Object.defineProperty(debitInput, "validity", {
+      value: { badInput: false },
+      configurable: true
+    });
+    fireEvent.blur(debitInput);
+
+    expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
+    expect(debitInput).not.toHaveAttribute("aria-invalid");
+    expect(debitInput).toHaveValue(0);
+  });
+
   it("presents retained evidence links as approval support without claiming evidence is missing", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
       ...manualJournalWorkbench,

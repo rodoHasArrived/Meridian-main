@@ -12,6 +12,9 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// <remarks>The trading stream is an execution source of record only after REST reconciliation succeeds.</remarks>
 public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
 {
+    /// <summary>Sanity bound for one accumulated trade-update message; far above any real payload.</summary>
+    private const int MaxTradeUpdateMessageBytes = 4 * 1024 * 1024;
+
     private readonly AlpacaOptions _options;
     private readonly ILogger<AlpacaTradeUpdatesClient> _logger;
     private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
@@ -119,12 +122,25 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                     await _reports.Writer.WriteAsync(report, ct).ConfigureAwait(false);
                 delay = TimeSpan.FromSeconds(1);
                 var buffer = new byte[64 * 1024];
+                using var messageBuffer = new MemoryStream();
                 while (_socket.State == WebSocketState.Open && !ct.IsCancellationRequested)
                 {
                     var result = await _socket.ReceiveAsync(buffer, ct).ConfigureAwait(false);
                     if (result.MessageType == WebSocketMessageType.Close)
                         break;
-                    await ProcessMessageAsync(Encoding.UTF8.GetString(buffer, 0, result.Count), ct).ConfigureAwait(false);
+                    // Frames can be fragmented or exceed the receive buffer; accumulate until the
+                    // final fragment and decode once so multi-byte UTF-8 sequences and large
+                    // trade-update payloads are never truncated mid-message. The cap bounds memory
+                    // against an endpoint that never sets EndOfMessage; tripping it reconnects.
+                    if (messageBuffer.Length + result.Count > MaxTradeUpdateMessageBytes)
+                        throw new InvalidOperationException(
+                            $"Alpaca trade-update message exceeded {MaxTradeUpdateMessageBytes} bytes without completing.");
+                    messageBuffer.Write(buffer, 0, result.Count);
+                    if (!result.EndOfMessage)
+                        continue;
+                    var message = Encoding.UTF8.GetString(messageBuffer.GetBuffer(), 0, (int)messageBuffer.Length);
+                    messageBuffer.SetLength(0);
+                    await ProcessMessageAsync(message, ct).ConfigureAwait(false);
                 }
                 _failure = "Alpaca trade-update socket closed.";
             }

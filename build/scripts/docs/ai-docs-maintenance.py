@@ -73,7 +73,7 @@ def _build_path_lists(root: Path) -> tuple[list[Path], list[Path], list[Path]]:
         root / ".github" / "agents" / "code-review-agent.md",
         root / ".github" / "agents" / "documentation-agent.md",
         root / ".github" / "agents" / "repo-navigation-agent.md",
-        root / ".claude" / "agents" / "meridian-navigation.md",
+        root / ".claude" / "agents" / "meridian-repo-navigation.md",
         root / ".codex" / "skills" / "meridian-repo-navigation" / "SKILL.md",
         root / ".claude" / "skills" / "meridian-code-review" / "SKILL.md",
     ]

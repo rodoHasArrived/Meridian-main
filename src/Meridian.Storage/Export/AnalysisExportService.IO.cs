@@ -483,13 +483,7 @@ load_trades <- function(symbol = NULL) {
     }
 
     private static string EscapeCsvValue(string value)
-    {
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-        {
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        }
-        return value;
-    }
+        => SpreadsheetFormulaGuard.EscapeCsvCell(value);
 
     private static string SqlEscape(object? value)
     {

@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Storage;
 using NSubstitute;
 using Xunit;
 
@@ -2042,6 +2044,325 @@ public sealed class AccountingCloseServicesTests
             "March financial statements and downstream reports require recertification.",
             ["evidence:restatement:2026-03:reopen-approval-2026-03"],
             "reopen-correlation-2026-03");
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileFailsClosedInsteadOfReportingAnEmptyClose()
+    {
+        var workflowId = Guid.Parse("5c5c5c5c-5c5c-5c5c-5c5c-5c5c5c5c5c5c");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await File.WriteAllTextAsync(storage.CloseManagementPath, "{\"LateAdjustments\":[");
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("unreadable", StringComparison.Ordinal))
+            .WithInnerException<InvalidDataException, JsonException>();
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("{\"TaskSignOffs\":[]}")]
+    public async Task Scenario_ClosePlan_RootOrMissingCoreLateAdjustmentsPersistenceFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("5e5e5e5e-5e5e-5e5e-5e5e-5e5e5e5e5e5e");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing required state", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":[]}")]
+    public async Task Scenario_ClosePlan_HistoricallyContiguousLegacyPersistenceIsReadable(string persisted)
+    {
+        var workflowId = Guid.Parse("63636363-6363-6363-6363-636363636363");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":[],\"EvidenceReviews\":null}")]
+    public async Task Scenario_ClosePlan_ExplicitNullPersistenceCollectionFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("64646464-6464-6464-6464-646464646464");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("explicit null", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[],\"PlanConfigurations\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"EvidenceReviews\":[]}")]
+    public async Task Scenario_ClosePlan_GappedPersistenceGenerationFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("65656565-6565-6565-6565-656565656565");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("gapped", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[],\"UnexpectedCollection\":[]}", "not part of a recognized")]
+    [InlineData("{\"LateAdjustments\":[],\"lateAdjustments\":[]}", "appears more than once")]
+    [InlineData("{\"LateAdjustments\":{}}", "must be JSON arrays")]
+    public async Task Scenario_ClosePlan_UnsupportedPersistenceShapeFailsClosed(
+        string persisted,
+        string expectedMessage)
+    {
+        var workflowId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains(expectedMessage, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_LegacyLateAdjustmentsOnlySnapshotNormalizesOnNextMutation()
+    {
+        var workflowId = Guid.Parse("61616161-6161-6161-6161-616161616161");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var journalEntryId = Guid.Parse("62626262-6262-6262-6262-626262626262");
+        using var storage = new TemporaryStorageRoot();
+        var writer = BuildPersistedCloseService(workflowId, storage, out _);
+        var created = await writer.RequestLateAdjustmentAsync(
+            new CreateLateAdjustmentRequestDto(
+                workflowId,
+                journalEntryId,
+                25_000m,
+                "USD",
+                "Material support arrived after the original close review.",
+                "fund-accountant",
+                [$"evidence:late-adjustment:{journalEntryId:D}:2026-03:book:{ledgerBookId:D}:request"]),
+            "fund-accountant");
+        var requestId = created!.LateAdjustments.Should().ContainSingle().Subject.RequestId;
+
+        using (var current = JsonDocument.Parse(await File.ReadAllTextAsync(storage.CloseManagementPath)))
+        {
+            var retainedLateAdjustments = current.RootElement.GetProperty("lateAdjustments").GetRawText();
+            await File.WriteAllTextAsync(
+                storage.CloseManagementPath,
+                $"{{\"LateAdjustments\":{retainedLateAdjustments}}}");
+        }
+
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+        plan!.LateAdjustments.Should().ContainSingle(adjustment =>
+            adjustment.RequestId == requestId &&
+            adjustment.JournalEntryId == journalEntryId);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        using var persisted = JsonDocument.Parse(await File.ReadAllTextAsync(storage.CloseManagementPath));
+        var root = persisted.RootElement;
+        root.GetProperty("lateAdjustments").GetArrayLength().Should().Be(1);
+        root.GetProperty("taskSignOffs").GetArrayLength().Should().Be(1);
+        root.GetProperty("planConfigurations").GetArrayLength().Should().Be(0);
+        root.GetProperty("evidenceReviews").GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileIsNotOverwrittenByTheNextSignOff()
+    {
+        var workflowId = Guid.Parse("5d5d5d5d-5d5d-5d5d-5d5d-5d5d5d5d5d5d");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var persisted = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        persisted.Should().Contain("reconciliation-review");
+
+        var torn = persisted[..(persisted.Length / 2)];
+        await File.WriteAllTextAsync(storage.CloseManagementPath, torn);
+
+        var secondSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>();
+
+        var afterFailedMutation = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        afterFailedMutation.Should().Be(torn);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_MissingPersistenceFileAfterSuccessfulWriteIsNotRecreatedByTheNextSignOff()
+    {
+        var workflowId = Guid.Parse("5f5f5f5f-5f5f-5f5f-5f5f-5f5f5f5f5f5f");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        File.Exists(storage.CloseManagementPath).Should().BeTrue();
+        File.Delete(storage.CloseManagementPath);
+
+        var secondSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing after durable", StringComparison.Ordinal));
+        File.Exists(storage.CloseManagementPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_PersistenceFileDeletedAfterServiceConstructionFailsClosedBeforeFirstRead()
+    {
+        var workflowId = Guid.Parse("60606060-6060-6060-6060-606060606060");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var writer = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await writer.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var replacement = BuildPersistedCloseService(workflowId, storage, out _);
+        File.Delete(storage.CloseManagementPath);
+
+        var secondSignOff = async () => await replacement.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing after durable", StringComparison.Ordinal));
+        File.Exists(storage.CloseManagementPath).Should().BeFalse();
+    }
+
+    private static AccountingCloseManagementService BuildPersistedCloseService(
+        Guid workflowId,
+        TemporaryStorageRoot storage,
+        out IOperationsContinuityWorkflowService workflowService)
+    {
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        return new AccountingCloseManagementService(
+            workflowService,
+            new StorageOptions { RootPath = storage.RootPath });
+    }
+
+    private sealed class TemporaryStorageRoot : IDisposable
+    {
+        public TemporaryStorageRoot()
+        {
+            RootPath = Path.Combine(Path.GetTempPath(), $"meridian-close-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(Path.Combine(RootPath, "accounting"));
+        }
+
+        public string RootPath { get; }
+
+        public string CloseManagementPath
+            => Path.Combine(RootPath, "accounting", "close-management-late-adjustments.json");
+
+        public void Dispose()
+        {
+            try
+            {
+                if (Directory.Exists(RootPath))
+                {
+                    Directory.Delete(RootPath, recursive: true);
+                }
+            }
+            catch (IOException)
+            {
+                // A leftover temp directory must not fail an otherwise passing test run.
+            }
+        }
+    }
 
     private static IAccountingClosePostingWorkbench CreateMutationGatedPostingWorkbench(
         TrackingMutationLeaseState? consistencyLeases = null)

@@ -728,7 +728,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             target[symbol] = subscriptionId;
     }
 
-    private static void ReleasePreparedSubscriptions(
+    private void ReleasePreparedSubscriptions(
         IMarketDataClient client,
         (IReadOnlyDictionary<string, int> Depth, IReadOnlyDictionary<string, int> Trades) subscriptions)
     {
@@ -746,22 +746,34 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         return handle;
     }
 
-    private static void TryUnsubscribeDepth(IMarketDataClient client, int subscriptionId)
+    private void TryUnsubscribeDepth(IMarketDataClient client, int subscriptionId)
     {
         try
         {
             client.UnsubscribeMarketDepth(subscriptionId);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // Best-effort cleanup, but a leaked upstream subscription keeps streaming and
+            // burning provider quota, so it must at least be visible in the logs.
+            _log.Warning(ex,
+                "Failed to release depth subscription {SubscriptionId} on provider {ProviderId} during failover cleanup",
+                subscriptionId, client.ProviderId);
+        }
     }
 
-    private static void TryUnsubscribeTrades(IMarketDataClient client, int subscriptionId)
+    private void TryUnsubscribeTrades(IMarketDataClient client, int subscriptionId)
     {
         try
         {
             client.UnsubscribeTrades(subscriptionId);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _log.Warning(ex,
+                "Failed to release trade subscription {SubscriptionId} on provider {ProviderId} during failover cleanup",
+                subscriptionId, client.ProviderId);
+        }
     }
 
     private void HandleProviderDiagnosticsChanged(

@@ -1395,7 +1395,12 @@ revocation, audience, artifact scope, maximum uses, tenant, and released-package
 enforced by the secure distribution service on exchange and download.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
 metadata, so recipients receive report-line provenance, publication evidence, selected branding, and
-restatement lineage in the downloaded files instead of package identifiers only. XLSX packages keep
+restatement lineage in the downloaded files instead of package identifiers only. Rebuilt bytes must
+match each retained artifact's byte length and SHA-256 checksum; a compatibility snapshot whose
+renderer inputs or checksum metadata drifted fails closed at download rather than serving different
+bytes under the retained identity. CSV cells use the Storage-owned
+spreadsheet-formula guard and quote semicolon-locale delimiters so metadata cannot become an
+executable formula when a recipient opens the package. XLSX packages keep
 the Branding worksheet, while HTML and PDF package renderers apply the selected theme colors plus
 recipient-visible firm, logo, footer, and disclaimer text so styled client packets are not metadata-only.
 The shared delivery

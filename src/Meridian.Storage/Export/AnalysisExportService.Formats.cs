@@ -49,7 +49,7 @@ public sealed partial class AnalysisExportService
                 {
                     if (transformedRecords.Count > 0)
                     {
-                        await writer.WriteLineAsync(string.Join(",", columns));
+                        await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                         foreach (var record in transformedRecords)
                         {
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(record, column)));
@@ -89,7 +89,7 @@ public sealed partial class AnalysisExportService
                             if (columns is null)
                             {
                                 columns = GetCsvColumns(new[] { transformedRecord }, profile);
-                                await writer.WriteLineAsync(string.Join(",", columns));
+                                await writer.WriteLineAsync(string.Join(",", columns.Select(EscapeCsvValue)));
                             }
 
                             var values = columns.Select(column => EscapeCsvValue(GetCsvValue(transformedRecord, column)));

@@ -103,7 +103,11 @@ lookup paths, and evidence trails those layers rely on.
   supervisor session receipts remain below the supervisor-managed data root and use the same
   write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
-  tiering, and scheduled cleanup.
+  tiering, and scheduled cleanup. CSV exports route headers and values through the shared
+  spreadsheet-formula guard, including semicolon-locale segments, and quote commas, semicolons,
+  tabs, quotes, carriage returns, and line feeds before publishing an artifact. The shared XLSX
+  writer fixes ZIP entry timestamps and platform attributes so identical workbook inputs produce
+  byte-identical artifacts and stable retained hashes.
 - `Services/QualityTrendStore.cs` - crash-safe append-only quality history. New score events retain
   immutable input snapshots, input and canonical result SHA-256 identities, and a verified
   quality-evaluation outcome. Sequence/predecessor hashes, a durable chain head, deterministic

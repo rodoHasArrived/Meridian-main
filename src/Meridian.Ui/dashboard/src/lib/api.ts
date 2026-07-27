@@ -35,13 +35,6 @@ import type {
   CellExecuteRequest,
   CellExecuteResult,
   BrokerageHouseholdPortfolio,
-  ChiefOfStaffDecisionRequest,
-  ChiefOfStaffEvidenceExport,
-  ChiefOfStaffRuntimeHealth,
-  ChiefOfStaffSession,
-  ChiefOfStaffSessionQuery,
-  ChiefOfStaffSessionSummary,
-  ChiefOfStaffTraceExportRequest,
   ClosePeriodPlan,
   ClosePeriodLockResult,
   CorporateAction,
@@ -504,11 +497,6 @@ import {
   workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
   workstationOperationsContinuitySecurityMasterResolveEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
-  workstationChiefOfStaffDecisionEndpoint,
-  workstationChiefOfStaffHealthEndpoint,
-  workstationChiefOfStaffSessionEndpoint,
-  workstationChiefOfStaffSessionsEndpoint,
-  workstationChiefOfStaffTraceExportEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -1675,34 +1663,6 @@ export function upsertOperationsCloseCalendarItem(
     request,
     options
   );
-}
-
-export function getChiefOfStaffSessions(query: ChiefOfStaffSessionQuery = {}, options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffSessionSummary[]>(workstationChiefOfStaffSessionsEndpoint(query), options);
-}
-
-export function getChiefOfStaffSession(sessionId: string, options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffSession>(workstationChiefOfStaffSessionEndpoint(sessionId), options);
-}
-
-export function getChiefOfStaffHealth(options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffRuntimeHealth>(workstationChiefOfStaffHealthEndpoint(), options);
-}
-
-export function submitChiefOfStaffDecision(
-  sessionId: string,
-  request: ChiefOfStaffDecisionRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ChiefOfStaffSession>(workstationChiefOfStaffDecisionEndpoint(sessionId), request, options);
-}
-
-export function exportChiefOfStaffTrace(
-  sessionId: string,
-  request: ChiefOfStaffTraceExportRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ChiefOfStaffEvidenceExport>(workstationChiefOfStaffTraceExportEndpoint(sessionId), request, options);
 }
 
 export function getEvidenceSubjects(options: ApiRequestOptions = {}) {

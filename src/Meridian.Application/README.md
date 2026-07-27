@@ -260,7 +260,11 @@ and UI presentation concerns in their owning layers.
   and does not seed a market-data `DataSourceConfig` or provider-routing binding. QuickBooks Online
   is cataloged by the Data Integration credential catalog as a credential-backed accounting-system
   provider; token exchange and GL evidence reads stay in the Data Integration provider seam and
-  shared UI projection seam.
+  shared UI projection seam. Credential-test status and backfill schedule replacements use
+  `AtomicFileWriter`, preserving cancellation and preventing torn JSON from becoming the next
+  restart authority. Backfill schedule mutations publish cloned in-memory state only after the
+  durable write succeeds; deletion commits through an ignored, directory-synced tombstone, and
+  canceled lock acquisition cannot release a semaphore the caller never acquired.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
@@ -348,6 +352,9 @@ and UI presentation concerns in their owning layers.
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
+  In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
+  self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
+  implementation drift between persistence lanes.
   Ownership-link policy validation is owned by `Meridian.Entities.FundStructure` and prevents
   invalid setup graphs by blocking self-parenting, active cycles, incompatible relationship types,
   overlapping primary links, invalid percentage ownership, sibling percentage over-allocation, and

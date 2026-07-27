@@ -313,6 +313,10 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Malformed, null, or incomplete close-management snapshots fail closed and remain untouched for
+recovery; a later sign-off cannot reinterpret missing slices as empty and overwrite retained close
+evidence. Once a service has observed or written the durable snapshot, disappearance of that file
+also fails closed instead of being treated as first-time initialization.
 The final close-plan control is the shared `Post closing entries` gate. After the existing task,
 sign-off, evidence, and version checks pass, the management service projects the current scoped
 revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,

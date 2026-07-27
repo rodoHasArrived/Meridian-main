@@ -93,7 +93,6 @@ export const WORKSTATION_API_ENDPOINTS = {
   operationsContinuityCloseCalendarItems: UI_API_ROUTES.OperationsContinuityCloseCalendarItems,
   financialOperationsCommandCenter: UI_API_ROUTES.FinancialOperationsCommandCenter,
   operationsPrivateCapitalCloseCockpit: UI_API_ROUTES.OperationsPrivateCapitalCloseCockpit,
-  chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: UI_API_ROUTES.RunHistory,
   runTimeline: UI_API_ROUTES.RunsTimeline,
   runSweeps: UI_API_ROUTES.RunsSweeps,
@@ -948,32 +947,6 @@ export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options:
   entityId?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
-}
-
-export function workstationChiefOfStaffSessionsEndpoint(options: {
-  workspace?: string;
-  fundProfileId?: string;
-  fundAccountId?: string;
-  status?: string;
-  limit?: number;
-} = {}): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions${queryString(options)}`;
-}
-
-export function workstationChiefOfStaffSessionEndpoint(sessionId: string): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/sessions/${pathSegment(sessionId, "sessionId")}`;
-}
-
-export function workstationChiefOfStaffDecisionEndpoint(sessionId: string): string {
-  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/decisions`;
-}
-
-export function workstationChiefOfStaffTraceExportEndpoint(sessionId: string): string {
-  return `${workstationChiefOfStaffSessionEndpoint(sessionId)}/export-trace`;
-}
-
-export function workstationChiefOfStaffHealthEndpoint(): string {
-  return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/health`;
 }
 
 export interface LedgerDimensionQueryOptions {

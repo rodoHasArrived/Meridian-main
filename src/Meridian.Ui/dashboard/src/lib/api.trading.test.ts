@@ -8,13 +8,9 @@ import {
   createExecutionManualOverride,
   deleteWorkflowPreset,
   evaluatePromotion,
-  exportChiefOfStaffTrace,
   getAlpacaConnectionStatus,
   getAccountingWorkspace,
   getBrokerageHouseholdPortfolio,
-  getChiefOfStaffHealth,
-  getChiefOfStaffSession,
-  getChiefOfStaffSessions,
   getDataWorkspace,
   developmentFixtureHeader,
   getExecutionControls,
@@ -96,7 +92,6 @@ import {
   startReplay,
   stopReplay,
   supersedeReconciliationBreak,
-  submitChiefOfStaffDecision,
   submitOrder,
   updateExecutionDefaultPositionLimit,
   updateExecutionSymbolPositionLimit,
@@ -779,53 +774,6 @@ describe("trading endpoint wiring", () => {
           reportPackId: "report-pack-2026-05",
           reconciliationCaseId: null,
           accountingRecordId: "workflow-2026-05"
-        })
-      })
-    );
-  });
-
-  it("wires Chief of Staff workstation API client calls", async () => {
-    await getChiefOfStaffSessions({ workspace: "Reporting", status: "AwaitingOperatorDecision", limit: 10 });
-    await getChiefOfStaffSession("session-1");
-    await getChiefOfStaffHealth();
-    await submitChiefOfStaffDecision("session-1", {
-      decision: "Approve",
-      actor: "operator",
-      selectedActionId: "action-1",
-      rationale: "Evidence reviewed."
-    });
-    await exportChiefOfStaffTrace("session-1", {
-      requestedBy: "operator",
-      reason: "audit trace",
-      includeWarnings: true
-    });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&status=AwaitingOperatorDecision&limit=10",
-      expect.anything()
-    );
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/sessions/session-1", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/chief-of-staff/health", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions/session-1/decisions",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          decision: "Approve",
-          actor: "operator",
-          selectedActionId: "action-1",
-          rationale: "Evidence reviewed."
-        })
-      })
-    );
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/chief-of-staff/sessions/session-1/export-trace",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          requestedBy: "operator",
-          reason: "audit trace",
-          includeWarnings: true
         })
       })
     );

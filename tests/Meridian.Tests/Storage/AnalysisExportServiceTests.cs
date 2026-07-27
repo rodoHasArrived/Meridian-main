@@ -891,6 +891,46 @@ public class AnalysisExportServiceTests : IDisposable
         csvContent.Should().Contain("1767434400000,185.5,100");
     }
 
+    [Fact]
+    public async Task ExportAsync_Csv_NeutralizesFormulaValuesAndEscapesUntrustedHeaders()
+    {
+        await CreateTestJsonlFileAsync(
+            "AAPL.Trade.jsonl",
+            [
+                new Dictionary<string, object?>
+                {
+                    ["Timestamp"] = "2026-01-03T10:00:00Z",
+                    ["Symbol"] = "AAPL",
+                    ["=FormulaHeader"] = "=1+1",
+                    ["Semicolon"] = "approved;=HYPERLINK(\"https://example.invalid\")",
+                    ["CarriageReturn"] = "first\rsecond",
+                    ["Quoted"] = "quoted \"value\"",
+                    ["Unicode"] = "café 東京"
+                }
+            ]);
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            CustomProfile = CreateFormatProfile(ExportFormat.Csv, "csv-formula-guard"),
+            OutputDirectory = _testOutputDir,
+            EventTypes = ["Trade"],
+            Symbols = ["AAPL"],
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidateBeforeExport = false,
+            IncludeManifest = false
+        });
+
+        result.Success.Should().BeTrue();
+        var csv = await File.ReadAllTextAsync(result.Files.Single().Path);
+        csv.Should().Contain(",'=FormulaHeader,");
+        csv.Should().Contain(",'=1+1,");
+        csv.Should().Contain("\"approved;'=HYPERLINK(\"\"https://example.invalid\"\")\"");
+        csv.Should().Contain("\"first\rsecond\"");
+        csv.Should().Contain("\"quoted \"\"value\"\"\"");
+        csv.Should().Contain("café 東京");
+    }
+
     private async Task CreateTestJsonlFileAsync<T>(string fileName, T[] records)
     {
         var filePath = Path.Combine(_testDataRoot, fileName);
