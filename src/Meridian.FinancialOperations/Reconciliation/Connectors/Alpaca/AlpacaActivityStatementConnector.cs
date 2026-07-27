@@ -99,12 +99,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 : await _activitySync
                     .GetActivitySnapshotAsync(request.ExternalAccountId, request.Since, ct)
                     .ConfigureAwait(false);
+            EnsureMatchingAccount(request.ExternalAccountId, activity.AccountId, "activity");
         }
 
         BrokeragePortfolioSnapshotDto? portfolio = null;
         if (request.Datasets.HasFlag(StatementFetchDatasets.Positions) && _portfolioSync is not null)
         {
             portfolio = await _portfolioSync.GetPortfolioSnapshotAsync(request.ExternalAccountId, ct).ConfigureAwait(false);
+            EnsureMatchingAccount(request.ExternalAccountId, portfolio.Account.AccountId, "portfolio");
         }
 
         var retrievedAt = activity?.RetrievedAt ?? portfolio?.RetrievedAt ?? DateTimeOffset.UtcNow;
@@ -142,6 +144,23 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 issues.Add(StatementParseIssue.Error("INVALID_SNAPSHOT", "The file is not a valid Alpaca statement snapshot."));
             }
 
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
+        var expectedAccount = document.ExternalAccountId?.Trim();
+        var snapshotAccount = snapshot.AccountId?.Trim();
+        var activityAccount = snapshot.Activity?.AccountId?.Trim();
+        var portfolioAccount = snapshot.Portfolio?.Account.AccountId?.Trim();
+        if ((!string.IsNullOrWhiteSpace(expectedAccount)
+             && !AccountsMatch(expectedAccount, snapshotAccount))
+            || (!string.IsNullOrWhiteSpace(activityAccount)
+                && !AccountsMatch(snapshotAccount, activityAccount))
+            || (!string.IsNullOrWhiteSpace(portfolioAccount)
+                && !AccountsMatch(snapshotAccount, portfolioAccount)))
+        {
+            issues.Add(StatementParseIssue.Error(
+                "ACCOUNT_SCOPE_MISMATCH",
+                "The Alpaca snapshot account does not match the requested external account."));
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
@@ -317,6 +336,23 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
     private Task<StatementMappingProfileDocument?> CatalogProfileAsync(string profileId, CancellationToken ct)
         => _catalog.FindAsync(profileId, ct);
+
+    private static void EnsureMatchingAccount(string expectedAccountId, string? actualAccountId, string dataset)
+    {
+        if (!AccountsMatch(expectedAccountId, actualAccountId))
+        {
+            throw new InvalidDataException(
+                $"The Alpaca {dataset} snapshot account does not match the requested external account.");
+        }
+    }
+
+    private static bool AccountsMatch(string? expectedAccountId, string? actualAccountId)
+        => !string.IsNullOrWhiteSpace(expectedAccountId)
+           && !string.IsNullOrWhiteSpace(actualAccountId)
+           && string.Equals(
+               expectedAccountId.Trim(),
+               actualAccountId.Trim(),
+               StringComparison.OrdinalIgnoreCase);
 
     private static string SanitizeAccountForFileName(string account)
     {

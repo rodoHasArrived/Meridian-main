@@ -15,8 +15,7 @@ public interface IOperationsContinuityReconciliationBridge
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
         ReconciliationBreakQueueScope accessScope,
-        CancellationToken ct = default) =>
-        RunReconciliationAsync(workflowId, request, ct);
+        CancellationToken ct = default);
 }
 
 public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge

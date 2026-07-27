@@ -1,15 +1,17 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.IO;
 
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for the multi-step Analysis Export Wizard page, managing step navigation,
-/// symbol selection, metric configuration, pre-export validation, and export queuing.
+/// symbol selection, metric configuration, and fail-closed export availability.
 /// </summary>
 public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
 {
+    internal const string ExportExecutionUnavailableReason =
+        "Analysis export is unavailable in this desktop wizard because its destination, metric, chart, and summary options are not connected to the canonical analysis export service. No export was queued or created.";
+
     private int _currentStep = 1;
     private string _symbolInput = string.Empty;
     private DateTime? _fromDate;
@@ -27,7 +29,6 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     private string _wizardScopeText = string.Empty;
     private string _actionReadinessTitle = string.Empty;
     private string _actionReadinessDetail = string.Empty;
-    private bool _preExportPassed;
 
     public AnalysisExportWizardViewModel()
     {
@@ -187,11 +188,11 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
     {
         1 => CanLeaveScopeStep(),
         2 => CanLeaveConfigurationStep(),
-        3 => _preExportPassed,
+        3 => false,
         _ => false
     };
 
-    public string PrimaryActionLabel => CurrentStep < 3 ? "Next" : "Queue Export";
+    public string PrimaryActionLabel => CurrentStep < 3 ? "Next" : "Export unavailable";
 
     public string ReviewSummary { get; private set; } = string.Empty;
 
@@ -288,12 +289,6 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
 
     public void Initialize()
     {
-        if (SelectedSymbols.Count == 0)
-        {
-            SelectedSymbols.Add("AAPL");
-            SelectedSymbols.Add("MSFT");
-        }
-
         UpdateReviewSummary();
         RefreshPresentationState();
     }
@@ -340,7 +335,9 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         RefreshPresentationState();
         if (!CanRunPrimaryAction)
         {
-            StatusMessage = "Resolve validation issues before continuing.";
+            StatusMessage = CurrentStep == 3
+                ? ExportExecutionUnavailableReason
+                : "Resolve validation issues before continuing.";
             return;
         }
 
@@ -351,15 +348,15 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
 
             if (CurrentStep == 3)
             {
-                RunPreExportValidation();
+                PrepareUnavailableExportReview();
+                StatusMessage = ExportExecutionUnavailableReason;
             }
 
             RefreshPresentationState();
             return;
         }
 
-        StatusMessage = "Analysis export queued successfully.";
-        RefreshPresentationState();
+        StatusMessage = ExportExecutionUnavailableReason;
     }
 
     public void CancelWizard()
@@ -368,155 +365,15 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         StatusMessage = "Wizard reset.";
         PreExportReport = string.Empty;
         EstimatedSize = string.Empty;
-        _preExportPassed = false;
         RefreshPresentationState();
     }
 
-    /// <summary>
-    /// Runs pre-export validation checks: disk space, destination writability,
-    /// data availability estimate, and format compatibility.
-    /// </summary>
-    private void RunPreExportValidation()
+    private void PrepareUnavailableExportReview()
     {
-        var checks = new List<string>();
-        _preExportPassed = true;
-
-        // 1. Destination directory exists and is writable
-        if (!string.IsNullOrWhiteSpace(Destination))
-        {
-            var destDir = Path.GetDirectoryName(Destination) ?? Destination;
-
-            if (Directory.Exists(destDir))
-            {
-                checks.Add("[PASS] Destination directory exists and is accessible.");
-
-                // 2. Disk space check
-                try
-                {
-                    var driveInfo = new DriveInfo(Path.GetPathRoot(destDir) ?? destDir);
-                    var freeGb = driveInfo.AvailableFreeSpace / (1024.0 * 1024 * 1024);
-                    var estimatedMb = EstimateExportSizeMb();
-
-                    if (freeGb > estimatedMb / 1024.0 * 2)
-                    {
-                        checks.Add($"[PASS] Disk space: {freeGb:F1} GB free (estimated need: {estimatedMb:F1} MB).");
-                    }
-                    else if (freeGb > estimatedMb / 1024.0)
-                    {
-                        checks.Add($"[WARN] Low disk space: {freeGb:F1} GB free (estimated need: {estimatedMb:F1} MB). Consider freeing space.");
-                    }
-                    else
-                    {
-                        checks.Add($"[FAIL] Insufficient disk space: {freeGb:F1} GB free (estimated need: {estimatedMb:F1} MB).");
-                        _preExportPassed = false;
-                    }
-
-                    EstimatedSize = $"{estimatedMb:F1} MB";
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or DriveNotFoundException)
-                {
-                    checks.Add("[WARN] Unable to determine free disk space.");
-                    EstimatedSize = EstimateExportSizeMb().ToString("F1") + " MB (estimated)";
-                }
-            }
-            else
-            {
-                checks.Add("[WARN] Destination directory does not exist. It will be created on export.");
-            }
-        }
-        else
-        {
-            checks.Add("[FAIL] No destination specified.");
-            _preExportPassed = false;
-        }
-
-        // 3. Symbol availability
-        if (SelectedSymbols.Count > 0)
-        {
-            checks.Add($"[PASS] {SelectedSymbols.Count} symbol(s) selected for export.");
-        }
-        else
-        {
-            checks.Add("[FAIL] No symbols selected.");
-            _preExportPassed = false;
-        }
-
-        // 4. Date range validation
-        if (FromDate.HasValue && ToDate.HasValue)
-        {
-            var span = ToDate.Value - FromDate.Value;
-            if (span.TotalDays > 365)
-            {
-                checks.Add($"[WARN] Large date range ({span.TotalDays:F0} days). Export may be slow for many symbols.");
-            }
-            else
-            {
-                checks.Add($"[PASS] Date range: {span.TotalDays:F0} day(s).");
-            }
-        }
-        else
-        {
-            checks.Add("[PASS] Open date range (all available data).");
-        }
-
-        // 5. Format compatibility
-        var selectedMetrics = Metrics.Where(m => m.IsSelected).ToList();
-        if (SelectedFormat == "CSV" && selectedMetrics.Count > 3)
-        {
-            checks.Add("[WARN] CSV with many metrics may produce wide files. Consider Parquet for better performance.");
-        }
-        else
-        {
-            checks.Add($"[PASS] Format: {SelectedFormat} with {selectedMetrics.Count} metric(s).");
-        }
-
-        // 6. File conflict check
-        if (!string.IsNullOrWhiteSpace(Destination) && File.Exists(Destination))
-        {
-            checks.Add("[WARN] Output file already exists and will be overwritten.");
-        }
-
-        var overallStatus = _preExportPassed ? "All checks passed." : "Some checks failed. Review issues above.";
-
-        PreExportReport = string.Join("\n", checks) + $"\n\n{overallStatus}";
-        RaisePropertyChanged(nameof(PreExportReport));
-        RaisePropertyChanged(nameof(EstimatedSize));
-    }
-
-    /// <summary>
-    /// Estimates the export file size in megabytes based on symbols, date range, format, and metrics.
-    /// </summary>
-    private double EstimateExportSizeMb()
-    {
-        var symbolCount = Math.Max(1, SelectedSymbols.Count);
-        var metricCount = Math.Max(1, Metrics.Count(m => m.IsSelected));
-
-        var days = 30.0;
-        if (FromDate.HasValue && ToDate.HasValue)
-        {
-            days = Math.Max(1, (ToDate.Value - FromDate.Value).TotalDays);
-        }
-
-        // Base estimate: ~50 KB per symbol per day for daily bars
-        var baseKb = symbolCount * days * 50.0;
-
-        // Metric multiplier: each metric adds ~30% overhead
-        var metricMultiplier = 1.0 + (metricCount - 1) * 0.3;
-
-        // Format multiplier
-        var formatMultiplier = SelectedFormat switch
-        {
-            "CSV" => 1.0,
-            "JSON" => 1.4,
-            "Parquet" => 0.3,
-            "Excel" => 1.2,
-            _ => 1.0
-        };
-
-        // Charts add overhead
-        var chartOverhead = IncludeCharts ? 1.5 : 1.0;
-
-        return baseKb * metricMultiplier * formatMultiplier * chartOverhead / 1024.0;
+        EstimatedSize = string.Empty;
+        PreExportReport =
+            $"{ExportExecutionUnavailableReason}\n\n" +
+            "The desktop wizard did not test destination access, estimate output size, inspect data availability, or submit an export.";
     }
 
     private void UpdateReviewSummary()
@@ -532,11 +389,6 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
             : "Open range";
 
         ReviewSummary = $"Symbols: {symbols}\nDate Range: {range}\nFormat: {SelectedFormat}\nDestination: {Destination}";
-        if (!string.IsNullOrEmpty(EstimatedSize))
-        {
-            ReviewSummary += $"\nEstimated Size: {EstimatedSize}";
-        }
-
         RaisePropertyChanged(nameof(ReviewSummary));
     }
 
@@ -572,9 +424,9 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
             }
         }
 
-        if (CurrentStep == 3 && !_preExportPassed)
+        if (CurrentStep == 3)
         {
-            yield return "Pre-export validation must pass before queuing the export.";
+            yield return ExportExecutionUnavailableReason;
         }
     }
 
@@ -605,15 +457,15 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         {
             1 => "Select export scope",
             2 => "Configure output package",
-            3 => "Review validation evidence",
+            3 => "Review export availability",
             _ => "Configure export"
         };
 
         CurrentStepDetail = CurrentStep switch
         {
             1 => "Choose at least one symbol and an optional date range before configuring metrics.",
-            2 => "Pick output metrics, format, and a destination path before the wizard runs validation.",
-            3 => "Review the validation report before queueing the export package.",
+            2 => "Pick output metrics, format, and a destination path before reviewing export availability.",
+            3 => "Review why this desktop-only configuration cannot be submitted to the canonical analysis export service.",
             _ => string.Empty
         };
 
@@ -631,14 +483,12 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
             {
                 1 => "Scope ready",
                 2 => "Package setup ready",
-                3 => "Export ready to queue",
                 _ => "Ready"
             };
             ActionReadinessDetail = CurrentStep switch
             {
                 1 => "Continue to choose metrics and package output details.",
-                2 => "Continue to review the pre-export validation evidence.",
-                3 => "Queue the analysis export package with the validated scope.",
+                2 => "Continue to review whether this configuration can be submitted.",
                 _ => string.Empty
             };
             return;
@@ -648,11 +498,13 @@ public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
         {
             1 => "Scope setup incomplete",
             2 => "Package setup incomplete",
-            3 => "Validation must pass",
+            3 => "Export unavailable",
             _ => "Setup incomplete"
         };
 
-        ActionReadinessDetail = string.IsNullOrWhiteSpace(ValidationSummary)
+        ActionReadinessDetail = CurrentStep == 3
+            ? ExportExecutionUnavailableReason
+            : string.IsNullOrWhiteSpace(ValidationSummary)
             ? "Complete the required fields before continuing."
             : ValidationSummary;
     }

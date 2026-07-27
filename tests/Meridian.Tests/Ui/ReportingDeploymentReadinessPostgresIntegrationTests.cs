@@ -4,9 +4,9 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
-using Meridian.Application.UI;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Entities.FundStructure;
@@ -21,6 +21,7 @@ using Meridian.Storage.Ledger;
 using Meridian.Storage.Reporting;
 using Meridian.TestSupport;
 using Meridian.Tests.Application.Composition;
+using Meridian.Tests.Storage.FundAccounts;
 using Meridian.Tests.Storage.Reporting;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -38,7 +39,7 @@ namespace Meridian.Tests.Ui;
 public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
 {
     [ReportingDatabaseFact]
-    public async Task ProductionReportingGraph_FirstStartupIsReadyAndEndpointPublishesCapability()
+    public async Task ProductionReportingGraph_ClientDocumentsFailClosedUntilSourceMigrationsComplete()
     {
         await using var database =
             await PostgresTestServer.CreateAsync("MERIDIAN_REPORTING_CONNECTION_STRING");
@@ -48,6 +49,23 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         {
             ConnectionString = database.ConnectionString,
             Schema = reportingSchema
+        };
+        var ledgerOptions = new LedgerJournalStoreOptions
+        {
+            ConnectionString = database.ConnectionString,
+            SchemaName = PostgresTestSchema.NewSchemaName("reporting_source_ledger"),
+            RequireGovernedPostingCommand = true,
+            RequireExpectedVersion = true
+        };
+        var fundAccountOptions = new FundAccountStoreOptions
+        {
+            ConnectionString = database.ConnectionString,
+            Schema = PostgresTestSchema.NewSchemaName("reporting_source_accounts")
+        };
+        var fundStructureOptions = new FundStructureStoreOptions
+        {
+            ConnectionString = database.ConnectionString,
+            Schema = PostgresTestSchema.NewSchemaName("reporting_source_structure")
         };
 
         using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Production");
@@ -62,7 +80,22 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             reportingSchema);
         using var ledger = new EnvironmentVariableScope(
             "MERIDIAN_LEDGER_CONNECTION_STRING",
-            null);
+            database.ConnectionString);
+        using var ledgerSchema = new EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_SCHEMA",
+            ledgerOptions.SchemaName);
+        using var fundAccounts = new EnvironmentVariableScope(
+            "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
+            database.ConnectionString);
+        using var fundAccountsSchema = new EnvironmentVariableScope(
+            "MERIDIAN_FUND_ACCOUNTS_SCHEMA",
+            fundAccountOptions.Schema);
+        using var fundStructure = new EnvironmentVariableScope(
+            "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
+            database.ConnectionString);
+        using var fundStructureSchema = new EnvironmentVariableScope(
+            "MERIDIAN_FUND_STRUCTURE_SCHEMA",
+            fundStructureOptions.Schema);
         using var destinations = new EnvironmentVariableScope(
             "MERIDIAN_REPORTING_RECIPIENT_DESTINATIONS_JSON",
             """
@@ -95,10 +128,12 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             builder.WebHost.UseTestServer();
             builder.Services.DeclareMeridianDeploymentPosture(
                 MeridianDeploymentPosture.ProductionApi);
-            builder.Services.AddSingleton(new ConfigStore(configPath));
+            builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
             RegisterPostgresLedgerPresentationSources(
                 builder.Services,
-                database.ConnectionString);
+                ledgerOptions,
+                fundAccountOptions,
+                fundStructureOptions);
             builder.Services.AddWorkstationSharedServices();
 
             // The test drives the real cancellable migration startup seam itself and avoids
@@ -109,6 +144,32 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             await app.Services
                 .GetRequiredService<IReportingMigrationStartup>()
                 .EnsureReadyAsync();
+
+            var sourceMigrationReceipt = app.Services
+                .GetRequiredService<DatabaseMigrationReadinessReceipt>();
+            sourceMigrationReceipt.LedgerReady.Should().BeFalse();
+            sourceMigrationReceipt.FundAccountsReady.Should().BeFalse();
+            sourceMigrationReceipt.FundStructureReady.Should().BeFalse();
+
+            var beforeSourceMigrations = app.Services
+                .GetRequiredService<IReportingDeploymentReadinessService>()
+                .Evaluate();
+            beforeSourceMigrations.MigrationsManaged.Should().BeTrue(
+                "the reporting schema has completed its own migration startup");
+            beforeSourceMigrations.ClientDocumentsConfigured.Should().BeFalse(
+                "registered PostgreSQL source types are not sufficient without completed source-schema migrations");
+            beforeSourceMigrations.IsReady.Should().BeFalse();
+            beforeSourceMigrations.Components
+                .Single(static component => component.Id == "client-documents")
+                .IsReady.Should().BeFalse();
+
+            await LedgerStartup.EnsureDatabaseReadyAsync(app.Services);
+            await FundAccountsStartup.EnsureDatabaseReadyAsync(app.Services);
+            await FundStructureStartup.EnsureDatabaseReadyAsync(app.Services);
+
+            sourceMigrationReceipt.LedgerReady.Should().BeTrue();
+            sourceMigrationReceipt.FundAccountsReady.Should().BeTrue();
+            sourceMigrationReceipt.FundStructureReady.Should().BeTrue();
 
             var capability = app.Services
                 .GetRequiredService<IReportingDeploymentReadinessService>()
@@ -161,6 +222,15 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             {
                 await new ReportingMigrationRunner(reportingOptions)
                     .ResetSchemaAsync();
+                await FundAccountDatabaseFixture.DropSchemaAsync(
+                    database.ConnectionString,
+                    ledgerOptions.SchemaName);
+                await FundAccountDatabaseFixture.DropSchemaAsync(
+                    database.ConnectionString,
+                    fundAccountOptions.Schema);
+                await FundAccountDatabaseFixture.DropSchemaAsync(
+                    database.ConnectionString,
+                    fundStructureOptions.Schema);
             }
 
             Directory.Delete(root, recursive: true);
@@ -169,33 +239,30 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
 
     private static void RegisterPostgresLedgerPresentationSources(
         IServiceCollection services,
-        string connectionString)
+        LedgerJournalStoreOptions ledgerOptions,
+        FundAccountStoreOptions fundAccountOptions,
+        FundStructureStoreOptions fundStructureOptions)
     {
-        var ledgerOptions = new LedgerJournalStoreOptions
-        {
-            ConnectionString = connectionString,
-            SchemaName = PostgresTestSchema.NewSchemaName("reporting_source_ledger"),
-            RequireGovernedPostingCommand = true,
-            RequireExpectedVersion = true
-        };
+        services.AddSingleton<DatabaseMigrationReadinessReceipt>();
+        services.AddSingleton(ledgerOptions);
+        services.AddSingleton<LedgerMigrationRunner>();
         services.AddSingleton<ILedgerJournalStore>(
             new PostgresLedgerJournalStore(ledgerOptions));
         services.AddSingleton<IFundProfileTenancyRegistry>(
             new PostgresFundProfileTenancyRegistry(ledgerOptions));
 
+        var accountStore = new PostgresFundAccountStore(fundAccountOptions);
         var accounts = new PostgresFundAccountService(
-            new PostgresFundAccountStore(new FundAccountStoreOptions
-            {
-                ConnectionString = connectionString,
-                Schema = PostgresTestSchema.NewSchemaName("reporting_source_accounts")
-            }));
+            accountStore);
+        services.AddSingleton(fundAccountOptions);
+        services.AddSingleton<IFundAccountStore>(accountStore);
+        services.AddSingleton<IFundAccountService>(accounts);
+        var structureStore = new PostgresFundStructureStore(fundStructureOptions);
+        services.AddSingleton(fundStructureOptions);
+        services.AddSingleton<IFundStructureStore>(structureStore);
         services.AddSingleton<IFundStructureService>(
             new PostgresFundStructureService(
-                new PostgresFundStructureStore(new FundStructureStoreOptions
-                {
-                    ConnectionString = connectionString,
-                    Schema = PostgresTestSchema.NewSchemaName("reporting_source_structure")
-                }),
+                structureStore,
                 accounts,
                 new FundStructurePolicyService()));
     }

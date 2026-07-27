@@ -110,17 +110,19 @@ export function validateStatementFetchDraft(
     errors.externalAccountId = "Enter the external broker or custodian account id.";
   }
 
+  if (!draft.fundAccountId.trim()) {
+    errors.fundAccountId = "Enter the Meridian fund account id.";
+  }
+
+  if (!draft.sourceInstitution.trim()) {
+    errors.sourceInstitution = "Enter the broker or custodian name.";
+  }
+
   if (draft.sinceDate && !/^\d{4}-\d{2}-\d{2}$/.test(draft.sinceDate)) {
     errors.sinceDate = "Fetch start must use YYYY-MM-DD format.";
   }
 
   if (mode === "schedule") {
-    if (!draft.fundAccountId.trim()) {
-      errors.fundAccountId = "Enter the Meridian fund account id.";
-    }
-    if (!draft.sourceInstitution.trim()) {
-      errors.sourceInstitution = "Enter the broker or custodian name.";
-    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.sinceDate)) {
       errors.sinceDate = "Ledger period start must use YYYY-MM-DD format.";
     }
@@ -234,6 +236,9 @@ export function useStatementFetchPanelViewModel({
       const next = await services.fetchPreview({
         connectorId: draft.connectorId.trim(),
         externalAccountId: draft.externalAccountId.trim(),
+        fundAccountId: draft.fundAccountId.trim(),
+        sourceInstitution: draft.sourceInstitution.trim(),
+        sourceKind: draft.sourceKind,
         mappingProfileId: draft.mappingProfileId.trim() || null,
         since: draft.sinceDate ? `${draft.sinceDate}T00:00:00Z` : null,
         datasets: draft.datasets

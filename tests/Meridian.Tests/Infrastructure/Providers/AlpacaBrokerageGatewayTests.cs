@@ -891,6 +891,42 @@ public sealed class AlpacaBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task GetPortfolioSnapshotAsync_CredentialAccountMismatch_FailsBeforePositionsFetch()
+    {
+        var requestedPaths = new List<string>();
+        var handler = new CapturingStubHandler(
+            request => requestedPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty),
+            request => request.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildPositionsResponse([]));
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("OTHER-ACCOUNT");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not match*configured credentials*");
+        requestedPaths.Should().Equal("/v2/account");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_CredentialAccountMismatch_FailsBeforeActivityFetch()
+    {
+        var requestedPaths = new List<string>();
+        var handler = new CapturingStubHandler(
+            request => requestedPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty),
+            request => request.RequestUri?.AbsolutePath == "/v2/account"
+                ? BuildAccountResponse()
+                : BuildJson(Array.Empty<object>()));
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("OTHER-ACCOUNT");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not match*configured credentials*");
+        requestedPaths.Should().Equal("/v2/account");
+    }
+
+    [Fact]
     public async Task GetActivitySnapshotAsync_BoundedWindow_IncludesStartAndExcludesEnd()
     {
         var activityPaths = new List<string>();
@@ -904,15 +940,23 @@ public sealed class AlpacaBrokerageGatewayTests
                     activityPaths.Add(request.RequestUri.PathAndQuery);
                 }
             },
-            request => request.RequestUri?.AbsolutePath == "/v2/account/activities"
-                ? BuildJson(new[]
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
                 {
-                    BuildActivityResponse("before-start", since.AddTicks(-1)),
-                    BuildActivityResponse("at-start", since),
-                    BuildActivityResponse("inside-window", since.AddDays(1)),
-                    BuildActivityResponse("at-end", untilExclusive)
-                })
-                : BuildJson(Array.Empty<object>()));
+                    return BuildAccountResponse();
+                }
+
+                return request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                    ? BuildJson(new[]
+                    {
+                        BuildActivityResponse("before-start", since.AddTicks(-1)),
+                        BuildActivityResponse("at-start", since),
+                        BuildActivityResponse("inside-window", since.AddDays(1)),
+                        BuildActivityResponse("at-end", untilExclusive)
+                    })
+                    : BuildJson(Array.Empty<object>());
+            });
         var sut = CreateSut(handler);
 
         var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
@@ -950,6 +994,11 @@ public sealed class AlpacaBrokerageGatewayTests
             },
             request =>
             {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
                 if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
                 {
                     return BuildJson(Array.Empty<object>());
@@ -986,9 +1035,17 @@ public sealed class AlpacaBrokerageGatewayTests
             .ToArray();
         var handler = new CapturingStubHandler(
             _ => { },
-            request => request.RequestUri?.AbsolutePath == "/v2/account/activities"
-                ? BuildJson(page)
-                : BuildJson(Array.Empty<object>()));
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                return request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                    ? BuildJson(page)
+                    : BuildJson(Array.Empty<object>());
+            });
         var sut = CreateSut(handler);
 
         var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
@@ -1009,6 +1066,11 @@ public sealed class AlpacaBrokerageGatewayTests
             _ => { },
             request =>
             {
+                if (request.RequestUri?.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
                 if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
                 {
                     return BuildJson(Array.Empty<object>());

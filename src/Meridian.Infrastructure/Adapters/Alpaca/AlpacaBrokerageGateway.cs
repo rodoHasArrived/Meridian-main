@@ -433,7 +433,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
 
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var account = await RequireRequestedAccountAsync(externalAccountId, ct).ConfigureAwait(false);
         var positions = await GetPositionsAsync(ct).ConfigureAwait(false);
         var accountDto = new BrokerageExternalAccountDto(
             ProviderId: GatewayId,
@@ -501,6 +501,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 "The exclusive activity upper bound must be later than the lower bound.");
         }
 
+        var account = await RequireRequestedAccountAsync(externalAccountId, ct).ConfigureAwait(false);
         var providerAfter = untilExclusive.HasValue && since is { } inclusiveStart
             ? inclusiveStart == DateTimeOffset.MinValue
                 ? null
@@ -546,7 +547,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         return new BrokerageActivitySnapshotDto(
             ProviderId: GatewayId,
-            AccountId: externalAccountId,
+            AccountId: account.AccountId,
             RetrievedAt: DateTimeOffset.UtcNow,
             Orders: openOrders
                 .Select(static order => new BrokerageOrderSnapshotDto(
@@ -565,6 +566,24 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions);
+    }
+
+    private async Task<AccountInfo> RequireRequestedAccountAsync(
+        string externalAccountId,
+        CancellationToken ct)
+    {
+        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(account.AccountId)
+            || !string.Equals(
+                account.AccountId.Trim(),
+                externalAccountId.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "The requested Alpaca account does not match the account resolved by the configured credentials.");
+        }
+
+        return account;
     }
 
     /// <inheritdoc />

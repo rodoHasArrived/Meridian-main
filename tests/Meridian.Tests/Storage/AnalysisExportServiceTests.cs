@@ -117,7 +117,7 @@ public class AnalysisExportServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ExportToXlsx_WithNoData_ShouldCreateEmptyXlsxFile()
+    public async Task ExportAsync_WithNoMatchingSourceData_ShouldFailWithoutArtifact()
     {
         // Arrange
         var request = new ExportRequest
@@ -134,8 +134,36 @@ public class AnalysisExportServiceTests : IDisposable
         var result = await _service.ExportAsync(request);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("No source data");
+        result.FilesGenerated.Should().Be(0);
+        result.Files.Should().BeEmpty();
         result.Warnings.Should().Contain(w => w.Contains("No source data"));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithEmptyMatchingSourceFile_ShouldFailAndRemoveEmptyArtifact()
+    {
+        await File.WriteAllTextAsync(
+            Path.Combine(_testDataRoot, "AAPL.Trade.jsonl"),
+            string.Empty);
+
+        var result = await _service.ExportAsync(new ExportRequest
+        {
+            ProfileId = "excel",
+            OutputDirectory = _testOutputDir,
+            EventTypes = new[] { "Trade" },
+            Symbols = new[] { "AAPL" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5)
+        });
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("No exportable records");
+        result.FilesGenerated.Should().Be(0);
+        result.Files.Should().BeEmpty();
+        Directory.EnumerateFiles(_testOutputDir, "*.xlsx", SearchOption.AllDirectories)
+            .Should().BeEmpty();
     }
 
     [Fact]

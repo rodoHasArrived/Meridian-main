@@ -103,9 +103,24 @@ export interface StatementReconciliationAccountingScope {
 export type StatementImportSourceKind = "broker" | "custodian";
 export type StatementFetchDatasets = "activity" | "positions" | "all";
 
+export interface StatementImportPreviewRequest {
+  file: File;
+  connectorId?: string | null;
+  mappingProfileId?: string | null;
+  externalAccountId: string;
+  sourceKind: StatementImportSourceKind;
+  sourceInstitution: string;
+  fundAccountId: string;
+  periodStart: string;
+  periodEnd: string;
+}
+
 export interface StatementFetchPreviewRequest {
   connectorId: string;
   externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  sourceKind: StatementImportSourceKind;
   since?: string | null;
   mappingProfileId?: string | null;
   datasets?: StatementFetchDatasets | null;

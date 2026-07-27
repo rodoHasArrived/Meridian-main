@@ -223,6 +223,28 @@ public sealed class StatementReconciliationReportWorkflowService
         if (snapshot.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Completed)
         {
             EnsureAuthoritativeIntake(snapshot);
+            var authorizedScope = await ResolveRetainedAccountingScopeAsync(
+                    snapshot,
+                    tenantId,
+                    companyId,
+                    ct)
+                .ConfigureAwait(false);
+            var authorizedSnapshot = BindResolvedAccountingScope(snapshot, authorizedScope);
+            EnsureAuthoritativeIntake(authorizedSnapshot);
+            var reconciliationGate = await EvaluateCurrentReconciliationAsync(
+                    authorizedSnapshot,
+                    ct)
+                .ConfigureAwait(false);
+            if (!reconciliationGate.IsSatisfied)
+            {
+                return AwaitReconciliation(
+                        authorizedSnapshot,
+                        reconciliationGate,
+                        advanceVersion: false)
+                    .Workflow;
+            }
+
+            return authorizedSnapshot.Workflow;
         }
         return snapshot.Workflow;
     }
@@ -234,7 +256,7 @@ public sealed class StatementReconciliationReportWorkflowService
         CancellationToken ct = default)
     {
         ValidateWorkflowLookup(workflowId, tenantId);
-        var intakeAuthority = RequireIntakeAuthority();
+        _ = RequireIntakeAuthority();
         var directory = GetWorkflowDirectory(workflowId);
         if (!Directory.Exists(directory))
             return null;
@@ -244,25 +266,10 @@ public sealed class StatementReconciliationReportWorkflowService
         if (snapshot is null)
             return null;
         EnsureScopeMatches(snapshot, tenantId, companyId);
-        var authorizedScope = await intakeAuthority
-            .ResolveAccountingScopeAsync(
-                new StatementReconciliationIntakeScopeRequest(
-                    tenantId,
-                    companyId
-                    ?? throw new UnauthorizedAccessException(
-                        "Statement-to-close resume requires a company scope."),
-                    snapshot.Request.FundAccountId,
-                    snapshot.Request.ExternalAccountId,
-                    snapshot.Request.SourceInstitution,
-                    snapshot.Request.PeriodStart,
-                    snapshot.Request.PeriodEnd,
-                    snapshot.Request.AccountingScope)
-                {
-                    AllowClosedPeriodForRetainedWorkflow =
-                        snapshot.Workflow.OperationsWorkflowId.HasValue
-                        || snapshot.Workflow.Status
-                            == StatementReconciliationReportWorkflowStatusDto.Completed
-                },
+        var authorizedScope = await ResolveRetainedAccountingScopeAsync(
+                snapshot,
+                tenantId,
+                companyId,
                 ct)
             .ConfigureAwait(false);
         var authorizedSnapshot = BindResolvedAccountingScope(snapshot, authorizedScope);
@@ -309,6 +316,18 @@ public sealed class StatementReconciliationReportWorkflowService
             if (snapshot.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Completed
                 && HasAuthoritativeIntake(snapshot))
             {
+                var completedGate = await EvaluateCurrentReconciliationAsync(snapshot, ct)
+                    .ConfigureAwait(false);
+                if (completedGate.IsSatisfied)
+                {
+                    return RequireExecution(snapshot);
+                }
+
+                snapshot = AwaitReconciliation(
+                    snapshot,
+                    completedGate,
+                    advanceVersion: true);
+                await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
                 return RequireExecution(snapshot);
             }
 
@@ -381,37 +400,14 @@ public sealed class StatementReconciliationReportWorkflowService
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
             }
 
-            var reconciliation = await _statementRuns
-                .GetAsync(snapshot.ImportResult.RunId, ct)
+            var reconciliationGate = await EvaluateCurrentReconciliationAsync(snapshot, ct)
                 .ConfigureAwait(false);
-            var openBreaks = reconciliation?.Breaks.Count ?? snapshot.ImportResult.BreakCount;
-            var openCases = reconciliation?.Cases.Count(IsOpenCase) ?? snapshot.ImportResult.CaseCount;
-            if (openBreaks > 0 || openCases > 0)
+            if (!reconciliationGate.IsSatisfied)
             {
-                snapshot = Advance(
+                snapshot = AwaitReconciliation(
                     snapshot,
-                    StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
-                    breakCount: openBreaks,
-                    caseCount: openCases,
-                    recoveryAction: "Resolve or disposition the linked reconciliation breaks and cases, then resume this workflow.");
-                await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
-                return RequireExecution(snapshot);
-            }
-
-            var queueGate = await EvaluateCanonicalQueueHandoffAsync(
-                    snapshot.ImportResult,
-                    snapshot.Workflow.TenantId,
-                    snapshot.Workflow.CompanyId,
-                    ct)
-                .ConfigureAwait(false);
-            if (!queueGate.IsSatisfied)
-            {
-                snapshot = Advance(
-                    snapshot,
-                    StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
-                    breakCount: queueGate.OpenCaseCount,
-                    caseCount: queueGate.BlockingCaseCount,
-                    recoveryAction: queueGate.RecoveryAction);
+                    reconciliationGate,
+                    advanceVersion: true);
                 await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
                 return RequireExecution(snapshot);
             }
@@ -421,7 +417,12 @@ public sealed class StatementReconciliationReportWorkflowService
                 breakCount: 0, caseCount: 0,
                 recoveryAction: "Retry report rendering from the retained statement and reconciliation evidence.");
             await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
-            var artifacts = await RetainReportArtifactsAsync(directory, snapshot, reconciliation, ct).ConfigureAwait(false);
+            var artifacts = await RetainReportArtifactsAsync(
+                    directory,
+                    snapshot,
+                    reconciliationGate.Reconciliation,
+                    ct)
+                .ConfigureAwait(false);
             snapshot = Complete(snapshot, artifacts);
             await SaveSnapshotAsync(directory, snapshot, ct).ConfigureAwait(false);
             return RequireExecution(snapshot);
@@ -445,6 +446,31 @@ public sealed class StatementReconciliationReportWorkflowService
            ?? throw new StatementReconciliationIntakeAuthorityException(
                "STATEMENT_INTAKE_AUTHORITY_UNAVAILABLE",
                "Statement reconciliation report processing is unavailable because the authoritative statement intake service is not configured. No input, evidence, reconciliation report, or completion record was retained.");
+
+    private Task<StatementAccountingScope> ResolveRetainedAccountingScopeAsync(
+        WorkflowSnapshot snapshot,
+        string tenantId,
+        string? companyId,
+        CancellationToken ct)
+        => RequireIntakeAuthority().ResolveAccountingScopeAsync(
+            new StatementReconciliationIntakeScopeRequest(
+                tenantId,
+                companyId
+                ?? throw new UnauthorizedAccessException(
+                    "Statement-to-close workflow access requires a company scope."),
+                snapshot.Request.FundAccountId,
+                snapshot.Request.ExternalAccountId,
+                snapshot.Request.SourceInstitution,
+                snapshot.Request.PeriodStart,
+                snapshot.Request.PeriodEnd,
+                snapshot.Request.AccountingScope)
+            {
+                AllowClosedPeriodForRetainedWorkflow =
+                    snapshot.Workflow.OperationsWorkflowId.HasValue
+                    || snapshot.Workflow.Status
+                        == StatementReconciliationReportWorkflowStatusDto.Completed
+            },
+            ct);
 
     private static void ValidateIntakeReceipt(
         StatementAccountingScope expectedScope,
@@ -609,7 +635,9 @@ public sealed class StatementReconciliationReportWorkflowService
         CancellationToken ct)
     {
         var import = snapshot.ImportResult!;
-        var retainedAt = snapshot.Workflow.CreatedAtUtc;
+        var retainedAt = snapshot.RenderingReconciliationReportAtUtc
+            ?? throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{snapshot.Workflow.WorkflowId}' has no persisted rendering checkpoint timestamp.");
         var evidenceReferences = snapshot.Workflow.EvidenceReferences
             .Concat(BuildEvidenceReferences(import))
             .Distinct(StringComparer.Ordinal)
@@ -822,6 +850,11 @@ public sealed class StatementReconciliationReportWorkflowService
         string? recoveryAction = null)
     {
         var import = snapshot.ImportResult;
+        var now = DateTimeOffset.UtcNow;
+        var renderingReconciliationReportAtUtc =
+            status == StatementReconciliationReportWorkflowStatusDto.RenderingReconciliationReport
+                ? snapshot.RenderingReconciliationReportAtUtc ?? now
+                : snapshot.RenderingReconciliationReportAtUtc;
         var workflow = snapshot.Workflow with
         {
             Status = status,
@@ -837,11 +870,16 @@ public sealed class StatementReconciliationReportWorkflowService
                     .ToArray(),
             BreakCount = breakCount ?? import?.BreakCount ?? snapshot.Workflow.BreakCount,
             CaseCount = caseCount ?? import?.CaseCount ?? snapshot.Workflow.CaseCount,
-            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = now,
             FailureReason = null,
             RecoveryAction = recoveryAction
         };
-        return snapshot with { Workflow = workflow, ResumeStatus = status };
+        return snapshot with
+        {
+            Workflow = workflow,
+            ResumeStatus = status,
+            RenderingReconciliationReportAtUtc = renderingReconciliationReportAtUtc
+        };
     }
 
     private static WorkflowSnapshot Complete(
@@ -913,6 +951,83 @@ public sealed class StatementReconciliationReportWorkflowService
            && !string.Equals(item.Status, "Superseded", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(item.Status, "Dismissed", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(item.Status, "SignedOff", StringComparison.OrdinalIgnoreCase);
+
+    private async Task<CurrentReconciliationGate> EvaluateCurrentReconciliationAsync(
+        WorkflowSnapshot snapshot,
+        CancellationToken ct)
+    {
+        var import = snapshot.ImportResult
+            ?? throw new InvalidDataException(
+                $"Statement reconciliation report workflow '{snapshot.Workflow.WorkflowId}' has no retained import checkpoint.");
+        var reconciliation = await _statementRuns
+            .GetAsync(import.RunId, ct)
+            .ConfigureAwait(false);
+        var openBreaks = reconciliation?.Breaks.Count ?? import.BreakCount;
+        var openCases = reconciliation?.Cases.Count(IsOpenCase) ?? import.CaseCount;
+        var queueGate = await EvaluateCanonicalQueueHandoffAsync(
+                import,
+                snapshot.Workflow.TenantId,
+                snapshot.Workflow.CompanyId,
+                ct)
+            .ConfigureAwait(false);
+
+        if (openBreaks <= 0 && openCases <= 0 && queueGate.IsSatisfied)
+        {
+            return CurrentReconciliationGate.Satisfied(reconciliation);
+        }
+
+        var recoveryActions = new List<string>(capacity: 2);
+        if (openBreaks > 0 || openCases > 0)
+        {
+            recoveryActions.Add(
+                "Resolve or disposition the linked reconciliation breaks and cases, then resume this workflow.");
+        }
+
+        if (!queueGate.IsSatisfied)
+        {
+            recoveryActions.Add(queueGate.RecoveryAction);
+        }
+
+        return new CurrentReconciliationGate(
+            false,
+            reconciliation,
+            Math.Max(openBreaks, queueGate.OpenCaseCount),
+            Math.Max(openCases, queueGate.BlockingCaseCount),
+            string.Join(" ", recoveryActions));
+    }
+
+    private static WorkflowSnapshot AwaitReconciliation(
+        WorkflowSnapshot snapshot,
+        CurrentReconciliationGate gate,
+        bool advanceVersion)
+    {
+        var workflow = snapshot.Workflow with
+        {
+            Status = StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
+            Version = advanceVersion
+                ? snapshot.Workflow.Version + 1
+                : snapshot.Workflow.Version,
+            RetainedArtifacts = [],
+            EvidenceReferences = snapshot.Workflow.EvidenceReferences
+                .Where(static item =>
+                    !item.StartsWith("artifact:", StringComparison.Ordinal))
+                .ToArray(),
+            BreakCount = gate.OpenBreakCount,
+            CaseCount = gate.OpenCaseCount,
+            UpdatedAtUtc = advanceVersion
+                ? DateTimeOffset.UtcNow
+                : snapshot.Workflow.UpdatedAtUtc,
+            CompletedAtUtc = null,
+            FailureReason = null,
+            RecoveryAction = gate.RecoveryAction
+        };
+        return snapshot with
+        {
+            Workflow = workflow,
+            ResumeStatus = StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation,
+            RenderingReconciliationReportAtUtc = null
+        };
+    }
 
     private static StatementReconciliationReportWorkflowExecution RequireExecution(WorkflowSnapshot snapshot)
         => new(
@@ -1274,7 +1389,20 @@ public sealed class StatementReconciliationReportWorkflowService
         PersistedRequest Request,
         StatementReconciliationReportWorkflowDto Workflow,
         StatementImportCommitResultDto? ImportResult,
-        StatementReconciliationReportWorkflowStatusDto ResumeStatus);
+        StatementReconciliationReportWorkflowStatusDto ResumeStatus,
+        DateTimeOffset? RenderingReconciliationReportAtUtc = null);
+
+    private sealed record CurrentReconciliationGate(
+        bool IsSatisfied,
+        StatementRunWorkflowResult? Reconciliation,
+        int OpenBreakCount,
+        int OpenCaseCount,
+        string RecoveryAction)
+    {
+        public static CurrentReconciliationGate Satisfied(
+            StatementRunWorkflowResult? reconciliation)
+            => new(true, reconciliation, 0, 0, string.Empty);
+    }
 
     private sealed record WorkflowLocation(string WorkflowId, string Directory);
 

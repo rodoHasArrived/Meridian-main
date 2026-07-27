@@ -174,6 +174,7 @@ import type {
   StatementFetchScheduleUpsertRequest,
   StatementImportCommitResult,
   StatementImportPreview,
+  StatementImportPreviewRequest,
   StatementImportSourceKind,
   StatementMappingProfile,
   StatementRunException,
@@ -3103,20 +3104,17 @@ export function deleteStatementMappingProfile(profileId: string, options: ApiReq
   return deleteJson<void>(reconciliationStatementMappingProfileEndpoint(profileId), options);
 }
 
-export function previewStatementImport(
-  request: {
-    file: File;
-    connectorId?: string | null;
-    mappingProfileId?: string | null;
-    externalAccountId?: string | null;
-  },
-  options: ApiRequestOptions = {}
-) {
+export function previewStatementImport(request: StatementImportPreviewRequest, options: ApiRequestOptions = {}) {
   const formData = new FormData();
   formData.append("file", request.file);
   appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
   appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
-  appendOptionalStatementFormField(formData, "externalAccountId", request.externalAccountId);
+  formData.append("externalAccountId", request.externalAccountId);
+  formData.append("sourceKind", request.sourceKind);
+  formData.append("sourceInstitution", request.sourceInstitution);
+  formData.append("fundAccountId", request.fundAccountId);
+  formData.append("periodStart", request.periodStart);
+  formData.append("periodEnd", request.periodEnd);
   return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
 }
 

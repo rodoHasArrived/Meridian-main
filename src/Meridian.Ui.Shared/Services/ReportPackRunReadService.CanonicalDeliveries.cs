@@ -10,6 +10,11 @@ public sealed partial class ReportPackRunReadService
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
     {
+        if (accessContext?.RequireBoundScope == true)
+        {
+            EnsureCanonicalReadScope(accessContext);
+        }
+
         var payload = BuildPayloadCore(
             accessContext,
             recentRunLimit,
@@ -19,7 +24,6 @@ public sealed partial class ReportPackRunReadService
             return payload;
         }
 
-        EnsureCanonicalReadScope(accessContext);
         if (_runStore is null)
         {
             throw new InvalidOperationException(

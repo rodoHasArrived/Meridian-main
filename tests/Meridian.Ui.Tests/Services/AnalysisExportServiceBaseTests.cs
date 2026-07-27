@@ -225,6 +225,7 @@ public sealed class AnalysisExportServiceTests
         var result = AnalysisExportService.MapCanonicalExportResponse(response);
 
         result.Success.Should().BeTrue();
+        result.Format.Should().Be("xlsx");
         result.OutputPath.Should().Be(outputDirectory);
         result.FilesCreated.Should().ContainSingle()
             .Which.Should().Be(Path.Combine(outputDirectory, "SPY_20260102.xlsx"));
@@ -232,6 +233,86 @@ public sealed class AnalysisExportServiceTests
         result.BytesWritten.Should().Be(4096);
         result.Duration.Should().Be(TimeSpan.FromSeconds(1.25));
         result.Warnings.Should().Equal("source warning");
+    }
+
+    [Fact]
+    public void MapSpecializedExportResponse_WithFailedPayload_ShouldNotPromoteTransportSuccess()
+    {
+        var response = CreateSpecializedResponse(
+            success: false,
+            status: "failed",
+            format: "xlsx",
+            error: "No source data found for the specified export criteria.",
+            files: Array.Empty<ExportAnalysisApiFile>(),
+            totalRecords: 0);
+
+        var result = AnalysisExportService.MapSpecializedExportResponse(response);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("No source data");
+        result.Format.Should().Be("xlsx");
+        result.FilesCreated.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MapSpecializedExportResponse_WithContradictoryArtifactFormat_ShouldFailClosed()
+    {
+        var response = CreateSpecializedResponse(
+            success: true,
+            status: "completed",
+            format: "xlsx",
+            error: null,
+            files:
+            [
+                new ExportAnalysisApiFile("SPY.csv", "SPY", "csv", 128, 2)
+            ],
+            totalRecords: 2);
+
+        var result = AnalysisExportService.MapSpecializedExportResponse(response);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("does not match artifact");
+        result.Format.Should().Be("xlsx");
+    }
+
+    [Fact]
+    public void SpecializedResultMappers_ShouldPreservePayloadFailureAndActualFormat()
+    {
+        var response = CreateSpecializedResponse(
+            success: false,
+            status: "failed",
+            format: "parquet",
+            error: "Export failed validation.",
+            files: Array.Empty<ExportAnalysisApiFile>(),
+            totalRecords: 0);
+
+        var quality = AnalysisExportService.MapQualityReportResponse(response);
+        var package = AnalysisExportService.MapResearchPackageResponse(response);
+
+        quality.Success.Should().BeFalse();
+        quality.Error.Should().Be("Export failed validation.");
+        quality.Format.Should().Be("parquet");
+        package.Success.Should().BeFalse();
+        package.Error.Should().Be("Export failed validation.");
+        package.Format.Should().Be("parquet");
+    }
+
+    [Fact]
+    public void EnsureSpecializedRequestsCanRepresent_WithIgnoredOptions_ShouldRejectBeforeDispatch()
+    {
+        var quality = () => AnalysisExportService.EnsureQualityReportRequestCanRepresent(
+            new QualityReportOptions { IncludeCharts = true, Format = "csv" });
+        var orderflow = () => AnalysisExportService.EnsureOrderFlowRequestCanRepresent(
+            new OrderFlowExportOptions { Aggregation = "Minute", Format = "parquet" });
+        var integrity = () => AnalysisExportService.EnsureIntegrityRequestCanRepresent(
+            new IntegrityExportOptions { OutputPath = "caller-path", Format = "csv" });
+        var package = () => AnalysisExportService.EnsureResearchPackageRequestCanRepresent(
+            new ResearchPackageOptions { Name = "model-alpha", Format = "parquet" });
+
+        quality.Should().Throw<NotSupportedException>().WithMessage("*IncludeCharts*No export was requested*");
+        orderflow.Should().Throw<NotSupportedException>().WithMessage("*Aggregation*No export was requested*");
+        integrity.Should().Throw<NotSupportedException>().WithMessage("*OutputPath*No export was requested*");
+        package.Should().Throw<NotSupportedException>().WithMessage("*Name*No export was requested*");
     }
 
     [Fact]
@@ -266,4 +347,30 @@ public sealed class AnalysisExportServiceTests
         template.Format.Should().Be(AnalysisExportFormat.CSV);
         template.Aggregation.Should().Be(DataAggregation.Daily);
     }
+
+    private static SpecializedExportApiResponse CreateSpecializedResponse(
+        bool success,
+        string status,
+        string format,
+        string? error,
+        IReadOnlyList<ExportAnalysisApiFile> files,
+        long totalRecords)
+        => new(
+            JobId: "job-1",
+            Success: success,
+            Status: status,
+            Format: format,
+            Symbols: new[] { "SPY" },
+            FilesGenerated: files.Count,
+            TotalRecords: totalRecords,
+            TotalBytes: files.Sum(static file => file.SizeBytes),
+            OutputDirectory: Path.Combine(Path.GetTempPath(), "analysis-export-specialized"),
+            Error: error,
+            Warnings: Array.Empty<string>(),
+            Files: files,
+            DataDictionaryPath: null,
+            LoaderScriptPath: null,
+            LineageManifestPath: null,
+            QualitySummary: null,
+            Timestamp: DateTimeOffset.UtcNow);
 }

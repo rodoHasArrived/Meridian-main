@@ -94,6 +94,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
+        services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults

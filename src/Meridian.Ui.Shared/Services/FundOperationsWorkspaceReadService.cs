@@ -26,7 +26,7 @@ namespace Meridian.Ui.Shared.Services;
 /// Builds the shared Accounting and fund-operations workspace projection used by
 /// the local API and future cross-workspace surfaces.
 /// </summary>
-public sealed class FundOperationsWorkspaceReadService
+public sealed partial class FundOperationsWorkspaceReadService
 {
     private static readonly JsonSerializerOptions ReportArtifactJsonOptions = new()
     {
@@ -4639,8 +4639,4 @@ public sealed class FundOperationsWorkspaceReadService
             _ => ReportKind.TrialBalance
         };
 
-    private sealed record AccountWorkspaceProjection(
-        FundAccountSummary Summary,
-        AccountBalanceSnapshotDto? LatestSnapshot,
-        Guid? FundId);
 }

@@ -7,7 +7,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class AnalysisExportWizardViewModelTests
 {
     [Fact]
-    public void Initialize_ProjectsScopeReadinessAndCommandState()
+    public void Initialize_DoesNotSeedSymbolScope()
     {
         var viewModel = new AnalysisExportWizardViewModel();
 
@@ -15,10 +15,11 @@ public sealed class AnalysisExportWizardViewModelTests
 
         viewModel.CurrentStep.Should().Be(1);
         viewModel.CurrentStepTitle.Should().Be("Select export scope");
-        viewModel.ActionReadinessTitle.Should().Be("Scope ready");
-        viewModel.WizardScopeText.Should().Contain("2 symbols selected");
-        viewModel.ValidationVisibility.Should().Be(Visibility.Collapsed);
-        viewModel.PrimaryActionCommand.CanExecute(null).Should().BeTrue();
+        viewModel.ActionReadinessTitle.Should().Be("Scope setup incomplete");
+        viewModel.WizardScopeText.Should().Contain("No symbols selected");
+        viewModel.SelectedSymbols.Should().BeEmpty();
+        viewModel.ValidationVisibility.Should().Be(Visibility.Visible);
+        viewModel.PrimaryActionCommand.CanExecute(null).Should().BeFalse();
         viewModel.AddSymbolCommand.CanExecute(null).Should().BeFalse();
     }
 
@@ -28,8 +29,6 @@ public sealed class AnalysisExportWizardViewModelTests
         var viewModel = new AnalysisExportWizardViewModel();
         viewModel.Initialize();
 
-        viewModel.SelectedSymbols.Clear();
-
         viewModel.PrimaryActionCommand.CanExecute(null).Should().BeFalse();
         viewModel.ActionReadinessTitle.Should().Be("Scope setup incomplete");
         viewModel.ActionReadinessDetail.Should().Contain("Add at least one symbol");
@@ -38,10 +37,12 @@ public sealed class AnalysisExportWizardViewModelTests
     }
 
     [Fact]
-    public void StepTwo_RequiresDestinationAndMetricBeforeReview()
+    public void ReviewStep_DisablesExportAndReportsChecksWereNotRun()
     {
         var viewModel = new AnalysisExportWizardViewModel();
         viewModel.Initialize();
+        viewModel.SymbolInput = "AAPL";
+        viewModel.AddSymbolCommand.Execute(null);
 
         viewModel.PrimaryActionCommand.Execute(null);
 
@@ -60,9 +61,20 @@ public sealed class AnalysisExportWizardViewModelTests
         viewModel.PrimaryActionCommand.Execute(null);
 
         viewModel.CurrentStep.Should().Be(3);
-        viewModel.PreExportReport.Should().Contain("All checks passed");
-        viewModel.ActionReadinessTitle.Should().Be("Export ready to queue");
-        viewModel.PrimaryActionCommand.CanExecute(null).Should().BeTrue();
+        viewModel.PreExportReport.Should().Contain("not connected to the canonical analysis export service");
+        viewModel.PreExportReport.Should().Contain("did not test destination access");
+        viewModel.PreExportReport.Should().NotContain("All checks passed");
+        viewModel.EstimatedSize.Should().BeEmpty();
+        viewModel.ActionReadinessTitle.Should().Be("Export unavailable");
+        viewModel.PrimaryActionLabel.Should().Be("Export unavailable");
+        viewModel.PrimaryActionCommand.CanExecute(null).Should().BeFalse();
+        viewModel.StatusMessage.Should().Contain("No export was queued or created");
+
+        viewModel.GoNext();
+
+        viewModel.CurrentStep.Should().Be(3);
+        viewModel.StatusMessage.Should().Contain("No export was queued or created");
+        viewModel.StatusMessage.Should().NotContain("queued successfully");
     }
 
     [Fact]
@@ -79,7 +91,7 @@ public sealed class AnalysisExportWizardViewModelTests
         viewModel.SelectedSymbols.Should().ContainSingle(symbol => symbol == "SPY");
         viewModel.SymbolInput.Should().BeEmpty();
         viewModel.StatusMessage.Should().Be("SPY is already selected.");
-        viewModel.WizardScopeText.Should().Contain("3 symbols selected");
+        viewModel.WizardScopeText.Should().Contain("1 symbol selected");
     }
 
     [Fact]
@@ -87,6 +99,8 @@ public sealed class AnalysisExportWizardViewModelTests
     {
         var viewModel = new AnalysisExportWizardViewModel();
         viewModel.Initialize();
+        viewModel.SymbolInput = "AAPL";
+        viewModel.AddSymbolCommand.Execute(null);
         viewModel.PrimaryActionCommand.Execute(null);
 
         viewModel.CancelCommand.Execute(null);

@@ -1120,8 +1120,15 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
     }
 
     internal bool IsConfigured =>
-        _services.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore
+        _services.GetService<DatabaseMigrationReadinessReceipt>() is
+        {
+            LedgerReady: true,
+            FundAccountsReady: true,
+            FundStructureReady: true
+        }
+        && _services.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore
         && _services.GetService<IFundProfileTenancyRegistry>() is PostgresFundProfileTenancyRegistry
+        && _services.GetService<IFundAccountService>() is PostgresFundAccountService
         && _services.GetService<IFundStructureService>() is PostgresFundStructureService;
 
     public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(

@@ -1471,7 +1471,10 @@ client-local route inference. The shared ledger amount provenance service expose
 lineage pointers as a click-through drilldown for a report-pack ledger amount, combining the ledger
 line, strategy/run evidence, Security Master pointer, reconciliation summary, durable case ids,
 related case status/owner/sign-off posture, approval state, report usage, retained report-pack
-artifacts, audit-pack readiness category evidence, export evidence, and restatement lineage. When a retained report
+artifacts, audit-pack readiness category evidence, export evidence, and restatement lineage. The
+drilldown requires an authenticated tenant/company scope and only joins reconciliation casework from
+that exact scope; unscoped callers or deployments without the authoritative casework store return no
+drilldown instead of claiming that scoped casework is clear. When a retained report
 line carries a retained Security Master id, the drilldown uses that id to pull in open Security
 Master exception cases for the same instrument. When a retained report line does not carry a direct
 provider-event pointer, related provider-ledger cases can contribute provider-event evidence from
@@ -1732,7 +1735,9 @@ mapping reviews, and override requests can follow the governed reconciliation-ca
 Fund-account close readiness now links the latest provider-ledger Security Master passports back to
 open Security Master queue items for the same held securities, so pending identifier-conflict or
 operator-override cases can block the account close even when the case itself is not fund-account
-scoped.
+scoped. Its endpoint, provider-latest lookup, and queue reads use the authenticated tenant/company
+scope end to end. Unscoped callers and deployments without the authoritative casework store receive
+a blocked posture with no latest-run claim rather than an authoritative ready-to-close response.
 Evidence Workflow Fabric now exposes those open identifier conflicts as a first-class
 `security-master-conflict` evidence subject. The packet contributor reads the shared conflict
 service, links open conflicts to their durable case ids, and keeps route-only Security Master

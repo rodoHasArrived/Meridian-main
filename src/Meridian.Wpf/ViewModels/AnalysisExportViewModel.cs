@@ -11,6 +11,11 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
 {
+    internal const string ExportExecutionUnavailableReason =
+        "Analysis export is unavailable in this desktop screen because its destination, metric, chart, and summary options are not connected to the canonical analysis export service. No export was run.";
+    internal const string PresetPersistenceUnavailableReason =
+        "Export preset saving is unavailable because this desktop screen has no configured preset store. No preset was saved.";
+
     private string _exportName = string.Empty;
     private string _selectedFormat = "CSV";
     private string _destination = string.Empty;
@@ -64,8 +69,8 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
                 new("Created", nameof(ExportSummary.CreatedAt), 160)
             ],
             "Recent analysis exports",
-            "No recent exports",
-            "Run a validated analysis export to retain a session history row.");
+            "No verified exports",
+            "Canonical analysis export history is not connected to this desktop screen.");
 
         foreach (var metric in Metrics)
         {
@@ -261,21 +266,13 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         private set => SetProperty(ref _exportActionInspector, value);
     }
 
-    public bool CanSavePreset() => CanSavePresetForState(ExportName, Destination);
+    public string RunExportTooltip => $"Export blocked: {ExportExecutionUnavailableReason}";
 
-    public string RunExportTooltip => CanRunExport()
-        ? ExportReadinessDetail
-        : $"Export blocked: {ExportReadinessDetail}";
+    public string SavePresetTooltip => PresetPersistenceUnavailableReason;
 
-    public string SavePresetTooltip => CanSavePreset()
-        ? $"Save {ExportName.Trim()} as a reusable analysis export preset."
-        : "Name the export and choose a destination before saving a preset.";
+    public string ExportActionStateTitle => "Export unavailable";
 
-    public string ExportActionStateTitle => CanRunExport() ? "Export ready" : "Export blocked";
-
-    public string ExportActionStateDetail => CanRunExport()
-        ? ExportReadinessDetail
-        : RunExportTooltip;
+    public string ExportActionStateDetail => ExportExecutionUnavailableReason;
 
     public string Error => string.Empty;
 
@@ -295,78 +292,25 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
 
     public void Initialize()
     {
-        if (RecentExports.Count == 0)
-        {
-            RecentExports.Add(new ExportSummary
-            {
-                Name = "Daily Liquidity Pack",
-                Format = "CSV",
-                Status = "Completed",
-                CreatedAt = DateTime.Today.ToString("MMM dd, yyyy")
-            });
-            RecentExports.Add(new ExportSummary
-            {
-                Name = "Monthly Volatility",
-                Format = "Parquet",
-                Status = "Queued",
-                CreatedAt = DateTime.Today.AddDays(-2).ToString("MMM dd, yyyy")
-            });
-        }
-
+        UpdateRecentExportsState();
         SelectedRecentExport ??= RecentExports.FirstOrDefault();
     }
 
     public void RunExport()
     {
         UpdateValidationSummary();
-        if (!string.IsNullOrWhiteSpace(ValidationSummary))
-        {
-            StatusMessage = "Resolve validation errors before running the export.";
-            return;
-        }
-
-        if (!Metrics.Any(metric => metric.IsSelected))
-        {
-            ValidationSummary = "Select at least one metric for the export.";
-            StatusMessage = "Select metrics to proceed.";
-            UpdateExportReadiness();
-            RunExportCommand.NotifyCanExecuteChanged();
-            return;
-        }
-
-        var exportName = string.IsNullOrWhiteSpace(ExportName) ? "Untitled Export" : ExportName.Trim();
-        var export = new ExportSummary
-        {
-            Name = exportName,
-            Format = SelectedFormat,
-            Status = "Queued",
-            CreatedAt = DateTime.Now.ToString("MMM dd, yyyy HH:mm")
-        };
-        RecentExports.Insert(0, export);
-        SelectedRecentExport = export;
-
-        StatusMessage = $"Export \"{exportName}\" queued successfully.";
+        StatusMessage = ExportExecutionUnavailableReason;
         RefreshExportReadiness();
     }
 
     public void SavePreset()
     {
-        if (!CanSavePreset())
-        {
-            StatusMessage = SavePresetTooltip;
-            return;
-        }
-
-        StatusMessage = "Export preset saved for quick reuse.";
+        StatusMessage = PresetPersistenceUnavailableReason;
     }
 
-    public bool CanRunExport()
-    {
-        return !GetFieldValidationErrors().Any() && Metrics.Any(metric => metric.IsSelected);
-    }
+    public bool CanRunExport() => false;
 
-    public static bool CanSavePresetForState(string? exportName, string? destination) =>
-        !string.IsNullOrWhiteSpace(exportName) && !string.IsNullOrWhiteSpace(destination);
+    public bool CanSavePreset() => false;
 
     private void UpdateSelectedSymbols()
     {
@@ -408,42 +352,27 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     {
         var fieldErrors = GetFieldValidationErrors().ToArray();
         var selectedMetricCount = Metrics.Count(metric => metric.IsSelected);
-        if (fieldErrors.Length > 0 || selectedMetricCount == 0)
+        var missing = fieldErrors
+            .Select(error => error.TrimEnd('.'))
+            .ToList();
+
+        if (selectedMetricCount == 0)
         {
-            ExportReadinessTitle = "Export setup incomplete";
-
-            var missing = fieldErrors
-                .Select(error => error.TrimEnd('.'))
-                .ToList();
-
-            if (selectedMetricCount == 0)
-            {
-                missing.Add("Select at least one metric");
-            }
-
-            ExportReadinessDetail = string.Join(" ", missing.Select(error => $"{error}."));
-            UpdateExportPresentation();
-            return;
+            missing.Add("Select at least one metric");
         }
 
-        var symbolScope = SelectedSymbols.Count == 0
-            ? "all eligible symbols"
-            : $"{SelectedSymbols.Count} selected symbol{(SelectedSymbols.Count == 1 ? string.Empty : "s")}";
-        var dateScope = FromDate.HasValue || ToDate.HasValue
-            ? $"{FromDate?.ToString("MMM dd, yyyy") ?? "start"} to {ToDate?.ToString("MMM dd, yyyy") ?? "latest"}"
-            : "the full retained window";
-
-        ExportReadinessTitle = "Export ready";
-        ExportReadinessDetail =
-            $"{SelectedFormat} export will include {selectedMetricCount} metric{(selectedMetricCount == 1 ? string.Empty : "s")} for {symbolScope} across {dateScope}.";
+        ExportReadinessTitle = "Export unavailable";
+        ExportReadinessDetail = missing.Count == 0
+            ? ExportExecutionUnavailableReason
+            : $"{ExportExecutionUnavailableReason} Configuration review: {string.Join(" ", missing.Select(error => $"{error}."))}";
         UpdateExportPresentation();
     }
 
     private void UpdateRecentExportsState()
     {
         RecentExportsStateText = RecentExports.Count == 0
-            ? "No exports have been queued in this session yet."
-            : $"{RecentExports.Count} export{(RecentExports.Count == 1 ? string.Empty : "s")} retained for this session.";
+            ? "No verified analysis export history is available in this desktop screen."
+            : $"{RecentExports.Count} backend-confirmed export{(RecentExports.Count == 1 ? string.Empty : "s")} available.";
         OnPropertyChanged(nameof(HasSelectedRecentExport));
         if (SelectedRecentExport is null)
         {
@@ -536,7 +465,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             Title = "No recent export selected",
             Subtitle = "Analysis export history",
-            Detail = "Run a validated analysis export or select a retained export row to inspect session history."
+            Detail = "Canonical analysis export history is not connected to this desktop screen."
         };
 
     internal static InspectorPanelModel BuildExportActionInspector(
@@ -549,7 +478,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         {
             Title = "Export actions",
             Subtitle = "Run and preset readiness",
-            Detail = canRunExport ? runTooltip : "Export actions stay blocked until required setup is complete.",
+            Detail = runTooltip,
             Badge = new WorkstationBadgeModel(
                 "Run export",
                 canRunExport ? "Ready" : "Blocked",
@@ -608,7 +537,7 @@ public sealed class MetricOption : BindableBase
     }
 }
 
-/// <summary>Summarises a completed or queued export job for display in the recent-exports list.</summary>
+/// <summary>Summarises a backend-confirmed export job for display in the recent-exports list.</summary>
 public sealed class ExportSummary
 {
     public string Name { get; init; } = string.Empty;

@@ -235,6 +235,8 @@ public sealed partial class AnalysisExportService
             if (sourceFiles.Count is 0)
             {
                 result.Warnings = [.. result.Warnings, "No source data found for the specified criteria"];
+                result.Success = false;
+                result.Error = "No source data found for the specified export criteria.";
                 result.CompletedAt = DateTime.UtcNow;
                 return result;
             }
@@ -269,6 +271,16 @@ public sealed partial class AnalysisExportService
                     break;
                 default:
                     throw new NotSupportedException($"Format {profile.Format} is not supported");
+            }
+
+            if (exportedFiles.Count == 0 || exportedFiles.Sum(static file => file.RecordCount) == 0)
+            {
+                DeleteEmptyExportArtifacts(exportedFiles, request.OutputDirectory);
+                result.Success = false;
+                result.Error = "No exportable records were found in the selected source data.";
+                result.Warnings = [.. result.Warnings, result.Error];
+                result.CompletedAt = DateTime.UtcNow;
+                return result;
             }
 
             result.Files = exportedFiles.ToArray();
@@ -391,6 +403,35 @@ public sealed partial class AnalysisExportService
                 count++;
         }
         return count;
+    }
+
+    private void DeleteEmptyExportArtifacts(
+        IEnumerable<ExportedFile> exportedFiles,
+        string outputDirectory)
+    {
+        var normalizedOutputDirectory = Path.GetFullPath(outputDirectory)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+
+        foreach (var exportedFile in exportedFiles)
+        {
+            try
+            {
+                var normalizedPath = Path.GetFullPath(exportedFile.Path);
+                if (normalizedPath.StartsWith(normalizedOutputDirectory, StringComparison.OrdinalIgnoreCase) &&
+                    File.Exists(normalizedPath))
+                {
+                    File.Delete(normalizedPath);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.Warning(
+                    ex,
+                    "Could not remove empty export artifact {ExportArtifactPath}",
+                    exportedFile.Path);
+            }
+        }
     }
 
     /// <summary>

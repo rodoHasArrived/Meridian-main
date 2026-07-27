@@ -1127,6 +1127,54 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
+    public void ReportWriterGridRead_SameRunIdAcrossTenants_UsesBoundTenantLookup()
+    {
+        const string runId = "shared-run-grid";
+        var tenantAGrid = new ReportWriterGridRenderDto(
+            "tenant-a-grid",
+            "Tenant A grid",
+            ReportWriterGridKindDto.Detail,
+            [],
+            [],
+            []);
+        var tenantBGrid = tenantAGrid with
+        {
+            GridId = "tenant-b-grid",
+            Title = "Tenant B grid"
+        };
+        var tenantABase = BuildRunSnapshot(runId, "tenant-a", "company-shared");
+        var tenantBBase = BuildRunSnapshot(runId, "tenant-b", "company-shared");
+        var tenantASnapshot = tenantABase with
+        {
+            Manifest = tenantABase.Manifest with
+            {
+                RenderedReportWriterGrids = [tenantAGrid]
+            }
+        };
+        var tenantBSnapshot = tenantBBase with
+        {
+            Manifest = tenantBBase.Manifest with
+            {
+                RenderedReportWriterGrids = [tenantBGrid]
+            }
+        };
+        var orchestration = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            new StubReportingRunStore([tenantASnapshot, tenantBSnapshot]));
+        var service = new ReportWriterGridArtifactService(orchestration);
+
+        var grid = service.GetGrid(
+            runId,
+            tenantAGrid.GridId,
+            Scope("admin-a", "tenant-a", "company-shared", isAdmin: true));
+
+        grid.GridId.Should().Be(tenantAGrid.GridId);
+        grid.Title.Should().Be(tenantAGrid.Title);
+    }
+
+    [Fact]
     public void WorkstationReportingRead_AdminSeesOnlyImmutableTenantRunScope()
     {
         var store = new StubReportingRunStore(
@@ -1370,11 +1418,25 @@ public sealed class ReportingTenantIsolationTests
         public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
             runs.Take(limit).ToArray();
 
-        public ReportingOutputManifest? GetManifest(string runId) =>
-            runs.FirstOrDefault(run => string.Equals(
-                run.Manifest.RunId,
-                runId,
-                StringComparison.Ordinal))?.Manifest;
+        public ReportingOutputManifest? GetManifest(string runId)
+        {
+            var matches = runs
+                .Where(run => string.Equals(
+                    run.Manifest.RunId,
+                    runId,
+                    StringComparison.Ordinal))
+                .Take(2)
+                .ToArray();
+            return matches.Length == 1 ? matches[0].Manifest : null;
+        }
+
+        public ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
+            runs.FirstOrDefault(run =>
+                string.Equals(run.Manifest.RunId, runId, StringComparison.Ordinal)
+                && string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    tenantId,
+                    StringComparison.Ordinal))?.Manifest;
 
         public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
             runs.FirstOrDefault(run => string.Equals(

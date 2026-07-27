@@ -410,20 +410,25 @@ public sealed class ReportingRunCertificationServiceTests
             Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task ReconciliationEvidence_MissingAuthoritativeSourceQueueScopeFailsClosedBeforeQueueRead()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReconciliationEvidence_MissingAuthoritativeSourceQueueScopeFailsClosedBeforeQueueRead(
+        bool omitTenant)
     {
         var parameters = Parameters(ReportingOutputFormatDto.Pdf);
         var sourceProvider = new StubAuthoritativeSource(Rows());
         var captured = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
-        var sourceWithoutCompany = captured with { CompanyId = null };
+        var sourceWithoutScope = omitTenant
+            ? captured with { TenantId = string.Empty }
+            : captured with { CompanyId = null };
         var queue = Substitute.For<IReconciliationBreakQueueRepository>();
         var sut = new ReportingReconciliationEvidenceSource(
             new EmptyReconciliationStore(),
             queue);
 
         Func<Task> resolve = async () =>
-            await sut.ResolveAsync(parameters, sourceWithoutCompany, Access());
+            await sut.ResolveAsync(parameters, sourceWithoutScope, Access());
 
         var exception = (await resolve.Should()
             .ThrowAsync<ReportingReconciliationEvidenceInvalidException>()).Which;
@@ -432,8 +437,11 @@ public sealed class ReportingRunCertificationServiceTests
         queue.ReceivedCalls().Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task ReconciliationEvidence_MissingReceiptQueueScopeFailsClosedBeforeQueueRead()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReconciliationEvidence_MissingReceiptQueueScopeFailsClosedBeforeQueueRead(
+        bool omitTenant)
     {
         var parameters = Parameters(ReportingOutputFormatDto.Pdf);
         var sourceProvider = new StubAuthoritativeSource(Rows());
@@ -442,16 +450,16 @@ public sealed class ReportingRunCertificationServiceTests
             "break-before-missing-receipt-scope",
             source,
             parameters.AsOfDate);
-        var receiptWithoutCompany = ClosedReceipt(
+        var completeReceipt = ClosedReceipt(
             source,
             resolved,
-            "hard-close-before-missing-receipt-scope") with
-        {
-            CompanyId = null
-        };
+            "hard-close-before-missing-receipt-scope");
+        var receiptWithoutScope = omitTenant
+            ? completeReceipt with { TenantId = string.Empty }
+            : completeReceipt with { CompanyId = null };
         var queue = Substitute.For<IReconciliationBreakQueueRepository>();
         var sut = new ReportingReconciliationEvidenceSource(
-            new ReturningReconciliationStore(receiptWithoutCompany),
+            new ReturningReconciliationStore(receiptWithoutScope),
             queue);
 
         Func<Task> resolve = async () =>

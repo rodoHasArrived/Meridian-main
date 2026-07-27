@@ -6501,6 +6501,31 @@ public sealed partial class WorkstationEndpointsTests
         problem.GetProperty("detail").GetString().Should().Contain("PostgreSQL authority");
     }
 
+    [Theory]
+    [InlineData("/api/workstation/reporting")]
+    [InlineData("/api/workstation/reporting/structured-exports/investment-portfolio-cuts")]
+    public async Task MapWorkstationEndpoints_ReportingAuthority_WithoutTenantCompanyScope_ShouldDenyBeforeRead(
+        string route)
+    {
+        var runStore = Substitute.For<IReportingRunStore>();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog(),
+                    runStore));
+            },
+            currentUserPermissions: UserPermission.ViewReporting,
+            currentUserCompanyId: null,
+            currentUserTenantId: "tenant-test");
+
+        var response = await app.GetTestClient().GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        runStore.ReceivedCalls().Should().BeEmpty(
+            "tenant/company validation must run before any reporting-store read");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_ReportingStructuredExport_WhenReadinessProbeThrows_ShouldFailClosed()
     {
