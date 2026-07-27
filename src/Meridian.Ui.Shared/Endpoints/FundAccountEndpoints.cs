@@ -450,15 +450,23 @@ public static class FundAccountEndpoints
             if (closeReadiness is null)
                 return FundAccountCloseReadinessUnavailable();
 
-            var result = await closeReadiness.GetAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var result = await closeReadiness
+                .GetAsync(accountId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return result is null
                 ? Results.NotFound()
                 : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundAccountCloseReadiness")
         .Produces<FundAccountCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {

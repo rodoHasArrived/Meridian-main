@@ -19,6 +19,7 @@ using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -73,6 +74,10 @@ public sealed partial class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IFundProfileTenancyRegistry>(
+            new TestCurrentScopeFundProfileTenancyRegistry(
+                currentUserTenantId ?? currentUserCompanyId,
+                currentUserCompanyId));
         builder.Services.TryAddSingleton<IReportingDeploymentReadinessService>(
             new FixedReportingDeploymentReadinessService(
                 ReadyReportingDeploymentCapability()));
@@ -152,6 +157,46 @@ public sealed partial class WorkstationEndpointsTests
         ReportingDeploymentCapabilityDto capability) : IReportingDeploymentReadinessService
     {
         public ReportingDeploymentCapabilityDto Evaluate() => capability;
+    }
+
+    private sealed class TestCurrentScopeFundProfileTenancyRegistry(
+        string? tenantId,
+        string? companyId) : IFundProfileTenancyRegistry
+    {
+        public Task<FundProfileOwnership> BindAsync(
+            string fundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new FundProfileOwnership(
+                fundProfileId,
+                requestedTenantId,
+                requestedCompanyId));
+
+        public Task<FundProfileOwnership?> ResolveAsync(
+            string fundProfileId,
+            CancellationToken ct = default)
+            => Task.FromResult<FundProfileOwnership?>(
+                string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId)
+                    ? null
+                    : new FundProfileOwnership(fundProfileId, tenantId.Trim(), companyId.Trim()));
+
+        public async Task<bool> IsAccessibleAsync(
+            string fundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+        {
+            var owner = await ResolveAsync(fundProfileId, ct).ConfigureAwait(false);
+            return owner is not null &&
+                   owner.IsHeldBy(requestedTenantId) &&
+                   !string.IsNullOrWhiteSpace(owner.CompanyId) &&
+                   !string.IsNullOrWhiteSpace(requestedCompanyId) &&
+                   string.Equals(
+                       owner.CompanyId.Trim(),
+                       requestedCompanyId.Trim(),
+                       StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     private static void RegisterRunReadServices(IServiceCollection services)

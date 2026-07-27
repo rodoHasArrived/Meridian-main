@@ -298,36 +298,14 @@ public sealed class ReportingRunCertificationServiceTests
         var parameters = Parameters(ReportingOutputFormatDto.Pdf);
         var sourceProvider = new StubAuthoritativeSource(Rows());
         var source = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
-        var resolved = ScopedBreak("break-reopened-after-close", source.FundId, StubAuthoritativeSource.BookId) with
-        {
-            Status = ReconciliationBreakQueueStatus.Resolved,
-            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
-            Disposition = ReconciliationBreakDispositionDto.Resolved,
-            DispositionReason = "The exact value difference was corrected.",
-            ResolvedBy = "reconciliation-operator",
-            ResolvedAt = CapturedAt,
-            DispositionEvidenceHash = new string('d', 64),
-            DisposedAt = CapturedAt,
-            Version = 2,
-            AccountingPeriodId = StubAuthoritativeSource.PeriodId.ToString("D"),
-            AsOfDate = parameters.AsOfDate
-        };
-        var closeBreakEvidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
-            [resolved],
-            source.FundId,
-            StubAuthoritativeSource.BookId,
-            StubAuthoritativeSource.PeriodId,
-            parameters.AsOfDate,
-            expectedOpenBreakCount: 0);
-        var receipt = ReportingReconciliationEvidenceValidation.CreateReceipt(
+        var resolved = ResolvedScopedBreak(
+            "break-reopened-after-close",
             source,
-            new ReportingReconciliationCompletionEvidence(
-                "hard-close-before-reopen",
-                new string('c', 64),
-                CapturedAt,
-                HasOpenBreaks: false,
-                ["period-close:hard-closed"],
-                closeBreakEvidence));
+            parameters.AsOfDate);
+        var receipt = ClosedReceipt(
+            source,
+            resolved,
+            "hard-close-before-reopen");
         var store = new InMemoryReportingReconciliationEvidenceStore();
         await store.RetainAsync(receipt);
         var reopened = resolved with
@@ -346,7 +324,12 @@ public sealed class ReportingRunCertificationServiceTests
             ReopenReason = "New custodian evidence invalidated the resolution."
         };
         var queue = Substitute.For<IReconciliationBreakQueueRepository>();
-        queue.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+        queue.GetAllAsync(
+                Arg.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId == source.TenantId
+                    && scope.CompanyId == source.CompanyId),
+                Arg.Any<ReconciliationBreakQueueStatus?>(),
+                Arg.Any<CancellationToken>())
             .Returns([reopened]);
         var sut = new ReportingReconciliationEvidenceSource(store, queue);
 
@@ -357,6 +340,128 @@ public sealed class ReportingRunCertificationServiceTests
         exception.Message.Should().Contain("changed after the retained close receipt");
         exception.Message.Should().Contain(reopened.BreakId);
         exception.Message.Should().Contain("Re-run reconciliation and close");
+        await queue.Received(1).GetAllAsync(
+            Arg.Is<ReconciliationBreakQueueScope>(scope =>
+                scope.TenantId == source.TenantId
+                && scope.CompanyId == source.CompanyId),
+            Arg.Any<ReconciliationBreakQueueStatus?>(),
+            Arg.Any<CancellationToken>());
+        await queue.DidNotReceive().GetAllAsync(
+            Arg.Any<ReconciliationBreakQueueStatus?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ReconciliationEvidence_CrossTenantCollidingQueueRowCannotChangeCertificationEvidence()
+    {
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var sourceProvider = new StubAuthoritativeSource(Rows());
+        var source = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
+        var resolved = ResolvedScopedBreak(
+            "same-break-id-across-tenants",
+            source,
+            parameters.AsOfDate);
+        var receipt = ClosedReceipt(
+            source,
+            resolved,
+            "hard-close-before-cross-tenant-collision");
+        var store = new InMemoryReportingReconciliationEvidenceStore();
+        await store.RetainAsync(receipt);
+        var crossTenantCollision = resolved with
+        {
+            TenantId = "tenant-b",
+            CompanyId = source.CompanyId,
+            Status = ReconciliationBreakQueueStatus.Open,
+            LifecycleState = ReconciliationCaseLifecycleState.Reopened,
+            Disposition = null,
+            DispositionReason = null,
+            ResolvedBy = null,
+            ResolvedAt = null,
+            DispositionEvidenceHash = null,
+            DisposedAt = null,
+            Version = 3,
+            ReopenReason = "A different tenant reopened its colliding case."
+        };
+        var queue = Substitute.For<IReconciliationBreakQueueRepository>();
+        queue.GetAllAsync(
+                Arg.Is<ReconciliationBreakQueueScope>(scope =>
+                    scope.TenantId == source.TenantId
+                    && scope.CompanyId == source.CompanyId),
+                Arg.Any<ReconciliationBreakQueueStatus?>(),
+                Arg.Any<CancellationToken>())
+            .Returns([resolved]);
+        queue.GetAllAsync(
+                Arg.Any<ReconciliationBreakQueueStatus?>(),
+                Arg.Any<CancellationToken>())
+            .Returns([crossTenantCollision]);
+        var sut = new ReportingReconciliationEvidenceSource(store, queue);
+
+        var actual = await sut.ResolveAsync(parameters, source, Access());
+
+        actual.Should().Be(receipt);
+        await queue.Received(1).GetAllAsync(
+            Arg.Is<ReconciliationBreakQueueScope>(scope =>
+                scope.TenantId == source.TenantId
+                && scope.CompanyId == source.CompanyId),
+            Arg.Any<ReconciliationBreakQueueStatus?>(),
+            Arg.Any<CancellationToken>());
+        await queue.DidNotReceive().GetAllAsync(
+            Arg.Any<ReconciliationBreakQueueStatus?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ReconciliationEvidence_MissingAuthoritativeSourceQueueScopeFailsClosedBeforeQueueRead()
+    {
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var sourceProvider = new StubAuthoritativeSource(Rows());
+        var captured = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
+        var sourceWithoutCompany = captured with { CompanyId = null };
+        var queue = Substitute.For<IReconciliationBreakQueueRepository>();
+        var sut = new ReportingReconciliationEvidenceSource(
+            new EmptyReconciliationStore(),
+            queue);
+
+        Func<Task> resolve = async () =>
+            await sut.ResolveAsync(parameters, sourceWithoutCompany, Access());
+
+        var exception = (await resolve.Should()
+            .ThrowAsync<ReportingReconciliationEvidenceInvalidException>()).Which;
+        exception.Message.Should().Contain("authoritative reporting source");
+        exception.Message.Should().Contain("exact tenant and company scope");
+        queue.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReconciliationEvidence_MissingReceiptQueueScopeFailsClosedBeforeQueueRead()
+    {
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var sourceProvider = new StubAuthoritativeSource(Rows());
+        var source = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
+        var resolved = ResolvedScopedBreak(
+            "break-before-missing-receipt-scope",
+            source,
+            parameters.AsOfDate);
+        var receiptWithoutCompany = ClosedReceipt(
+            source,
+            resolved,
+            "hard-close-before-missing-receipt-scope") with
+        {
+            CompanyId = null
+        };
+        var queue = Substitute.For<IReconciliationBreakQueueRepository>();
+        var sut = new ReportingReconciliationEvidenceSource(
+            new ReturningReconciliationStore(receiptWithoutCompany),
+            queue);
+
+        Func<Task> resolve = async () =>
+            await sut.ResolveAsync(parameters, source, Access());
+
+        var exception = (await resolve.Should()
+            .ThrowAsync<ReportingReconciliationEvidenceInvalidException>()).Which;
+        exception.Message.Should().Contain("retained reconciliation receipt");
+        exception.Message.Should().Contain("exact tenant and company scope");
+        queue.ReceivedCalls().Should().BeEmpty();
     }
 
     [Fact]
@@ -1642,6 +1747,50 @@ public sealed class ReportingRunCertificationServiceTests
             AuthoritativeSource: certified.AuthoritativeSource,
             CertifiedDatasetRows: certified.DatasetRows,
             CertifiedPartnersCapital: partnersCapital);
+    }
+
+    private static ReconciliationBreakQueueItem ResolvedScopedBreak(
+        string breakId,
+        ReportingAuthoritativeSourceCheckpoint source,
+        DateOnly asOfDate) =>
+        ScopedBreak(breakId, source.FundId, StubAuthoritativeSource.BookId) with
+        {
+            TenantId = source.TenantId,
+            CompanyId = source.CompanyId,
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "The exact value difference was corrected.",
+            ResolvedBy = "reconciliation-operator",
+            ResolvedAt = CapturedAt,
+            DispositionEvidenceHash = new string('d', 64),
+            DisposedAt = CapturedAt,
+            Version = 2,
+            AccountingPeriodId = StubAuthoritativeSource.PeriodId.ToString("D"),
+            AsOfDate = asOfDate
+        };
+
+    private static ReportingReconciliationEvidenceReceipt ClosedReceipt(
+        ReportingAuthoritativeSourceCheckpoint source,
+        ReconciliationBreakQueueItem resolved,
+        string completionCheckpointId)
+    {
+        var closeBreakEvidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [resolved],
+            source.FundId,
+            StubAuthoritativeSource.BookId,
+            StubAuthoritativeSource.PeriodId,
+            source.AsOfDate,
+            expectedOpenBreakCount: 0);
+        return ReportingReconciliationEvidenceValidation.CreateReceipt(
+            source,
+            new ReportingReconciliationCompletionEvidence(
+                completionCheckpointId,
+                new string('c', 64),
+                CapturedAt,
+                HasOpenBreaks: false,
+                ["period-close:hard-closed"],
+                closeBreakEvidence));
     }
 
     private static ReconciliationBreakQueueItem ScopedBreak(string breakId, string fundId, Guid bookId) => new(

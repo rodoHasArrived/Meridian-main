@@ -400,6 +400,8 @@ public sealed class StatementReconciliationReportWorkflowService
 
             var queueGate = await EvaluateCanonicalQueueHandoffAsync(
                     snapshot.ImportResult,
+                    snapshot.Workflow.TenantId,
+                    snapshot.Workflow.CompanyId,
                     ct)
                 .ConfigureAwait(false);
             if (!queueGate.IsSatisfied)
@@ -492,6 +494,8 @@ public sealed class StatementReconciliationReportWorkflowService
 
     private async Task<CanonicalQueueHandoffGate> EvaluateCanonicalQueueHandoffAsync(
         StatementImportCommitResultDto import,
+        string tenantId,
+        string? companyId,
         CancellationToken ct)
     {
         if (import.CaseCount <= 0 && import.BreakCount <= 0)
@@ -506,7 +510,15 @@ public sealed class StatementReconciliationReportWorkflowService
                 "The canonical reconciliation queue is unavailable. Restore it, complete every retained statement casework handoff, then resume this workflow.");
         }
 
-        var items = (await _breakQueue.GetAllAsync(ct: ct).ConfigureAwait(false))
+        if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
+        {
+            return CanonicalQueueHandoffGate.Blocked(
+                Math.Max(import.CaseCount, import.BreakCount),
+                "The canonical reconciliation queue cannot be evaluated without the workflow's exact tenant and company scope.");
+        }
+
+        var queueScope = new ReconciliationBreakQueueScope(tenantId, companyId);
+        var items = (await _breakQueue.GetAllAsync(queueScope, ct: ct).ConfigureAwait(false))
             .Where(item =>
                 string.Equals(item.SourceType, "statement", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(item.SourceImportId, import.RunId, StringComparison.OrdinalIgnoreCase))

@@ -14,6 +14,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
@@ -516,7 +517,8 @@ public static partial class WorkstationEndpoints
             return Results.Json(payload, jsonOptions);
         })
         .WithName("GetWorkstationPortfolioMultiAssetCoverage")
-        .Produces<MultiAssetCoverageSummaryDto>(200);
+        .Produces<MultiAssetCoverageSummaryDto>(200)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAssetOperations), async (Guid securityId, HttpContext context) =>
         {
@@ -1134,6 +1136,11 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
             if (service is null)
             {
@@ -1141,10 +1148,13 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser };
-            var result = await service.RunReconciliationAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var result = await service
+                .RunReconciliationAsync(workflowId, trustedRequest, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("RunOperationsContinuityReconciliation");
+        .WithName("RunOperationsContinuityReconciliation")
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakAssign), async (
             Guid workflowId,
@@ -3615,8 +3625,14 @@ public static partial class WorkstationEndpoints
             service = new MultiAssetCoverageReadService(new SecurityMasterOperationalReadinessService());
         }
 
+        if (!TryResolveReconciliationBreakQueueScope(context, out var scope))
+        {
+            throw new InvalidOperationException(
+                "A tenant- and company-scoped workstation request context is required.");
+        }
+
         return await service
-            .GetCoverageAsync(fundAccountId, entity, assetClass, context.RequestAborted)
+            .GetCoverageAsync(fundAccountId, entity, assetClass, scope, context.RequestAborted)
             .ConfigureAwait(false);
     }
 
@@ -3642,21 +3658,34 @@ public static partial class WorkstationEndpoints
             return null;
         }
 
+        if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+        {
+            return null;
+        }
+
         var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
-        var breakQueueItems = TryResolveReconciliationBreakQueueScope(context, out var queueScope)
-            ? await GetBreakQueueItemsAsync(
-                    breakQueueRepository,
-                    queueScope,
-                    status: null,
-                    fundAccountId: null,
-                    ledgerBookId: requestedLedgerBookId,
-                    ct: context.RequestAborted)
-                .ConfigureAwait(false)
-            : [];
+        var breakQueueItems = await GetBreakQueueItemsAsync(
+                breakQueueRepository,
+                queueScope,
+                status: null,
+                fundAccountId: null,
+                ledgerBookId: requestedLedgerBookId,
+                ct: context.RequestAborted)
+            .ConfigureAwait(false);
         var scopedOpenBreaks = breakQueueItems.Count(static item =>
             item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
 
-        var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
+        var allRuns = await GetAuthorizedAccountingRunsAsync(
+                context,
+                readService,
+                queueScope,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+        if (allRuns is null)
+        {
+            return null;
+        }
+
         var runs = allRuns.Take(6).ToArray();
         if (runs.Length == 0)
         {
@@ -3724,6 +3753,61 @@ public static partial class WorkstationEndpoints
             ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
             ManualJournalWorkbench: manualJournalWorkbench);
+    }
+
+    private static async Task<StrategyRunSummary[]?> GetAuthorizedAccountingRunsAsync(
+        HttpContext context,
+        StrategyRunReadService readService,
+        ReconciliationBreakQueueScope scope,
+        CancellationToken ct)
+    {
+        var tenancyRegistry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        if (tenancyRegistry is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+            var ownershipByFund = new Dictionary<string, FundProfileOwnership?>(
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var fundProfileId in runs
+                         .Select(static run => run.FundProfileId)
+                         .Where(static fundProfileId => !string.IsNullOrWhiteSpace(fundProfileId))
+                         .Select(static fundProfileId => fundProfileId!.Trim())
+                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                ownershipByFund[fundProfileId] = await tenancyRegistry
+                    .ResolveAsync(fundProfileId, ct)
+                    .ConfigureAwait(false);
+            }
+
+            return runs
+                .Where(run =>
+                {
+                    if (string.IsNullOrWhiteSpace(run.FundProfileId))
+                    {
+                        return false;
+                    }
+
+                    var fundProfileId = run.FundProfileId.Trim();
+                    return ownershipByFund.TryGetValue(fundProfileId, out var ownership) &&
+                           ownership is not null &&
+                           ownership.IsHeldBy(scope.TenantId) &&
+                           !string.IsNullOrWhiteSpace(ownership.CompanyId) &&
+                           string.Equals(
+                               ownership.CompanyId.Trim(),
+                               scope.CompanyId.Trim(),
+                               StringComparison.OrdinalIgnoreCase);
+                })
+                .ToArray();
+        }
+        catch (Exception) when (!ct.IsCancellationRequested)
+        {
+            return null;
+        }
     }
 
     private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)

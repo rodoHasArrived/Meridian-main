@@ -2012,13 +2012,21 @@ public static partial class FundStructureEndpoints
                 return scopeFailure;
             }
 
-            var result = await service.GetAsync(reportId, scopeKey, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var result = await service
+                .GetAsync(reportId, scopeKey, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithName("GetFundReportPackLedgerProvenance")
         .Produces<LedgerAmountProvenanceDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status410Gone);
+        .ProducesProblem(StatusCodes.Status410Gone)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost("/accounting/transaction-lab/preview", (InvestmentAccountingTransactionLabRequestDto request, HttpContext context) =>
         {

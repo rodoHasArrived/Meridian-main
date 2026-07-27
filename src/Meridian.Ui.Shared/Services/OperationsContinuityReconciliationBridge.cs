@@ -10,6 +10,13 @@ public interface IOperationsContinuityReconciliationBridge
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
         CancellationToken ct = default);
+
+    Task<OperationsTransitionResultDto> RunReconciliationAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default) =>
+        RunReconciliationAsync(workflowId, request, ct);
 }
 
 public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
@@ -70,7 +77,25 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
     public async Task<OperationsTransitionResultDto> RunReconciliationAsync(
         Guid workflowId,
         OperationsReconciliationRunRequestDto request,
+        CancellationToken ct = default) =>
+        await RunReconciliationCoreAsync(workflowId, request, accessScope: null, ct)
+            .ConfigureAwait(false);
+
+    public async Task<OperationsTransitionResultDto> RunReconciliationAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        return await RunReconciliationCoreAsync(workflowId, request, accessScope, ct).ConfigureAwait(false);
+    }
+
+    private async Task<OperationsTransitionResultDto> RunReconciliationCoreAsync(
+        Guid workflowId,
+        OperationsReconciliationRunRequestDto request,
+        ReconciliationBreakQueueScope? accessScope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -79,6 +104,12 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             return await _workflowService
                 .RunReconciliationAsync(workflowId, request, ct)
                 .ConfigureAwait(false);
+        }
+
+        if (accessScope is null)
+        {
+            return MissingReconciliationScope(
+                "A tenant- and company-scoped reconciliation request context is required to consume retained casework.");
         }
 
         if (_reconciliationRunService is null)
@@ -94,7 +125,7 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
                 "No reconciliation run detail was found for the requested source run or reconciliation run id.");
         }
 
-        var breakQueueItems = await LoadBreakQueueLookupAsync(detail, ct).ConfigureAwait(false);
+        var breakQueueItems = await LoadBreakQueueLookupAsync(detail, accessScope, ct).ConfigureAwait(false);
         var bridgedRequest = BuildWorkflowRequest(request, detail, breakQueueItems);
         return await _workflowService
             .RunReconciliationAsync(workflowId, bridgedRequest, ct)
@@ -103,6 +134,7 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
 
     private async Task<IReadOnlyDictionary<string, ReconciliationBreakQueueItem>> LoadBreakQueueLookupAsync(
         ReconciliationRunDetail detail,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct)
     {
         if (_breakQueueRepository is null)
@@ -110,7 +142,9 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             return new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var items = await _breakQueueRepository
+            .GetAllAsync(accessScope, status: null, ct)
+            .ConfigureAwait(false);
         var lookup = new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in items.Where(item => IsRelatedBreakQueueItem(detail, item)))
         {
@@ -140,13 +174,7 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
         if (!string.IsNullOrWhiteSpace(request.SourceRunId))
         {
             return await _reconciliationRunService!
-                .RunAsync(
-                    new ReconciliationRunRequest(
-                        request.SourceRunId.Trim(),
-                        request.AmountTolerance.GetValueOrDefault(0.01m),
-                        request.MaxAsOfDriftMinutes.GetValueOrDefault(5),
-                        request.BankEntityId),
-                    ct)
+                .GetLatestForRunAsync(request.SourceRunId.Trim(), ct)
                 .ConfigureAwait(false);
         }
 
@@ -823,6 +851,23 @@ public sealed class OperationsContinuityReconciliationBridge : IOperationsContin
             [
                 new OperationsWorkflowBlockerDto(
                     "RECONCILIATION_RUN_NOT_FOUND",
+                    message,
+                    OperationsGateKeyDto.Reconciliation,
+                    "Error",
+                    [])
+            ],
+            NextActions: []);
+
+    private static OperationsTransitionResultDto MissingReconciliationScope(string message) =>
+        new(
+            Success: false,
+            ErrorCode: "RECONCILIATION_SCOPE_REQUIRED",
+            ErrorMessage: message,
+            Workflow: null,
+            Blockers:
+            [
+                new OperationsWorkflowBlockerDto(
+                    "RECONCILIATION_SCOPE_REQUIRED",
                     message,
                     OperationsGateKeyDto.Reconciliation,
                     "Error",

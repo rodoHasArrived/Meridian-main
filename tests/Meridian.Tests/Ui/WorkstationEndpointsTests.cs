@@ -21,6 +21,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -4105,7 +4106,8 @@ public sealed partial class WorkstationEndpointsTests
             strategyId: "scope-1",
             strategyName: "Ledger Book Scope",
             runType: RunType.Paper,
-            startedAt: new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero)));
+            startedAt: new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero),
+            fundProfileId: "fund-test"));
 
         var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
         await repository.CreateIfMissingAsync(
@@ -4191,6 +4193,63 @@ public sealed partial class WorkstationEndpointsTests
             .Be("1");
         root.GetProperty("workspace").GetProperty("openBreaks").GetInt32().Should().Be(1);
         root.GetProperty("controlCenter").GetProperty("ownerWorkload").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_AccountingPayload_ShouldProjectOnlyRunsOwnedByAuthenticatedTenantAndCompany()
+    {
+        var tenancy = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancy.ResolveAsync("fund-owned", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-owned", "tenant-test", "tenant-test"));
+        tenancy.ResolveAsync("fund-foreign", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-foreign", "tenant-foreign", "company-foreign"));
+        tenancy.ResolveAsync("fund-unbound", Arg.Any<CancellationToken>())
+            .Returns((FundProfileOwnership?)null);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(tenancy);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            "run-owned",
+            "owned",
+            "Owned",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 13, 0, 0, TimeSpan.Zero),
+            fundProfileId: "fund-owned"));
+        await store.RecordRunAsync(BuildRun(
+            "run-foreign",
+            "foreign",
+            "Foreign",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero),
+            fundProfileId: "fund-foreign"));
+        await store.RecordRunAsync(BuildRun(
+            "run-unbound",
+            "unbound",
+            "Unbound",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 11, 0, 0, TimeSpan.Zero),
+            fundProfileId: "fund-unbound"));
+        await store.RecordRunAsync(BuildRun(
+            "run-no-fund",
+            "no-fund",
+            "No Fund",
+            RunType.Paper,
+            new DateTimeOffset(2026, 6, 20, 10, 0, 0, TimeSpan.Zero)));
+
+        using var response = await app.GetTestClient().GetAsync(UiApiRoutes.WorkstationAccounting);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        var root = payload.RootElement;
+        root.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
+        root.GetProperty("reconciliationQueue").EnumerateArray()
+            .Should()
+            .ContainSingle(item => item.GetProperty("runId").GetString() == "run-owned");
     }
 
     [Fact]
@@ -7872,7 +7931,8 @@ public sealed partial class WorkstationEndpointsTests
             FeedReference = "synthetic:equities",
             PortfolioId = "recon-portfolio",
             LedgerReference = "recon-ledger",
-            AuditReference = $"audit-{runId}"
+            AuditReference = $"audit-{runId}",
+            FundProfileId = "fund-test"
         };
     }
 
@@ -7964,7 +8024,8 @@ public sealed partial class WorkstationEndpointsTests
             FeedReference = "synthetic:equities",
             PortfolioId = "recon-break-portfolio",
             LedgerReference = "recon-break-ledger",
-            AuditReference = $"audit-{runId}"
+            AuditReference = $"audit-{runId}",
+            FundProfileId = "fund-test"
         };
     }
 

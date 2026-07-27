@@ -8,6 +8,11 @@ namespace Meridian.Tests.Ui;
 
 public sealed class OperationsContinuityReconciliationBridgeTests
 {
+    private static readonly ReconciliationBreakQueueScope AlphaScope =
+        new("tenant-alpha", "company-alpha");
+    private static readonly ReconciliationBreakQueueScope BetaScope =
+        new("tenant-beta", "company-beta");
+
     [Fact]
     public async Task RunReconciliationAsync_ShouldProjectSecurityMasterIssuesAsWorkflowBreakCases()
     {
@@ -19,20 +24,30 @@ public sealed class OperationsContinuityReconciliationBridgeTests
         await repository.SaveAsync(workflow);
 
         var reconciliationDetail = CreateReconciliationDetail();
-        var breakQueueItem = CreateBreakQueueItem(reconciliationDetail);
+        var breakQueueItem = CreateBreakQueueItem(reconciliationDetail, AlphaScope, "fund-controller");
+        var foreignBreakQueueItem = CreateBreakQueueItem(reconciliationDetail, BetaScope, "foreign-controller");
+        var reconciliationService = new StaticReconciliationRunService(reconciliationDetail);
+        var breakQueueRepository = new StaticReconciliationBreakQueueRepository(
+            [foreignBreakQueueItem, breakQueueItem]);
         var bridge = new OperationsContinuityReconciliationBridge(
             workflowService,
-            new StaticReconciliationRunService(reconciliationDetail),
-            new StaticReconciliationBreakQueueRepository([breakQueueItem]));
+            reconciliationService,
+            breakQueueRepository);
 
         var result = await bridge.RunReconciliationAsync(
             workflow.WorkflowId,
             new OperationsReconciliationRunRequestDto(
                 workflow.Version,
                 "ops-user",
-                SourceRunId: reconciliationDetail.Summary.RunId));
+                SourceRunId: reconciliationDetail.Summary.RunId),
+            AlphaScope);
 
         result.Success.Should().BeTrue();
+        reconciliationService.RunCallCount.Should().Be(0);
+        reconciliationService.LatestReadCallCount.Should().Be(1);
+        breakQueueRepository.ScopedReadCount.Should().Be(1);
+        breakQueueRepository.UnscopedReadCount.Should().Be(0);
+        breakQueueRepository.MutationCount.Should().Be(0);
         result.Workflow.Should().NotBeNull();
         result.Workflow!.BreakCases.Should().Contain(breakCase =>
             breakCase.CheckId == "SM_RECON_SECURITY_UNRESOLVED" &&
@@ -81,6 +96,79 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             lane.Summary.Contains("expected journal preview", StringComparison.OrdinalIgnoreCase));
         result.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
             .Status.Should().Be(OperationsGateStatusDto.Blocked);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_WithForeignScope_ShouldNotSurfaceForeignCasework()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        var breakQueueRepository = new StaticReconciliationBreakQueueRepository(
+            [CreateBreakQueueItem(detail, AlphaScope, "alpha-controller")]);
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            new StaticReconciliationRunService(detail),
+            breakQueueRepository);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                SourceRunId: detail.Summary.RunId),
+            BetaScope);
+
+        result.Success.Should().BeTrue();
+        result.Workflow!.BreakCases.Should().ContainSingle(breakCase =>
+                breakCase.CheckId == "FACTOR_PAYDOWN_AMOUNT_MISMATCH")
+            .Which.Owner.Should().BeNull();
+        breakQueueRepository.ScopedReadCount.Should().Be(1);
+        breakQueueRepository.UnscopedReadCount.Should().Be(0);
+        breakQueueRepository.MutationCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_WithSourceRunAndNoScope_ShouldFailClosedWithoutReadsOrMutation()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var workflowService = new OperationsContinuityWorkflowService(
+            repository,
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
+        var workflow = CreateLedgerPostedWorkflow();
+        await repository.SaveAsync(workflow);
+        var detail = CreateReconciliationDetail();
+        var reconciliationService = new StaticReconciliationRunService(detail);
+        var breakQueueRepository = new StaticReconciliationBreakQueueRepository(
+            [CreateBreakQueueItem(detail, AlphaScope, "alpha-controller")]);
+        var bridge = new OperationsContinuityReconciliationBridge(
+            workflowService,
+            reconciliationService,
+            breakQueueRepository);
+
+        var result = await bridge.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                workflow.Version,
+                "ops-user",
+                SourceRunId: detail.Summary.RunId));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("RECONCILIATION_SCOPE_REQUIRED");
+        result.ErrorMessage.Should().Contain("tenant- and company-scoped");
+        reconciliationService.TotalReadCount.Should().Be(0);
+        reconciliationService.RunCallCount.Should().Be(0);
+        breakQueueRepository.ScopedReadCount.Should().Be(0);
+        breakQueueRepository.UnscopedReadCount.Should().Be(0);
+        breakQueueRepository.MutationCount.Should().Be(0);
     }
 
     private static OperationsContinuityWorkflow CreateLedgerPostedWorkflow()
@@ -158,7 +246,10 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             ]);
     }
 
-    private static ReconciliationBreakQueueItem CreateBreakQueueItem(ReconciliationRunDetail detail)
+    private static ReconciliationBreakQueueItem CreateBreakQueueItem(
+        ReconciliationRunDetail detail,
+        ReconciliationBreakQueueScope scope,
+        string owner)
     {
         var createdAt = detail.Summary.CreatedAt;
         return new ReconciliationBreakQueueItem(
@@ -169,7 +260,7 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             Status: ReconciliationBreakQueueStatus.InReview,
             Variance: -100m,
             Reason: "Actual principal paydown differs from the Security Master expected amount.",
-            AssignedTo: "fund-controller",
+            AssignedTo: owner,
             DetectedAt: createdAt.AddHours(-2),
             LastUpdatedAt: createdAt,
             Severity: ReconciliationBreakSeverity.High,
@@ -192,7 +283,11 @@ public sealed class OperationsContinuityReconciliationBridgeTests
                 CounterpartyCriticalityComponent: 0,
                 RecurringPatternComponent: 0,
                 IsHighPriority: false,
-                SlaDueAt: createdAt.AddHours(8)));
+                SlaDueAt: createdAt.AddHours(8)))
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId
+        };
     }
 
     private sealed class StaticReconciliationRunService : IReconciliationRunService
@@ -204,14 +299,31 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             _detail = detail;
         }
 
-        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default) =>
-            Task.FromResult<ReconciliationRunDetail?>(_detail);
+        public int RunCallCount { get; private set; }
 
-        public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
-            Task.FromResult<ReconciliationRunDetail?>(_detail);
+        public int LatestReadCallCount { get; private set; }
 
-        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default) =>
-            Task.FromResult<ReconciliationRunDetail?>(_detail);
+        public int ByIdReadCallCount { get; private set; }
+
+        public int TotalReadCount => LatestReadCallCount + ByIdReadCallCount;
+
+        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+        {
+            RunCallCount++;
+            throw new InvalidOperationException("A read path must not execute reconciliation.");
+        }
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default)
+        {
+            ByIdReadCallCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(_detail);
+        }
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default)
+        {
+            LatestReadCallCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(_detail);
+        }
 
         public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([_detail.Summary]);
@@ -226,31 +338,66 @@ public sealed class OperationsContinuityReconciliationBridgeTests
             _items = items;
         }
 
+        public int ScopedReadCount { get; private set; }
+
+        public int UnscopedReadCount { get; private set; }
+
+        public int MutationCount { get; private set; }
+
         public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default)
         {
+            UnscopedReadCount++;
             var items = status.HasValue
                 ? _items.Where(item => item.Status == status.Value).ToArray()
                 : _items;
             return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(items);
         }
 
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueScope scope,
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+        {
+            ScopedReadCount++;
+            var items = _items
+                .Where(scope.Owns)
+                .Where(item => !status.HasValue || item.Status == status.Value)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(items);
+        }
+
         public Task<ReconciliationBreakQueueItem?> GetByIdAsync(string breakId, CancellationToken ct = default) =>
             Task.FromResult(_items.FirstOrDefault(item => string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase)));
 
-        public Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default) =>
+        public Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+        {
+            MutationCount++;
             throw new NotSupportedException();
+        }
 
-        public Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default) =>
+        public Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
+        {
+            MutationCount++;
             throw new NotSupportedException();
+        }
 
-        public Task<bool> DeleteAsync(string breakId, CancellationToken ct = default) =>
+        public Task<bool> DeleteAsync(string breakId, CancellationToken ct = default)
+        {
+            MutationCount++;
             throw new NotSupportedException();
+        }
 
-        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default) =>
+        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default)
+        {
+            MutationCount++;
             throw new NotSupportedException();
+        }
 
-        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default) =>
+        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default)
+        {
+            MutationCount++;
             throw new NotSupportedException();
+        }
 
         public Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>([]);
