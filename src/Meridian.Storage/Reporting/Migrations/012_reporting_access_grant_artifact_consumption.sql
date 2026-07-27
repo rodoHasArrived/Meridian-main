@@ -132,11 +132,12 @@ $$;
 -- compatibility sentinel: a pre-012 deployment probe cannot report this post-012 schema as ready.
 -- Lagging writers that omit the new nullable column are rejected; new writers explicitly insert an
 -- empty tracked set.
-drop trigger if exists trg_reporting_access_grants_guard
-    on __SCHEMA__.reporting_access_grants;
+alter trigger trg_reporting_access_grants_guard
+    on __SCHEMA__.reporting_access_grants
+    rename to trg_reporting_access_grants_guard_pre012_retired;
 
-drop trigger if exists trg_reporting_access_grants_guard_v012
-    on __SCHEMA__.reporting_access_grants;
+alter table __SCHEMA__.reporting_access_grants
+    disable trigger trg_reporting_access_grants_guard_pre012_retired;
 
 create trigger trg_reporting_access_grants_guard_v012
 before insert or update or delete on __SCHEMA__.reporting_access_grants
