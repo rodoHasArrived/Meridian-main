@@ -1,18 +1,16 @@
 import type {
-  AccountingReportingSummary,
   AccountingWorkspaceResponse,
+  AccountingReportingSummary,
   ReportingWorkspaceResponse
 } from "@/types";
 
-type LegacyReportingWorkspaceEnvelope = Pick<AccountingWorkspaceResponse, "reporting">;
-
 export type ReportingWorkspacePayload =
   | ReportingWorkspaceResponse
-  | LegacyReportingWorkspaceEnvelope;
+  | AccountingWorkspaceResponse;
 
-function isLegacyReportingWorkspaceEnvelope(
+function isReportingWorkspaceEnvelope(
   payload: ReportingWorkspacePayload
-): payload is LegacyReportingWorkspaceEnvelope {
+): payload is AccountingWorkspaceResponse {
   return "reporting" in payload;
 }
 
@@ -23,5 +21,5 @@ export function normalizeReportingWorkspace(
     return null;
   }
 
-  return isLegacyReportingWorkspaceEnvelope(payload) ? payload.reporting : payload;
+  return isReportingWorkspaceEnvelope(payload) ? payload.reporting : payload;
 }

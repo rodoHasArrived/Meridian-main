@@ -19,7 +19,7 @@ import type {
   DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
-  ReportingWorkspaceResponse,
+  AccountingReportingSummary,
   MetricSnapshot,
   OperatorInbox,
   OperatorWorkItem,
@@ -910,7 +910,7 @@ function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRo
   };
 }
 
-function buildReportPackFacts(reportingPayload: ReportingWorkspaceResponse | null): ReadinessConsoleRowBase[] {
+function buildReportPackFacts(reportingPayload: AccountingReportingSummary | null): ReadinessConsoleRowBase[] {
   const reporting = reportingPayload;
   if (!reporting) {
     return [{
@@ -1664,7 +1664,7 @@ function buildMetrics({
   providerTrustRows: ReadinessConsoleRow[];
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
-  reporting: ReportingWorkspaceResponse | null;
+  reporting: AccountingReportingSummary | null;
 }): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
   const reportDistributions = getReportPackDistributions(reporting);
@@ -1736,7 +1736,7 @@ function buildApiSources({
   readiness: TradingOperatorReadiness | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
-  reporting?: ReportingWorkspaceResponse | null;
+  reporting?: AccountingReportingSummary | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;

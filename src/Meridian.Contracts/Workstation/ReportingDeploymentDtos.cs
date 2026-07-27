@@ -17,6 +17,7 @@ public sealed record ReportingDeploymentCapabilityDto(
     bool IsReady = default,
     bool DurableGovernance = default,
     bool DurableArtifacts = default,
+    bool DurableReconciliationEvidence = default,
     bool DurableRuns = default,
     bool DurableScheduling = default,
     bool DurableDelivery = default,

@@ -70,6 +70,44 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             packageId,
             nameof(packageId),
             256);
+        return await ListByScopeAsync(
+                normalizedTenantId,
+                "package_id",
+                "package_id",
+                normalizedPackageId,
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByRunAsync(
+        string tenantId,
+        string runId,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingDistributionStoreGuard.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            256);
+        var normalizedRunId = ReportingDistributionStoreGuard.NormalizeRequired(
+            runId,
+            nameof(runId),
+            256);
+        return await ListByScopeAsync(
+                normalizedTenantId,
+                "release_authorization ->> 'runId'",
+                "run_id",
+                normalizedRunId,
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByScopeAsync(
+        string tenantId,
+        string scopeExpression,
+        string scopeParameterName,
+        string scopeValue,
+        CancellationToken ct)
+    {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
@@ -81,11 +119,11 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             select {JobSelectList()}
             from {_jobTable}
             where tenant_id = @tenant_id
-              and package_id = @package_id
+              and {scopeExpression} = @{scopeParameterName}
             order by created_at_utc desc, job_id;
             """;
-        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
-        command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue(scopeParameterName, NpgsqlDbType.Text, scopeValue);
         var baseJobs = new List<ReportingDeliveryJobRecord>();
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {

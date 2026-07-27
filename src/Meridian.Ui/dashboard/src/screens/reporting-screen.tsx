@@ -52,6 +52,12 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import { ReportingPrivateCapitalReadinessPanel } from "@/screens/reporting-screen.private-capital-readiness";
 import {
+  buildClientPackageScheduleFormatSelection,
+  clientPackageScheduleArtifactFormats,
+  updateScheduleArtifactFormatDraft,
+  updateScheduleRunParameterDraft
+} from "@/screens/reporting-screen.client-package";
+import {
   ReportingBrandingAccessPanel,
   buildDefaultReportBrandingDraft,
   buildReportBrandingOverride,
@@ -92,6 +98,8 @@ import { ReportingStarterKitChooser } from "@/screens/reporting-screen.starter-k
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
+  ReportingCutMetric,
+  ReportingHighlight,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import {
@@ -610,23 +618,11 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   }
 
   function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
-    setScheduleDraft((current) => ({
-      ...current,
-      runParameters: {
-        ...current.runParameters,
-        [field]: value
-      } as ReportRunParameterDraftState
-    }));
+    setScheduleDraft((current) => updateScheduleRunParameterDraft(current, field, value));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
-    setScheduleDraft((current) => ({
-      ...current,
-      formats: {
-        ...current.formats,
-        [format]: isSelected
-      }
-    }));
+    setScheduleDraft((current) => updateScheduleArtifactFormatDraft(current, format, isSelected));
   }
 
   function stageScheduleDraftDeliveryTarget() {
@@ -2437,15 +2433,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   );
 }
 
-function ReportingHighlight({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
-      <div className="font-semibold">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
 function ReportingExportStatusPanel({
   status,
   className
@@ -2501,15 +2488,6 @@ function ReportingExportStatusPanel({
           ))}
         </dl>
       ) : null}
-    </div>
-  );
-}
-
-function ReportingCutMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
 }
@@ -2619,6 +2597,12 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     ?? (template
       ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
       : { name: templateId, version: 1 });
+  const runParameters = buildDefaultReportRunParameterDraft({
+    fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+    asOfDate: nextAsOfDate,
+    parameters: schedule?.runParameters
+  });
+  const isClientPackage = runParameters.outputFormat === "ClientPackage";
 
   return {
     scheduleId,
@@ -2635,14 +2619,13 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     recipientPrincipalId: normalizeDraftText(firstTarget?.recipientPrincipalId, ""),
     recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(firstTarget?.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
-    formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    formats: isClientPackage
+      ? buildClientPackageScheduleFormatSelection()
+      : buildScheduleFormatSelection(firstTarget?.formats),
+    deliveryTargets: (schedule?.deliveryTargets ?? [])
+      .map((target) => normalizeScheduleDraftTarget(target, isClientPackage)),
     templateVersion: retainedTemplate.version,
-    runParameters: buildDefaultReportRunParameterDraft({
-      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
-      asOfDate: nextAsOfDate,
-      parameters: schedule?.runParameters
-    })
+    runParameters
   };
 }
 
@@ -2782,7 +2765,9 @@ function buildReportingScheduleDeliveryTargets(
       recipientPrincipalId,
       recipientPrincipalKind,
       deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
-      formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
+      formats: draft.runParameters.outputFormat === "ClientPackage"
+        ? [...clientPackageScheduleArtifactFormats]
+        : reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
       note: note || null
     });
   }
@@ -2798,7 +2783,7 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
     recipientPrincipalKind: draft.recipientPrincipalKind,
     note: draft.deliveryNote,
     formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
-  });
+  }, draft.runParameters.outputFormat === "ClientPackage");
 }
 
 function normalizeScheduleDraftTarget(target: {
@@ -2808,14 +2793,16 @@ function normalizeScheduleDraftTarget(target: {
   recipientPrincipalKind?: string | null;
   note?: string | null;
   formats?: readonly GovernanceReportArtifactFormat[] | null;
-}): ReportingScheduleDraftTarget {
+}, isClientPackage = false): ReportingScheduleDraftTarget {
   return {
     distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
     recipientPrincipalId: normalizeDraftText(target.recipientPrincipalId, ""),
     recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(target.note, ""),
-    formats: buildScheduleFormatSelection(target.formats)
+    formats: isClientPackage
+      ? buildClientPackageScheduleFormatSelection()
+      : buildScheduleFormatSelection(target.formats)
   };
 }
 

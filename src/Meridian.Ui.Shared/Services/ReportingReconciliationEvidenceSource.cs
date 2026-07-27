@@ -193,7 +193,7 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         {
             var currentOpenCount = items.Count(item =>
                 item.LedgerBookId == ledgerBookId
-                && string.Equals(item.FundAccountId, source.FundId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(item.FundProfileId, source.FundId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(item.AccountingPeriodId, source.AccountingPeriodId, StringComparison.OrdinalIgnoreCase)
                 && item.AsOfDate == source.AsOfDate
                 && item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);

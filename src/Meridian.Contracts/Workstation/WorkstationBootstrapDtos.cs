@@ -652,7 +652,48 @@ public sealed record WorkstationReportAccessAuditSummaryDto(
     IReadOnlyList<string> DenialReasons);
 
 /// <summary>
-/// Typed reporting summary embedded inside <see cref="WorkstationAccountingPayload"/>.
+/// Immutable provider or portal evidence retained against a canonical reporting delivery job.
+/// </summary>
+public sealed record WorkstationReportingDeliveryReceiptPayload(
+    string ReceiptId,
+    string Kind,
+    DateTimeOffset OccurredAtUtc,
+    string TransportId,
+    string? ProviderReference = null,
+    string? EvidenceReference = null,
+    string? Detail = null);
+
+/// <summary>
+/// Tenant-scoped projection of one durable canonical reporting delivery job.
+/// </summary>
+public sealed record WorkstationReportingDeliveryPayload(
+    string JobId,
+    string RunId,
+    string PackageId,
+    string ReleaseReceiptId,
+    string ReleaseVersion,
+    string ArtifactManifestHashSha256,
+    string DistributionId,
+    string TransportId,
+    string Recipient,
+    string RecipientRole,
+    string Destination,
+    string State,
+    int AttemptCount,
+    int MaxAttempts,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? NextAttemptAtUtc,
+    string RequestedBy,
+    string? LastErrorCode,
+    string? LastError,
+    string? ProviderMessageId,
+    string? AccessGrantId,
+    IReadOnlyList<WorkstationReportingDeliveryReceiptPayload> Receipts);
+
+/// <summary>
+/// Typed reporting payload returned directly by <c>GET /api/workstation/reporting</c> and also
+/// embedded as the Reporting summary inside <see cref="WorkstationAccountingPayload"/>.
 /// </summary>
 public sealed record WorkstationReportingPayload(
     int ProfileCount,
@@ -679,7 +720,17 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null,
     IReadOnlyList<ReportingStarterKitDto>? StarterKits = null,
     ReportingStarterKitStateDto? StarterKitState = null,
-    ReportingDeploymentCapabilityDto? DeploymentCapability = null);
+    ReportingDeploymentCapabilityDto? DeploymentCapability = null,
+    IReadOnlyList<WorkstationReportingDeliveryPayload>? CanonicalDeliveries = null);
+
+/// <summary>
+/// Canonical tenant/company reporting history over durable run and delivery authorities.
+/// </summary>
+public sealed record WorkstationReportingHistoryPayload(
+    IReadOnlyList<WorkstationReportingRunPayload> Runs,
+    IReadOnlyList<WorkstationReportingDeliveryPayload> Deliveries,
+    int Limit,
+    DateTimeOffset GeneratedAtUtc);
 
 /// <summary>
 /// Accounting run-card governance details linked to strategy evidence.
@@ -824,8 +875,8 @@ public sealed record WorkstationKernelObservabilityPayload(
     IReadOnlyList<WorkstationKernelDomainPayload> Domains);
 
 /// <summary>
-/// Typed payload returned by <c>GET /api/workstation/accounting</c> and
-/// <c>GET /api/workstation/reporting</c>.
+/// Typed payload returned by <c>GET /api/workstation/accounting</c>.
+/// The independent reporting route returns the nested <see cref="WorkstationReportingPayload"/> directly.
 /// </summary>
 public sealed record WorkstationAccountingPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,

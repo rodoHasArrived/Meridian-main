@@ -324,6 +324,17 @@ public interface IReportingDeliveryStore
         CancellationToken ct = default);
 
     /// <summary>
+    /// Lists durable receipt-bearing jobs through the exact tenant/run key retained in the
+    /// server-issued release authorization. Implementations should preserve package-list semantics;
+    /// this read exists for canonical run-history projections that do not know a package revision.
+    /// </summary>
+    Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByRunAsync(
+        string tenantId,
+        string runId,
+        CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<ReportingDeliveryJobRecord>>([]);
+
+    /// <summary>
     /// Lists durable failed-provider outcomes whose linked grant still requires revocation. Stores
     /// that share persistence with grants should filter already-revoked grants so reconciliation
     /// cannot starve behind completed rows.

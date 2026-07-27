@@ -4805,6 +4805,95 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Endpoint_ReportingMutations_WithoutRegisteredStores_FailClosedWithoutInMemoryAuthority()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Admin,
+            registerMutationStores: false);
+        var client = app.GetTestClient();
+
+        using var registerResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates",
+            new ReportTemplateDefinitionDto(
+                new VersionedReportTemplateIdDto("fileless-template", 1),
+                "Fileless Template",
+                [],
+                ["summary"]),
+            ServerJsonOptions);
+        using var draftResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/drafts",
+            new ReportTemplateDraftRequestDto(
+                "fileless-template",
+                "Fileless Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "A missing persistence store must block mutation."),
+            ServerJsonOptions);
+        using var submitResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/submit",
+            new ReportTemplateDecisionRequestDto("Submit must remain durable."),
+            ServerJsonOptions);
+        using var approveResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/approve",
+            new ReportTemplateDecisionRequestDto("Approve must remain durable.", "APP-FILELESS-1"),
+            ServerJsonOptions);
+        using var rejectResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/reject",
+            new ReportTemplateDecisionRequestDto("Reject must remain durable."),
+            ServerJsonOptions);
+        using var provisionResponse = await client.PostAsync(
+            "/api/fund-structure/reporting/starter-kits/emerging-manager/provision",
+            null);
+
+        var responses = new[]
+        {
+            registerResponse,
+            draftResponse,
+            submitResponse,
+            approveResponse,
+            rejectResponse,
+            provisionResponse
+        };
+        responses.Should().OnlyContain(response =>
+            response.StatusCode == HttpStatusCode.ServiceUnavailable);
+        app.Services.GetRequiredService<ReportTemplateRegistryService>()
+            .List(includeSuperseded: true)
+            .Should().NotBeEmpty()
+            .And.OnlyContain(static template => template.IsBuiltIn);
+        app.Services.GetRequiredService<ReportingScheduleService>()
+            .ListSchedules(BoundAccessContext("controller.admin"))
+            .Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Endpoint_LegacyReportPackReads_WithoutRepository_ReturnGoneWithCanonicalGuidance()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Admin,
+            registerMutationStores: false);
+        var client = app.GetTestClient();
+        var reportId = Guid.Parse("4359a90a-1466-4ecf-92fb-25e102512c2d");
+
+        using var historyResponse = await client.GetAsync(
+            "/api/fund-structure/report-packs?fundProfileId=fund-a");
+        using var detailResponse = await client.GetAsync(
+            $"/api/fund-structure/report-packs/{reportId:D}");
+        using var provenanceResponse = await client.GetAsync(
+            $"/api/fund-structure/report-packs/{reportId:D}/ledger-provenance?scopeKey=Cash");
+
+        var responses = new[] { historyResponse, detailResponse, provenanceResponse };
+        responses.Should().OnlyContain(response => response.StatusCode == HttpStatusCode.Gone);
+        responses.Should().OnlyContain(response =>
+            response.Headers.CacheControl != null
+            && response.Headers.CacheControl.NoStore);
+        var historyProblem = await historyResponse.Content.ReadFromJsonAsync<JsonElement>(
+            ServerJsonOptions);
+        historyProblem.GetProperty("detail").GetString()
+            .Should().Contain("/api/fund-structure/reporting/runs");
+    }
+
+    [Fact]
     public async Task Endpoint_SchedulePrivateTemplate_WhenCallerIsNotOwner_ReturnsForbiddenForCreateAndRun()
     {
         await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
@@ -5481,7 +5570,8 @@ public sealed class ReportPackWorkflowServiceTests
         FundOperationsWorkspaceReadService? workspaceService = null,
         string? roleProfileName = null,
         string? companyId = TestCompanyId,
-        string? tenantId = TestTenantId)
+        string? tenantId = TestTenantId,
+        bool registerMutationStores = true)
     {
         var resolvedCompanyId = string.IsNullOrWhiteSpace(companyId)
             ? "company-test"
@@ -5491,6 +5581,13 @@ public sealed class ReportPackWorkflowServiceTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
+        if (registerMutationStores)
+        {
+            builder.Services.AddSingleton<IReportTemplateGovernanceStore>(
+                new InMemoryReportTemplateGovernanceStore());
+            builder.Services.AddSingleton<IReportingStarterKitStore>(
+                new InMemoryReportingStarterKitStore());
+        }
         builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<DefaultReportingTemplateCatalog>();
         builder.Services.AddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
@@ -5518,6 +5615,8 @@ public sealed class ReportPackWorkflowServiceTests
                 new EmptyReportingRunReadinessDependencyEvaluator()));
         builder.Services.AddSingleton<ReportingRunCertificationService>();
         builder.Services.AddSingleton<ReportingRunCommandService>();
+        builder.Services.AddSingleton<IReportingDeploymentReadinessService>(
+            new ReadyReportingDeploymentReadinessService());
         builder.Services.AddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
@@ -5582,6 +5681,50 @@ public sealed class ReportPackWorkflowServiceTests
         public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules)
         {
         }
+    }
+
+    private sealed class InMemoryReportTemplateGovernanceStore : IReportTemplateGovernanceStore
+    {
+        private IReadOnlyList<ReportTemplateGovernanceRecordDto> _records = [];
+
+        public IReadOnlyList<ReportTemplateGovernanceRecordDto> Load() => _records;
+
+        public void Save(IReadOnlyList<ReportTemplateGovernanceRecordDto> records)
+        {
+            _records = records.ToArray();
+        }
+    }
+
+    private sealed class InMemoryReportingStarterKitStore : IReportingStarterKitStore
+    {
+        private readonly Dictionary<(string TenantId, string CompanyId), ReportingStarterKitStateDto> _states = [];
+
+        public ReportingStarterKitStateDto? Load(string tenantId, string companyId) =>
+            _states.GetValueOrDefault((tenantId, companyId));
+
+        public void Save(string tenantId, string companyId, ReportingStarterKitStateDto state)
+        {
+            _states[(tenantId, companyId)] = state;
+        }
+    }
+
+    private sealed class ReadyReportingDeploymentReadinessService
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: true,
+                DurableGovernance: true,
+                DurableArtifacts: true,
+                DurableReconciliationEvidence: true,
+                DurableRuns: true,
+                DurableScheduling: true,
+                DurableDelivery: true,
+                RecipientDestinationsConfigured: true,
+                ClientDocumentsConfigured: true,
+                MigrationsManaged: true,
+                Components: [],
+                BlockingReasons: []);
     }
 
     private sealed class InMemoryReportPackDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)

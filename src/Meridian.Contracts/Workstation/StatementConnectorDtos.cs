@@ -134,6 +134,10 @@ public sealed record StatementImportCommitResultDto(
     public IReadOnlyList<string> ReconciliationCaseRoutes { get; init; } = [];
     public IReadOnlyList<StatementImportReconciliationCaseLinkDto> ReconciliationCaseLinks { get; init; } = [];
     public IReadOnlyList<string> NextActions { get; init; } = [];
+    public string? StatementReconciliationReportWorkflowId { get; init; }
+    public string? StatementReconciliationReportStatusRoute { get; init; }
+    public Guid? OperationsWorkflowId { get; init; }
+    public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }
 }
 
 /// <summary>
@@ -174,6 +178,15 @@ public sealed record StatementReconciliationReportArtifactDto(
     DateTimeOffset RetainedAtUtc = default);
 
 /// <summary>
+/// Exact accounting authority bound to a statement import before it can enter close casework.
+/// </summary>
+public sealed record StatementReconciliationAccountingScopeDto(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
+
+/// <summary>
 /// Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and
 /// recovery routes without exposing server file-system paths.
 /// </summary>
@@ -200,7 +213,20 @@ public sealed record StatementReconciliationReportWorkflowDto(
     string? FailureReason = default,
     string? RecoveryAction = default,
     string StatusRoute = default!,
-    string ResumeRoute = default!);
+    string ResumeRoute = default!)
+{
+    /// <summary>
+    /// Server-verified fund, ledger-book, period, and as-of scope. Null denotes a legacy
+    /// reconciliation-only workflow that cannot be used as close or certified-reporting evidence.
+    /// </summary>
+    public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }
+
+    /// <summary>
+    /// Existing Operations Continuity workflow that owns posting, casework, approval, and close.
+    /// The statement operation does not duplicate that lifecycle.
+    /// </summary>
+    public Guid? OperationsWorkflowId { get; init; }
+}
 
 /// <summary>
 /// Source-compatibility status contract for clients compiled before the operation was renamed.
@@ -274,7 +300,10 @@ public sealed record StatementFetchScheduleDto(
     DateTimeOffset? LastRunAtUtc,
     string? LastRunStatus,
     DateTimeOffset? NextDueAtUtc,
-    string SourceKind);
+    string SourceKind,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null,
+    StatementReconciliationAccountingScopeDto? AccountingScope = null);
 
 public sealed record StatementFetchScheduleUpsertRequestDto(
     string? ScheduleId,
@@ -286,4 +315,6 @@ public sealed record StatementFetchScheduleUpsertRequestDto(
     string? ToleranceProfileId,
     int CadenceHours,
     bool Enabled,
-    string? SourceKind = null);
+    string? SourceKind = null,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null);

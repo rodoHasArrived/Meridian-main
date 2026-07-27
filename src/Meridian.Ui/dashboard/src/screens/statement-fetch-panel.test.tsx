@@ -109,7 +109,15 @@ const schedule: StatementFetchSchedule = {
   lastRunAtUtc: "2026-07-17T06:00:00Z",
   lastRunStatus: "Imported run stmt-run-88: 2 record(s), 1 case(s).",
   nextDueAtUtc: "2026-07-18T06:00:00Z",
-  sourceKind: "broker"
+  sourceKind: "broker",
+  periodStart: "2026-07-01",
+  periodEnd: "2026-07-31",
+  accountingScope: {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "11111111-1111-1111-1111-111111111111",
+    accountingPeriodId: "22222222-2222-2222-2222-222222222222",
+    asOfDate: "2026-07-31"
+  }
 };
 
 const runResult: StatementImportCommitResult = {
@@ -149,6 +157,7 @@ const validDraft: StatementFetchDraft = {
   externalAccountId: "PA3ALPACA01",
   fundAccountId: "FUND-ALPHA-BROKERAGE",
   mappingProfileId: "alpaca-activity-v1",
+  periodEnd: "2026-07-31",
   scheduleId: "alpaca-daily",
   sinceDate: "2026-07-17",
   sourceInstitution: "Alpaca",
@@ -220,6 +229,8 @@ describe("StatementFetchPanel", () => {
       connectorId: "alpaca-activity",
       cadenceHours: 24,
       enabled: true,
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
       sourceKind: "custodian"
     }));
 

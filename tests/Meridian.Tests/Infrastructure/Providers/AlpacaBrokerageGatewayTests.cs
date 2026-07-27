@@ -64,6 +64,16 @@ public sealed class AlpacaBrokerageGatewayTests
     private static StringContent BuildPositionsResponse(object[] positions) =>
         BuildJson(positions);
 
+    private static object BuildActivityResponse(string? id, DateTimeOffset occurredAt) =>
+        new
+        {
+            id,
+            activity_type = "DIV",
+            transaction_time = occurredAt,
+            net_amount = "1.00",
+            currency = "USD"
+        };
+
     private static StringContent BuildJson(object obj) =>
         new StringContent(JsonSerializer.Serialize(obj), Encoding.UTF8, "application/json");
 
@@ -841,12 +851,15 @@ public sealed class AlpacaBrokerageGatewayTests
             });
         var sut = CreateSut(handler);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var since = new DateTimeOffset(2026, 4, 24, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
 
         var accounts = await ((IBrokerageAccountCatalog)sut).GetAccountsAsync(cts.Token);
         var portfolio = await ((IBrokeragePortfolioSync)sut).GetPortfolioSnapshotAsync("TEST123", cts.Token);
         var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
             "TEST123",
-            new DateTimeOffset(2026, 4, 24, 0, 0, 0, TimeSpan.Zero),
+            since,
+            untilExclusive,
             cts.Token);
 
         accounts.Should().ContainSingle(account =>
@@ -869,8 +882,156 @@ public sealed class AlpacaBrokerageGatewayTests
             cash.TransactionId == "cash-1" &&
             cash.TransactionType == "DIV" &&
             cash.Amount == 42.50m);
-        capturedPaths.Should().Contain(path =>
-            path.StartsWith("/v2/account/activities?direction=desc&page_size=100&after=", StringComparison.Ordinal));
+        var activityPath = capturedPaths.Single(path =>
+            path.StartsWith("/v2/account/activities?", StringComparison.Ordinal));
+        activityPath.Should().Contain(
+            $"after={Uri.EscapeDataString(since.AddTicks(-1).UtcDateTime.ToString("O"))}");
+        activityPath.Should().Contain(
+            $"until={Uri.EscapeDataString(untilExclusive.UtcDateTime.ToString("O"))}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_BoundedWindow_IncludesStartAndExcludesEnd()
+    {
+        var activityPaths = new List<string>();
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        var handler = new CapturingStubHandler(
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account/activities")
+                {
+                    activityPaths.Add(request.RequestUri.PathAndQuery);
+                }
+            },
+            request => request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                ? BuildJson(new[]
+                {
+                    BuildActivityResponse("before-start", since.AddTicks(-1)),
+                    BuildActivityResponse("at-start", since),
+                    BuildActivityResponse("inside-window", since.AddDays(1)),
+                    BuildActivityResponse("at-end", untilExclusive)
+                })
+                : BuildJson(Array.Empty<object>()));
+        var sut = CreateSut(handler);
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            untilExclusive);
+
+        activity.CashTransactions.Select(transaction => transaction.TransactionId)
+            .Should()
+            .BeEquivalentTo("at-start", "inside-window");
+        activityPaths.Should().ContainSingle();
+        activityPaths[0].Should().Contain(
+            $"after={Uri.EscapeDataString(since.AddTicks(-1).UtcDateTime.ToString("O"))}",
+            "the provider's exclusive after bound must be one tick before the inclusive period start");
+        activityPaths[0].Should().Contain(
+            $"until={Uri.EscapeDataString(untilExclusive.UtcDateTime.ToString("O"))}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_FullActivityPage_PaginatesWithTerminalId()
+    {
+        var activityPaths = new List<string>();
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        var firstPage = Enumerable.Range(0, 100)
+            .Select(index => BuildActivityResponse($"activity-{index:D3}", since.AddMinutes(index)))
+            .ToArray();
+        var handler = new CapturingStubHandler(
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath == "/v2/account/activities")
+                {
+                    activityPaths.Add(request.RequestUri.PathAndQuery);
+                }
+            },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
+                {
+                    return BuildJson(Array.Empty<object>());
+                }
+
+                return request.RequestUri.Query.Contains("page_token=", StringComparison.Ordinal)
+                    ? BuildJson(new[]
+                    {
+                        BuildActivityResponse("activity-100", since.AddMinutes(100))
+                    })
+                    : BuildJson(firstPage);
+            });
+        var sut = CreateSut(handler);
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            untilExclusive);
+
+        activity.CashTransactions.Should().HaveCount(101);
+        activityPaths.Should().HaveCount(2);
+        activityPaths[1].Should().Contain(
+            $"page_token={Uri.EscapeDataString("activity-099")}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_FullActivityPageWithoutTerminalId_FailsClosed()
+    {
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var page = Enumerable.Range(0, 100)
+            .Select(index => BuildActivityResponse(
+                index == 99 ? null : $"activity-{index:D3}",
+                since.AddMinutes(index)))
+            .ToArray();
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request => request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                ? BuildJson(page)
+                : BuildJson(Array.Empty<object>()));
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            since.AddDays(30));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*without a terminal activity id*");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_RepeatedActivityPageToken_FailsClosed()
+    {
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var activityRequestCount = 0;
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request =>
+            {
+                if (request.RequestUri?.AbsolutePath != "/v2/account/activities")
+                {
+                    return BuildJson(Array.Empty<object>());
+                }
+
+                var pageOffset = activityRequestCount++ * 100;
+                var page = Enumerable.Range(0, 100)
+                    .Select(index => BuildActivityResponse(
+                        index == 99 ? "repeated-token" : $"activity-{pageOffset + index:D3}",
+                        since.AddMinutes(pageOffset + index)))
+                    .ToArray();
+                return BuildJson(page);
+            });
+        var sut = CreateSut(handler);
+
+        var act = () => ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            since,
+            since.AddDays(30));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*repeated a page token*");
+        activityRequestCount.Should().Be(2);
     }
 
 

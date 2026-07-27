@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -157,8 +158,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementImportCommit), async (
             HttpContext context,
             HttpRequest request,
-            [FromServices] StatementImportService? importService,
-            [FromServices] StatementImportEvidenceBridge? evidenceBridge) =>
+            [FromServices] StatementReconciliationReportWorkflowService? workflowService,
+            [FromServices] IStatementReconciliationIntakeAuthority? intakeAuthority) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -170,9 +171,32 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            if (importService is null)
+            if (workflowService is null || intakeAuthority is null)
             {
-                return StatementConnectorsNotRegistered();
+                return StatementReconciliationReportNotRegistered();
+            }
+
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var form = await request.ReadFormAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryReadStatementReconciliationReportScope(form, out var scope, out var validationProblem))
+            {
+                return validationProblem!;
+            }
+
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    scope,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+            {
+                return ownershipProblem;
             }
 
             var (document, connectorId, problem) = await ReadStatementDocumentAsync(request, context).ConfigureAwait(false);
@@ -181,89 +205,79 @@ public static partial class WorkstationEndpoints
                 return problem;
             }
 
-            var form = await request.ReadFormAsync(context.RequestAborted).ConfigureAwait(false);
-            var sourceKind = form["sourceKind"].FirstOrDefault()?.Trim();
-            if (string.IsNullOrWhiteSpace(sourceKind))
-            {
-                sourceKind = "broker";
-            }
-
-            var sourceInstitution = form["sourceInstitution"].FirstOrDefault()?.Trim();
-            if (string.IsNullOrWhiteSpace(sourceInstitution))
-            {
-                return MissingDataUploadPayload("sourceInstitution", "Statement import requires the source institution (broker or custodian name).");
-            }
-
-            var fundAccountId = form["fundAccountId"].FirstOrDefault()?.Trim();
-            if (string.IsNullOrWhiteSpace(fundAccountId))
-            {
-                return MissingDataUploadPayload("fundAccountId", "Statement import requires the fund account id.");
-            }
-
-            var externalAccountId = form["externalAccountId"].FirstOrDefault()?.Trim();
-            if (string.IsNullOrWhiteSpace(externalAccountId))
-            {
-                return MissingDataUploadPayload("externalAccountId", "Statement import requires the external (broker/custodian) account id.");
-            }
-
-            if (!TryParseDataUploadDate(form["periodStart"].FirstOrDefault() ?? string.Empty, out var periodStart))
-            {
-                return MissingDataUploadPayload("periodStart", "Statement period start must use YYYY-MM-DD format.");
-            }
-
-            if (!TryParseDataUploadDate(form["periodEnd"].FirstOrDefault() ?? string.Empty, out var periodEnd))
-            {
-                return MissingDataUploadPayload("periodEnd", "Statement period end must use YYYY-MM-DD format.");
-            }
-
-            if (periodEnd < periodStart)
-            {
-                return MissingDataUploadPayload("periodEnd", "Statement period end must be on or after the period start.");
-            }
-
             try
             {
-                var result = await importService.CommitAsync(
-                        new StatementImportCommitRequest(
-                            document!,
-                            connectorId,
-                            sourceKind,
-                            sourceInstitution,
-                            fundAccountId,
-                            externalAccountId,
-                            periodStart,
-                            periodEnd,
-                            form["toleranceProfileId"].FirstOrDefault()?.Trim(),
-                            currentUser),
+                var execution = await workflowService.StartAsync(
+                        new StatementReconciliationReportStartCommand(
+                            new StatementImportCommitRequest(
+                                document!,
+                                connectorId,
+                                scope.SourceKind,
+                                scope.SourceInstitution,
+                                scope.FundAccountId,
+                                scope.ExternalAccountId,
+                                scope.PeriodStart,
+                                scope.PeriodEnd,
+                                scope.ToleranceProfileId,
+                                currentUser)
+                            {
+                                AccountingScope = scope.AccountingScope
+                            },
+                            tenant.TenantId,
+                            tenant.CompanyId),
                         context.RequestAborted)
                     .ConfigureAwait(false);
-                if (evidenceBridge is not null)
+                if (execution.Workflow.Status == StatementReconciliationReportWorkflowStatusDto.Failed)
                 {
-                    result = await evidenceBridge.RetainAsync(
-                            result,
-                            new StatementImportEvidenceBridgeRequest(
-                                sourceKind,
-                                sourceInstitution,
-                                fundAccountId,
-                                externalAccountId,
-                                periodStart,
-                                periodEnd,
-                                currentUser),
-                            context.RequestAborted)
-                        .ConfigureAwait(false);
+                    return Results.Problem(
+                        title: "Statement reconciliation report ingestion failed",
+                        detail: execution.Workflow.FailureReason,
+                        statusCode: StatusCodes.Status500InternalServerError);
                 }
 
-                return Results.Json(result, jsonOptions);
+                if (execution.ImportResult is null
+                    || execution.Workflow.OperationsWorkflowId is null
+                    || execution.Workflow.AccountingScope is null)
+                {
+                    return Results.Problem(
+                        title: "Statement reconciliation authority is unavailable",
+                        detail: "The import was not confirmed through exact accounting scope, Operations Continuity, and canonical reconciliation casework.",
+                        statusCode: StatusCodes.Status503ServiceUnavailable);
+                }
+
+                return Results.Json(
+                    execution.ImportResult with
+                    {
+                        StatementReconciliationReportWorkflowId = execution.Workflow.WorkflowId,
+                        StatementReconciliationReportStatusRoute = execution.Workflow.StatusRoute,
+                        OperationsWorkflowId = execution.Workflow.OperationsWorkflowId,
+                        AccountingScope = execution.Workflow.AccountingScope
+                    },
+                    jsonOptions);
             }
             catch (Exception ex) when (ex is InvalidDataException or NotSupportedException)
             {
                 return MissingDataUploadPayload("statement", ex.Message);
+            }
+            catch (StatementReconciliationIntakeAuthorityException ex)
+            {
+                return Results.Problem(
+                    title: "Statement accounting authority is unavailable",
+                    detail: ex.Message,
+                    statusCode: string.Equals(
+                        ex.Code,
+                        "STATEMENT_INTAKE_AUTHORITY_UNAVAILABLE",
+                        StringComparison.Ordinal)
+                        ? StatusCodes.Status503ServiceUnavailable
+                        : StatusCodes.Status409Conflict);
             }
         })
         .WithName("CommitStatementImport")
         .Produces<StatementImportCommitResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
+        .Produces(409)
+        .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchPreview), async (
@@ -309,6 +323,8 @@ public static partial class WorkstationEndpoints
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
+        .Produces(409)
+        .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchSchedules), async (
@@ -320,7 +336,16 @@ public static partial class WorkstationEndpoints
                 return StatementConnectorsNotRegistered();
             }
 
-            var schedules = await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var schedules = (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                .Where(schedule => IsStatementFetchScheduleOwnedBy(schedule, tenant))
+                .ToArray();
             return Results.Json(schedules.Select(ToScheduleDto).ToArray(), jsonOptions);
         })
         .WithName("ListStatementFetchSchedules")
@@ -329,20 +354,85 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchSchedules), async (
             StatementFetchScheduleUpsertRequestDto request,
             HttpContext context,
-            [FromServices] IStatementFetchScheduleStore? scheduleStore) =>
+            [FromServices] IStatementFetchScheduleStore? scheduleStore,
+            [FromServices] IStatementReconciliationIntakeAuthority? intakeAuthority) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            if (scheduleStore is null)
+            if (scheduleStore is null || intakeAuthority is null)
             {
-                return StatementConnectorsNotRegistered();
+                return StatementReconciliationReportNotRegistered();
+            }
+
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!request.PeriodStart.HasValue
+                || !request.PeriodEnd.HasValue
+                || request.PeriodEnd.Value < request.PeriodStart.Value)
+            {
+                return MissingDataUploadPayload(
+                    "period",
+                    "Statement fetch schedule requires an exact ledger period start and end.");
+            }
+
+            var sourceKind = string.IsNullOrWhiteSpace(request.SourceKind)
+                ? "broker"
+                : request.SourceKind.Trim();
+            var endpointScope = new StatementReconciliationReportScope(
+                sourceKind,
+                request.SourceInstitution,
+                request.FundAccountId,
+                request.ExternalAccountId,
+                request.PeriodStart.Value,
+                request.PeriodEnd.Value,
+                request.ToleranceProfileId,
+                AccountingScope: null);
+            var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                    endpointScope,
+                    tenant,
+                    context)
+                .ConfigureAwait(false);
+            if (ownershipProblem is not null)
+            {
+                return ownershipProblem;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.ScheduleId))
+            {
+                var existing = (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                    .FirstOrDefault(candidate => string.Equals(
+                        candidate.ScheduleId,
+                        request.ScheduleId.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+                if (existing is not null
+                    && !IsStatementFetchScheduleOwnedBy(existing, tenant)
+                    && !IsMatchingLegacyStatementFetchSchedule(existing, request))
+                {
+                    return Results.NotFound();
+                }
             }
 
             try
             {
+                var accountingScope = await intakeAuthority.ResolveAccountingScopeAsync(
+                        new StatementReconciliationIntakeScopeRequest(
+                            tenant.TenantId,
+                            tenant.CompanyId,
+                            request.FundAccountId,
+                            request.ExternalAccountId,
+                            request.SourceInstitution,
+                            request.PeriodStart.Value,
+                            request.PeriodEnd.Value),
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
                 var saved = await scheduleStore.UpsertAsync(
                         new StatementFetchSchedule(
                             request.ScheduleId ?? string.Empty,
@@ -356,9 +446,12 @@ public static partial class WorkstationEndpoints
                                 : request.ToleranceProfileId,
                             request.CadenceHours,
                             request.Enabled,
-                            SourceKind: string.IsNullOrWhiteSpace(request.SourceKind)
-                                ? "broker"
-                                : request.SourceKind),
+                            SourceKind: sourceKind,
+                            TenantId: tenant.TenantId,
+                            CompanyId: tenant.CompanyId,
+                            PeriodStart: request.PeriodStart,
+                            PeriodEnd: request.PeriodEnd,
+                            AccountingScope: accountingScope),
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(ToScheduleDto(saved), jsonOptions);
@@ -367,11 +460,25 @@ public static partial class WorkstationEndpoints
             {
                 return MissingDataUploadPayload("schedule", ex.Message);
             }
+            catch (StatementReconciliationIntakeAuthorityException ex)
+            {
+                return Results.Problem(
+                    title: "Statement accounting authority is unavailable",
+                    detail: ex.Message,
+                    statusCode: string.Equals(
+                        ex.Code,
+                        "STATEMENT_INTAKE_AUTHORITY_UNAVAILABLE",
+                        StringComparison.Ordinal)
+                        ? StatusCodes.Status503ServiceUnavailable
+                        : StatusCodes.Status409Conflict);
+            }
         })
         .WithName("UpsertStatementFetchSchedule")
         .Produces<StatementFetchScheduleDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
+        .Produces(409)
+        .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchScheduleById), async (
@@ -389,7 +496,23 @@ public static partial class WorkstationEndpoints
                 return StatementConnectorsNotRegistered();
             }
 
-            var deleted = await scheduleStore.DeleteAsync(scheduleId, context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var schedule = (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                .FirstOrDefault(candidate =>
+                    string.Equals(candidate.ScheduleId, scheduleId?.Trim(), StringComparison.OrdinalIgnoreCase)
+                    && IsStatementFetchScheduleOwnedBy(candidate, tenant));
+            if (schedule is null)
+            {
+                return Results.NotFound();
+            }
+
+            var deleted = await scheduleStore.DeleteAsync(schedule.ScheduleId, context.RequestAborted).ConfigureAwait(false);
             return deleted ? Results.NoContent() : Results.NotFound();
         })
         .WithName("DeleteStatementFetchSchedule")
@@ -402,50 +525,56 @@ public static partial class WorkstationEndpoints
             string scheduleId,
             HttpContext context,
             [FromServices] StatementFetchScheduleRunner? runner,
-            [FromServices] IStatementFetchScheduleStore? scheduleStore,
-            [FromServices] StatementImportEvidenceBridge? evidenceBridge) =>
+            [FromServices] IStatementFetchScheduleStore? scheduleStore) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            if (runner is null)
+            if (runner is null || scheduleStore is null)
             {
                 return StatementConnectorsNotRegistered();
             }
 
-            var nowUtc = DateTimeOffset.UtcNow;
-            var schedule = scheduleStore is null
-                ? null
-                : (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
-                    .FirstOrDefault(candidate => string.Equals(candidate.ScheduleId, scheduleId?.Trim(), StringComparison.OrdinalIgnoreCase));
-            var since = schedule?.LastRunAtUtc ?? nowUtc.AddHours(-Math.Max(1, schedule?.CadenceHours ?? 24));
-            var result = await runner.RunScheduleAsync(scheduleId, nowUtc, context.RequestAborted).ConfigureAwait(false);
-            if (result is not null && schedule is not null && evidenceBridge is not null)
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.IsNullOrWhiteSpace(tenant.TenantId)
+                || string.IsNullOrWhiteSpace(tenant.CompanyId))
             {
-                result = await evidenceBridge.RetainAsync(
-                        result,
-                        new StatementImportEvidenceBridgeRequest(
-                            SourceKind: "broker",
-                            SourceInstitution: schedule.SourceInstitution,
-                            FundAccountId: schedule.FundAccountId,
-                            ExternalAccountId: schedule.ExternalAccountId,
-                            PeriodStart: DateOnly.FromDateTime(since.UtcDateTime),
-                            PeriodEnd: DateOnly.FromDateTime(nowUtc.UtcDateTime),
-                            ImportedBy: "statement-fetch-scheduler"),
-                        context.RequestAborted)
-                    .ConfigureAwait(false);
+                return EndpointHelpers.Forbidden();
             }
 
-            return result is null
-                ? Results.NotFound()
-                : Results.Json(result, jsonOptions);
+            var nowUtc = DateTimeOffset.UtcNow;
+            var schedule = (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                .FirstOrDefault(candidate =>
+                    string.Equals(candidate.ScheduleId, scheduleId?.Trim(), StringComparison.OrdinalIgnoreCase)
+                    && IsStatementFetchScheduleOwnedBy(candidate, tenant));
+            if (schedule is null)
+            {
+                return Results.NotFound();
+            }
+
+            var result = await runner.RunScheduleAsync(schedule, nowUtc, context.RequestAborted).ConfigureAwait(false);
+            if (result is null)
+            {
+                var failed = (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                    .FirstOrDefault(candidate =>
+                        string.Equals(candidate.ScheduleId, schedule.ScheduleId, StringComparison.OrdinalIgnoreCase));
+                return Results.Problem(
+                    title: "Statement fetch ingestion failed",
+                    detail: failed?.LastRunStatus
+                            ?? "The scheduled statement was not accepted by the reconciliation report authority.",
+                    statusCode: StatusCodes.Status409Conflict);
+            }
+
+            return Results.Json(result, jsonOptions);
         })
         .WithName("RunStatementFetchSchedule")
         .Produces<StatementImportCommitResultDto>(200)
         .Produces(403)
         .Produces(404)
+        .Produces(409)
+        .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
@@ -568,5 +697,32 @@ public static partial class WorkstationEndpoints
             schedule.LastRunAtUtc,
             schedule.LastRunStatus,
             schedule.NextDueAtUtc,
-            schedule.SourceKind);
+            schedule.SourceKind,
+            schedule.PeriodStart,
+            schedule.PeriodEnd,
+            schedule.AccountingScope is null
+                ? null
+                : new StatementReconciliationAccountingScopeDto(
+                    schedule.AccountingScope.FundProfileId,
+                    schedule.AccountingScope.LedgerBookId,
+                    schedule.AccountingScope.AccountingPeriodId,
+                    schedule.AccountingScope.AsOfDate));
+
+    private static bool IsStatementFetchScheduleOwnedBy(
+        StatementFetchSchedule schedule,
+        WorkstationTenantContext tenant)
+        => !string.IsNullOrWhiteSpace(schedule.TenantId)
+           && !string.IsNullOrWhiteSpace(schedule.CompanyId)
+           && string.Equals(schedule.TenantId.Trim(), tenant.TenantId?.Trim(), StringComparison.OrdinalIgnoreCase)
+           && string.Equals(schedule.CompanyId.Trim(), tenant.CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsMatchingLegacyStatementFetchSchedule(
+        StatementFetchSchedule schedule,
+        StatementFetchScheduleUpsertRequestDto request)
+        => string.IsNullOrWhiteSpace(schedule.TenantId)
+           && string.IsNullOrWhiteSpace(schedule.CompanyId)
+           && string.Equals(schedule.ConnectorId, request.ConnectorId?.Trim(), StringComparison.OrdinalIgnoreCase)
+           && string.Equals(schedule.ExternalAccountId, request.ExternalAccountId?.Trim(), StringComparison.OrdinalIgnoreCase)
+           && string.Equals(schedule.FundAccountId, request.FundAccountId?.Trim(), StringComparison.OrdinalIgnoreCase)
+           && string.Equals(schedule.SourceInstitution, request.SourceInstitution?.Trim(), StringComparison.OrdinalIgnoreCase);
 }

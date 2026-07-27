@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -8,12 +9,24 @@ using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
-using NSubstitute;
+using Moq;
 
 namespace Meridian.Tests.Ui;
 
+/// <summary>
+/// Guards statement casework against missing or conflicting month-end ledger authority so a
+/// reviewed case cannot be rebound to another book or accounting period during evidence handoff.
+/// </summary>
 public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
 {
+    private const string DefaultFundProfileId = "fund-profile-statement-authority";
+    private static readonly Guid DefaultLedgerBookId =
+        Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid DefaultAccountingPeriodId =
+        Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid DefaultFundStructureNodeId =
+        Guid.Parse("33333333-3333-3333-3333-333333333333");
+
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
         "meridian-statement-casework-handoff-tests",
@@ -27,7 +40,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var import = BuildImport("import-resolved", fundAccountId);
         var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-resolved");
         var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddHours(-1));
-        var item = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.Resolved,
             LifecycleState = ReconciliationCaseLifecycleState.Resolved,
@@ -44,12 +57,14 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
         await operationsRepository.SaveAsync(BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)));
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             queue,
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
 
         var first = await service.ApplyAsync(command);
         var replay = await service.ApplyAsync(command);
@@ -67,7 +82,10 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         retainedCase.AuditEvents.Single(audit => audit.EventType == "StatementBreakDisposed").Detail
             .Should().Contain($"correlationId={command.CorrelationId}");
 
-        var workflow = (await operations.ListAsync(fundAccountId, import.StatementPeriodEnd.ToString("yyyy-MM")))
+        var workflow = (await operations.ListAsync(
+                fundAccountId,
+                import.AccountingScope!.AccountingPeriodId.ToString("D"),
+                ledgerBookId: import.AccountingScope.LedgerBookId))
             .Should().ContainSingle().Which;
         var timeline = await operations.GetTimelineAsync(workflow.WorkflowId);
         timeline.SelectMany(entry => entry.References)
@@ -92,7 +110,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
                 "prior-operator",
                 now.AddHours(-2))
         };
-        var item = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.Open,
             LifecycleState = ReconciliationCaseLifecycleState.Reopened,
@@ -111,12 +129,14 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
         await operationsRepository.SaveAsync(BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)));
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
 
         await service.ApplyAsync(command);
 
@@ -139,7 +159,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var import = BuildImport("import-retry", fundAccountId);
         var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-retry");
         var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
-        var item = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.Resolved,
             LifecycleState = ReconciliationCaseLifecycleState.Resolved,
@@ -152,16 +172,20 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
 
         var first = () => service.ApplyAsync(command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
         failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
+        journalStore.Invocations.Should().BeEmpty(
+            "missing workflow detection must remain ahead of ledger authority resolution");
         (await breakStore.GetAsync(sourceBreak.BreakId))!.Status.Should().Be("Resolved");
         (await caseStore.GetAsync(sourceCase.CaseId))!.AuditEvents
             .Should().ContainSingle(audit => audit.EventType == "StatementBreakDisposed");
@@ -172,7 +196,10 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         replay.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         (await caseStore.GetAsync(sourceCase.CaseId))!.AuditEvents
             .Should().ContainSingle(audit => audit.EventType == "StatementBreakDisposed");
-        var workflow = (await operations.ListAsync(fundAccountId, import.StatementPeriodEnd.ToString("yyyy-MM")))
+        var workflow = (await operations.ListAsync(
+                fundAccountId,
+                import.AccountingScope!.AccountingPeriodId.ToString("D"),
+                ledgerBookId: import.AccountingScope.LedgerBookId))
             .Should().ContainSingle().Which;
         (await operations.GetTimelineAsync(workflow.WorkflowId))
             .SelectMany(entry => entry.References)
@@ -185,10 +212,13 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var now = new DateTimeOffset(2026, 7, 26, 15, 0, 0, TimeSpan.Zero);
         var fundAccountId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
-        var import = BuildImport("import-guid-period", fundAccountId);
+        var import = BuildImport(
+            "import-guid-period",
+            fundAccountId,
+            accountingPeriodId: periodId);
         var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-guid-period");
         var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
-        var item = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.Resolved,
             LifecycleState = ReconciliationCaseLifecycleState.Resolved,
@@ -205,36 +235,149 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             import,
             now.AddDays(-1),
             periodId.ToString()));
-        var journalStore = Substitute.For<ILedgerJournalStore>();
-        journalStore.GetPeriodAsync(periodId, Arg.Any<CancellationToken>())
-            .Returns(new LedgerAccountingPeriod(
-                periodId,
-                LedgerBookId: null,
-                FiscalYear: 2026,
-                PeriodNo: 6,
-                Label: "2026-06",
-                StartDate: import.StatementPeriodStart,
-                EndDate: import.StatementPeriodEnd,
-                Status: "Open",
-                OpenedAt: now.AddMonths(-1),
-                ClosedAt: null,
-                Version: 1));
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore);
+            journalStore.Object);
 
         await service.ApplyAsync(BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
-        var workflow = (await operations.ListAsync(fundAccountId, periodId.ToString()))
+        var workflow = (await operations.ListAsync(
+                fundAccountId,
+                periodId.ToString("D"),
+                ledgerBookId: import.AccountingScope!.LedgerBookId))
             .Should().ContainSingle().Which;
         (await operations.GetTimelineAsync(workflow.WorkflowId))
             .SelectMany(entry => entry.References)
             .Should().ContainSingle(reference => reference.Source == "statement-reconciliation-casework");
-        await journalStore.Received(1).GetPeriodAsync(periodId, Arg.Any<CancellationToken>());
+        journalStore.Verify(
+            store => store.GetLedgerBookAsync(
+                import.AccountingScope!.LedgerBookId,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        journalStore.Verify(
+            store => store.GetPeriodAsync(periodId, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ApplyAsync_DifferentLedgerBookWorkflow_ShouldNotRebindAlreadyScopedStatementCase()
+    {
+        var now = new DateTimeOffset(2026, 7, 26, 15, 10, 0, TimeSpan.Zero);
+        var fundAccountId = Guid.NewGuid();
+        var import = BuildImport("import-different-book", fundAccountId);
+        var scope = import.AccountingScope!;
+        var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-different-book");
+        var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved
+        };
+        var queue = new StaticQueueRepository(item);
+        var breakStore = new JsonReconciliationBreakStore(_root);
+        var caseStore = new JsonReconciliationCaseStore(_root);
+        await breakStore.WriteAsync([sourceBreak]);
+        await caseStore.SaveAsync(sourceCase);
+        var operations = CreateOperationsService(out var operationsRepository);
+        var differentBookWorkflow = BuildOperationsWorkflow(
+            fundAccountId,
+            import,
+            now.AddDays(-1),
+            scope.AccountingPeriodId.ToString("D"),
+            Guid.NewGuid());
+        await operationsRepository.SaveAsync(differentBookWorkflow);
+        var journalStore = CreateStrictJournalStore(import);
+        var service = new StatementReconciliationCaseworkHandoffService(
+            queue,
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object);
+
+        var apply = () => service.ApplyAsync(
+            BuildCommand(item, ReconciliationCaseworkAction.Resolve));
+
+        var failure = await apply
+            .Should()
+            .ThrowAsync<StatementReconciliationCaseworkHandoffException>();
+        failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
+        journalStore.Invocations.Should().BeEmpty(
+            "a differently scoped workflow must be rejected before ledger authority resolution");
+        var retained = await queue.GetByIdAsync(item.BreakId);
+        retained.Should().NotBeNull();
+        retained!.FundProfileId.Should().Be(scope.FundProfileId);
+        retained.LedgerBookId.Should().Be(scope.LedgerBookId);
+        retained.AccountingPeriodId.Should().Be(scope.AccountingPeriodId.ToString("D"));
+        retained.AsOfDate.Should().Be(scope.AsOfDate);
+        (await operations.GetTimelineAsync(differentBookWorkflow.WorkflowId))
+            .SelectMany(entry => entry.References)
+            .Should().NotContain(reference =>
+                reference.Source == "statement-reconciliation-casework");
+    }
+
+    [Fact]
+    public async Task ApplyAsync_DifferentAccountingPeriodWorkflow_ShouldNotRebindAlreadyScopedStatementCase()
+    {
+        var now = new DateTimeOffset(2026, 7, 26, 15, 20, 0, TimeSpan.Zero);
+        var fundAccountId = Guid.NewGuid();
+        var import = BuildImport("import-different-period", fundAccountId);
+        var scope = import.AccountingScope!;
+        var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-different-period");
+        var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved
+        };
+        var queue = new StaticQueueRepository(item);
+        var breakStore = new JsonReconciliationBreakStore(_root);
+        var caseStore = new JsonReconciliationCaseStore(_root);
+        await breakStore.WriteAsync([sourceBreak]);
+        await caseStore.SaveAsync(sourceCase);
+        var operations = CreateOperationsService(out var operationsRepository);
+        var differentPeriodWorkflow = BuildOperationsWorkflow(
+            fundAccountId,
+            import,
+            now.AddDays(-1),
+            Guid.NewGuid().ToString("D"),
+            scope.LedgerBookId);
+        await operationsRepository.SaveAsync(differentPeriodWorkflow);
+        var journalStore = CreateStrictJournalStore(import);
+        var service = new StatementReconciliationCaseworkHandoffService(
+            queue,
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object);
+
+        var apply = () => service.ApplyAsync(
+            BuildCommand(item, ReconciliationCaseworkAction.Resolve));
+
+        var failure = await apply
+            .Should()
+            .ThrowAsync<StatementReconciliationCaseworkHandoffException>();
+        failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
+        journalStore.Invocations.Should().BeEmpty(
+            "a differently scoped workflow must be rejected before ledger authority resolution");
+        var retained = await queue.GetByIdAsync(item.BreakId);
+        retained.Should().NotBeNull();
+        retained!.FundProfileId.Should().Be(scope.FundProfileId);
+        retained.LedgerBookId.Should().Be(scope.LedgerBookId);
+        retained.AccountingPeriodId.Should().Be(scope.AccountingPeriodId.ToString("D"));
+        retained.AsOfDate.Should().Be(scope.AsOfDate);
+        (await operations.GetTimelineAsync(differentPeriodWorkflow.WorkflowId))
+            .SelectMany(entry => entry.References)
+            .Should().NotContain(reference =>
+                reference.Source == "statement-reconciliation-casework");
     }
 
     [Fact]
@@ -245,7 +388,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var import = BuildImport("import-bulk-projection", fundAccountId);
         var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-bulk-projection");
         var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
-        var initial = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var initial = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.InReview,
             LifecycleState = ReconciliationCaseLifecycleState.Investigating,
@@ -267,12 +410,14 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             fundAccountId,
             import,
             now.AddDays(-1)));
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             queue,
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
         var request = new ReconciliationBulkCaseworkRequest(
             BreakIds: [initial.BreakId],
             Action: ReconciliationCaseworkAction.Resolve,
@@ -315,10 +460,14 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
         var accountingPeriodId = Guid.NewGuid();
-        var import = BuildImport("import-durable-handoff", fundAccountId);
+        var import = BuildImport(
+            "import-durable-handoff",
+            fundAccountId,
+            ledgerBookId,
+            accountingPeriodId);
         var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-durable-handoff");
         var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddDays(-1));
-        var initial = BuildQueueItem(import.ImportId, sourceBreak.BreakId, now) with
+        var initial = BuildQueueItem(import, sourceBreak.BreakId, now) with
         {
             Status = ReconciliationBreakQueueStatus.InReview,
             LifecycleState = ReconciliationCaseLifecycleState.Investigating,
@@ -378,17 +527,21 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
+        var journalStore = CreateStrictJournalStore(import);
         var service = new StatementReconciliationCaseworkHandoffService(
             queue,
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
 
         var first = () => service.ApplyAsync(command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
 
         failure.Which.Code.Should().Be("OPERATIONS_WORKFLOW_REQUIRED");
+        journalStore.Invocations.Should().BeEmpty(
+            "missing workflow detection must remain ahead of ledger authority resolution");
         var pending = await queue.GetByIdAsync(initial.BreakId);
         pending.Should().NotBeNull();
         pending!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Resolved);
@@ -430,7 +583,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         {
             _ = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
                 [pending!],
-                fundAccountId.ToString("D"),
+                import.AccountingScope!.FundProfileId,
                 ledgerBookId,
                 accountingPeriodId,
                 import.StatementPeriodEnd,
@@ -440,7 +593,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             .WithMessage("*pending statement-source/Operations evidence handoff*");
         var unscopedPending = pending! with
         {
-            FundAccountId = null,
+            FundProfileId = null,
             LedgerBookId = null,
             AccountingPeriodId = null,
             AsOfDate = null
@@ -449,7 +602,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         {
             _ = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
                 [unscopedPending],
-                fundAccountId.ToString("D"),
+                import.AccountingScope!.FundProfileId,
                 ledgerBookId,
                 accountingPeriodId,
                 import.StatementPeriodEnd,
@@ -476,7 +629,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             breakStore,
             caseStore,
             new StaticStatementRunWorkflowService(import),
-            operations);
+            operations,
+            journalStore.Object);
 
         var replay = await restartedService.ApplyAsync(command);
 
@@ -505,7 +659,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             && audit.CausationId == command.CommandId);
         AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
                 [cleared!],
-                fundAccountId.ToString("D"),
+                import.AccountingScope!.FundProfileId,
                 ledgerBookId,
                 accountingPeriodId,
                 import.StatementPeriodEnd,
@@ -539,34 +693,92 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         DateTimeOffset now,
         string? periodId = null,
         Guid? ledgerBookId = null)
-        => OperationsContinuityWorkflow.Start(
+    {
+        var scope = import.AccountingScope
+            ?? throw new InvalidOperationException("The test statement import must carry accounting scope.");
+        return OperationsContinuityWorkflow.Start(
             Guid.NewGuid(),
             fundAccountId,
-            periodId ?? import.StatementPeriodEnd.ToString("yyyy-MM"),
+            periodId ?? scope.AccountingPeriodId.ToString("D"),
             securityMasterSnapshotId: null,
             brokerSource: import.Broker,
             now,
-            ledgerBookId);
+            ledgerBookId ?? scope.LedgerBookId);
+    }
 
-    private static CanonicalStatementImport BuildImport(string importId, Guid fundAccountId)
-        => new(
+    private static CanonicalStatementImport BuildImport(
+        string importId,
+        Guid fundAccountId,
+        Guid? ledgerBookId = null,
+        Guid? accountingPeriodId = null,
+        string fundProfileId = DefaultFundProfileId)
+    {
+        var statementPeriodStart = new DateOnly(2026, 6, 1);
+        var statementPeriodEnd = new DateOnly(2026, 6, 30);
+        var resolvedLedgerBookId = ledgerBookId ?? DefaultLedgerBookId;
+        var resolvedAccountingPeriodId = accountingPeriodId ?? DefaultAccountingPeriodId;
+        return new CanonicalStatementImport(
             importId,
             "custodian",
-            new DateOnly(2026, 6, 30),
+            statementPeriodEnd,
             new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero),
             "retained://statement.csv",
             new string('A', 64),
             4,
             4)
         {
-            FundAccountId = fundAccountId.ToString(),
+            FundAccountId = fundAccountId.ToString("D"),
             ExternalAccountId = "CUST-123",
-            StatementPeriodStart = new DateOnly(2026, 6, 1),
-            StatementPeriodEnd = new DateOnly(2026, 6, 30),
+            StatementPeriodStart = statementPeriodStart,
+            StatementPeriodEnd = statementPeriodEnd,
             SourceInstitution = "custodian",
             OriginalFileName = "statement.csv",
-            ImportedBy = "statement-loader"
+            ImportedBy = "statement-loader",
+            AccountingScope = new StatementAccountingScope(
+                fundProfileId,
+                resolvedLedgerBookId,
+                resolvedAccountingPeriodId,
+                statementPeriodEnd)
         };
+    }
+
+    private static Mock<ILedgerJournalStore> CreateStrictJournalStore(
+        CanonicalStatementImport import)
+    {
+        var scope = import.AccountingScope
+            ?? throw new InvalidOperationException("The test statement import must carry accounting scope.");
+        var journalStore = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        journalStore
+            .Setup(store => store.GetLedgerBookAsync(
+                scope.LedgerBookId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LedgerBookRecord(
+                scope.LedgerBookId,
+                scope.FundProfileId,
+                DefaultFundStructureNodeId,
+                FundStructureNodeKindDto.Fund,
+                "Statement authority book",
+                "USD",
+                import.ImportedAtUtc.AddYears(-1),
+                import.ImportedAtUtc));
+        journalStore
+            .Setup(store => store.GetPeriodAsync(
+                scope.AccountingPeriodId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LedgerAccountingPeriod(
+                scope.AccountingPeriodId,
+                scope.LedgerBookId,
+                2026,
+                6,
+                "2026-06",
+                import.StatementPeriodStart,
+                import.StatementPeriodEnd,
+                "Open",
+                import.ImportedAtUtc.AddMonths(-1),
+                ClosedAt: null,
+                Version: 1));
+        return journalStore;
+    }
 
     private static ReconciliationBreakRecord BuildSourceBreak(string importId, string breakId)
         => new(
@@ -610,12 +822,15 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         };
 
     private static ReconciliationBreakQueueItem BuildQueueItem(
-        string importId,
+        CanonicalStatementImport import,
         string sourceBreakId,
         DateTimeOffset now)
-        => new(
+    {
+        var scope = import.AccountingScope
+            ?? throw new InvalidOperationException("The test statement import must carry accounting scope.");
+        return new ReconciliationBreakQueueItem(
             BreakId: $"statement:queue-{sourceBreakId}",
-            RunId: importId,
+            RunId: import.ImportId,
             StrategyName: "Statement reconciliation",
             Category: ReconciliationBreakCategory.ExternalStatementMismatch,
             Status: ReconciliationBreakQueueStatus.InReview,
@@ -627,16 +842,24 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Severity: ReconciliationBreakSeverity.High,
             LifecycleState: ReconciliationCaseLifecycleState.InReview,
             Version: 2,
+            FundAccountId: import.FundAccountId,
             EvidenceLinks:
             [
-                $"/api/workstation/reconciliation/statement-runs/{importId}#row-1"
+                $"/api/workstation/reconciliation/statement-runs/{import.ImportId}#row-1"
             ],
             SourceType: "statement",
             SourceSystem: "statement-reconciliation",
-            SourceReference: $"{importId}:1",
-            SourceImportId: importId,
+            SourceReference: $"{import.ImportId}:1",
+            SourceImportId: import.ImportId,
             SourceBreakId: sourceBreakId,
-            DispositionEvidenceHash: new string('b', 64));
+            LedgerBookId: scope.LedgerBookId,
+            DispositionEvidenceHash: new string('b', 64),
+            AccountingPeriodId: scope.AccountingPeriodId.ToString("D"),
+            AsOfDate: scope.AsOfDate)
+        {
+            FundProfileId = scope.FundProfileId
+        };
+    }
 
     private static ReconciliationCaseworkCommand BuildCommand(
         ReconciliationBreakQueueItem item,

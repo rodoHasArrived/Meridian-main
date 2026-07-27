@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Documents;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
@@ -48,6 +49,14 @@ public sealed class ReportingRunCertificationServiceTests
         second.Snapshot.SourceCheckpointId.Should().Be(first.AuthoritativeSource.CheckpointId);
         second.Snapshot.ReconciliationCheckpointId.Should().NotBe(second.Snapshot.SourceCheckpointId);
         second.DatasetRows.Should().Equal(first.DatasetRows);
+        first.Snapshot.RequiresCertifiedLedgerPresentation.Should().BeFalse(
+            "non-client-package reports must retain the legacy immutable snapshot binding");
+        first.Snapshot.ParametersCanonicalJson.Should().NotContain(
+            "requiresCertifiedLedgerPresentation",
+            "the false case must preserve the pre-upgrade canonical parameter hash");
+        JsonSerializer.Serialize(first.Snapshot).Should().NotContain(
+            "RequiresCertifiedLedgerPresentation",
+            "the false case must preserve pre-upgrade manifest and store payload hashes");
         first.OperationalScope.TenantId.Should().Be("tenant-a");
         first.OperationalScope.CompanyId.Should().Be("company-a");
         first.Readiness.ResolvedParameters.LedgerBook.LedgerBookId.Should().Be(StubAuthoritativeSource.BookId);
@@ -1025,9 +1034,6 @@ public sealed class ReportingRunCertificationServiceTests
             CapitalAccountRows(),
             CapitalAccountTemplate(),
             reportPack);
-        var canonicalTables = LedgerReportPresentation.BuildTables(reportPack);
-        var expected = canonicalTables.Single(static table =>
-            table.Title == "Statement of Changes in Partners' Capital");
         var presentationSource = new StubCertifiedLedgerPresentationSource(
             BindCanonicalPresentation(manifest, reportPack));
         var renderer = new DocumentsReportingPrimaryDocumentRenderer();
@@ -1048,17 +1054,21 @@ public sealed class ReportingRunCertificationServiceTests
         var secondWorkbook = second.Artifacts.Single(static artifact =>
             artifact.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             .Content.ToArray();
-        var model = DocumentsReportingPrimaryDocumentRenderer.BuildModel(
-            manifest,
-            canonicalTables);
+        var authoritativeDocumentRenderer = new FinancialReportDocumentRenderer();
 
         presentationSource.ResolveCount.Should().Be(2, "the producer resolves one exact presentation per package");
         Encoding.ASCII.GetString(firstPdf, 0, 5).Should().Be("%PDF-");
         firstPdf.Should().Equal(secondPdf);
-        firstPdf.Should().NotEqual(
-            renderer.RenderPdf(manifest),
-            "the PDF rendered through the producer must include the canonical partners-capital table");
+        firstPdf.Should().Equal(
+            authoritativeDocumentRenderer.RenderPdf(reportPack),
+            "Reporting must reuse the existing Documents renderer over the exact certified ledger pack");
+        var unboundRender = () => renderer.RenderPdf(manifest);
+        unboundRender.Should().Throw<ReportingGovernanceException>()
+            .WithMessage("*exact checkpoint-bound canonical ledger presentation*");
         firstWorkbook.Should().Equal(secondWorkbook);
+        firstWorkbook.Should().Equal(
+            authoritativeDocumentRenderer.RenderWorkbook(reportPack),
+            "Reporting must not rebuild a parallel workbook model from display rows");
 
         using (var archive = new ZipArchive(new MemoryStream(firstWorkbook), ZipArchiveMode.Read))
         {
@@ -1072,19 +1082,13 @@ public sealed class ReportingRunCertificationServiceTests
                 .Should().Contain(static name =>
                     name != null
                     && name.StartsWith("Statement of Changes in", StringComparison.Ordinal));
+            using var reader = new StreamReader(
+                archive.GetEntry("xl/sharedStrings.xml")!.Open(),
+                Encoding.UTF8);
+            var sharedStrings = await reader.ReadToEndAsync();
+            sharedStrings.Should().Contain("1,000,000.00");
+            sharedStrings.Should().Contain("250,000.00");
         }
-
-        var actual = model.Tables.Single(static table =>
-            table.Title == "Statement of Changes in Partners' Capital");
-        actual.Headers.Should().Equal(expected.Headers);
-        actual.Rows.Should().HaveSameCount(expected.Rows);
-        for (var index = 0; index < expected.Rows.Count; index++)
-        {
-            actual.Rows[index].Should().Equal(expected.Rows[index]);
-        }
-        actual.Rows.Should().Contain(static row =>
-            row.Contains("1,000,000.00", StringComparer.Ordinal)
-            && row.Contains("250,000.00", StringComparer.Ordinal));
     }
 
     [Fact]
@@ -1106,6 +1110,49 @@ public sealed class ReportingRunCertificationServiceTests
             .ThrowAsync<ReportingGovernanceException>()
             .WithMessage(
                 "*no exact checkpoint-bound canonical ledger presentation*not recalculated from incomplete certified display rows*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_GovernedCapitalAccountAliasCannotUseCheckpointUnboundProjectionFallback()
+    {
+        var aliasTemplate = CapitalAccountTemplate() with
+        {
+            TemplateId = "custom-partner-capital-package",
+            Name = "Custom Partner Capital Package"
+        };
+        var reportPack = BuildCanonicalCapitalReportPack();
+        var manifest = await BuildCertifiedManifestAsync(
+            "run-capital-account-alias",
+            ReportingOutputFormatDto.ClientPackage,
+            CapitalAccountRows(),
+            aliasTemplate,
+            reportPack,
+            SamplePartnersCapital());
+        var renderer = new DocumentsReportingPrimaryDocumentRenderer();
+        var producer = new DeterministicReportingCertifiedArtifactProducer(renderer);
+
+        manifest.CertifiedSnapshot!.RequiresCertifiedLedgerPresentation.Should().BeTrue(
+            "the governed CapitalAccountStatement family, not a built-in template id, owns the requirement");
+        Action renderWithoutBoundPresentation = () => renderer.RenderPdf(manifest);
+        Func<Task> produceWithoutBoundPresentation = async () => await producer.ProduceAsync(manifest);
+        var preUpgradeAlias = manifest with
+        {
+            CertifiedSnapshot = manifest.CertifiedSnapshot with
+            {
+                RequiresCertifiedLedgerPresentation = false
+            }
+        };
+        Action renderPreUpgradeAlias = () => renderer.RenderPdf(preUpgradeAlias);
+
+        renderWithoutBoundPresentation.Should()
+            .Throw<ReportingGovernanceException>()
+            .WithMessage("*cannot use a checkpoint-unbound partners-capital projection*");
+        renderPreUpgradeAlias.Should()
+            .Throw<ReportingGovernanceException>()
+            .WithMessage("*cannot use a checkpoint-unbound partners-capital projection*");
+        await produceWithoutBoundPresentation.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*no exact checkpoint-bound canonical ledger presentation*");
     }
 
     [Fact]
@@ -1620,7 +1667,10 @@ public sealed class ReportingRunCertificationServiceTests
         ],
         BlockedOutputs: ["FinalReport", "PeriodClose"],
         AccountingPeriodId: AccountingPeriodId.ToString("D"),
-        AsOfDate: ReportingAsOfDate);
+        AsOfDate: ReportingAsOfDate)
+    {
+        FundProfileId = fundId
+    };
 
     private static ReportingTemplateMetadata Template(bool reportWriterGrid = true) => new(
         "test-report",

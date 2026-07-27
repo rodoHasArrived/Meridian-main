@@ -403,15 +403,15 @@ public static class WorkstationServiceCollectionExtensions
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the
-        // candidate resolver locates the published report packs that consumed the edited security from
-        // retained report-line provenance (ReportPackRestatementCandidateResolver), falling back to the
-        // no-op NullRestatementCandidateResolver only where no report-pack workflow backend is present.
+        // canonical reporting governance does not yet expose a security-to-released-run candidate
+        // query. Fail closed as indeterminate instead of consulting the retired, empty report-pack
+        // workflow authority and incorrectly reporting no soft-closed restatement.
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.ILedgerPeriodLockReader,
             Meridian.Application.SecurityMaster.LedgerPeriodLockReader>();
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IRestatementCandidateResolver,
-            ReportPackRestatementCandidateResolver>();
+            Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver>();
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver,
             Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver>();
@@ -447,6 +447,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportPackValidationService>();
         var reportingConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
             ?? Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        if (isProductionComposition && string.IsNullOrWhiteSpace(reportingConnectionString))
+        {
+            throw new InvalidOperationException(
+                "Production reporting authority requires MERIDIAN_REPORTING_CONNECTION_STRING " +
+                "or MERIDIAN_LEDGER_CONNECTION_STRING. File-backed reporting runs and schedules " +
+                "are supported only by non-production local/development composition.");
+        }
+
         if (!string.IsNullOrWhiteSpace(reportingConnectionString))
         {
             services.TryAddSingleton(new ReportingArtifactStoreOptions
@@ -455,6 +463,7 @@ public static class WorkstationServiceCollectionExtensions
                 Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
             });
             services.TryAddSingleton<ReportingMigrationRunner>();
+            services.TryAddSingleton<IReportingMigrationStartup, ReportingMigrationStartup>();
             services.TryAddSingleton<PostgresReportingDeploymentProbe>();
             services.TryAddSingleton<IReportingDeploymentProbe>(sp =>
                 sp.GetRequiredService<PostgresReportingDeploymentProbe>());
@@ -482,7 +491,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<PostgresReportingReconciliationEvidenceStore>());
             services.TryAddSingleton<IReportingReconciliationEvidenceSource, ReportingReconciliationEvidenceSource>();
             services.TryAddSingleton<ReportingReconciliationEvidenceRetentionService>();
-            services.TryAddSingleton<IReportingPrimaryDocumentRenderer, DocumentsReportingPrimaryDocumentRenderer>();
+            services.TryAddSingleton<IReportingPrimaryDocumentRenderer>(sp =>
+                new DocumentsReportingPrimaryDocumentRenderer(
+                    sp.GetRequiredService<LedgerClientReportExportService>()));
             services.TryAddSingleton<IReportingCertifiedArtifactProducer>(sp =>
                 new DeterministicReportingCertifiedArtifactProducer(
                     sp.GetRequiredService<IReportingPrimaryDocumentRenderer>(),
@@ -552,12 +563,15 @@ public static class WorkstationServiceCollectionExtensions
         // registered. Their mutation endpoints are retired; canonical lifecycle state belongs to
         // ReportingGovernanceService and canonical delivery state/receipts belong to
         // IReportingDeliveryStore.
-        services.TryAddSingleton<ReportTemplateGovernanceStoreOptions>(sp =>
-            new ReportTemplateGovernanceStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-templates.json")));
-        services.TryAddSingleton<IReportTemplateGovernanceStore>(sp =>
-            new FileReportTemplateGovernanceStore(
-                sp.GetRequiredService<ReportTemplateGovernanceStoreOptions>(),
-                sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
+        if (!isProductionComposition)
+        {
+            services.TryAddSingleton<ReportTemplateGovernanceStoreOptions>(sp =>
+                new ReportTemplateGovernanceStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-templates.json")));
+            services.TryAddSingleton<IReportTemplateGovernanceStore>(sp =>
+                new FileReportTemplateGovernanceStore(
+                    sp.GetRequiredService<ReportTemplateGovernanceStoreOptions>(),
+                    sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
+        }
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<DefaultReportingTemplateCatalog>();
         services.TryAddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
@@ -586,12 +600,15 @@ public static class WorkstationServiceCollectionExtensions
                 // default keeps run execution unaffected in the meantime.
                 sp.GetService<IReportingRunNotifier>(),
                 sp.GetService<IReportingPartnersCapitalSource>()));
-        services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
-            new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
-        services.TryAddSingleton<IReportingStarterKitStore>(sp =>
-            new FileReportingStarterKitStore(
-                sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
-                sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
+        if (!isProductionComposition)
+        {
+            services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
+                new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
+            services.TryAddSingleton<IReportingStarterKitStore>(sp =>
+                new FileReportingStarterKitStore(
+                    sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
+                    sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
+        }
         services.TryAddSingleton<IReportingRunReadinessDependencyEvaluator, ReportingRunReadinessDependencyEvaluator>();
         services.TryAddSingleton<ReportingRunReadinessService>();
         services.TryAddSingleton<ReportingRunCertificationService>();
@@ -606,7 +623,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportingRunReadinessService>(),
                 sp.GetRequiredService<ReportingRunCertificationService>(),
                 sp.GetService<IReportingGovernanceEndpointCoordinator>(),
-                sp.GetService<IReportingRecipientDestinationResolver>()));
+                sp.GetService<IReportingRecipientDestinationResolver>(),
+                sp.GetRequiredService<IReportingDeploymentReadinessService>()));
         services.TryAddSingleton(ReportingScheduleWorkerOptions.Default);
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, ReportingScheduleHostedService>());
@@ -615,11 +633,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportingMigrationReadinessState>();
         services.TryAddSingleton<IReportingDeploymentReadinessService, ReportingDeploymentReadinessService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
-        services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
+        if (!isProductionComposition)
         {
-            var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
-            return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
-        });
+            services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
+                return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
+            });
+        }
         services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
         services.TryAddSingleton(sp => new FamilyOfficeReadService(
@@ -849,6 +870,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService, ReconciliationApiService>();
+        services.TryAddSingleton<IStatementReconciliationIntakeAuthority>(sp =>
+            new StatementReconciliationIntakeAuthority(
+                sp.GetService<IAccountQueryService>(),
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IStatementRunWorkflowService>(),
+                sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
+                sp.GetService<IReconciliationBreakQueueRepository>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
@@ -1014,15 +1044,56 @@ internal sealed class WorkstationScopedAccessMigrationHostedService(
         => Task.CompletedTask;
 }
 
-internal sealed class WorkstationReportingMigrationHostedService(
+/// <summary>
+/// Completes the existing checksummed reporting migration workflow before services that query
+/// the reporting authority are constructed.
+/// </summary>
+public interface IReportingMigrationStartup
+{
+    Task EnsureReadyAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Idempotent process-local startup gate over <see cref="ReportingMigrationRunner"/>.
+/// </summary>
+internal sealed class ReportingMigrationStartup(
     ReportingMigrationRunner runner,
+    ReportingMigrationReadinessState readiness) : IReportingMigrationStartup
+{
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    public async Task EnsureReadyAsync(CancellationToken cancellationToken = default)
+    {
+        if (readiness.IsReady)
+        {
+            return;
+        }
+
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (readiness.IsReady)
+            {
+                return;
+            }
+
+            readiness.MarkNotReady();
+            await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+            readiness.MarkReady();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+}
+
+internal sealed class WorkstationReportingMigrationHostedService(
+    IReportingMigrationStartup startup,
     ReportingMigrationReadinessState readiness) : IHostedService
 {
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
-        readiness.MarkReady();
-    }
+    public Task StartAsync(CancellationToken cancellationToken) =>
+        startup.EnsureReadyAsync(cancellationToken);
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
@@ -1117,7 +1188,11 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
                     CompanyId: scope.CompanyId,
                     TenantId: scope.TenantId,
                     RequireBoundScope: true),
-                new ReportingAuthoritativeSourceCaptureIntent(manifest.TemplateId),
+                new ReportingAuthoritativeSourceCaptureIntent(manifest.TemplateId)
+                {
+                    RequiresCertifiedLedgerPresentation =
+                        ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest)
+                },
                 cancellationToken)
             .ConfigureAwait(false);
         if (!string.Equals(

@@ -62,6 +62,24 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     public async Task<StatementSourceDocument> FetchAsync(StatementFetchRequest request, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ExternalAccountId);
+        if (request.Since.HasValue
+            && request.UntilExclusive.HasValue
+            && request.UntilExclusive.Value <= request.Since.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(request.UntilExclusive),
+                request.UntilExclusive,
+                "The exclusive statement upper bound must be later than the lower bound.");
+        }
+
+        if (request.UntilExclusive.HasValue
+            && request.Datasets.HasFlag(StatementFetchDatasets.Positions)
+            && _portfolioSync is not null)
+        {
+            throw new NotSupportedException(
+                "Alpaca cannot produce a historical portfolio snapshot at an exact statement-period end. Request bounded activity only.");
+        }
+
         if (_activitySync is null && _portfolioSync is null)
         {
             throw new NotSupportedException("No Alpaca brokerage gateway is registered; remote fetch is unavailable.");
@@ -70,7 +88,17 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         BrokerageActivitySnapshotDto? activity = null;
         if (request.Datasets.HasFlag(StatementFetchDatasets.Activity) && _activitySync is not null)
         {
-            activity = await _activitySync.GetActivitySnapshotAsync(request.ExternalAccountId, request.Since, ct).ConfigureAwait(false);
+            activity = request.UntilExclusive.HasValue
+                ? await _activitySync
+                    .GetActivitySnapshotAsync(
+                        request.ExternalAccountId,
+                        request.Since,
+                        request.UntilExclusive,
+                        ct)
+                    .ConfigureAwait(false)
+                : await _activitySync
+                    .GetActivitySnapshotAsync(request.ExternalAccountId, request.Since, ct)
+                    .ConfigureAwait(false);
         }
 
         BrokeragePortfolioSnapshotDto? portfolio = null;

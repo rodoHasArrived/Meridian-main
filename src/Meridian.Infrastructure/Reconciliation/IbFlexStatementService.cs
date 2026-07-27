@@ -119,12 +119,20 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             .ConfigureAwait(false);
         var sourceFileHash = snapshots.Source.Sha256;
         var canonicalArtifactHash = snapshots.ParseArtifact.Sha256;
-        var compatibleDuplicateKeys = StatementDuplicateKey.CreateCompatibleKeys(
-            request.FundAccountId,
-            request.StatementPeriodStart,
-            request.StatementPeriodEnd,
-            sourceFileHash,
-            canonicalArtifactHash);
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                request.FundAccountId,
+                request.StatementPeriodStart,
+                request.StatementPeriodEnd,
+                sourceFileHash,
+                canonicalArtifactHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                request.FundAccountId,
+                request.StatementPeriodStart,
+                request.StatementPeriodEnd,
+                sourceFileHash,
+                canonicalArtifactHash,
+                request.AccountingScope);
         var duplicateKey = compatibleDuplicateKeys[0];
 
         foreach (var candidate in compatibleDuplicateKeys)
@@ -200,7 +208,8 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             ImportedBy = normalizedRequest.ImportedBy,
             SourceFileHash = sourceFileHash,
             CanonicalArtifactHash = canonicalArtifactHash,
-            DuplicateKey = duplicateKey
+            DuplicateKey = duplicateKey,
+            AccountingScope = normalizedRequest.AccountingScope
         };
 
         if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))

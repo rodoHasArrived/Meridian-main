@@ -29,7 +29,14 @@ public sealed record StatementImportCommitRequest(
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
     string? ToleranceProfileId,
-    string ImportedBy);
+    string ImportedBy)
+{
+    /// <summary>
+    /// Exact server-verified accounting authority for statement-to-close processing. It remains
+    /// optional for legacy reconciliation-report callers that do not enter the governed close lane.
+    /// </summary>
+    public StatementAccountingScope? AccountingScope { get; init; }
+}
 
 /// <summary>
 /// The outcome of validating a statement document through the connector pipeline without
@@ -212,7 +219,8 @@ public sealed class StatementImportService(
             SourceFileHash: rawHash)
         {
             CanonicalSourcePath = canonicalPath,
-            CanonicalArtifactHash = canonicalHash
+            CanonicalArtifactHash = canonicalHash,
+            AccountingScope = request.AccountingScope
         };
 
         var kindSummaries = BuildKindSummaries(parse.Records);
@@ -229,11 +237,11 @@ public sealed class StatementImportService(
             // Upgrade compatibility: a pre-hardening run may be keyed only by the canonical
             // artifact hash. Return that retained run identity instead of inventing the new
             // raw-plus-canonical key for a run that was not created.
-            return DuplicateResult(ex.ExistingImportId);
+            return await DuplicateResultAsync(ex.ExistingImportId).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already imported", StringComparison.OrdinalIgnoreCase))
         {
-            return DuplicateResult(runRequest.DuplicateKey);
+            return await DuplicateResultAsync(runRequest.DuplicateKey).ConfigureAwait(false);
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
@@ -270,17 +278,43 @@ public sealed class StatementImportService(
             ReconciliationCaseLinks = caseLinks
         };
 
-        StatementImportCommitResultDto DuplicateResult(string existingRunId) => new(
-            RunId: existingRunId,
-            Duplicate: true,
-            RecordCount: parse.Records.Count,
-            KindSummaries: kindSummaries,
-            BreakCount: 0,
-            CaseCount: 0,
-            RetainedSourcePath: relativeRaw,
-            RetainedCanonicalPath: relativeCanonical,
-            Status: "Duplicate",
-            NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.");
+        async Task<StatementImportCommitResultDto> DuplicateResultAsync(string existingRunId)
+        {
+            var retained = await workflow.GetAsync(existingRunId, ct).ConfigureAwait(false)
+                ?? throw new InvalidDataException(
+                    $"Statement import '{existingRunId}' was reported as a duplicate, but its retained reconciliation authority could not be loaded.");
+            var retainedBreakIds = retained.Breaks
+                .Select(static item => item.BreakId)
+                .Where(static value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var retainedCaseLinks = BuildReconciliationCaseLinks(
+                retained.Import.ImportId,
+                retained.Cases);
+
+            return new StatementImportCommitResultDto(
+                RunId: retained.Import.ImportId,
+                Duplicate: true,
+                RecordCount: parse.Records.Count,
+                KindSummaries: kindSummaries,
+                BreakCount: retained.Breaks.Count,
+                CaseCount: retained.Cases.Count,
+                RetainedSourcePath: relativeRaw,
+                RetainedCanonicalPath: relativeCanonical,
+                Status: "Duplicate",
+                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.")
+            {
+                BreakIds = retainedBreakIds,
+                CaseIds = retainedCaseLinks
+                    .Select(static item => item.CaseId)
+                    .ToArray(),
+                ReconciliationCaseRoutes = retainedCaseLinks
+                    .Select(static item => item.Route)
+                    .ToArray(),
+                ReconciliationCaseLinks = retainedCaseLinks
+            };
+        }
     }
 
     public async Task<StatementImportValidationResult> ValidateAsync(

@@ -30,7 +30,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   it (see `WorkstationServiceCollectionExtensions`), flipping governed ledger exports off the
   dependency-free plain-text fallback so the governed report pack is the client deliverable. The
   shared `LedgerClientReportExportService` (in `Meridian.Ui.Shared`) is the single export seam the
-  browser and WPF workstations both route through.
+  browser and WPF workstations both route through. Reporting uses that same seam for a governed
+  capital-account `ClientPackage`: the certified producer passes the exact checkpoint-bound
+  `LedgerFinancialReportPack` through once and receives the complete PDF/XLSX pair. It does not
+  project the pack into a second `ClientGradeReportRenderer` model.
 
 ## Important workflows
 

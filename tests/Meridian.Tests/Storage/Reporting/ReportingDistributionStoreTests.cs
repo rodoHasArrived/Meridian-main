@@ -25,6 +25,13 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
     }
 
     [ReportingDatabaseFact]
+    public async Task ReportingDistributionMigration_IndexesCanonicalTenantRunHistory()
+    {
+        (await _database.HasMigrationAsync("011_reporting_delivery_run_read_index.sql"))
+            .Should().BeTrue();
+    }
+
+    [ReportingDatabaseFact]
     public async Task AccessGrantStore_PersistsOnlyHashAndEnforcesAtomicUseCounter()
     {
         var rawTokenBytes = RandomNumberGenerator.GetBytes(32);
@@ -250,6 +257,12 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         (await _deliveryStore.ListByPackageAsync(job.TenantId, job.PackageId))
             .Should().ContainSingle(item => item.JobId == job.JobId && item.Receipts.Count == 2);
         (await _deliveryStore.ListByPackageAsync(NewTenantId(), job.PackageId)).Should().BeEmpty();
+        (await _deliveryStore.ListByRunAsync(job.TenantId, job.ReleaseAuthorization.RunId))
+            .Should().ContainSingle(item => item.JobId == job.JobId && item.Receipts.Count == 2);
+        (await _deliveryStore.ListByRunAsync(job.TenantId, $"other-{job.ReleaseAuthorization.RunId}"))
+            .Should().BeEmpty();
+        (await _deliveryStore.ListByRunAsync(NewTenantId(), job.ReleaseAuthorization.RunId))
+            .Should().BeEmpty();
 
         Func<Task> mutateReceipt = () => ExecuteAsync(
             $"update {QualifiedReceiptTable} set detail = 'tampered' where job_id = @job_id and receipt_id = @receipt_id;",

@@ -57,6 +57,10 @@ export interface StatementImportCommitResult {
   reconciliationCaseRoutes?: string[];
   reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+  statementReconciliationReportWorkflowId?: string | null;
+  statementReconciliationReportStatusRoute?: string | null;
+  operationsWorkflowId?: string | null;
+  accountingScope?: StatementReconciliationAccountingScope | null;
 }
 
 export interface StatementImportReconciliationCaseLink {
@@ -84,6 +88,16 @@ export interface StatementFetchSchedule {
   lastRunStatus: string | null;
   nextDueAtUtc: string | null;
   sourceKind: StatementImportSourceKind;
+  periodStart: string | null;
+  periodEnd: string | null;
+  accountingScope: StatementReconciliationAccountingScope | null;
+}
+
+export interface StatementReconciliationAccountingScope {
+  fundProfileId: string;
+  ledgerBookId: string;
+  accountingPeriodId: string;
+  asOfDate: string;
 }
 
 export type StatementImportSourceKind = "broker" | "custodian";
@@ -108,6 +122,8 @@ export interface StatementFetchScheduleUpsertRequest {
   cadenceHours: number;
   enabled: boolean;
   sourceKind?: StatementImportSourceKind | null;
+  periodStart: string;
+  periodEnd: string;
 }
 
 export interface AccountingReconciliationRecord {
@@ -1011,6 +1027,49 @@ export interface ReportPackDeliveryAttempt {
   package: ReportPackDeliveryPackage | null;
 }
 
+export interface WorkstationReportingDeliveryReceipt {
+  receiptId: string;
+  kind: string;
+  occurredAtUtc: string;
+  transportId: string;
+  providerReference?: string | null;
+  evidenceReference?: string | null;
+  detail?: string | null;
+}
+
+export interface WorkstationReportingDelivery {
+  jobId: string;
+  runId: string;
+  packageId: string;
+  releaseReceiptId: string;
+  releaseVersion: string;
+  artifactManifestHashSha256: string;
+  distributionId: string;
+  transportId: string;
+  recipient: string;
+  recipientRole: string;
+  destination: string;
+  state: string;
+  attemptCount: number;
+  maxAttempts: number;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  nextAttemptAtUtc: string | null;
+  requestedBy: string;
+  lastErrorCode: string | null;
+  lastError: string | null;
+  providerMessageId: string | null;
+  accessGrantId: string | null;
+  receipts: WorkstationReportingDeliveryReceipt[];
+}
+
+export interface WorkstationReportingHistory {
+  runs: ReportingRunStatusProjection[];
+  deliveries: WorkstationReportingDelivery[];
+  limit: number;
+  generatedAtUtc: string;
+}
+
 export interface ReportPackDeliveryRequest {
   distributionId: string;
   actor?: string | null;
@@ -1494,6 +1553,7 @@ export interface ReportingDeploymentCapability {
   isReady: boolean;
   durableGovernance: boolean;
   durableArtifacts: boolean;
+  durableReconciliationEvidence: boolean;
   durableRuns: boolean;
   durableScheduling: boolean;
   durableDelivery: boolean;
@@ -1534,7 +1594,9 @@ export interface AccountingReportingSummary {
   recentRuns?: ReportingRunStatusProjection[];
   workflowRecords?: ReportingWorkflowRecord[];
   schedules?: ReportingScheduleRecord[];
+  /** Compatibility-only file-backed delivery records; empty in production composition. */
   deliveryAttempts?: ReportPackDeliveryAttempt[];
+  canonicalDeliveries?: WorkstationReportingDelivery[];
   scheduleDeliveryPlans?: ReportingScheduleDeliveryPlan[];
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];

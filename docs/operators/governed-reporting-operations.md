@@ -13,7 +13,8 @@ formats are defined in [Governed Accounting Reporting](../reference/accounting-r
 - production persistence and authoritative-source prerequisites
 - preflight checks for run certification, governance, and distribution
 - recovery of a hard close whose reporting evidence handoff is pending
-- restart and corruption recovery across PostgreSQL and local reporting state
+- restart and corruption recovery across PostgreSQL, auxiliary reporting state, statement
+  workflows, and the canonical reconciliation queue
 - HTTP relay, receipt, access-grant, and secret-handling procedures
 
 This runbook does not make legacy report-pack mutation routes authoritative. Those routes remain
@@ -28,17 +29,24 @@ below:
 
 - PostgreSQL reporting governance and its maker-checker coordinator
 - PostgreSQL artifact bytes, catalog, access audit, and artifact vault
+- PostgreSQL close/reconciliation evidence and its immutable database controls
 - PostgreSQL certified run manifests and run audit
 - PostgreSQL reporting schedules
 - PostgreSQL access grants, delivery jobs, and retained receipts
 - an exact-scope recipient destination directory
-- the canonical client PDF/XLSX renderer and deterministic certified-artifact producer
-- managed checksummed reporting migrations
+- the canonical client PDF/XLSX renderer, deterministic certified-artifact producer, and durable
+  checkpoint-bound ledger presentation source
+- a complete reporting schema probe plus the current process's successful checksummed-migration
+  receipt
 
-The same capability is exposed in a successful Reporting payload as `deploymentCapability`. Local
-file run and schedule stores are development compatibility only and deliberately leave this gate
-blocked. Do not infer Reporting availability from Accounting workspace health, a configured
-connection string alone, a rendered preview, or the presence of retained JSON files.
+The same capability is exposed in a successful Reporting payload as `deploymentCapability`,
+including a top-level durable-reconciliation-evidence signal. The schema probe verifies required
+tables, immutable-control trigger bindings, operational columns, the checksummed migration-ledger
+key, and immediate predicate-compatible unique/idempotency keys. Local file run, schedule,
+custom-template, starter-kit, workflow, and delivery stores are development compatibility only and
+deliberately leave this gate blocked or are omitted from production composition. Do not infer
+Reporting availability from Accounting workspace health, a configured connection string alone, a
+rendered preview, or the presence of retained JSON files.
 
 ## Production prerequisites
 
@@ -54,20 +62,30 @@ Before enabling governed reporting, confirm all of the following:
 4. An authenticated `GET /api/workstation/reporting` returns `200` with
    `deploymentCapability.isReady = true`. Preserve its component summaries with deployment
    evidence. A `503` is a deployment blocker, not an empty Reporting workspace.
-5. The resolved `DataRoot` is durable and backed up. Include the complete
-   `<DataRoot>/workstation/reporting/` auxiliary state and any retained
-   `<DataRoot>/reporting/statement-reconciliation-report/` preprocessing workflows in the
-   coordinated reporting recovery set.
-6. Production does not run fixture or in-memory governance, or file-backed run/schedule
-   compatibility stores, in place of the durable ledger,
-   fund-structure, reporting, and fund-account dependencies.
+5. The resolved `DataRoot` is durable and backed up. Include any explicitly enabled
+   local/development `<DataRoot>/workstation/reporting/` compatibility state and any retained
+   `<DataRoot>/reporting/statement-reconciliation-report/` preprocessing workflows, plus the
+   `<DataRoot>/workstation/reconciliation-break-queue.json` snapshot and adjacent queue sidecars,
+   in the coordinated reporting recovery set.
+6. Production does not run fixture or in-memory governance, or file-backed run, schedule,
+   custom-template, starter-kit, workflow, or delivery compatibility stores, in place of the
+   durable ledger, fund-structure, reporting, and fund-account dependencies.
 7. If external notification is enabled, all relay, recipient-directory, external-access, receipt
    HMAC, and delivery-grant HMAC settings pass the
    [HTTP relay contract](../reference/accounting-report-packs.md#http-relay-contract).
 
-The host applies checksummed Reporting migrations under a schema-scoped advisory lock when the
-durable reporting services are resolved. A migration checksum mismatch or unavailable store is a
-deployment blocker; do not bypass the migration ledger or edit an applied migration.
+Production service registration fails when neither `MERIDIAN_REPORTING_CONNECTION_STRING` nor its
+documented ledger fallback is configured. With a database configured, the host applies checksummed
+Reporting migrations under a schema-scoped advisory lock before it starts the HTTP listener or
+constructs hosted workers. An unreachable database, migration failure, or checksum mismatch fails
+startup; do not bypass the migration ledger or edit an applied migration.
+
+After migrations succeed, a missing recipient binding, client-document dependency, schema-probe
+requirement, or other noncanonical authority leaves the production reporting lifecycle
+`Required/NotReady`. Reporting reads and mutations, including run creation and schedule commands,
+return `503`; the host does not fall back to file authority. Local/development can start on file
+run/schedule compatibility stores with a `Degraded` reporting lifecycle, but the same authoritative
+Reporting routes stay blocked until every deployment component is ready.
 
 ## Preflight
 
@@ -93,26 +111,43 @@ Use an authenticated operator in the intended tenant and company scope.
 
 ## Canonical statement-to-delivery handoff
 
-The [Statement Reconciliation Report](./statement-reconciliation-report-operations.md) is an
-upstream preprocessing result, not a governed reporting run. Keep the authoritative path on the
-existing seams:
+The [Statement Reconciliation Report](./statement-reconciliation-report-operations.md) is the
+authoritative intake adapter into Meridian's existing casework and close spine. Its JSON/CSV output
+is reconciliation support evidence, not a governed Reporting run. Keep the full chain on these
+existing authorities:
 
-1. Retain and reconcile the source statement. Treat its JSON/CSV outputs as reconciliation support
-   evidence only.
-2. Route reconciliation, governed break/case disposition, accounting and ledger evidence, approval,
-   and close posture through Operations Continuity and its reconciliation bridge.
-3. Start a separate governed Reporting run through the canonical readiness and certification
-   services. Final certification requires the committed close/reconciliation receipt; a clean
+1. Before retaining input, the server verifies the active fund account and statement source, fund
+   tenancy, one primary ledger book, one exact matching open accounting period, and its period-end
+   as-of date. Missing, ambiguous, closed, or mismatched scope fails closed.
+2. The coordinator retains the statement, committed import, and Evidence Vault lineage. The
+   `IStatementReconciliationIntakeAuthority` then starts or reuses the one non-closed Operations
+   Continuity workflow for the exact fund-account, ledger-book, and accounting-period scope,
+   attaches stable statement evidence, and publishes every source break/case obligation into the
+   canonical reconciliation queue.
+3. Governed queue commands remain the casework authority. Terminal dispositions synchronize back to
+   the statement-owned break/case and append the same evidence to Operations Continuity without
+   advancing posting, approval, or close gates. The statement workflow remains
+   `AwaitingReconciliation` until every source obligation has exactly one scoped queue item and its
+   source/Operations handoff is complete.
+4. Accounting posting, ledger evidence, approvals, close readiness, and the committed
+   close/reconciliation receipt remain owned by Operations Continuity and its established bridges.
+5. Start a separate governed Reporting run through the canonical readiness and certification
+   services. Final certification requires the committed close/reconciliation receipt; a completed
    statement workflow does not substitute for it.
-4. For a client package, use the Reporting `ClientPackage` output through the deterministic
-   certified-artifact producer and canonical client-document renderer. The package declares and
-   retains both PDF and XLSX primary outputs.
-5. After independent maker-checker approval and release, use secure Reporting distribution. Retain
+6. For a client package, use Reporting `ClientPackage` through the deterministic certified-artifact
+   producer and canonical client-document renderer. Capital-account packages pass the verified
+   checkpoint-bound `LedgerFinancialReportPack` through the existing
+   `LedgerClientReportExportService`/`FinancialReportDocumentRenderer` seam; do not reconstruct
+   partners-capital tables in a Reporting-specific renderer. The same certified package must retain
+   exactly one `<runId>.pdf` and one `<runId>.xlsx`; release fails closed if either primary artifact
+   is missing or duplicated.
+7. After independent maker-checker approval and release, use secure Reporting distribution. Retain
    the durable delivery job, scoped grant state, provider receipt, and audited download receipt as
-   applicable.
+   applicable. A `ClientPackage` distribution must select both released primary documents; it may
+   include additional released artifacts but cannot deliver a PDF-only or XLSX-only subset.
 
-The current Statement Reconciliation Report workflow does not automatically execute steps 2-5.
-Its `Completed` status therefore does not mean posted, closed, certified, approved, released, or
+Statement workflow `Completed` proves the bounded intake, reconciliation-casework handoff, and
+hash-verified support artifacts. It does not mean posted, closed, certified, approved, released, or
 delivered.
 
 ## Recover a pending hard-close evidence handoff
@@ -125,15 +160,28 @@ The period is intentionally left `HardClosed`; Final reporting remains blocked.
 Recovery is idempotent:
 
 1. Keep the exact tenant, company, fund, ledger book, period, and close context unchanged.
-2. Correct the reporting database or dependency outage that prevented receipt retention.
-3. Invoke the same governed **Finalize hard close** command again for that period. When the period is
-   already `HardClosed`, the service skips a second close and retries the exact evidence receipt.
-4. Re-evaluate Final reporting readiness and confirm the close/reconciliation check now names the
+2. Preserve `<DataRoot>/workstation/reconciliation-break-queue.json`. Its retained close-scope
+   record contains the immutable queue head and checkpoint hash frozen before the ledger commit.
+   Do not clear the `Closing` state, edit a disposition, or reconstruct the head from current queue
+   rows.
+3. Restore authoritative ledger reads and correct any reporting dependency outage that prevented
+   checkpoint sealing or receipt retention.
+4. Invoke the same governed **Finalize hard close** command again for that period. Recovery acquires
+   the exclusive `reconciliation-break-queue.lock` fence, rotates the retained lease token, and
+   preserves and re-hashes the exact frozen scope/items; it never rereads the live queue head.
+5. The bridge rereads the authoritative ledger while holding that lease:
+   - `HardClosed` seals or reuses the exact checkpoint and retries the reporting-evidence receipt.
+   - A confirmed non-hard-closed postcondition explicitly abandons the pre-commit freeze, durably
+     reopens scoped casework, and surfaces the original close failure.
+   - An unreadable or ambiguous ledger outcome leaves `Closing` retained. Restore ledger authority
+     and retry; do not infer whether commit occurred.
+6. Re-evaluate Final reporting readiness and confirm the close/reconciliation check now names the
    retained receipt and evidence references.
 
-Do not reopen the period, generate a replacement completion id, hand-insert a receipt, or switch to
-a Draft and later relabel it Final. Any of those actions would break the retained close-to-report
-lineage.
+Dispose and process death deliberately leave an ambiguous `Closing` freeze in place. Do not delete
+it, reopen a `HardClosed` period, generate a replacement completion id, hand-insert a receipt, or
+switch to a Draft and later relabel it Final. Any of those actions would break the retained
+close-to-report lineage.
 
 ## Delivery and receipt triage
 
@@ -167,10 +215,17 @@ The coordinated reporting recovery set crosses the production authority and auxi
 
 - the configured PostgreSQL reporting schema, including governance, artifact, run, schedule,
   access-grant, delivery-job, and receipt state
-- the entire `<DataRoot>/workstation/reporting/` directory, including custom templates, starter-kit
-  state, and any explicitly retained compatibility history
+- any explicitly enabled local/development `<DataRoot>/workstation/reporting/` compatibility
+  directory, including custom templates, starter-kit state, and retained compatibility history;
+  production does not register those file repositories
 - `<DataRoot>/reporting/statement-reconciliation-report/` when statement preprocessing workflows
   are in use
+- `<DataRoot>/workstation/reconciliation-break-queue.json`, whose current integrity-validated
+  snapshot includes queue items, audit and idempotency receipts, plus the durable `Closing` or
+  `HardClosed` close-scope checkpoint
+- the adjacent `reconciliation-break-queue-audit.jsonl` legacy migration sidecar and
+  `reconciliation-break-queue.lock` service-owned mutation-coordination file when present; neither
+  is a substitute for the current queue snapshot and neither may be edited or replayed independently
 
 Production run and schedule authority does not come from `FileReportingRunStore` or
 `FileReportingScheduleStore`. Do not restore their local snapshots as a substitute for the
@@ -246,8 +301,9 @@ and must follow coordinated restore, not the legacy recertification path.
 
 ## Current residual limitations (P1)
 
-- Statement reconciliation preprocessing does not automatically create Operations Continuity close
-  work, a certified Reporting run, a release, or a delivery.
+- Statement intake automatically starts or reuses the exact Operations Continuity workflow and
+  publishes scoped reconciliation obligations, but posting, human close gates, certified Reporting
+  runs, release, and delivery remain separate governed actions.
 - Coordinated PostgreSQL/file backup drills and state-reconciliation tooling are manual; there is no
   automated repair command.
 - Receipt and delivery-grant HMAC rotation is single-key and maintenance-window based.

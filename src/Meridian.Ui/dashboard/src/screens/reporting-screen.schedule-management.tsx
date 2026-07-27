@@ -157,6 +157,7 @@ export function ReportingScheduleManagementPanel({
   const hasExplicitTypedRecipient = Boolean(
     scheduleDraft.recipientPrincipalId.trim() && scheduleDraft.recipientPrincipalKind
   );
+  const isClientPackage = scheduleDraft.runParameters.outputFormat === "ClientPackage";
 
   return (
     <Card className="panel-surface">
@@ -454,13 +455,23 @@ export function ReportingScheduleManagementPanel({
                 >
                   <Checkbox
                     checked={scheduleDraft.formats[format]}
+                    disabled={isClientPackage}
                     onCheckedChange={(checked) => onToggleFormat(format, checked === true)}
                     aria-label={`Reporting schedule ${format} format`}
+                    aria-describedby={isClientPackage ? "reporting-schedule-client-package-formats" : undefined}
                     label={format}
                   />
                 </div>
               ))}
             </div>
+            {isClientPackage ? (
+              <p
+                id="reporting-schedule-client-package-formats"
+                className="basis-full text-xs leading-5 text-muted-foreground"
+              >
+                Client Package delivery always includes PDF and XLSX together; CSV is unavailable.
+              </p>
+            ) : null}
             <Button
               type="button"
               size="sm"

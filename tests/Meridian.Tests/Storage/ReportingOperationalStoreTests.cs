@@ -202,6 +202,104 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
     }
 
     [ReportingDatabaseFact]
+    public async Task RunStore_CreateClaim_IsExclusiveAndFencesExpiredOwners()
+    {
+        var firstStore = new PostgresReportingRunStore(_database.Options);
+        var secondStore = new PostgresReportingRunStore(_database.Options);
+        var tenantId = $"tenant-run-claim-{Guid.NewGuid():N}";
+        var runId = $"run-claim-{Guid.NewGuid():N}";
+        var manifest = BuildManifest(runId, tenantId, "company-run-claim");
+        var audit = new[]
+        {
+            new ReportingRunAuditEntry(
+                runId,
+                FixedNow,
+                "RunGenerated",
+                "claim-owner-b",
+                "durable create")
+        };
+
+        try
+        {
+            var firstClaim = await firstStore.TryClaimCreateAsync(
+                tenantId,
+                runId,
+                "claim-owner-a",
+                FixedNow,
+                TimeSpan.FromMinutes(5));
+            var blockedClaim = await secondStore.TryClaimCreateAsync(
+                tenantId,
+                runId,
+                "claim-owner-b",
+                FixedNow,
+                TimeSpan.FromMinutes(5));
+
+            firstClaim.Status.Should().Be(ReportingRunCreateClaimStatus.Acquired);
+            firstClaim.LeaseVersion.Should().BePositive();
+            blockedClaim.Status.Should().Be(
+                ReportingRunCreateClaimStatus.LeasedByAnotherOwner);
+            (await firstStore.RenewCreateClaimAsync(
+                    tenantId,
+                    runId,
+                    "claim-owner-a",
+                    firstClaim.LeaseVersion,
+                    TimeSpan.FromMinutes(5)))
+                .Should().BeTrue();
+
+            await ExpireRunCreateClaimAsync(tenantId, runId);
+            var takeoverClaim = await secondStore.TryClaimCreateAsync(
+                tenantId,
+                runId,
+                "claim-owner-b",
+                FixedNow.AddMinutes(6),
+                TimeSpan.FromMinutes(5));
+
+            takeoverClaim.Status.Should().Be(ReportingRunCreateClaimStatus.Acquired);
+            takeoverClaim.LeaseVersion.Should().BeGreaterThan(firstClaim.LeaseVersion);
+            (await firstStore.RenewCreateClaimAsync(
+                    tenantId,
+                    runId,
+                    "claim-owner-a",
+                    firstClaim.LeaseVersion,
+                    TimeSpan.FromMinutes(5)))
+                .Should().BeFalse();
+            (await secondStore.RenewCreateClaimAsync(
+                    tenantId,
+                    runId,
+                    "claim-owner-b",
+                    takeoverClaim.LeaseVersion,
+                    TimeSpan.FromMinutes(5)))
+                .Should().BeTrue();
+
+            var staleCompletion = () => firstStore.SaveClaimedCreateAsync(
+                manifest,
+                audit,
+                "claim-owner-a",
+                firstClaim.LeaseVersion);
+            await staleCompletion.Should().ThrowAsync<ReportingRunCreateClaimException>();
+
+            await firstStore.ReleaseCreateClaimAsync(
+                tenantId,
+                runId,
+                "claim-owner-a",
+                firstClaim.LeaseVersion);
+            await secondStore.SaveClaimedCreateAsync(
+                manifest,
+                audit,
+                "claim-owner-b",
+                takeoverClaim.LeaseVersion);
+
+            secondStore.GetManifest(tenantId, runId).Should().BeEquivalentTo(manifest);
+            (await CountRunCreateClaimsAsync(tenantId, runId)).Should().Be(0);
+        }
+        finally
+        {
+            await DeleteRunAsync(tenantId, runId);
+            await DeleteRunCreateClaimAsync(tenantId, runId);
+        }
+    }
+
+    [ReportingDatabaseFact]
     public async Task ScheduleStore_RoundTripsScopedDuplicateIdsAndExactSnapshotRetries()
     {
         var store = new PostgresReportingScheduleStore(_database.Options);
@@ -548,6 +646,116 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
     }
 
     [ReportingDatabaseFact]
+    public async Task ScheduleStore_ExecutionLease_IsExclusiveRenewableAndFenced()
+    {
+        var firstStore = new PostgresReportingScheduleStore(_database.Options);
+        var secondStore = new PostgresReportingScheduleStore(_database.Options);
+        var tenantId = $"tenant-schedule-lease-{Guid.NewGuid():N}";
+        var companyId = $"company-schedule-lease-{Guid.NewGuid():N}";
+        var scheduleId = $"schedule-lease-{Guid.NewGuid():N}";
+        var schedule = BuildSchedule(
+            scheduleId,
+            tenantId,
+            companyId,
+            "lease-operator");
+
+        try
+        {
+            firstStore.Upsert(schedule);
+            var firstLease = firstStore.TryClaimExecution(
+                schedule,
+                "lease-owner-a",
+                FixedNow,
+                TimeSpan.FromMinutes(5));
+            var blockedLease = secondStore.TryClaimExecution(
+                schedule,
+                "lease-owner-b",
+                FixedNow,
+                TimeSpan.FromMinutes(5));
+
+            firstLease.Should().NotBeNull();
+            blockedLease.Should().BeNull();
+
+            await ExpireScheduleExecutionLeaseAsync(
+                tenantId,
+                companyId,
+                scheduleId);
+            var takeoverLease = secondStore.TryClaimExecution(
+                schedule,
+                "lease-owner-b",
+                FixedNow.AddMinutes(6),
+                TimeSpan.FromMinutes(5));
+
+            takeoverLease.Should().NotBeNull();
+            var retainedFirstLease = firstLease!;
+            var retainedTakeoverLease = takeoverLease!;
+            retainedTakeoverLease.LeaseVersion.Should()
+                .BeGreaterThan(retainedFirstLease.LeaseVersion);
+            var staleCompletion = () => firstStore.UpsertClaimedExecution(
+                schedule with
+                {
+                    RunCount = 1,
+                    UpdatedAtUtc = FixedNow.AddMinutes(1)
+                },
+                schedule.UpdatedAtUtc,
+                retainedFirstLease);
+            staleCompletion.Should().Throw<ReportingScheduleExecutionLeaseException>();
+            secondStore.Load().Should().ContainSingle(candidate =>
+                candidate.TenantId == tenantId
+                && candidate.CompanyId == companyId
+                && candidate.ScheduleId == scheduleId
+                && candidate.RunCount == 0);
+            firstStore.RenewExecutionLease(
+                    schedule,
+                    retainedFirstLease,
+                    FixedNow.AddMinutes(6),
+                    TimeSpan.FromMinutes(5))
+                .Should()
+                .BeNull();
+
+            firstStore.ReleaseExecutionLease(
+                tenantId,
+                companyId,
+                scheduleId,
+                retainedFirstLease);
+            firstStore.TryClaimExecution(
+                    schedule,
+                    "lease-owner-c",
+                    FixedNow.AddMinutes(6),
+                    TimeSpan.FromMinutes(5))
+                .Should()
+                .BeNull("a stale release must not clear the takeover owner's lease");
+
+            var renewed = secondStore.RenewExecutionLease(
+                schedule,
+                retainedTakeoverLease,
+                FixedNow.AddMinutes(6),
+                TimeSpan.FromMinutes(5));
+            renewed.Should().NotBeNull();
+            var retainedRenewed = renewed!;
+            retainedRenewed.LeaseVersion.Should().Be(retainedTakeoverLease.LeaseVersion);
+
+            secondStore.ReleaseExecutionLease(
+                tenantId,
+                companyId,
+                scheduleId,
+                retainedRenewed);
+            var reacquired = firstStore.TryClaimExecution(
+                schedule,
+                "lease-owner-c",
+                FixedNow.AddMinutes(6),
+                TimeSpan.FromMinutes(5));
+            reacquired.Should().NotBeNull();
+            reacquired!.LeaseVersion.Should()
+                .BeGreaterThan(retainedTakeoverLease.LeaseVersion);
+        }
+        finally
+        {
+            await DeleteScheduleAsync(tenantId, companyId, scheduleId);
+        }
+    }
+
+    [ReportingDatabaseFact]
     public async Task MigrationRunner_AppliesOperationalStateMigration()
     {
         (await _database.HasMigrationAsync("010_reporting_operational_state.sql")).Should().BeTrue();
@@ -662,6 +870,65 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
             scheduleId.ToLowerInvariant());
         return (long)(await command.ExecuteScalarAsync() ?? 0L);
     }
+
+    private async Task<long> CountRunCreateClaimsAsync(
+        string tenantId,
+        string runId)
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*)
+            from {QualifiedRunClaimTable}
+            where tenant_id = @tenant_id
+              and run_id_key = @identity_key;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue(
+            "identity_key",
+            NpgsqlDbType.Text,
+            runId.ToLowerInvariant());
+        return (long)(await command.ExecuteScalarAsync() ?? 0L);
+    }
+
+    private Task ExpireRunCreateClaimAsync(string tenantId, string runId) =>
+        ExecuteAsync(
+            $"""
+            update {QualifiedRunClaimTable}
+            set claimed_at_utc = current_timestamp - interval '2 seconds',
+                lease_expires_at_utc = current_timestamp - interval '1 second'
+            where tenant_id = @tenant_id
+              and run_id_key = @identity_key;
+            """,
+            tenantId,
+            runId.ToLowerInvariant());
+
+    private Task DeleteRunCreateClaimAsync(string tenantId, string runId) =>
+        ExecuteAsync(
+            $"""
+            delete from {QualifiedRunClaimTable}
+            where tenant_id = @tenant_id
+              and run_id_key = @identity_key;
+            """,
+            tenantId,
+            runId.ToLowerInvariant());
+
+    private Task ExpireScheduleExecutionLeaseAsync(
+        string tenantId,
+        string companyId,
+        string scheduleId) =>
+        ExecuteAsync(
+            $"""
+            update {QualifiedScheduleTable}
+            set lease_expires_at_utc = current_timestamp - interval '1 second'
+            where tenant_id = @tenant_id
+              and company_id = @company_id
+              and schedule_id_key = @identity_key;
+            """,
+            tenantId,
+            scheduleId.ToLowerInvariant(),
+            companyId);
 
     private async Task InsertForeignRunRowsAsync(
         string tenantId,
@@ -780,6 +1047,9 @@ public sealed class ReportingOperationalStoreTests : IClassFixture<ReportingArti
 
     private string QualifiedRunTable =>
         $"\"{_database.Options.Schema}\".\"reporting_run_snapshots\"";
+
+    private string QualifiedRunClaimTable =>
+        $"\"{_database.Options.Schema}\".\"reporting_run_create_claims\"";
 
     private string QualifiedScheduleTable =>
         $"\"{_database.Options.Schema}\".\"reporting_schedule_snapshots\"";

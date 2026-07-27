@@ -154,7 +154,15 @@ const fetchSchedule: StatementFetchSchedule = {
   lastRunAtUtc: null,
   lastRunStatus: null,
   nextDueAtUtc: null,
-  sourceKind: "broker"
+  sourceKind: "broker",
+  periodStart: "2026-07-01",
+  periodEnd: "2026-07-31",
+  accountingScope: {
+    fundProfileId: "fund-a",
+    ledgerBookId: "11111111-1111-1111-1111-111111111111",
+    accountingPeriodId: "22222222-2222-2222-2222-222222222222",
+    asOfDate: "2026-07-31"
+  }
 };
 
 function makeServices(): StatementImportPanelServices {

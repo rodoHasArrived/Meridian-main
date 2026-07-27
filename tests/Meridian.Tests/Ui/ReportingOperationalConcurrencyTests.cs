@@ -226,6 +226,139 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public async Task Scenario_TwoHostsCreatingSameScopedRun_OnlyDurableClaimOwnerRenders()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Tests",
+            nameof(ReportingOperationalConcurrencyTests),
+            Guid.NewGuid().ToString("N"));
+        var firstStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(root),
+            NullLogger<FileReportingRunStore>.Instance);
+        var secondStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(root),
+            NullLogger<FileReportingRunStore>.Instance);
+        var firstRenderer = new BlockingRenderer();
+        var secondRenderer = new CountingRenderer();
+        var firstHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            firstRenderer,
+            () => FixedNow,
+            firstStore);
+        var secondHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            secondRenderer,
+            () => FixedNow.AddMinutes(1),
+            secondStore);
+        var contract = BuildCertifiedContract("durable-create-claim");
+
+        try
+        {
+            var first = Task.Run(
+                () => firstHost.ExecuteAsync(contract, CancellationToken.None));
+            await firstRenderer.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+            var second = () => secondHost.ExecuteAsync(
+                contract,
+                CancellationToken.None);
+            await second.Should()
+                .ThrowAsync<ReportingRunCreateClaimException>()
+                .WithMessage("*another durable owner*");
+            secondRenderer.RenderCount.Should().Be(0);
+
+            firstRenderer.Release.TrySetResult(true);
+            var retained = await first;
+            retained.Status.Should().Be(ReportingRunStatus.Draft);
+            firstStore.GetManifest("tenant-a", retained.RunId)!.Status
+                .Should().Be(ReportingRunStatus.Draft);
+            firstStore.GetAudit("tenant-a", retained.RunId)
+                .Select(static entry => entry.Action)
+                .Should().Equal("RunGenerated");
+        }
+        finally
+        {
+            firstRenderer.Release.TrySetResult(true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_FallbackCreateCollision_ReturnsWinnerWithoutFailedOverwrite()
+    {
+        var store = new ControllableRunStore();
+        var firstHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            store);
+        var secondHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow.AddMinutes(1),
+            store);
+        var contract = BuildCertifiedContract("fallback-create-collision");
+        store.BlockNextWrite();
+
+        var first = firstHost.ExecuteAsync(contract, CancellationToken.None);
+        await store.WaitForBlockedWriteAsync();
+        var winner = await secondHost.ExecuteAsync(contract, CancellationToken.None);
+        store.ReleaseBlockedWrite();
+        var observed = await first;
+
+        observed.Should().BeEquivalentTo(winner);
+        ((IReportingRunStore)store).GetManifest("tenant-a", winner.RunId)!.Status
+            .Should().Be(ReportingRunStatus.Draft);
+        ((IReportingRunStore)store).GetAudit("tenant-a", winner.RunId)
+            .Select(static entry => entry.Action)
+            .Should().Equal("RunGenerated");
+    }
+
+    [Fact]
+    public async Task Scenario_FallbackCreateCollision_DifferentCertifiedRequestFailsClosed()
+    {
+        var store = new ControllableRunStore();
+        var firstHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            store);
+        var secondHost = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow.AddMinutes(1),
+            store);
+        var firstContract = BuildCertifiedContract(
+            "fallback-create-request-mismatch");
+        var winningContract = firstContract with
+        {
+            BrandingThemeId = "different-certified-request"
+        };
+        store.BlockNextWrite();
+
+        var first = firstHost.ExecuteAsync(firstContract, CancellationToken.None);
+        await store.WaitForBlockedWriteAsync();
+        var winner = await secondHost.ExecuteAsync(
+            winningContract,
+            CancellationToken.None);
+        store.ReleaseBlockedWrite();
+        var losingRequest = async () => await first;
+
+        await losingRequest.Should()
+            .ThrowAsync<ReportingRunCreateClaimException>()
+            .WithMessage("*different certified request*");
+        winner.BrandingThemeId.Should().Be("different-certified-request");
+        ((IReportingRunStore)store).GetManifest("tenant-a", winner.RunId)!.BrandingThemeId
+            .Should().Be("different-certified-request");
+        ((IReportingRunStore)store).GetAudit("tenant-a", winner.RunId)
+            .Select(static entry => entry.Action)
+            .Should().Equal("RunGenerated");
+    }
+
+    [Fact]
     public async Task Scenario_ConcurrentApprovalCalls_AreSerializedBeforeAuditMutation()
     {
         var store = new ControllableRunStore();
@@ -452,6 +585,150 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public async Task Scenario_TwoScheduleHosts_RefreshAndLeaseBeforeGeneration()
+    {
+        var store = new SharedAtomicScheduleStore([]);
+        var firstRenderer = new BlockingRenderer();
+        var secondRenderer = new CountingRenderer();
+        var firstHost = CreateRunnableScheduleService(store, firstRenderer);
+        var secondHost = CreateRunnableScheduleService(store, secondRenderer);
+        var due = BuildSchedule("multi-host-due", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow.AddMinutes(-1)
+        };
+        store.Upsert(due);
+
+        var first = Task.Run(
+            () => firstHost.RunDueForWorkerAsync(
+                FixedNow,
+                CancellationToken.None));
+        await firstRenderer.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var losingPoll = await secondHost.RunDueForWorkerAsync(
+            FixedNow,
+            CancellationToken.None);
+        losingPoll.Result.Runs.Should().BeEmpty();
+        secondRenderer.RenderCount.Should().Be(0);
+
+        firstRenderer.Release.TrySetResult(true);
+        var winner = await first;
+        winner.Result.Runs.Should().ContainSingle();
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == due.ScheduleId
+            && schedule.RunCount == 1
+            && schedule.DueAtUtc > FixedNow);
+    }
+
+    [Fact]
+    public void Scenario_ScheduleLease_ExpiresWithFencingAgainstLateOwner()
+    {
+        var schedule = BuildCurrentSchedule("lease-expiry") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow
+        };
+        var store = new SharedAtomicScheduleStore([schedule]);
+        var first = store.TryClaimExecution(
+            schedule,
+            "host-a",
+            FixedNow,
+            TimeSpan.FromMinutes(1));
+
+        first.Should().NotBeNull();
+        store.TryClaimExecution(
+                schedule,
+                "host-b",
+                FixedNow.AddSeconds(59),
+                TimeSpan.FromMinutes(1))
+            .Should().BeNull();
+        var reclaimed = store.TryClaimExecution(
+            schedule,
+            "host-b",
+            FixedNow.AddMinutes(1),
+            TimeSpan.FromMinutes(1));
+
+        reclaimed.Should().NotBeNull();
+        reclaimed!.LeaseVersion.Should().Be(first!.LeaseVersion + 1);
+        var staleCompletion = () => store.UpsertClaimedExecution(
+            schedule with
+            {
+                RunCount = 1,
+                UpdatedAtUtc = FixedNow.AddMinutes(1)
+            },
+            schedule.UpdatedAtUtc,
+            first);
+        staleCompletion.Should().Throw<ReportingScheduleExecutionLeaseException>();
+        store.Load().Should().ContainSingle().Which.RunCount.Should().Be(0);
+        store.ReleaseExecutionLease(
+            schedule.TenantId!,
+            schedule.CompanyId!,
+            schedule.ScheduleId,
+            first);
+        store.RenewExecutionLease(
+                schedule,
+                reclaimed,
+                FixedNow.AddMinutes(1).AddSeconds(30),
+                TimeSpan.FromMinutes(1))
+            .Should().NotBeNull(
+                "the expired owner's fenced release must not clear the replacement lease");
+    }
+
+    [Fact]
+    public async Task Scenario_UnreadyReportingDeployment_RejectsAllScheduleMutationsAndExecution()
+    {
+        var retained = BuildSchedule("deployment-blocked", "operator-a") with
+        {
+            State = ReportingScheduleStateDto.Active,
+            DueAtUtc = FixedNow
+        };
+        var store = new SharedAtomicScheduleStore([retained]);
+        var service = new ReportingScheduleService(
+            new ReportingOrchestrationService(
+                new DefaultReportingTemplateCatalog(),
+                new DeterministicReportingSectionRenderer(),
+                () => FixedNow),
+            store,
+            deliveryService: null,
+            governedTemplateCatalog: null,
+            datasetSourceService: null,
+            readinessService: null,
+            certificationService: null,
+            governanceCoordinator: null,
+            destinationResolver: null,
+            deploymentReadinessService:
+                new FixedDeploymentReadinessService(isReady: false));
+
+        var upsert = () => service.Upsert(new ReportingScheduleUpsertRequestDto(
+            "blocked-create",
+            "investor-monthly-statement",
+            "0 9 1 * *",
+            new DateOnly(2026, 8, 31),
+            FixedNow.AddDays(1),
+            0,
+            "operator-a"));
+        upsert.Should().Throw<InvalidOperationException>()
+            .WithMessage("*deployment is ready*");
+        var stateChange = () => service.SetState(
+            retained.ScheduleId,
+            ReportingScheduleStateDto.Paused);
+        stateChange.Should().Throw<InvalidOperationException>()
+            .WithMessage("*deployment is ready*");
+        var runNow = () => service.RunNowAsync(
+            retained.ScheduleId,
+            retained.RequestedBy,
+            CancellationToken.None);
+        await runNow.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*deployment is ready*");
+        var runDue = () => service.RunDueForWorkerAsync(
+            FixedNow,
+            CancellationToken.None);
+        await runDue.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*deployment is ready*");
+        store.Load().Should().ContainSingle().Which.Should().Be(retained);
+    }
+
+    [Fact]
     public void Scenario_TwoFileScheduleServices_ConflictRefreshesThenRetrySucceeds()
     {
         var root = Path.Combine(
@@ -546,6 +823,25 @@ public sealed class ReportingOperationalConcurrencyTests
                 new DeterministicReportingSectionRenderer(),
                 () => FixedNow),
             store);
+
+    private static ReportingScheduleService CreateRunnableScheduleService(
+        IReportingScheduleStore store,
+        IReportingSectionRenderer renderer)
+    {
+        var catalog = new DefaultReportingTemplateCatalog();
+        return new ReportingScheduleService(
+            new ReportingOrchestrationService(
+                catalog,
+                renderer,
+                () => FixedNow),
+            store,
+            readinessService: new ReportingRunReadinessService(
+                catalog,
+                dependencyEvaluator: new AlwaysReadyEvaluator(),
+                utcNow: () => FixedNow,
+                options: new ReportingRunReadinessOptions(
+                    AllowLegacyUnscopedDrafts: true)));
+    }
 
     private static ReportingRunSnapshot BuildSnapshot(
         string runId,
@@ -750,6 +1046,33 @@ public sealed class ReportingOperationalConcurrencyTests
             AuthoritativeSource: source,
             CertifiedDatasetRows: rows);
         return new ReportingRunSnapshot(manifest, [], FixedNow);
+    }
+
+    private static ReportingJobContract BuildCertifiedContract(string jobId)
+    {
+        var certified = BuildCertifiedSnapshot(
+            runId: $"{jobId}-seed",
+            tenantId: "tenant-a",
+            companyId: "company-a",
+            fundId: "fund-a",
+            periodId: "2026-07",
+            policyHash: new string('a', 64)).Manifest;
+        return new ReportingJobContract(
+            jobId,
+            certified.TemplateId,
+            certified.AsOfDate,
+            ReportingRunTrigger.AdHoc,
+            MaxRetries: 0,
+            RequestedBy: "operator",
+            RequestedAtUtc: FixedNow,
+            DatasetRows: certified.CertifiedDatasetRows,
+            ResolvedTemplate: certified.ResolvedTemplate,
+            ResolvedParameters: certified.ResolvedParameters,
+            Readiness: certified.Readiness,
+            OperationalScope: certified.OperationalScope,
+            ImmutableAccessScope: certified.ImmutableAccessScope,
+            CertifiedSnapshot: certified.CertifiedSnapshot,
+            AuthoritativeSource: certified.AuthoritativeSource);
     }
 
     private static ReportingRunSnapshot BuildRestrictedSnapshot(
@@ -1102,6 +1425,8 @@ public sealed class ReportingOperationalConcurrencyTests
         private readonly object _gate = new();
         private readonly Dictionary<string, ReportingScheduleRecordDto> _schedules =
             schedules.ToDictionary(BuildKey, StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ReportingScheduleExecutionLease> _leases =
+            new(StringComparer.OrdinalIgnoreCase);
 
         public int AtomicUpsertCalls { get; private set; }
 
@@ -1166,6 +1491,103 @@ public sealed class ReportingOperationalConcurrencyTests
             }
         }
 
+        public ReportingScheduleExecutionLease? TryClaimExecution(
+            ReportingScheduleRecordDto schedule,
+            string leaseOwner,
+            DateTimeOffset nowUtc,
+            TimeSpan leaseDuration)
+        {
+            lock (_gate)
+            {
+                var key = BuildKey(schedule);
+                if (!_schedules.TryGetValue(key, out var current)
+                    || current.UpdatedAtUtc != schedule.UpdatedAtUtc)
+                {
+                    return null;
+                }
+
+                if (_leases.TryGetValue(key, out var retained)
+                    && retained.LeaseExpiresAtUtc > nowUtc)
+                {
+                    return null;
+                }
+
+                var lease = new ReportingScheduleExecutionLease(
+                    leaseOwner,
+                    nowUtc.Add(leaseDuration),
+                    retained is null ? 1 : retained.LeaseVersion + 1);
+                _leases[key] = lease;
+                return lease;
+            }
+        }
+
+        public ReportingScheduleExecutionLease? RenewExecutionLease(
+            ReportingScheduleRecordDto schedule,
+            ReportingScheduleExecutionLease lease,
+            DateTimeOffset nowUtc,
+            TimeSpan leaseDuration)
+        {
+            lock (_gate)
+            {
+                var key = BuildKey(schedule);
+                if (!_leases.TryGetValue(key, out var retained)
+                    || retained.LeaseOwner != lease.LeaseOwner
+                    || retained.LeaseVersion != lease.LeaseVersion
+                    || retained.LeaseExpiresAtUtc <= nowUtc)
+                {
+                    return null;
+                }
+
+                retained = retained with
+                {
+                    LeaseExpiresAtUtc = nowUtc.Add(leaseDuration)
+                };
+                _leases[key] = retained;
+                return retained;
+            }
+        }
+
+        public void ReleaseExecutionLease(
+            string tenantId,
+            string companyId,
+            string scheduleId,
+            ReportingScheduleExecutionLease lease)
+        {
+            lock (_gate)
+            {
+                var key = $"{tenantId.Trim()}/{companyId.Trim()}/{scheduleId.Trim()}";
+                if (_leases.TryGetValue(key, out var retained)
+                    && retained.LeaseOwner == lease.LeaseOwner
+                    && retained.LeaseVersion == lease.LeaseVersion)
+                {
+                    _leases.Remove(key);
+                }
+            }
+        }
+
+        public void UpsertClaimedExecution(
+            ReportingScheduleRecordDto schedule,
+            DateTimeOffset expectedUpdatedAtUtc,
+            ReportingScheduleExecutionLease lease)
+        {
+            lock (_gate)
+            {
+                var key = BuildKey(schedule);
+                if (!_leases.TryGetValue(key, out var retained)
+                    || retained.LeaseOwner != lease.LeaseOwner
+                    || retained.LeaseVersion != lease.LeaseVersion)
+                {
+                    throw new ReportingScheduleExecutionLeaseException(
+                        schedule.TenantId ?? string.Empty,
+                        schedule.CompanyId ?? string.Empty,
+                        schedule.ScheduleId,
+                        "The test reporting schedule execution lease was superseded.");
+                }
+
+                Upsert(schedule, expectedUpdatedAtUtc);
+            }
+        }
+
         private static string BuildKey(ReportingScheduleRecordDto schedule) =>
             $"{schedule.TenantId?.Trim()}/{schedule.CompanyId?.Trim()}/{schedule.ScheduleId.Trim()}";
     }
@@ -1198,6 +1620,94 @@ public sealed class ReportingOperationalConcurrencyTests
                     BlocksDraft: false,
                     BlocksFinal: false)
             ];
+        }
+    }
+
+    private sealed class AlwaysReadyEvaluator : IReportingRunReadinessDependencyEvaluator
+    {
+        public Task<IReadOnlyList<ReportingRunReadinessCheckDto>> EvaluateAsync(
+            ReportingRunRequestDto request,
+            ReportingTemplateMetadata template,
+            ReportingRunParametersDto parameters,
+            ReportAccessQueryContext? accessContext,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReportingRunReadinessCheckDto>>(
+            [
+                new ReportingRunReadinessCheckDto(
+                    "multi-host-ready",
+                    "Multi-host dependency readiness",
+                    ReportingRunReadinessStatusDto.Ready,
+                    "All deterministic test dependencies are ready.",
+                    0,
+                    BlocksDraft: false,
+                    BlocksFinal: false)
+            ]);
+    }
+
+    private sealed class FixedDeploymentReadinessService(bool isReady)
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: isReady,
+                Components: [],
+                BlockingReasons: isReady ? [] : ["Reporting schema is incomplete."]);
+    }
+
+    private sealed class CountingRenderer : IReportingSectionRenderer
+    {
+        private readonly DeterministicReportingSectionRenderer _inner = new();
+        private int _renderCount;
+
+        public int RenderCount => Volatile.Read(ref _renderCount);
+
+        public ReportingSectionManifest RenderSection(
+            string runId,
+            ReportingJobContract contract,
+            ReportingTemplateMetadata template,
+            string sectionId,
+            int attempt)
+        {
+            Interlocked.Increment(ref _renderCount);
+            return _inner.RenderSection(
+                runId,
+                contract,
+                template,
+                sectionId,
+                attempt);
+        }
+    }
+
+    private sealed class BlockingRenderer : IReportingSectionRenderer
+    {
+        private readonly DeterministicReportingSectionRenderer _inner = new();
+        private int _entered;
+
+        public TaskCompletionSource<bool> Entered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<bool> Release { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ReportingSectionManifest RenderSection(
+            string runId,
+            ReportingJobContract contract,
+            ReportingTemplateMetadata template,
+            string sectionId,
+            int attempt)
+        {
+            if (Interlocked.Exchange(ref _entered, 1) == 0)
+            {
+                Entered.TrySetResult(true);
+                Release.Task.GetAwaiter().GetResult();
+            }
+
+            return _inner.RenderSection(
+                runId,
+                contract,
+                template,
+                sectionId,
+                attempt);
         }
     }
 }

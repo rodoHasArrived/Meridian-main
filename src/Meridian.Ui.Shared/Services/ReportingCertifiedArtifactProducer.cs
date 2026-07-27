@@ -58,7 +58,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     public const string RetainedManifestSchemaVersion = "meridian.reporting.retained-manifest.v1";
 
     private const string DurableLedgerSourceKind = "durable-ledger-journal";
-    private const string PartnersCapitalTableTitle = "Statement of Changes in Partners' Capital";
     private const int PdfCharactersPerLine = 86;
     private const int PdfLinesPerPage = 48;
 
@@ -101,6 +100,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             throw new ReportingGovernanceException(
                 $"Certified manifest '{manifest.RunId}' artifact declaration drifted before byte production.");
         }
+        var clientDocumentPackage = RenderCertifiedClientPackage(
+            manifest,
+            declarations,
+            certifiedLedgerPresentation);
 
         var rendered = ImmutableArray.CreateBuilder<ReportingRenderedArtifact>(declarations.Length);
         var descriptors = ImmutableArray.CreateBuilder<ReportingRetainedManifestArtifactDescriptor>(declarations.Length);
@@ -111,7 +114,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                      artifact.Kind != ReportingDeclaredArtifactKind.Manifest))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var content = RenderArtifact(manifest, declaration, certifiedLedgerPresentation);
+            var content = RenderArtifact(manifest, declaration, clientDocumentPackage);
             if (content.Length == 0)
             {
                 throw new ReportingGovernanceException(
@@ -252,18 +255,22 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
     private byte[] RenderArtifact(
         ReportingOutputManifest manifest,
         ReportingDeclaredArtifact declaration,
-        IReadOnlyList<LedgerReportTable>? certifiedLedgerPresentation) => declaration.Kind switch
+        LedgerClientReportDocumentPackage? clientDocumentPackage) => declaration.Kind switch
         {
             ReportingDeclaredArtifactKind.PrimaryOutput => declaration.ContentType switch
             {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
-                    _primaryRenderer is { } workbookRenderer
-                    ? RenderWorkbook(workbookRenderer, manifest, certifiedLedgerPresentation)
+                    clientDocumentPackage is { } package
+                    ? package.Workbook
+                    : _primaryRenderer is { } workbookRenderer
+                    ? workbookRenderer.RenderWorkbook(manifest)
                     : RenderXlsx(manifest),
                 "text/csv" => RenderPrimaryCsv(manifest),
                 "application/vnd.meridian.reporting-evidence+json" => RenderEvidenceVault(manifest),
-                "application/pdf" => _primaryRenderer is { } documentRenderer
-                    ? RenderPdf(documentRenderer, manifest, certifiedLedgerPresentation)
+                "application/pdf" => clientDocumentPackage is { } package
+                    ? package.Pdf
+                    : _primaryRenderer is { } documentRenderer
+                    ? documentRenderer.RenderPdf(manifest)
                     : RenderPdf(manifest),
                 _ => throw new ReportingGovernanceException(
                     $"Primary artifact '{declaration.ArtifactId}' declares unsupported content type '{declaration.ContentType}'.")
@@ -277,7 +284,7 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 $"Artifact kind '{declaration.Kind}' cannot be rendered outside the retained manifest pass.")
         };
 
-    private async ValueTask<IReadOnlyList<LedgerReportTable>?> ResolveCertifiedLedgerPresentationAsync(
+    private async ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveCertifiedLedgerPresentationAsync(
         ReportingOutputManifest manifest,
         CancellationToken cancellationToken)
     {
@@ -286,10 +293,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             return null;
         }
 
-        if (_primaryRenderer is not IReportingPrimaryDocumentRendererWithLedgerPresentation)
+        if (_primaryRenderer is not IReportingPrimaryDocumentRendererWithLedgerReportPack)
         {
             throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because the configured primary-document renderer cannot consume a canonical partners-capital presentation.");
+                $"Capital-account client package '{manifest.RunId}' is blocked because the configured primary-document renderer cannot consume the exact checkpoint-bound ledger report pack.");
         }
 
         var input = _ledgerPresentationSource is null
@@ -303,16 +310,46 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 $"Capital-account client package '{manifest.RunId}' is blocked because no exact checkpoint-bound canonical ledger presentation is available. Partners' capital was not recalculated from incomplete certified display rows.");
         }
         ValidateCertifiedLedgerPresentation(manifest, input);
+        return input;
+    }
 
-        var tables = LedgerReportPresentation.BuildTables(input.ReportPack);
-        if (tables.Count(static table =>
-                string.Equals(table.Title, PartnersCapitalTableTitle, StringComparison.Ordinal)) != 1)
+    private LedgerClientReportDocumentPackage? RenderCertifiedClientPackage(
+        ReportingOutputManifest manifest,
+        ImmutableArray<ReportingDeclaredArtifact> declarations,
+        ReportingCertifiedLedgerPresentationInput? certifiedLedgerPresentation)
+    {
+        if (certifiedLedgerPresentation is null)
         {
-            throw new ReportingGovernanceException(
-                $"Capital-account client package '{manifest.RunId}' is blocked because its canonical ledger report pack does not contain exactly one partners-capital statement.");
+            return null;
         }
 
-        return tables;
+        var primaryDocuments = declarations
+            .Where(static artifact => artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
+            .ToArray();
+        if (primaryDocuments.Length != 2
+            || primaryDocuments.Count(static artifact =>
+                string.Equals(artifact.ContentType, "application/pdf", StringComparison.Ordinal)) != 1
+            || primaryDocuments.Count(static artifact =>
+                string.Equals(
+                    artifact.ContentType,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    StringComparison.Ordinal)) != 1)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account client package '{manifest.RunId}' must declare exactly one PDF and one XLSX primary artifact before rendering.");
+        }
+
+        var renderer = (IReportingPrimaryDocumentRendererWithLedgerReportPack)_primaryRenderer!;
+        var package = renderer.RenderClientPackage(
+            manifest,
+            certifiedLedgerPresentation.ReportPack);
+        if (package.Pdf.Length == 0 || package.Workbook.Length == 0)
+        {
+            throw new ReportingGovernanceException(
+                $"Capital-account client package '{manifest.RunId}' did not render both PDF and XLSX bytes.");
+        }
+
+        return package;
     }
 
     private static void ValidateCertifiedLedgerPresentation(
@@ -435,24 +472,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 $"Capital-account client package '{runId}' is blocked because its canonical ledger report pack signature does not match its exact artifacts.");
         }
     }
-
-    private static byte[] RenderPdf(
-        IReportingPrimaryDocumentRenderer renderer,
-        ReportingOutputManifest manifest,
-        IReadOnlyList<LedgerReportTable>? certifiedLedgerPresentation) =>
-        certifiedLedgerPresentation is null
-            ? renderer.RenderPdf(manifest)
-            : ((IReportingPrimaryDocumentRendererWithLedgerPresentation)renderer)
-                .RenderPdf(manifest, certifiedLedgerPresentation);
-
-    private static byte[] RenderWorkbook(
-        IReportingPrimaryDocumentRenderer renderer,
-        ReportingOutputManifest manifest,
-        IReadOnlyList<LedgerReportTable>? certifiedLedgerPresentation) =>
-        certifiedLedgerPresentation is null
-            ? renderer.RenderWorkbook(manifest)
-            : ((IReportingPrimaryDocumentRendererWithLedgerPresentation)renderer)
-                .RenderWorkbook(manifest, certifiedLedgerPresentation);
 
     private static bool RequiresPartnersCapitalClientPackage(ReportingOutputManifest manifest) =>
         ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest);

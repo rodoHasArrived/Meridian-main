@@ -5,6 +5,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -93,6 +94,47 @@ public sealed class SupportedPostureStartupIntegrationTests
                 "application/problem+json",
                 "the status-code fallback is intentionally limited to /api");
 
+            await server.StopAsync(startTimeout.Token);
+        }
+        finally
+        {
+            CleanupTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_StartAsync_CompletesReportingMigrationBeforeHostedServiceConstruction()
+    {
+        using var environment = UiServerDevelopmentEnvironmentScope.Enable();
+        var root = CreateTempRoot();
+        var configPath = WriteMinimalConfig(root);
+        var migration = new RecordingReportingMigrationStartup();
+        var hostedServiceObservedReady = false;
+
+        try
+        {
+            await using var server = new UiServer(
+                configPath,
+                port: 0,
+                lifecycle: new RecordingLifecycleCoordinator(),
+                ownsLifecycle: true,
+                apiHostOptions: null,
+                configureServices: services =>
+                {
+                    services.AddSingleton<IReportingMigrationStartup>(migration);
+                    services.AddSingleton<IHostedService>(_ =>
+                    {
+                        hostedServiceObservedReady = migration.IsReady;
+                        return new StopAndDisposeProbeHostedService();
+                    });
+                });
+            using var startTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+
+            await server.StartAsync(startTimeout.Token);
+
+            migration.CallCount.Should().Be(1);
+            hostedServiceObservedReady.Should().BeTrue(
+                "reporting schema readiness must precede construction of schedule and distribution hosted services");
             await server.StopAsync(startTimeout.Token);
         }
         finally
@@ -466,6 +508,23 @@ public sealed class SupportedPostureStartupIntegrationTests
         {
             Interlocked.Increment(ref _disposeCount);
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingReportingMigrationStartup : IReportingMigrationStartup
+    {
+        private int _callCount;
+        private int _ready;
+
+        public int CallCount => Volatile.Read(ref _callCount);
+        public bool IsReady => Volatile.Read(ref _ready) == 1;
+
+        public Task EnsureReadyAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _callCount);
+            Volatile.Write(ref _ready, 1);
+            return Task.CompletedTask;
         }
     }
 }

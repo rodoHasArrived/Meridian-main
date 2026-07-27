@@ -108,6 +108,39 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task ClientPackageRelease_RejectsPartialPrimaryArtifactSet()
+    {
+        var scenario = NewScenario(outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var approved = await CreateValidatedRunAsync(scenario);
+        approved = await scenario.Service.SubmitAsync(
+            approved.RunId,
+            approved.Version,
+            scenario.Creator);
+        approved = await scenario.Service.ApproveAsync(
+            approved.RunId,
+            approved.Version,
+            "Both client documents reviewed",
+            scenario.Approver);
+
+        Func<Task> releasePdfOnly = async () => await scenario.Service.ReleaseAsync(
+            approved.RunId,
+            approved.Version,
+            new ReportingReleaseEvidence(
+                "manifest-client-package",
+                new string('4', 64),
+                [new ReportingArtifactReference(
+                    $"{approved.RunId}.pdf",
+                    new string('3', 64),
+                    128)],
+                ["evidence-client-package"]),
+            scenario.Releaser);
+
+        await releasePdfOnly.Should()
+            .ThrowAsync<ReportingGovernanceException>()
+            .WithMessage("*requires both immutable PDF and XLSX primary artifacts*");
+    }
+
+    [Fact]
     public async Task AuditChain_RejectsPrincipalAudienceTamperingWithoutReseal()
     {
         var scenario = NewScenario();
@@ -938,7 +971,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
 
     private static Scenario NewScenario(
         DateTimeOffset? snapshotCapturedAtUtc = null,
-        ReportingFinalityDto finality = ReportingFinalityDto.Final)
+        ReportingFinalityDto finality = ReportingFinalityDto.Final,
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
     {
         var scope = new ReportingOperationalScope(
             "tenant-a",
@@ -947,7 +981,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             "fund-a",
             "book-a",
             "period-a");
-        var parametersJson = CanonicalParametersJson(scope, finality);
+        var parametersJson = CanonicalParametersJson(scope, finality, outputFormat);
         var parametersHash = Convert.ToHexString(SHA256.HashData(
                 Encoding.UTF8.GetBytes(parametersJson)))
             .ToLowerInvariant();
@@ -1015,7 +1049,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
 
     private static string CanonicalParametersJson(
         ReportingOperationalScope scope,
-        ReportingFinalityDto finality) =>
+        ReportingFinalityDto finality,
+        ReportingOutputFormatDto outputFormat) =>
         JsonSerializer.Serialize(new
         {
             scope = new
@@ -1034,7 +1069,7 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             accountingBasis = ReportingAccountingBasisDto.Gaap.ToString(),
             presentationCurrency = "USD",
             consolidationLevel = ReportingConsolidationLevelDto.Fund.ToString(),
-            outputFormat = ReportingOutputFormatDto.Pdf.ToString(),
+            outputFormat = outputFormat.ToString(),
             finality = finality.ToString(),
             includeSupportingSchedules = true,
             includeEvidenceAppendix = finality == ReportingFinalityDto.Final,

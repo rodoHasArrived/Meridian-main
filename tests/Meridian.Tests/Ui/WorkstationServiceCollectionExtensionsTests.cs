@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
@@ -71,9 +72,18 @@ public sealed class WorkstationServiceCollectionExtensionsTests
             "the retired report-pack workflow must not retain a second lifecycle authority");
         provider.GetService<IReportPackDeliveryRecordStore>().Should().BeNull(
             "canonical secure distribution owns delivery jobs and immutable receipts");
+        provider.GetRequiredService<IRestatementCandidateResolver>().Should()
+            .BeOfType<IndeterminateRestatementCandidateResolver>(
+                "the retired report-pack workflow cannot authoritatively clear soft-closed restatement exposure");
         provider.GetRequiredService<ReportTemplateGovernanceStoreOptions>().SnapshotPath
             .Should()
             .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-templates.json"));
+        provider.GetRequiredService<IReportTemplateGovernanceStore>()
+            .Should().BeOfType<FileReportTemplateGovernanceStore>();
+        provider.GetRequiredService<IReportingStarterKitStore>()
+            .Should().BeOfType<FileReportingStarterKitStore>();
+        provider.GetRequiredService<IGovernanceReportPackRepository>()
+            .Should().BeOfType<FileGovernanceReportPackRepository>();
     }
 
     [Fact]
@@ -195,6 +205,9 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
             "ASPNETCORE_ENVIRONMENT",
             "Production");
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=30");
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         var configPath = Path.Combine(root, "appsettings.json");
         Directory.CreateDirectory(root);
@@ -210,7 +223,69 @@ public sealed class WorkstationServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public async Task AddWorkstationSharedServices_ConfiguredReporting_DefersMigrationToCancellableHostedService()
+    public void AddWorkstationSharedServices_WhenProductionReportingAuthorityIsMissing_FailsClosed()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            null);
+        using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_CONNECTION_STRING",
+            null);
+        var services = CreateMinimalWorkstationServices();
+
+        Action act = () => services.AddWorkstationSharedServices();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Production reporting authority requires*");
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_WhenProductionReportingIsConfigured_OmitsFileBackedReportingAuthorities()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
+            null);
+        using var reporting = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_REPORTING_CONNECTION_STRING",
+            "Host=127.0.0.1;Port=1;Database=meridian;Username=test;Password=test;Timeout=30");
+        using var ledger = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "MERIDIAN_LEDGER_CONNECTION_STRING",
+            null);
+        var services = CreateMinimalWorkstationServices();
+
+        services.AddWorkstationSharedServices();
+
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IReportTemplateGovernanceStore));
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IReportingStarterKitStore));
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IGovernanceReportPackRepository));
+        using var provider = services.BuildServiceProvider();
+        provider.GetService<IReportTemplateGovernanceStore>().Should().BeNull();
+        provider.GetService<IReportingStarterKitStore>().Should().BeNull();
+        provider.GetService<IGovernanceReportPackRepository>().Should().BeNull();
+        provider.GetRequiredService<ReportTemplateRegistryService>()
+            .List(includeSuperseded: true)
+            .Should().NotBeEmpty()
+            .And.OnlyContain(static template => template.IsBuiltIn);
+        provider.GetRequiredService<IReportingTemplateCatalog>()
+            .ListTemplates()
+            .Should().NotBeEmpty(
+                "production canonical reporting keeps the built-in template catalog when custom mutation is unavailable");
+    }
+
+    [Fact]
+    public async Task AddWorkstationSharedServices_ConfiguredReportingRegistersCancellableStartupAndHostedFallback()
     {
         using var unified = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
             Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable,
@@ -242,6 +317,9 @@ public sealed class WorkstationServiceCollectionExtensionsTests
             descriptor.ServiceType == typeof(IHostedService) &&
             descriptor.ImplementationType == typeof(WorkstationReportingMigrationHostedService));
         using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IReportingMigrationStartup>()
+            .Should().NotBeNull(
+                "the host must be able to complete reporting migration before hosted-service construction");
         provider.GetRequiredService<IReportingArtifactStore>()
             .Should().BeOfType<PostgresReportingArtifactStore>(
                 "resolving a store must not synchronously open a database connection");

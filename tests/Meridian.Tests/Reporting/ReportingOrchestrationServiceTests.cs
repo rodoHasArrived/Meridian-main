@@ -180,22 +180,29 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
-    public async Task ExecuteDueSchedulesAsync_OnlyRunsDueSchedulesInStableOrder()
+    public async Task ExecuteDueSchedulesAsync_FailsClosedOutsideHostedScheduleAuthority()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
-        var dueLater = FixedNow.AddMinutes(5);
         var schedules = new[]
         {
-            new ReportingScheduleContract("sched-shadow", "shadow-nav-daily-pack", "0 22 * * 1-5", new DateOnly(2026, 5, 3), FixedNow.AddMinutes(-2), 1, "scheduler"),
-            new ReportingScheduleContract("sched-investor", "investor-monthly-statement", "0 8 1 * *", new DateOnly(2026, 5, 1), FixedNow.AddMinutes(-5), 1, "scheduler"),
-            new ReportingScheduleContract("sched-sec", "sec-13f-packet", "0 8 * * 5", new DateOnly(2026, 5, 8), dueLater, 1, "scheduler")
+            new ReportingScheduleContract(
+                "sched-investor",
+                "investor-monthly-statement",
+                "0 8 1 * *",
+                new DateOnly(2026, 5, 1),
+                FixedNow.AddMinutes(-5),
+                1,
+                "scheduler")
         };
 
-        var generated = await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning disable CS0618 // Verify the fail-closed behavior of the retained compatibility member.
+        Func<Task> act = async () =>
+            await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning restore CS0618
 
-        generated.Select(m => m.RunId).Should().Equal("sched-investor-20260501", "sched-shadow-20260503");
-        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId != null);
-        sut.GetAudit("sched-shadow-20260503").Should().ContainSingle(e => e.Action == "RunGenerated" && e.Notes.Contains("trigger=Scheduled"));
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*host reporting-schedule adapter*");
+        sut.GetManifest("sched-investor-20260501").Should().BeNull();
     }
 
     [Fact]

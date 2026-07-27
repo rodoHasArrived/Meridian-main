@@ -23,13 +23,20 @@ public sealed record ReportingAuthoritativeSourceCapture(
 /// Template identity supplied by the governed certification/revalidation path when an
 /// authoritative source capture may require template-specific presentation evidence.
 /// </summary>
-public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
+public sealed record ReportingAuthoritativeSourceCaptureIntent(
+    string TemplateId)
 {
+    public bool RequiresCertifiedLedgerPresentation { get; init; }
+
     public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(
         ReportingTemplateMetadata template)
     {
         ArgumentNullException.ThrowIfNull(template);
-        return new ReportingAuthoritativeSourceCaptureIntent(template.TemplateId);
+        return new ReportingAuthoritativeSourceCaptureIntent(template.TemplateId)
+        {
+            RequiresCertifiedLedgerPresentation =
+                template.Family == ReportingTemplateFamily.CapitalAccountStatement
+        };
     }
 }
 
@@ -216,7 +223,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         }
 
         var canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(
-                intent?.TemplateId,
+                intent,
                 parameters.OutputFormat)
             ? await BuildCanonicalLedgerReportPackAsync(
                     parameters,

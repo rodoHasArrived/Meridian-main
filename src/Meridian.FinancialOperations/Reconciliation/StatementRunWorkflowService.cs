@@ -139,8 +139,42 @@ public sealed class StatementRunWorkflowService(
             ImportedBy = request.ImportedBy.Trim(),
             SourceFileHash = request.SourceFileHash?.Trim().ToUpperInvariant() ?? string.Empty,
             CanonicalSourcePath = canonicalSourcePath,
-            CanonicalArtifactHash = request.CanonicalArtifactHash?.Trim().ToUpperInvariant() ?? string.Empty
+            CanonicalArtifactHash = request.CanonicalArtifactHash?.Trim().ToUpperInvariant() ?? string.Empty,
+            AccountingScope = NormalizeAccountingScope(request.AccountingScope, request.StatementPeriodEnd)
         };
+    }
+
+    private static StatementAccountingScope? NormalizeAccountingScope(
+        StatementAccountingScope? scope,
+        DateOnly statementPeriodEnd)
+    {
+        if (scope is null)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(scope.FundProfileId))
+        {
+            throw new InvalidDataException("Statement accounting scope requires a fund profile id.");
+        }
+
+        if (scope.LedgerBookId == Guid.Empty)
+        {
+            throw new InvalidDataException("Statement accounting scope requires a ledger book id.");
+        }
+
+        if (scope.AccountingPeriodId == Guid.Empty)
+        {
+            throw new InvalidDataException("Statement accounting scope requires an accounting period id.");
+        }
+
+        if (scope.AsOfDate != statementPeriodEnd)
+        {
+            throw new InvalidDataException(
+                "Statement accounting scope as-of date must equal the retained statement period end.");
+        }
+
+        return scope with { FundProfileId = scope.FundProfileId.Trim() };
     }
 
     private static BrokerStatementImportRequest ToImportRequest(StatementRunRequest request)
@@ -159,7 +193,8 @@ public sealed class StatementRunWorkflowService(
             request.SourceFileHash)
         {
             CanonicalSourcePath = request.CanonicalSourcePath,
-            CanonicalArtifactHash = request.CanonicalArtifactHash
+            CanonicalArtifactHash = request.CanonicalArtifactHash,
+            AccountingScope = request.AccountingScope
         };
 
     private static string BuildEvidenceLink(StatementRunBreak item)

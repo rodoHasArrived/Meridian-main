@@ -19,6 +19,7 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
 
     private readonly ReportingArtifactStoreOptions _options;
     private readonly string _runTable;
+    private readonly string _runClaimTable;
 
     public PostgresReportingRunStore(ReportingArtifactStoreOptions options)
     {
@@ -26,6 +27,7 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.ConnectionString);
         ReportingDistributionStoreGuard.ValidateIdentifier(_options.Schema, nameof(options.Schema));
         _runTable = $"\"{_options.Schema}\".\"reporting_run_snapshots\"";
+        _runClaimTable = $"\"{_options.Schema}\".\"reporting_run_create_claims\"";
     }
 
     public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25)
@@ -248,17 +250,279 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
             : ReportingRunStoreRevision.Compute(snapshot.Manifest, snapshot.AuditTrail);
     }
 
+    public async Task<ReportingRunCreateClaimResult> TryClaimCreateAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingOperationalStoreJson.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var normalizedRunId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            runId,
+            nameof(runId),
+            MaximumIdentityLength);
+        var normalizedOwner = ReportingOperationalStoreJson.NormalizeRequired(
+            leaseOwner,
+            nameof(leaseOwner),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+        await AcquireIdentityLockAsync(
+                connection,
+                transaction,
+                normalizedTenantId,
+                normalizedRunId,
+                ct)
+            .ConfigureAwait(false);
+
+        await using (var existingCommand = connection.CreateCommand())
+        {
+            existingCommand.Transaction = transaction;
+            existingCommand.CommandText =
+                $"""
+                select exists (
+                    select 1
+                    from {_runTable}
+                    where tenant_id = @tenant_id
+                      and run_id_key = @run_id_key);
+                """;
+            existingCommand.Parameters.AddWithValue(
+                "tenant_id",
+                NpgsqlDbType.Text,
+                normalizedTenantId);
+            existingCommand.Parameters.AddWithValue(
+                "run_id_key",
+                NpgsqlDbType.Text,
+                normalizedRunId.ToLowerInvariant());
+            if ((bool)(await existingCommand.ExecuteScalarAsync(ct).ConfigureAwait(false)
+                       ?? false))
+            {
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.AlreadyExists);
+            }
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {_runClaimTable} as retained_claim (
+                tenant_id,
+                run_id,
+                run_id_key,
+                lease_owner,
+                claimed_at_utc,
+                lease_expires_at_utc,
+                lease_version)
+            values (
+                @tenant_id,
+                @run_id,
+                @run_id_key,
+                @lease_owner,
+                clock_timestamp(),
+                clock_timestamp() + @lease_duration,
+                1)
+            on conflict (tenant_id, run_id_key)
+            do update
+               set lease_owner = excluded.lease_owner,
+                   claimed_at_utc = clock_timestamp(),
+                   lease_expires_at_utc = clock_timestamp() + @lease_duration,
+                   lease_version = retained_claim.lease_version + 1
+             where retained_claim.lease_expires_at_utc <= clock_timestamp()
+                or retained_claim.lease_owner = excluded.lease_owner
+            returning lease_expires_at_utc, lease_version;
+            """;
+        command.Parameters.AddWithValue(
+            "tenant_id",
+            NpgsqlDbType.Text,
+            normalizedTenantId);
+        command.Parameters.AddWithValue(
+            "run_id",
+            NpgsqlDbType.Text,
+            normalizedRunId);
+        command.Parameters.AddWithValue(
+            "run_id_key",
+            NpgsqlDbType.Text,
+            normalizedRunId.ToLowerInvariant());
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            normalizedOwner);
+        command.Parameters.AddWithValue(
+            "lease_duration",
+            NpgsqlDbType.Interval,
+            leaseDuration);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            await reader.DisposeAsync().ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return new ReportingRunCreateClaimResult(
+                ReportingRunCreateClaimStatus.LeasedByAnotherOwner);
+        }
+
+        var expiresAtUtc = ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 0);
+        var leaseVersion = reader.GetInt64(1);
+        await reader.DisposeAsync().ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new ReportingRunCreateClaimResult(
+            ReportingRunCreateClaimStatus.Acquired,
+            expiresAtUtc,
+            leaseVersion);
+    }
+
+    public async Task<bool> RenewCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingOperationalStoreJson.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var normalizedRunId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            runId,
+            nameof(runId),
+            MaximumIdentityLength);
+        var normalizedOwner = ReportingOperationalStoreJson.NormalizeRequired(
+            leaseOwner,
+            nameof(leaseOwner),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            update {_runClaimTable}
+               set lease_expires_at_utc = clock_timestamp() + @lease_duration
+             where tenant_id = @tenant_id
+               and run_id_key = @run_id_key
+               and lease_owner = @lease_owner
+               and lease_version = @lease_version
+               and lease_expires_at_utc > clock_timestamp();
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+        command.Parameters.AddWithValue(
+            "run_id_key",
+            NpgsqlDbType.Text,
+            normalizedRunId.ToLowerInvariant());
+        command.Parameters.AddWithValue("lease_owner", NpgsqlDbType.Text, normalizedOwner);
+        command.Parameters.AddWithValue("lease_version", NpgsqlDbType.Bigint, leaseVersion);
+        command.Parameters.AddWithValue(
+            "lease_duration",
+            NpgsqlDbType.Interval,
+            leaseDuration);
+        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 1;
+    }
+
+    public async Task ReleaseCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingOperationalStoreJson.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        var normalizedRunId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            runId,
+            nameof(runId),
+            MaximumIdentityLength);
+        var normalizedOwner = ReportingOperationalStoreJson.NormalizeRequired(
+            leaseOwner,
+            nameof(leaseOwner),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            delete from {_runClaimTable}
+            where tenant_id = @tenant_id
+              and run_id_key = @run_id_key
+              and lease_owner = @lease_owner
+              and lease_version = @lease_version;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+        command.Parameters.AddWithValue(
+            "run_id_key",
+            NpgsqlDbType.Text,
+            normalizedRunId.ToLowerInvariant());
+        command.Parameters.AddWithValue("lease_owner", NpgsqlDbType.Text, normalizedOwner);
+        command.Parameters.AddWithValue("lease_version", NpgsqlDbType.Bigint, leaseVersion);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
     public Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
         CancellationToken ct = default) =>
         SaveAsync(manifest, auditTrail, expectedRevision: null, ct: ct);
 
-    public async Task SaveAsync(
+    public Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
         string? expectedRevision,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision,
+            leaseOwner: null,
+            leaseVersion: 0,
+            ct);
+
+    public Task SaveClaimedCreateAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision: null,
+            leaseOwner,
+            leaseVersion,
+            ct);
+
+    private async Task SaveCoreAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string? expectedRevision,
+        string? leaseOwner,
+        long leaseVersion,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(auditTrail);
@@ -287,10 +551,26 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
             .ConfigureAwait(false);
+        await AcquireIdentityLockAsync(
+                connection,
+                transaction,
+                identity.TenantId,
+                identity.RunId,
+                ct)
+            .ConfigureAwait(false);
         var current = await ReadCurrentStateAsync(
                 connection,
                 transaction,
                 identity,
+                ct)
+            .ConfigureAwait(false);
+        await EnsureCreateClaimAsync(
+                connection,
+                transaction,
+                identity,
+                current is null,
+                leaseOwner,
+                leaseVersion,
                 ct)
             .ConfigureAwait(false);
         if (current is null)
@@ -331,6 +611,14 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
                     concurrent?.Revision ?? "<concurrent-create>");
             }
 
+            await DeleteCreateClaimAsync(
+                    connection,
+                    transaction,
+                    identity,
+                    leaseOwner,
+                    leaseVersion,
+                    ct)
+                .ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return;
         }
@@ -392,7 +680,143 @@ public sealed class PostgresReportingRunStore : IReportingRunStore
                 concurrent?.Revision ?? "<missing>");
         }
 
+        await DeleteCreateClaimAsync(
+                connection,
+                transaction,
+                identity,
+                leaseOwner,
+                leaseVersion,
+                ct)
+            .ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task AcquireIdentityLockAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        string tenantId,
+        string runId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            "select pg_advisory_xact_lock(hashtextextended(@identity, 0));";
+        command.Parameters.AddWithValue(
+            "identity",
+            NpgsqlDbType.Text,
+            $"{_options.Schema}:{tenantId}:{runId.ToLowerInvariant()}");
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task EnsureCreateClaimAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingRunIdentity identity,
+        bool isCreate,
+        string? leaseOwner,
+        long leaseVersion,
+        CancellationToken ct)
+    {
+        if (leaseOwner is null && !isCreate)
+        {
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        if (leaseOwner is null)
+        {
+            command.CommandText =
+                $"""
+                select exists (
+                    select 1
+                    from {_runClaimTable}
+                    where tenant_id = @tenant_id
+                      and run_id_key = @run_id_key
+                      and lease_expires_at_utc > clock_timestamp());
+                """;
+        }
+        else
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+            command.CommandText =
+                $"""
+                select exists (
+                    select 1
+                    from {_runClaimTable}
+                    where tenant_id = @tenant_id
+                      and run_id_key = @run_id_key
+                      and lease_owner = @lease_owner
+                      and lease_version = @lease_version
+                      and lease_expires_at_utc > clock_timestamp());
+                """;
+            command.Parameters.AddWithValue(
+                "lease_owner",
+                NpgsqlDbType.Text,
+                ReportingOperationalStoreJson.NormalizeRequired(
+                    leaseOwner,
+                    nameof(leaseOwner),
+                    MaximumIdentityLength,
+                    requireCanonical: true));
+            command.Parameters.AddWithValue(
+                "lease_version",
+                NpgsqlDbType.Bigint,
+                leaseVersion);
+        }
+
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, identity.TenantId);
+        command.Parameters.AddWithValue(
+            "run_id_key",
+            NpgsqlDbType.Text,
+            identity.RunIdKey);
+        var exists = (bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false)
+                            ?? false);
+        if (leaseOwner is null ? exists : !exists)
+        {
+            throw new ReportingRunCreateClaimException(
+                identity.TenantId,
+                identity.RunId,
+                leaseOwner is null
+                    ? "The reporting run identity has an active durable create owner."
+                    : "The reporting run create lease is missing, expired, or was superseded by another owner.");
+        }
+    }
+
+    private async Task DeleteCreateClaimAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingRunIdentity identity,
+        string? leaseOwner,
+        long leaseVersion,
+        CancellationToken ct)
+    {
+        if (leaseOwner is null)
+        {
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            delete from {_runClaimTable}
+            where tenant_id = @tenant_id
+              and run_id_key = @run_id_key
+              and lease_owner = @lease_owner
+              and lease_version = @lease_version;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, identity.TenantId);
+        command.Parameters.AddWithValue("run_id_key", NpgsqlDbType.Text, identity.RunIdKey);
+        command.Parameters.AddWithValue("lease_owner", NpgsqlDbType.Text, leaseOwner);
+        command.Parameters.AddWithValue("lease_version", NpgsqlDbType.Bigint, leaseVersion);
+        if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+        {
+            throw new ReportingRunCreateClaimException(
+                identity.TenantId,
+                identity.RunId,
+                "The reporting run create lease could not be completed by its fenced owner.");
+        }
     }
 
     private async Task<StoredRunState?> ReadCurrentStateAsync(

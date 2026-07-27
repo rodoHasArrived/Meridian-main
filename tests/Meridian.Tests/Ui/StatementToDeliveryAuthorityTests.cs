@@ -5,25 +5,38 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Ledger;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Reporting;
 using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace Meridian.Tests.Ui;
 
 /// <summary>
-/// Guards the downstream month-end close authority scenario where a clean, independently approved
-/// Operations Continuity close remains correlated through final ClientPackage release and externally
-/// verified distribution receipts.
+/// Guards the authoritative month-end statement-to-delivery scenario where retained statement
+/// intake starts the existing Operations Continuity workflow and that same workflow remains
+/// correlated through close, certified ClientPackage release, and verified delivery receipts.
 /// </summary>
 [Trait("Category", "Scenario")]
 public sealed class StatementToDeliveryAuthorityTests
 {
+    private const string StatementRunId = "statement-run-june-2026";
+    private const string StatementBreakId = "statement-break-june-2026";
+    private const string StatementCaseId = "case:statement-break-june-2026";
     private static readonly DateTimeOffset ReportingNow =
         new(2026, 7, 31, 18, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly AsOfDate = new(2026, 6, 30);
@@ -31,6 +44,8 @@ public sealed class StatementToDeliveryAuthorityTests
         Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid AccountingPeriodId =
         Guid.Parse("44444444-4444-4444-4444-444444444444");
+    private static readonly Guid FundProfileId =
+        Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     [Fact]
     public async Task Scenario_MonthEndClose_CertifiedClientPackageReleasesAndRetainsDeliveryReceipt()
@@ -39,21 +54,117 @@ public sealed class StatementToDeliveryAuthorityTests
         var ct = timeout.Token;
         var fundAccountId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
+        using var statementIntake = await StartStatementWorkflowAsync(fundAccountId, ct);
+        statementIntake.Execution.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        statementIntake.Execution.Workflow.EvidenceVaultIdentity.Should().NotBeNull();
+        statementIntake.Execution.Workflow.AccountingScope.Should().BeEquivalentTo(
+            new StatementAccountingScope(
+                FundProfileId.ToString("D"),
+                LedgerBookId,
+                AccountingPeriodId,
+                AsOfDate));
+        statementIntake.Execution.Workflow.OperationsWorkflowId.Should().NotBeNull();
+        statementIntake.Execution.Workflow.RetainedArtifacts.Should().BeEmpty(
+            "the statement reconciliation report cannot render before its exact casework handoff completes");
+        var importedOperations = await statementIntake.Operations.GetAsync(
+            statementIntake.Execution.Workflow.OperationsWorkflowId!.Value,
+            ct);
+        importedOperations.Should().NotBeNull();
+        importedOperations!.BrokerIntakeState.Should().Be(OperationsBrokerIntakeStateDto.Imported);
+
+        var queuedCase = (await statementIntake.Queue.GetAllAsync(ct: ct))
+            .Should().ContainSingle("one retained statement variance requires governed casework")
+            .Which;
+        var assigned = await statementIntake.Casework.ApplyAsync(
+            CaseworkCommand(queuedCase, ReconciliationCaseworkAction.Assign, "assign") with
+            {
+                Assignee = "fund-ops"
+            },
+            ct);
+        assigned.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        var investigating = await statementIntake.Casework.ApplyAsync(
+            CaseworkCommand(
+                assigned.Item!,
+                ReconciliationCaseworkAction.TransitionStatus,
+                "investigate") with
+            {
+                Status = ReconciliationCaseLifecycleState.Investigating
+            },
+            ct);
+        investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        var resolvedCase = await statementIntake.Casework.ApplyAsync(
+            CaseworkCommand(
+                investigating.Item!,
+                ReconciliationCaseworkAction.Resolve,
+                "resolve") with
+            {
+                RootCauseCode = "BrokerCashTiming",
+                ResolutionCode = "LedgerAdjusted",
+                Note = "Corrected the statement timing difference with retained ledger evidence.",
+                EvidenceLinks = (investigating.Item!.EvidenceLinks ?? [])
+                    .Append("ledger-event:statement-june-2026-adjustment")
+                    .ToArray(),
+                ApprovalActor = "fund-controller",
+                ApprovalReference = "approval://statement-june-2026"
+            },
+            ct);
+        resolvedCase.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        resolvedCase.Item.Should().NotBeNull();
+        resolvedCase.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Resolved);
+        StatementCaseworkHandoffObligation.HasPending(resolvedCase.Item).Should().BeFalse();
+        StatementCaseworkHandoffObligation.HasCompleted(resolvedCase.Item).Should().BeTrue();
+        (await statementIntake.Operations.GetTimelineAsync(
+                statementIntake.Execution.Workflow.OperationsWorkflowId.Value,
+                ct))
+            .SelectMany(static entry => entry.References)
+            .Should().ContainSingle(reference =>
+                reference.Source == "statement-reconciliation-casework");
+
+        var reconciledStatement = await statementIntake.Workflow.ResumeAsync(
+            statementIntake.Execution.Workflow.WorkflowId,
+            "tenant-alpha",
+            "company-alpha",
+            ct);
+        reconciledStatement.Should().NotBeNull();
+        reconciledStatement!.Workflow.Status.Should().Be(
+            StatementReconciliationReportWorkflowStatusDto.Completed);
+        reconciledStatement.Workflow.OperationsWorkflowId.Should().Be(
+            statementIntake.Execution.Workflow.OperationsWorkflowId);
+        reconciledStatement.Workflow.RetainedArtifacts.Should().HaveCount(2,
+            "the existing statement reconciliation report workflow owns the retained intake report");
+
         var (closedWorkflow, closeAudit) = await CloseOperationsWorkflowAsync(
+            statementIntake.Operations,
+            statementIntake.AuditStore,
+            statementIntake.Execution.Workflow.OperationsWorkflowId.Value,
             fundAccountId,
             ct);
+        closedWorkflow.WorkflowId.Should().Be(
+            statementIntake.Execution.Workflow.OperationsWorkflowId.Value,
+            "posting, close, certification, and delivery must continue the workflow started by statement intake");
         var closeCompletion = BuildCloseCompletion(closedWorkflow, closeAudit);
 
         var authoritativeSource = new ScenarioAuthoritativeSource(
-            fundAccountId,
+            FundProfileId,
             LedgerBookId,
             AccountingPeriodId);
         var evidenceStore = new InMemoryReportingReconciliationEvidenceStore();
         var evidenceRetention = new ReportingReconciliationEvidenceRetentionService(
             evidenceStore,
             authoritativeSource);
-        var reportingParameters = Parameters(fundAccountId);
+        var reportingParameters = Parameters(FundProfileId);
         var makerAccess = Access("report-maker");
+        var retainedBreakEvidence =
+            AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+                await statementIntake.Queue.GetAllAsync(ct: ct),
+                FundProfileId.ToString("D"),
+                LedgerBookId,
+                AccountingPeriodId,
+                AsOfDate,
+                expectedOpenBreakCount: 0);
+        retainedBreakEvidence.Should().ContainSingle(item =>
+            item.Disposition == ReconciliationBreakDispositionDto.Resolved);
         var retainedClose = await evidenceRetention.RetainCompletionAsync(
             reportingParameters,
             makerAccess,
@@ -72,14 +183,13 @@ public sealed class StatementToDeliveryAuthorityTests
                 [
                     $"operations-workflow:{closedWorkflow.WorkflowId:D}"
                 ],
-                BreakEvidence: [],
+                BreakEvidence: retainedBreakEvidence,
                 CloseWorkflowCompletion: closeCompletion),
             ct);
 
-        var breakQueue = new EmptyReconciliationBreakQueueRepository();
         var certification = new ReportingRunCertificationService(
             authoritativeSource,
-            new ReportingReconciliationEvidenceSource(evidenceStore, breakQueue));
+            new ReportingReconciliationEvidenceSource(evidenceStore, statementIntake.Queue));
         var template = Template();
         var certified = await certification.CertifyAsync(
             template,
@@ -89,6 +199,10 @@ public sealed class StatementToDeliveryAuthorityTests
 
         certified.Snapshot.ReconciliationCheckpointId
             .Should().Be(retainedClose.ReconciliationCheckpointId);
+        certified.Snapshot.RequiresCertifiedLedgerPresentation.Should().BeTrue(
+            "the authoritative client package must reuse the checkpoint-bound partners-capital presentation");
+        certified.AuthoritativeSource.EvidenceIds.Should().ContainSingle(static evidence =>
+            evidence.StartsWith("ledger-report-pack:", StringComparison.Ordinal));
         certified.Readiness.Checks
             .Single(check => check.CheckId == "exact-reconciliation-evidence")
             .EvidenceReferences.Should().Contain(
@@ -126,7 +240,8 @@ public sealed class StatementToDeliveryAuthorityTests
             orchestration,
             artifactVault,
             new DeterministicReportingCertifiedArtifactProducer(
-                new DocumentsReportingPrimaryDocumentRenderer()),
+                new DocumentsReportingPrimaryDocumentRenderer(),
+                authoritativeSource),
             new ReportingArtifactRetentionAuthorityProvider(),
             new GovernedReportingRestatementChangedLineResolver(),
             new UnusedRestatementCertificationInputProvider());
@@ -156,6 +271,8 @@ public sealed class StatementToDeliveryAuthorityTests
         governed.Approval!.Authority.ActorId.Should().Be("fund-controller");
         governed.Release!.Authority.ActorId.Should().Be("client-report-releaser");
         governed.Release.Authority.ActorId.Should().NotBe(governed.Approval.Authority.ActorId);
+        authoritativeSource.PresentationResolveCount.Should().BeGreaterThan(0,
+            "PDF/XLSX production must resolve the exact certified partners-capital report pack");
         ReportingGovernanceAuditChain.Verify(governed.AuditTrail).Should().BeTrue();
         governed.Release.EvidenceIds.Should().Contain(
         [
@@ -311,51 +428,331 @@ public sealed class StatementToDeliveryAuthorityTests
             $"operations-close-audit:{closeCompletion.CloseAuditEventId}:{closeCompletion.CloseAuditHash}");
     }
 
+    private static async Task<StatementChainFixture> StartStatementWorkflowAsync(
+        Guid fundAccountId,
+        CancellationToken ct)
+    {
+        var dataRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-to-delivery-authority",
+            Guid.NewGuid().ToString("N"));
+        var accounts = new Mock<IAccountQueryService>(MockBehavior.Strict);
+        accounts
+            .Setup(service => service.GetAccountAsync(
+                fundAccountId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AccountSummaryDto(
+                fundAccountId,
+                AccountTypeDto.Custody,
+                EntityId: null,
+                FundId: FundProfileId,
+                SleeveId: null,
+                VehicleId: null,
+                AccountCode: "CUSTODY-7842",
+                DisplayName: "Northstar operating custody",
+                BaseCurrency: "USD",
+                Institution: "Northstar Custody",
+                IsActive: true,
+                EffectiveFrom: ReportingNow.AddYears(-1),
+                EffectiveTo: null,
+                PortfolioId: null,
+                LedgerReference: null,
+                StrategyId: null,
+                RunId: null));
+        var tenancy = new Mock<IFundProfileTenancyRegistry>(MockBehavior.Strict);
+        tenancy
+            .Setup(registry => registry.ResolveAsync(
+                FundProfileId.ToString("D"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FundProfileOwnership(
+                FundProfileId.ToString("D"),
+                "tenant-alpha",
+                "company-alpha"));
+        var ledgerBooks = new Mock<ILedgerBookService>(MockBehavior.Strict);
+        ledgerBooks
+            .Setup(service => service.ListBooksAsync(
+                It.IsAny<LedgerBookQuery>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new LedgerBookDto(
+                    LedgerBookId,
+                    FundProfileId.ToString("D"),
+                    FundProfileId,
+                    FundStructureNodeKindDto.Fund,
+                    "Primary reporting book",
+                    "USD",
+                    ReportingNow.AddYears(-1),
+                    ReportingNow.AddDays(-1),
+                    AccountingBasis: AccountingBasisKindDto.Primary)
+            ]);
+        ledgerBooks
+            .Setup(service => service.ListPeriodsAsync(
+                It.IsAny<LedgerPeriodQuery>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+            [
+                new LedgerPeriodDto(
+                    AccountingPeriodId,
+                    LedgerBookId,
+                    FiscalYear: 2026,
+                    PeriodNo: 6,
+                    Label: "2026-06",
+                    StartDate: new DateOnly(2026, 6, 1),
+                    EndDate: AsOfDate,
+                    Status: LedgerPeriodStatusDto.Open,
+                    OpenedAt: ReportingNow.AddMonths(-1),
+                    ClosedAt: null,
+                    Version: 1)
+            ]);
+
+        var importResult = CleanStatementImportResult();
+        var statementRun = CleanStatementRun(fundAccountId);
+        var statementBreakStore = new JsonReconciliationBreakStore(dataRoot);
+        var statementCaseStore = new JsonReconciliationCaseStore(dataRoot);
+        await statementBreakStore.WriteAsync(statementRun.Breaks, ct);
+        foreach (var statementCase in statementRun.Cases)
+        {
+            await statementCaseStore.SaveAsync(statementCase, ct);
+        }
+        var statementRuns = new ScenarioStatementRunWorkflowService(
+            statementRun.Import,
+            statementBreakStore,
+            statementCaseStore);
+        var reconciliation = new Mock<IReconciliationApiService>(MockBehavior.Strict);
+        reconciliation
+            .Setup(service => service.ListOpenStatementBreaksAsync(
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([StatementBreak()]);
+
+        var derivation = new OperationsStatusDerivationService();
+        var auditStore = new InMemoryOperationsWorkflowAuditStore();
+        var journalStore = new RecordingLedgerJournalStore(
+            FundProfileId,
+            LedgerBookId,
+            AccountingPeriodId);
+        var operations = new OperationsContinuityWorkflowService(
+            new InMemoryOperationsContinuityRepository(derivation),
+            auditStore,
+            derivation,
+            journalStore);
+        var queue = new FileReconciliationBreakQueueRepository(
+            Path.Combine(dataRoot, "reconciliation-casework"),
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var authority = new StatementReconciliationIntakeAuthority(
+            accounts.Object,
+            tenancy.Object,
+            ledgerBooks.Object,
+            operations,
+            statementRuns,
+            reconciliation.Object,
+            queue);
+        var casework = new StatementReconciliationCaseworkHandoffService(
+            queue,
+            statementBreakStore,
+            statementCaseStore,
+            statementRuns,
+            operations,
+            journalStore);
+        var workflow = new StatementReconciliationReportWorkflowService(
+            new CleanStatementImportService(importResult),
+            new CleanStatementEvidenceRetainer(),
+            statementRuns,
+            dataRoot,
+            NullLogger<StatementReconciliationReportWorkflowService>.Instance,
+            queue,
+            authority);
+        var execution = await workflow.StartAsync(
+            new StatementReconciliationReportStartCommand(
+                new StatementImportCommitRequest(
+                    new StatementSourceDocument(
+                        "northstar-june-2026.csv",
+                        "account,currency,amount,bookAmount\nCUSTODY-7842,USD,125000,125000"u8
+                            .ToArray()),
+                    ConnectorId: "csv",
+                    SourceKind: "custodian",
+                    SourceInstitution: "Northstar Custody",
+                    FundAccountId: fundAccountId.ToString("D"),
+                    ExternalAccountId: "CUSTODY-7842",
+                    PeriodStart: new DateOnly(2026, 6, 1),
+                    PeriodEnd: AsOfDate,
+                    ToleranceProfileId: "month-end-cash",
+                    ImportedBy: "statement-operations"),
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha"),
+            ct);
+        return new StatementChainFixture(
+            dataRoot,
+            execution,
+            workflow,
+            casework,
+            operations,
+            auditStore,
+            queue);
+    }
+
+    private static StatementImportCommitResultDto CleanStatementImportResult()
+        => new(
+            RunId: StatementRunId,
+            Duplicate: false,
+            RecordCount: 1,
+            KindSummaries: [new StatementKindSummaryDto("Cash", 1, [])],
+            BreakCount: 1,
+            CaseCount: 1,
+            RetainedSourcePath: "reconciliation/statements/northstar-june-2026.csv",
+            RetainedCanonicalPath: "reconciliation/statements/northstar-june-2026.canonical.json",
+            Status: "ReviewRequired",
+            NextAction: "Resolve the retained statement reconciliation case.")
+        {
+            BreakIds = [StatementBreakId],
+            CaseIds = [StatementCaseId],
+            ReconciliationCaseLinks =
+            [
+                new StatementImportReconciliationCaseLinkDto(
+                    StatementCaseId,
+                    StatementBreakId,
+                    $"/api/workstation/reconciliation/cases/{StatementCaseId}",
+                    "June cash timing review",
+                    "Open",
+                    "High",
+                    "Statement cash differs from the retained ledger activity.",
+                    "Review the retained statement and ledger evidence.")
+            ]
+        };
+
+    private static StatementRunWorkflowResult CleanStatementRun(Guid fundAccountId)
+        => new(
+            new CanonicalStatementImport(
+                StatementRunId,
+                "Northstar Custody",
+                AsOfDate,
+                ReportingNow,
+                "reconciliation/statements/northstar-june-2026.csv",
+                new string('a', 64),
+                RawRowCount: 1,
+                NormalizedRowCount: 1)
+            {
+                SourceInstitution = "Northstar Custody",
+                FundAccountId = fundAccountId.ToString("D"),
+                ExternalAccountId = "CUSTODY-7842",
+                StatementPeriodStart = new DateOnly(2026, 6, 1),
+                StatementPeriodEnd = AsOfDate,
+                OriginalFileName = "northstar-june-2026.csv",
+                ImportedBy = "statement-operations",
+                AccountingScope = new StatementAccountingScope(
+                    FundProfileId.ToString("D"),
+                    LedgerBookId,
+                    AccountingPeriodId,
+                    AsOfDate)
+            },
+            Breaks:
+            [
+                new ReconciliationBreakRecord(
+                    StatementBreakId,
+                    StatementRunId,
+                    StatementRunId,
+                    $"{StatementRunId}:1",
+                    "AMOUNT_MISMATCH",
+                    "cash",
+                    100m,
+                    1m,
+                    ToleranceBreached: true,
+                    ReportingNow.AddMinutes(-45),
+                    "Open")
+                {
+                    EvidenceLink =
+                        $"/api/workstation/reconciliation/statement-runs/{StatementRunId}#row-1"
+                }
+            ],
+            Cases:
+            [
+                new ReconciliationCase(
+                    StatementCaseId,
+                    StatementRunId,
+                    "Open",
+                    "Statement cash differs from the retained ledger activity.",
+                    0.5m,
+                    "Manual review is required before accounting close.",
+                    ReportingNow.AddMinutes(-44),
+                    [])
+                {
+                    Owner = "fund-ops",
+                    Priority = "High",
+                    LastUpdatedAtUtc = ReportingNow.AddMinutes(-44),
+                    LastUpdatedBy = "statement-operations",
+                    Disposition = "NeedsInvestigation",
+                    EvidenceReferences =
+                    [
+                        $"/api/workstation/reconciliation/statement-runs/{StatementRunId}#row-1"
+                    ]
+                }
+            ]);
+
+    private static StatementBreakDto StatementBreak() => new(
+        StatementBreakId,
+        StatementBreakType.CashBalanceMismatch,
+        StatementValidationSeverity.Error,
+        Meridian.Contracts.Workstation.StatementMatchTier.Unmatched,
+        $"{StatementRunId}:1",
+        "Statement cash differs from the retained ledger activity.",
+        StatementAmount: 125_000m,
+        BookAmount: 124_900m,
+        Delta: 100m,
+        Tolerance: 1m,
+        Currency: "USD",
+        CreatedAtUtc: ReportingNow.AddMinutes(-45),
+        Status: "Open",
+        InternalReference: StatementRunId,
+        Owner: "fund-ops",
+        LastObservedAtUtc: ReportingNow.AddMinutes(-40),
+        RecommendedAction: "ReviewAndResolve",
+        EvidenceLink:
+            $"/api/workstation/reconciliation/statement-runs/{StatementRunId}#row-1");
+
+    private static ReconciliationCaseworkCommand CaseworkCommand(
+        ReconciliationBreakQueueItem item,
+        ReconciliationCaseworkAction action,
+        string step) =>
+        new(
+            item.BreakId,
+            action,
+            "fund-ops",
+            $"statement-delivery-{step}",
+            $"statement-delivery:{StatementRunId}",
+            "statement-to-delivery-authority-scenario",
+            item.Version,
+            Reason: "Retain reviewed statement reconciliation evidence.",
+            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+
     private static async Task<(OperationsContinuityWorkflowDto Workflow, OperationsWorkflowAuditDto CloseAudit)>
         CloseOperationsWorkflowAsync(
+            OperationsContinuityWorkflowService service,
+            InMemoryOperationsWorkflowAuditStore auditStore,
+            Guid workflowId,
             Guid fundAccountId,
             CancellationToken ct)
     {
-        var derivation = new OperationsStatusDerivationService();
-        var repository = new InMemoryOperationsContinuityRepository(derivation);
-        var auditStore = new InMemoryOperationsWorkflowAuditStore();
-        var service = new OperationsContinuityWorkflowService(
-            repository,
-            auditStore,
-            derivation,
-            new RecordingLedgerJournalStore());
-
-        var started = await service.StartWorkflowAsync(
-            new OperationsStartWorkflowRequestDto(
-                fundAccountId,
-                AccountingPeriodId.ToString("D"),
-                LedgerBookId,
-                "custodian-statement",
-                "statement-operations"),
-            ct);
-        var imported = await service.ImportBrokerDataAsync(
-            started.Workflow!.WorkflowId,
-            new OperationsTransitionRequestDto(
-                started.Workflow.Version,
-                "statement-operations",
-                "Retained June custodian statement."),
-            ct);
+        var imported = await service.GetAsync(workflowId, ct)
+            ?? throw new InvalidOperationException(
+                "Statement intake did not retain its Operations Continuity workflow.");
+        imported.FundAccountId.Should().Be(fundAccountId);
+        imported.BrokerIntakeState.Should().Be(OperationsBrokerIntakeStateDto.Imported);
         var normalized = await service.NormalizeBrokerTransactionsAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsTransitionRequestDto(
-                imported.Workflow!.Version,
+                imported.Version,
                 "statement-operations",
                 "Normalized retained statement activity."),
             ct);
         var mapped = await service.ResolveSecurityMasterMappingsAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsSecurityMasterResolveRequestDto(
                 normalized.Workflow!.Version,
                 "statement-operations",
                 "Resolved all statement securities."),
             ct);
         var drafted = await service.BuildLedgerDraftAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsLedgerDraftRequestDto(
                 mapped.Workflow!.Version,
                 "statement-operations",
@@ -364,7 +761,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 Rationale: "Built balanced statement-derived journal preview."),
             ct);
         var validated = await service.ValidateLedgerDraftAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsLedgerValidationRequestDto(
                 drafted.Workflow!.Version,
                 "statement-operations",
@@ -373,7 +770,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 Rationale: "Validated statement-derived journals before posting."),
             ct);
         var posted = await service.PostLedgerEntriesAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsLedgerPostRequestDto(
                 validated.Workflow!.Version,
                 "statement-operations",
@@ -384,7 +781,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 JournalCandidate: JournalCandidate(fundAccountId)),
             ct);
         var reconciled = await service.RunReconciliationAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsReconciliationRunRequestDto(
                 posted.Workflow!.Version,
                 "statement-operations",
@@ -392,7 +789,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 BreakCases: []),
             ct);
         var posture = await service.RefreshGatePostureAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsGatePostureRequestDto(
                 reconciled.Workflow!.Version,
                 "statement-operations",
@@ -401,7 +798,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 Rationale: "Close support package is ready for controller review."),
             ct);
         var submitted = await service.SubmitForApprovalAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsSubmitApprovalRequestDto(
                 posture.Workflow!.Version,
                 "statement-operations",
@@ -411,7 +808,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 ChecklistControlApprovals: RequiredChecklistControlApprovals()),
             ct);
         var approved = await service.ApproveWorkflowAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version,
                 "fund-controller",
@@ -421,7 +818,7 @@ public sealed class StatementToDeliveryAuthorityTests
                 ChecklistControlApprovals: RequiredChecklistControlApprovals()),
             ct);
         var closed = await service.CloseWorkflowAsync(
-            started.Workflow.WorkflowId,
+            workflowId,
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version,
                 "statement-operations",
@@ -471,11 +868,11 @@ public sealed class StatementToDeliveryAuthorityTests
     }
 
     private static ReportingTemplateMetadata Template() => new(
-        "month-end-client-package",
-        ReportingTemplateFamily.CustomReport,
-        "Month-end client package",
+        "capital-account-statement",
+        ReportingTemplateFamily.CapitalAccountStatement,
+        "Month-end capital account statement",
         "1.0.0",
-        ["detail"],
+        ["cover", "capital-balance", "flows", "allocation"],
         ImmutableDictionary<string, string>.Empty,
         ReportWriterGrids: [],
         AccessPolicy: new ReportAccessPolicyDto(
@@ -489,8 +886,8 @@ public sealed class StatementToDeliveryAuthorityTests
             ],
             CompanyId: "company-alpha"));
 
-    private static ReportingRunParametersDto Parameters(Guid fundAccountId) => new(
-        new ReportingRunScopeDto(fundAccountId.ToString("D")),
+    private static ReportingRunParametersDto Parameters(Guid fundProfileId) => new(
+        new ReportingRunScopeDto(fundProfileId.ToString("D")),
         AccountingPeriodId.ToString("D"),
         AsOfDate,
         new ReportingLedgerBookSelectionDto(LedgerBookId),
@@ -505,7 +902,7 @@ public sealed class StatementToDeliveryAuthorityTests
     private static ReportingRunReadinessDto Readiness(ReportingRunParametersDto parameters) => new(
         "month-end-client-package-readiness",
         ReportingNow.AddMinutes(-20),
-        new VersionedReportTemplateIdDto("month-end-client-package", 1),
+        new VersionedReportTemplateIdDto("capital-account-statement", 1),
         parameters,
         ReportingRunReadinessStatusDto.Ready,
         CanGenerateDraft: true,
@@ -612,17 +1009,56 @@ public sealed class StatementToDeliveryAuthorityTests
         Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     private sealed class ScenarioAuthoritativeSource(
-        Guid fundAccountId,
+        Guid fundProfileId,
         Guid ledgerBookId,
-        Guid accountingPeriodId) : IReportingAuthoritativeSource
+        Guid accountingPeriodId) :
+        IReportingAuthoritativeSource,
+        IReportingCertifiedLedgerPresentationSource
     {
+        private LedgerFinancialReportPack? _canonicalReportPack;
+        private ReportingCertifiedLedgerPresentationInput? _presentation;
+
+        public int PresentationResolveCount { get; private set; }
+
         public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
             ReportingRunParametersDto parameters,
             ReportAccessQueryContext accessContext,
+            CancellationToken cancellationToken = default) =>
+            CaptureCore(parameters, accessContext, includeLedgerPresentation: false, cancellationToken);
+
+        public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            ReportAccessQueryContext accessContext,
+            ReportingAuthoritativeSourceCaptureIntent intent,
             CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(intent);
+            return CaptureCore(
+                parameters,
+                accessContext,
+                intent.RequiresCertifiedLedgerPresentation
+                    && parameters.OutputFormat == ReportingOutputFormatDto.ClientPackage,
+                cancellationToken);
+        }
+
+        public ValueTask<ReportingCertifiedLedgerPresentationInput?> ResolveExactAsync(
+            ReportingOutputManifest manifest,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(manifest);
             cancellationToken.ThrowIfCancellationRequested();
-            parameters.Scope.FundProfileId.Should().Be(fundAccountId.ToString("D"));
+            PresentationResolveCount++;
+            return ValueTask.FromResult(_presentation);
+        }
+
+        private ValueTask<ReportingAuthoritativeSourceCapture> CaptureCore(
+            ReportingRunParametersDto parameters,
+            ReportAccessQueryContext accessContext,
+            bool includeLedgerPresentation,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            parameters.Scope.FundProfileId.Should().Be(fundProfileId.ToString("D"));
             parameters.LedgerBook.LedgerBookId.Should().Be(ledgerBookId);
             parameters.PeriodId.Should().Be(accountingPeriodId.ToString("D"));
             accessContext.TenantId.Should().Be("tenant-alpha");
@@ -639,13 +1075,23 @@ public sealed class StatementToDeliveryAuthorityTests
             const string checkpointId = "ledger-checkpoint-month-end-june-2026";
             var checkpointHash = HashBytes(
                 Encoding.UTF8.GetBytes("ledger-checkpoint-month-end-june-2026"));
+            var reportPack = includeLedgerPresentation
+                ? _canonicalReportPack ??= BuildCanonicalCapitalReportPack()
+                : null;
+            var evidenceIds = ImmutableArray.CreateBuilder<string>();
+            evidenceIds.Add($"reporting-source-checkpoint:{checkpointId}:{checkpointHash}");
+            if (reportPack is not null)
+            {
+                evidenceIds.Add(
+                    $"ledger-report-pack:{reportPack.Request.ReportId}:{reportPack.Signature.PayloadChecksumSha256}");
+            }
             var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
                 "durable-ledger-journal",
                 $"ledger:{ledgerBookId:D}:{accountingPeriodId:D}",
                 "tenant-alpha",
                 "organization-alpha",
                 "company-alpha",
-                fundAccountId.ToString("D"),
+                fundProfileId.ToString("D"),
                 ledgerBookId.ToString("D"),
                 accountingPeriodId.ToString("D"),
                 "Gaap",
@@ -659,8 +1105,47 @@ public sealed class StatementToDeliveryAuthorityTests
                 checkpointId,
                 checkpointHash,
                 ReportingNow.AddMinutes(-10),
-                [$"reporting-source-checkpoint:{checkpointId}:{checkpointHash}"]);
-            return ValueTask.FromResult(new ReportingAuthoritativeSourceCapture(checkpoint, rows));
+                evidenceIds.ToImmutable());
+            _presentation = reportPack is null
+                ? null
+                : new ReportingCertifiedLedgerPresentationInput(
+                    checkpointId,
+                    checkpointHash,
+                    DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(rows),
+                    reportPack);
+            return ValueTask.FromResult(
+                new ReportingAuthoritativeSourceCapture(checkpoint, rows, _presentation));
+        }
+
+        private LedgerFinancialReportPack BuildCanonicalCapitalReportPack()
+        {
+            var ledger = new Meridian.Ledger.Ledger();
+            ledger.PostLines(
+                new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
+                "opening capital",
+                [
+                    (LedgerAccounts.Cash, 1_000_000m, 0m),
+                    (LedgerAccounts.InvestorCapitalFor("client-investor"), 0m, 1_000_000m)
+                ]);
+            ledger.PostLines(
+                new DateTimeOffset(2026, 6, 5, 12, 0, 0, TimeSpan.Zero),
+                "period capital contribution",
+                [
+                    (LedgerAccounts.Cash, 250_000m, 0m),
+                    (LedgerAccounts.InvestorCapitalFor("client-investor"), 0m, 250_000m)
+                ]);
+            return LedgerReportPackBuilder.Build(
+                ledger,
+                new LedgerReportPackRequest(
+                    "statement-delivery-capital-account",
+                    fundProfileId.ToString("D"),
+                    accountingPeriodId.ToString("D"),
+                    new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    "USD",
+                    "report-maker",
+                    ReportingNow));
         }
     }
 
@@ -1056,6 +1541,117 @@ public sealed class StatementToDeliveryAuthorityTests
         }
     }
 
+    private sealed class StatementChainFixture(
+        string dataRoot,
+        StatementReconciliationReportWorkflowExecution execution,
+        StatementReconciliationReportWorkflowService workflow,
+        StatementReconciliationCaseworkHandoffService casework,
+        OperationsContinuityWorkflowService operations,
+        InMemoryOperationsWorkflowAuditStore auditStore,
+        FileReconciliationBreakQueueRepository queue) : IDisposable
+    {
+        public StatementReconciliationReportWorkflowExecution Execution { get; } = execution;
+        public StatementReconciliationReportWorkflowService Workflow { get; } = workflow;
+        public StatementReconciliationCaseworkHandoffService Casework { get; } = casework;
+        public OperationsContinuityWorkflowService Operations { get; } = operations;
+        public InMemoryOperationsWorkflowAuditStore AuditStore { get; } = auditStore;
+        public FileReconciliationBreakQueueRepository Queue { get; } = queue;
+
+        public void Dispose()
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    private sealed class ScenarioStatementRunWorkflowService(
+        CanonicalStatementImport import,
+        IReconciliationBreakStore breakStore,
+        IReconciliationCaseStore caseStore) : IStatementRunWorkflowService
+    {
+        public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([import]);
+        }
+
+        public Task<StatementRunWorkflowResult> CreateAsync(
+            StatementRunRequest request,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public async Task<StatementRunWorkflowResult?> GetAsync(
+            string runId,
+            CancellationToken cancellationToken = default)
+        {
+            if (!string.Equals(runId, import.ImportId, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return new StatementRunWorkflowResult(
+                import,
+                await breakStore.ListOpenAsync(cancellationToken),
+                await caseStore.ListAsync(cancellationToken));
+        }
+
+        public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenBreaksAsync(
+            CancellationToken cancellationToken = default) =>
+            breakStore.ListOpenAsync(cancellationToken);
+
+        public Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(
+            CancellationToken cancellationToken = default) =>
+            caseStore.ListAsync(cancellationToken);
+    }
+
+    private sealed class CleanStatementImportService(StatementImportCommitResultDto result)
+        : IStatementImportCommitService
+    {
+        public Task<StatementImportCommitResultDto> CommitAsync(
+            StatementImportCommitRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            request.AccountingScope.Should().Be(new StatementAccountingScope(
+                FundProfileId.ToString("D"),
+                LedgerBookId,
+                AccountingPeriodId,
+                AsOfDate));
+            return Task.FromResult(result);
+        }
+
+        public Task<StatementImportValidationResult> ValidateAsync(
+            StatementSourceDocument document,
+            string? connectorId,
+            CancellationToken ct = default)
+            => Task.FromResult(new StatementImportValidationResult(true, 1, []));
+    }
+
+    private sealed class CleanStatementEvidenceRetainer : IStatementImportEvidenceRetainer
+    {
+        public Task<StatementImportCommitResultDto> RetainAsync(
+            StatementImportCommitResultDto result,
+            StatementImportEvidenceBridgeRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(result with
+            {
+                EvidenceVaultIdentity = new EvidenceVaultIdentityDto(
+                    "statement-vault-june-2026",
+                    "statement-run",
+                    result.RunId,
+                    "evidence/statement-vault-june-2026/manifest.json",
+                    "/api/workstation/evidence/statement-vault-june-2026",
+                    ReportingNow,
+                    new string('b', 64),
+                    SchemaVersion: 1,
+                    StorageKind: "File")
+            });
+        }
+    }
+
     private sealed class EmptyReconciliationBreakQueueRepository :
         IReconciliationBreakQueueRepository
     {
@@ -1100,7 +1696,10 @@ public sealed class StatementToDeliveryAuthorityTests
             Task.FromResult<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>([]);
     }
 
-    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    private sealed class RecordingLedgerJournalStore(
+        Guid authoritativeFundProfileId,
+        Guid authoritativeLedgerBookId,
+        Guid authoritativeAccountingPeriodId) : ILedgerJournalStore
     {
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
@@ -1123,7 +1722,21 @@ public sealed class StatementToDeliveryAuthorityTests
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(
             Guid periodId,
             CancellationToken ct = default) =>
-            Task.FromResult<LedgerAccountingPeriod?>(null);
+            Task.FromResult<LedgerAccountingPeriod?>(
+                periodId == authoritativeAccountingPeriodId
+                    ? new LedgerAccountingPeriod(
+                        authoritativeAccountingPeriodId,
+                        authoritativeLedgerBookId,
+                        2026,
+                        6,
+                        "2026-06",
+                        new DateOnly(2026, 6, 1),
+                        AsOfDate,
+                        "Open",
+                        ReportingNow.AddMonths(-1),
+                        ClosedAt: null,
+                        Version: 1)
+                    : null);
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
             Guid? ledgerBookId = null,
@@ -1131,7 +1744,24 @@ public sealed class StatementToDeliveryAuthorityTests
             string? fundProfileId = null,
             Guid? fundStructureNodeId = null,
             CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(
+                !ledgerBookId.HasValue || ledgerBookId.Value == authoritativeLedgerBookId
+                    ?
+                    [
+                        new LedgerAccountingPeriod(
+                            authoritativeAccountingPeriodId,
+                            authoritativeLedgerBookId,
+                            2026,
+                            6,
+                            "2026-06",
+                            new DateOnly(2026, 6, 1),
+                            AsOfDate,
+                            "Open",
+                            ReportingNow.AddMonths(-1),
+                            ClosedAt: null,
+                            Version: 1)
+                    ]
+                    : []);
 
         public Task<LedgerAccountingPeriod> SavePeriodAsync(
             LedgerAccountingPeriod period,
@@ -1141,16 +1771,38 @@ public sealed class StatementToDeliveryAuthorityTests
             Task.FromResult(period);
 
         public Task<LedgerBookRecord?> GetLedgerBookAsync(
-            Guid ledgerBookId,
+            Guid requestedLedgerBookId,
             CancellationToken ct = default) =>
-            Task.FromResult<LedgerBookRecord?>(null);
+            Task.FromResult<LedgerBookRecord?>(
+                requestedLedgerBookId == authoritativeLedgerBookId
+                    ? new LedgerBookRecord(
+                        authoritativeLedgerBookId,
+                        authoritativeFundProfileId.ToString("D"),
+                        authoritativeFundProfileId,
+                        FundStructureNodeKindDto.Fund,
+                        "Primary statement authority book",
+                        "USD",
+                        ReportingNow.AddYears(-1),
+                        ReportingNow)
+                    : null);
 
         public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
             string? fundProfileId = null,
             Guid? fundStructureNodeId = null,
             FundStructureNodeKindDto? fundStructureNodeKind = null,
             CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+            Task.FromResult<IReadOnlyList<LedgerBookRecord>>(
+            [
+                new LedgerBookRecord(
+                    authoritativeLedgerBookId,
+                    authoritativeFundProfileId.ToString("D"),
+                    authoritativeFundProfileId,
+                    FundStructureNodeKindDto.Fund,
+                    "Primary statement authority book",
+                    "USD",
+                    ReportingNow.AddYears(-1),
+                    ReportingNow)
+            ]);
 
         public Task<LedgerBookRecord> SaveLedgerBookAsync(
             LedgerBookRecord book,

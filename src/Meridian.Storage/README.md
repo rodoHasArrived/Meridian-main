@@ -81,8 +81,11 @@ lookup paths, and evidence trails those layers rely on.
   `MERIDIAN_REPORTING_CONNECTION_STRING` with the intentional ledger-connection fallback and
   `MERIDIAN_REPORTING_SCHEMA` (default `reporting`). Migration `010_reporting_operational_state.sql`
   adds tenant-bound run snapshots and tenant/company-bound schedule snapshots with canonical JSON
-  digests and indexed identity checks. When the reporting connection is absent, UI Shared can
-  register file-backed run and schedule compatibility stores for local development, but the
+  digests and indexed identity checks. The live deployment probe also verifies the reporting
+  migration-ledger key and non-null checksum, immediate non-expression conflict/idempotency keys,
+  and the predicate-bound access-grant delivery key. When the reporting connection is absent, UI
+  Shared can register file-backed run, schedule, custom-template, starter-kit, workflow, and
+  delivery compatibility stores for local development, but production omits them and the
   independent Reporting deployment capability remains blocked; those files are not production
   recovery authority.
 - `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
@@ -402,11 +405,18 @@ backwards. Retry claims use leased skip-locked rows, while terminal provider and
 receipts append without overwriting prior evidence.
 `PostgresReportingRunStore` retains the canonical certified manifest and run audit under tenant/run
 identity, re-hashes the manifest, audit, and certified rows before returning them, and treats
-identity or digest drift as operational-state corruption. `PostgresReportingScheduleStore` retains
-the complete scoped schedule set in a serializable transaction under tenant/company/schedule
-identity and verifies each canonical payload digest on read. These operational snapshots support
-the canonical Reporting services; they do not replace governed lifecycle, artifact-vault, release,
-or delivery-receipt authority.
+identity or digest drift as operational-state corruption. Tenant/run create claims use expiring,
+version-fenced leases, and aggregate saves reject stale expected revisions so concurrent or retried
+creators cannot overwrite a newer retained run. `PostgresReportingScheduleStore` retains the
+complete scoped schedule set in a serializable transaction under tenant/company/schedule identity,
+verifies each canonical payload digest on read, and uses expiring version-fenced execution leases
+for due work. Missing, expired, or superseded leases fail closed instead of allowing duplicate
+schedule advancement. Production readiness requires these PostgreSQL stores plus the migration-010
+run-claim and schedule-lease tables/columns and every migration-owned unique/idempotency control to
+pass the live schema probe; file-backed reporting stores remain local/development compatibility
+and keep the deployment gate blocked. These operational snapshots support the canonical Reporting
+services; they do not replace governed lifecycle, artifact-vault, release, or delivery-receipt
+authority.
 
 ## Glossary
 

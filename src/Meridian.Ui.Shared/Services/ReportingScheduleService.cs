@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
@@ -40,6 +41,40 @@ internal sealed class ReportingScheduleStoreCompatibilityAdapter(
         ReportingScheduleRecordDto schedule,
         DateTimeOffset? expectedUpdatedAtUtc) =>
         _inner.Upsert(schedule, expectedUpdatedAtUtc);
+
+    public ReportingScheduleExecutionLease? TryClaimExecution(
+        ReportingScheduleRecordDto schedule,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration) =>
+        _inner.TryClaimExecution(schedule, leaseOwner, nowUtc, leaseDuration);
+
+    public ReportingScheduleExecutionLease? RenewExecutionLease(
+        ReportingScheduleRecordDto schedule,
+        ReportingScheduleExecutionLease lease,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration) =>
+        _inner.RenewExecutionLease(schedule, lease, nowUtc, leaseDuration);
+
+    public void ReleaseExecutionLease(
+        string tenantId,
+        string companyId,
+        string scheduleId,
+        ReportingScheduleExecutionLease lease) =>
+        _inner.ReleaseExecutionLease(
+            tenantId,
+            companyId,
+            scheduleId,
+            lease);
+
+    public void UpsertClaimedExecution(
+        ReportingScheduleRecordDto schedule,
+        DateTimeOffset expectedUpdatedAtUtc,
+        ReportingScheduleExecutionLease lease) =>
+        _inner.UpsertClaimedExecution(
+            schedule,
+            expectedUpdatedAtUtc,
+            lease);
 
     public bool Delete(
         string tenantId,
@@ -114,7 +149,7 @@ internal sealed class ReportingScheduleIdentityComparer : IEqualityComparer<Repo
 }
 
 #pragma warning disable CS0618
-public sealed class FileReportingScheduleStore : IReportingScheduleStore
+public sealed partial class FileReportingScheduleStore : IReportingScheduleStore, INonProductionOnlyService
 {
     private const string SchemaVersion = "meridian.reporting.schedule-store.v2";
     private const string EntrySchemaVersion = "meridian.reporting.schedule-entry.v2";
@@ -123,7 +158,6 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
         "Read-only legacy schedule. Preserve for inventory, then recapture tenant, company, template, canonical parameters, typed access, recipient, and handoff policy before activation.";
     private static readonly ConcurrentDictionary<string, object> StoreGates =
         new(StringComparer.OrdinalIgnoreCase);
-
     private readonly ReportingScheduleStoreOptions _options;
     private readonly ILogger<FileReportingScheduleStore> _logger;
     private readonly object _gate;
@@ -141,8 +175,9 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.SnapshotPath);
+        _storeKey = Path.GetFullPath(_options.SnapshotPath);
         _gate = StoreGates.GetOrAdd(
-            Path.GetFullPath(_options.SnapshotPath),
+            _storeKey,
             static _ => new object());
     }
 
@@ -1013,7 +1048,7 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
 }
 #pragma warning restore CS0618
 
-public sealed class ReportingScheduleService
+public sealed partial class ReportingScheduleService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
     private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
@@ -1044,6 +1079,33 @@ public sealed class ReportingScheduleService
         IReportingRecipientDestinationResolver? destinationResolver = null)
         : this(
             orchestrationService,
+            store,
+            deliveryService,
+            governedTemplateCatalog,
+            datasetSourceService,
+            readinessService,
+            certificationService,
+            governanceCoordinator,
+            destinationResolver,
+            deploymentReadinessService: null)
+    {
+    }
+
+    [Obsolete(
+        "Use the constructor overload accepting Meridian.Reporting.IReportingScheduleStore.")]
+    public ReportingScheduleService(
+        IReportingOrchestrationService orchestrationService,
+        IReportingScheduleStore? store,
+        ReportPackDeliveryService? deliveryService,
+        GovernedReportingTemplateCatalog? governedTemplateCatalog,
+        ReportWriterDatasetSourceService? datasetSourceService,
+        ReportingRunReadinessService? readinessService,
+        ReportingRunCertificationService? certificationService,
+        IReportingGovernanceEndpointCoordinator? governanceCoordinator,
+        IReportingRecipientDestinationResolver? destinationResolver,
+        IReportingDeploymentReadinessService? deploymentReadinessService)
+        : this(
+            orchestrationService,
             (Meridian.Reporting.IReportingScheduleStore?)store,
             deliveryService,
             governedTemplateCatalog,
@@ -1051,7 +1113,8 @@ public sealed class ReportingScheduleService
             readinessService,
             certificationService,
             governanceCoordinator,
-            destinationResolver)
+            destinationResolver,
+            deploymentReadinessService)
     {
     }
 #pragma warning restore CS0618
@@ -1066,6 +1129,31 @@ public sealed class ReportingScheduleService
         ReportingRunCertificationService? certificationService = null,
         IReportingGovernanceEndpointCoordinator? governanceCoordinator = null,
         IReportingRecipientDestinationResolver? destinationResolver = null)
+        : this(
+            orchestrationService,
+            store,
+            deliveryService,
+            governedTemplateCatalog,
+            datasetSourceService,
+            readinessService,
+            certificationService,
+            governanceCoordinator,
+            destinationResolver,
+            deploymentReadinessService: null)
+    {
+    }
+
+    public ReportingScheduleService(
+        IReportingOrchestrationService orchestrationService,
+        Meridian.Reporting.IReportingScheduleStore? store,
+        ReportPackDeliveryService? deliveryService,
+        GovernedReportingTemplateCatalog? governedTemplateCatalog,
+        ReportWriterDatasetSourceService? datasetSourceService,
+        ReportingRunReadinessService? readinessService,
+        ReportingRunCertificationService? certificationService,
+        IReportingGovernanceEndpointCoordinator? governanceCoordinator,
+        IReportingRecipientDestinationResolver? destinationResolver,
+        IReportingDeploymentReadinessService? deploymentReadinessService)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         // Kept in the signature for source compatibility while scheduled delivery is migrated to
@@ -1077,6 +1165,7 @@ public sealed class ReportingScheduleService
         _certificationService = certificationService;
         _governanceCoordinator = governanceCoordinator;
         _destinationResolver = destinationResolver ?? new RejectingReportingRecipientDestinationResolver();
+        _deploymentReadinessService = deploymentReadinessService;
         _store = store;
         foreach (var schedule in _store?.Load() ?? [])
         {
@@ -1128,6 +1217,7 @@ public sealed class ReportingScheduleService
         ReportingScheduleUpsertRequestDto request,
         ReportAccessQueryContext? accessContext)
     {
+        EnsureReportingDeploymentReady("upsert reporting schedules");
         var prepared = PrepareUpsert(
             request,
             accessContext,
@@ -1154,6 +1244,7 @@ public sealed class ReportingScheduleService
         ReportAccessQueryContext? accessContext,
         CancellationToken cancellationToken = default)
     {
+        EnsureReportingDeploymentReady("upsert reporting schedules");
         var prepared = PrepareUpsert(
             request,
             accessContext,
@@ -1255,7 +1346,7 @@ public sealed class ReportingScheduleService
                 request.NextAsOfDate,
                 request.DueAtUtc,
                 request.MaxRetries,
-                request.RequestedBy.Trim(),
+                request.RequestedBy!.Trim(),
                 request.State,
                 existing?.CreatedAtUtc ?? now,
                 existing is null
@@ -1350,6 +1441,7 @@ public sealed class ReportingScheduleService
         ReportingScheduleStateDto state,
         ReportAccessQueryContext? accessContext)
     {
+        EnsureReportingDeploymentReady("change reporting schedule state");
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         lock (_gate)
         {
@@ -1416,6 +1508,8 @@ public sealed class ReportingScheduleService
         ReportAccessQueryContext? accessContext,
         CancellationToken ct = default)
     {
+        EnsureReportingDeploymentReady("run a reporting schedule");
+        RefreshSchedulesFromStore();
         EnsureBoundContext(accessContext);
         if (accessContext?.RequireBoundScope == true
             && !string.IsNullOrWhiteSpace(requestedBy)
@@ -1433,7 +1527,32 @@ public sealed class ReportingScheduleService
 
         EnsureScheduleAccess(schedule, accessContext);
         EnsureScheduleInScope(schedule, accessContext);
-        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, accessContext, ct).ConfigureAwait(false);
+        var identity = ReportingScheduleIdentity.From(schedule);
+        var lease = TryAcquireExecutionLease(identity, schedule, DateTimeOffset.UtcNow);
+        if (lease is null)
+        {
+            throw new ReportingScheduleExecutionLeaseException(
+                schedule.TenantId ?? string.Empty,
+                schedule.CompanyId ?? string.Empty,
+                schedule.ScheduleId,
+                $"Reporting schedule '{schedule.ScheduleId}' is already executing under another durable owner.");
+        }
+
+        try
+        {
+            return await RunScheduleWithLeaseAsync(
+                    schedule,
+                    requestedBy,
+                    isDueRun: false,
+                    accessContext,
+                    lease,
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            ReleaseExecutionLease(identity, lease);
+        }
     }
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
@@ -1468,6 +1587,8 @@ public sealed class ReportingScheduleService
         bool continueAfterScheduleFailure,
         CancellationToken ct)
     {
+        EnsureReportingDeploymentReady("execute due reporting schedules");
+        RefreshSchedulesFromStore();
         KeyValuePair<ReportingScheduleIdentity, ReportingScheduleRecordDto>[] dueSchedules;
         lock (_gate)
         {
@@ -1475,7 +1596,6 @@ public sealed class ReportingScheduleService
                 .Where(static pair => pair.Value.State == ReportingScheduleStateDto.Active)
                 .Where(pair => processAllTenants || IsScheduleInScope(pair.Value, accessContext))
                 .Where(pair => pair.Value.DueAtUtc <= nowUtc)
-                .Where(pair => _dueRunClaims.Add(pair.Key))
                 .OrderBy(static pair => pair.Value.DueAtUtc)
                 .ThenBy(static pair => pair.Value.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -1483,53 +1603,51 @@ public sealed class ReportingScheduleService
 
         var results = new List<ReportingScheduleRunResultDto>(dueSchedules.Length);
         var failures = new List<ReportingScheduleWorkerFailure>();
-        try
+        foreach (var pair in dueSchedules)
         {
-            foreach (var pair in dueSchedules)
+            ct.ThrowIfCancellationRequested();
+            var lease = TryAcquireExecutionLease(pair.Key, pair.Value, nowUtc);
+            if (lease is null)
             {
-                ct.ThrowIfCancellationRequested();
+                continue;
+            }
+
+            try
+            {
+                results.Add(await RunScheduleWithLeaseAsync(
+                        pair.Value,
+                        requestedBy: null,
+                        isDueRun: true,
+                        processAllTenants ? null : accessContext,
+                        lease,
+                        ct)
+                    .ConfigureAwait(false));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception) when (continueAfterScheduleFailure)
+            {
+                string? failureRecordingErrorType = null;
                 try
                 {
-                    results.Add(await RunScheduleAsync(
-                            pair.Value,
-                            requestedBy: null,
-                            isDueRun: true,
-                            processAllTenants ? null : accessContext,
-                            ct)
-                        .ConfigureAwait(false));
+                    RecordDueScheduleFailure(pair.Key, exception, nowUtc, lease);
                 }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                catch (Exception failureRecordingException)
                 {
-                    throw;
+                    failureRecordingErrorType = failureRecordingException.GetType().Name;
                 }
-                catch (Exception exception) when (continueAfterScheduleFailure)
-                {
-                    string? failureRecordingErrorType = null;
-                    try
-                    {
-                        RecordDueScheduleFailure(pair.Key, exception, nowUtc);
-                    }
-                    catch (Exception failureRecordingException)
-                    {
-                        failureRecordingErrorType = failureRecordingException.GetType().Name;
-                    }
-                    failures.Add(new ReportingScheduleWorkerFailure(
-                        pair.Key.TenantId,
-                        pair.Key.CompanyId,
-                        pair.Key.ScheduleId,
-                        exception.GetType().Name,
-                        failureRecordingErrorType));
-                }
+                failures.Add(new ReportingScheduleWorkerFailure(
+                    pair.Key.TenantId,
+                    pair.Key.CompanyId,
+                    pair.Key.ScheduleId,
+                    exception.GetType().Name,
+                    failureRecordingErrorType));
             }
-        }
-        finally
-        {
-            lock (_gate)
+            finally
             {
-                foreach (var pair in dueSchedules)
-                {
-                    _dueRunClaims.Remove(pair.Key);
-                }
+                ReleaseExecutionLease(pair.Key, lease);
             }
         }
 
@@ -1541,7 +1659,8 @@ public sealed class ReportingScheduleService
     private void RecordDueScheduleFailure(
         ReportingScheduleIdentity identity,
         Exception exception,
-        DateTimeOffset evaluatedAtUtc)
+        DateTimeOffset evaluatedAtUtc,
+        ReportingScheduleExecutionLease lease)
     {
         lock (_gate)
         {
@@ -1560,7 +1679,7 @@ public sealed class ReportingScheduleService
             _schedules[identity] = updated;
             try
             {
-                PersistSchedule(updated, current.UpdatedAtUtc);
+                PersistSchedule(updated, current.UpdatedAtUtc, lease);
             }
             catch (Exception ex)
             {
@@ -1746,7 +1865,8 @@ public sealed class ReportingScheduleService
         string? requestedBy,
         bool isDueRun,
         ReportAccessQueryContext? accessContext,
-        CancellationToken ct)
+        CancellationToken ct,
+        ReportingScheduleExecutionLease executionLease)
     {
         if (schedule.State != ReportingScheduleStateDto.Active)
         {
@@ -1886,7 +2006,11 @@ public sealed class ReportingScheduleService
                 requireInitialDraft: !recoveredExistingGovernance);
         }
 
-        var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
+        var run = ProjectRun(
+            manifest,
+            manifest.OperationalScope is { } scope
+                ? _orchestrationService.GetAudit(scope.TenantId, manifest.RunId)
+                : _orchestrationService.GetAudit(manifest.RunId));
         var handoffs = BuildReleaseDeliveryHandoffs(schedule, manifest);
         var advanced = AdvanceSchedule(schedule, manifest, effectiveReadiness.ResolvedParameters) with
         {
@@ -1917,7 +2041,10 @@ public sealed class ReportingScheduleService
             _schedules[identity] = advanced;
             try
             {
-                PersistSchedule(advanced, schedule.UpdatedAtUtc);
+                PersistSchedule(
+                    advanced,
+                    schedule.UpdatedAtUtc,
+                    executionLease);
             }
             catch (Exception ex)
             {
@@ -2080,399 +2207,6 @@ public sealed class ReportingScheduleService
             .ToArray();
     }
 
-    private static bool IsPendingReleaseHandoffBoundToCurrentTargets(
-        ReportingScheduleRecordDto schedule,
-        ReportingScheduledReleaseHandoffDto handoff)
-    {
-        if (handoff.State != ReportingScheduledReleaseHandoffStateDto.PendingRelease
-            || !HasValidDeliveryTargetsSnapshot(schedule)
-            || string.IsNullOrWhiteSpace(schedule.TenantId)
-            || string.IsNullOrWhiteSpace(schedule.CompanyId)
-            || string.IsNullOrWhiteSpace(handoff.DeliveryTargetsSnapshotHash)
-            || !string.Equals(
-                handoff.DeliveryTargetsSnapshotHash,
-                schedule.DeliveryTargetsSnapshotHash,
-                StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(handoff.TenantId, schedule.TenantId, StringComparison.Ordinal)
-            || !string.Equals(handoff.CompanyId, schedule.CompanyId, StringComparison.Ordinal)
-            || !string.Equals(handoff.ScheduleId, schedule.ScheduleId, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(handoff.TemplateId, schedule.TemplateId, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        foreach (var target in schedule.DeliveryTargets ?? [])
-        {
-            if (!string.Equals(
-                    target.DistributionId,
-                    handoff.TargetDistributionId,
-                    StringComparison.Ordinal)
-                || string.IsNullOrWhiteSpace(target.RecipientPrincipalId)
-                || target.RecipientPrincipalKind is not { } recipientKind
-                || !Enum.IsDefined(recipientKind)
-                || target.DeliveryMode is not { } deliveryMode
-                || !Enum.IsDefined(deliveryMode))
-            {
-                continue;
-            }
-
-            var reportingRecipientKind = ToReportingPrincipalKind(recipientKind);
-            var expectedTransportId = deliveryMode == ReportPackDeliveryModeDto.EmailLink
-                ? "http-relay"
-                : "secure-portal";
-            if (!string.Equals(handoff.DistributionId, $"scheduled:{handoff.HandoffId}", StringComparison.Ordinal)
-                || !string.Equals(handoff.TransportId, expectedTransportId, StringComparison.Ordinal)
-                || !string.Equals(
-                    handoff.RecipientPrincipalId,
-                    target.RecipientPrincipalId,
-                    StringComparison.Ordinal)
-                || !string.Equals(
-                    handoff.RecipientPrincipalKind,
-                    reportingRecipientKind.ToString(),
-                    StringComparison.Ordinal)
-                || expectedTransportId == "http-relay"
-                    && (handoff.GrantLifetimeSeconds != 1_800 || handoff.GrantMaxUses != 1)
-                || expectedTransportId != "http-relay"
-                    && (handoff.GrantLifetimeSeconds is not null || handoff.GrantMaxUses is not null))
-            {
-                continue;
-            }
-
-            if (target.Formats is { Count: > 0 })
-            {
-                var retainedFormats = (handoff.RequestedFormats ?? [])
-                    .Distinct()
-                    .OrderBy(static format => format);
-                var targetFormats = target.Formats
-                    .Distinct()
-                    .OrderBy(static format => format);
-                if (!targetFormats.SequenceEqual(retainedFormats))
-                {
-                    continue;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    internal static ReportingScheduledArtifactSelection ResolveScheduledArtifactSelection(
-        ReportingScheduleDeliveryTargetDto target,
-        ReportingOutputManifest manifest)
-    {
-        ArgumentNullException.ThrowIfNull(target);
-        ArgumentNullException.ThrowIfNull(manifest);
-        var declarations = ReportingArtifactDeclaration.Build(manifest);
-        var primaryOutputs = declarations
-            .Where(static artifact =>
-                artifact.Kind == ReportingDeclaredArtifactKind.PrimaryOutput)
-            .Select(artifact => new
-            {
-                Artifact = artifact,
-                Format = ResolveArtifactFormat(artifact)
-            })
-            .ToArray();
-        if (primaryOutputs.Length == 0
-            || primaryOutputs.Select(static output => output.Format).Distinct().Count()
-            != primaryOutputs.Length)
-        {
-            throw new InvalidDataException(
-                $"Reporting run '{manifest.RunId}' must declare at least one uniquely formatted primary output.");
-        }
-
-        var availableFormats = primaryOutputs
-            .Select(static output => output.Format)
-            .ToArray();
-        GovernanceReportArtifactFormatDto[] requestedFormats = target.Formats is { Count: > 0 }
-            ? target.Formats
-                .Distinct()
-                .ToArray()
-            : [];
-        if (requestedFormats.Any(static format => !Enum.IsDefined(format)))
-        {
-            throw new InvalidDataException(
-                $"Scheduled distribution '{target.DistributionId}' requests an unknown artifact format.");
-        }
-
-        if (requestedFormats.Length > 0
-            && (requestedFormats.Length != availableFormats.Length
-                || requestedFormats.Except(availableFormats).Any()))
-        {
-            throw new InvalidDataException(
-                $"Scheduled distribution '{target.DistributionId}' requests unavailable output format(s) for run '{manifest.RunId}'; the exact primary outputs are {string.Join(", ", availableFormats)}.");
-        }
-
-        return new ReportingScheduledArtifactSelection(
-            availableFormats,
-            primaryOutputs.Select(static output => output.Artifact.ArtifactId).ToArray());
-    }
-
-    private static GovernanceReportArtifactFormatDto ResolveArtifactFormat(
-        ReportingDeclaredArtifact artifact) =>
-        artifact.ContentType switch
-        {
-            "application/pdf" => GovernanceReportArtifactFormatDto.Pdf,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
-                GovernanceReportArtifactFormatDto.Xlsx,
-            "text/csv" => GovernanceReportArtifactFormatDto.Csv,
-            "text/html" => GovernanceReportArtifactFormatDto.Html,
-            _ when artifact.ContentType.Contains("json", StringComparison.OrdinalIgnoreCase) =>
-                GovernanceReportArtifactFormatDto.Json,
-            _ => throw new InvalidDataException(
-                $"Scheduled primary artifact '{artifact.ArtifactId}' has unsupported content type '{artifact.ContentType}'.")
-        };
-
-    private static bool SameReleaseHandoffDeclaration(
-        ReportingScheduledReleaseHandoffDto retained,
-        ReportingScheduledReleaseHandoffDto candidate) =>
-        string.Equals(retained.HandoffId, candidate.HandoffId, StringComparison.Ordinal)
-        && string.Equals(retained.TenantId, candidate.TenantId, StringComparison.Ordinal)
-        && string.Equals(retained.CompanyId, candidate.CompanyId, StringComparison.Ordinal)
-        && string.Equals(retained.ScheduleId, candidate.ScheduleId, StringComparison.Ordinal)
-        && string.Equals(retained.RunId, candidate.RunId, StringComparison.Ordinal)
-        && string.Equals(retained.TemplateId, candidate.TemplateId, StringComparison.Ordinal)
-        && string.Equals(retained.DistributionId, candidate.DistributionId, StringComparison.Ordinal)
-        && string.Equals(retained.TargetDistributionId, candidate.TargetDistributionId, StringComparison.Ordinal)
-        && string.Equals(retained.TransportId, candidate.TransportId, StringComparison.Ordinal)
-        && string.Equals(retained.RecipientPrincipalId, candidate.RecipientPrincipalId, StringComparison.Ordinal)
-        && string.Equals(
-            retained.RecipientPrincipalKind,
-            candidate.RecipientPrincipalKind,
-            StringComparison.Ordinal)
-        && string.Equals(
-            retained.DeliveryTargetsSnapshotHash,
-            candidate.DeliveryTargetsSnapshotHash,
-            StringComparison.OrdinalIgnoreCase)
-        && string.Equals(retained.Destination, candidate.Destination, StringComparison.Ordinal)
-        && string.Equals(retained.Subject, candidate.Subject, StringComparison.Ordinal)
-        && string.Equals(retained.Body, candidate.Body, StringComparison.Ordinal)
-        && (retained.RequestedFormats ?? []).SequenceEqual(candidate.RequestedFormats ?? [])
-        && (retained.ArtifactIds ?? []).SequenceEqual(candidate.ArtifactIds ?? [], StringComparer.Ordinal)
-        && retained.GrantLifetimeSeconds == candidate.GrantLifetimeSeconds
-        && retained.GrantMaxUses == candidate.GrantMaxUses
-        && retained.MaxAttempts == candidate.MaxAttempts;
-
-    private static string BuildReleaseHandoffId(
-        string tenantId,
-        string companyId,
-        string scheduleId,
-        string runId,
-        string targetDistributionId,
-        ReportingAccessPrincipalKind recipientKind,
-        string recipientPrincipalId)
-    {
-        var canonical = string.Join(
-            "\n",
-            tenantId,
-            companyId,
-            scheduleId,
-            runId,
-            targetDistributionId,
-            recipientKind.ToString(),
-            recipientPrincipalId.Trim());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
-    }
-
-    private static ReportingAccessPrincipalScope ResolveScheduledRecipientPrincipal(
-        ReportingScheduleDeliveryTargetDto target,
-        ReportingAccessScope access)
-    {
-        if (string.IsNullOrWhiteSpace(target.RecipientPrincipalId)
-            || target.RecipientPrincipalKind is null)
-        {
-            throw new InvalidDataException(
-                $"Scheduled distribution '{target.DistributionId}' has no explicit typed recipient.");
-        }
-
-        var recipient = new ReportingAccessPrincipalScope(
-            ToReportingPrincipalKind(target.RecipientPrincipalKind.Value),
-            target.RecipientPrincipalId.Trim());
-        if (access.Mode == ReportingGovernanceAccessMode.CompanyWide)
-        {
-            return recipient;
-        }
-
-        var allowed = (access.Principals.IsDefault
-                ? Enumerable.Empty<ReportingAccessPrincipalScope>()
-                : access.Principals)
-            .Concat(access.AllowOwnerAccess && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
-                ? [new ReportingAccessPrincipalScope(
-                    ReportingAccessPrincipalKind.User,
-                    access.OwnerPrincipalId.Trim())]
-                : []);
-        if (!allowed.Any(candidate =>
-                candidate.Kind == recipient.Kind
-                && string.Equals(
-                    candidate.PrincipalId,
-                    recipient.PrincipalId,
-                    StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new InvalidDataException(
-                $"Scheduled distribution '{target.DistributionId}' recipient is outside the immutable run access policy.");
-        }
-
-        return recipient;
-    }
-
-    internal static ReportingAccessPrincipalScope? ResolveScheduledRecipientPrincipal(
-        ReportingAccessScope access,
-        string policyOwner)
-    {
-        var candidates = (access.Principals.IsDefault
-                ? Enumerable.Empty<ReportingAccessPrincipalScope>()
-                : access.Principals)
-            .Concat(access.AllowOwnerAccess && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
-                ? [new ReportingAccessPrincipalScope(
-                    ReportingAccessPrincipalKind.User,
-                    access.OwnerPrincipalId.Trim())]
-                : [])
-            .Where(principal =>
-                access.Mode != ReportingGovernanceAccessMode.Private
-                || principal.Kind == ReportingAccessPrincipalKind.User)
-            .DistinctBy(
-                static principal => $"{(int)principal.Kind}:{principal.PrincipalId.Trim()}",
-                StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (!string.IsNullOrWhiteSpace(policyOwner))
-        {
-            var ownerMatches = candidates
-                .Where(candidate => string.Equals(
-                    candidate.PrincipalId,
-                    policyOwner.Trim(),
-                    StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-            if (ownerMatches.Length == 1)
-            {
-                return ownerMatches[0];
-            }
-            if (ownerMatches.Length > 1)
-            {
-                return null;
-            }
-        }
-
-        return candidates.Length == 1 ? candidates[0] : null;
-    }
-
-    private static ReportAccessQueryContext BuildScheduledExecutionAccessContext(
-        ReportingScheduleRecordDto schedule,
-        string actor,
-        ReportAccessQueryContext? requestContext)
-    {
-        if (string.IsNullOrWhiteSpace(schedule.TenantId)
-            && string.IsNullOrWhiteSpace(schedule.CompanyId))
-        {
-            return requestContext ?? new ReportAccessQueryContext(actor);
-        }
-
-        if (!HasValidAccessPolicySnapshot(schedule)
-            || !HasValidScheduledExecutionPrincipal(schedule))
-        {
-            throw new InvalidDataException(
-                "The governed reporting schedule has no valid immutable execution authority snapshot.");
-        }
-
-        var immutableGroups = schedule.AccessPolicySnapshot!.Mode == ReportAccessModeDto.Restricted
-            ? (schedule.AccessPolicySnapshot.Principals ?? [])
-                .Where(static principal => principal.Kind == ReportAccessPrincipalKindDto.Group)
-                .Select(static principal => principal.PrincipalId.Trim())
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(static principal => principal, StringComparer.Ordinal)
-                .ToArray()
-            : [];
-        return new ReportAccessQueryContext(
-            ActorPrincipalId: actor,
-            GroupPrincipalIds: immutableGroups,
-            CompanyId: schedule.CompanyId,
-            HasGlobalOverride: false,
-            TenantId: schedule.TenantId,
-            RequireBoundScope: true);
-    }
-
-    private static ReportingGovernanceCallerContext BuildScheduledGovernanceCaller(
-        ReportingScheduleRecordDto schedule,
-        CertifiedReportingRunContext certified,
-        string runId)
-    {
-        var actor = schedule.RequestedBy.Trim();
-        var access = certified.AccessScope;
-        var actorIsOwner = access.AllowOwnerAccess
-            && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
-            && string.Equals(access.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase);
-        var actorIsRestrictedPrincipal = access.Mode == ReportingGovernanceAccessMode.Restricted
-            && access.Principals.Any(principal =>
-                principal.Kind == ReportingAccessPrincipalKind.User
-                && string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase));
-        var actorIsPrivatePrincipal = access.Mode == ReportingGovernanceAccessMode.Private
-            && access.Principals.Any(principal =>
-                principal.Kind == ReportingAccessPrincipalKind.User
-                && string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase));
-        var authorized = access.Mode switch
-        {
-            ReportingGovernanceAccessMode.Private => actorIsOwner || actorIsPrivatePrincipal,
-            ReportingGovernanceAccessMode.Restricted => actorIsOwner || actorIsRestrictedPrincipal,
-            ReportingGovernanceAccessMode.CompanyWide => true,
-            _ => false
-        };
-        if (!authorized)
-        {
-            throw new ReportingGovernanceAuthorizationException(
-                "The persisted schedule actor is not the immutable report owner or a named restricted principal.");
-        }
-
-        return new ReportingGovernanceCallerContext(
-            actor,
-            certified.OperationalScope.TenantId,
-            certified.OperationalScope.CompanyId,
-            UserPermission.ManageReporting,
-            ReportingCommandOrigin.ServicePrincipal,
-            $"reporting-schedule:{schedule.ScheduleId}:{runId}",
-            ImmutableArray<string>.Empty);
-    }
-
-    private static void ValidateScheduledGovernedRun(
-        ReportingOutputManifest manifest,
-        CertifiedReportingRunContext certified,
-        GovernedReportingRun governedRun,
-        bool requireInitialDraft)
-    {
-        ArgumentNullException.ThrowIfNull(governedRun);
-        if (!string.Equals(governedRun.RunId, manifest.RunId, StringComparison.Ordinal)
-            || governedRun.ExecutionState != GovernedReportingExecutionState.Succeeded
-            || (requireInitialDraft && governedRun.GovernanceState != GovernedReportingState.Draft)
-            || !string.Equals(governedRun.Scope.TenantId, certified.OperationalScope.TenantId, StringComparison.Ordinal)
-            || !string.Equals(governedRun.Scope.CompanyId, certified.OperationalScope.CompanyId, StringComparison.Ordinal)
-            || !string.Equals(governedRun.Snapshot.SnapshotId, certified.Snapshot.SnapshotId, StringComparison.Ordinal)
-            || !string.Equals(governedRun.Snapshot.SnapshotHash, certified.Snapshot.SnapshotHash, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(governedRun.Access.PolicyHash, certified.AccessScope.PolicyHash, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ReportingGovernanceException(
-                "Canonical governance did not retain the scheduled run as the exact certified Succeeded/Draft aggregate.");
-        }
-    }
-
-    private static ReportPackDeliveryModeDto ResolveScheduledDeliveryMode(string channel)
-    {
-        if (channel.Contains("email", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.EmailLink;
-        }
-
-        if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.SecurePortal;
-        }
-
-        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.EvidenceVault;
-        }
-
-        return ReportPackDeliveryModeDto.SecurePortal; // non-email scheduled handoffs use the secure-portal transport
-    }
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
         ReportingScheduleRecordDto schedule,
@@ -2738,52 +2472,6 @@ public sealed class ReportingScheduleService
 
         var gridId = artifact[(index + marker.Length)..].Trim();
         return string.IsNullOrWhiteSpace(gridId) ? null : gridId;
-    }
-
-    private static ReportingScheduleRecordDto AdvanceSchedule(
-        ReportingScheduleRecordDto schedule,
-        ReportingOutputManifest manifest,
-        ReportingRunParametersDto resolvedParameters)
-    {
-        var nextDue = ResolveNextDue(schedule.CronExpression, schedule.DueAtUtc);
-        var nextAsOfDate = schedule.NextAsOfDate.AddDays(
-            Math.Max(1, (nextDue.Date - schedule.DueAtUtc.Date).Days));
-        var runAtUtc = DateTimeOffset.UtcNow;
-        return schedule with
-        {
-            DueAtUtc = nextDue,
-            NextAsOfDate = nextAsOfDate,
-            RunParameters = resolvedParameters with { AsOfDate = nextAsOfDate },
-            UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, runAtUtc),
-            LastRunAtUtc = runAtUtc,
-            LastRunId = manifest.RunId,
-            RunCount = schedule.RunCount + 1
-        };
-    }
-
-    private static DateTimeOffset ResolveNextDue(string cronExpression, DateTimeOffset dueAtUtc)
-    {
-        var cron = cronExpression.Trim();
-        if (cron.EndsWith(" 1", StringComparison.Ordinal) || cron.Contains(" * * 5", StringComparison.Ordinal))
-        {
-            return dueAtUtc.AddDays(7);
-        }
-
-        if (cron.Contains(" 1 * *", StringComparison.Ordinal))
-        {
-            return dueAtUtc.AddMonths(1);
-        }
-
-        var next = dueAtUtc.AddDays(1);
-        if (cron.EndsWith("1-5", StringComparison.Ordinal))
-        {
-            while (next.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-            {
-                next = next.AddDays(1);
-            }
-        }
-
-        return next;
     }
 
     private static string ResolveFamily(string templateId)
@@ -3588,13 +3276,6 @@ public sealed class ReportingScheduleService
         var computed = Convert.FromHexString(ComputeDeliveryTargetsSnapshotHash(schedule.DeliveryTargets)!);
         return retained.Length == computed.Length
                && CryptographicOperations.FixedTimeEquals(retained, computed);
-    }
-
-    private void PersistSchedule(
-        ReportingScheduleRecordDto schedule,
-        DateTimeOffset? expectedUpdatedAtUtc)
-    {
-        _store?.Upsert(schedule, expectedUpdatedAtUtc);
     }
 
     private void RestoreScheduleAfterPersistenceFailure(

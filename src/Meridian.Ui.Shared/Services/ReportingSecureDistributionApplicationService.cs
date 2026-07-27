@@ -1080,6 +1080,10 @@ public sealed class ReportingSecureDistributionApplicationService
                 $"Reporting run '{run.RunId}' is not Released and cannot be distributed.");
         }
 
+        ReportingGovernanceCanonicalValidation.ValidateCompleteClientPackageRelease(
+            run.RunId,
+            run.Snapshot,
+            run.Release.Artifacts);
         return run;
     }
 
@@ -1179,6 +1183,7 @@ public sealed class ReportingSecureDistributionApplicationService
             artifactIds = released.Keys.OrderBy(static item => item, StringComparer.Ordinal).ToArray();
         }
 
+        RequireAtomicClientPackageSelection(run.RunId, run.Snapshot, artifactIds);
         if (artifactIds.Count == 0)
         {
             throw new InvalidOperationException("A Released run must contain at least one immutable artifact.");
@@ -1200,10 +1205,63 @@ public sealed class ReportingSecureDistributionApplicationService
                     $"Released artifact '{artifactId}' is missing from immutable storage.");
             ValidateCatalogBinding(retained, run.Scope.TenantId, packageId, artifactId);
             ValidateRunArtifactBinding(run, retained, releaseArtifact, packageId);
+            ValidateClientPackagePrimaryContentType(run, retained);
             result.Add(releaseArtifact);
         }
 
         return result;
+    }
+
+    internal static void RequireAtomicClientPackageSelection(
+        string runId,
+        ReportingCertifiedSnapshotScope snapshot,
+        IReadOnlyCollection<string> artifactIds)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(artifactIds);
+        if (!ReportingGovernanceCanonicalValidation.IsClientPackage(snapshot))
+        {
+            return;
+        }
+
+        var normalizedRunId = runId.Trim();
+        var pdfArtifactId = $"{normalizedRunId}.pdf";
+        var workbookArtifactId = $"{normalizedRunId}.xlsx";
+        if (!artifactIds.Contains(pdfArtifactId, StringComparer.Ordinal)
+            || !artifactIds.Contains(workbookArtifactId, StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"ClientPackage distribution for run '{normalizedRunId}' is atomic and must include both released PDF and XLSX primary artifacts.");
+        }
+    }
+
+    private static void ValidateClientPackagePrimaryContentType(
+        GovernedReportingRun run,
+        ReportingRetainedArtifactRecord retained)
+    {
+        if (!ReportingGovernanceCanonicalValidation.IsClientPackage(run.Snapshot))
+        {
+            return;
+        }
+
+        var expectedContentType = retained.ArtifactId switch
+        {
+            var artifactId when StringComparer.Ordinal.Equals(
+                artifactId,
+                $"{run.RunId}.pdf") => "application/pdf",
+            var artifactId when StringComparer.Ordinal.Equals(
+                artifactId,
+                $"{run.RunId}.xlsx") =>
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            _ => null
+        };
+        if (expectedContentType is not null
+            && !StringComparer.Ordinal.Equals(retained.ContentType, expectedContentType))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Released ClientPackage primary artifact '{retained.ArtifactId}' has an invalid retained content type.");
+        }
     }
 
     private async Task<ReportingDeliveryJobRecord> GetJobInTenantAsync(

@@ -222,6 +222,7 @@ public sealed class UiServer : IAsyncDisposable
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
             builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
             builder.Services.AddWorkstationSharedServices();
+            builder.Services.AddStatementFetchSchedulerHostedService();
             builder.Services.AddOmsIntegrationApiHandlers();
 
             if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
@@ -1223,6 +1224,13 @@ public sealed class UiServer : IAsyncDisposable
                 .ConfigureAwait(false);
             await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
+            var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
+            if (reportingStartup is not null)
+            {
+                await reportingStartup
+                    .EnsureReadyAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             _databaseReadinessCompleted = true;
             readinessStopwatch.Stop();

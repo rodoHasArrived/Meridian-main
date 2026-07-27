@@ -2,6 +2,24 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
+public sealed record ReportingScheduleExecutionLease(
+    string LeaseOwner,
+    DateTimeOffset LeaseExpiresAtUtc,
+    long LeaseVersion);
+
+public sealed class ReportingScheduleExecutionLeaseException(
+    string tenantId,
+    string companyId,
+    string scheduleId,
+    string message) : InvalidOperationException(message)
+{
+    public string TenantId { get; } = tenantId;
+
+    public string CompanyId { get; } = companyId;
+
+    public string ScheduleId { get; } = scheduleId;
+}
+
 /// <summary>
 /// Durable schedule snapshot boundary shared by reporting orchestration and storage adapters.
 /// </summary>
@@ -43,6 +61,77 @@ public interface IReportingScheduleStore
             .Append(schedule)
             .ToArray();
         Save(retained);
+    }
+
+    ReportingScheduleExecutionLease? TryClaimExecution(
+        ReportingScheduleRecordDto schedule,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(leaseDuration),
+                "A reporting schedule execution lease must have a positive duration.");
+        }
+
+        var current = Load().SingleOrDefault(candidate => HasSameIdentity(candidate, schedule));
+        return current is not null && current.UpdatedAtUtc == schedule.UpdatedAtUtc
+            ? new ReportingScheduleExecutionLease(
+                leaseOwner.Trim(),
+                nowUtc.ToUniversalTime().Add(leaseDuration),
+                LeaseVersion: 1)
+            : null;
+    }
+
+    ReportingScheduleExecutionLease? RenewExecutionLease(
+        ReportingScheduleRecordDto schedule,
+        ReportingScheduleExecutionLease lease,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(lease);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(leaseDuration),
+                "A reporting schedule execution lease must have a positive duration.");
+        }
+
+        return Load().Any(candidate =>
+            HasSameIdentity(candidate, schedule)
+            && candidate.UpdatedAtUtc == schedule.UpdatedAtUtc)
+            ? lease with
+            {
+                LeaseExpiresAtUtc = nowUtc.ToUniversalTime().Add(leaseDuration)
+            }
+            : null;
+    }
+
+    void ReleaseExecutionLease(
+        string tenantId,
+        string companyId,
+        string scheduleId,
+        ReportingScheduleExecutionLease lease)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        ArgumentNullException.ThrowIfNull(lease);
+    }
+
+    void UpsertClaimedExecution(
+        ReportingScheduleRecordDto schedule,
+        DateTimeOffset expectedUpdatedAtUtc,
+        ReportingScheduleExecutionLease lease)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(lease);
+        Upsert(schedule, expectedUpdatedAtUtc);
     }
 
     bool Delete(

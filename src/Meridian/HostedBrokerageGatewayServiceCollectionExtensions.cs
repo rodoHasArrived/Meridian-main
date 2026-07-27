@@ -124,6 +124,13 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             DateTimeOffset? since,
             CancellationToken ct)
             => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            DateTimeOffset? untilExclusive,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, untilExclusive, ct);
     }
 
     private sealed class IBBrokerageSyncAdapter(IBBrokerageGateway gateway) :

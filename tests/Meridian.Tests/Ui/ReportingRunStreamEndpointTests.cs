@@ -172,6 +172,55 @@ public sealed class ReportingRunStreamEndpointTests
         }
     }
 
+    [Fact]
+    public void ScopedStreamTopic_DuplicateRunIdsBuildOnlyAuthorizedTenantPayload()
+    {
+        var orchestration = new DuplicateScopedRunOrchestration();
+        using var services = new ServiceCollection()
+            .AddSingleton<IReportingOrchestrationService>(orchestration)
+            .BuildServiceProvider();
+        var tenantATopic = StreamTopic.ReportRun(
+            SeededTenantId,
+            SeededCompanyId,
+            SeededRunId);
+        var tenantBTopic = StreamTopic.ReportRun(
+            "tenant-b",
+            "company-b",
+            SeededRunId);
+
+        tenantATopic.Should().NotBe(tenantBTopic);
+        var tenantA = FundStructureEndpoints.TryBuildReportRunAuditTrail(
+            services,
+            tenantATopic.Argument);
+        var tenantB = FundStructureEndpoints.TryBuildReportRunAuditTrail(
+            services,
+            tenantBTopic.Argument);
+
+        tenantA.Should().NotBeNull();
+        tenantA!.Entries.Should().ContainSingle(entry => entry.Actor == "operator-a");
+        tenantB.Should().NotBeNull();
+        tenantB!.Entries.Should().ContainSingle(entry => entry.Actor == "operator-b");
+    }
+
+    [Fact]
+    public async Task AuditEndpoint_DuplicateRunIdsReturnsBoundTenantAudit()
+    {
+        await using var app = await CreateDuplicateAuditAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync(
+            $"/api/fund-structure/reporting/runs/{SeededRunId}/audit");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadAsStringAsync();
+        var audit = JsonSerializer.Deserialize<ReportingRunAuditTrailDto>(
+            payload,
+            ServerJsonOptions);
+        audit.Should().NotBeNull();
+        audit!.Entries.Should().ContainSingle(entry => entry.Actor == "operator-a");
+        audit.Entries.Should().NotContain(entry => entry.Actor == "operator-b");
+    }
+
     private static async Task<string> ReadFirstEventFrameAsync(HttpResponseMessage response, CancellationToken ct)
     {
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -381,6 +430,137 @@ public sealed class ReportingRunStreamEndpointTests
         app.MapReportingRunStreamEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private static async Task<WebApplication> CreateDuplicateAuditAppAsync()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<IReportingOrchestrationService>(
+            new DuplicateScopedRunOrchestration());
+
+        var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-op";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
+                UserPermission.ViewReporting;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] =
+                SeededCompanyId;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] =
+                SeededTenantId;
+            await next();
+        });
+        app.MapFundStructureEndpoints(ServerJsonOptions);
+        await app.StartAsync();
+        return app;
+    }
+
+    private sealed class DuplicateScopedRunOrchestration : IReportingOrchestrationService
+    {
+        private readonly IReadOnlyDictionary<string, ReportingOutputManifest> _manifests;
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<ReportingRunAuditEntry>> _audits;
+
+        public DuplicateScopedRunOrchestration()
+        {
+            _manifests = new Dictionary<string, ReportingOutputManifest>(StringComparer.Ordinal)
+            {
+                [Key(SeededTenantId, SeededRunId)] =
+                    BuildManifest(SeededTenantId, SeededCompanyId),
+                [Key("tenant-b", SeededRunId)] =
+                    BuildManifest("tenant-b", "company-b")
+            };
+            _audits = new Dictionary<string, IReadOnlyList<ReportingRunAuditEntry>>(
+                StringComparer.Ordinal)
+            {
+                [Key(SeededTenantId, SeededRunId)] =
+                [
+                    new ReportingRunAuditEntry(
+                        SeededRunId,
+                        FixedNow,
+                        "RunGenerated",
+                        "operator-a",
+                        "tenant a")
+                ],
+                [Key("tenant-b", SeededRunId)] =
+                [
+                    new ReportingRunAuditEntry(
+                        SeededRunId,
+                        FixedNow,
+                        "RunGenerated",
+                        "operator-b",
+                        "tenant b")
+                ]
+            };
+        }
+
+        public Task<ReportingOutputManifest> ExecuteAsync(
+            ReportingJobContract contract,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
+            IEnumerable<ReportingScheduleContract> schedules,
+            DateTimeOffset nowUtc,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public ReportingOutputManifest? GetManifest(string runId) => null;
+
+        public ReportingOutputManifest? GetManifest(
+            string tenantId,
+            string runId) =>
+            _manifests.GetValueOrDefault(Key(tenantId, runId));
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) => [];
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(
+            string tenantId,
+            string runId) =>
+            _audits.GetValueOrDefault(Key(tenantId, runId)) ?? [];
+
+        public Task<bool> TransitionApprovalAsync(
+            string runId,
+            ReportingRunStatus target,
+            string actor,
+            string role,
+            string notes,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        private static ReportingOutputManifest BuildManifest(
+            string tenantId,
+            string companyId) =>
+            new(
+                SeededRunId,
+                "investor-monthly-statement",
+                SeededAsOfDate,
+                ReportingRunStatus.Draft,
+                [],
+                [],
+                1,
+                ReportingRunTrigger.AdHoc,
+                OperationalScope: new ReportingOperationalScope(
+                    tenantId,
+                    $"organization-{tenantId}",
+                    companyId,
+                    SeededFundId,
+                    SeededBookId,
+                    SeededPeriodId),
+                ImmutableAccessScope: new ReportingAccessScope(
+                    $"policy-{tenantId}",
+                    "1",
+                    ReportingGovernanceAccessMode.CompanyWide,
+                    OwnerPrincipalId: null,
+                    AllowOwnerAccess: false,
+                    Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
+                    PolicyHash: new string('e', 64)));
+
+        private static string Key(string tenantId, string runId) =>
+            $"{tenantId}:{runId}";
     }
 
     private sealed class SeededRunStore(ReportingRunSnapshot run) : IReportingRunStore

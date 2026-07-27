@@ -1,10 +1,14 @@
 import type { WorkflowContinuityStepStatus } from "@/app-shell.workflow-continuity";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ReportingWorkspaceResponse } from "@/types";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 
 export function buildReportingGovernedReportContinuityStatus(
-  reporting: ReportingWorkspaceResponse | null
+  reportingPayload: ReportingWorkspacePayload | null
 ): WorkflowContinuityStepStatus {
+  const reporting = normalizeReportingWorkspace(reportingPayload);
   if (!reporting) {
     return { label: "Waiting", tone: "pending" };
   }

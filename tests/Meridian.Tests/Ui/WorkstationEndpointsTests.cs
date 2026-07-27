@@ -3596,14 +3596,14 @@ public sealed partial class WorkstationEndpointsTests
         cashFlow.GetProperty("netVariance").GetDecimal().Should().Be(-100m);
 
         var reporting = governance.RootElement.GetProperty("reporting");
-        reporting.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
-        reporting.GetProperty("profiles").EnumerateArray()
-            .Should()
-            .Contain(profile => profile.GetProperty("id").GetString() == "excel");
-        reporting.GetProperty("recommendedProfiles").EnumerateArray()
-            .Select(profile => profile.GetString())
-            .Should()
-            .Contain("excel");
+        reporting.GetProperty("profileCount").GetInt32().Should().Be(0,
+            "embedded governance payloads must not synthesize reporting capability when the durable reporting deployment is unavailable");
+        reporting.GetProperty("profiles").GetArrayLength().Should().Be(0);
+        reporting.GetProperty("recommendedProfiles").GetArrayLength().Should().Be(0);
+        reporting.GetProperty("deploymentCapability")
+            .GetProperty("isReady")
+            .GetBoolean()
+            .Should().BeFalse();
         var controlCenter = governance.RootElement.GetProperty("controlCenter");
         controlCenter.GetProperty("closeReadiness").GetString().Should().NotBeNullOrWhiteSpace();
         controlCenter.GetProperty("blockerSeverityDistribution").GetArrayLength().Should().BeGreaterThan(0);
@@ -6130,10 +6130,15 @@ public sealed partial class WorkstationEndpointsTests
 
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
 
+        reporting.RootElement.TryGetProperty("metrics", out _).Should().BeFalse();
+        reporting.RootElement.TryGetProperty("workspace", out _).Should().BeFalse();
+        reporting.RootElement.TryGetProperty("reporting", out _).Should().BeFalse();
         var reportingSection = reporting.RootElement;
         reportingSection.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
         reportingSection.GetProperty("summary").GetString().Should().Contain("profiles are available");
-        reportingSection.GetProperty("deploymentCapability").GetProperty("isReady").GetBoolean()
+        var deploymentCapability = reportingSection.GetProperty("deploymentCapability");
+        deploymentCapability.GetProperty("isReady").GetBoolean().Should().BeTrue();
+        deploymentCapability.GetProperty("durableReconciliationEvidence").GetBoolean()
             .Should().BeTrue();
         reportingSection.TryGetProperty("reportPackTargets", out _).Should().BeFalse();
         var distributions = reportingSection.GetProperty("reportPackDistributions").EnumerateArray().ToArray();
@@ -6163,6 +6168,161 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ReportingWorkspace_ProjectsCanonicalRunsAndImmutableDeliveryReceipts()
+    {
+        var now = new DateTimeOffset(2026, 7, 26, 12, 0, 0, TimeSpan.Zero);
+        var scope = new ReportingOperationalScope(
+            "tenant-test",
+            "organization-test",
+            "tenant-test",
+            "fund-test",
+            "book-test",
+            "2026-07");
+        var access = new ReportingAccessScope(
+            "policy-company-test",
+            "1",
+            ReportingGovernanceAccessMode.CompanyWide,
+            "ops-user",
+            AllowOwnerAccess: true,
+            Principals: [],
+            PolicyHash: new string('a', 64));
+        var manifest = new ReportingOutputManifest(
+            "canonical-run-001",
+            "investor-monthly-statement",
+            new DateOnly(2026, 7, 25),
+            ReportingRunStatus.Released,
+            [],
+            ["artifact://canonical-run-001/investor-statement.pdf"],
+            1,
+            ReportingRunTrigger.AdHoc,
+            OperationalScope: scope,
+            ImmutableAccessScope: access);
+        var snapshot = new ReportingRunSnapshot(
+            manifest,
+            [new ReportingRunAuditEntry(
+                manifest.RunId,
+                now.AddMinutes(-5),
+                "Released",
+                "release.officer",
+                "Canonical package released.")],
+            now);
+        var runStore = Substitute.For<IReportingRunStore>();
+        runStore
+            .ListRuns("tenant-test", "tenant-test", Arg.Any<int>(), Arg.Any<int>())
+            .Returns([snapshot]);
+
+        const string packageId = "report-package-canonical-001";
+        var release = new ReportingDeliveryReleaseAuthorization(
+            "release-receipt-001",
+            ReportingReleaseState.Released,
+            "tenant-test",
+            packageId,
+            manifest.RunId,
+            "revision-1",
+            new string('b', 64),
+            [new ReportingReleasedArtifactReference(
+                "investor-statement.pdf",
+                "reporting-artifact://tenant-test/investor-statement.pdf",
+                new string('c', 64),
+                2048)],
+            ["release-evidence:001"],
+            now.AddMinutes(-4),
+            "release.officer",
+            "release-proof-001");
+        var receipt = new ReportingDeliveryReceipt(
+            "provider-receipt-001",
+            ReportingDeliveryReceiptKind.Delivered,
+            now,
+            "email-relay",
+            "provider-message-001",
+            "provider-evidence:001",
+            "Delivered to the governed recipient.");
+        var job = new ReportingDeliveryJobRecord(
+            "delivery-canonical-001",
+            "tenant-test",
+            packageId,
+            "investor-relations",
+            "email-relay",
+            release,
+            "controller.user",
+            new string('d', 64),
+            new ReportingDeliveryPayload(
+                "Investor relations",
+                "Investor relations",
+                "investor@example.test",
+                "Your report is ready",
+                "Use the secure portal.",
+                $"/portal/reporting/secure/packages/{manifest.RunId}"),
+            ReportingDeliveryState.Delivered,
+            1,
+            3,
+            now.AddMinutes(-3),
+            now,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "provider-message-001",
+            null,
+            [receipt]);
+        var deliveryStore = Substitute.For<IReportingDeliveryStore>();
+        deliveryStore
+            .ListByRunAsync("tenant-test", manifest.RunId, Arg.Any<CancellationToken>())
+            .Returns([job]);
+
+        var legacyWorkflow = new ReportPackWorkflowService();
+        legacyWorkflow.Create(
+            "legacy-fund",
+            "legacy-account",
+            "2026-07",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "legacy.author",
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.CompanyWide,
+                CompanyId: "tenant-test"),
+            accessContext: new ReportAccessQueryContext(
+                "legacy.author",
+                CompanyId: "tenant-test",
+                TenantId: "tenant-test",
+                RequireBoundScope: true));
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog(),
+                    runStore,
+                    legacyWorkflow,
+                    canonicalDeliveryStore: deliveryStore));
+            },
+            currentUserPermissions: UserPermission.ViewReporting);
+
+        var payload = await app.GetTestClient()
+            .GetFromJsonAsync<WorkstationReportingPayload>(
+                "/api/workstation/reporting",
+                ServerJsonOptions);
+
+        payload.Should().NotBeNull();
+        payload!.RecentRuns.Should().ContainSingle(run => run.RunId == manifest.RunId);
+        payload.RecentRuns.Should().NotContain(run =>
+            run.RunId.StartsWith("report-pack:", StringComparison.Ordinal));
+        payload.DeliveryAttempts.Should().BeEmpty(
+            "legacy GUID-based attempts are compatibility-only in production composition");
+        var canonical = payload.CanonicalDeliveries.Should().ContainSingle().Subject;
+        canonical.JobId.Should().Be(job.JobId);
+        canonical.PackageId.Should().Be(packageId);
+        canonical.ArtifactManifestHashSha256.Should().Be(release.ArtifactManifestHashSha256);
+        canonical.Receipts.Should().ContainSingle(projected =>
+            projected.ReceiptId == receipt.ReceiptId
+            && projected.Kind == nameof(ReportingDeliveryReceiptKind.Delivered)
+            && projected.ProviderReference == receipt.ProviderReference);
+        payload.ReportPackDistributions.Should().ContainSingle(distribution =>
+            distribution.DistributionId == job.DistributionId
+            && distribution.LastSentAtUtc == receipt.OccurredAtUtc);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReportingWorkspace_WithoutDurableAuthority_ShouldFailClosed()
     {
         var readiness = Substitute.For<IReportingDeploymentReadinessService>();
@@ -6170,6 +6330,7 @@ public sealed partial class WorkstationEndpointsTests
             IsReady: false,
             DurableGovernance: true,
             DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
             DurableRuns: false,
             DurableScheduling: false,
             DurableDelivery: true,
@@ -6201,12 +6362,79 @@ public sealed partial class WorkstationEndpointsTests
         problem.GetProperty("detail").GetString().Should().Contain("PostgreSQL authority");
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportingStructuredExport_WhenReadinessProbeThrows_ShouldFailClosed()
+    {
+        var readiness = Substitute.For<IReportingDeploymentReadinessService>();
+        readiness.Evaluate().Returns(_ =>
+            throw new InvalidOperationException("Simulated reporting readiness probe failure."));
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(readiness);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog()));
+            },
+            currentUserPermissions: UserPermission.ViewReporting);
+
+        var response = await app.GetTestClient().GetAsync(
+            "/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(ServerJsonOptions);
+        problem.GetProperty("detail").GetString()
+            .Should().Contain("durable reporting deployment is ready");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportingStoreFailure_ShouldFailReportingClosedAndDegradeAccountingSection()
+    {
+        var runStore = Substitute.For<IReportingRunStore>();
+        runStore
+            .ListRuns(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<int>(), Arg.Any<int>())
+            .Returns(_ => throw new InvalidOperationException("Simulated reporting store failure."));
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog(),
+                    runStore));
+            },
+            currentUserPermissions: UserPermission.ViewReporting);
+        var client = app.GetTestClient();
+
+        using var reportingResponse = await client.GetAsync("/api/workstation/reporting");
+        using var accountingResponse = await client.GetAsync("/api/workstation/accounting");
+
+        reportingResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        accountingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var accounting = await JsonDocument.ParseAsync(
+            await accountingResponse.Content.ReadAsStreamAsync());
+        accounting.RootElement.GetProperty("metrics").ValueKind.Should().Be(JsonValueKind.Array);
+        var reporting = accounting.RootElement.GetProperty("reporting");
+        reporting.GetProperty("profileCount").GetInt32().Should().Be(0);
+        reporting.GetProperty("recentRuns").GetArrayLength().Should().Be(0);
+        var capability = reporting.GetProperty("deploymentCapability");
+        capability.GetProperty("isReady").GetBoolean().Should().BeFalse();
+        capability.GetProperty("durableReconciliationEvidence").GetBoolean()
+            .Should().BeTrue();
+        capability.GetProperty("blockingReasons").EnumerateArray()
+            .Select(reason => reason.GetString())
+            .Should().Contain("The authoritative reporting store is temporarily unavailable.");
+    }
+
     private static ReportingDeploymentCapabilityDto ReadyReportingDeploymentCapability()
     {
         var components = new[]
         {
             new ReportingDeploymentComponentDto("governance", "Governance", true, "Ready."),
             new ReportingDeploymentComponentDto("artifacts", "Artifact vault", true, "Ready."),
+            new ReportingDeploymentComponentDto(
+                "reconciliation-evidence",
+                "Reconciliation evidence",
+                true,
+                "Ready."),
             new ReportingDeploymentComponentDto("runs", "Run history", true, "Ready."),
             new ReportingDeploymentComponentDto("scheduling", "Scheduling", true, "Ready."),
             new ReportingDeploymentComponentDto("delivery", "Delivery", true, "Ready."),
@@ -6218,6 +6446,7 @@ public sealed partial class WorkstationEndpointsTests
             IsReady: true,
             DurableGovernance: true,
             DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
             DurableRuns: true,
             DurableScheduling: true,
             DurableDelivery: true,

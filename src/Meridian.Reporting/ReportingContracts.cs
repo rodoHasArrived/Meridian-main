@@ -185,6 +185,36 @@ public sealed record ReportingRunSnapshot(
     string? CertifiedDatasetHashSha256 = null,
     string? ManifestHashSha256 = null);
 
+public enum ReportingRunCreateClaimStatus
+{
+    Acquired,
+    AlreadyExists,
+    LeasedByAnotherOwner,
+    Unsupported
+}
+
+public sealed record ReportingRunCreateClaimResult(
+    ReportingRunCreateClaimStatus Status,
+    DateTimeOffset? LeaseExpiresAtUtc = null,
+    long LeaseVersion = 0);
+
+public sealed class ReportingRunCreateClaimException : InvalidOperationException
+{
+    public ReportingRunCreateClaimException(
+        string tenantId,
+        string runId,
+        string message)
+        : base(message)
+    {
+        TenantId = tenantId;
+        RunId = runId;
+    }
+
+    public string TenantId { get; }
+
+    public string RunId { get; }
+}
+
 public interface IReportingRunStore
 {
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
@@ -279,7 +309,20 @@ public interface IReportingRunStore
             return scopedMatches.Length == 1 ? scopedMatches[0].AuditTrail : [];
         }
 
-        return GetManifest(tenantId, runId) is null ? [] : GetAudit(runId);
+        var scoped = GetManifest(tenantId, runId);
+        var unscoped = GetManifest(runId);
+        return scoped is not null
+               && unscoped is not null
+               && string.Equals(
+                   unscoped.OperationalScope?.TenantId,
+                   scoped.OperationalScope?.TenantId,
+                   StringComparison.Ordinal)
+               && string.Equals(
+                   unscoped.OperationalScope?.CompanyId,
+                   scoped.OperationalScope?.CompanyId,
+                   StringComparison.Ordinal)
+            ? GetAudit(runId)
+            : [];
     }
 
     string? GetRevision(string runId)
@@ -301,6 +344,85 @@ public interface IReportingRunStore
             : ReportingRunStoreRevision.Compute(
                 manifest,
                 GetAudit(tenantId, runId));
+    }
+
+    Task<ReportingRunCreateClaimResult> TryClaimCreateAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(leaseDuration),
+                "A reporting run create lease must have a positive duration.");
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(
+            GetManifest(tenantId.Trim(), runId.Trim()) is null
+                ? new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.Unsupported)
+                : new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.AlreadyExists));
+    }
+
+    Task<bool> RenewCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(leaseDuration),
+                "A reporting run create lease must have a positive duration.");
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(false);
+    }
+
+    Task ReleaseCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        ct.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
+    }
+
+    Task SaveClaimedCreateAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        return SaveAsync(manifest, auditTrail, expectedRevision: null, ct);
     }
 
     Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default);

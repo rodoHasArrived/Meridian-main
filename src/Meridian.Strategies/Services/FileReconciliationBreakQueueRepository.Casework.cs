@@ -65,6 +65,12 @@ public static class StatementCaseworkHandoffObligation
             .Contains(CreateCompletedMarker(commandId), StringComparer.Ordinal);
     }
 
+    public static bool HasCompleted(ReconciliationBreakQueueItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        return (item.EvidenceLinks ?? []).Any(IsCompletedMarker);
+    }
+
     public static bool IsControlMarker(string? value)
         => IsPendingMarker(value) || IsCompletedMarker(value);
 
@@ -113,7 +119,8 @@ public static class StatementCaseworkHandoffObligation
         if (command.Action != ReconciliationCaseworkAction.LinkEvidence
             || !string.Equals(command.Source, CompletionSource, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(command.CausationId)
-            || command.EvidenceLinks is not { Count: 1 })
+            || command.EvidenceLinks is not { Count: 1 }
+            || !HasValidCloseScope(command.CloseScope))
         {
             return false;
         }
@@ -129,6 +136,13 @@ public static class StatementCaseworkHandoffObligation
                    StringComparison.Ordinal)
                && HasPending(item, causationId);
     }
+
+    private static bool HasValidCloseScope(ReconciliationCaseworkCloseScopeDto? scope)
+        => scope is not null
+           && !string.IsNullOrWhiteSpace(scope.FundProfileId)
+           && scope.LedgerBookId != Guid.Empty
+           && scope.AccountingPeriodId != Guid.Empty
+           && scope.AsOfDate != default;
 
     private static bool IsPendingMarker(string? value)
         => value?.StartsWith(PendingPrefix, StringComparison.Ordinal) == true
@@ -349,6 +363,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             item.SourceBreakId,
             item.SourceFingerprint,
             item.FundAccountId,
+            item.FundProfileId,
             item.ExternalAccountId,
             item.CustodianId,
             item.LedgerBookId,
@@ -846,6 +861,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         ReconciliationBulkCaseworkRequest request,
         PreparedBulkCasework entry,
         string bulkActionId,
+        ReconciliationBreakQueueScope? scope,
         CancellationToken ct)
     {
         if (entry.Item is not null && entry.Command is not null)
@@ -875,7 +891,11 @@ public sealed partial class FileReconciliationBreakQueueRepository
             CorrelationId: request.CorrelationId,
             CommandId: $"{bulkActionId}:{entry.BreakId}",
             Source: request.Source,
-            Reason: entry.Validation?.Error ?? "Break was not found."), ct).ConfigureAwait(false);
+            Reason: entry.Validation?.Error ?? "Break was not found.")
+        {
+            TenantId = scope?.TenantId,
+            CompanyId = scope?.CompanyId
+        }, ct).ConfigureAwait(false);
     }
 
     private async Task<ReconciliationBulkCaseworkResult> RetainBulkReplayConflictAsync(
@@ -883,10 +903,11 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string inputHash,
         DateTimeOffset startedAt,
         string reason,
+        ReconciliationBreakQueueScope? scope,
         CancellationToken ct)
     {
         var auditCount = _auditEvents.Count;
-        await AppendBulkReplayAuditAsync(request, "BulkActionReplayConflict", reason, ct).ConfigureAwait(false);
+        await AppendBulkReplayAuditAsync(request, "BulkActionReplayConflict", reason, scope, ct).ConfigureAwait(false);
         try
         {
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
@@ -909,6 +930,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         ReconciliationBulkCaseworkRequest request,
         string eventType,
         string reason,
+        ReconciliationBreakQueueScope? scope,
         CancellationToken ct)
         => AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
             EventId: Guid.NewGuid().ToString("N"),
@@ -928,7 +950,11 @@ public sealed partial class FileReconciliationBreakQueueRepository
             CorrelationId: request.CorrelationId,
             CommandId: request.CommandId,
             Source: request.Source,
-            Reason: reason), ct);
+            Reason: reason)
+        {
+            TenantId = scope?.TenantId,
+            CompanyId = scope?.CompanyId
+        }, ct);
 
     private Task AppendCaseworkReplayAuditAsync(
         ReconciliationCaseworkCommand command,
@@ -1352,7 +1378,9 @@ public sealed partial class FileReconciliationBreakQueueRepository
     private static bool HasMatchingReportingScope(
         ReconciliationBreakQueueItem source,
         ReconciliationBreakQueueItem successor) =>
-        ScopeEquals(source.FundAccountId, successor.FundAccountId)
+        ScopeEquals(source.TenantId, successor.TenantId)
+        && ScopeEquals(source.CompanyId, successor.CompanyId)
+        && ScopeEquals(source.FundAccountId, successor.FundAccountId)
         && ScopeEquals(source.ExternalAccountId, successor.ExternalAccountId)
         && source.LedgerBookId == successor.LedgerBookId
         && ScopeEquals(source.AccountingPeriodId, successor.AccountingPeriodId)
@@ -1389,7 +1417,9 @@ public sealed partial class FileReconciliationBreakQueueRepository
             Status = status,
             ResolutionCode = resolutionCode,
             RootCauseCode = rootCauseCode,
-            SignoffStatus = signoffStatus
+            SignoffStatus = signoffStatus,
+            TenantId = string.IsNullOrWhiteSpace(item.TenantId) ? null : item.TenantId.Trim(),
+            CompanyId = string.IsNullOrWhiteSpace(item.CompanyId) ? null : item.CompanyId.Trim()
         };
     }
 
@@ -1470,6 +1500,10 @@ public sealed partial class FileReconciliationBreakQueueRepository
                         EvidenceLinks = completedEvidence,
                         EvidenceCount = completedEvidence.Length,
                         BlockedOutputs = remainingBlockedOutputs,
+                        FundProfileId = command.CloseScope!.FundProfileId.Trim(),
+                        LedgerBookId = command.CloseScope.LedgerBookId,
+                        AccountingPeriodId = command.CloseScope.AccountingPeriodId.ToString("D"),
+                        AsOfDate = command.CloseScope.AsOfDate,
                         LastUpdatedAt = now
                     };
                 }
@@ -1677,7 +1711,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string InputHashSha256,
         ReconciliationBreakQueueItem Result,
         VerifiedOperationOutcome? Outcome = null,
-        bool LegacyUnverified = false);
+        bool LegacyUnverified = false,
+        ReconciliationBreakQueueScope? AccessScope = null);
 
     private sealed record BulkCaseworkReceipt(
         string BulkActionId,
@@ -1685,7 +1720,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string IdempotencyKey,
         string InputHashSha256,
         ReconciliationBulkCaseworkResult Result,
-        bool LegacyUnverified = false);
+        bool LegacyUnverified = false,
+        ReconciliationBreakQueueScope? AccessScope = null);
 
     private sealed record PreparedBulkCasework(
         string BreakId,
@@ -1703,7 +1739,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
         IReadOnlyList<ReconciliationBulkCaseworkResult>? BulkResults = null,
         IReadOnlyDictionary<string, string>? BulkResultIdsByIdempotencyKey = null,
         IReadOnlyList<CaseworkCommandReceipt>? CommandReceipts = null,
-        IReadOnlyList<BulkCaseworkReceipt>? BulkReceipts = null)
+        IReadOnlyList<BulkCaseworkReceipt>? BulkReceipts = null,
+        IReadOnlyList<CloseScopeLockRecord>? CloseScopeLocks = null)
     {
         public int SchemaVersion { get; init; } = 1;
         public string? ContentHashSha256 { get; init; }
@@ -1716,6 +1753,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         Dictionary<string, string> BulkResultIdsByIdempotencyKey,
         Dictionary<string, BulkCaseworkReceipt> BulkReceipts,
         Dictionary<string, CaseworkCommandReceipt> CommandReceipts,
+        Dictionary<string, CloseScopeLockRecord> CloseScopeLocks,
         SnapshotStamp? LoadedSnapshotStamp);
 
     private sealed record SnapshotStamp(long Length, long LastWriteUtcTicks);

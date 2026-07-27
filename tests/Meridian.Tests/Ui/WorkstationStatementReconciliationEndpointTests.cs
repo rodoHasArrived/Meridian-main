@@ -3,12 +3,17 @@ using System.Net.Http.Json;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.TestHost;
@@ -18,18 +23,93 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    private static readonly Guid StatementReportAccountId =
+        Guid.Parse("8c5224d3-95d5-493f-a8c5-7272f8c49c14");
+    private static readonly Guid StatementReportFundId =
+        Guid.Parse("b581a990-d754-464c-8408-d18ae3f1621c");
+    private static readonly Guid StatementReportLedgerBookId =
+        Guid.Parse("287a2b1c-f05e-4ddf-a988-19ea3c812498");
+    private static readonly Guid StatementReportPeriodId =
+        Guid.Parse("e56a2c52-23cb-4d14-bda3-b91e9ce810a0");
+    private static readonly Guid StatementReportOperationsWorkflowId =
+        Guid.Parse("1dca2044-cdbf-4bc4-92c6-d1e23770fd39");
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementImportCommit_ShouldDelegateToCanonicalIntakeAuthority()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-import-authority-endpoint",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var intake = new RecordingStatementReconciliationIntakeAuthority();
+            var workflow = new StatementReconciliationReportWorkflowService(
+                new EndpointStatementImportService(),
+                new EndpointStatementEvidenceRetainer(),
+                new EndpointStatementRunWorkflowService(),
+                root,
+                logger: null,
+                breakQueue: null,
+                intakeAuthority: intake);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(workflow);
+                services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
+                RegisterStatementReportAuthority(services);
+            });
+            using var content = BuildStatementReconciliationReportContent();
+
+            var response = await app.GetTestClient().PostAsync(
+                UiApiRoutes.ReconciliationStatementImportCommit,
+                content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<StatementImportCommitResultDto>(
+                ServerJsonOptions);
+            result.Should().NotBeNull();
+            result!.StatementReconciliationReportWorkflowId.Should().StartWith(
+                "statement-reconciliation-report-");
+            result.OperationsWorkflowId.Should().Be(StatementReportOperationsWorkflowId);
+            result.AccountingScope.Should().BeEquivalentTo(
+                new StatementReconciliationAccountingScopeDto(
+                    StatementReportFundId.ToString("D"),
+                    StatementReportLedgerBookId,
+                    StatementReportPeriodId,
+                    new DateOnly(2026, 6, 30)));
+            intake.ResolveCount.Should().Be(1);
+            intake.PublishCount.Should().Be(1);
+            intake.LastTenantId.Should().Be("tenant-test");
+            intake.LastCompanyId.Should().Be("tenant-test");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_StatementReconciliationReport_ShouldCompleteAndServeRetainedArtifact()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-statement-reconciliation-report-endpoint", Guid.NewGuid().ToString("N"));
         try
         {
+            var intake = new RecordingStatementReconciliationIntakeAuthority();
             var workflow = new StatementReconciliationReportWorkflowService(
                 new EndpointStatementImportService(),
                 new EndpointStatementEvidenceRetainer(),
                 new EndpointStatementRunWorkflowService(),
-                root);
-            await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
+                root,
+                logger: null,
+                breakQueue: null,
+                intakeAuthority: intake);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(workflow);
+                services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
+                RegisterStatementReportAuthority(services);
+            });
             var client = app.GetTestClient();
             using var content = BuildStatementReconciliationReportContent();
 
@@ -66,12 +146,21 @@ public sealed partial class WorkstationEndpointsTests
             Guid.NewGuid().ToString("N"));
         try
         {
+            var intake = new RecordingStatementReconciliationIntakeAuthority();
             var workflow = new StatementReconciliationReportWorkflowService(
                 new EndpointStatementImportService(),
                 new EndpointStatementEvidenceRetainer(),
                 new EndpointStatementRunWorkflowService(),
-                root);
-            await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
+                root,
+                logger: null,
+                breakQueue: null,
+                intakeAuthority: intake);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(workflow);
+                services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
+                RegisterStatementReportAuthority(services);
+            });
             var client = app.GetTestClient();
             using var content = BuildStatementReconciliationReportContent();
 
@@ -176,17 +265,74 @@ public sealed partial class WorkstationEndpointsTests
         var root = Path.Combine(Path.GetTempPath(), "meridian-statement-connector-extension", Guid.NewGuid().ToString("N"));
         try
         {
+            var intake = new RecordingStatementReconciliationIntakeAuthority();
             var workflow = new StatementReconciliationReportWorkflowService(
                 new EndpointStatementImportService(),
                 new EndpointStatementEvidenceRetainer(),
                 new EndpointStatementRunWorkflowService(),
-                root);
-            await using var app = await CreateAppAsync(services => services.AddSingleton(workflow));
+                root,
+                logger: null,
+                breakQueue: null,
+                intakeAuthority: intake);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(workflow);
+                services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
+                RegisterStatementReportAuthority(services);
+            });
             using var content = BuildStatementReconciliationReportContent(fileName);
 
             var response = await app.GetTestClient().PostAsync(UiApiRoutes.ReconciliationStatementReconciliationReport, content);
 
             response.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementReconciliationReport_ForeignTenantAccountFailsBeforeInputRetention()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-statement-report-foreign-account",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            var imports = new EndpointStatementImportService();
+            var intake = new RecordingStatementReconciliationIntakeAuthority();
+            var workflow = new StatementReconciliationReportWorkflowService(
+                imports,
+                new EndpointStatementEvidenceRetainer(),
+                new EndpointStatementRunWorkflowService(),
+                root,
+                logger: null,
+                breakQueue: null,
+                intakeAuthority: intake);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton(workflow);
+                services.AddSingleton<IStatementReconciliationIntakeAuthority>(intake);
+                RegisterStatementReportAuthority(
+                    services,
+                    new FundProfileOwnership(
+                        StatementReportFundId.ToString("D"),
+                        "tenant-other",
+                        "company-other"));
+            });
+            using var content = BuildStatementReconciliationReportContent();
+
+            var response = await app.GetTestClient().PostAsync(
+                UiApiRoutes.ReconciliationStatementReconciliationReport,
+                content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            imports.CommitCount.Should().Be(0);
+            Directory.Exists(root).Should().BeFalse(
+                "foreign account scope must be rejected before the workflow retains uploaded input");
         }
         finally
         {
@@ -342,7 +488,11 @@ public sealed partial class WorkstationEndpointsTests
         service.CreatedRequests.Should().BeEmpty();
     }
 
-    private static InMemoryFundAccountService CreateStatementAccount(Guid accountId)
+    private static InMemoryFundAccountService CreateStatementAccount(
+        Guid accountId,
+        Guid? fundId = null,
+        string institution = "Sample Custodian",
+        string externalAccountId = "external-allowed")
     {
         var accounts = new InMemoryFundAccountService();
         accounts.CreateAccountAsync(new Meridian.Contracts.FundStructure.CreateAccountRequest(
@@ -353,10 +503,31 @@ public sealed partial class WorkstationEndpointsTests
             "USD",
             DateTimeOffset.UtcNow,
             "test-operator",
-            Institution: "Sample Custodian",
+            FundId: fundId,
+            Institution: institution,
             CustodianDetails: new Meridian.Contracts.FundStructure.CustodianAccountDetailsDto(
-                "external-allowed", null, null, null, null, null, null, null))).GetAwaiter().GetResult();
+                externalAccountId, null, null, null, null, null, null, null))).GetAwaiter().GetResult();
         return accounts;
+    }
+
+    private static void RegisterStatementReportAuthority(
+        IServiceCollection services,
+        FundProfileOwnership? ownership = null)
+    {
+        services.AddSingleton<IAccountQueryService>(
+            CreateStatementAccount(
+                StatementReportAccountId,
+                StatementReportFundId,
+                "Broker Alpha",
+                "external-alpha"));
+        services.AddSingleton<IFundProfileTenancyRegistry>(
+            new FixedFundProfileTenancyRegistry(
+                ownership ?? new FundProfileOwnership(
+                    StatementReportFundId.ToString("D"),
+                    "tenant-test",
+                    "tenant-test")));
+        services.AddSingleton<IScopedAuthorizationService>(
+            new StatementReportScopedAuthorizationService(StatementReportAccountId));
     }
 
     private static MultipartFormDataContent BuildStatementReconciliationReportContent(string fileName = "statement.csv")
@@ -370,7 +541,7 @@ public sealed partial class WorkstationEndpointsTests
         content.Add(new StringContent("csv"), "connectorId");
         content.Add(new StringContent("broker"), "sourceKind");
         content.Add(new StringContent("Broker Alpha"), "sourceInstitution");
-        content.Add(new StringContent("fund-account-alpha"), "fundAccountId");
+        content.Add(new StringContent(StatementReportAccountId.ToString("D")), "fundAccountId");
         content.Add(new StringContent("external-alpha"), "externalAccountId");
         content.Add(new StringContent("2026-06-01"), "periodStart");
         content.Add(new StringContent("2026-06-30"), "periodEnd");
@@ -379,10 +550,14 @@ public sealed partial class WorkstationEndpointsTests
 
     private sealed class EndpointStatementImportService : IStatementImportCommitService
     {
+        public int CommitCount { get; private set; }
+
         public Task<StatementImportCommitResultDto> CommitAsync(
             StatementImportCommitRequest request,
             CancellationToken ct = default)
-            => Task.FromResult(new StatementImportCommitResultDto(
+        {
+            CommitCount++;
+            return Task.FromResult(new StatementImportCommitResultDto(
                 "statement-run-endpoint",
                 Duplicate: false,
                 RecordCount: 1,
@@ -393,12 +568,62 @@ public sealed partial class WorkstationEndpointsTests
                 RetainedCanonicalPath: "reconciliation/canonical.csv",
                 Status: "Imported",
                 NextAction: "Build report."));
+        }
 
         public Task<StatementImportValidationResult> ValidateAsync(
             StatementSourceDocument document,
             string? connectorId,
             CancellationToken ct = default)
             => Task.FromResult(new StatementImportValidationResult(true, 1, []));
+    }
+
+    private sealed class FixedFundProfileTenancyRegistry(FundProfileOwnership ownership)
+        : IFundProfileTenancyRegistry
+    {
+        public Task<FundProfileOwnership> BindAsync(
+            string fundProfileId,
+            string tenantId,
+            string? companyId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(ownership);
+
+        public Task<FundProfileOwnership?> ResolveAsync(
+            string fundProfileId,
+            CancellationToken ct = default)
+            => Task.FromResult<FundProfileOwnership?>(
+                string.Equals(
+                    fundProfileId,
+                    ownership.FundProfileId,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? ownership
+                    : null);
+
+        public async Task<bool> IsAccessibleAsync(
+            string fundProfileId,
+            string tenantId,
+            string? companyId = null,
+            CancellationToken ct = default)
+            => (await ResolveAsync(fundProfileId, ct))?.IsHeldBy(tenantId) == true;
+    }
+
+    private sealed class StatementReportScopedAuthorizationService(Guid accountId)
+        : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission requiredPermission,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+            => Task.FromResult(
+                new ScopedAuthorizationDecisionDto(
+                    scopeKind == AccessScopeKindDto.Account && scopeId == accountId,
+                    actor,
+                    requiredPermission,
+                    scopeKind,
+                    scopeId,
+                    "statement-report-test"));
     }
 
     private sealed class EndpointStatementEvidenceRetainer : IStatementImportEvidenceRetainer
@@ -420,6 +645,48 @@ public sealed partial class WorkstationEndpointsTests
                     1,
                     "File")
             });
+    }
+
+    private sealed class RecordingStatementReconciliationIntakeAuthority
+        : IStatementReconciliationIntakeAuthority
+    {
+        public int ResolveCount { get; private set; }
+        public int PublishCount { get; private set; }
+        public string? LastTenantId { get; private set; }
+        public string? LastCompanyId { get; private set; }
+
+        public Task<StatementAccountingScope> ResolveAccountingScopeAsync(
+            StatementReconciliationIntakeScopeRequest request,
+            CancellationToken ct = default)
+        {
+            ResolveCount++;
+            LastTenantId = request.TenantId;
+            LastCompanyId = request.CompanyId;
+            return Task.FromResult(new StatementAccountingScope(
+                StatementReportFundId.ToString("D"),
+                StatementReportLedgerBookId,
+                StatementReportPeriodId,
+                new DateOnly(2026, 6, 30)));
+        }
+
+        public Task<StatementReconciliationIntakeReceipt> PublishAsync(
+            string statementWorkflowId,
+            StatementImportCommitResultDto import,
+            StatementAccountingScope accountingScope,
+            string tenantId,
+            string companyId,
+            string actor,
+            string sourceInstitution,
+            IReadOnlyList<string> evidenceReferences,
+            CancellationToken ct = default)
+        {
+            PublishCount++;
+            return Task.FromResult(new StatementReconciliationIntakeReceipt(
+                accountingScope,
+                StatementReportOperationsWorkflowId,
+                PublishedCaseCount: 0,
+                evidenceReferences));
+        }
     }
 
     private sealed class EndpointStatementRunWorkflowService : IStatementRunWorkflowService

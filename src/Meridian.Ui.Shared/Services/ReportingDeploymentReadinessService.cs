@@ -51,6 +51,14 @@ public sealed class ReportingDeploymentReadinessService(
                         "trg_reporting_restatement_requests_guard",
                         "trg_reporting_governance_audit_append",
                         "trg_reporting_governance_audit_immutable"
+                    ],
+                    UniqueKeys:
+                    [
+                        "reporting_governed_runs(tenant_id,run_id)",
+                        "reporting_governed_runs(tenant_id,series_id,revision)",
+                        "reporting_restatement_requests(tenant_id,request_id)",
+                        "reporting_governance_audit(tenant_id,aggregate_kind,aggregate_id,aggregate_version)",
+                        "reporting_governance_audit(tenant_id,event_id)"
                     ]),
                 ["artifacts"] = new(
                     [
@@ -66,6 +74,15 @@ public sealed class ReportingDeploymentReadinessService(
                         "trg_reporting_artifact_packages_immutable",
                         "trg_reporting_artifact_catalog_immutable",
                         "trg_reporting_artifact_audit_immutable"
+                    ],
+                    UniqueKeys:
+                    [
+                        "reporting_artifact_blobs(tenant_id,content_hash_sha256)",
+                        "reporting_artifact_packages(tenant_id,package_id)",
+                        "reporting_artifact_catalog(tenant_id,package_id,artifact_id)",
+                        "reporting_artifact_audit_chain_head(chain_id)",
+                        "reporting_artifact_audit(sequence)",
+                        "reporting_artifact_audit(event_id)"
                     ]),
                 ["reconciliation-evidence"] = new(
                     [
@@ -75,9 +92,43 @@ public sealed class ReportingDeploymentReadinessService(
                     [
                         "reporting_reconciliation_evidence_immutable",
                         "reporting_reconciliation_evidence_v2_append"
+                    ],
+                    UniqueKeys:
+                    [
+                        "reporting_reconciliation_evidence(tenant_id,receipt_key_sha256)",
+                        "reporting_reconciliation_evidence(tenant_id,reconciliation_checkpoint_id,reconciliation_checkpoint_hash)",
+                        "reporting_reconciliation_evidence_v2(tenant_id,receipt_key_sha256)",
+                        "reporting_reconciliation_evidence_v2(tenant_id,reconciliation_checkpoint_id,reconciliation_checkpoint_hash)"
                     ]),
-                ["runs"] = new(["reporting_run_snapshots"], []),
-                ["scheduling"] = new(["reporting_schedule_snapshots"], []),
+                ["runs"] = new(
+                    [
+                        "reporting_run_snapshots",
+                        "reporting_run_create_claims"
+                    ],
+                    [],
+                    [
+                        "reporting_run_create_claims.tenant_id",
+                        "reporting_run_create_claims.run_id",
+                        "reporting_run_create_claims.run_id_key",
+                        "reporting_run_create_claims.lease_owner",
+                        "reporting_run_create_claims.claimed_at_utc",
+                        "reporting_run_create_claims.lease_expires_at_utc",
+                        "reporting_run_create_claims.lease_version"
+                    ],
+                    [
+                        "reporting_run_snapshots(tenant_id,run_id_key)",
+                        "reporting_run_create_claims(tenant_id,run_id_key)"
+                    ]),
+                ["scheduling"] = new(
+                    ["reporting_schedule_snapshots"],
+                    [],
+                    [
+                        "reporting_schedule_snapshots.due_at_utc",
+                        "reporting_schedule_snapshots.lease_owner",
+                        "reporting_schedule_snapshots.lease_expires_at_utc",
+                        "reporting_schedule_snapshots.lease_version"
+                    ],
+                    ["reporting_schedule_snapshots(tenant_id,company_id,schedule_id_key)"]),
                 ["delivery"] = new(
                     [
                         "reporting_access_grants",
@@ -88,8 +139,24 @@ public sealed class ReportingDeploymentReadinessService(
                         "trg_reporting_access_grants_guard",
                         "trg_reporting_delivery_jobs_guard",
                         "trg_reporting_delivery_receipts_immutable"
+                    ],
+                    UniqueKeys:
+                    [
+                        "reporting_access_grants(grant_id)",
+                        "reporting_delivery_jobs(job_id)",
+                        "reporting_delivery_jobs(idempotency_key)",
+                        "reporting_delivery_jobs(job_id,tenant_id)",
+                        "reporting_delivery_jobs(access_grant_id) where access_grant_id IS NOT NULL",
+                        "reporting_delivery_receipts(job_id,receipt_id)"
                     ]),
-                ["migrations"] = new(["reporting_schema_migrations"], [])
+                ["migrations"] = new(
+                    ["reporting_schema_migrations"],
+                    [],
+                    [
+                        "reporting_schema_migrations.filename",
+                        "reporting_schema_migrations.checksum"
+                    ],
+                    ["reporting_schema_migrations(filename)"])
             };
 
     private readonly IServiceProvider _services =
@@ -134,6 +201,7 @@ public sealed class ReportingDeploymentReadinessService(
             Resolve<IReportingRecipientDestinationResolver>()?.IsConfigured == true;
         var clientDocumentsConfigured =
             IsImplementation<IReportingPrimaryDocumentRenderer, DocumentsReportingPrimaryDocumentRenderer>()
+            && Resolve<LedgerClientReportExportService>()?.HasClientGradeRenderer == true
             && IsImplementation<IReportingCertifiedArtifactProducer,
                 DeterministicReportingCertifiedArtifactProducer>()
             && Resolve<IReportingCertifiedLedgerPresentationSource>()
@@ -202,9 +270,13 @@ public sealed class ReportingDeploymentReadinessService(
                     ? "The PostgreSQL reporting authority is unreachable."
                     : persistenceProbe is { MissingTriggers.Count: > 0 }
                         ? "The PostgreSQL reporting schema is missing required immutable-control triggers."
-                    : persistenceProbe is { MissingTables.Count: > 0 }
-                        ? "The PostgreSQL reporting schema is incomplete."
-                        : "Reporting migrations have not completed for this process.")
+                        : persistenceProbe is { MissingColumns.Count: > 0 }
+                            ? "The PostgreSQL reporting schema is missing required operational-authority columns."
+                            : persistenceProbe is { MissingUniqueKeys.Count: > 0 }
+                                ? "The PostgreSQL reporting schema is missing required durable identity keys."
+                                : persistenceProbe is { MissingTables.Count: > 0 }
+                                    ? "The PostgreSQL reporting schema is incomplete."
+                                    : "Reporting migrations have not completed for this process.")
         };
         var blockers = components
             .Where(static component => !component.IsReady)
@@ -215,6 +287,7 @@ public sealed class ReportingDeploymentReadinessService(
             IsReady: blockers.Length == 0,
             DurableGovernance: durableGovernance,
             DurableArtifacts: durableArtifacts,
+            DurableReconciliationEvidence: durableReconciliationEvidence,
             DurableRuns: durableRuns,
             DurableScheduling: durableScheduling,
             DurableDelivery: durableDelivery,
@@ -245,7 +318,16 @@ public sealed class ReportingDeploymentReadinessService(
         }
 
         return requirement.Tables.All(probe.HasTable)
-               && requirement.Triggers.All(probe.HasTrigger);
+               && requirement.Triggers.All(probe.HasTrigger)
+               && (requirement.Columns?.All(column =>
+               {
+                   var separator = column.IndexOf('.');
+                   return separator > 0
+                          && probe.HasColumn(
+                              column[..separator],
+                              column[(separator + 1)..]);
+               }) ?? true)
+               && (requirement.UniqueKeys?.All(probe.HasUniqueKey) ?? true);
     }
 
     private T? Resolve<T>()
@@ -268,5 +350,7 @@ public sealed class ReportingDeploymentReadinessService(
 
     private sealed record ReportingDeploymentSchemaRequirement(
         IReadOnlyList<string> Tables,
-        IReadOnlyList<string> Triggers);
+        IReadOnlyList<string> Triggers,
+        IReadOnlyList<string>? Columns = null,
+        IReadOnlyList<string>? UniqueKeys = null);
 }

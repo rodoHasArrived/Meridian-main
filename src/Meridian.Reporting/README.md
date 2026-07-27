@@ -43,8 +43,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   retries, provider receipts, and release authorization contracts.
 - `ReportingOperationalStoreContracts.cs` - Reporting-owned schedule and legacy
   compatibility-store boundaries implemented by UI Shared or Storage adapters.
-- `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
-  lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
+- `ReportingOrchestrationService.cs` - deterministic certified single-run execution, lineage
+  rendering, approval transitions, retry/failure state, and run-store persistence handoff. Its
+  retained batch due-schedule member is obsolete and fails closed.
 - `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
   contribution, saved-filter, and formula-backed report-writer tables over explicit lower-level
   input rows.
@@ -61,6 +62,10 @@ artifact, governance, restatement, and distribution contracts plus deterministic
 UI Shared adapts authenticated workstation requests and server-owned accounting sources; Storage
 implements PostgreSQL persistence. Browser and WPF remain thin consumers of shared DTOs and
 server-returned action availability.
+The host reporting-schedule adapter is the only due-work discovery and lease authority. It resolves
+the exact access scope, readiness, certification, and delivery handoff before calling
+`IReportingOrchestrationService.ExecuteAsync` with one certified job contract. The retained
+`ExecuteDueSchedulesAsync` compatibility member cannot generate runs.
 Artifact declarations are not completion evidence by themselves. UI Shared renders the declared
 PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty content and SHA-256
 identity, and retains them in one immutable package. Final report readiness fails closed when exact
@@ -69,21 +74,38 @@ impacted outputs, and retained evidence hash.
 
 Production reporting is also fail-closed at the workspace boundary. The independent
 `GET /api/workstation/reporting` capability is ready only when PostgreSQL governance, artifact,
-run, schedule, access-grant, delivery, and receipt stores are active together with managed
-migrations, exact-scope recipient destinations, and the canonical client-document renderer.
-File-backed run and schedule stores remain local/development compatibility; they do not satisfy the
-production capability.
+immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and receipt stores
+are active and their required tables, immutable-control triggers, operational lease columns,
+checksummed migration-ledger key, and immediate predicate-compatible unique/idempotency keys pass
+the schema probe. Exact-scope recipient destinations, the canonical client-document renderer, the
+configured durable ledger-presentation source, and the current process's successful managed
+migration receipt are also required. File-backed run, schedule, custom-template, starter-kit,
+workflow, and delivery stores remain local/development compatibility; production omits them and
+they do not satisfy the capability. Production composition requires a Reporting or documented
+ledger PostgreSQL connection and does not silently substitute those file stores. With a database
+configured, checksummed Reporting migrations finish before the HTTP host
+and hosted workers start; an unreachable database or migration failure stops startup. Other
+incomplete authority leaves production reporting `Required/NotReady` and its reads/mutations
+service-unavailable. Local/development may start on file compatibility stores with a degraded
+reporting lifecycle, but those stores still do not make authoritative Reporting routes ready.
 
-`ReportingOutputFormatDto.ClientPackage` declares both PDF and XLSX primary outputs. UI Shared uses
-the deterministic certified-artifact producer and the Documents-backed primary renderer to produce
-and hash those bytes from the same certified manifest.
+`ReportingOutputFormatDto.ClientPackage` declares exactly one `<runId>.pdf` and one
+`<runId>.xlsx` primary output. For a capital-account package, UI Shared verifies the exact
+checkpoint-bound `LedgerFinancialReportPack`, then passes that pack intact through the existing
+`LedgerClientReportExportService` to the registered
+`Meridian.Documents.FinancialReportDocumentRenderer`. The producer receives both documents from one
+in-memory package build and applies the Reporting declarations, byte lengths, and SHA-256 hashes; it
+does not rebuild partners-capital tables through a parallel renderer. Release and distribution
+treat that primary pair atomically: neither a missing, duplicated, PDF-only, nor XLSX-only subset is
+a releasable or deliverable `ClientPackage`.
 
-The Statement Reconciliation Report endpoint is upstream preprocessing owned by UI Shared. Its
-retained JSON/CSV artifacts are not a Reporting run, governed artifact package, approval, release,
-or delivery receipt, and this module does not automatically promote them. The canonical downstream
-path reuses Operations Continuity for reconciliation/accounting/close evidence, this module's
-certification and governance lifecycle, the shared client-document renderer, and secure
-distribution after release.
+The Statement Reconciliation Report endpoint is an intake adapter owned by UI Shared. It resolves
+durable account/fund/book/open-period scope, retains statement and Evidence Vault evidence, starts
+or reuses the exact Operations Continuity workflow, and publishes statement obligations into the
+existing governed reconciliation queue. Its retained JSON/CSV artifacts are not a Reporting run,
+governed artifact package, approval, release, or delivery receipt. Only a separately started,
+readiness-approved run enters this module's certification and governance lifecycle, followed by the
+shared client-document renderer and secure distribution after independent release.
 
 ## Diagrams
 
@@ -120,7 +142,9 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 by UI Shared, Storage, browser, and WPF. A successful orchestration manifest remains a certified
 Draft until the canonical governance aggregate validates, submits, approves, verifies exact retained
 bytes, and releases it. Released state is terminal; approved restatement creates a newly certified
-revision without changing its predecessor. `ReportGenerationService` retains the canonical ledger dimension
+revision without changing its predecessor. Due schedules must enter through the host schedule
+adapter; the obsolete batch method on `IReportingOrchestrationService` fails closed rather than
+constructing an uncertified job contract. `ReportGenerationService` retains the canonical ledger dimension
 envelope from dimensioned fund-ledger lines on generated trial-balance rows so downstream
 report-pack evidence artifacts do not reconstruct accounting scope from account names or route
 context. `ReportWriterGridEngine` renders governed template grid definitions without script

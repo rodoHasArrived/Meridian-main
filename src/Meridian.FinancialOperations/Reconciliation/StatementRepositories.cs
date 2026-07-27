@@ -49,6 +49,8 @@ public sealed record StatementRunManifest(
     int RawRowCount = 0,
     int NormalizedRowCount = 0)
 {
+    public StatementAccountingScope? AccountingScope { get; init; }
+
     public static StatementRunManifest FromRequest(
         string runId,
         string importId,
@@ -81,7 +83,10 @@ public sealed record StatementRunManifest(
             new StatementProfileVersion(request.ToleranceProfileId, toleranceProfileVersion),
             request.DuplicateKey,
             rawRowCount,
-            normalizedRowCount);
+            normalizedRowCount)
+        {
+            AccountingScope = request.AccountingScope
+        };
     }
 }
 
@@ -435,4 +440,3 @@ internal static class StatementRepositoryGuard
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
     }
 }
-

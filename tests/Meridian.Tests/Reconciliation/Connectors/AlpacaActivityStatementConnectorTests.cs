@@ -122,6 +122,56 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.Transaction);
     }
 
+    [Fact]
+    public async Task Fetch_BoundedPeriod_ForwardsExactHalfOpenWindow()
+    {
+        var activitySync = new RecordingBoundedActivitySync();
+        var connector = CreateConnector(activitySync);
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+
+        await connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: since,
+            Datasets: StatementFetchDatasets.Activity,
+            UntilExclusive: untilExclusive));
+
+        activitySync.LastSince.Should().Be(since);
+        activitySync.LastUntilExclusive.Should().Be(untilExclusive);
+    }
+
+    [Fact]
+    public async Task Fetch_BoundedPeriod_WhenProviderCannotEnforceUpperBound_FailsClosed()
+    {
+        var connector = CreateConnector(new FakeActivitySync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            Datasets: StatementFetchDatasets.Activity,
+            UntilExclusive: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*exact upper time bound*");
+    }
+
+    [Fact]
+    public async Task Fetch_BoundedPeriod_WithCurrentPortfolioDataset_FailsClosed()
+    {
+        var connector = CreateConnector(new RecordingBoundedActivitySync(), new FakePortfolioSync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            UntilExclusive: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*historical portfolio snapshot*");
+    }
+
     private sealed class FakeActivitySync : IBrokerageActivitySync
     {
         public string ProviderId => "alpaca";
@@ -148,6 +198,34 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
                         Commission: 0.55m)
                 ],
                 CashTransactions: []));
+    }
+
+    private sealed class RecordingBoundedActivitySync : IBrokerageActivitySync
+    {
+        private readonly FakeActivitySync _inner = new();
+
+        public string ProviderId => _inner.ProviderId;
+
+        public DateTimeOffset? LastSince { get; private set; }
+
+        public DateTimeOffset? LastUntilExclusive { get; private set; }
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+            => _inner.GetActivitySnapshotAsync(externalAccountId, since, ct);
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            DateTimeOffset? untilExclusive,
+            CancellationToken ct = default)
+        {
+            LastSince = since;
+            LastUntilExclusive = untilExclusive;
+            return _inner.GetActivitySnapshotAsync(externalAccountId, since, ct);
+        }
     }
 
     private sealed class FakePortfolioSync : IBrokeragePortfolioSync

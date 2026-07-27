@@ -872,7 +872,7 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
-    public async Task ClosePostingBridge_FinalizeHardClose_CloseLocksPostedClosingBatchAndRetryConverges()
+    public async Task ClosePostingBridge_FinalizeHardClose_ReportedFailureAfterCommitSealsCheckpointAndRetryConverges()
     {
         var journalPeriod = new LedgerAccountingPeriod(
             ClosedPeriodId,
@@ -943,7 +943,8 @@ public sealed class AutomatedJournalEventProducerTests
                     ClosedAt = AsOf,
                     Version = journalPeriod.Version + 1
                 };
-                return new LedgerPeriodCloseResultDto(currentPeriod, currentSummary, null!);
+                return Task.FromException<LedgerPeriodCloseResultDto>(
+                    new IOException("Injected transport failure after durable hard close."));
             });
         var runner = new AutomatedJournalIntakeRunner(
             fixture.Intake,
@@ -1024,10 +1025,31 @@ public sealed class AutomatedJournalEventProducerTests
         tenancy.ResolveAsync("fund-alpha", Arg.Any<CancellationToken>())
             .Returns(new FundProfileOwnership("fund-alpha", "tenant-alpha", "company-alpha"));
         var breakQueue = Substitute.For<IReconciliationBreakQueueRepository>();
-        breakQueue.GetAllAsync(
-                Arg.Any<ReconciliationBreakQueueStatus?>(),
+        var closeScope = new ReconciliationCloseScope(
+            "fund-alpha",
+            BookId,
+            ClosedPeriodId,
+            PeriodEndDate);
+        var closeCheckpointHash = new string('c', 64);
+        var closeScopeLease = Substitute.For<IReconciliationCloseScopeLease>();
+        closeScopeLease.Scope.Returns(closeScope);
+        closeScopeLease.Items.Returns(Array.Empty<ReconciliationBreakQueueItem>());
+        closeScopeLease.CheckpointHashSha256.Returns(closeCheckpointHash);
+        closeScopeLease.CommitHardCloseAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        closeScopeLease.DisposeAsync().Returns(ValueTask.CompletedTask);
+        breakQueue.AcquireCloseScopeLeaseAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
                 Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>([]));
+            .Returns(Task.FromResult(closeScopeLease));
+        var closeCheckpoint = new ReconciliationCloseScopeCheckpoint(
+            closeScope,
+            [],
+            closeCheckpointHash);
+        breakQueue.RecoverHardClosedScopeCheckpointAsync(
+                Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(closeCheckpoint));
         var bridge = new AccountingClosePostingWorkbenchBridge(
             runner,
             fixture.Workbench,
@@ -1083,7 +1105,17 @@ public sealed class AutomatedJournalEventProducerTests
             .Should().BeTrue();
         retainedReportingEvidence.Should().OnlyContain(receipt =>
             receipt.CompletionCheckpointId == $"hard-close-{ClosedPeriodId:N}-v{closed.Version}" &&
-            !receipt.HasOpenBreaks);
+            !receipt.HasOpenBreaks &&
+            receipt.EvidenceIds.Contains(
+                $"reconciliation-close-checkpoint:{closeCheckpointHash}",
+                StringComparer.Ordinal));
+        await breakQueue.DidNotReceive().GetAllAsync(
+            Arg.Any<ReconciliationBreakQueueStatus?>(),
+            Arg.Any<CancellationToken>());
+        await closeScopeLease.Received(1).CommitHardCloseAsync(Arg.Any<CancellationToken>());
+        await breakQueue.Received(1).RecoverHardClosedScopeCheckpointAsync(
+            Arg.Is<ReconciliationCloseScope>(candidate => candidate == closeScope),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -885,6 +885,13 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         // and hash the retained package first, then recheck ledger + canonical queue state so a
         // long artifact download cannot widen the stale-certification window.
         var manifest = GetRequiredManifestForRun(run);
+        if (ReportingCertifiedLedgerPresentationBinding.IsRequired(manifest)
+            && !run.Snapshot.RequiresCertifiedLedgerPresentation)
+        {
+            throw new ReportingGovernanceException(
+                "Final release is blocked because this retained capital-account client package predates exact checkpoint-bound ledger-presentation certification. Regenerate and reapprove it from a fresh certified snapshot.");
+        }
+
         await _certification.RevalidateForReleaseAsync(
                 manifest.ResolvedParameters
                     ?? throw new ReportingGovernanceException(
@@ -1457,23 +1464,42 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         && left.StoredAtUtc == right.StoredAtUtc;
 
     private static string ComputeRetainedSnapshotHash(ReportingRetainedManifestDocument document) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        {
-            template = new
+        document.Snapshot.RequiresCertifiedLedgerPresentation
+            ? ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
             {
-                document.ResolvedTemplate.Name,
-                document.ResolvedTemplate.Version
-            },
-            scope = document.Scope,
-            access = document.Access,
-            parametersHash = document.ParametersHash,
-            sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
-            sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
-            reconciliationId = document.Snapshot.ReconciliationCheckpointId,
-            reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
-            readinessHash = document.Readiness.EvidenceHash,
-            certifiedDatasetHash = document.CertifiedDatasetHashSha256
-        })));
+                template = new
+                {
+                    document.ResolvedTemplate.Name,
+                    document.ResolvedTemplate.Version
+                },
+                scope = document.Scope,
+                access = document.Access,
+                parametersHash = document.ParametersHash,
+                sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
+                sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
+                reconciliationId = document.Snapshot.ReconciliationCheckpointId,
+                reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
+                readinessHash = document.Readiness.EvidenceHash,
+                certifiedDatasetHash = document.CertifiedDatasetHashSha256,
+                requiresCertifiedLedgerPresentation = true
+            })))
+            : ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+            {
+                template = new
+                {
+                    document.ResolvedTemplate.Name,
+                    document.ResolvedTemplate.Version
+                },
+                scope = document.Scope,
+                access = document.Access,
+                parametersHash = document.ParametersHash,
+                sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
+                sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
+                reconciliationId = document.Snapshot.ReconciliationCheckpointId,
+                reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
+                readinessHash = document.Readiness.EvidenceHash,
+                certifiedDatasetHash = document.CertifiedDatasetHashSha256
+            })));
 
     private static void VerifyRetention(
         GovernedReportingRun run,

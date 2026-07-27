@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -27,7 +29,13 @@ public static class EvidenceWorkflowServiceCollectionExtensions
             sp.GetRequiredService<IStatementImportEvidenceRetainer>(),
             sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowService>(),
             FileEvidenceArtifactStore.ResolveDataRoot(sp),
-            sp.GetService<ILogger<StatementReconciliationReportWorkflowService>>()));
+            sp.GetService<ILogger<StatementReconciliationReportWorkflowService>>(),
+            sp.GetService<Meridian.Strategies.Services.IReconciliationBreakQueueRepository>(),
+            sp.GetRequiredService<Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority>()));
+        services.TryAddSingleton<IStatementFetchIngestionAuthority>(sp =>
+            new StatementReconciliationReportFetchIngestionAuthority(
+                sp.GetRequiredService<StatementReconciliationReportWorkflowService>(),
+                sp.GetRequiredService<IStatementReconciliationIntakeAuthority>()));
 #pragma warning disable CS0618 // Preserve injection compatibility while the operation is renamed.
         services.TryAddSingleton(sp => new StatementToReportWorkflowService(
             sp.GetRequiredService<StatementReconciliationReportWorkflowService>()));

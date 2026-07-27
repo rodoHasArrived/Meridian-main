@@ -63,7 +63,94 @@ public sealed record ReportingReconciliationEvidenceReceipt(
     string? CompletionCheckpointId = null,
     string? CompletionCheckpointHash = null,
     ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default,
-    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null);
+    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null)
+{
+    /// <summary>
+    /// Binary-compatibility constructor for consumers compiled before committed-close evidence
+    /// became part of the retained receipt.
+    /// </summary>
+    public ReportingReconciliationEvidenceReceipt(
+        string TenantId,
+        string OrganizationId,
+        string? CompanyId,
+        string FundId,
+        string LedgerBookId,
+        string AccountingPeriodId,
+        string AccountingBasis,
+        DateOnly AsOfDate,
+        string SourceCheckpointId,
+        string SourceCheckpointHash,
+        string ReconciliationCheckpointId,
+        string ReconciliationCheckpointHash,
+        DateTimeOffset ReconciledAtUtc,
+        bool HasOpenBreaks,
+        ImmutableArray<string> EvidenceIds,
+        string? CompletionCheckpointId = null,
+        string? CompletionCheckpointHash = null,
+        ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default)
+        : this(
+            TenantId,
+            OrganizationId,
+            CompanyId,
+            FundId,
+            LedgerBookId,
+            AccountingPeriodId,
+            AccountingBasis,
+            AsOfDate,
+            SourceCheckpointId,
+            SourceCheckpointHash,
+            ReconciliationCheckpointId,
+            ReconciliationCheckpointHash,
+            ReconciledAtUtc,
+            HasOpenBreaks,
+            EvidenceIds,
+            CompletionCheckpointId,
+            CompletionCheckpointHash,
+            BreakEvidence,
+            CloseWorkflowCompletion: null)
+    {
+    }
+
+    public void Deconstruct(
+        out string TenantId,
+        out string OrganizationId,
+        out string? CompanyId,
+        out string FundId,
+        out string LedgerBookId,
+        out string AccountingPeriodId,
+        out string AccountingBasis,
+        out DateOnly AsOfDate,
+        out string SourceCheckpointId,
+        out string SourceCheckpointHash,
+        out string ReconciliationCheckpointId,
+        out string ReconciliationCheckpointHash,
+        out DateTimeOffset ReconciledAtUtc,
+        out bool HasOpenBreaks,
+        out ImmutableArray<string> EvidenceIds,
+        out string? CompletionCheckpointId,
+        out string? CompletionCheckpointHash,
+        out ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+    {
+        TenantId = this.TenantId;
+        OrganizationId = this.OrganizationId;
+        CompanyId = this.CompanyId;
+        FundId = this.FundId;
+        LedgerBookId = this.LedgerBookId;
+        AccountingPeriodId = this.AccountingPeriodId;
+        AccountingBasis = this.AccountingBasis;
+        AsOfDate = this.AsOfDate;
+        SourceCheckpointId = this.SourceCheckpointId;
+        SourceCheckpointHash = this.SourceCheckpointHash;
+        ReconciliationCheckpointId = this.ReconciliationCheckpointId;
+        ReconciliationCheckpointHash = this.ReconciliationCheckpointHash;
+        ReconciledAtUtc = this.ReconciledAtUtc;
+        HasOpenBreaks = this.HasOpenBreaks;
+        EvidenceIds = this.EvidenceIds;
+        CompletionCheckpointId = this.CompletionCheckpointId;
+        CompletionCheckpointHash = this.CompletionCheckpointHash;
+        BreakEvidence = this.BreakEvidence;
+    }
+}
 
 /// <summary>
 /// Immutable result emitted by a server-owned close/reconciliation workflow. The reporting
@@ -76,7 +163,46 @@ public sealed record ReportingReconciliationCompletionEvidence(
     bool HasOpenBreaks,
     ImmutableArray<string> EvidenceIds,
     ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default,
-    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null);
+    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null)
+{
+    /// <summary>
+    /// Binary-compatibility constructor for consumers compiled before committed-close evidence
+    /// became part of reconciliation completion.
+    /// </summary>
+    public ReportingReconciliationCompletionEvidence(
+        string CompletionCheckpointId,
+        string CompletionCheckpointHash,
+        DateTimeOffset CompletedAtUtc,
+        bool HasOpenBreaks,
+        ImmutableArray<string> EvidenceIds,
+        ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+        : this(
+            CompletionCheckpointId,
+            CompletionCheckpointHash,
+            CompletedAtUtc,
+            HasOpenBreaks,
+            EvidenceIds,
+            BreakEvidence,
+            CloseWorkflowCompletion: null)
+    {
+    }
+
+    public void Deconstruct(
+        out string CompletionCheckpointId,
+        out string CompletionCheckpointHash,
+        out DateTimeOffset CompletedAtUtc,
+        out bool HasOpenBreaks,
+        out ImmutableArray<string> EvidenceIds,
+        out ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+    {
+        CompletionCheckpointId = this.CompletionCheckpointId;
+        CompletionCheckpointHash = this.CompletionCheckpointHash;
+        CompletedAtUtc = this.CompletedAtUtc;
+        HasOpenBreaks = this.HasOpenBreaks;
+        EvidenceIds = this.EvidenceIds;
+        BreakEvidence = this.BreakEvidence;
+    }
+}
 
 /// <summary>
 /// Durable evidence read boundary. Implementations must return only an exact retained receipt for

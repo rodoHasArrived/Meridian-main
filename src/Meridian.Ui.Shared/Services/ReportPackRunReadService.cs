@@ -110,6 +110,7 @@ public sealed partial class ReportPackRunReadService
 
     private readonly IReportingTemplateCatalog _templateCatalog;
     private readonly IReportingRunStore? _runStore;
+    private readonly IReportingDeliveryStore? _canonicalDeliveryStore;
     private readonly ReportPackWorkflowService? _workflowService;
     private readonly ReportTemplateRegistryService? _templateRegistry;
     private readonly ReportPackDeliveryService? _deliveryService;
@@ -157,10 +158,12 @@ public sealed partial class ReportPackRunReadService
         ReportTemplateRegistryService? templateRegistry = null,
         ReportPackDeliveryService? deliveryService = null,
         ReportingScheduleService? scheduleService = null,
-        ReportingStarterKitService? starterKitService = null)
+        ReportingStarterKitService? starterKitService = null,
+        IReportingDeliveryStore? canonicalDeliveryStore = null)
     {
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
         _runStore = runStore;
+        _canonicalDeliveryStore = canonicalDeliveryStore;
         _workflowService = workflowService;
         _templateRegistry = templateRegistry;
         _deliveryService = deliveryService;
@@ -173,15 +176,31 @@ public sealed partial class ReportPackRunReadService
 
     public WorkstationReportingPayload BuildPayload(
         ReportAccessQueryContext? accessContext,
-        int recentRunLimit = DefaultRecentRunLimit)
+        int recentRunLimit = DefaultRecentRunLimit) =>
+        BuildPayloadCore(
+            accessContext,
+            recentRunLimit,
+            includeCompatibilitySources: _canonicalDeliveryStore is null);
+
+    private WorkstationReportingPayload BuildPayloadCore(
+        ReportAccessQueryContext? accessContext,
+        int recentRunLimit,
+        bool includeCompatibilitySources)
     {
         var profiles = BuildProfiles();
         var recommended = profiles
             .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
             .Select(static profile => profile.Id)
             .ToArray();
-        var allWorkflowRecords = _workflowService?.ListRecords(200) ?? [];
-        var allDeliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
+        // Production composition supplies the canonical delivery authority. In that mode the
+        // legacy workflow and GUID-based delivery records are compatibility-only and must not be
+        // presented as reporting truth, even when their services remain registered for local reads.
+        var allWorkflowRecords = includeCompatibilitySources
+            ? _workflowService?.ListRecords(200) ?? []
+            : [];
+        var allDeliveryAttempts = includeCompatibilitySources
+            ? _deliveryService?.ListAttempts(500) ?? []
+            : [];
         var allSchedules = _scheduleService?.ListSchedules(accessContext, 100) ?? [];
         var runSnapshots = ListRunSnapshots(accessContext, 200);
         var starterKits = _starterKitService?.ListKits() ?? [];
@@ -291,7 +310,8 @@ public sealed partial class ReportPackRunReadService
             AccessAudit: accessAudit,
             DailyWork: dailyWork,
             StarterKits: starterKits,
-            StarterKitState: starterKitState);
+            StarterKitState: starterKitState,
+            CanonicalDeliveries: includeCompatibilitySources ? null : []);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -1637,48 +1657,6 @@ public sealed partial class ReportPackRunReadService
             .ThenBy(static run => run.Payload.RunId, StringComparer.Ordinal)
             .Take(limit)
             .ToArray();
-    }
-
-    private IReadOnlyList<ReportingRunSnapshot> ListRunSnapshots(
-        ReportAccessQueryContext? accessContext,
-        int limit)
-    {
-        if (_runStore is null)
-        {
-            return [];
-        }
-
-        if (string.IsNullOrWhiteSpace(accessContext?.TenantId))
-        {
-            var snapshots = _runStore.ListRuns(limit);
-            return accessContext is null
-                ? snapshots
-                : snapshots
-                    .Where(snapshot => ReportAccessPolicyEvaluator
-                        .Evaluate(snapshot.Manifest, accessContext)
-                        .IsAccessible)
-                    .ToArray();
-        }
-
-        const int pageSize = 200;
-        var visible = new List<ReportingRunSnapshot>(Math.Clamp(limit, 1, 200));
-        for (var offset = 0; visible.Count < limit; offset += pageSize)
-        {
-            var page = _runStore.ListRuns(
-                accessContext.TenantId.Trim(),
-                accessContext.CompanyId,
-                offset,
-                pageSize);
-            visible.AddRange(page.Where(snapshot => ReportAccessPolicyEvaluator
-                .Evaluate(snapshot.Manifest, accessContext)
-                .IsAccessible));
-            if (page.Count < pageSize)
-            {
-                break;
-            }
-        }
-
-        return visible.Take(Math.Clamp(limit, 1, 200)).ToArray();
     }
 
     public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(

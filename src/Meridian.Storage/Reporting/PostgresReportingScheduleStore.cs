@@ -298,6 +298,229 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
         return true;
     }
 
+    public ReportingScheduleExecutionLease? TryClaimExecution(
+        ReportingScheduleRecordDto schedule,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        var entry = PrepareEntries([schedule]).Single();
+        var normalizedOwner = ReportingOperationalStoreJson.NormalizeRequired(
+            leaseOwner,
+            nameof(leaseOwner),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            update {_scheduleTable}
+               set lease_owner = @lease_owner,
+                   lease_expires_at_utc = clock_timestamp() + @lease_duration,
+                   lease_version = lease_version + 1
+             where tenant_id = @tenant_id
+               and company_id = @company_id
+               and schedule_id_key = @schedule_id_key
+               and payload_hash_sha256 = @payload_hash_sha256
+               and (lease_owner is null or lease_expires_at_utc <= clock_timestamp())
+            returning lease_expires_at_utc, lease_version;
+            """;
+        AddIdentityParameters(command, entry.Identity);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            normalizedOwner);
+        command.Parameters.AddWithValue(
+            "lease_duration",
+            NpgsqlDbType.Interval,
+            leaseDuration);
+        using var reader = command.ExecuteReader();
+        return reader.Read()
+            ? new ReportingScheduleExecutionLease(
+                normalizedOwner,
+                ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 0),
+                reader.GetInt64(1))
+            : null;
+    }
+
+    public ReportingScheduleExecutionLease? RenewExecutionLease(
+        ReportingScheduleRecordDto schedule,
+        ReportingScheduleExecutionLease lease,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(lease);
+        var entry = PrepareEntries([schedule]).Single();
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            update {_scheduleTable}
+               set lease_expires_at_utc = clock_timestamp() + @lease_duration
+             where tenant_id = @tenant_id
+               and company_id = @company_id
+               and schedule_id_key = @schedule_id_key
+               and payload_hash_sha256 = @payload_hash_sha256
+               and lease_owner = @lease_owner
+               and lease_version = @lease_version
+               and lease_expires_at_utc > clock_timestamp()
+            returning lease_expires_at_utc;
+            """;
+        AddIdentityParameters(command, entry.Identity);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            lease.LeaseOwner);
+        command.Parameters.AddWithValue(
+            "lease_version",
+            NpgsqlDbType.Bigint,
+            lease.LeaseVersion);
+        command.Parameters.AddWithValue(
+            "lease_duration",
+            NpgsqlDbType.Interval,
+            leaseDuration);
+        using var reader = command.ExecuteReader();
+        return reader.Read()
+            ? lease with
+            {
+                LeaseExpiresAtUtc =
+                    ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 0)
+            }
+            : null;
+    }
+
+    public void ReleaseExecutionLease(
+        string tenantId,
+        string companyId,
+        string scheduleId,
+        ReportingScheduleExecutionLease lease)
+    {
+        ArgumentNullException.ThrowIfNull(lease);
+        var normalizedScheduleId = ReportingOperationalStoreJson.NormalizeMachineIdentity(
+            scheduleId,
+            nameof(scheduleId),
+            MaximumIdentityLength);
+        var identity = new ReportingScheduleIdentity(
+            ReportingOperationalStoreJson.NormalizeRequired(
+                tenantId,
+                nameof(tenantId),
+                MaximumIdentityLength,
+                requireCanonical: true),
+            ReportingOperationalStoreJson.NormalizeRequired(
+                companyId,
+                nameof(companyId),
+                MaximumIdentityLength,
+                requireCanonical: true),
+            normalizedScheduleId,
+            normalizedScheduleId.ToLowerInvariant());
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            update {_scheduleTable}
+               set lease_owner = null,
+                   lease_expires_at_utc = null
+             where tenant_id = @tenant_id
+               and company_id = @company_id
+               and schedule_id_key = @schedule_id_key
+               and lease_owner = @lease_owner
+               and lease_version = @lease_version;
+            """;
+        AddIdentityParameters(command, identity);
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            lease.LeaseOwner);
+        command.Parameters.AddWithValue(
+            "lease_version",
+            NpgsqlDbType.Bigint,
+            lease.LeaseVersion);
+        command.ExecuteNonQuery();
+    }
+
+    public void UpsertClaimedExecution(
+        ReportingScheduleRecordDto schedule,
+        DateTimeOffset expectedUpdatedAtUtc,
+        ReportingScheduleExecutionLease lease)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(lease);
+        var entry = PrepareEntries([schedule]).Single();
+        var normalizedOwner = ReportingOperationalStoreJson.NormalizeRequired(
+            lease.LeaseOwner,
+            nameof(lease.LeaseOwner),
+            MaximumIdentityLength,
+            requireCanonical: true);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(lease.LeaseVersion);
+
+        using var connection = OpenConnection();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        var current = ReadCurrentSchedule(connection, transaction, entry.Identity);
+        if (current is null)
+        {
+            throw ReportingScheduleConcurrencyException.ForMissing(
+                schedule,
+                expectedUpdatedAtUtc);
+        }
+        if (current.Schedule.UpdatedAtUtc != expectedUpdatedAtUtc)
+        {
+            throw ReportingScheduleConcurrencyException.ForConflict(
+                current.Schedule,
+                expectedUpdatedAtUtc);
+        }
+        if (!HasActiveExecutionLease(
+                connection,
+                transaction,
+                entry.Identity,
+                normalizedOwner,
+                lease.LeaseVersion))
+        {
+            throw ExecutionLeaseException(entry.Identity);
+        }
+        if (ReportingOperationalStoreJson.FixedHashEquals(
+                current.PayloadHashSha256,
+                entry.PayloadHashSha256))
+        {
+            transaction.Commit();
+            return;
+        }
+        if (entry.Schedule.UpdatedAtUtc <= current.Schedule.UpdatedAtUtc)
+        {
+            throw new ArgumentException(
+                "A changed reporting schedule must advance UpdatedAtUtc beyond the retained revision.",
+                nameof(schedule));
+        }
+
+        UpdateClaimedExecution(
+            connection,
+            transaction,
+            entry,
+            current.PayloadHashSha256,
+            normalizedOwner,
+            lease.LeaseVersion);
+        transaction.Commit();
+    }
+
     private static IReadOnlyList<StoredScheduleEntry> PrepareEntries(
         IReadOnlyList<ReportingScheduleRecordDto> schedules)
     {
@@ -625,6 +848,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 schedule_id_key,
                 schedule_payload,
                 payload_hash_sha256,
+                due_at_utc,
                 stored_at_utc)
             values (
                 @tenant_id,
@@ -633,6 +857,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 @schedule_id_key,
                 @schedule_payload,
                 @payload_hash_sha256,
+                @due_at_utc,
                 @stored_at_utc)
             on conflict (tenant_id, company_id, schedule_id_key) do nothing;
             """;
@@ -649,6 +874,10 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
             "payload_hash_sha256",
             NpgsqlDbType.Text,
             entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "due_at_utc",
+            NpgsqlDbType.TimestampTz,
+            entry.Schedule.DueAtUtc.UtcDateTime);
         command.Parameters.AddWithValue(
             "stored_at_utc",
             NpgsqlDbType.TimestampTz,
@@ -687,6 +916,7 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
             set schedule_id = @schedule_id,
                 schedule_payload = @schedule_payload,
                 payload_hash_sha256 = @payload_hash_sha256,
+                due_at_utc = @due_at_utc,
                 stored_at_utc = @stored_at_utc
             where tenant_id = @tenant_id
               and company_id = @company_id
@@ -707,6 +937,10 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
             NpgsqlDbType.Text,
             entry.PayloadHashSha256);
         command.Parameters.AddWithValue(
+            "due_at_utc",
+            NpgsqlDbType.TimestampTz,
+            entry.Schedule.DueAtUtc.UtcDateTime);
+        command.Parameters.AddWithValue(
             "stored_at_utc",
             NpgsqlDbType.TimestampTz,
             DateTime.UtcNow);
@@ -721,6 +955,112 @@ public sealed class PostgresReportingScheduleStore : IReportingScheduleStore
                 expectedUpdatedAtUtc: entry.Schedule.UpdatedAtUtc);
         }
     }
+
+    private bool HasActiveExecutionLease(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingScheduleIdentity identity,
+        string leaseOwner,
+        long leaseVersion)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select exists (
+                select 1
+                from {_scheduleTable}
+                where tenant_id = @tenant_id
+                  and company_id = @company_id
+                  and schedule_id_key = @schedule_id_key
+                  and lease_owner = @lease_owner
+                  and lease_version = @lease_version
+                  and lease_expires_at_utc > clock_timestamp());
+            """;
+        AddIdentityParameters(command, identity);
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            leaseOwner);
+        command.Parameters.AddWithValue(
+            "lease_version",
+            NpgsqlDbType.Bigint,
+            leaseVersion);
+        return (bool)(command.ExecuteScalar() ?? false);
+    }
+
+    private void UpdateClaimedExecution(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        StoredScheduleEntry entry,
+        string retainedPayloadHashSha256,
+        string leaseOwner,
+        long leaseVersion)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            update {_scheduleTable}
+               set schedule_id = @schedule_id,
+                   schedule_payload = @schedule_payload,
+                   payload_hash_sha256 = @payload_hash_sha256,
+                   due_at_utc = @due_at_utc,
+                   stored_at_utc = @stored_at_utc
+             where tenant_id = @tenant_id
+               and company_id = @company_id
+               and schedule_id_key = @schedule_id_key
+               and payload_hash_sha256 = @retained_payload_hash_sha256
+               and lease_owner = @lease_owner
+               and lease_version = @lease_version
+               and lease_expires_at_utc > clock_timestamp();
+            """;
+        AddIdentityParameters(command, entry.Identity);
+        command.Parameters.AddWithValue(
+            "schedule_id",
+            NpgsqlDbType.Text,
+            entry.Identity.ScheduleId);
+        command.Parameters.AddWithValue(
+            "schedule_payload",
+            NpgsqlDbType.Jsonb,
+            entry.Payload);
+        command.Parameters.AddWithValue(
+            "payload_hash_sha256",
+            NpgsqlDbType.Text,
+            entry.PayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "due_at_utc",
+            NpgsqlDbType.TimestampTz,
+            entry.Schedule.DueAtUtc.UtcDateTime);
+        command.Parameters.AddWithValue(
+            "stored_at_utc",
+            NpgsqlDbType.TimestampTz,
+            DateTime.UtcNow);
+        command.Parameters.AddWithValue(
+            "retained_payload_hash_sha256",
+            NpgsqlDbType.Text,
+            retainedPayloadHashSha256);
+        command.Parameters.AddWithValue(
+            "lease_owner",
+            NpgsqlDbType.Text,
+            leaseOwner);
+        command.Parameters.AddWithValue(
+            "lease_version",
+            NpgsqlDbType.Bigint,
+            leaseVersion);
+        if (command.ExecuteNonQuery() != 1)
+        {
+            throw ExecutionLeaseException(entry.Identity);
+        }
+    }
+
+    private static ReportingScheduleExecutionLeaseException ExecutionLeaseException(
+        ReportingScheduleIdentity identity) =>
+        new(
+            identity.TenantId,
+            identity.CompanyId,
+            identity.ScheduleId,
+            "The reporting schedule execution lease is missing, expired, or was superseded by another owner.");
 
     private static void AddIdentityParameters(
         NpgsqlCommand command,

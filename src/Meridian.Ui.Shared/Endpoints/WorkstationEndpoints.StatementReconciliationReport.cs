@@ -1,12 +1,20 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -175,34 +183,65 @@ public static partial class WorkstationEndpoints
             return StatementReconciliationReportNotRegistered();
 
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (string.IsNullOrWhiteSpace(tenant.TenantId))
+        if (string.IsNullOrWhiteSpace(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(tenant.CompanyId))
             return EndpointHelpers.Forbidden();
-
-        var (document, connectorId, problem) = await ReadStatementDocumentAsync(request, context)
-            .ConfigureAwait(false);
-        if (problem is not null)
-            return problem;
 
         var form = await request.ReadFormAsync(context.RequestAborted).ConfigureAwait(false);
         if (!TryReadStatementReconciliationReportScope(form, out var scope, out var validationProblem))
             return validationProblem!;
 
-        var execution = await workflowService.StartAsync(
-            new StatementReconciliationReportStartCommand(
-                new StatementImportCommitRequest(
-                    document!,
-                    connectorId,
-                    scope.SourceKind,
-                    scope.SourceInstitution,
-                    scope.FundAccountId,
-                    scope.ExternalAccountId,
-                    scope.PeriodStart,
-                    scope.PeriodEnd,
-                    scope.ToleranceProfileId,
-                    currentUser),
-                tenant.TenantId,
-                tenant.CompanyId),
-            context.RequestAborted).ConfigureAwait(false);
+        var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(
+                scope,
+                tenant,
+                context)
+            .ConfigureAwait(false);
+        if (ownershipProblem is not null)
+            return ownershipProblem;
+
+        // The workflow's first durable action is retaining the uploaded bytes. Keep the authoritative
+        // account/tenant check above this read and above StartAsync so a foreign or unbound account
+        // cannot create a retained input or a statement run.
+        var (document, connectorId, problem) = await ReadStatementDocumentAsync(request, context)
+            .ConfigureAwait(false);
+        if (problem is not null)
+            return problem;
+
+        StatementReconciliationReportWorkflowExecution execution;
+        try
+        {
+            execution = await workflowService.StartAsync(
+                new StatementReconciliationReportStartCommand(
+                    new StatementImportCommitRequest(
+                        document!,
+                        connectorId,
+                        scope.SourceKind,
+                        scope.SourceInstitution,
+                        scope.FundAccountId,
+                        scope.ExternalAccountId,
+                        scope.PeriodStart,
+                        scope.PeriodEnd,
+                        scope.ToleranceProfileId,
+                        currentUser)
+                    {
+                        AccountingScope = scope.AccountingScope
+                    },
+                    tenant.TenantId,
+                    tenant.CompanyId),
+                context.RequestAborted).ConfigureAwait(false);
+        }
+        catch (StatementReconciliationIntakeAuthorityException exception)
+        {
+            return Results.Problem(
+                title: "Statement accounting authority is unavailable",
+                detail: exception.Message,
+                statusCode: string.Equals(
+                    exception.Code,
+                    "STATEMENT_INTAKE_AUTHORITY_UNAVAILABLE",
+                    StringComparison.Ordinal)
+                    ? StatusCodes.Status503ServiceUnavailable
+                    : StatusCodes.Status409Conflict);
+        }
 
         return StatementReconciliationReportWorkflowResult(
             execution.Workflow,
@@ -395,6 +434,38 @@ public static partial class WorkstationEndpoints
             return false;
         }
 
+        StatementAccountingScope? accountingScope = null;
+        var fundProfileId = form["fundProfileId"].FirstOrDefault()?.Trim();
+        var ledgerBookValue = form["ledgerBookId"].FirstOrDefault()?.Trim();
+        var accountingPeriodValue = form["accountingPeriodId"].FirstOrDefault()?.Trim();
+        var asOfValue = form["asOfDate"].FirstOrDefault()?.Trim();
+        var hasAccountingScope = !string.IsNullOrWhiteSpace(fundProfileId)
+                                 || !string.IsNullOrWhiteSpace(ledgerBookValue)
+                                 || !string.IsNullOrWhiteSpace(accountingPeriodValue)
+                                 || !string.IsNullOrWhiteSpace(asOfValue);
+        if (hasAccountingScope)
+        {
+            if (string.IsNullOrWhiteSpace(fundProfileId)
+                || !Guid.TryParse(ledgerBookValue, out var ledgerBookId)
+                || ledgerBookId == Guid.Empty
+                || !Guid.TryParse(accountingPeriodValue, out var accountingPeriodId)
+                || accountingPeriodId == Guid.Empty
+                || !TryParseDataUploadDate(asOfValue ?? string.Empty, out var asOfDate))
+            {
+                scope = default!;
+                problem = MissingDataUploadPayload(
+                    "accountingScope",
+                    "Accounting scope requires fundProfileId, ledgerBookId, accountingPeriodId, and asOfDate.");
+                return false;
+            }
+
+            accountingScope = new StatementAccountingScope(
+                fundProfileId,
+                ledgerBookId,
+                accountingPeriodId,
+                asOfDate);
+        }
+
         scope = new StatementReconciliationReportScope(
             sourceKind,
             sourceInstitution,
@@ -402,9 +473,118 @@ public static partial class WorkstationEndpoints
             externalAccountId,
             periodStart,
             periodEnd,
-            form["toleranceProfileId"].FirstOrDefault()?.Trim());
+            form["toleranceProfileId"].FirstOrDefault()?.Trim(),
+            accountingScope);
         problem = null;
         return true;
+    }
+
+    private static async Task<IResult?> RequireStatementReconciliationReportAccountOwnershipAsync(
+        StatementReconciliationReportScope scope,
+        WorkstationTenantContext tenant,
+        HttpContext context)
+    {
+        var accounts = context.RequestServices.GetService<IAccountQueryService>();
+        var tenancy = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        if (accounts is null
+            || tenancy is null
+            || !Guid.TryParse(scope.FundAccountId, out var accountId)
+            || accountId == Guid.Empty)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var account = await accounts
+            .GetAccountAsync(accountId, context.RequestAborted)
+            .ConfigureAwait(false);
+        if (account is null
+            || !account.IsActive
+            || !account.FundId.HasValue
+            || account.FundId.Value == Guid.Empty
+            || !IsStatementSourceBoundToAccount(
+                scope.SourceInstitution,
+                scope.ExternalAccountId,
+                account))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        FundProfileOwnership? ownership;
+        try
+        {
+            ownership = await tenancy
+                .ResolveAsync(account.FundId.Value.ToString("D"), context.RequestAborted)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            // This is an ingestion authority boundary, not a convenience read. Registry absence,
+            // an unbound fund, or an authority failure must not create retained evidence.
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (ownership is null
+            || !ownership.IsHeldBy(tenant.TenantId)
+            || string.IsNullOrWhiteSpace(ownership.CompanyId)
+            || !string.Equals(
+                ownership.CompanyId.Trim(),
+                tenant.CompanyId!.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return null;
+        }
+
+        if (context.RequestServices.GetService<IScopedAuthorizationService>() is null)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
+                context,
+                UserPermission.ManageDirectLending,
+                AccessScopeKindDto.Account,
+                accountId,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+        return allowed ? null : EndpointHelpers.Forbidden();
+    }
+
+    private static bool IsStatementSourceBoundToAccount(
+        string? sourceInstitution,
+        string? externalAccountId,
+        AccountSummaryDto account)
+    {
+        var external = externalAccountId?.Trim();
+        var institution = sourceInstitution?.Trim();
+        if (string.IsNullOrWhiteSpace(external) || string.IsNullOrWhiteSpace(institution))
+        {
+            return false;
+        }
+
+        var externalAccountMatches = new[]
+        {
+            account.AccountCode,
+            account.CustodianDetails?.SubAccountNumber,
+            account.BankDetails?.AccountNumber,
+            account.BankDetails?.Iban
+        }.Any(candidate =>
+            string.Equals(candidate?.Trim(), external, StringComparison.OrdinalIgnoreCase));
+        var institutionMatches = new[]
+        {
+            account.Institution,
+            account.BankDetails?.BankName
+        }.Any(candidate =>
+            string.Equals(candidate?.Trim(), institution, StringComparison.OrdinalIgnoreCase));
+        return externalAccountMatches && institutionMatches;
     }
 
     private sealed record StatementReconciliationReportScope(
@@ -414,5 +594,6 @@ public static partial class WorkstationEndpoints
         string ExternalAccountId,
         DateOnly PeriodStart,
         DateOnly PeriodEnd,
-        string? ToleranceProfileId);
+        string? ToleranceProfileId,
+        StatementAccountingScope? AccountingScope);
 }

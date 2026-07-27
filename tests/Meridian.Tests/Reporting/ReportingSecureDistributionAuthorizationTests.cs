@@ -146,6 +146,36 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             .IsInfrastructureReady.Should().BeTrue("permission and configuration readiness are separate server facts");
     }
 
+    [Fact]
+    public void ClientPackageDistribution_RejectsRequestedPrimaryArtifactSubset()
+    {
+        var scope = new ReportingOperationalScope(
+            "tenant-a",
+            "organization-a",
+            "company-a",
+            "fund-a",
+            "book-a",
+            "2026-07");
+        var snapshot = CertifiedSnapshot(
+            scope,
+            outputFormat: ReportingOutputFormatDto.ClientPackage);
+
+        Action selectPdfOnly = () =>
+            ReportingSecureDistributionApplicationService.RequireAtomicClientPackageSelection(
+                "run-a",
+                snapshot,
+                ["run-a.pdf"]);
+        Action selectCompletePackage = () =>
+            ReportingSecureDistributionApplicationService.RequireAtomicClientPackageSelection(
+                "run-a",
+                snapshot,
+                ["run-a.pdf", "run-a.xlsx"]);
+
+        selectPdfOnly.Should().Throw<InvalidOperationException>()
+            .WithMessage("*atomic*both released PDF and XLSX primary artifacts*");
+        selectCompletePackage.Should().NotThrow();
+    }
+
     [Theory]
     [InlineData(256, true)]
     [InlineData(257, false)]
@@ -1022,7 +1052,8 @@ public sealed class ReportingSecureDistributionAuthorizationTests
 
     private static ReportingCertifiedSnapshotScope CertifiedSnapshot(
         ReportingOperationalScope scope,
-        string snapshotId = "snapshot-a")
+        string snapshotId = "snapshot-a",
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
     {
         var parametersJson = JsonSerializer.Serialize(new
         {
@@ -1042,7 +1073,7 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             accountingBasis = ReportingAccountingBasisDto.Gaap.ToString(),
             presentationCurrency = "USD",
             consolidationLevel = ReportingConsolidationLevelDto.Fund.ToString(),
-            outputFormat = ReportingOutputFormatDto.Pdf.ToString(),
+            outputFormat = outputFormat.ToString(),
             finality = ReportingFinalityDto.Final.ToString(),
             includeSupportingSchedules = true,
             includeEvidenceAppendix = true,

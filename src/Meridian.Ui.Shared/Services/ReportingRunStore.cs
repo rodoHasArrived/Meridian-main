@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -61,7 +62,7 @@ public sealed class ReportingLegacyStateRequiresArchiveException : InvalidOperat
     public int RecordCount { get; }
 }
 
-public sealed class FileReportingRunStore : IReportingRunStore
+public sealed class FileReportingRunStore : IReportingRunStore, INonProductionOnlyService
 {
     private const string SnapshotFileName = "reporting-runs.json";
     private const string SchemaVersion = "meridian.reporting.run-store.v2";
@@ -70,10 +71,13 @@ public sealed class FileReportingRunStore : IReportingRunStore
         "Read-only legacy run. Preserve for inventory, then freshly recertify from authoritative source data before current use.";
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> StoreGates =
         new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, ReportingRunCreateLease> CreateLeases =
+        new(StringComparer.Ordinal);
 
     private readonly ReportingRunStoreOptions _options;
     private readonly ILogger<FileReportingRunStore> _logger;
     private readonly SemaphoreSlim _gate;
+    private readonly string _storeKey;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -89,8 +93,9 @@ public sealed class FileReportingRunStore : IReportingRunStore
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.RootDirectory);
         Directory.CreateDirectory(_options.RootDirectory);
+        _storeKey = Path.GetFullPath(Path.Combine(_options.RootDirectory, SnapshotFileName));
         _gate = StoreGates.GetOrAdd(
-            Path.GetFullPath(Path.Combine(_options.RootDirectory, SnapshotFileName)),
+            _storeKey,
             static _ => new SemaphoreSlim(1, 1));
     }
 
@@ -230,17 +235,181 @@ public sealed class FileReportingRunStore : IReportingRunStore
                 retained.AuditTrail);
     }
 
+    public async Task<ReportingRunCreateClaimResult> TryClaimCreateAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        DateTimeOffset nowUtc,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        var normalizedTenantId = tenantId.Trim();
+        var normalizedRunId = runId.Trim();
+        var normalizedOwner = leaseOwner.Trim();
+        var evaluatedAtUtc = DateTimeOffset.UtcNow;
+        var claimKey = BuildCreateLeaseKey(normalizedTenantId, normalizedRunId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (LoadActiveSnapshot().Runs.Any(snapshot =>
+                    string.Equals(
+                        snapshot.Manifest.OperationalScope?.TenantId,
+                        normalizedTenantId,
+                        StringComparison.Ordinal)
+                    && string.Equals(
+                        snapshot.Manifest.RunId,
+                        normalizedRunId,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                CreateLeases.TryRemove(claimKey, out _);
+                return new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.AlreadyExists);
+            }
+
+            if (CreateLeases.TryGetValue(claimKey, out var retained)
+                && retained.ExpiresAtUtc > evaluatedAtUtc
+                && !string.Equals(retained.Owner, normalizedOwner, StringComparison.Ordinal))
+            {
+                return new ReportingRunCreateClaimResult(
+                    ReportingRunCreateClaimStatus.LeasedByAnotherOwner,
+                    retained.ExpiresAtUtc);
+            }
+
+            var expiresAtUtc = evaluatedAtUtc.Add(leaseDuration);
+            CreateLeases[claimKey] = new ReportingRunCreateLease(
+                normalizedOwner,
+                expiresAtUtc,
+                retained is null ? 1 : checked(retained.Version + 1));
+            return new ReportingRunCreateClaimResult(
+                ReportingRunCreateClaimStatus.Acquired,
+                expiresAtUtc,
+                CreateLeases[claimKey].Version);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<bool> RenewCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        TimeSpan leaseDuration,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        if (leaseDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(leaseDuration));
+        }
+
+        var claimKey = BuildCreateLeaseKey(tenantId.Trim(), runId.Trim());
+        var normalizedOwner = leaseOwner.Trim();
+        var evaluatedAtUtc = DateTimeOffset.UtcNow;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!CreateLeases.TryGetValue(claimKey, out var retained)
+                || !string.Equals(retained.Owner, normalizedOwner, StringComparison.Ordinal)
+                || retained.Version != leaseVersion
+                || retained.ExpiresAtUtc <= evaluatedAtUtc)
+            {
+                return false;
+            }
+
+            CreateLeases[claimKey] = retained with
+            {
+                ExpiresAtUtc = evaluatedAtUtc.Add(leaseDuration)
+            };
+            return true;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task ReleaseCreateClaimAsync(
+        string tenantId,
+        string runId,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(leaseOwner);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leaseVersion);
+        var claimKey = BuildCreateLeaseKey(tenantId.Trim(), runId.Trim());
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (CreateLeases.TryGetValue(claimKey, out var retained)
+                && string.Equals(retained.Owner, leaseOwner.Trim(), StringComparison.Ordinal)
+                && retained.Version == leaseVersion)
+            {
+                CreateLeases.TryRemove(claimKey, out _);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
         CancellationToken ct = default) =>
         SaveAsync(manifest, auditTrail, expectedRevision: null, ct: ct);
 
-    public async Task SaveAsync(
+    public Task SaveAsync(
         ReportingOutputManifest manifest,
         IReadOnlyList<ReportingRunAuditEntry> auditTrail,
         string? expectedRevision,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision,
+            leaseOwner: null,
+            leaseVersion: 0,
+            ct);
+
+    public Task SaveClaimedCreateAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string leaseOwner,
+        long leaseVersion,
+        CancellationToken ct = default) =>
+        SaveCoreAsync(
+            manifest,
+            auditTrail,
+            expectedRevision: null,
+            leaseOwner,
+            leaseVersion,
+            ct);
+
+    private async Task SaveCoreAsync(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+        string? expectedRevision,
+        string? leaseOwner,
+        long leaseVersion,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(auditTrail);
@@ -273,6 +442,39 @@ public sealed class FileReportingRunStore : IReportingRunStore
             EnsureLegacyStateArchived(state);
             var existing = state.Snapshot.Runs.SingleOrDefault(
                 run => SameIdentity(run.Manifest, tenantId, manifest.RunId));
+            var createLeaseKey = tenantId is null
+                ? null
+                : BuildCreateLeaseKey(tenantId, manifest.RunId);
+            if (leaseOwner is not null)
+            {
+                if (tenantId is null
+                    || leaseVersion <= 0
+                    || createLeaseKey is null
+                    || !CreateLeases.TryGetValue(createLeaseKey, out var createLease)
+                    || !string.Equals(
+                        createLease.Owner,
+                        leaseOwner.Trim(),
+                        StringComparison.Ordinal)
+                    || createLease.Version != leaseVersion
+                    || createLease.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+                {
+                    throw new ReportingRunCreateClaimException(
+                        tenantId ?? string.Empty,
+                        manifest.RunId,
+                        "The reporting run create lease is missing, expired, or was superseded by another owner.");
+                }
+            }
+            else if (existing is null
+                     && createLeaseKey is not null
+                     && CreateLeases.TryGetValue(createLeaseKey, out var activeLease)
+                     && activeLease.ExpiresAtUtc > DateTimeOffset.UtcNow)
+            {
+                throw new ReportingRunCreateClaimException(
+                    tenantId ?? string.Empty,
+                    manifest.RunId,
+                    "The reporting run identity has an active durable create owner.");
+            }
+
             if (existing is null)
             {
                 if (expectedRevision is not null)
@@ -341,6 +543,10 @@ public sealed class FileReportingRunStore : IReportingRunStore
             await AtomicFileWriter
                 .WriteAsync(SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions), ct)
                 .ConfigureAwait(false);
+            if (leaseOwner is not null && createLeaseKey is not null)
+            {
+                CreateLeases.TryRemove(createLeaseKey, out _);
+            }
         }
         finally
         {
@@ -436,6 +642,14 @@ public sealed class FileReportingRunStore : IReportingRunStore
         EnsureLegacyStateArchived(state);
         return state.Snapshot;
     }
+
+    private string BuildCreateLeaseKey(string tenantId, string runId) =>
+        $"{_storeKey.Length}:{_storeKey}:{tenantId.Length}:{tenantId}:{runId.ToLowerInvariant()}";
+
+    private sealed record ReportingRunCreateLease(
+        string Owner,
+        DateTimeOffset ExpiresAtUtc,
+        long Version);
 
     private ReportingRunStoreState LoadStoreState()
     {
@@ -746,23 +960,42 @@ public sealed class FileReportingRunStore : IReportingRunStore
     }
 
     private static string ComputeSnapshotHash(ReportingOutputManifest manifest) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        {
-            template = new
+        manifest.CertifiedSnapshot!.RequiresCertifiedLedgerPresentation
+            ? ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
             {
-                manifest.ResolvedTemplate!.Name,
-                manifest.ResolvedTemplate.Version
-            },
-            scope = manifest.OperationalScope,
-            access = manifest.ImmutableAccessScope,
-            parametersHash = manifest.CertifiedSnapshot!.ParametersHash,
-            sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
-            sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
-            reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
-            reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
-            readinessHash = manifest.Readiness!.EvidenceHash,
-            certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
-        })));
+                template = new
+                {
+                    manifest.ResolvedTemplate!.Name,
+                    manifest.ResolvedTemplate.Version
+                },
+                scope = manifest.OperationalScope,
+                access = manifest.ImmutableAccessScope,
+                parametersHash = manifest.CertifiedSnapshot.ParametersHash,
+                sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
+                sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
+                reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
+                reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
+                readinessHash = manifest.Readiness!.EvidenceHash,
+                certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows),
+                requiresCertifiedLedgerPresentation = true
+            })))
+            : ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+            {
+                template = new
+                {
+                    manifest.ResolvedTemplate!.Name,
+                    manifest.ResolvedTemplate.Version
+                },
+                scope = manifest.OperationalScope,
+                access = manifest.ImmutableAccessScope,
+                parametersHash = manifest.CertifiedSnapshot.ParametersHash,
+                sourceCheckpointId = manifest.AuthoritativeSource!.CheckpointId,
+                sourceCheckpointHash = manifest.AuthoritativeSource.CheckpointHash,
+                reconciliationId = manifest.CertifiedSnapshot.ReconciliationCheckpointId,
+                reconciliationHash = manifest.CertifiedSnapshot.ReconciliationCheckpointHash,
+                readinessHash = manifest.Readiness!.EvidenceHash,
+                certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
+            })));
 
     // Normalizes before hashing as well as at the SaveAsync entry point. Save-side manifests are
     // already normalized, so this is a no-op there; on the load/verification path a manifest

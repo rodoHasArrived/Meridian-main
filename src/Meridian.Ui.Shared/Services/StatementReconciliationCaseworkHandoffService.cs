@@ -13,10 +13,12 @@ namespace Meridian.Ui.Shared.Services;
 public interface IStatementReconciliationCaseworkHandoffService
 {
     Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationCaseworkCommand command,
         CancellationToken ct = default);
 
     Task<ReconciliationBulkCaseworkResult> ApplyBulkAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationBulkCaseworkRequest request,
         CancellationToken ct = default);
 }
@@ -61,12 +63,14 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
     }
 
     public async Task<ReconciliationBreakQueueTransitionResult> ApplyAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationCaseworkCommand command,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(command);
         var transition = await _queueRepository
-            .ApplyCaseworkCommandAsync(command, ct)
+            .ApplyCaseworkCommandAsync(scope, command, ct)
             .ConfigureAwait(false);
         if (transition.Status != ReconciliationBreakQueueTransitionStatus.Success ||
             transition.Item is null ||
@@ -78,24 +82,26 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         await _synchronizationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await SynchronizeAsync(command, transition.Item, ct).ConfigureAwait(false);
+            await SynchronizeAsync(scope, command, transition.Item, ct).ConfigureAwait(false);
         }
         finally
         {
             _synchronizationGate.Release();
         }
 
-        var current = await RequireCurrentQueueItemAsync(command.BreakId, ct).ConfigureAwait(false);
+        var current = await RequireCurrentQueueItemAsync(scope, command.BreakId, ct).ConfigureAwait(false);
         return transition with { Item = current };
     }
 
     public async Task<ReconciliationBulkCaseworkResult> ApplyBulkAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationBulkCaseworkRequest request,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(request);
         var result = await _queueRepository
-            .ApplyBulkCaseworkAsync(request, ct)
+            .ApplyBulkCaseworkAsync(scope, request, ct)
             .ConfigureAwait(false);
         if (request.DryRun || result.Results.All(static item => !item.Succeeded || item.Item is null))
         {
@@ -137,8 +143,8 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                     SupersedingBreakId: request.SupersedingBreakId);
                 if (RequiresStatementSynchronization(command, item))
                 {
-                    await SynchronizeAsync(command, item, ct).ConfigureAwait(false);
-                    var current = await RequireCurrentQueueItemAsync(item.BreakId, ct).ConfigureAwait(false);
+                    await SynchronizeAsync(scope, command, item, ct).ConfigureAwait(false);
+                    var current = await RequireCurrentQueueItemAsync(scope, item.BreakId, ct).ConfigureAwait(false);
                     projected.Add(caseResult with { Item = current });
                     continue;
                 }
@@ -155,20 +161,22 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
     }
 
     private async Task<ReconciliationBreakQueueItem> RequireCurrentQueueItemAsync(
+        ReconciliationBreakQueueScope scope,
         string breakId,
         CancellationToken ct)
-        => await _queueRepository.GetByIdAsync(breakId, ct).ConfigureAwait(false)
+        => await _queueRepository.GetByIdAsync(scope, breakId, ct).ConfigureAwait(false)
            ?? throw Failure(
                "STATEMENT_CASEWORK_NOT_FOUND",
                $"Statement case '{breakId}' disappeared after its evidence handoff completed.");
 
     private async Task SynchronizeAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationCaseworkCommand command,
         ReconciliationBreakQueueItem retainedItem,
         CancellationToken ct)
     {
         EnsureStatementDependencies();
-        var currentItem = await _queueRepository.GetByIdAsync(retainedItem.BreakId, ct).ConfigureAwait(false);
+        var currentItem = await _queueRepository.GetByIdAsync(scope, retainedItem.BreakId, ct).ConfigureAwait(false);
         if (currentItem is null)
         {
             throw Failure(
@@ -241,7 +249,7 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                 evidence,
                 ct)
             .ConfigureAwait(false);
-        await AttachOperationsContinuityEvidenceAsync(
+        var closeScope = await AttachOperationsContinuityEvidenceAsync(
                 command,
                 retainedItem,
                 sourceBreak,
@@ -251,20 +259,22 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             .ConfigureAwait(false);
         if (hasDurableObligation)
         {
-            await CompleteDurableHandoffObligationAsync(command, retainedItem.BreakId, ct)
+            await CompleteDurableHandoffObligationAsync(scope, command, retainedItem.BreakId, closeScope, ct)
                 .ConfigureAwait(false);
         }
     }
 
     private async Task CompleteDurableHandoffObligationAsync(
+        ReconciliationBreakQueueScope scope,
         ReconciliationCaseworkCommand command,
         string breakId,
+        ReconciliationCaseworkCloseScopeDto closeScope,
         CancellationToken ct)
     {
         const int maximumAttempts = 5;
         for (var attempt = 1; attempt <= maximumAttempts; attempt++)
         {
-            var current = await _queueRepository.GetByIdAsync(breakId, ct).ConfigureAwait(false)
+            var current = await _queueRepository.GetByIdAsync(scope, breakId, ct).ConfigureAwait(false)
                 ?? throw Failure(
                     "STATEMENT_CASEWORK_NOT_FOUND",
                     $"Statement case '{breakId}' disappeared before its evidence-handoff obligation could be cleared.");
@@ -288,13 +298,16 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                 [
                     StatementCaseworkHandoffObligation.CreateCompletedMarker(command.CommandId)
                 ],
-                ActionOrigin: OperationsActionOriginDto.HumanOperator);
+                ActionOrigin: OperationsActionOriginDto.HumanOperator)
+            {
+                CloseScope = closeScope
+            };
             var cleared = await _queueRepository
-                .ApplyCaseworkCommandAsync(completion, ct)
+                .ApplyCaseworkCommandAsync(scope, completion, ct)
                 .ConfigureAwait(false);
             if (cleared.Status == ReconciliationBreakQueueTransitionStatus.Success)
             {
-                var verified = await _queueRepository.GetByIdAsync(breakId, ct).ConfigureAwait(false)
+                var verified = await _queueRepository.GetByIdAsync(scope, breakId, ct).ConfigureAwait(false)
                     ?? throw Failure(
                         "STATEMENT_CASEWORK_NOT_FOUND",
                         $"Statement case '{breakId}' disappeared after its evidence-handoff completion command succeeded.");
@@ -464,7 +477,7 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         }
     }
 
-    private async Task AttachOperationsContinuityEvidenceAsync(
+    private async Task<ReconciliationCaseworkCloseScopeDto> AttachOperationsContinuityEvidenceAsync(
         ReconciliationCaseworkCommand command,
         ReconciliationBreakQueueItem item,
         ReconciliationBreakRecord sourceBreak,
@@ -504,8 +517,16 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         IReadOnlyList<OperationsContinuityWorkflowSummaryDto> workflows;
         try
         {
+            var expectedLedgerBookId =
+                item.LedgerBookId
+                ?? import.AccountingScope?.LedgerBookId;
             workflows = await _operationsContinuity!
-                .ListAsync(fundAccountId, periodId: null, status: null, ct: ct, ledgerBookId: item.LedgerBookId)
+                .ListAsync(
+                    fundAccountId,
+                    periodId: null,
+                    status: null,
+                    ct: ct,
+                    ledgerBookId: expectedLedgerBookId)
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -539,13 +560,22 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                 "OPERATIONS_WORKFLOW_CLOSED",
                 $"Operations Continuity workflow '{workflow.WorkflowId}' is closed; reopen it through governed close controls before attaching reopened statement casework.");
         }
+        if (workflow.FundAccountId != fundAccountId)
+        {
+            throw Failure(
+                "OPERATIONS_WORKFLOW_SCOPE_MISMATCH",
+                $"Operations Continuity workflow '{workflow.WorkflowId}' does not match statement fund account '{fundAccountId:D}'.");
+        }
+
+        var closeScope = await ResolveAccountingCloseScopeAsync(workflow, import, item, ct)
+            .ConfigureAwait(false);
 
         var evidenceId = BuildStableId("statement-casework-evidence", command.CommandId, sourceBreak.BreakId);
         var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
         if (timeline.Any(entry => entry.References.Any(reference =>
                 string.Equals(reference.EvidenceId, evidenceId, StringComparison.Ordinal))))
         {
-            return;
+            return closeScope;
         }
 
         var route = evidence.FirstOrDefault(static link =>
@@ -597,6 +627,8 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
                     handoff.Blockers.FirstOrDefault()?.Message,
                     $"Operations Continuity workflow '{workflow.WorkflowId}' did not retain the statement evidence handoff.")!);
         }
+
+        return closeScope;
     }
 
     private void EnsureStatementDependencies()
@@ -627,6 +659,157 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             throw Failure(
                 "OPERATIONS_CONTINUITY_REQUIRED",
                 "The Operations Continuity workflow service is not registered.");
+        }
+
+    }
+
+    private async Task<ReconciliationCaseworkCloseScopeDto> ResolveAccountingCloseScopeAsync(
+        OperationsContinuityWorkflowDto workflow,
+        CanonicalStatementImport import,
+        ReconciliationBreakQueueItem item,
+        CancellationToken ct)
+    {
+        if (_ledgerJournalStore is null)
+        {
+            throw Failure(
+                "LEDGER_JOURNAL_STORE_REQUIRED",
+                "The durable ledger journal store is required to bind statement casework to an exact fund, ledger-book, accounting-period, and as-of scope.");
+        }
+
+        if (!workflow.LedgerBookId.HasValue || workflow.LedgerBookId.Value == Guid.Empty)
+        {
+            throw Failure(
+                "OPERATIONS_LEDGER_BOOK_REQUIRED",
+                $"Operations Continuity workflow '{workflow.WorkflowId}' has no exact ledger-book scope.");
+        }
+
+        var ledgerBookId = workflow.LedgerBookId.Value;
+        LedgerBookRecord ledgerBook;
+        try
+        {
+            ledgerBook = await _ledgerJournalStore!
+                .GetLedgerBookAsync(ledgerBookId, ct)
+                .ConfigureAwait(false)
+                ?? throw Failure(
+                    "LEDGER_BOOK_NOT_FOUND",
+                    $"Ledger book '{ledgerBookId:D}' was not found for Operations Continuity workflow '{workflow.WorkflowId}'.");
+        }
+        catch (StatementReconciliationCaseworkHandoffException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            throw Failure(
+                "LEDGER_BOOK_LOOKUP_FAILED",
+                $"Ledger book '{ledgerBookId:D}' could not be resolved for statement casework handoff.",
+                exception);
+        }
+
+        if (string.IsNullOrWhiteSpace(ledgerBook.FundProfileId))
+        {
+            throw Failure(
+                "FUND_PROFILE_SCOPE_REQUIRED",
+                $"Ledger book '{ledgerBookId:D}' has no authoritative fund-profile scope.");
+        }
+
+        IReadOnlyList<LedgerAccountingPeriod> candidates;
+        try
+        {
+            if (Guid.TryParse(workflow.PeriodId, out var exactPeriodId) && exactPeriodId != Guid.Empty)
+            {
+                var exact = await _ledgerJournalStore!
+                    .GetPeriodAsync(exactPeriodId, ct)
+                    .ConfigureAwait(false);
+                candidates = exact is null ? [] : [exact];
+            }
+            else
+            {
+                candidates = (await _ledgerJournalStore!
+                        .ListPeriodsAsync(ledgerBookId, ct: ct)
+                        .ConfigureAwait(false))
+                    .Where(period =>
+                        string.Equals(period.Label, workflow.PeriodId, StringComparison.OrdinalIgnoreCase)
+                        || (period.StartDate == import.StatementPeriodStart
+                            && period.EndDate == import.StatementPeriodEnd))
+                    .ToArray();
+            }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            throw Failure(
+                "ACCOUNTING_PERIOD_LOOKUP_FAILED",
+                $"Accounting period '{workflow.PeriodId}' could not be resolved for statement casework handoff.",
+                exception);
+        }
+
+        var exactCandidates = candidates
+            .Where(period =>
+                period.PeriodId != Guid.Empty
+                && period.LedgerBookId == ledgerBookId
+                && period.StartDate == import.StatementPeriodStart
+                && period.EndDate == import.StatementPeriodEnd)
+            .DistinctBy(static period => period.PeriodId)
+            .ToArray();
+        if (exactCandidates.Length != 1)
+        {
+            throw Failure(
+                exactCandidates.Length == 0
+                    ? "ACCOUNTING_PERIOD_SCOPE_REQUIRED"
+                    : "ACCOUNTING_PERIOD_SCOPE_AMBIGUOUS",
+                exactCandidates.Length == 0
+                    ? $"Operations Continuity workflow '{workflow.WorkflowId}' does not resolve to the exact statement accounting period '{FormatPeriod(import)}' on ledger book '{ledgerBookId:D}'."
+                    : $"Operations Continuity workflow '{workflow.WorkflowId}' resolves to more than one statement accounting period on ledger book '{ledgerBookId:D}'.");
+        }
+
+        var period = exactCandidates[0];
+        var closeScope = new ReconciliationCaseworkCloseScopeDto(
+            ledgerBook.FundProfileId.Trim(),
+            ledgerBookId,
+            period.PeriodId,
+            period.EndDate);
+        EnsureAuthorityScopeMatches(import, item, closeScope);
+        return closeScope;
+    }
+
+    private static void EnsureAuthorityScopeMatches(
+        CanonicalStatementImport import,
+        ReconciliationBreakQueueItem item,
+        ReconciliationCaseworkCloseScopeDto resolved)
+    {
+        var imported = import.AccountingScope;
+        if (imported is not null
+            && (!string.Equals(
+                    imported.FundProfileId,
+                    resolved.FundProfileId,
+                    StringComparison.OrdinalIgnoreCase)
+                || imported.LedgerBookId != resolved.LedgerBookId
+                || imported.AccountingPeriodId != resolved.AccountingPeriodId
+                || imported.AsOfDate != resolved.AsOfDate))
+        {
+            throw Failure(
+                "STATEMENT_ACCOUNTING_SCOPE_MISMATCH",
+                $"Statement import '{import.ImportId}' is bound to a different fund, ledger-book, accounting-period, or as-of authority than Operations Continuity workflow '{resolved.AccountingPeriodId:D}'.");
+        }
+
+        var retainedPeriodId = Guid.TryParse(item.AccountingPeriodId, out var parsedPeriodId)
+            ? parsedPeriodId
+            : (Guid?)null;
+        if ((!string.IsNullOrWhiteSpace(item.FundProfileId)
+             && !string.Equals(
+                 item.FundProfileId,
+                 resolved.FundProfileId,
+                 StringComparison.OrdinalIgnoreCase))
+            || (item.LedgerBookId.HasValue
+                && item.LedgerBookId.Value != resolved.LedgerBookId)
+            || (retainedPeriodId.HasValue
+                && retainedPeriodId.Value != resolved.AccountingPeriodId)
+            || (item.AsOfDate.HasValue
+                && item.AsOfDate.Value != resolved.AsOfDate))
+        {
+            throw Failure(
+                "STATEMENT_CASEWORK_SCOPE_MISMATCH",
+                $"Reconciliation case '{item.BreakId}' is already bound to a different fund, ledger-book, accounting-period, or as-of authority and cannot be rebound by Operations Continuity.");
         }
     }
 
@@ -743,8 +926,30 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
         CancellationToken ct)
     {
         var matching = new List<OperationsContinuityWorkflowSummaryDto>();
+        var expectedLedgerBookId =
+            item.LedgerBookId
+            ?? import.AccountingScope?.LedgerBookId;
+        var expectedAccountingPeriodId =
+            Guid.TryParse(item.AccountingPeriodId, out var retainedPeriodId)
+                && retainedPeriodId != Guid.Empty
+                ? retainedPeriodId
+                : import.AccountingScope?.AccountingPeriodId;
         foreach (var workflow in workflows)
         {
+            if (expectedLedgerBookId.HasValue
+                && workflow.LedgerBookId != expectedLedgerBookId)
+            {
+                continue;
+            }
+
+            if (expectedAccountingPeriodId.HasValue
+                && Guid.TryParse(workflow.PeriodId, out var workflowPeriodId)
+                && workflowPeriodId != Guid.Empty
+                && workflowPeriodId != expectedAccountingPeriodId.Value)
+            {
+                continue;
+            }
+
             if ((!string.IsNullOrWhiteSpace(item.AccountingPeriodId) &&
                  string.Equals(
                      workflow.PeriodId,
@@ -777,6 +982,10 @@ public sealed class StatementReconciliationCaseworkHandoffService : IStatementRe
             }
 
             if (period is not null &&
+                (!expectedLedgerBookId.HasValue
+                 || period.LedgerBookId == expectedLedgerBookId.Value) &&
+                (!expectedAccountingPeriodId.HasValue
+                 || period.PeriodId == expectedAccountingPeriodId.Value) &&
                 period.StartDate == import.StatementPeriodStart &&
                 period.EndDate == import.StatementPeriodEnd)
             {

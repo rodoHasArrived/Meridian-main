@@ -14,6 +14,7 @@ public sealed class ReportingRunCommandService
     private readonly ReportingRunReadinessService _readinessService;
     private readonly ReportingRunCertificationService _certificationService;
     private readonly IReportingGovernanceEndpointCoordinator? _governanceCoordinator;
+    private readonly IReportingDeploymentReadinessService? _deploymentReadinessService;
 
     public ReportingRunCommandService(
         IReportingOrchestrationService orchestrationService,
@@ -22,7 +23,8 @@ public sealed class ReportingRunCommandService
         ReportWriterDatasetSourceService? datasetSourceService = null,
         ReportingRunReadinessService? readinessService = null,
         ReportingRunCertificationService? certificationService = null,
-        IReportingGovernanceEndpointCoordinator? governanceCoordinator = null)
+        IReportingGovernanceEndpointCoordinator? governanceCoordinator = null,
+        IReportingDeploymentReadinessService? deploymentReadinessService = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
@@ -33,6 +35,7 @@ public sealed class ReportingRunCommandService
             governedTemplateCatalog);
         _certificationService = certificationService ?? new ReportingRunCertificationService();
         _governanceCoordinator = governanceCoordinator;
+        _deploymentReadinessService = deploymentReadinessService;
     }
 
     public async Task<ReportingRunResultDto> RunAsync(
@@ -79,6 +82,8 @@ public sealed class ReportingRunCommandService
                 "Ordinary report generation cannot authorize a restatement. Use the governed restatement-request workflow.");
         }
 
+        EnsureReportingDeploymentReady();
+
         var requestedAtUtc = DateTimeOffset.UtcNow;
         var templateId = request.TemplateId.Trim();
         var governed = accessContext?.RequireBoundScope == true;
@@ -117,7 +122,7 @@ public sealed class ReportingRunCommandService
         var asOfDate = effectiveReadiness.ResolvedParameters.AsOfDate;
         var actor = fallbackActor.Trim();
         var jobId = governed
-            ? BuildDefaultJobId($"{accessContext.TenantId}-{templateId}", requestedAtUtc)
+            ? BuildDefaultJobId($"{accessContext!.TenantId}-{templateId}", requestedAtUtc)
             : string.IsNullOrWhiteSpace(request.JobId)
             ? BuildDefaultJobId(templateId, requestedAtUtc)
             : request.JobId.Trim();
@@ -169,6 +174,37 @@ public sealed class ReportingRunCommandService
         }
 
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));
+    }
+
+    private void EnsureReportingDeploymentReady()
+    {
+        if (_deploymentReadinessService is null)
+        {
+            return;
+        }
+
+        ReportingDeploymentCapabilityDto capability;
+        try
+        {
+            capability = _deploymentReadinessService.Evaluate()
+                ?? throw new InvalidOperationException(
+                    "The reporting deployment capability service returned no result.");
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            throw new ReportingRunDeploymentNotReadyException(
+                "The authoritative reporting deployment could not be evaluated.",
+                capability: null,
+                exception);
+        }
+
+        if (!capability.IsReady)
+        {
+            throw new ReportingRunDeploymentNotReadyException(
+                "Cannot create an ad-hoc reporting run until the authoritative reporting deployment is ready: "
+                + string.Join(" ", capability.BlockingReasons),
+                capability);
+        }
     }
 
     private ReportingTemplateMetadata ResolveTemplate(
@@ -554,4 +590,18 @@ public sealed class ReportingRunReadinessBlockedException : InvalidOperationExce
     }
 
     public ReportingRunReadinessDto Readiness { get; }
+}
+
+public sealed class ReportingRunDeploymentNotReadyException : InvalidOperationException
+{
+    public ReportingRunDeploymentNotReadyException(
+        string message,
+        ReportingDeploymentCapabilityDto? capability,
+        Exception? innerException = null)
+        : base(message, innerException)
+    {
+        Capability = capability;
+    }
+
+    public ReportingDeploymentCapabilityDto? Capability { get; }
 }

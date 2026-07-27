@@ -41,6 +41,7 @@ export interface StatementFetchDraft {
   externalAccountId: string;
   fundAccountId: string;
   mappingProfileId: string;
+  periodEnd: string;
   scheduleId: string;
   sinceDate: string;
   sourceInstitution: string;
@@ -119,6 +120,14 @@ export function validateStatementFetchDraft(
     }
     if (!draft.sourceInstitution.trim()) {
       errors.sourceInstitution = "Enter the broker or custodian name.";
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.sinceDate)) {
+      errors.sinceDate = "Ledger period start must use YYYY-MM-DD format.";
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.periodEnd)) {
+      errors.periodEnd = "Ledger period end must use YYYY-MM-DD format.";
+    } else if (!errors.sinceDate && draft.periodEnd < draft.sinceDate) {
+      errors.periodEnd = "Ledger period end must be on or after its start.";
     }
 
     const cadence = Number(draft.cadenceHours);
@@ -371,6 +380,7 @@ function createStatementFetchDraft(
     ? connectors.find((candidate) => candidate.connectorId === schedule.connectorId)
     : connectors[0];
   const defaultSinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const defaultPeriodEnd = new Date().toISOString().slice(0, 10);
   return {
     cadenceHours: schedule ? String(schedule.cadenceHours) : "24",
     connectorId: schedule?.connectorId ?? connector?.connectorId ?? "",
@@ -379,8 +389,9 @@ function createStatementFetchDraft(
     externalAccountId: schedule?.externalAccountId ?? current?.externalAccountId ?? "",
     fundAccountId: schedule?.fundAccountId ?? current?.fundAccountId ?? "",
     mappingProfileId: schedule ? schedule.mappingProfileId ?? "" : connector?.defaultProfileId ?? "",
+    periodEnd: schedule?.periodEnd ?? current?.periodEnd ?? defaultPeriodEnd,
     scheduleId: schedule?.scheduleId ?? "",
-    sinceDate: schedule?.lastRunAtUtc?.slice(0, 10) ?? current?.sinceDate ?? defaultSinceDate,
+    sinceDate: schedule?.periodStart ?? current?.sinceDate ?? defaultSinceDate,
     sourceInstitution: schedule?.sourceInstitution ?? connector?.displayName ?? current?.sourceInstitution ?? "",
     sourceKind: schedule?.sourceKind ?? current?.sourceKind ?? "broker",
     toleranceProfileId: schedule?.toleranceProfileId ?? current?.toleranceProfileId ?? "statement-default"
@@ -405,7 +416,9 @@ function toScheduleRequest(draft: StatementFetchDraft): StatementFetchScheduleUp
     toleranceProfileId: draft.toleranceProfileId.trim() || null,
     cadenceHours: Number(draft.cadenceHours),
     enabled: draft.enabled,
-    sourceKind: draft.sourceKind
+    sourceKind: draft.sourceKind,
+    periodStart: draft.sinceDate,
+    periodEnd: draft.periodEnd
   };
 }
 

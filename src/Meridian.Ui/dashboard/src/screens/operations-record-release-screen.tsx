@@ -19,6 +19,7 @@ import {
   readViewStateFromSearch,
   stripViewStateFromSearch
 } from "@/lib/view-state-envelope";
+import { normalizeReportingWorkspace } from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
 import {
@@ -50,7 +51,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
   const navigate = useNavigate();
   const continuity = useOperationsContinuityScreenViewModel();
   const reportingVm = useReportingScreenViewModel(
-    reporting,
+    normalizeReportingWorkspace(reporting),
     undefined,
     WORKSTATION_ROUTE_CATALOG.reportingReportPacks
   );

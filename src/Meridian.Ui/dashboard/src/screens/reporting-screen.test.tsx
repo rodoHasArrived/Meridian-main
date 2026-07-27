@@ -3522,6 +3522,13 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
       target: { value: "ClientPackage" }
     });
+    expect(screen.getByLabelText("Reporting schedule Pdf format")).toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Pdf format")).toBeDisabled();
+    expect(screen.getByLabelText("Reporting schedule Xlsx format")).toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Xlsx format")).toBeDisabled();
+    expect(screen.getByLabelText("Reporting schedule Csv format")).not.toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Csv format")).toBeDisabled();
+    expect(screen.getByText(/Client Package delivery always includes PDF and XLSX together/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Reporting schedule finality"), {
       target: { value: "Final" }
     });
@@ -3557,7 +3564,6 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Email link pack." }
     });
-    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
     fireEvent.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -3631,7 +3637,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "compliance-reviewers",
           recipientPrincipalKind: "Group",
           deliveryMode: "EmailLink",
-          formats: ["Pdf", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Email link pack."
         }
       ]
@@ -3671,7 +3677,7 @@ describe("ReportingScreen", () => {
             distributionId: "board-reporting-committee",
             recipientPrincipalId: "board-reviewers",
             recipientPrincipalKind: "Group",
-            formats: ["Pdf", "Xlsx", "Csv"],
+            formats: ["Pdf", "Xlsx"],
             deliveryMode: "SecurePortal",
             note: "Board portal pack."
           },
@@ -3679,7 +3685,7 @@ describe("ReportingScreen", () => {
             distributionId: "compliance-archive",
             recipientPrincipalId: "company-alpha",
             recipientPrincipalKind: "Company",
-            formats: ["Pdf", "Csv"],
+            formats: ["Pdf", "Xlsx"],
             deliveryMode: "EmailLink",
             note: "Email link archive."
           }
@@ -3691,6 +3697,9 @@ describe("ReportingScreen", () => {
 
     fireEvent.change(screen.getByLabelText("Reporting schedule ID"), {
       target: { value: "sched-multi-target" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
+      target: { value: "ClientPackage" }
     });
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Board portal pack." }
@@ -3722,7 +3731,6 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Email link archive." }
     });
-    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -3740,7 +3748,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "board-reviewers",
           recipientPrincipalKind: "Group",
           deliveryMode: "SecurePortal",
-          formats: ["Pdf", "Xlsx", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Board portal pack."
         },
         {
@@ -3748,7 +3756,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "company-alpha",
           recipientPrincipalKind: "Company",
           deliveryMode: "EmailLink",
-          formats: ["Pdf", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Email link archive."
         }
       ]
