@@ -36,9 +36,10 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 
 Use this flow before adding a tool or running a broad script batch:
 
-1. Read `ai-systems-inventory.md` and identify which AI systems/surfaces your task touches.
+1. Read [`../ai-systems-inventory.md`](../ai-systems-inventory.md) and identify which AI systems/surfaces your task touches.
 2. Choose the smallest command set from the Fast Selection table that matches that surface.
-3. If the chosen validator is unavailable, use the nearest narrower scoped equivalent and record the fallback path in the handoff packet.
+3. If a required validator is unavailable, record that gate as `not-run` or blocked in the handoff
+   packet. A narrower check may provide diagnostic evidence, but it does not replace the required gate.
 4. Re-run only commands whose prerequisites changed after the edit (for example, no need to rerun inventory on a pure command-path update).
 
 This keeps token and runner usage proportional to evidence gained: minimal first, then expand only when required by failure gates.

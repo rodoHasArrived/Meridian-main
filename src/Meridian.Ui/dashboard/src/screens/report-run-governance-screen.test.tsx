@@ -300,6 +300,124 @@ describe("ReportRunGovernanceScreen", () => {
     ));
   });
 
+  it("locks both released ClientPackage primaries and queues them atomically", async () => {
+    const released = buildRun({
+      governanceState: "Released",
+      actionAvailability: [],
+      normalizedParameters: {
+        ...draftRun.normalizedParameters,
+        outputFormat: "ClientPackage"
+      },
+      release: {
+        authority: draftRun.creationAuthority,
+        releasedAtUtc: "2026-07-15T12:30:00Z",
+        manifestId: "manifest-client-package",
+        manifestHash: "manifest-client-package-hash",
+        artifacts: [
+          { artifactId: "run-1.pdf", artifactHash: "pdf-hash", byteLength: 42 },
+          { artifactId: "run-1.xlsx", artifactHash: "xlsx-hash", byteLength: 84 },
+          { artifactId: "run-1.evidence.json", artifactHash: "evidence-hash", byteLength: 21 }
+        ],
+        evidenceIds: ["release-evidence-1"]
+      }
+    });
+    vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(released);
+    vi.mocked(governanceApi.getGovernedReportingSeriesHistory).mockResolvedValue({
+      ...seriesHistory,
+      runs: [released]
+    });
+    vi.mocked(governanceApi.queueSecureReportingDelivery).mockResolvedValue({
+      jobId: "delivery-client-package",
+      runId: released.runId,
+      packageId: "package-1",
+      releaseVersion: "1",
+      artifactManifestHashSha256: "manifest-client-package-hash",
+      distributionId: "distribution-1",
+      transportId: "secure-portal",
+      recipient: "maker-1",
+      destination: "",
+      subject: "Released client package",
+      state: "Queued",
+      attemptCount: 0,
+      maxAttempts: 3,
+      createdAtUtc: "2026-07-15T12:31:00Z",
+      updatedAtUtc: "2026-07-15T12:31:00Z",
+      nextAttemptAtUtc: "2026-07-15T12:31:00Z",
+      lastErrorCode: null,
+      lastError: null,
+      providerMessageId: null,
+      accessGrantId: null,
+      receipts: []
+    });
+
+    renderGovernance();
+
+    expect(await screen.findByText("Client package primaries locked")).toBeInTheDocument();
+    const pdf = screen.getByLabelText("Include run-1.pdf in distribution");
+    const xlsx = screen.getByLabelText("Include run-1.xlsx in distribution");
+    const evidence = screen.getByLabelText("Include run-1.evidence.json in distribution");
+    expect(pdf).toBeChecked();
+    expect(pdf).toBeDisabled();
+    expect(xlsx).toBeChecked();
+    expect(xlsx).toBeDisabled();
+    expect(evidence).toBeChecked();
+    expect(evidence).toBeEnabled();
+    fireEvent.click(evidence);
+
+    fireEvent.change(screen.getByLabelText("Distribution ID"), { target: { value: "distribution-1" } });
+    fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "Released client package" } });
+    fireEvent.change(screen.getByLabelText("Body"), { target: { value: "Use the secure link." } });
+    const queue = screen.getByRole("button", { name: "Queue secure delivery" });
+    expect(queue).toBeEnabled();
+    fireEvent.click(queue);
+
+    await waitFor(() => expect(governanceApi.queueSecureReportingDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifactIds: ["run-1.pdf", "run-1.xlsx"]
+      }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    ));
+  });
+
+  it("blocks ClientPackage delivery and grants when either released primary is missing", async () => {
+    const incomplete = buildRun({
+      governanceState: "Released",
+      actionAvailability: [],
+      normalizedParameters: {
+        ...draftRun.normalizedParameters,
+        outputFormat: "ClientPackage"
+      },
+      release: {
+        authority: draftRun.creationAuthority,
+        releasedAtUtc: "2026-07-15T12:30:00Z",
+        manifestId: "manifest-incomplete-client-package",
+        manifestHash: "manifest-incomplete-hash",
+        artifacts: [
+          { artifactId: "run-1.pdf", artifactHash: "pdf-hash", byteLength: 42 }
+        ],
+        evidenceIds: ["release-evidence-1"]
+      }
+    });
+    vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(incomplete);
+    vi.mocked(governanceApi.getGovernedReportingSeriesHistory).mockResolvedValue({
+      ...seriesHistory,
+      runs: [incomplete]
+    });
+
+    renderGovernance();
+
+    expect(await screen.findByText("Client package release is incomplete")).toBeInTheDocument();
+    expect(screen.getByText(/missing run-1.xlsx/i)).toBeInTheDocument();
+    const queue = screen.getByRole("button", { name: "Queue secure delivery" });
+    const issueGrant = screen.getByRole("button", { name: "Issue scoped recipient access" });
+    expect(queue).toBeDisabled();
+    expect(issueGrant).toBeDisabled();
+    fireEvent.click(queue);
+    fireEvent.click(issueGrant);
+    expect(governanceApi.queueSecureReportingDelivery).not.toHaveBeenCalled();
+    expect(governanceApi.issueSecureReportingAccessGrant).not.toHaveBeenCalled();
+  });
+
   it("treats a stale array-only transport response as unavailable", async () => {
     vi.mocked(governanceApi.getSecureReportingTransportCapabilities).mockResolvedValue(
       [] as unknown as SecureReportingDistributionCapabilityCatalog

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Data.Common;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -59,6 +60,239 @@ public sealed class ReportingSecureDistributionTests
         valid.Status.Should().Be(ReportingAccessGrantValidationStatus.Valid);
         valid.Grant!.UseCount.Should().Be(1);
         exhausted.Status.Should().Be(ReportingAccessGrantValidationStatus.UseLimitExceeded);
+    }
+
+    [Theory]
+    [InlineData("client-package.pdf", "client-package.xlsx")]
+    [InlineData("client-package.xlsx", "client-package.pdf")]
+    public async Task AccessGrant_MultiArtifactRetry_PreservesDistinctArtifactCoverage(
+        string firstArtifactId,
+        string secondArtifactId)
+    {
+        var store = new InMemoryAccessGrantStore();
+        var service = new ReportingAccessGrantService(store, new MutableTimeProvider(FixedNow));
+        var secret = await service.IssueAsync(new ReportingAccessGrantIssueRequest(
+            "tenant-a",
+            "recipient-a",
+            "run-a",
+            "package-a",
+            FixedNow.AddHours(1),
+            AllowPackageRead: false,
+            ArtifactIds: ["client-package.pdf", "client-package.xlsx"],
+            MaxUses: 2));
+
+        var issued = (await store.GetAsync(secret.GrantId))!;
+        issued.ConsumedArtifactIds.Should().NotBeNull().And.BeEmpty();
+
+        (await ConsumeAsync(firstArtifactId)).Status
+            .Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        (await ConsumeAsync(firstArtifactId)).Status
+            .Should().Be(
+                ReportingAccessGrantValidationStatus.UseLimitExceeded,
+                "a duplicate read cannot consume the use reserved for the other package artifact");
+        (await ConsumeAsync(secondArtifactId)).Status
+            .Should().Be(ReportingAccessGrantValidationStatus.Valid);
+
+        var consumed = (await store.GetAsync(secret.GrantId))!;
+        consumed.UseCount.Should().Be(2);
+        consumed.ConsumedArtifactIds.Should().Equal(
+            "client-package.pdf",
+            "client-package.xlsx");
+
+        Task<ReportingAccessGrantValidationResult> ConsumeAsync(string artifactId) =>
+            service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+                secret.GrantId,
+                secret.Token,
+                "tenant-a",
+                "recipient-a",
+                "run-a",
+                "package-a",
+                artifactId));
+    }
+
+    [Fact]
+    public async Task AccessGrant_ConcurrentDistinctArtifactReads_BothCommitWithoutLosingCoverage()
+    {
+        var store = new FirstReadBarrierAccessGrantStore(new InMemoryAccessGrantStore());
+        var service = new ReportingAccessGrantService(store, new MutableTimeProvider(FixedNow));
+        var secret = await service.IssueAsync(new ReportingAccessGrantIssueRequest(
+            "tenant-a",
+            "recipient-a",
+            "run-a",
+            "package-a",
+            FixedNow.AddHours(1),
+            AllowPackageRead: false,
+            ArtifactIds: ["client-package.pdf", "client-package.xlsx"],
+            MaxUses: 2));
+
+        var outcomes = await Task.WhenAll(
+            ConsumeAsync("client-package.pdf"),
+            ConsumeAsync("client-package.xlsx"));
+
+        outcomes.Should().OnlyContain(static outcome => outcome.IsValid);
+        var retained = (await store.GetAsync(secret.GrantId))!;
+        retained.UseCount.Should().Be(2);
+        retained.ConsumedArtifactIds.Should().Equal(
+            "client-package.pdf",
+            "client-package.xlsx");
+
+        Task<ReportingAccessGrantValidationResult> ConsumeAsync(string artifactId) =>
+            service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+                secret.GrantId,
+                secret.Token,
+                "tenant-a",
+                "recipient-a",
+                "run-a",
+                "package-a",
+                artifactId));
+    }
+
+    [Fact]
+    public async Task AccessGrant_LegacyMultiArtifactState_InitializesOnlyWhenPriorUseIsKnownEmpty()
+    {
+        var store = new InMemoryAccessGrantStore();
+        var service = new ReportingAccessGrantService(store, new MutableTimeProvider(FixedNow));
+        var rawToken = Enumerable.Repeat((byte)0x2a, 32).ToArray();
+        var token = Convert.ToHexString(rawToken).ToLowerInvariant();
+        var tokenHash = Convert.ToHexString(SHA256.HashData(rawToken)).ToLowerInvariant();
+        var untouched = new ReportingAccessGrantRecord(
+            "grant_legacy_untouched",
+            tokenHash,
+            "tenant-a",
+            "recipient-a",
+            "run-a",
+            "package-a",
+            AllowPackageRead: false,
+            ArtifactIds: ["client-package.pdf", "client-package.xlsx"],
+            FixedNow,
+            FixedNow.AddHours(1),
+            MaxUses: 2,
+            UseCount: 0);
+        var previouslyUsed = untouched with
+        {
+            GrantId = "grant_legacy_used",
+            UseCount = 1,
+            LastUsedAtUtc = FixedNow.AddMinutes(1),
+            Version = 1
+        };
+        var previouslyUsedSingle = previouslyUsed with
+        {
+            GrantId = "grant_legacy_used_single",
+            ArtifactIds = ["client-package.pdf"],
+            AllowPackageRead = true
+        };
+        (await store.TryCreateAsync(untouched)).Should().BeTrue();
+        (await store.TryCreateAsync(previouslyUsed)).Should().BeTrue();
+        (await store.TryCreateAsync(previouslyUsedSingle)).Should().BeTrue();
+
+        var initialized = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            untouched.GrantId,
+            token,
+            untouched.TenantId,
+            untouched.Audience,
+            untouched.RunId,
+            untouched.PackageId,
+            "client-package.pdf"));
+        var ambiguous = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            previouslyUsed.GrantId,
+            token,
+            previouslyUsed.TenantId,
+            previouslyUsed.Audience,
+            previouslyUsed.RunId,
+            previouslyUsed.PackageId,
+            "client-package.xlsx"));
+        var single = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            previouslyUsedSingle.GrantId,
+            token,
+            previouslyUsedSingle.TenantId,
+            previouslyUsedSingle.Audience,
+            previouslyUsedSingle.RunId,
+            previouslyUsedSingle.PackageId,
+            ArtifactId: null));
+
+        initialized.Status.Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        initialized.Grant!.ConsumedArtifactIds.Should().Equal("client-package.pdf");
+        ambiguous.Status.Should().Be(
+            ReportingAccessGrantValidationStatus.UseLimitExceeded,
+            "the prior artifact identity of a used legacy multi-artifact grant is unknowable");
+        (await store.GetAsync(previouslyUsed.GrantId))!.UseCount.Should().Be(1);
+        single.Status.Should().Be(
+            ReportingAccessGrantValidationStatus.Valid,
+            "a package read with one authorized artifact has a unique legacy identity");
+        single.Grant!.ConsumedArtifactIds.Should().Equal("client-package.pdf");
+    }
+
+    [Fact]
+    public async Task AccessGrant_LegacyMultiArtifactPackageRead_RequiresExactFirstArtifact()
+    {
+        var store = new InMemoryAccessGrantStore();
+        var service = new ReportingAccessGrantService(store, new MutableTimeProvider(FixedNow));
+        var rawToken = Enumerable.Repeat((byte)0x2b, 32).ToArray();
+        var token = Convert.ToHexString(rawToken).ToLowerInvariant();
+        var legacy = new ReportingAccessGrantRecord(
+            "grant_legacy_package",
+            Convert.ToHexString(SHA256.HashData(rawToken)).ToLowerInvariant(),
+            "tenant-a",
+            "recipient-a",
+            "run-a",
+            "package-a",
+            AllowPackageRead: true,
+            ArtifactIds: ["client-package.pdf", "client-package.xlsx"],
+            FixedNow,
+            FixedNow.AddHours(1),
+            MaxUses: 3,
+            UseCount: 0);
+        var packageOnly = legacy with
+        {
+            GrantId = "grant_legacy_package_only",
+            ArtifactIds = [],
+            MaxUses = 1
+        };
+        (await store.TryCreateAsync(legacy)).Should().BeTrue();
+        (await store.TryCreateAsync(packageOnly)).Should().BeTrue();
+
+        (await ConsumeAsync(artifactId: null)).Status.Should().Be(
+            ReportingAccessGrantValidationStatus.ArtifactOutOfScope,
+            "a package-level use cannot initialize exact tracking for a legacy multi-artifact grant");
+        var packageOnlyResult = await service.ValidateAsync(
+            new ReportingAccessGrantValidationRequest(
+                packageOnly.GrantId,
+                token,
+                packageOnly.TenantId,
+                packageOnly.Audience,
+                packageOnly.RunId,
+                packageOnly.PackageId,
+                ArtifactId: null));
+        packageOnlyResult.Status.Should().Be(
+            ReportingAccessGrantValidationStatus.ArtifactOutOfScope,
+            "a zero-artifact legacy package grant has no exact identity to initialize");
+        (await store.GetAsync(packageOnly.GrantId))!.UseCount.Should().Be(0);
+        var untouched = (await store.GetAsync(legacy.GrantId))!;
+        untouched.UseCount.Should().Be(0);
+        untouched.ConsumedArtifactIds.Should().BeNull();
+
+        (await ConsumeAsync("client-package.pdf")).Status
+            .Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        (await ConsumeAsync(artifactId: null)).Status
+            .Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        (await ConsumeAsync("client-package.xlsx")).Status
+            .Should().Be(ReportingAccessGrantValidationStatus.Valid);
+
+        var consumed = (await store.GetAsync(legacy.GrantId))!;
+        consumed.UseCount.Should().Be(3);
+        consumed.ConsumedArtifactIds.Should().Equal(
+            "client-package.pdf",
+            "client-package.xlsx");
+
+        Task<ReportingAccessGrantValidationResult> ConsumeAsync(string? artifactId) =>
+            service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+                legacy.GrantId,
+                token,
+                legacy.TenantId,
+                legacy.Audience,
+                legacy.RunId,
+                legacy.PackageId,
+                artifactId));
     }
 
     [Fact]
@@ -160,6 +394,50 @@ public sealed class ReportingSecureDistributionTests
     }
 
     [Fact]
+    public async Task AccessGrant_ConsumptionPreservesLatestUseHighWaterMarkWhenReadTimeIsEarlier()
+    {
+        var clock = new MutableTimeProvider(FixedNow);
+        var store = new InMemoryAccessGrantStore();
+        var service = new ReportingAccessGrantService(store, clock);
+        var secret = await service.IssueAsync(new ReportingAccessGrantIssueRequest(
+            "tenant-a",
+            "investor-42",
+            "run-1",
+            "package-1",
+            FixedNow.AddHours(1),
+            AllowPackageRead: false,
+            ArtifactIds: ["client-package.pdf", "client-package.xlsx"],
+            MaxUses: 2));
+        clock.Advance(TimeSpan.FromMinutes(2));
+        var laterRead = await service.ValidateAsync(new ReportingAccessGrantValidationRequest(
+            secret.GrantId,
+            secret.Token,
+            "tenant-a",
+            "investor-42",
+            "run-1",
+            "package-1",
+            "client-package.pdf",
+            ConsumeUse: true));
+        clock.Advance(TimeSpan.FromMinutes(-1));
+
+        var earlierReadCommittedLater = await service.ValidateAsync(
+            new ReportingAccessGrantValidationRequest(
+                secret.GrantId,
+                secret.Token,
+                "tenant-a",
+                "investor-42",
+                "run-1",
+                "package-1",
+                "client-package.xlsx",
+                ConsumeUse: true));
+
+        earlierReadCommittedLater.Status.Should().Be(ReportingAccessGrantValidationStatus.Valid);
+        earlierReadCommittedLater.Grant!.LastUsedAtUtc.Should().Be(laterRead.Grant!.LastUsedAtUtc);
+        earlierReadCommittedLater.Grant.ConsumedArtifactIds.Should()
+            .Equal("client-package.pdf", "client-package.xlsx");
+    }
+
+    [Fact]
     public async Task Dispatcher_IdempotencyRejectsChangedPayloadAndReceiptReplayMutation()
     {
         var clock = new MutableTimeProvider(FixedNow);
@@ -193,6 +471,62 @@ public sealed class ReportingSecureDistributionTests
 
         await conflictingReplay.Should().ThrowAsync<InvalidDataException>()
             .WithMessage("*different immutable content*");
+    }
+
+    [Fact]
+    public async Task Dispatcher_GenericReceiptAppendCannotCreateDownloadedReceipt()
+    {
+        var clock = new MutableTimeProvider(FixedNow);
+        var store = new InMemoryDeliveryStore();
+        var dispatcher = CreateDispatcher(store, [new SecurePortalReportingDeliveryTransport(clock)], clock);
+        var queued = await dispatcher.QueueAsync(BuildQueueRequest("secure-portal"));
+        var downloaded = new ReportingDeliveryReceipt(
+            "download-outside-composite",
+            ReportingDeliveryReceiptKind.Downloaded,
+            FixedNow,
+            "secure-portal",
+            EvidenceReference: "artifact-audit-event");
+
+        var append = () => dispatcher.AppendReceiptAsync(
+            queued.JobId,
+            queued.TenantId,
+            downloaded);
+
+        await append.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*atomic access-grant consumption boundary*");
+        (await store.GetAsync(queued.JobId))!.Receipts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Dispatcher_TransportCannotProjectDownloadedReceipt()
+    {
+        var clock = new MutableTimeProvider(FixedNow);
+        var store = new InMemoryDeliveryStore();
+        var downloaded = new ReportingDeliveryReceipt(
+            "transport-forged-download",
+            ReportingDeliveryReceiptKind.Downloaded,
+            FixedNow,
+            "relay",
+            ProviderReference: "provider-message-1",
+            EvidenceReference: "artifact-audit-event");
+        var transport = new SequencedTransport(
+            "relay",
+            new ReportingDeliveryTransportResult(
+                ReportingDeliveryTransportOutcome.Delivered,
+                "FORGED_DOWNLOAD",
+                ProviderMessageId: "provider-message-1",
+                Receipt: downloaded));
+        var dispatcher = CreateDispatcher(store, [transport], clock);
+        var queued = await dispatcher.QueueAsync(BuildQueueRequest("relay"));
+
+        var dispatch = () => dispatcher.DispatchDueAsync("worker-a");
+
+        await dispatch.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*cannot create Downloaded receipts*");
+        var retained = await store.GetAsync(queued.JobId);
+        retained!.State.Should().Be(ReportingDeliveryState.Dispatching);
+        retained.Receipts.Should().NotContain(receipt =>
+            receipt.Kind == ReportingDeliveryReceiptKind.Downloaded);
     }
 
     [Fact]
@@ -1191,6 +1525,51 @@ public sealed class ReportingSecureDistributionTests
 
             return inner.TryCreateAsync(grant, ct);
         }
+
+        public Task<bool> TryUpdateAsync(
+            string grantId,
+            long expectedVersion,
+            ReportingAccessGrantRecord updatedGrant,
+            CancellationToken ct = default) =>
+            inner.TryUpdateAsync(grantId, expectedVersion, updatedGrant, ct);
+    }
+
+    private sealed class FirstReadBarrierAccessGrantStore(InMemoryAccessGrantStore inner)
+        : IReportingAccessGrantStore
+    {
+        private readonly TaskCompletionSource<bool> _bothReads =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _readCount;
+
+        public async Task<ReportingAccessGrantRecord?> GetAsync(
+            string grantId,
+            CancellationToken ct = default)
+        {
+            var retained = await inner.GetAsync(grantId, ct);
+            var readCount = Interlocked.Increment(ref _readCount);
+            if (readCount <= 2)
+            {
+                if (readCount == 2)
+                {
+                    _bothReads.TrySetResult(true);
+                }
+
+                await _bothReads.Task.WaitAsync(ct);
+            }
+
+            return retained;
+        }
+
+        public Task<IReadOnlyList<ReportingAccessGrantRecord>> ListByPackageAsync(
+            string tenantId,
+            string packageId,
+            CancellationToken ct = default) =>
+            inner.ListByPackageAsync(tenantId, packageId, ct);
+
+        public Task<bool> TryCreateAsync(
+            ReportingAccessGrantRecord grant,
+            CancellationToken ct = default) =>
+            inner.TryCreateAsync(grant, ct);
 
         public Task<bool> TryUpdateAsync(
             string grantId,

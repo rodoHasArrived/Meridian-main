@@ -222,6 +222,7 @@ public sealed class UiServer : IAsyncDisposable
             builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
             builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
             builder.Services.AddWorkstationSharedServices();
+            builder.Services.AddStatementFetchSchedulerHostedService();
             builder.Services.AddOmsIntegrationApiHandlers();
 
             if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
@@ -941,6 +942,41 @@ public sealed class UiServer : IAsyncDisposable
             }));
 
         services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
+            "reporting-durability",
+            "Reporting durability",
+            productionPosture
+                ? LifecycleCheckRequirement.Required
+                : LifecycleCheckRequirement.Degradable,
+            _ =>
+            {
+                var capability = sp.GetService<IReportingDeploymentReadinessService>()?.Evaluate();
+                if (capability is null)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        productionPosture
+                            ? LifecycleCheckStatus.Failing
+                            : LifecycleCheckStatus.Degraded,
+                        "Reporting deployment capability is unavailable."));
+                }
+
+                if (capability.IsReady)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Governance, release consistency, casework evidence, certified runs, scheduling, client documents, delivery workers, and receipts use the durable reporting authority."));
+                }
+
+                var missing = capability.Components
+                    .Where(static component => !component.IsReady)
+                    .Select(static component => component.ComponentId);
+                return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                    productionPosture
+                        ? LifecycleCheckStatus.Failing
+                        : LifecycleCheckStatus.Degraded,
+                    $"REPORTING: INCOMPLETE — unavailable durable components: {string.Join(", ", missing)}."));
+            }));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
             "event-pipeline",
             "Event pipeline",
             LifecycleCheckRequirement.Required,
@@ -1188,6 +1224,13 @@ public sealed class UiServer : IAsyncDisposable
                 .ConfigureAwait(false);
             await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
+            var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
+            if (reportingStartup is not null)
+            {
+                await reportingStartup
+                    .EnsureReadyAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             _databaseReadinessCompleted = true;
             readinessStopwatch.Stop();

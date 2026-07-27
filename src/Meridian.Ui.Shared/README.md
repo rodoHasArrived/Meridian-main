@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Ui.Shared
@@ -37,9 +37,13 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   provider adapters that expose configurable workflow registrations through
   `Meridian.Contracts.Extensibility`.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
-- `Evidence/StatementToReportWorkflowService.cs` - tenant/company-scoped persisted coordinator for
+- `Evidence/StatementReconciliationReportWorkflowService.cs` - tenant/company-scoped persisted coordinator for
   statement retention, import, Evidence Vault linkage, reconciliation gating, restart recovery, and
-  hash-verified JSON/CSV report artifacts.
+  hash-verified JSON/CSV reconciliation support artifacts.
+- `Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs` - authenticated start, status,
+  resume, and integrity-checked artifact-download adapters for that bounded workflow.
+- `Services/ReportingDeploymentReadinessService.cs` - independent fail-closed Reporting deployment
+  capability over the resolved production persistence, rendering, recipient, and migration graph.
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
@@ -96,11 +100,22 @@ Preserve cross-surface compatibility when evolving shared read models. Keep ledg
 source-of-truth services authoritative. Statement connector endpoints expose file and remote
 preview plus persisted fetch-schedule CRUD/run operations over shared DTOs; schedule upserts default
 an omitted source kind to `broker`, while explicit `custodian` values pass unchanged into Financial
-Operations. The golden-path `POST /api/workstation/reconciliation/statement-to-report` route
-persists the source before import, checkpoints every completed stage, pauses while reconciliation
-cases remain open, and resumes without repeating a committed import. Status, resume, and
-artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
-artifacts before serving them. The lower-level
+Operations. The bounded `POST /api/workstation/reconciliation/statement-reconciliation-report`
+route uses `IStatementReconciliationIntakeAuthority` to verify active account/source ownership and
+resolve one exact fund, primary ledger book, open accounting period, and as-of scope before retaining
+input. It then persists the source before import, checkpoints every completed stage, retains
+Evidence Vault lineage, starts or reuses the exact non-closed Operations Continuity workflow, and
+publishes each source break/case obligation into `IReconciliationBreakQueueRepository` with that
+accounting scope. Queue-owned terminal casework synchronizes the disposition back to the statement
+break/case and attaches the same evidence to Operations Continuity; the report coordinator will not
+render until every source obligation has exactly one completed canonical handoff. Status, resume,
+and artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
+JSON/CSV reconciliation artifacts before serving them. This adapter does not perform accounting
+posting or close controls, reporting certification or approval, client PDF/XLSX packaging, release,
+delivery, or delivery-receipt retention. Those actions remain owned by the existing Operations
+Continuity, reconciliation casework, Reporting governance, document, and distribution services, and
+statement workflow `Completed` is not a posted, closed, certified, released, or delivered outcome.
+The lower-level
 `POST /api/workstation/reconciliation/statement-runs` mutation derives `ImportedBy` from the
 authenticated session and fails closed unless `FundAccountId` resolves to an active account whose
 institution and external-account evidence match the statement source. `AdminMaintenance` may
@@ -121,6 +136,9 @@ The canonical reconciliation queue publishes explicit assign, resolve, waive, an
 actions. Waive and supersede routes preserve the authenticated operator, approval and successor
 lineage, typed Value/Quantity/CostBasis measures, blocked outputs, and disposition evidence hashes;
 browser API contracts mirror these fields rather than inferring terminal state from queue status.
+Queue reads and casework mutations never materialize cases from tenantless strategy-run or statement
+lists. A source workflow must retain the exact tenant and company and publish the scoped case before
+it can appear in the operator inbox or accept casework; legacy unscoped rows remain inaccessible.
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close
@@ -1089,9 +1107,12 @@ report template registry now seeds built-in Reporting templates as approved immu
 exposes shared list, draft, submit, approve, reject, and render routes under
 `/api/fund-structure/reporting/templates*`. Draft versions cannot render until approved, invalid
 drafts cannot enter review, and approving a new version marks earlier approved records as no longer
-latest without mutating built-in history. Custom draft and approval records are retained under the
-resolved workstation data root at `workstation/reporting/report-templates.json`, so template
-authoring state survives host restart. Approved custom templates can carry report-writer grid
+latest without mutating built-in history. In local/development composition, custom draft and
+approval records are retained under the resolved workstation data root at
+`workstation/reporting/report-templates.json`, so template authoring state survives host restart.
+Production omits that file authority and returns `503` for custom-template mutations until a
+durable governance store is available; the immutable built-in catalog remains readable. Approved
+custom templates can carry report-writer grid
 definitions; the shared registry validates and renders those grids through `ReportWriterGridEngine`
 instead of returning browser-local or WPF-local calculations. Render requests may include temporary
 grid definitions for live no-code previews; the registry renders that request-scoped layout without
@@ -1129,9 +1150,11 @@ fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `De
 through the visible template/workflow set for the current `ReportAccessQueryContext`, so
 unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
 links, or delivery status from the read model.
-`ReportingStarterKitService` resolves the Reporting module starter-kit catalog, persists the
-selected editable starter state, and provisions seed schedules through `ReportingScheduleService`
-with `Draft` state instead of bypassing schedule governance. The
+`ReportingStarterKitService` resolves the Reporting module starter-kit catalog and, in
+local/development composition, persists selected editable starter state and provisions seed
+schedules through `ReportingScheduleService` with `Draft` state instead of bypassing schedule
+governance. Production keeps the catalog read-only and returns `503` for provisioning while no
+durable starter-kit authority is registered. The
 `/api/fund-structure/reporting/starter-kits` and
 `/api/fund-structure/reporting/starter-kits/{kitId}/provision` endpoints require the same reporting
 read/workflow permissions as the surrounding Reporting API, and `ReportPackRunReadService` carries
@@ -1182,19 +1205,69 @@ The template projection also carries registry-owned audit and version-control me
 based-on version, created/updated/submitted/approved/rejected actors and timestamps, decision
 rationale, approval reference, validation issues, and retained template audit events, so clients do
 not reconstruct governance lineage from display labels.
-Generic Reporting orchestration runs and legacy report-pack workflow records share one historical
-operator read model here. `FileReportingRunStore` persists the integrity-validated certified
-`ReportingOutputManifest` plus run audit snapshot at
-`<DataRoot>/workstation/reporting/runs/reporting-runs.json`. `FileReportingScheduleStore` retains
-schedules and restart-safe release handoffs at
-`<DataRoot>/workstation/reporting/reporting-schedules.json`. `FileReportPackWorkflowRecordStore`
-records remain tenant-filtered historical compatibility only; their mutation routes are retired and
-they are not approval, release, or restatement authority. `ReportPackRunReadService` projects these
-sources into `WorkstationReportingPayload`, while canonical action state comes from the governed run
-DTO. Browser and WPF Reporting surfaces should consume those recent-run rows instead of
+Generic Reporting orchestration and governance share one operator read model here. With the
+reporting database configured, `IReportingRunStore` resolves to `PostgresReportingRunStore` and
+`IReportingScheduleStore` resolves to `PostgresReportingScheduleStore`; those stores retain and
+verify tenant-scoped certified manifests/run audit and tenant/company-scoped schedule snapshots.
+`FileReportingRunStore`, `FileReportingScheduleStore`, custom-template/starter-kit stores, and
+legacy report-pack repositories remain local/development compatibility only. They do not satisfy
+production deployment readiness, and production composition does not register them or silently
+fall back to them. Remaining legacy report-pack reads return `410` when their repository is absent;
+custom-template mutations and starter-kit provisioning return `503`. Production composition
+without a Reporting or documented ledger PostgreSQL connection fails registration. The
+UI host runs checksummed Reporting migrations before starting the listener or hosted workers;
+database or migration failure stops startup. Remaining authority gaps leave production reporting
+`Required/NotReady` and run/schedule/read routes service-unavailable, while local/development file
+compatibility composition is explicitly degraded and those routes remain blocked. The default
+shared composition no longer
+registers the legacy `IReportPackWorkflowRecordStore` or `IReportPackDeliveryRecordStore`;
+explicitly supplied legacy records remain historical compatibility only and are not approval,
+release, restatement, recipient-access, or transport authority. `ReportPackRunReadService` projects
+the available run and schedule sources into `WorkstationReportingPayload`, while canonical action
+state comes from the governed run DTO. Browser and WPF Reporting surfaces should consume those
+recent-run rows instead of
 reintroducing fixture rows in workstation bootstrap payloads. Recent-run
 rows now expose run-series/version metadata, latest generated/latest approved pointers, retry
 reason, and changed/added/removed report-writer line counts from the retained Reporting manifest.
+`ReportingDeploymentReadinessService` independently checks the probed PostgreSQL governance,
+artifact-vault, immutable close/reconciliation evidence, run, schedule, access-grant, delivery, and
+receipt schemas and their concrete store graph. It also requires exact-scope recipient
+destinations, the canonical PDF/XLSX client-document renderer, deterministic certified-artifact
+production, a configured durable ledger-presentation source, the exact PostgreSQL
+accounting-period release-consistency gate, and both a complete schema probe and the current
+process's successful reporting, ledger, fund-account, and fund-structure migration receipts.
+The same readiness graph requires migration 013's statement document/revision tables, all four
+document and revision triggers, the exact
+`reporting-statement-reconciliation-authority:v1` compatibility marker, and a concrete
+`PostgresStatementReconciliationReportAuthorityStore`; registration of the backend-neutral
+contract or a file adapter cannot satisfy that component.
+Reporting startup also integrity-reloads the one reconciliation queue shared by statement
+casework, Operations Continuity, hard close, and Final evidence; readiness requires that receipt and
+the running schedule and secure-delivery workers with valid options. PostgreSQL-shaped source
+registrations without those completed source migrations remain blocked.
+`GET /api/workstation/reporting` returns `503`
+when any component is missing instead of inheriting Accounting health or a fallback Reporting
+payload; workstation structured Reporting exports apply the same fail-closed posture. A successful
+payload includes the sanitized `deploymentCapability`.
+Capital-account `Pdf`, `Xlsx`, and `ClientPackage` outputs keep the verified checkpoint-bound
+`LedgerFinancialReportPack` intact and ask the existing `LedgerClientReportExportService` for the
+same canonical PDF/XLSX pair. That shared service uses the composition-root
+`FinancialReportDocumentRenderer`; `DocumentsReportingPrimaryDocumentRenderer` is only an adapter
+and does not rebuild the partners-capital presentation with `ClientGradeReportRenderer`. A
+standalone `Pdf` or `Xlsx` output retains the corresponding canonical document, while
+`ClientPackage` declares exactly one `<runId>.pdf` and one `<runId>.xlsx` and retains both exact
+hashes and sizes from the same certified manifest. Governance release requires the complete
+retained pair for `ClientPackage`, and secure distribution rejects commands that select only one
+primary document from that package.
+Before ledger hard close, `AccountingClosePostingWorkbenchBridge` acquires an exact-scope lease from
+`IReconciliationBreakQueueRepository`. The file repository freezes the fund/book/period/as-of queue
+head and its hash into the integrity-validated reconciliation snapshot before ledger commit, blocks
+casework mutations while that scope is closing or hard-closed, and recovers a post-commit evidence
+handoff from the frozen checkpoint rather than a later mutable queue. An ambiguous `Closing` freeze
+survives dispose/process death. Recovery takes the cross-process fence, rotates lease ownership
+without changing the frozen head, and rereads ledger authority: hard-closed seals/reuses the exact
+checkpoint, confirmed non-hard-closed explicitly abandons the pre-commit freeze, and an unreadable
+ledger leaves the freeze blocking for a later retry.
 The same service also projects `DailyWork` items for due packages, blocked packages, approvals,
 delivery failures, restatements, readiness warnings, and evidence gaps; browser and WPF Reporting
 cockpits should use those items as the first decision queue instead of locally rescoring readiness.
@@ -1322,7 +1395,12 @@ revocation, audience, artifact scope, maximum uses, tenant, and released-package
 enforced by the secure distribution service on exchange and download.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
 metadata, so recipients receive report-line provenance, publication evidence, selected branding, and
-restatement lineage in the downloaded files instead of package identifiers only. XLSX packages keep
+restatement lineage in the downloaded files instead of package identifiers only. Rebuilt bytes must
+match each retained artifact's byte length and SHA-256 checksum; a compatibility snapshot whose
+renderer inputs or checksum metadata drifted fails closed at download rather than serving different
+bytes under the retained identity. CSV cells use the Storage-owned
+spreadsheet-formula guard and quote semicolon-locale delimiters so metadata cannot become an
+executable formula when a recipient opens the package. XLSX packages keep
 the Branding worksheet, while HTML and PDF package renderers apply the selected theme colors plus
 recipient-visible firm, logo, footer, and disclaimer text so styled client packets are not metadata-only.
 The shared delivery
@@ -1409,7 +1487,10 @@ client-local route inference. The shared ledger amount provenance service expose
 lineage pointers as a click-through drilldown for a report-pack ledger amount, combining the ledger
 line, strategy/run evidence, Security Master pointer, reconciliation summary, durable case ids,
 related case status/owner/sign-off posture, approval state, report usage, retained report-pack
-artifacts, audit-pack readiness category evidence, export evidence, and restatement lineage. When a retained report
+artifacts, audit-pack readiness category evidence, export evidence, and restatement lineage. The
+drilldown requires an authenticated tenant/company scope and only joins reconciliation casework from
+that exact scope; unscoped callers or deployments without the authoritative casework store return no
+drilldown instead of claiming that scoped casework is clear. When a retained report
 line carries a retained Security Master id, the drilldown uses that id to pull in open Security
 Master exception cases for the same instrument. When a retained report line does not carry a direct
 provider-event pointer, related provider-ledger cases can contribute provider-event evidence from
@@ -1505,6 +1586,15 @@ Retained vault bundles are also first-class Evidence Workbench subjects through 
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
 linkage for browser/WPF parity.
+Production statement-reconciliation composition does not route statement authority through that
+file-backed Evidence Workbench store. `ReportingStatementImportEvidenceRetainer` copies the
+Statement Import service's retained source into the durable, exact-scope Reporting statement
+authority, verifies any identity before reuse, and migrates a legacy identity only from the retained
+source bytes. The existing `StatementReconciliationReportWorkflowService` then hydrates a
+service-owned exact cache under the authority lease and checkpoints document mappings with
+`workflow.json` last. Missing or non-durable production statement authority omits this workflow
+registration so its optional endpoints return `503`; local/development constructors retain their
+file compatibility behavior.
 
 The Data workstation exposes shared operational surfaces at
 `/api/workstation/data/ingestion-operations` and
@@ -1670,7 +1760,9 @@ mapping reviews, and override requests can follow the governed reconciliation-ca
 Fund-account close readiness now links the latest provider-ledger Security Master passports back to
 open Security Master queue items for the same held securities, so pending identifier-conflict or
 operator-override cases can block the account close even when the case itself is not fund-account
-scoped.
+scoped. Its endpoint, provider-latest lookup, and queue reads use the authenticated tenant/company
+scope end to end. Unscoped callers and deployments without the authoritative casework store receive
+a blocked posture with no latest-run claim rather than an authoritative ready-to-close response.
 Evidence Workflow Fabric now exposes those open identifier conflicts as a first-class
 `security-master-conflict` evidence subject. The packet contributor reads the shared conflict
 service, links open conflicts to their durable case ids, and keeps route-only Security Master
@@ -2011,3 +2103,4 @@ domain-specific endpoint edits to the matching partial file.
 - `docs/source/generated/source-module-index.md`
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
+- `docs/operators/statement-reconciliation-report-operations.md`

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.FinancialOperations
@@ -45,7 +45,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   decisions, service-owned operating coverage rows for close setup, dependency graph, sign-off
   matrix, late adjustments, blocker review, and period lock, plus a governed
   close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
-  Operations Continuity close-package publication gate.
+  Operations Continuity close-package publication gate. Hard close requires explicit Controller or
+  Fund Controller authority; preparation-only closing-entry requests do not acquire that authority
+  or seal the reconciliation queue.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
@@ -64,8 +66,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
-  boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
-  before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
+  boundary used by the persisted statement reconciliation report coordinator; a committed import is
+  checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
+  recovery cannot silently repeat the import. Commit rejects any parsed row or uploaded-document
+  account identity that differs from the authorized external account.
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
@@ -88,7 +92,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
   persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
   transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
-  watermark.
+  watermark. Scheduled fetches reauthorize the retained tenant, company, fund, book, period, and
+  external-account scope before provider access.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 
@@ -97,6 +102,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Operations Continuity workflow state, command transitions, status derivation, persistence, audit hashing, reconciliation-break assignment/escalation, approval-policy rules, and close-calendar configuration live here so close, approval, report-pack, checklist-control, reviewer-independence, due-date, owner override, and retained audit policy remains part of Financial Operations rather than application orchestration or UI endpoints. The Financial Operations command-center read service also owns unified queue-row composition and deterministic status, owner, due/SLA, severity, blocker type, close/report impact, evidence, action, and route labels for browser and WPF clients.
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
+
+The UI Shared Statement Reconciliation Report intake adapter binds retained imports to an exact
+fund, ledger-book, open accounting-period, and as-of scope, starts or reuses the matching Operations
+Continuity workflow, and projects source obligations into the existing canonical reconciliation
+queue. Those are adapter actions into existing authorities. This module's statement-run, source-case,
+and Operations Continuity services continue to own reconciliation state and
+posting/approval/close gates; `IReconciliationBreakQueueRepository` and
+`IStatementReconciliationCaseworkHandoffService` own governed queue mutation and evidence
+synchronization. The adapter and its casework handoff may attach retained evidence, but they do not
+post, approve, or close on an operator's behalf.
 
 The statement-run workflow reconciles each imported statement against Meridian's own book rather than against itself: `StatementRunWorkflowService` resolves internal positions, cash, and ledger transactions through `IInternalReconciliationPopulationProvider` (default: an empty book, so every row is a genuine unmatched break) and runs the shared `StatementMatchingEngine` across positions, cash, and transactions in exact / tolerance / candidate / unmatched tiers. Foreign-currency amounts normalize to the reporting base currency through a fail-closed `IReconciliationFxRateProvider` (identity-only by default, so cross-currency lines break unless a rate is configured); cash matching retains its original currency identity after conversion so distinct per-currency balances cannot cross-match. Both statement-only and internal-only records surface as breaks with a truthful tolerance-breached flag and engine-sourced confidence. A real `IFxRateProvider` implementation (`InMemoryFxRateProvider`, identity/inverse/triangulation with as-of selection) is available to the execution and ledger layers.
 
@@ -298,6 +313,10 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Malformed, null, or incomplete close-management snapshots fail closed and remain untouched for
+recovery; a later sign-off cannot reinterpret missing slices as empty and overwrite retained close
+evidence. Once a service has observed or written the durable snapshot, disappearance of that file
+also fails closed instead of being treated as first-time initialization.
 The final close-plan control is the shared `Post closing entries` gate. After the existing task,
 sign-off, evidence, and version checks pass, the management service projects the current scoped
 revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,

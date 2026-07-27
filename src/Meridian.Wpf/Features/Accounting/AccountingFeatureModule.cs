@@ -21,6 +21,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Reporting;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
@@ -31,6 +32,7 @@ using Meridian.Wpf.Views;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage;
+using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -179,7 +181,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
                 sp.GetService<ILedgerBookService>(),
                 sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
-                sp.GetService<IFundProfileTenancyRegistry>()));
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReportingReleaseConsistencyGate>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());

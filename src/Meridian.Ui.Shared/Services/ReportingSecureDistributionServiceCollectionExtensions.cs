@@ -27,6 +27,9 @@ public static class ReportingSecureDistributionServiceCollectionExtensions
             ServiceDescriptor.Singleton<IReportingDeliveryTransport, SecurePortalReportingDeliveryTransport>());
         services.TryAddSingleton<ReportingDeliveryDispatcher>();
         services.TryAddSingleton<ReportingSecureDistributionApplicationService>();
+        services.TryAddSingleton<IReportingTransportInfrastructureReadiness>(sp =>
+            sp.GetRequiredService<ReportingSecureDistributionApplicationService>());
+        services.TryAddSingleton<ReportingDeliveryWorkerReadinessState>();
         services.AddHostedService<ReportingSecureDistributionHostedService>();
         return services;
     }

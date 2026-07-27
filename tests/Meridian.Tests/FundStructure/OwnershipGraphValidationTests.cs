@@ -81,25 +81,37 @@ public sealed class OwnershipGraphValidationTests
     }
 
     [Fact]
-    public void Validate_OverlappingCycles_DoesNotDuplicateSharedNodeOrLinkIssues()
+    public void Validate_OverlappingCycles_ReportsEveryParticipatingLinkExactlyOnce()
     {
         // A -> B -> A and A -> B -> C -> A share node A and link A->B; both cycles are found on
         // one traversal, but the shared node and link must not be reported twice.
         var (a, b, c) = (Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
-        var links = new[] { Link(a, b), Link(b, a), Link(b, c), Link(c, a) };
+        var aToB = Link(a, b);
+        var bToA = Link(b, a);
+        var bToC = Link(b, c);
+        var cToA = Link(c, a);
+        var links = new[] { aToB, bToA, bToC, cToA };
 
         var issues = OwnershipGraphValidation.Validate(links, _ => true);
 
-        // Which of the two overlapping cycles is attributed first depends on traversal order, so
-        // assert the order-independent invariants: no duplicate issues, and only real cycle links.
-        issues.Where(issue => issue.Code == "ownership.cycle").Should()
-            .NotBeEmpty().And.OnlyHaveUniqueItems();
+        var cycleIssues = issues.Where(issue => issue.Code == "ownership.cycle").ToList();
+        cycleIssues.Should().ContainSingle("the overlapping cycles form one strongly connected component");
+        new Guid?[] { a, b, c }.Should().Contain(cycleIssues[0].NodeId);
+
         var cycleLinkIds = issues
             .Where(issue => issue.Code == "ownership.cycle-link")
             .Select(issue => issue.OwnershipLinkId)
             .ToList();
-        cycleLinkIds.Should().NotBeEmpty().And.OnlyHaveUniqueItems();
-        cycleLinkIds.Should().BeSubsetOf(links.Select(link => (Guid?)link.OwnershipLinkId));
+        cycleLinkIds.Should().BeEquivalentTo(
+            new Guid?[]
+            {
+                aToB.OwnershipLinkId,
+                bToA.OwnershipLinkId,
+                bToC.OwnershipLinkId,
+                cToA.OwnershipLinkId,
+            },
+            "every edge in the strongly connected component participates in at least one cycle");
+        cycleLinkIds.Should().OnlyHaveUniqueItems("shared cycle links are reported once");
     }
 
     [Fact]

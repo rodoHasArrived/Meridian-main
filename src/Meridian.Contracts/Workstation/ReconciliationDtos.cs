@@ -485,7 +485,53 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? DisposedAt = null,
     IReadOnlyList<string>? BlockedOutputs = null,
     string? AccountingPeriodId = null,
-    DateOnly? AsOfDate = null);
+    DateOnly? AsOfDate = null)
+{
+    /// <summary>
+    /// Immutable tenant identity retained by the queue persistence boundary. Legacy records may
+    /// be unscoped; tenant-bound production reads must not surface those records.
+    /// </summary>
+    public string? TenantId { get; init; }
+
+    /// <summary>
+    /// Immutable company identity retained alongside <see cref="TenantId"/>. Tenant and company
+    /// must either both be present or both be absent on a legacy record.
+    /// </summary>
+    public string? CompanyId { get; init; }
+
+    /// <summary>
+    /// Reporting/close fund-profile identity. Kept separate from the source fund-account identity
+    /// and init-only to preserve the established positional constructor and deconstruction ABI.
+    /// </summary>
+    public string? FundProfileId { get; init; }
+}
+
+/// <summary>
+/// Server-resolved access scope for reconciliation queue reads and mutations. This value is never
+/// accepted from a workstation request body; endpoint adapters build it from the authenticated
+/// session.
+/// </summary>
+public sealed record ReconciliationBreakQueueScope
+{
+    public ReconciliationBreakQueueScope(string tenantId, string companyId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        TenantId = tenantId.Trim();
+        CompanyId = companyId.Trim();
+    }
+
+    public string TenantId { get; }
+
+    public string CompanyId { get; }
+
+    public bool Owns(ReconciliationBreakQueueItem? item)
+        => item is not null
+           && !string.IsNullOrWhiteSpace(item.TenantId)
+           && !string.IsNullOrWhiteSpace(item.CompanyId)
+           && string.Equals(item.TenantId.Trim(), TenantId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(item.CompanyId.Trim(), CompanyId, StringComparison.OrdinalIgnoreCase);
+}
 
 public sealed record ReconciliationBreakExplanationDto(
     string Summary,
@@ -584,7 +630,25 @@ public sealed record ReconciliationCaseworkCommand(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     string? ApprovalActor = null,
     string? ApprovalReference = null,
-    string? SupersedingBreakId = null);
+    string? SupersedingBreakId = null)
+{
+    /// <summary>
+    /// Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only
+    /// preserves the established command constructor and deconstruction ABI.
+    /// </summary>
+    public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }
+}
+
+/// <summary>
+/// Exact accounting-close scope retained when statement casework has been handed to the matching
+/// Operations Continuity workflow. This scope is queue-owned evidence; callers cannot use it to
+/// post, approve, or close a ledger period.
+/// </summary>
+public sealed record ReconciliationCaseworkCloseScopeDto(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
 
 public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string> BreakIds,

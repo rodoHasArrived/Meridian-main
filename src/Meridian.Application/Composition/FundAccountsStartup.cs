@@ -43,8 +43,10 @@ internal static class FundAccountsStartup
         }
 
         var options = serviceProvider.GetRequiredService<FundAccountStoreOptions>();
+        var readiness = serviceProvider.GetRequiredService<DatabaseMigrationReadinessReceipt>();
         var runner = new FundAccountMigrationRunner(options);
         await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
+        readiness.MarkFundAccountsReady();
         logger?.LogInformation(
             "Fund accounts schema '{Schema}' is ready.",
             options.Schema);

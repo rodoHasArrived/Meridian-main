@@ -499,6 +499,10 @@ public sealed class CredentialTestingService : IAsyncDisposable
             await AtomicFileWriter.WriteAsync(_statusPersistencePath, json, ct).ConfigureAwait(false);
             _log.Debug("Persisted credential status for {Count} providers", statuses.Count);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log.Warning(ex, "Failed to persist credential status");

@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Wpf
@@ -637,10 +637,11 @@ Direct Lending now follows the same focused portfolio workbench pattern: the hea
 by a compact action strip, loan/accrual/cash evidence renders through shared dense tables, the
 selected loan owns the inspector rail, and accrual posting fails closed until a retained loan row is
 selected and detail loading is idle.
-Analysis Export now opens on compact run/preset readiness instead of an embedded header. Recent
-export history renders through `DenseDataGridControl`, selected history rows drive an inspector, and
-run/save commands expose missing export name, destination, metric, or date-range requirements through
-disabled-action tooltips and inspector facts.
+Analysis Export now opens on compact canonical-backend availability instead of an embedded header.
+Recent export history renders through `DenseDataGridControl` but remains empty until backend-confirmed
+history is connected. Run and preset-save commands fail closed because this desktop screen's
+destination, metric, chart, summary, and preset options are not yet represented by the canonical
+analysis-export service; disabled-action tooltips state that no export or preset was created.
 RunMat Lab is a Strategy workspace tool; its visible page descriptions and code comments use
 `Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison

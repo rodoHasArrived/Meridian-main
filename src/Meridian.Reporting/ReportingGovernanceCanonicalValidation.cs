@@ -246,6 +246,12 @@ public static class ReportingGovernanceCanonicalValidation
         }
 
         var parameters = ParseCanonicalParameters(snapshot.ParametersCanonicalJson!);
+        if (snapshot.RequiresCertifiedLedgerPresentation
+            != parameters.RequiresCertifiedLedgerPresentation)
+        {
+            throw new ReportingGovernanceException(
+                "The certified ledger-presentation requirement does not match the immutable normalized parameter receipt.");
+        }
         if (!StringComparer.Ordinal.Equals(parameters.FundId, scope.FundId)
             || !StringComparer.Ordinal.Equals(parameters.BookId, scope.BookId)
             || !StringComparer.Ordinal.Equals(parameters.PeriodId, scope.PeriodId))
@@ -467,6 +473,40 @@ public static class ReportingGovernanceCanonicalValidation
         {
             throw new ReportingGovernanceException(
                 "Release requires immutable Final parameters and the final evidence appendix; Draft-certified bytes cannot be released.");
+        }
+    }
+
+    public static bool IsClientPackage(ReportingCertifiedSnapshotScope snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        RequireText(snapshot.ParametersCanonicalJson, nameof(snapshot.ParametersCanonicalJson));
+        return ParseCanonicalParameters(snapshot.ParametersCanonicalJson!).OutputFormat
+            == ReportingOutputFormatDto.ClientPackage;
+    }
+
+    public static void ValidateCompleteClientPackageRelease(
+        string runId,
+        ReportingCertifiedSnapshotScope snapshot,
+        ImmutableArray<ReportingArtifactReference> artifacts)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (!IsClientPackage(snapshot))
+        {
+            return;
+        }
+
+        var normalizedRunId = runId.Trim();
+        var pdfArtifactId = $"{normalizedRunId}.pdf";
+        var workbookArtifactId = $"{normalizedRunId}.xlsx";
+        if (artifacts.IsDefaultOrEmpty
+            || artifacts.Count(artifact =>
+                StringComparer.Ordinal.Equals(artifact.ArtifactId, pdfArtifactId)) != 1
+            || artifacts.Count(artifact =>
+                StringComparer.Ordinal.Equals(artifact.ArtifactId, workbookArtifactId)) != 1)
+        {
+            throw new ReportingGovernanceException(
+                $"ClientPackage release for run '{normalizedRunId}' requires both immutable PDF and XLSX primary artifacts from the same certified package.");
         }
     }
 
@@ -706,6 +746,7 @@ public static class ReportingGovernanceCanonicalValidation
             release.ManifestHash,
             release.Artifacts,
             release.EvidenceIds);
+        ValidateCompleteClientPackageRelease(run.RunId, run.Snapshot, release.Artifacts);
 
         if (run.Approval is null
             || release.ReleasedAtUtc < run.Approval.ApprovedAtUtc
@@ -1237,10 +1278,13 @@ public static class ReportingGovernanceCanonicalValidation
             _ = ParseEnum<ReportingAccountingBasisDto>(root, "accountingBasis");
             RequireText(RequireJsonString(root, "presentationCurrency"), "presentationCurrency");
             _ = ParseEnum<ReportingConsolidationLevelDto>(root, "consolidationLevel");
-            _ = ParseEnum<ReportingOutputFormatDto>(root, "outputFormat");
+            var outputFormat = ParseEnum<ReportingOutputFormatDto>(root, "outputFormat");
             var finality = ParseEnum<ReportingFinalityDto>(root, "finality");
             _ = root.GetProperty("includeSupportingSchedules").GetBoolean();
             var includeEvidenceAppendix = root.GetProperty("includeEvidenceAppendix").GetBoolean();
+            var requiresCertifiedLedgerPresentation =
+                root.TryGetProperty("requiresCertifiedLedgerPresentation", out var requirement)
+                && requirement.GetBoolean();
             if (root.GetProperty("templateParameters").ValueKind != JsonValueKind.Object)
             {
                 throw new ReportingGovernanceException(
@@ -1251,8 +1295,10 @@ public static class ReportingGovernanceCanonicalValidation
                 fundId,
                 bookId!,
                 periodId,
+                outputFormat,
                 finality,
-                includeEvidenceAppendix);
+                includeEvidenceAppendix,
+                requiresCertifiedLedgerPresentation);
         }
         catch (ReportingGovernanceException)
         {
@@ -1384,6 +1430,10 @@ public static class ReportingGovernanceCanonicalValidation
         AppendCanonical(target, snapshot.ReconciliationCheckpointHash);
         AppendCanonical(target, snapshot.ParametersCanonicalJson);
         AppendCanonical(target, snapshot.ParametersHash);
+        if (snapshot.RequiresCertifiedLedgerPresentation)
+        {
+            AppendCanonical(target, "requires-certified-ledger-presentation");
+        }
     }
 
     private static void AppendAuthority(StringBuilder target, ReportingAuthorityScope authority)
@@ -1454,6 +1504,8 @@ public static class ReportingGovernanceCanonicalValidation
         string FundId,
         string BookId,
         string PeriodId,
+        ReportingOutputFormatDto OutputFormat,
         ReportingFinalityDto Finality,
-        bool IncludeEvidenceAppendix);
+        bool IncludeEvidenceAppendix,
+        bool RequiresCertifiedLedgerPresentation);
 }

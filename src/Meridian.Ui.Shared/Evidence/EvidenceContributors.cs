@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
@@ -288,7 +289,7 @@ public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
     }
 }
 
-public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
+public sealed partial class ReconciliationEvidenceContributor : IEvidenceContributor
 {
     private readonly IServiceProvider _services;
 
@@ -343,59 +344,6 @@ public sealed class ReconciliationEvidenceContributor : IEvidenceContributor
         return new EvidenceContribution([node], [], [], [nodeId], []);
     }
 
-    private async Task<EvidenceContribution> ContributeStatementRunAsync(EvidenceContributionContext context, string runId)
-    {
-        var service = _services.GetService<IReconciliationApiService>();
-        if (service is null)
-        {
-            return new EvidenceContribution([], [], [], [], ["Statement reconciliation API service is not registered."]);
-        }
-
-        var detail = await service.GetStatementRunAsync(runId, context.CancellationToken).ConfigureAwait(false);
-        if (detail is null)
-        {
-            return new EvidenceContribution([], [], [], [], [$"No statement-run evidence is available for '{runId}'."]);
-        }
-
-        var nodeId = NodeId(context.Subject, "statement-run");
-        var runKey = string.IsNullOrWhiteSpace(detail.RunId) ? runId : detail.RunId!;
-        var matchSummary = detail.MatchSummary;
-        var openExceptionCount = detail.Breaks?.Count(static item =>
-            string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(item.Status, "InReview", StringComparison.OrdinalIgnoreCase)) ?? 0;
-        var status = openExceptionCount > 0 ? EvidenceStatusDto.ReviewRequired : EvidenceStatusDto.Ready;
-        var generatedAt = detail.CompletedAtUtc ?? detail.ImportedAtUtc ?? detail.StartedAtUtc ?? DateTimeOffset.UtcNow;
-        var route = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(runKey)}";
-        var sourceFileHash = string.IsNullOrWhiteSpace(detail.SourceFileHash) ? null : detail.SourceFileHash;
-        var node = Node(
-            context.Subject,
-            nodeId,
-            "statement-run",
-            status,
-            matchSummary is null
-                ? $"{openExceptionCount} open exception(s)."
-                : $"{matchSummary.MatchedItemCount}/{matchSummary.StatementItemCount} item(s) matched; {matchSummary.BreakCount} break(s); {openExceptionCount} open exception(s).",
-            "ReconciliationApiService",
-            generatedAt,
-            artifacts: sourceFileHash is null
-                ? []
-                :
-                [
-                    Artifact(
-                        $"{nodeId}:detail",
-                        "statement-run-detail-route",
-                        route: route,
-                        generatedAt: generatedAt,
-                        hash: sourceFileHash)
-                ],
-            workItemIds: detail.Breaks?
-                .Select(static item => item.BreakId)
-                .Where(static breakId => !string.IsNullOrWhiteSpace(breakId))
-                .Select(static breakId => breakId!)
-                .ToArray() ?? []);
-
-        return new EvidenceContribution([node], [], [], [nodeId], []);
-    }
 }
 
 public sealed class ReportPackEvidenceContributor : IEvidenceContributor

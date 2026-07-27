@@ -12,6 +12,10 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
@@ -34,6 +38,10 @@ import type {
 
 interface FinanceStandardScreenProps {
   data: AccountingWorkspaceResponse | null;
+}
+
+interface ReportingStandardScreenProps {
+  data: ReportingWorkspacePayload | null;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -62,15 +70,16 @@ const reportParameterFields = [
   "Evidence appendix"
 ];
 
-export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenProps) {
+export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenProps) {
   const [searchParams] = useSearchParams();
-  const reporting = asRecord(data?.reporting);
+  const reportingData = normalizeReportingWorkspace(data);
+  const reporting = asRecord(reportingData);
   const requestedRunId = searchParams.get("runId") ?? "";
   const runs = readRecordArray(reporting, "recentRuns");
   const run = requestedRunId
     ? runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? null
     : runs[0] ?? null;
-  const templates = buildTemplateRows(data?.reporting.templates ?? []);
+  const templates = buildTemplateRows(reportingData?.templates ?? []);
   const runTemplateId = readString(run, "templateId", "");
   const selectedTemplate = runTemplateId
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
@@ -87,9 +96,9 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   const retainedArtifacts = readStringArray(run, "artifacts");
   const retainedOutputReferences = generatedFiles.length > 0 ? generatedFiles : retainedArtifacts;
   const selectedTemplateMetadata = runTemplateId
-    ? data?.reporting.templates?.find((candidate) => candidate.templateId === runTemplateId) ?? null
+    ? reportingData?.templates?.find((candidate) => candidate.templateId === runTemplateId) ?? null
     : selectedTemplate
-      ? data?.reporting.templates?.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
+      ? reportingData?.templates?.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
       : null;
   const previewSections = (selectedTemplateMetadata?.sections ?? []).map((section) => presentReportingIdentifier(section, "Report section"));
   const sectionCount = readNumber(run, "sectionCount", previewSections.length);
@@ -264,7 +273,7 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   );
 }
 
-export function ReportRunDetailScreen(_props: FinanceStandardScreenProps) {
+export function ReportRunDetailScreen(_props: ReportingStandardScreenProps) {
   return <ReportRunGovernanceScreen />;
 }
 

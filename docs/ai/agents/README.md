@@ -230,7 +230,8 @@ Use repo navigation first whenever the main problem is "where should I start?" r
 
 Choose coordinator escalation for multi-domain work, explicit approval-gated changes, or operator-facing
 briefings that need trace/evidence retention. Use the shared handoff packet workflow plus the route and
-validation evidence required by `assistant-workflow-contract.md`; record required/context boundaries and
+validation evidence required by [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md);
+record required/context boundaries and
 rerun triggers before lane transition.
 
 Coordinator agents should assign one narrow concern, a compact file set, and a validation owner to

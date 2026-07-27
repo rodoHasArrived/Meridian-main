@@ -402,7 +402,9 @@ public sealed record LockClosePeriodRequestDto(
     string? ClosePackageManifestId = null,
     string? ClosePackageRetainedManifestRoute = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
-    bool PrepareClosingEntriesOnly = false)
+    bool PrepareClosingEntriesOnly = false,
+    [property: JsonIgnore]
+    string? ControllerRole = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

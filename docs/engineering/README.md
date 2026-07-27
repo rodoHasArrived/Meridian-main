@@ -16,6 +16,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
 - **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
+- **Production readiness and test debt:** [Production Readiness Audit 2026-07-27](production-readiness-audit-2026-07-27.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 

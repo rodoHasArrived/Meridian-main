@@ -145,6 +145,10 @@ TWS account summaries and positions remain keyed by provider account, including 
 held in multiple accounts; an unknown requested account fails closed instead of inheriting another
 account's balances or positions. Account-summary request correlation is registered before dispatch
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
+Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
+bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+Failover cleanup remains best effort, but failed depth or trade unsubscriptions are logged with the
+provider and subscription identity so leaked quota-consuming streams remain observable.
 The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
 contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB

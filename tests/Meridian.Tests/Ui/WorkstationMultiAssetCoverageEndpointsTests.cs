@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
@@ -146,6 +147,19 @@ public sealed partial class WorkstationEndpointsTests
             row.DrillThroughTargets.Any(static target => target.TargetType == "LedgerMapping") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "AssetOperations") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "CloseReadiness"));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_MultiAssetCoverage_WithoutCompanyScope_ShouldFailClosed()
+    {
+        await using var app = await CreateAppAsync(
+            currentUserCompanyId: null,
+            currentUserTenantId: "tenant-test");
+
+        using var response = await app.GetTestClient().GetAsync(
+            $"{UiApiRoutes.WorkstationPortfolioMultiAssetCoverage}?fundAccountId={Guid.NewGuid():D}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

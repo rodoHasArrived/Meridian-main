@@ -6,24 +6,28 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class AnalysisExportViewModelTests
 {
     [Fact]
-    public void NewViewModel_DisablesRunExportAndExplainsMissingSetup()
+    public void NewViewModel_DisablesActionsAndExplainsCanonicalBackendGap()
     {
         var viewModel = new AnalysisExportViewModel();
 
         viewModel.CanRunExport().Should().BeFalse();
         viewModel.RunExportCommand.CanExecute(null).Should().BeFalse();
-        viewModel.ExportReadinessTitle.Should().Be("Export setup incomplete");
+        viewModel.ExportReadinessTitle.Should().Be("Export unavailable");
+        viewModel.ExportReadinessDetail.Should().Contain("not connected to the canonical analysis export service");
         viewModel.ExportReadinessDetail.Should().Contain("Export name is required");
         viewModel.ExportReadinessDetail.Should().Contain("Destination folder is required");
         viewModel.ExportReadinessDetail.Should().Contain("Select at least one metric");
         viewModel.RunExportTooltip.Should().Contain("Export blocked");
         viewModel.SavePresetCommand.CanExecute(null).Should().BeFalse();
+        viewModel.SavePresetTooltip.Should().Contain("no configured preset store");
         viewModel.ExportActionInspector.Facts.Should().Contain(fact => fact.Label == "Run export" && fact.Value.Contains("Export blocked"));
-        viewModel.RecentExportsStateText.Should().Be("No exports have been queued in this session yet.");
+        viewModel.RecentExportsStateText.Should().Be("No verified analysis export history is available in this desktop screen.");
+        viewModel.Formats.Should().Equal("CSV", "Parquet", "Excel", "Apache Arrow");
+        viewModel.Formats.Should().NotContain("JSON");
     }
 
     [Fact]
-    public void RequiredFieldsAndMetric_EnableRunExportAndDescribeScope()
+    public void CompletedSetup_RemainsFailClosedUntilCanonicalBackendIsWired()
     {
         var viewModel = new AnalysisExportViewModel
         {
@@ -34,19 +38,17 @@ public sealed class AnalysisExportViewModelTests
 
         viewModel.Metrics[0].IsSelected = true;
 
-        viewModel.CanRunExport().Should().BeTrue();
-        viewModel.RunExportCommand.CanExecute(null).Should().BeTrue();
-        viewModel.SavePresetCommand.CanExecute(null).Should().BeTrue();
-        viewModel.ExportReadinessTitle.Should().Be("Export ready");
-        viewModel.ExportReadinessDetail.Should().Contain("CSV export");
-        viewModel.ExportReadinessDetail.Should().Contain("1 metric");
-        viewModel.ExportReadinessDetail.Should().Contain("2 selected symbols");
-        viewModel.ExportReadinessInspector.Badge!.Value.Should().Be("Ready");
-        viewModel.ExportActionStateTitle.Should().Be("Export ready");
+        viewModel.CanRunExport().Should().BeFalse();
+        viewModel.RunExportCommand.CanExecute(null).Should().BeFalse();
+        viewModel.SavePresetCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ExportReadinessTitle.Should().Be("Export unavailable");
+        viewModel.ExportReadinessDetail.Should().Contain("No export was run");
+        viewModel.ExportReadinessInspector.Badge!.Value.Should().Be("Blocked");
+        viewModel.ExportActionStateTitle.Should().Be("Export unavailable");
     }
 
     [Fact]
-    public void RunExportCommand_WhenReady_QueuesRecentExportAndUpdatesState()
+    public void RunExport_WhenInvokedDirectly_DoesNotCreateHistoryOrClaimSuccess()
     {
         var viewModel = new AnalysisExportViewModel
         {
@@ -56,20 +58,17 @@ public sealed class AnalysisExportViewModelTests
         };
         viewModel.Metrics.Single(metric => metric.Name == "Liquidity").IsSelected = true;
 
-        viewModel.RunExportCommand.Execute(null);
+        viewModel.RunExport();
 
-        viewModel.RecentExports.Should().ContainSingle();
-        viewModel.RecentExports[0].Name.Should().Be("Liquidity close");
-        viewModel.RecentExports[0].Format.Should().Be("Parquet");
-        viewModel.RecentExports[0].Status.Should().Be("Queued");
-        viewModel.SelectedRecentExport.Should().Be(viewModel.RecentExports[0]);
-        viewModel.SelectedExportInspector.Title.Should().Be("Liquidity close");
-        viewModel.StatusMessage.Should().Be("Export \"Liquidity close\" queued successfully.");
-        viewModel.RecentExportsStateText.Should().Be("1 export retained for this session.");
+        viewModel.RecentExports.Should().BeEmpty();
+        viewModel.SelectedRecentExport.Should().BeNull();
+        viewModel.StatusMessage.Should().Contain("No export was run");
+        viewModel.StatusMessage.Should().NotContain("queued successfully");
+        viewModel.RecentExportsStateText.Should().Be("No verified analysis export history is available in this desktop screen.");
     }
 
     [Fact]
-    public void RunExport_WithoutMetric_ReportsMetricValidation()
+    public void SavePreset_WhenInvokedDirectly_DoesNotClaimPersistence()
     {
         var viewModel = new AnalysisExportViewModel
         {
@@ -77,24 +76,24 @@ public sealed class AnalysisExportViewModelTests
             Destination = @"C:\exports"
         };
 
-        viewModel.RunExport();
+        viewModel.SavePreset();
 
-        viewModel.ValidationSummary.Should().Be("Select at least one metric for the export.");
-        viewModel.StatusMessage.Should().Be("Select metrics to proceed.");
-        viewModel.RunExportCommand.CanExecute(null).Should().BeFalse();
+        viewModel.StatusMessage.Should().Contain("No preset was saved");
+        viewModel.StatusMessage.Should().NotContain("saved for quick reuse");
+        viewModel.SavePresetCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
-    public void Initialize_SeedsRecentExportsAndUpdatesRetainedState()
+    public void Initialize_DoesNotSeedRecentExportHistory()
     {
         var viewModel = new AnalysisExportViewModel();
 
         viewModel.Initialize();
 
-        viewModel.RecentExports.Should().HaveCount(2);
-        viewModel.SelectedRecentExport.Should().Be(viewModel.RecentExports[0]);
-        viewModel.SelectedExportInspector.Title.Should().Be("Daily Liquidity Pack");
-        viewModel.RecentExportsStateText.Should().Be("2 exports retained for this session.");
+        viewModel.RecentExports.Should().BeEmpty();
+        viewModel.SelectedRecentExport.Should().BeNull();
+        viewModel.SelectedExportInspector.Title.Should().Be("No recent export selected");
+        viewModel.RecentExportsStateText.Should().Be("No verified analysis export history is available in this desktop screen.");
     }
 
     [Fact]

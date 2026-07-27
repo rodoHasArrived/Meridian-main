@@ -90,10 +90,11 @@ these cases:
 
 These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. For
 multi-domain, approval-gated, or evidence-synthesis work that needs structured sign-off, trace
-retention, or operator-facing briefing, use provider-agnostic coordinator escalation: update the shared
-handoff packet (`docs/ai/agent-handoff-checklist.md`), capture required evidence and validation-floor state
-in `docs/status/ai-handoff-packet.json`, and require explicit human confirmation before implementation
-continues.
+retention, or operator-facing briefing, use provider-agnostic coordinator escalation. Follow
+`docs/ai/agent-handoff-checklist.md`, generate and validate a task-specific handoff packet, and capture
+the required evidence and validation-floor state. The checked-in
+`docs/status/ai-handoff-packet.json` is a deterministic automation artifact, not evidence of approval;
+explicit human confirmation remains a separate gate before implementation continues.
 
 ### Agent Orchestration
 

@@ -12,6 +12,30 @@ namespace Meridian.Strategies.Services;
 
 public sealed partial class FileReconciliationBreakQueueRepository
 {
+    public async Task VerifyAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ResetCachedState();
+            try
+            {
+                await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // A failed legacy migration or integrity check can populate only part of the
+                // in-memory state. Never let a later readiness check reuse that partial state.
+                ResetCachedState();
+                throw;
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private async Task EnsureLoadedAsync(CancellationToken ct)
     {
         if (_items is not null)
@@ -133,6 +157,21 @@ public sealed partial class FileReconciliationBreakQueueRepository
             }
         }
 
+        _closeScopeLocks.Clear();
+        foreach (var closeScopeLock in snapshot?.CloseScopeLocks ?? [])
+        {
+            var retainedCloseScopeLock =
+                snapshot is { SchemaVersion: < 6 } && closeScopeLock.Generation <= 0
+                    ? closeScopeLock with { Generation = 1 }
+                    : closeScopeLock;
+            ValidateCloseScopeLock(retainedCloseScopeLock);
+            if (!_closeScopeLocks.TryAdd(retainedCloseScopeLock.ScopeKey, retainedCloseScopeLock))
+            {
+                throw new InvalidDataException(
+                    $"Duplicate reconciliation close-scope lock '{retainedCloseScopeLock.ScopeKey}' was retained in the snapshot.");
+            }
+        }
+
         if (snapshot is { SchemaVersion: >= CurrentSnapshotSchemaVersion })
         {
             if (_bulkReceipts.Count != _bulkResults.Count ||
@@ -171,7 +210,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
             _bulkResults.Values.OrderBy(static item => item.BulkActionId, StringComparer.Ordinal).ToArray(),
             new Dictionary<string, string>(_bulkResultIdsByIdempotencyKey, StringComparer.OrdinalIgnoreCase),
             _commandReceipts.Values.OrderBy(static item => item.CommandId, StringComparer.Ordinal).ToArray(),
-            _bulkReceipts.Values.OrderBy(static item => item.BulkActionId, StringComparer.Ordinal).ToArray())
+            _bulkReceipts.Values.OrderBy(static item => item.BulkActionId, StringComparer.Ordinal).ToArray(),
+            _closeScopeLocks.Values.OrderBy(static item => item.ScopeKey, StringComparer.Ordinal).ToArray())
         {
             SchemaVersion = CurrentSnapshotSchemaVersion
         };
@@ -191,6 +231,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         _bulkResultIdsByIdempotencyKey.Clear();
         _bulkReceipts.Clear();
         _commandReceipts.Clear();
+        _closeScopeLocks.Clear();
     }
 
     private SnapshotStamp? ReadSnapshotStamp()
@@ -234,6 +275,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             new Dictionary<string, string>(_bulkResultIdsByIdempotencyKey, StringComparer.OrdinalIgnoreCase),
             new Dictionary<string, BulkCaseworkReceipt>(_bulkReceipts, StringComparer.OrdinalIgnoreCase),
             new Dictionary<string, CaseworkCommandReceipt>(_commandReceipts, StringComparer.OrdinalIgnoreCase),
+            new Dictionary<string, CloseScopeLockRecord>(_closeScopeLocks, StringComparer.Ordinal),
             _loadedSnapshotStamp);
 
     private void RestoreState(RepositoryState state)
@@ -246,6 +288,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         RestoreDictionary(_bulkResultIdsByIdempotencyKey, state.BulkResultIdsByIdempotencyKey);
         RestoreDictionary(_bulkReceipts, state.BulkReceipts);
         RestoreDictionary(_commandReceipts, state.CommandReceipts);
+        RestoreDictionary(_closeScopeLocks, state.CloseScopeLocks);
     }
 
     private static void RestoreDictionary<TKey, TValue>(
@@ -263,14 +306,69 @@ public sealed partial class FileReconciliationBreakQueueRepository
     private Task AppendAuditAsync(ReconciliationBreakQueueAuditEvent auditEvent, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        var sequenced = auditEvent with
+        var scoped = BindAuditScope(auditEvent);
+        var sequenced = scoped with
         {
-            Sequence = auditEvent.Sequence > 0 ? auditEvent.Sequence : NextAuditSequence(),
-            BeforePayloadHash = auditEvent.BeforePayloadHash ?? HashPayload(auditEvent.BeforePayload),
-            AfterPayloadHash = auditEvent.AfterPayloadHash ?? HashPayload(auditEvent.AfterPayload)
+            Sequence = scoped.Sequence > 0 ? scoped.Sequence : NextAuditSequence(),
+            BeforePayloadHash = scoped.BeforePayloadHash ?? HashPayload(scoped.BeforePayload),
+            AfterPayloadHash = scoped.AfterPayloadHash ?? HashPayload(scoped.AfterPayload)
         };
         _auditEvents.Add(sequenced);
         return Task.CompletedTask;
+    }
+
+    private ReconciliationBreakQueueAuditEvent BindAuditScope(
+        ReconciliationBreakQueueAuditEvent auditEvent)
+    {
+        var hasTenant = !string.IsNullOrWhiteSpace(auditEvent.TenantId);
+        var hasCompany = !string.IsNullOrWhiteSpace(auditEvent.CompanyId);
+        if (hasTenant != hasCompany)
+        {
+            throw new InvalidOperationException(
+                $"Reconciliation audit event '{auditEvent.EventId}' must retain both tenant and company scope.");
+        }
+
+        if (hasTenant)
+        {
+            return auditEvent with
+            {
+                TenantId = auditEvent.TenantId!.Trim(),
+                CompanyId = auditEvent.CompanyId!.Trim()
+            };
+        }
+
+        var item = _items?.GetValueOrDefault(auditEvent.BreakId)
+                   ?? TryReadQueueItem(auditEvent.AfterPayload)
+                   ?? TryReadQueueItem(auditEvent.BeforePayload);
+        if (item is null
+            || string.IsNullOrWhiteSpace(item.TenantId)
+            || string.IsNullOrWhiteSpace(item.CompanyId))
+        {
+            return auditEvent;
+        }
+
+        return auditEvent with
+        {
+            TenantId = item.TenantId.Trim(),
+            CompanyId = item.CompanyId.Trim()
+        };
+    }
+
+    private ReconciliationBreakQueueItem? TryReadQueueItem(string? payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(payload, _jsonOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private async Task LoadLegacyAuditEventsAsync(bool migrateLegacy, CancellationToken ct)
@@ -343,6 +441,12 @@ public sealed partial class FileReconciliationBreakQueueRepository
         {
             throw new InvalidDataException(
                 "Reconciliation break queue audit evidence has an invalid event identity, timestamp, schema version, or sequence.");
+        }
+
+        if (string.IsNullOrWhiteSpace(auditEvent.TenantId) != string.IsNullOrWhiteSpace(auditEvent.CompanyId))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation audit event '{auditEvent.EventId}' must retain both tenant and company scope or remain legacy-unscoped.");
         }
 
         ValidateJsonPayload(auditEvent.EventId, "before", auditEvent.BeforePayload);
@@ -766,6 +870,13 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
     private void ValidateBulkReceiptIntegrity(BulkCaseworkReceipt receipt)
     {
+        if (receipt.AccessScope is not null &&
+            receipt.Result.Results.Any(result => result.Item is not null && !receipt.AccessScope.Owns(result.Item)))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation bulk receipt '{receipt.BulkActionId}' contains a result outside its retained tenant and company scope.");
+        }
+
         if (string.IsNullOrWhiteSpace(receipt.BulkActionId) ||
             string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.IdempotencyKey) ||
@@ -797,6 +908,12 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
     private void ValidateCommandReceiptIntegrity(CaseworkCommandReceipt receipt)
     {
+        if (receipt.AccessScope is not null && !receipt.AccessScope.Owns(receipt.Result))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation casework receipt '{receipt.CommandId}' contains a result outside its retained tenant and company scope.");
+        }
+
         if (string.IsNullOrWhiteSpace(receipt.CommandId) ||
             string.IsNullOrWhiteSpace(receipt.BreakId) ||
             !IsSha256(receipt.InputHashSha256) ||

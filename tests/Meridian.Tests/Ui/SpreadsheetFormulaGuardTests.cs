@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Ui.Shared.Services;
+using Meridian.Storage.Export;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -29,5 +29,18 @@ public sealed class SpreadsheetFormulaGuardTests
     public void Neutralize_SafeValues_AreUnchanged(string value)
     {
         SpreadsheetFormulaGuard.Neutralize(value).Should().Be(value);
+    }
+
+    [Theory]
+    [InlineData("approved;=1+1", "\"approved;'=1+1\"")]
+    [InlineData("reviewed;  @import", "\"reviewed;'  @import\"")]
+    [InlineData("plain;second", "\"plain;second\"")]
+    [InlineData("line\rreturn", "\"line\rreturn\"")]
+    [InlineData("quoted \"value\"", "\"quoted \"\"value\"\"\"")]
+    public void EscapeCsvCell_DelimitedOrStructuralText_IsQuotedAndFormulaSafe(
+        string value,
+        string expected)
+    {
+        SpreadsheetFormulaGuard.EscapeCsvCell(value).Should().Be(expected);
     }
 }

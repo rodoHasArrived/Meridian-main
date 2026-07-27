@@ -44,6 +44,8 @@ public sealed class PilotAcceptanceHarnessTests
 {
     private const string DatasetEvidenceId = "dataset/pilot/golden-aapl-2026-04-11";
     private const string FeedEvidenceId = "provider-evidence/dk1/unit-ready";
+    private static readonly Guid PilotAccountingPeriodId =
+        Guid.Parse("20260411-0000-4000-8000-000000000001");
 
     private static readonly JsonSerializerOptions ServerJsonOptions = new()
     {
@@ -157,7 +159,7 @@ public sealed class PilotAcceptanceHarnessTests
                 "audit-evidence-package",
                 Parameters: new ReportingRunParametersDto(
                     new ReportingRunScopeDto(seed.FundProfileId),
-                    "2026-04",
+                    PilotAccountingPeriodId.ToString("D"),
                     new DateOnly(2026, 4, 11),
                     new ReportingLedgerBookSelectionDto(LedgerBookId: seed.AccountId),
                     ReportingAccountingBasisDto.Gaap,
@@ -186,6 +188,7 @@ public sealed class PilotAcceptanceHarnessTests
         draft.Scope.TenantId.Should().Be("pilot-acceptance-tenant");
         draft.Scope.CompanyId.Should().Be("pilot-acceptance-tenant");
         draft.Scope.FundId.Should().Be(seed.FundProfileId);
+        draft.Scope.PeriodId.Should().Be(PilotAccountingPeriodId.ToString("D"));
 
         var validated = await TransitionPilotReportingRunAsync(
             client,
@@ -463,6 +466,7 @@ public sealed class PilotAcceptanceHarnessTests
         builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, PilotReportingReconciliationEvidenceSource>();
         builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, PilotReportingReadinessDependencyEvaluator>();
         builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
+        builder.Services.AddSingleton<IReportingDeploymentReadinessService, PilotReportingDeploymentReadinessService>();
 
         using (InMemoryGovernanceFixtureProfile.Enable())
         {
@@ -1330,7 +1334,10 @@ public sealed class PilotAcceptanceHarnessTests
             cancellationToken.ThrowIfCancellationRequested();
             var ledgerBookId = parameters.LedgerBook.LedgerBookId
                 ?? throw new InvalidOperationException("The pilot reporting fixture requires an explicit server-owned ledger book id.");
-            var capturedAt = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
+            // Certification evaluates readiness before capturing the authoritative source. Keep
+            // the fixture capture current so the immutable snapshot cannot predate its readiness
+            // receipt; the source cutoff remains pinned to the requested accounting as-of date.
+            var capturedAt = DateTimeOffset.UtcNow;
             var checkpointId = $"pilot-ledger-checkpoint-{ledgerBookId:N}";
             var checkpointHash = PilotHash(
                 $"{accessContext.TenantId}|{accessContext.CompanyId}|{parameters.Scope.FundProfileId}|{ledgerBookId:D}|{parameters.PeriodId}|{parameters.AsOfDate:yyyy-MM-dd}");
@@ -1819,6 +1826,37 @@ public sealed class PilotAcceptanceHarnessTests
 
     private static string PilotHash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+
+    /// <summary>
+    /// The pilot harness supplies deterministic in-memory authorities so it can verify evidence
+    /// continuity independently of the PostgreSQL deployment probe. Production composition and
+    /// fail-closed deployment posture are covered by dedicated reporting readiness tests.
+    /// </summary>
+    private sealed class PilotReportingDeploymentReadinessService
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: true,
+                DurableGovernance: true,
+                DurableArtifacts: true,
+                DurableReconciliationEvidence: true,
+                DurableRuns: true,
+                DurableScheduling: true,
+                DurableDelivery: true,
+                RecipientDestinationsConfigured: true,
+                ClientDocumentsConfigured: true,
+                MigrationsManaged: true,
+                Components:
+                [
+                    new ReportingDeploymentComponentDto(
+                        "pilot-harness",
+                        "Pilot harness",
+                        IsReady: true,
+                        "Deterministic in-memory pilot authorities are configured.")
+                ],
+                BlockingReasons: []);
+    }
 
     private sealed record PilotTestApp(WebApplication App, string Root) : IAsyncDisposable
     {

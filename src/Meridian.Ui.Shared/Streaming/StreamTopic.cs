@@ -7,7 +7,8 @@ namespace Meridian.Ui.Shared.Streaming;
 /// Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing.
 /// The <see cref="Key"/> encodes the topic kind and its argument: <c>quotes:&lt;symbols&gt;</c> for a
 /// canonical, order- and case-independent symbol set (or the "all tracked symbols" sentinel), and
-/// <c>report-run:&lt;runId&gt;</c> for a single reporting run. Topic equality is by <see cref="Key"/>, so
+/// a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by
+/// <see cref="Key"/>, so
 /// equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
 /// </summary>
 public readonly struct StreamTopic : IEquatable<StreamTopic>
@@ -72,14 +73,73 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
     }
 
     /// <summary>
-    /// Build a report-run topic keyed by the exact run id (trimmed). Run ids are opaque
-    /// identifiers, so — unlike symbols — they are not case- or order-canonicalized. One run id
-    /// maps to exactly one topic.
+    /// Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound
+    /// subscriptions use the scoped overload below.
     /// </summary>
     public static StreamTopic ReportRun(string runId)
     {
         var trimmed = (runId ?? string.Empty).Trim();
         return new StreamTopic($"report-run:{trimmed}", trimmed);
+    }
+
+    public static StreamTopic ReportRun(
+        string tenantId,
+        string companyId,
+        string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var tenant = tenantId.Trim();
+        var company = companyId.Trim();
+        var run = runId.Trim();
+        var argument =
+            $"{tenant.Length}:{tenant}{company.Length}:{company}{run.Length}:{run}";
+        return new StreamTopic($"report-run-scoped:{argument}", argument);
+    }
+
+    public static bool TryParseScopedReportRun(
+        string argument,
+        out string tenantId,
+        out string companyId,
+        out string runId)
+    {
+        tenantId = string.Empty;
+        companyId = string.Empty;
+        runId = string.Empty;
+        var cursor = 0;
+        return TryReadLengthPrefixed(argument, ref cursor, out tenantId)
+               && TryReadLengthPrefixed(argument, ref cursor, out companyId)
+               && TryReadLengthPrefixed(argument, ref cursor, out runId)
+               && cursor == argument.Length;
+    }
+
+    private static bool TryReadLengthPrefixed(
+        string value,
+        ref int cursor,
+        out string part)
+    {
+        part = string.Empty;
+        if (cursor >= value.Length)
+        {
+            return false;
+        }
+
+        var separator = value.IndexOf(':', cursor);
+        if (separator <= cursor
+            || !int.TryParse(
+                value.AsSpan(cursor, separator - cursor),
+                out var length)
+            || length < 0
+            || separator + 1 + length > value.Length)
+        {
+            return false;
+        }
+
+        cursor = separator + 1;
+        part = value.Substring(cursor, length);
+        cursor += length;
+        return part.Length > 0;
     }
 
     public bool Equals(StreamTopic other) => string.Equals(Key, other.Key, StringComparison.Ordinal);

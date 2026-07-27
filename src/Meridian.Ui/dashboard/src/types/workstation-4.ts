@@ -57,6 +57,10 @@ export interface StatementImportCommitResult {
   reconciliationCaseRoutes?: string[];
   reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+  statementReconciliationReportWorkflowId?: string | null;
+  statementReconciliationReportStatusRoute?: string | null;
+  operationsWorkflowId?: string | null;
+  accountingScope?: StatementReconciliationAccountingScope | null;
 }
 
 export interface StatementImportReconciliationCaseLink {
@@ -84,14 +88,39 @@ export interface StatementFetchSchedule {
   lastRunStatus: string | null;
   nextDueAtUtc: string | null;
   sourceKind: StatementImportSourceKind;
+  periodStart: string | null;
+  periodEnd: string | null;
+  accountingScope: StatementReconciliationAccountingScope | null;
+}
+
+export interface StatementReconciliationAccountingScope {
+  fundProfileId: string;
+  ledgerBookId: string;
+  accountingPeriodId: string;
+  asOfDate: string;
 }
 
 export type StatementImportSourceKind = "broker" | "custodian";
 export type StatementFetchDatasets = "activity" | "positions" | "all";
 
+export interface StatementImportPreviewRequest {
+  file: File;
+  connectorId?: string | null;
+  mappingProfileId?: string | null;
+  externalAccountId: string;
+  sourceKind: StatementImportSourceKind;
+  sourceInstitution: string;
+  fundAccountId: string;
+  periodStart: string;
+  periodEnd: string;
+}
+
 export interface StatementFetchPreviewRequest {
   connectorId: string;
   externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  sourceKind: StatementImportSourceKind;
   since?: string | null;
   mappingProfileId?: string | null;
   datasets?: StatementFetchDatasets | null;
@@ -108,6 +137,8 @@ export interface StatementFetchScheduleUpsertRequest {
   cadenceHours: number;
   enabled: boolean;
   sourceKind?: StatementImportSourceKind | null;
+  periodStart: string;
+  periodEnd: string;
 }
 
 export interface AccountingReconciliationRecord {
@@ -1011,6 +1042,49 @@ export interface ReportPackDeliveryAttempt {
   package: ReportPackDeliveryPackage | null;
 }
 
+export interface WorkstationReportingDeliveryReceipt {
+  receiptId: string;
+  kind: string;
+  occurredAtUtc: string;
+  transportId: string;
+  providerReference?: string | null;
+  evidenceReference?: string | null;
+  detail?: string | null;
+}
+
+export interface WorkstationReportingDelivery {
+  jobId: string;
+  runId: string;
+  packageId: string;
+  releaseReceiptId: string;
+  releaseVersion: string;
+  artifactManifestHashSha256: string;
+  distributionId: string;
+  transportId: string;
+  recipient: string;
+  recipientRole: string;
+  destination: string;
+  state: string;
+  attemptCount: number;
+  maxAttempts: number;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  nextAttemptAtUtc: string | null;
+  requestedBy: string;
+  lastErrorCode: string | null;
+  lastError: string | null;
+  providerMessageId: string | null;
+  accessGrantId: string | null;
+  receipts: WorkstationReportingDeliveryReceipt[];
+}
+
+export interface WorkstationReportingHistory {
+  runs: ReportingRunStatusProjection[];
+  deliveries: WorkstationReportingDelivery[];
+  limit: number;
+  generatedAtUtc: string;
+}
+
 export interface ReportPackDeliveryRequest {
   distributionId: string;
   actor?: string | null;
@@ -1300,7 +1374,7 @@ export interface ReportingRunRequest {
 export type ReportingEntityScopeKind = "AllEntities" | "Entity" | "Portfolio" | "Investor";
 export type ReportingAccountingBasis = "Gaap" | "Tax" | "Management" | "Cash" | "Statutory";
 export type ReportingConsolidationLevel = "Fund" | "Entity" | "Portfolio" | "Investor";
-export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault";
+export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault" | "ClientPackage";
 export type ReportingFinality = "Draft" | "Final";
 export type ReportingRunReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
 
@@ -1483,6 +1557,28 @@ export interface ReportingAccessAuditSummary {
   denialReasons: string[];
 }
 
+export interface ReportingDeploymentComponent {
+  componentId: string;
+  displayName: string;
+  isReady: boolean;
+  summary: string;
+}
+
+export interface ReportingDeploymentCapability {
+  isReady: boolean;
+  durableGovernance: boolean;
+  durableArtifacts: boolean;
+  durableReconciliationEvidence: boolean;
+  durableRuns: boolean;
+  durableScheduling: boolean;
+  durableDelivery: boolean;
+  recipientDestinationsConfigured: boolean;
+  clientDocumentsConfigured: boolean;
+  migrationsManaged: boolean;
+  components: ReportingDeploymentComponent[];
+  blockingReasons: string[];
+}
+
 export interface ReportingDailyWorkItem {
   workItemId: string;
   kind: string;
@@ -1513,7 +1609,9 @@ export interface AccountingReportingSummary {
   recentRuns?: ReportingRunStatusProjection[];
   workflowRecords?: ReportingWorkflowRecord[];
   schedules?: ReportingScheduleRecord[];
+  /** Compatibility-only file-backed delivery records; empty in production composition. */
   deliveryAttempts?: ReportPackDeliveryAttempt[];
+  canonicalDeliveries?: WorkstationReportingDelivery[];
   scheduleDeliveryPlans?: ReportingScheduleDeliveryPlan[];
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];
@@ -1528,6 +1626,7 @@ export interface AccountingReportingSummary {
   analyticsRows?: PortfolioReportingAnalyticsRow[];
   reportLineProvenanceExplorer?: FinancialRecordExplorerDto | null;
   accessAudit?: ReportingAccessAuditSummary | null;
+  deploymentCapability?: ReportingDeploymentCapability | null;
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
@@ -1556,7 +1655,7 @@ export interface AccountingWorkspaceResponse {
 }
 
 export type GovernanceWorkspaceResponse = AccountingWorkspaceResponse;
-export type ReportingWorkspaceResponse = AccountingWorkspaceResponse;
+export type ReportingWorkspaceResponse = AccountingReportingSummary;
 
 export interface ExportAnalysisResult {
   jobId: string | null;

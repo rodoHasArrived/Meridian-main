@@ -908,6 +908,13 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            string? controllerRole = null;
+            if (!request.PrepareClosingEntriesOnly &&
+                !TryResolveControllerRole(context, out controllerRole))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = ResolveAccountingCloseManagementService(context);
             if (service is null)
             {
@@ -932,7 +939,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            ActionOrigin = OperationsActionOriginDto.HumanOperator
+                            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                            ControllerRole = controllerRole
                         },
                         actor,
                         scope.TenantContext.TenantId,

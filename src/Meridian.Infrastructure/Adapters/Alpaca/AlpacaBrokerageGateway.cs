@@ -42,6 +42,8 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
 public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
 {
+    private const int AccountActivityPageSize = 100;
+
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
     private const string LiveBaseUrl = "https://api.alpaca.markets";
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
@@ -431,7 +433,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
 
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var account = await RequireRequestedAccountAsync(externalAccountId, ct).ConfigureAwait(false);
         var positions = await GetPositionsAsync(ct).ConfigureAwait(false);
         var accountDto = new BrokerageExternalAccountDto(
             ProviderId: GatewayId,
@@ -470,20 +472,52 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     }
 
     /// <inheritdoc />
-    public async Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+    public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
         string externalAccountId,
         DateTimeOffset? since = null,
         CancellationToken ct = default)
+        => GetActivitySnapshotCoreAsync(externalAccountId, since, untilExclusive: null, ct);
+
+    /// <inheritdoc />
+    public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+        string externalAccountId,
+        DateTimeOffset? since,
+        DateTimeOffset? untilExclusive,
+        CancellationToken ct = default)
+        => GetActivitySnapshotCoreAsync(externalAccountId, since, untilExclusive, ct);
+
+    private async Task<BrokerageActivitySnapshotDto> GetActivitySnapshotCoreAsync(
+        string externalAccountId,
+        DateTimeOffset? since,
+        DateTimeOffset? untilExclusive,
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+        if (since.HasValue && untilExclusive.HasValue && untilExclusive.Value <= since.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(untilExclusive),
+                untilExclusive,
+                "The exclusive activity upper bound must be later than the lower bound.");
+        }
 
+        var account = await RequireRequestedAccountAsync(externalAccountId, ct).ConfigureAwait(false);
+        var providerAfter = untilExclusive.HasValue && since is { } inclusiveStart
+            ? inclusiveStart == DateTimeOffset.MinValue
+                ? null
+                : inclusiveStart.AddTicks(-1)
+            : since;
         var openOrdersTask = GetOpenOrdersAsync(ct);
-        var activitiesTask = GetAccountActivitiesAsync(since, ct);
+        var activitiesTask = GetAccountActivitiesAsync(providerAfter, untilExclusive, ct);
 
         await Task.WhenAll(openOrdersTask, activitiesTask).ConfigureAwait(false);
 
         var openOrders = await openOrdersTask.ConfigureAwait(false);
         var activities = await activitiesTask.ConfigureAwait(false);
+        if (untilExclusive.HasValue)
+        {
+            activities = EnforceHalfOpenActivityWindow(activities, since, untilExclusive.Value);
+        }
 
         var fills = activities
             .Where(static activity => string.Equals(activity.ActivityType, "FILL", StringComparison.OrdinalIgnoreCase))
@@ -513,7 +547,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
         return new BrokerageActivitySnapshotDto(
             ProviderId: GatewayId,
-            AccountId: externalAccountId,
+            AccountId: account.AccountId,
             RetrievedAt: DateTimeOffset.UtcNow,
             Orders: openOrders
                 .Select(static order => new BrokerageOrderSnapshotDto(
@@ -532,6 +566,24 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions);
+    }
+
+    private async Task<AccountInfo> RequireRequestedAccountAsync(
+        string externalAccountId,
+        CancellationToken ct)
+    {
+        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(account.AccountId)
+            || !string.Equals(
+                account.AccountId.Trim(),
+                externalAccountId.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "The requested Alpaca account does not match the account resolved by the configured credentials.");
+        }
+
+        return account;
     }
 
     /// <inheritdoc />
@@ -611,23 +663,81 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     }
 
     private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetAccountActivitiesAsync(
-        DateTimeOffset? since,
+        DateTimeOffset? after,
+        DateTimeOffset? untilExclusive,
         CancellationToken ct)
     {
         using var client = CreateHttpClient();
-        var path = $"{BaseUrl}/v2/account/activities?direction=desc&page_size=100";
-        if (since.HasValue)
+        var basePath = $"{BaseUrl}/v2/account/activities?direction=desc&page_size={AccountActivityPageSize}";
+        if (after.HasValue)
         {
-            path += $"&after={Uri.EscapeDataString(since.Value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture))}";
+            basePath += $"&after={Uri.EscapeDataString(after.Value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture))}";
+        }
+        if (untilExclusive.HasValue)
+        {
+            basePath += $"&until={Uri.EscapeDataString(untilExclusive.Value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture))}";
         }
 
-        var response = await client.GetAsync(path, ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        var activities = new List<AlpacaAccountActivityResponse>();
+        var observedPageTokens = new HashSet<string>(StringComparer.Ordinal);
+        string? pageToken = null;
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var path = pageToken is null
+                ? basePath
+                : $"{basePath}&page_token={Uri.EscapeDataString(pageToken)}";
+            using var response = await client.GetAsync(path, ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-        var activities = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray, ct).ConfigureAwait(false);
+            var page = await response.Content.ReadFromJsonAsync(
+                    AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray,
+                    ct)
+                .ConfigureAwait(false) ?? [];
+            activities.AddRange(page);
+            if (page.Length < AccountActivityPageSize)
+            {
+                return activities;
+            }
 
-        return activities ?? Array.Empty<AlpacaAccountActivityResponse>();
+            var nextPageToken = page[^1].Id;
+            if (string.IsNullOrWhiteSpace(nextPageToken))
+            {
+                throw new InvalidDataException(
+                    "Alpaca activity pagination returned a full page without a terminal activity id.");
+            }
+
+            if (!observedPageTokens.Add(nextPageToken))
+            {
+                throw new InvalidDataException(
+                    "Alpaca activity pagination repeated a page token before reaching a short page.");
+            }
+
+            pageToken = nextPageToken;
+        }
+    }
+
+    private static IReadOnlyList<AlpacaAccountActivityResponse> EnforceHalfOpenActivityWindow(
+        IReadOnlyList<AlpacaAccountActivityResponse> activities,
+        DateTimeOffset? since,
+        DateTimeOffset untilExclusive)
+    {
+        var retained = new List<AlpacaAccountActivityResponse>(activities.Count);
+        foreach (var activity in activities)
+        {
+            if (!TryGetActivityTimestamp(activity, out var occurredAt))
+            {
+                throw new InvalidDataException(
+                    "Alpaca activity response omitted the timestamp required to enforce an exact statement period.");
+            }
+
+            if ((!since.HasValue || occurredAt >= since.Value) && occurredAt < untilExclusive)
+            {
+                retained.Add(activity);
+            }
+        }
+
+        return retained;
     }
 
     private static AlpacaOrderPayload BuildOrderPayload(OrderRequest request)
@@ -1021,17 +1131,31 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private static DateTimeOffset ParseActivityTimestamp(AlpacaAccountActivityResponse activity)
     {
+        return TryGetActivityTimestamp(activity, out var occurredAt)
+            ? occurredAt
+            : DateTimeOffset.UtcNow;
+    }
+
+    private static bool TryGetActivityTimestamp(
+        AlpacaAccountActivityResponse activity,
+        out DateTimeOffset occurredAt)
+    {
         if (activity.TransactionTime.HasValue)
         {
-            return activity.TransactionTime.Value;
+            occurredAt = activity.TransactionTime.Value;
+            return true;
         }
 
         if (activity.Date.HasValue)
         {
-            return new DateTimeOffset(activity.Date.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            occurredAt = new DateTimeOffset(
+                activity.Date.Value.ToDateTime(TimeOnly.MinValue),
+                TimeSpan.Zero);
+            return true;
         }
 
-        return DateTimeOffset.UtcNow;
+        occurredAt = default;
+        return false;
     }
 
     private static bool ReadMetadataString(

@@ -240,6 +240,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -267,6 +268,7 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -282,6 +284,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -316,6 +319,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -368,6 +372,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -377,7 +382,6 @@ describe("useStatementImportPanelViewModel", () => {
     act(() => result.current.selectProfile("custom-ibkr"));
     await waitFor(() => expect(services.previewImport).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(result.current.canCommit).toBe(true));
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();
@@ -411,12 +415,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview?.status).toBe("NeedsAttention"));
-    fillCommitForm(result);
 
     expect(result.current.canCommit).toBe(false);
     expect(result.current.commitDisabledReason).toContain("Resolve preview errors");
@@ -435,12 +439,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview).not.toBeNull());
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();
@@ -474,12 +478,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview).not.toBeNull());
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();

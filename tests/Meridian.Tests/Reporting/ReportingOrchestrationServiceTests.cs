@@ -34,6 +34,48 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_CapitalAccountManifestDoesNotInvokeLegacyProjectionSource()
+    {
+        var legacyProjectionSource = new RecordingPartnersCapitalSource();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore: null,
+            runNotifier: null,
+            partnersCapitalSource: legacyProjectionSource);
+        var asOf = new DateOnly(2026, 5, 31);
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto("fund-alpha"),
+            "period-2026-05",
+            asOf,
+            new ReportingLedgerBookSelectionDto(Guid.NewGuid(), "PRIMARY"),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: false,
+            IncludeEvidenceAppendix: false);
+
+        var manifest = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "capital-canonical",
+                "capital-account-statement",
+                asOf,
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow,
+                ResolvedParameters: parameters),
+            CancellationToken.None);
+
+        legacyProjectionSource.CaptureCount.Should().Be(0,
+            "capital-account bytes are sourced later from the exact certified ledger report pack");
+        manifest.CertifiedPartnersCapital.Should().BeNull();
+    }
+
+    [Fact]
     public async Task TransitionApprovalAsync_EnforcesGateAndRole()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
@@ -180,22 +222,29 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
-    public async Task ExecuteDueSchedulesAsync_OnlyRunsDueSchedulesInStableOrder()
+    public async Task ExecuteDueSchedulesAsync_FailsClosedOutsideHostedScheduleAuthority()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
-        var dueLater = FixedNow.AddMinutes(5);
         var schedules = new[]
         {
-            new ReportingScheduleContract("sched-shadow", "shadow-nav-daily-pack", "0 22 * * 1-5", new DateOnly(2026, 5, 3), FixedNow.AddMinutes(-2), 1, "scheduler"),
-            new ReportingScheduleContract("sched-investor", "investor-monthly-statement", "0 8 1 * *", new DateOnly(2026, 5, 1), FixedNow.AddMinutes(-5), 1, "scheduler"),
-            new ReportingScheduleContract("sched-sec", "sec-13f-packet", "0 8 * * 5", new DateOnly(2026, 5, 8), dueLater, 1, "scheduler")
+            new ReportingScheduleContract(
+                "sched-investor",
+                "investor-monthly-statement",
+                "0 8 1 * *",
+                new DateOnly(2026, 5, 1),
+                FixedNow.AddMinutes(-5),
+                1,
+                "scheduler")
         };
 
-        var generated = await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning disable CS0618 // Verify the fail-closed behavior of the retained compatibility member.
+        Func<Task> act = async () =>
+            await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning restore CS0618
 
-        generated.Select(m => m.RunId).Should().Equal("sched-investor-20260501", "sched-shadow-20260503");
-        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId != null);
-        sut.GetAudit("sched-shadow-20260503").Should().ContainSingle(e => e.Action == "RunGenerated" && e.Notes.Contains("trigger=Scheduled"));
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*host reporting-schedule adapter*");
+        sut.GetManifest("sched-investor-20260501").Should().BeNull();
     }
 
     [Fact]
@@ -410,6 +459,19 @@ public sealed class ReportingOrchestrationServiceTests
     private sealed class ThrowingRunNotifier : IReportingRunNotifier
     {
         public void NotifyRunChanged(string runId) => throw new InvalidOperationException("notifier boom");
+    }
+
+    private sealed class RecordingPartnersCapitalSource : IReportingPartnersCapitalSource
+    {
+        public int CaptureCount { get; private set; }
+
+        public Task<CertifiedPartnersCapitalProjection?> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CaptureCount++;
+            return Task.FromResult<CertifiedPartnersCapitalProjection?>(null);
+        }
     }
 
     private sealed class FailingOnceRenderer : IReportingSectionRenderer

@@ -1,5 +1,16 @@
 namespace Meridian.Domain.Reconciliation;
 
+/// <summary>
+/// Exact accounting authority bound to a retained statement import. The source account remains on
+/// the statement request; this scope identifies the reporting fund profile, ledger book, ledger
+/// period, and as-of date that may consume the statement during close and certified reporting.
+/// </summary>
+public sealed record StatementAccountingScope(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
+
 public sealed record CanonicalStatementImport(
     string ImportId,
     string Broker,
@@ -22,6 +33,7 @@ public sealed record CanonicalStatementImport(
     public string SourceFileHash { get; init; } = SourceChecksum;
     public string CanonicalArtifactHash { get; init; } = SourceChecksum;
     public string DuplicateKey { get; init; } = string.Empty;
+    public StatementAccountingScope? AccountingScope { get; init; }
 }
 
 public sealed record StatementSourceRowReference(

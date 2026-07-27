@@ -179,7 +179,19 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         // Human casework on the legacy id whose lineage must survive the re-key.
         await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(legacy.BreakId, "controller-a", "controller-a", "triage"));
 
-        var reseeded = legacy with { BreakId = "statement:new-fingerprint", SourceFingerprint = "new-fingerprint" };
+        var ledgerBookId = Guid.NewGuid();
+        var accountingPeriodId = Guid.NewGuid();
+        var asOfDate = new DateOnly(2026, 7, 31);
+        var reseeded = legacy with
+        {
+            BreakId = "statement:new-fingerprint",
+            SourceFingerprint = "new-fingerprint",
+            LedgerBookId = ledgerBookId,
+            AccountingPeriodId = accountingPeriodId.ToString("D"),
+            AsOfDate = asOfDate,
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            FundProfileId = "fund-alpha"
+        };
         var created = await repo.CreateOrMigrateAsync(reseeded, previousBreakId: "statement:old-fingerprint");
 
         created.Should().BeFalse(); // a migration, not a brand-new case
@@ -190,6 +202,11 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         migrated!.AssignedTo.Should().Be("controller-a");
         migrated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
         migrated.SourceFingerprint.Should().Be("new-fingerprint");
+        migrated.FundProfileId.Should().Be("fund-alpha");
+        migrated.LedgerBookId.Should().Be(ledgerBookId);
+        migrated.AccountingPeriodId.Should().Be(accountingPeriodId.ToString("D"));
+        migrated.AsOfDate.Should().Be(asOfDate);
+        migrated.BlockedOutputs.Should().Equal("FinalReport", "PeriodClose");
 
         // The full audit trail follows the re-key: the migration event plus the pre-migration rows
         // that remain stored under the superseded id are all returned under the new id.
@@ -219,6 +236,37 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         // The already-present current case wins; the legacy case is left untouched (no destructive merge).
         (await repo.GetByIdAsync("statement:old")).Should().NotBeNull();
         (await repo.GetByIdAsync("statement:new")).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_rejects_conflicting_retained_accounting_scope()
+    {
+        var repo = CreateRepository(out _);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:scoped-old",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-scoped",
+            SourceFingerprint = "scoped-old",
+            LedgerBookId = Guid.NewGuid(),
+            AccountingPeriodId = Guid.NewGuid().ToString("D"),
+            AsOfDate = new DateOnly(2026, 6, 30),
+            FundProfileId = "fund-alpha"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+        var incoming = legacy with
+        {
+            BreakId = "statement:scoped-new",
+            SourceFingerprint = "scoped-new",
+            LedgerBookId = Guid.NewGuid()
+        };
+
+        var migrate = () => repo.CreateOrMigrateAsync(incoming, legacy.BreakId);
+
+        await migrate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*different tenant, company, or accounting close scope*");
+        (await repo.GetByIdAsync(legacy.BreakId)).Should().NotBeNull();
+        (await repo.GetByIdAsync(incoming.BreakId)).Should().BeNull();
     }
 
     [Fact]
@@ -328,7 +376,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         using (var doc = JsonDocument.Parse(await File.ReadAllTextAsync(snapshotPath)))
         {
             var snapshot = doc.RootElement;
-            snapshot.GetProperty("schemaVersion").GetInt32().Should().Be(2);
+            snapshot.GetProperty("schemaVersion").GetInt32().Should().Be(6);
             snapshot.GetProperty("contentHashSha256").GetString().Should().MatchRegex("^[0-9a-f]{64}$");
             var retainedEvents = snapshot.GetProperty("auditEvents");
             retainedEvents.GetArrayLength().Should().Be(history.Count);
@@ -378,6 +426,140 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var onlyOpen = await repo.GetAllAsync(ReconciliationBreakQueueStatus.Open);
         onlyOpen.Should().ContainSingle(i => i.BreakId == open.BreakId);
         onlyOpen.Should().NotContain(i => i.BreakId == review.BreakId);
+    }
+
+    [Fact]
+    public async Task ScopedQueueOperations_TwoTenantMonthEndCasework_PreventCrossTenantVisibilityAndMutation()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var ct = timeout.Token;
+        var repo = CreateRepository(out var root);
+        var tenantA = new ReconciliationBreakQueueScope("tenant-alpha", "company-alpha");
+        var tenantB = new ReconciliationBreakQueueScope("tenant-beta", "company-beta");
+        var itemA = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-0001",
+            TenantId = tenantA.TenantId,
+            CompanyId = tenantA.CompanyId
+        };
+        var itemB = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-0002",
+            TenantId = tenantB.TenantId,
+            CompanyId = tenantB.CompanyId
+        };
+        var legacyUnscoped = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "tenant-isolation:case-legacy"
+        };
+
+        try
+        {
+            (await repo.CreateIfMissingAsync(tenantA, itemA, ct)).Should().BeTrue();
+            (await repo.CreateIfMissingAsync(tenantB, itemB, ct)).Should().BeTrue();
+            (await repo.CreateIfMissingAsync(legacyUnscoped, ct)).Should().BeTrue();
+
+            (await repo.GetAllAsync(tenantA, ct: ct))
+                .Should().ContainSingle()
+                .Which.BreakId.Should().Be(itemA.BreakId);
+            (await repo.GetAllAsync(tenantB, ct: ct))
+                .Should().ContainSingle()
+                .Which.BreakId.Should().Be(itemB.BreakId);
+
+            var retainedA = await repo.GetByIdAsync(tenantA, itemA.BreakId, ct);
+            var retainedB = await repo.GetByIdAsync(tenantB, itemB.BreakId, ct);
+            retainedA.Should().NotBeNull();
+            retainedB.Should().NotBeNull();
+            (await repo.GetByIdAsync(tenantA, itemB.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, itemA.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantA, legacyUnscoped.BreakId, ct)).Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, legacyUnscoped.BreakId, ct)).Should().BeNull();
+
+            var tenantAAudit = await repo.GetAuditHistoryAsync(tenantA, itemA.BreakId, ct);
+            tenantAAudit.Should().ContainSingle(entry => entry.EventType == "CaseCreated");
+            tenantAAudit.Should().OnlyContain(entry =>
+                entry.TenantId == tenantA.TenantId && entry.CompanyId == tenantA.CompanyId);
+            (await repo.GetAuditHistoryAsync(tenantB, itemA.BreakId, ct)).Should().BeEmpty();
+            (await repo.GetAuditHistoryAsync(tenantA, itemB.BreakId, ct)).Should().BeEmpty();
+            (await repo.GetAuditHistoryAsync(tenantA, legacyUnscoped.BreakId, ct)).Should().BeEmpty();
+
+            var foreignSingleCommand = Command(retainedA!, ReconciliationCaseworkAction.Assign) with
+            {
+                CommandId = "tenant-beta-cross-tenant-single",
+                CorrelationId = "tenant-beta-cross-tenant-single",
+                Actor = "tenant-beta-operator",
+                Assignee = "tenant-beta-operator"
+            };
+            var foreignSingle = await repo.ApplyCaseworkCommandAsync(
+                tenantB,
+                foreignSingleCommand,
+                ct);
+            foreignSingle.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.NotFound);
+            foreignSingle.Item.Should().BeNull();
+            (await repo.GetByIdAsync(tenantA, itemA.BreakId, ct))!.AssignedTo.Should().BeNull();
+
+            var tenantASingleCommand = Command(retainedA!, ReconciliationCaseworkAction.Assign) with
+            {
+                CommandId = "tenant-alpha-own-single",
+                CorrelationId = "tenant-alpha-own-single",
+                Actor = "tenant-alpha-operator",
+                Assignee = "tenant-alpha-operator"
+            };
+            var tenantASingle = await repo.ApplyCaseworkCommandAsync(
+                tenantA,
+                tenantASingleCommand,
+                ct);
+            tenantASingle.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+            tenantASingle.Item!.AssignedTo.Should().Be("tenant-alpha-operator");
+
+            var bulkRequest = new ReconciliationBulkCaseworkRequest(
+                BreakIds: [itemA.BreakId, itemB.BreakId],
+                Action: ReconciliationCaseworkAction.ChangePriority,
+                Actor: "tenant-alpha-operator",
+                CommandId: "tenant-alpha-mixed-scope-bulk",
+                CorrelationId: "tenant-alpha-mixed-scope-bulk",
+                Source: "tenant-isolation-test",
+                IdempotencyKey: "tenant-alpha-mixed-scope-bulk",
+                DryRun: false,
+                AllowPartialSuccess: true,
+                Reason: "Escalate the tenant-alpha month-end break.",
+                Priority: ReconciliationCasePriority.Critical);
+            var bulk = await repo.ApplyBulkCaseworkAsync(tenantA, bulkRequest, ct);
+
+            bulk.SucceededCount.Should().Be(1);
+            bulk.FailedCount.Should().Be(1);
+            bulk.Results.Single(result => result.BreakId == itemA.BreakId)
+                .Should().Match<ReconciliationBulkCaseworkCaseResult>(
+                    result => result.Succeeded
+                              && result.Item != null
+                              && result.Item.Priority == ReconciliationCasePriority.Critical);
+            bulk.Results.Single(result => result.BreakId == itemB.BreakId)
+                .Should().Match<ReconciliationBulkCaseworkCaseResult>(
+                    result => !result.Succeeded && result.Item == null);
+
+            (await repo.GetByIdAsync(tenantA, itemA.BreakId, ct))!.Priority
+                .Should().Be(ReconciliationCasePriority.Critical);
+            var tenantBFinal = await repo.GetByIdAsync(tenantB, itemB.BreakId, ct);
+            tenantBFinal!.Priority.Should().Be(ReconciliationCasePriority.Normal);
+            tenantBFinal.AssignedTo.Should().BeNull();
+            (await repo.GetByIdAsync(tenantB, itemA.BreakId, ct)).Should().BeNull();
+
+            (await repo.GetBulkCaseworkResultAsync(tenantA, bulkRequest.CommandId, ct))
+                .Should().NotBeNull();
+            (await repo.GetBulkCaseworkResultAsync(tenantB, bulkRequest.CommandId, ct))
+                .Should().BeNull();
+            (await repo.GetAuditHistoryAsync(tenantB, itemB.BreakId, ct))
+                .Should().NotContain(entry =>
+                    entry.CommandId == foreignSingleCommand.CommandId
+                    || entry.CommandId == bulkRequest.CommandId);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 
 
@@ -734,6 +916,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         {
             AssignedTo = "controller-a",
             FundAccountId = "fund-1",
+            FundProfileId = "fund-1",
             ExternalAccountId = "account-1",
             LedgerBookId = ledgerBookId,
             AccountingPeriodId = accountingPeriodId.ToString("D"),
@@ -1612,6 +1795,34 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     }
 
     [Fact]
+    public async Task Authority_probe_reloads_integrity_state_and_recovers_only_after_durable_repair()
+    {
+        var repo = CreateRepository(out var root);
+        await repo.CreateIfMissingAsync(CreateItem(ReconciliationBreakQueueStatus.Open));
+        var snapshotPath = Path.Combine(root, "reconciliation-break-queue.json");
+        var original = await File.ReadAllTextAsync(snapshotPath);
+
+        await repo.VerifyAsync();
+        await RewriteSnapshotWithValidEnvelopeHashAsync(snapshotPath, document =>
+        {
+            document["auditEvents"]!.AsArray()[0]!["afterPayload"] =
+                "{\"breakId\":\"tampered\"}";
+        });
+
+        Func<Task> firstProbe = () => repo.VerifyAsync();
+        Func<Task> retryProbe = () => repo.VerifyAsync();
+
+        await firstProbe.Should().ThrowAsync<InvalidDataException>();
+        await retryProbe.Should().ThrowAsync<InvalidDataException>(
+            "a failed probe must not leave partially loaded casework state that can satisfy readiness");
+
+        await File.WriteAllTextAsync(snapshotPath, original);
+
+        await repo.VerifyAsync();
+        (await repo.GetAllAsync()).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task Restart_fails_closed_when_legacy_success_receipt_is_detached_from_its_audit_event()
     {
         var repo = CreateRepository(out var root);
@@ -1740,7 +1951,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
             issue.Code == ReconciliationBreakQueueTransitionErrorCode.IdempotencyConflict.ToString());
 
         var upgraded = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!.AsObject();
-        upgraded["schemaVersion"]!.GetValue<int>().Should().Be(2);
+        upgraded["schemaVersion"]!.GetValue<int>().Should().Be(6);
         upgraded["contentHashSha256"]!.GetValue<string>().Should().HaveLength(64);
         upgraded["auditEvents"]!.AsArray().Select(node => node!["sequence"]!.GetValue<long>())
             .Should().Equal(Enumerable.Range(1, upgraded["auditEvents"]!.AsArray().Count).Select(static value => (long)value));
@@ -1780,6 +1991,533 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         retained[0].Sequence.Should().Be(1);
         retained[0].AfterPayloadHash.Should().MatchRegex("^[0-9a-f]{64}$");
         File.Exists(auditPath).Should().BeTrue("legacy evidence remains preserved after migration");
+    }
+
+    [Fact]
+    public async Task Hard_close_checkpoint_recovers_after_seal_failure_and_restart_without_rereading_mutable_state()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"recon-break-repo-{Guid.NewGuid():N}");
+        var failNextWrite = false;
+        async Task WriteStateAsync(string path, string content, CancellationToken ct)
+        {
+            if (failNextWrite)
+            {
+                failNextWrite = false;
+                throw new IOException("Injected checkpoint seal failure.");
+            }
+
+            await File.WriteAllTextAsync(path, content, ct);
+        }
+
+        var repo = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance,
+            stateWriter: WriteStateAsync);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var retained = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:checkpoint-retained",
+            SourceType = "statement",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(retained);
+
+        var lease = await repo.AcquireCloseScopeLeaseAsync(scope);
+        var checkpointHash = lease.CheckpointHashSha256;
+        lease.Items.Should().ContainSingle(item => item.BreakId == retained.BreakId);
+        failNextWrite = true;
+        var seal = () => lease.CommitHardCloseAsync();
+        await seal.Should().ThrowAsync<IOException>().WithMessage("*seal failure*");
+        await lease.DisposeAsync();
+
+        var restarted = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var postCloseCreate = () => restarted.CreateIfMissingAsync(retained with
+        {
+            BreakId = "statement:post-close-before-recovery"
+        });
+        await postCloseCreate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*being hard-closed*");
+
+        var recovered = await restarted.RecoverHardClosedScopeCheckpointAsync(scope);
+        recovered.CheckpointHashSha256.Should().Be(checkpointHash);
+        recovered.Items.Should().ContainSingle(item => item.BreakId == retained.BreakId);
+        var idempotentRetry = await restarted.RecoverHardClosedScopeCheckpointAsync(scope);
+        idempotentRetry.Should().BeEquivalentTo(recovered);
+
+        var reacquire = () => restarted.AcquireCloseScopeLeaseAsync(scope);
+        await reacquire.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already sealed*");
+    }
+
+    [Fact]
+    public async Task Version_five_hard_close_checkpoint_migrates_to_generation_one()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var retained = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:legacy-close-generation",
+            SourceType = "statement",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(retained);
+        await using (var lease = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            await lease.CommitHardCloseAsync();
+        }
+
+        var snapshotPath = Path.Combine(root, "reconciliation-break-queue.json");
+        var legacy = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        legacy["schemaVersion"] = 5;
+        legacy["closeScopeLocks"]!.AsArray()[0]!.AsObject().Remove("generation");
+        legacy["closeScopeLocks"]!.AsArray()[0]!.AsObject().Remove("history");
+        await File.WriteAllTextAsync(snapshotPath, legacy.ToJsonString());
+
+        var migrated = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var recovered = await migrated.RecoverHardClosedScopeCheckpointAsync(scope);
+
+        recovered.Generation.Should().Be(1);
+        var upgraded = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!.AsObject();
+        upgraded["schemaVersion"]!.GetValue<int>().Should().Be(6);
+        upgraded["closeScopeLocks"]!.AsArray()[0]!["generation"]!.GetValue<long>().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Closing_checkpoint_owner_loss_reacquires_exact_checkpoint_and_explicit_precommit_abandon_reopens_casework()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var retained = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:crashed-close-owner",
+            SourceType = "statement",
+            SourceBreakId = "source-crashed-close-owner",
+            SourceFingerprint = "fingerprint-crashed-close-owner",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(retained);
+
+        var lostOwner = await repo.AcquireCloseScopeLeaseAsync(scope);
+        var checkpointHash = lostOwner.CheckpointHashSha256;
+        var snapshotPath = Path.Combine(root, "reconciliation-break-queue.json");
+        var firstToken = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!
+            ["closeScopeLocks"]!.AsArray()[0]!["token"]!.GetValue<string>();
+
+        // Disposing without an explicit pre-commit abandon models process ownership loss:
+        // the OS file lock is released, but the durable ambiguous checkpoint must remain.
+        await lostOwner.DisposeAsync();
+        var afterCrashCreate = () => new FileReconciliationBreakQueueRepository(
+                root,
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance)
+            .CreateIfMissingAsync(retained with
+            {
+                BreakId = "statement:blocked-until-ledger-verified",
+                SourceBreakId = "source-blocked-until-ledger-verified"
+            });
+        await afterCrashCreate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*being hard-closed*");
+
+        var restarted = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        await using (var recoveredOwner = await restarted.AcquireCloseScopeLeaseAsync(scope))
+        {
+            recoveredOwner.CheckpointHashSha256.Should().Be(checkpointHash);
+            recoveredOwner.Items.Should().ContainSingle(item => item.BreakId == retained.BreakId);
+            var secondToken = JsonNode.Parse(await File.ReadAllTextAsync(snapshotPath))!
+                ["closeScopeLocks"]!.AsArray()[0]!["token"]!.GetValue<string>();
+            secondToken.Should().NotBe(firstToken, "reacquisition fences the lost process owner");
+
+            // The bridge may invoke this only after its authoritative ledger read still reports
+            // the period as not hard-closed.
+            await recoveredOwner.AbandonBeforeLedgerCommitAsync();
+        }
+
+        var replacement = retained with
+        {
+            BreakId = "statement:post-abandon-casework",
+            SourceBreakId = "source-post-abandon-casework",
+            SourceFingerprint = "fingerprint-post-abandon-casework"
+        };
+        (await restarted.CreateIfMissingAsync(replacement)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Concurrent_close_owner_waits_for_file_fence_and_cannot_replace_a_committed_checkpoint()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var firstOwner = await repo.AcquireCloseScopeLeaseAsync(scope);
+        var competingRepository = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var competingOwner = competingRepository.AcquireCloseScopeLeaseAsync(scope, timeout.Token);
+        try
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            competingOwner.IsCompleted.Should().BeFalse(
+                "the first owner retains the exclusive cross-process mutation fence");
+
+            await firstOwner.CommitHardCloseAsync();
+        }
+        finally
+        {
+            await firstOwner.DisposeAsync();
+        }
+
+        Func<Task> competingResult = async () => { await competingOwner; };
+        await competingResult.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already sealed*");
+    }
+
+    [Fact]
+    public async Task Hard_closed_scope_blocks_every_queue_mutation_route_but_not_an_unrelated_scope()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var scoped = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:hard-closed",
+            SourceType = "statement",
+            SourceBreakId = "source-hard-closed",
+            SourceFingerprint = "fingerprint-hard-closed",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(scoped);
+        await using (var lease = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            await lease.CommitHardCloseAsync();
+        }
+
+        var create = () => repo.CreateIfMissingAsync(scoped with
+        {
+            BreakId = "statement:post-close-create",
+            SourceBreakId = "source-post-close-create"
+        });
+        var migrate = () => repo.CreateOrMigrateAsync(scoped with
+        {
+            BreakId = "statement:post-close-migrate",
+            SourceFingerprint = "fingerprint-post-close-migrate"
+        }, scoped.BreakId);
+        var save = () => repo.SaveAsync(scoped with { ResolutionNote = "post-close save" });
+        var delete = () => repo.DeleteAsync(scoped.BreakId);
+
+        await create.Should().ThrowAsync<InvalidOperationException>().WithMessage("*hard-closed*");
+        await migrate.Should().ThrowAsync<InvalidOperationException>().WithMessage("*hard-closed*");
+        await save.Should().ThrowAsync<InvalidOperationException>().WithMessage("*hard-closed*");
+        await delete.Should().ThrowAsync<InvalidOperationException>().WithMessage("*hard-closed*");
+
+        var legacyReview = await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(
+            scoped.BreakId,
+            "controller-a",
+            "controller-a",
+            "post-close review"));
+        legacyReview.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        legacyReview.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.AccountingPeriodHardClosed);
+        var legacyResolve = await repo.ResolveAsync(new ResolveReconciliationBreakRequest(
+            scoped.BreakId,
+            ReconciliationBreakQueueStatus.Resolved,
+            "controller-a",
+            "post-close resolve",
+            "post-close rationale"));
+        legacyResolve.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        legacyResolve.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.AccountingPeriodHardClosed);
+
+        var modern = await repo.ApplyCaseworkCommandAsync(
+            Command(scoped, ReconciliationCaseworkAction.AddComment) with
+            {
+                Note = "post-close comment"
+            });
+        modern.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        modern.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.AccountingPeriodHardClosed);
+
+        var unrelated = scoped with
+        {
+            BreakId = "statement:unrelated-scope",
+            SourceBreakId = "source-unrelated-scope",
+            SourceFingerprint = "fingerprint-unrelated-scope",
+            AccountingPeriodId = Guid.NewGuid().ToString("D")
+        };
+        (await repo.CreateIfMissingAsync(unrelated)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Governed_reopen_versions_checkpoint_allows_casework_and_reclose_survives_restart()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var original = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:reopen-generation-1",
+            SourceType = "statement",
+            SourceBreakId = "source-reopen-generation-1",
+            SourceFingerprint = "fingerprint-reopen-generation-1",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(original);
+
+        string firstCheckpointHash;
+        await using (var firstClose = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            firstClose.Generation.Should().Be(1);
+            firstClose.Items.Should().ContainSingle(item => item.BreakId == original.BreakId);
+            firstCheckpointHash = firstClose.CheckpointHashSha256;
+            await firstClose.CommitHardCloseAsync();
+        }
+
+        var firstReopenCommand = new ReconciliationCloseScopeReopenCommand(
+            "controller-a",
+            "Controller",
+            "Reopen the July ledger for a governed restatement.",
+            "approval-reopen-july-1",
+            "correlation-reopen-july-1",
+            [
+                "evidence://reopen/july/support",
+                "evidence://reopen/july/approval-reopen-july-1"
+            ],
+            ReopenedLedgerPeriodVersion: 3,
+            CommandHashSha256: new string('a', 64));
+        var unlinkedApprovalEvidence = () => repo.ReopenCloseScopeAsync(
+            scope,
+            firstReopenCommand with { EvidenceLinks = ["evidence://reopen/july/support-only"] });
+        await unlinkedApprovalEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*evidence linked to the approval reference*");
+
+        var firstReopen = await repo.ReopenCloseScopeAsync(scope, firstReopenCommand);
+        var firstReplay = await repo.ReopenCloseScopeAsync(scope, firstReopenCommand);
+
+        firstReopen.CheckpointGeneration.Should().Be(1);
+        firstReopen.CheckpointHashSha256.Should().Be(firstCheckpointHash);
+        firstReopen.WasAlreadyReopened.Should().BeFalse();
+        firstReopen.EvidenceLinks.Should().Equal(
+            "evidence://reopen/july/approval-reopen-july-1",
+            "evidence://reopen/july/support");
+        firstReplay.Should().BeEquivalentTo(firstReopen with { WasAlreadyReopened = true });
+        var changedReplay = () => repo.ReopenCloseScopeAsync(
+            scope,
+            firstReopenCommand with { Reason = "Changed restatement reason." });
+        await changedReplay.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*different governed command*");
+
+        var postReopen = original with
+        {
+            BreakId = "statement:reopen-generation-2",
+            SourceBreakId = "source-reopen-generation-2",
+            SourceFingerprint = "fingerprint-reopen-generation-2"
+        };
+        (await repo.CreateIfMissingAsync(postReopen)).Should().BeTrue(
+            "a governed reopen unseals the exact scope for new reconciliation casework");
+
+        await using (var abandonedSecondClose = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            abandonedSecondClose.Generation.Should().Be(2);
+            await abandonedSecondClose.AbandonBeforeLedgerCommitAsync();
+        }
+
+        var afterAbandon = original with
+        {
+            BreakId = "statement:reopen-generation-2-after-abandon",
+            SourceBreakId = "source-reopen-generation-2-after-abandon",
+            SourceFingerprint = "fingerprint-reopen-generation-2-after-abandon"
+        };
+        (await repo.CreateIfMissingAsync(afterAbandon)).Should().BeTrue(
+            "abandoning a later pre-commit checkpoint restores the prior reopened generation");
+
+        string secondCheckpointHash;
+        await using (var secondClose = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            secondClose.Generation.Should().Be(2);
+            secondClose.Items.Select(static item => item.BreakId).Should().BeEquivalentTo(
+                new[] { original.BreakId, postReopen.BreakId, afterAbandon.BreakId });
+            secondCheckpointHash = secondClose.CheckpointHashSha256;
+            secondCheckpointHash.Should().NotBe(firstCheckpointHash);
+            await secondClose.CommitHardCloseAsync();
+        }
+
+        var restarted = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var recovered = await restarted.RecoverHardClosedScopeCheckpointAsync(scope);
+        var retainedHistory = await restarted.ListCloseScopeHistoryAsync(scope);
+
+        recovered.Generation.Should().Be(2);
+        recovered.CheckpointHashSha256.Should().Be(secondCheckpointHash);
+        recovered.Items.Should().HaveCount(3);
+        retainedHistory.Should().ContainSingle();
+        retainedHistory[0].CheckpointGeneration.Should().Be(1);
+        retainedHistory[0].CheckpointHashSha256.Should().Be(firstCheckpointHash);
+
+        var staleVersionReopen = () => restarted.ReopenCloseScopeAsync(
+            scope,
+            firstReopenCommand with
+            {
+                ApprovalReference = "approval-reopen-july-2",
+                CorrelationId = "correlation-reopen-july-2",
+                EvidenceLinks = ["evidence://reopen/july/approval-reopen-july-2"],
+                ReopenedLedgerPeriodVersion = 3,
+                CommandHashSha256 = new string('b', 64)
+            });
+        await staleVersionReopen.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*cannot reopen at ledger version 3*prior governed reopen retained version 3*");
+
+        var secondReopenCommand = firstReopenCommand with
+        {
+            ApprovalReference = "approval-reopen-july-2",
+            CorrelationId = "correlation-reopen-july-2",
+            EvidenceLinks = ["evidence://reopen/july/approval-reopen-july-2"],
+            ReopenedLedgerPeriodVersion = 5,
+            CommandHashSha256 = new string('b', 64)
+        };
+        var secondReopen = await restarted.ReopenCloseScopeAsync(scope, secondReopenCommand);
+        var completeHistory = await restarted.ListCloseScopeHistoryAsync(scope);
+
+        secondReopen.CheckpointGeneration.Should().Be(2);
+        secondReopen.CheckpointHashSha256.Should().Be(secondCheckpointHash);
+        completeHistory.Select(static entry => entry.CheckpointGeneration).Should().Equal(1, 2);
+        completeHistory.Select(static entry => entry.ReopenReceipt.ReopenedLedgerPeriodVersion)
+            .Should().Equal(3, 5);
+    }
+
+    [Fact]
+    public async Task Restart_rejects_governed_reopen_history_changed_under_a_valid_snapshot_envelope()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:reopen-history-tamper",
+            SourceType = "statement",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(item);
+        await using (var lease = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            await lease.CommitHardCloseAsync();
+        }
+
+        await repo.ReopenCloseScopeAsync(
+            scope,
+            new ReconciliationCloseScopeReopenCommand(
+                "controller-a",
+                "Fund Controller",
+                "Governed reopen with retained support.",
+                "approval-history-tamper",
+                "correlation-history-tamper",
+                ["evidence://reopen/history/approval-history-tamper"],
+                ReopenedLedgerPeriodVersion: 3,
+                CommandHashSha256: new string('c', 64)));
+
+        var snapshotPath = Path.Combine(root, "reconciliation-break-queue.json");
+        await RewriteSnapshotWithValidEnvelopeHashAsync(snapshotPath, document =>
+        {
+            document["closeScopeLocks"]!.AsArray()[0]!["history"]!
+                .AsArray()[0]!["items"]!
+                .AsArray()[0]!["reason"] = "tampered retained checkpoint history";
+        });
+        var restarted = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+        var readHistory = () => restarted.ListCloseScopeHistoryAsync(scope);
+
+        await readHistory.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*history*checkpoint hash verification*");
+    }
+
+    [Fact]
+    public async Task Restart_rejects_a_checkpoint_payload_changed_under_a_valid_snapshot_envelope()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationCloseScope(
+            "fund-alpha",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateOnly(2026, 7, 31));
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:checkpoint-tamper",
+            SourceType = "statement",
+            LedgerBookId = scope.LedgerBookId,
+            AccountingPeriodId = scope.AccountingPeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            FundProfileId = scope.FundProfileId
+        };
+        await repo.CreateIfMissingAsync(item);
+        await using (var lease = await repo.AcquireCloseScopeLeaseAsync(scope))
+        {
+            await lease.CommitHardCloseAsync();
+        }
+
+        var snapshotPath = Path.Combine(root, "reconciliation-break-queue.json");
+        await RewriteSnapshotWithValidEnvelopeHashAsync(snapshotPath, document =>
+        {
+            document["closeScopeLocks"]!.AsArray()[0]!["checkpointItems"]!
+                .AsArray()[0]!["reason"] = "tampered after close";
+        });
+        var restarted = new FileReconciliationBreakQueueRepository(
+            root,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+        var recover = () => restarted.RecoverHardClosedScopeCheckpointAsync(scope);
+
+        await recover.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*checkpoint hash verification*");
     }
 
     [Fact]

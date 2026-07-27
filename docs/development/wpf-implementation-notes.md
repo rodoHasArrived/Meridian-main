@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.8.x | **Last updated**: 2026-07-06 | **Status**: Active product lane — co-equal with the browser workstation; current focus is web-UI parity (`W8-WPF-PARITY-001`)
+**Version**: 1.8.x | **Last updated**: 2026-07-27 | **Status**: Active product lane — co-equal with the browser workstation; current focus is web-UI parity (`W8-WPF-PARITY-001`)
 
 ## Overview
 
@@ -106,9 +106,9 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 
 **Advanced Analytics action readiness** — `AdvancedAnalyticsPage` now binds refresh, report generation, gap analysis, repair confirmation, provider comparison, and status dismissal to `AdvancedAnalyticsViewModel` commands. The view model owns comparison readiness copy and the inline repair-confirmation state from the already-loaded gap analysis result, so repair no longer depends on a page-level `MessageBox` and no new service calls, timers, or persistence writes are introduced.
 
-**Analysis Export action readiness** — `AnalysisExportPage` now binds export launch and preset save actions to `AnalysisExportViewModel` commands instead of page click handlers. The view model owns required-field, metric-selection, symbol-scope, date-scope, and recent-export presentation state so invalid exports are disabled with inline guidance before an operator queues work, without adding service calls, timers, or persistence writes.
+**Analysis Export fail-closed availability** — `AnalysisExportPage` binds export launch and preset save actions to `AnalysisExportViewModel` commands instead of page click handlers, but neither command claims execution or persistence. The page's destination, metric, chart, summary, and preset options are not represented by the canonical analysis-export service, so actions stay disabled with explicit unavailable guidance and recent history stays empty until backend-confirmed rows are connected.
 
-**Analysis Export Wizard readiness** — `AnalysisExportWizardPage` now binds add-symbol, back, next/queue, and cancel actions to `AnalysisExportWizardViewModel` commands instead of page click handlers. The view model owns step title/detail copy, scope text, validation visibility, and action enablement for symbol, date, destination, metric, and pre-export checks without adding service calls, timers, or persistence writes.
+**Analysis Export Wizard fail-closed availability** — `AnalysisExportWizardPage` binds add-symbol, back, next, and cancel actions to `AnalysisExportWizardViewModel` commands instead of page click handlers. The view model still supports configuration review, but the terminal action is disabled and the review explicitly says destination access, data availability, output size, and export submission were not tested or performed. No seeded symbols, fictional PASS checks, size estimates, queued-success claims, service calls, timers, or persistence writes remain.
 
 **Export Presets readiness** — `ExportPresetsPage` now binds save/delete actions to `ExportPresetsViewModel` commands instead of page click handlers. The view model owns preset-library state, empty-state copy, save-readiness title/detail text, status visibility, and built-in preset delete gating so reporting operators see whether a preset can be saved or removed before acting, without adding service calls, timers, or persistence writes.
 

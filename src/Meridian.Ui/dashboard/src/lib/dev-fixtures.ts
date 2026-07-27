@@ -6395,7 +6395,7 @@ const fixtures = {
   [PROVIDER_ROUTING_API_ENDPOINTS.bindings]: fixtureProviderRoutingBindings,
   [PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots]: fixtureProviderRoutingTrustSnapshots,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace.reporting,
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
   [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,

@@ -38,6 +38,8 @@ export interface ReconciliationBreakQueueItem {
   toleranceBand?: number | null;
   requiredSignoffRole?: string | null;
   signoffStatus?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
   fundAccountId?: string | null;
   explainabilitySummary?: string | null;
   routingTarget?: string | null;

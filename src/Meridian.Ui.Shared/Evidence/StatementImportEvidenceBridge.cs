@@ -9,7 +9,12 @@ public sealed record StatementImportEvidenceBridgeRequest(
     string ExternalAccountId,
     DateOnly PeriodStart,
     DateOnly PeriodEnd,
-    string ImportedBy);
+    string ImportedBy)
+{
+    public string? TenantId { get; init; }
+    public string? CompanyId { get; init; }
+    public string? WorkflowId { get; init; }
+}
 
 public interface IStatementImportEvidenceRetainer
 {

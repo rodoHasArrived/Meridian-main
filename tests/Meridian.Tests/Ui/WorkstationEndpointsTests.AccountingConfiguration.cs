@@ -9,6 +9,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
+using Meridian.Reporting;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
@@ -527,6 +528,8 @@ public sealed partial class WorkstationEndpointsTests
                 // The accounting/reporting workspace endpoints require the strategy run read
                 // service; without it they return 503 instead of fabricated fallback data.
                 RegisterRunReadServices(services);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog()));
                 RegisterAccountingConfigurationServices(services);
             },
             currentUserPermissions: UserPermission.AdminMaintenance,
@@ -635,7 +638,7 @@ public sealed partial class WorkstationEndpointsTests
         var capitalAccountWorkbench = await capitalAccountWorkbenchResponse.Content.ReadFromJsonAsync<CapitalAccountWorkbenchDto>(ServerJsonOptions);
         var missingPrivateCapitalActivity = await missingPrivateCapitalResponse.Content.ReadFromJsonAsync<PrivateCapitalActivityProjectionDto>(ServerJsonOptions);
         var accountingWorkspace = await accountingWorkspaceResponse.Content.ReadFromJsonAsync<WorkstationAccountingPayload>(ServerJsonOptions);
-        var reportingWorkspace = await reportingWorkspaceResponse.Content.ReadFromJsonAsync<WorkstationAccountingPayload>(ServerJsonOptions);
+        var reportingWorkspace = await reportingWorkspaceResponse.Content.ReadFromJsonAsync<WorkstationReportingPayload>(ServerJsonOptions);
         privateCapitalActivity.Should().NotBeNull();
         var reportOutputId = privateCapitalActivity!.ReportOutputs.Single().ReportOutputId;
         using var reportOutputResponse = await client.GetAsync(
@@ -691,13 +694,9 @@ public sealed partial class WorkstationEndpointsTests
             item.CapitalAccountSubledgerEntryCount == 1 &&
             item.LedgerImpactCount == 1);
         reportingWorkspace.Should().NotBeNull();
-        reportingWorkspace!.ManualJournalWorkbench.Should().NotBeNull();
-        reportingWorkspace.ManualJournalWorkbench!.PrivateCapitalActivity.Should().NotBeNull();
-        reportingWorkspace.ManualJournalWorkbench.PrivateCapitalActivity!.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
-            item.ReportOutputCount == 1 &&
-            item.CapitalAccountSubledgerEntryCount == 1 &&
-            item.LedgerImpactCount == 1);
+        reportingWorkspace!.ProfileCount.Should().BeGreaterThan(0);
+        reportingWorkspace.DeploymentCapability.Should().NotBeNull();
+        reportingWorkspace.DeploymentCapability!.IsReady.Should().BeTrue();
         privateCapitalActivity.FundEvents.Should().ContainSingle(item =>
             item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
             item.NetCapitalActivity == 100m);

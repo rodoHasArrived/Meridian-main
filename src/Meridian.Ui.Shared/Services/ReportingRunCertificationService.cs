@@ -50,11 +50,23 @@ public sealed class ReportingRunCertificationService
         var reconciliationSource = _reconciliationEvidenceSource
             ?? throw new ReportingAuthoritativeSourceUnavailableException(
                 "No durable reconciliation/close evidence source is configured; certification is blocked.");
+        var captureIntent = ReportingAuthoritativeSourceCaptureIntent.FromTemplate(template);
+        var requiresCertifiedLedgerPresentation =
+            ReportingCertifiedLedgerPresentationBinding.IsRequired(
+                captureIntent,
+                readiness.ResolvedParameters.OutputFormat);
 
         var capture = await source
-            .CaptureAsync(readiness.ResolvedParameters, accessContext, cancellationToken)
+            .CaptureAsync(
+                readiness.ResolvedParameters,
+                accessContext,
+                captureIntent,
+                cancellationToken)
             .ConfigureAwait(false);
         ValidateCapture(capture, readiness.ResolvedParameters, accessContext);
+        RequireCertifiedPresentationEvidence(
+            capture.Checkpoint,
+            requiresCertifiedLedgerPresentation);
         ReportingReconciliationEvidenceReceipt reconciliation;
         try
         {
@@ -73,6 +85,23 @@ public sealed class ReportingRunCertificationService
                     exception.Message,
                     invalid?.BlockingCount ?? 1,
                     invalid?.EvidenceReferences));
+        }
+        if (readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final)
+        {
+            try
+            {
+                ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
+            }
+            catch (ArgumentException exception)
+            {
+                throw new ReportingRunReadinessBlockedException(
+                    BuildMissingReconciliationReadiness(
+                        template,
+                        readiness,
+                        capture,
+                        exception.Message,
+                        reconciliationEvidence: reconciliation.EvidenceIds));
+            }
         }
 
         var parameters = NormalizeParameters(readiness.ResolvedParameters, capture.Checkpoint);
@@ -120,7 +149,11 @@ public sealed class ReportingRunCertificationService
             .Append(reconciliationCheck)
             .OrderBy(static check => check.CheckId, StringComparer.Ordinal)
             .ToArray();
-        var preflightReadiness = RebuildReadiness(readiness, parameters, checksWithoutReconciliation);
+        var preflightReadiness = RebuildReadiness(
+            readiness,
+            parameters,
+            checksWithoutReconciliation,
+            requiresCertifiedLedgerPresentation);
         var requestedPreflightReady = parameters.Finality == ReportingFinalityDto.Final
             ? preflightReadiness.CanGenerateFinal
             : preflightReadiness.CanGenerateDraft;
@@ -139,34 +172,58 @@ public sealed class ReportingRunCertificationService
             "/workstation/reporting/readiness",
             capture.Checkpoint.EvidenceIds
                 .Concat(reconciliation.EvidenceIds)
-                .Append($"reporting-parameters:{ComputeParametersHash(parameters)}")
+                .Append(
+                    $"reporting-parameters:{ComputeParametersHash(parameters, requiresCertifiedLedgerPresentation)}")
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(static evidence => evidence, StringComparer.Ordinal)
                 .ToArray());
         var certifiedReadiness = RebuildReadiness(
             readiness,
             parameters,
-            checksWithoutReconciliation.Append(scopeCheck).ToArray());
+            checksWithoutReconciliation.Append(scopeCheck).ToArray(),
+            requiresCertifiedLedgerPresentation);
 
-        var parametersJson = SerializeParameters(parameters);
+        var parametersJson = SerializeParameters(
+            parameters,
+            requiresCertifiedLedgerPresentation);
         var parametersHash = ComputeHash(parametersJson);
-        var snapshotHash = ComputeHash(JsonSerializer.Serialize(new
-        {
-            template = new
+        var certifiedDatasetHash = ComputeCertifiedRowsHash(capture.DatasetRows);
+        var snapshotHash = requiresCertifiedLedgerPresentation
+            ? ComputeHash(JsonSerializer.Serialize(new
             {
-                readiness.ResolvedTemplate.Name,
-                readiness.ResolvedTemplate.Version
-            },
-            scope,
-            access,
-            parametersHash,
-            sourceCheckpointId = capture.Checkpoint.CheckpointId,
-            sourceCheckpointHash = capture.Checkpoint.CheckpointHash,
-            reconciliationId = reconciliation.ReconciliationCheckpointId,
-            reconciliationHash = reconciliation.ReconciliationCheckpointHash,
-            readinessHash = certifiedReadiness.EvidenceHash,
-            certifiedDatasetHash = ComputeCertifiedRowsHash(capture.DatasetRows)
-        }));
+                template = new
+                {
+                    readiness.ResolvedTemplate.Name,
+                    readiness.ResolvedTemplate.Version
+                },
+                scope,
+                access,
+                parametersHash,
+                sourceCheckpointId = capture.Checkpoint.CheckpointId,
+                sourceCheckpointHash = capture.Checkpoint.CheckpointHash,
+                reconciliationId = reconciliation.ReconciliationCheckpointId,
+                reconciliationHash = reconciliation.ReconciliationCheckpointHash,
+                readinessHash = certifiedReadiness.EvidenceHash,
+                certifiedDatasetHash,
+                requiresCertifiedLedgerPresentation = true
+            }))
+            : ComputeHash(JsonSerializer.Serialize(new
+            {
+                template = new
+                {
+                    readiness.ResolvedTemplate.Name,
+                    readiness.ResolvedTemplate.Version
+                },
+                scope,
+                access,
+                parametersHash,
+                sourceCheckpointId = capture.Checkpoint.CheckpointId,
+                sourceCheckpointHash = capture.Checkpoint.CheckpointHash,
+                reconciliationId = reconciliation.ReconciliationCheckpointId,
+                reconciliationHash = reconciliation.ReconciliationCheckpointHash,
+                readinessHash = certifiedReadiness.EvidenceHash,
+                certifiedDatasetHash
+            }));
         var certifiedAtUtc = capture.Checkpoint.CapturedAtUtc >= reconciliation.ReconciledAtUtc
             ? capture.Checkpoint.CapturedAtUtc
             : reconciliation.ReconciledAtUtc;
@@ -185,7 +242,10 @@ public sealed class ReportingRunCertificationService
             capture.Checkpoint.CheckpointHash,
             reconciliation.ReconciliationCheckpointHash,
             parametersJson,
-            parametersHash);
+            parametersHash)
+        {
+            RequiresCertifiedLedgerPresentation = requiresCertifiedLedgerPresentation
+        };
 
         return new CertifiedReportingRunContext(
             scope,
@@ -203,12 +263,14 @@ public sealed class ReportingRunCertificationService
     /// </summary>
     public async ValueTask RevalidateForReleaseAsync(
         ReportingRunParametersDto parameters,
+        string templateId,
         ReportingAuthoritativeSourceCheckpoint certifiedSource,
         ReportingCertifiedSnapshotScope certifiedSnapshot,
         ReportAccessQueryContext accessContext,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
         ArgumentNullException.ThrowIfNull(certifiedSource);
         ArgumentNullException.ThrowIfNull(certifiedSnapshot);
         ArgumentNullException.ThrowIfNull(accessContext);
@@ -222,10 +284,24 @@ public sealed class ReportingRunCertificationService
                 "No durable reconciliation/close evidence source is configured; final release revalidation is blocked.");
 
         var current = await source
-            .CaptureAsync(parameters, accessContext, cancellationToken)
+            .CaptureAsync(
+                parameters,
+                accessContext,
+                new ReportingAuthoritativeSourceCaptureIntent(templateId)
+                {
+                    RequiresCertifiedLedgerPresentation =
+                        certifiedSnapshot.RequiresCertifiedLedgerPresentation
+                },
+                cancellationToken)
             .ConfigureAwait(false);
         ValidateCapture(current, parameters, accessContext);
-        if (!SameCertifiedSource(current.Checkpoint, certifiedSource, certifiedSnapshot))
+        if (!SameCertifiedSource(
+                current.Checkpoint,
+                certifiedSource,
+                certifiedSnapshot,
+                templateId,
+                certifiedSnapshot.RequiresCertifiedLedgerPresentation,
+                parameters.OutputFormat))
         {
             throw new ReportingGovernanceException(
                 "Final release is blocked because the authoritative ledger source changed after certification. Regenerate and reapprove the report from a fresh certified snapshot.");
@@ -234,6 +310,15 @@ public sealed class ReportingRunCertificationService
         var reconciliation = await reconciliationSource
             .ResolveAsync(parameters, current.Checkpoint, accessContext, cancellationToken)
             .ConfigureAwait(false);
+        try
+        {
+            ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new ReportingGovernanceException(
+                $"Final release is blocked because committed accounting-close workflow evidence is unavailable or invalid: {exception.Message}");
+        }
         if (!string.Equals(
                 reconciliation.ReconciliationCheckpointId,
                 certifiedSnapshot.ReconciliationCheckpointId,
@@ -251,7 +336,10 @@ public sealed class ReportingRunCertificationService
     private static bool SameCertifiedSource(
         ReportingAuthoritativeSourceCheckpoint current,
         ReportingAuthoritativeSourceCheckpoint certified,
-        ReportingCertifiedSnapshotScope snapshot) =>
+        ReportingCertifiedSnapshotScope snapshot,
+        string templateId,
+        bool requiresCertifiedLedgerPresentation,
+        ReportingOutputFormatDto outputFormat) =>
         string.Equals(current.TenantId, certified.TenantId, StringComparison.Ordinal)
         && string.Equals(current.OrganizationId, certified.OrganizationId, StringComparison.Ordinal)
         && string.Equals(current.CompanyId, certified.CompanyId, StringComparison.Ordinal)
@@ -269,7 +357,49 @@ public sealed class ReportingRunCertificationService
         && string.Equals(current.LedgerBookId, snapshot.BookId, StringComparison.Ordinal)
         && string.Equals(current.AccountingPeriodId, snapshot.PeriodId, StringComparison.Ordinal)
         && string.Equals(current.CheckpointId, snapshot.SourceCheckpointId, StringComparison.Ordinal)
-        && string.Equals(current.CheckpointHash, snapshot.SourceCheckpointHash, StringComparison.Ordinal);
+        && string.Equals(current.CheckpointHash, snapshot.SourceCheckpointHash, StringComparison.Ordinal)
+        && HasSameRequiredPresentationEvidence(
+            current,
+            certified,
+            templateId,
+            requiresCertifiedLedgerPresentation,
+            outputFormat);
+
+    private static bool HasSameRequiredPresentationEvidence(
+        ReportingAuthoritativeSourceCheckpoint current,
+        ReportingAuthoritativeSourceCheckpoint certified,
+        string templateId,
+        bool requiresCertifiedLedgerPresentation,
+        ReportingOutputFormatDto outputFormat)
+    {
+        if (!ReportingCertifiedLedgerPresentationBinding.IsRequired(
+                templateId,
+                requiresCertifiedLedgerPresentation,
+                outputFormat))
+        {
+            return true;
+        }
+
+        var currentEvidence =
+            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(current);
+        var certifiedEvidence =
+            ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(certified);
+        return currentEvidence is not null
+            && certifiedEvidence is not null
+            && string.Equals(currentEvidence, certifiedEvidence, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void RequireCertifiedPresentationEvidence(
+        ReportingAuthoritativeSourceCheckpoint checkpoint,
+        bool requiresCertifiedLedgerPresentation)
+    {
+        if (requiresCertifiedLedgerPresentation
+            && ReportingCertifiedLedgerPresentationBinding.GetSingleEvidenceId(checkpoint) is null)
+        {
+            throw new ReportingAuthoritativeSourceUnavailableException(
+                "Capital-account primary-document certification is blocked because the authoritative source did not retain one signed canonical ledger-presentation checksum.");
+        }
+    }
 
     /// <summary>
     /// Compatibility signature retained so old callers fail closed instead of silently certifying
@@ -297,7 +427,9 @@ public sealed class ReportingRunCertificationService
             || !string.Equals(certified.Readiness.EvidenceHash, readiness.EvidenceHash, StringComparison.OrdinalIgnoreCase)
             || !string.Equals(
                 certified.Snapshot.ParametersHash,
-                ComputeParametersHash(readiness.ResolvedParameters),
+                ComputeParametersHash(
+                    readiness.ResolvedParameters,
+                    certified.Snapshot.RequiresCertifiedLedgerPresentation),
                 StringComparison.OrdinalIgnoreCase)
             || !string.Equals(certified.Snapshot.SourceCheckpointId, certified.AuthoritativeSource.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(certified.Snapshot.SourceCheckpointHash, certified.AuthoritativeSource.CheckpointHash, StringComparison.OrdinalIgnoreCase))
@@ -390,7 +522,8 @@ public sealed class ReportingRunCertificationService
     private static ReportingRunReadinessDto RebuildReadiness(
         ReportingRunReadinessDto original,
         ReportingRunParametersDto parameters,
-        IReadOnlyList<ReportingRunReadinessCheckDto> checks)
+        IReadOnlyList<ReportingRunReadinessCheckDto> checks,
+        bool requiresCertifiedLedgerPresentation)
     {
         var orderedChecks = checks.OrderBy(static check => check.CheckId, StringComparer.Ordinal).ToArray();
         var canDraft = orderedChecks.All(static check =>
@@ -416,7 +549,9 @@ public sealed class ReportingRunCertificationService
         var hash = ComputeHash(JsonSerializer.Serialize(new
         {
             template = original.ResolvedTemplate,
-            parametersCanonicalJson = SerializeParameters(parameters),
+            parametersCanonicalJson = SerializeParameters(
+                parameters,
+                requiresCertifiedLedgerPresentation),
             checks = orderedChecks.Select(static check => new
             {
                 check.CheckId,
@@ -484,7 +619,15 @@ public sealed class ReportingRunCertificationService
             .Append(sourceCheck)
             .Append(reconciliationCheck)
             .ToArray();
-        return RebuildReadiness(readiness, parameters, checks);
+        var requiresCertifiedLedgerPresentation =
+            ReportingCertifiedLedgerPresentationBinding.IsRequired(
+                ReportingAuthoritativeSourceCaptureIntent.FromTemplate(template),
+                parameters.OutputFormat);
+        return RebuildReadiness(
+            readiness,
+            parameters,
+            checks,
+            requiresCertifiedLedgerPresentation);
     }
 
     private static ReportingRunParametersDto NormalizeParameters(
@@ -587,42 +730,12 @@ public sealed class ReportingRunCertificationService
         ReportingFinalityDto finality) =>
         finality == ReportingFinalityDto.Final ? check.BlocksFinal : check.BlocksDraft;
 
-    private static string SerializeParameters(ReportingRunParametersDto parameters)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream))
-        {
-            writer.WriteStartObject();
-            writer.WriteStartObject("scope");
-            writer.WriteString("fundProfileId", parameters.Scope.FundProfileId);
-            writer.WriteString("entityScopeKind", parameters.Scope.EntityScopeKind.ToString());
-            WriteOptional(writer, "entityId", parameters.Scope.EntityId);
-            WriteOptional(writer, "portfolioId", parameters.Scope.PortfolioId);
-            WriteOptional(writer, "investorId", parameters.Scope.InvestorId);
-            writer.WritePropertyName("dimensions");
-            JsonSerializer.Serialize(writer, parameters.Scope.Dimensions);
-            writer.WriteEndObject();
-            writer.WriteString("periodId", parameters.PeriodId);
-            writer.WriteString("asOfDate", parameters.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
-            writer.WriteString("ledgerBookId", parameters.LedgerBook.LedgerBookId?.ToString("D"));
-            WriteOptional(writer, "ledgerBookCode", parameters.LedgerBook.LedgerBookCode);
-            writer.WriteString("accountingBasis", parameters.AccountingBasis.ToString());
-            writer.WriteString("presentationCurrency", parameters.PresentationCurrency);
-            writer.WriteString("consolidationLevel", parameters.ConsolidationLevel.ToString());
-            writer.WriteString("outputFormat", parameters.OutputFormat.ToString());
-            writer.WriteString("finality", parameters.Finality.ToString());
-            writer.WriteBoolean("includeSupportingSchedules", parameters.IncludeSupportingSchedules);
-            writer.WriteBoolean("includeEvidenceAppendix", parameters.IncludeEvidenceAppendix);
-            writer.WriteStartObject("templateParameters");
-            foreach (var pair in parameters.TemplateParameters.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-            {
-                writer.WriteString(pair.Key, pair.Value);
-            }
-            writer.WriteEndObject();
-            writer.WriteEndObject();
-        }
-        return Encoding.UTF8.GetString(stream.ToArray());
-    }
+    private static string SerializeParameters(
+        ReportingRunParametersDto parameters,
+        bool requiresCertifiedLedgerPresentation = false) =>
+        ReportingCanonicalParameterSerializer.Serialize(
+            parameters,
+            requiresCertifiedLedgerPresentation);
 
     internal static ReportingRunParametersDto DeserializeParameters(string canonicalJson)
     {
@@ -740,8 +853,12 @@ public sealed class ReportingRunCertificationService
         }
     }
 
-    private static string ComputeParametersHash(ReportingRunParametersDto parameters) =>
-        ComputeHash(SerializeParameters(parameters));
+    private static string ComputeParametersHash(
+        ReportingRunParametersDto parameters,
+        bool requiresCertifiedLedgerPresentation = false) =>
+        ReportingCanonicalParameterSerializer.ComputeHash(
+            parameters,
+            requiresCertifiedLedgerPresentation);
 
     internal static string ComputeCertifiedRowsHash(
         ImmutableArray<IReadOnlyDictionary<string, string>> rows)
@@ -783,18 +900,6 @@ public sealed class ReportingRunCertificationService
     {
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
-
-    private static void WriteOptional(Utf8JsonWriter writer, string propertyName, string? value)
-    {
-        if (value is null)
-        {
-            writer.WriteNull(propertyName);
-        }
-        else
-        {
-            writer.WriteString(propertyName, value);
-        }
     }
 
     private static string? ReadOptional(JsonElement element, string propertyName) =>
