@@ -1,13 +1,6 @@
 name: Branch Cleanup
 
 on:
-  # Temporary registration trigger: a workflow_dispatch-only workflow that has
-  # never existed on the default branch is not dispatchable via the API until
-  # one of its triggers has fired once. Push events run as a dry run only
-  # (the confirm input is empty outside workflow_dispatch).
-  push:
-    branches:
-      - claude/consolidate-git-worktrees-72ot1s
   workflow_dispatch:
     inputs:
       confirm:
