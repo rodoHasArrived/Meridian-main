@@ -160,11 +160,50 @@ public static class RiskEndpoints
                 return Results.Problem("Risk escalation queue is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var actor = ResolveActor(context);
-            var approved = queue.Approve(escalationId, actor, request?.Reason);
-            if (approved is null)
+            var entry = queue.TryGet(escalationId);
+            if (entry is null)
             {
                 return Results.NotFound();
+            }
+
+            var actor = ResolveActor(context);
+
+            // Segregation of duties: the operator who submitted the escalated order can
+            // never approve their own risk exception.
+            if (!string.IsNullOrWhiteSpace(entry.Actor) &&
+                string.Equals(entry.Actor.Trim(), actor, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Json(
+                    new { error = "The submitting operator cannot approve their own escalation; a distinct approver is required." },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            // The release bypasses /orders/submit, so re-check the approver's scoped
+            // fund-account authority against the retained order before transitioning.
+            if (entry.Request.FundAccountId is { } fundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    fundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            // Approve when still pending; an entry already Approved (e.g. an earlier
+            // release attempt failed downstream) stays retryable through this endpoint.
+            var approved = entry.Status switch
+            {
+                RiskEscalationStatus.PendingApproval => queue.Approve(escalationId, actor, request?.Reason),
+                RiskEscalationStatus.Approved => entry,
+                _ => null
+            };
+            if (approved is null)
+            {
+                return Results.Conflict(new { error = $"Escalation is already {entry.Status}." });
             }
 
             // Release the parked order back through the full pre-trade gate. The approval
@@ -197,7 +236,9 @@ public static class RiskEndpoints
                 jsonOptions);
         })
         .Produces<RiskEscalationApprovalResponse>(200)
+        .Produces(403)
         .Produces(404)
+        .Produces(409)
         .Produces(503);
 
         group.MapPost("/escalations/{escalationId}/deny", (

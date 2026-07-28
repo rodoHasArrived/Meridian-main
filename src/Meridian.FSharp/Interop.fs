@@ -291,7 +291,9 @@ type RiskInterop private () =
             RecentOrderRate = None
             PortfolioExposure = None
             SymbolExposure = None
+            SignedSymbolExposure = None
             OrderNotional = None
+            SignedOrderNotional = None
             MaxGrossExposure = None
             MaxSymbolConcentrationPercent = None
             MaxOrderNotional = None
@@ -299,13 +301,16 @@ type RiskInterop private () =
         }
 
     /// Context for the portfolio-aware rules: gross-exposure, symbol-concentration,
-    /// and per-order-notional gates fed from the live aggregated portfolio.
+    /// and per-order-notional gates fed from the live aggregated portfolio. Signed
+    /// values make the projections direction-aware so de-risking orders reduce them.
     static member CreatePortfolioContext(
         request: Meridian.Execution.Sdk.OrderRequest,
         portfolioExposure: Nullable<decimal>,
         symbolExposure: Nullable<decimal>,
+        signedSymbolExposure: Nullable<decimal>,
         portfolioValue: Nullable<decimal>,
         orderNotional: Nullable<decimal>,
+        signedOrderNotional: Nullable<decimal>,
         maxGrossExposure: Nullable<decimal>,
         maxSymbolConcentrationPercent: Nullable<decimal>,
         maxOrderNotional: Nullable<decimal>,
@@ -320,7 +325,9 @@ type RiskInterop private () =
             RecentOrderRate = None
             PortfolioExposure = if portfolioExposure.HasValue then Some portfolioExposure.Value else None
             SymbolExposure = if symbolExposure.HasValue then Some symbolExposure.Value else None
+            SignedSymbolExposure = if signedSymbolExposure.HasValue then Some signedSymbolExposure.Value else None
             OrderNotional = if orderNotional.HasValue then Some orderNotional.Value else None
+            SignedOrderNotional = if signedOrderNotional.HasValue then Some signedOrderNotional.Value else None
             MaxGrossExposure = if maxGrossExposure.HasValue then Some maxGrossExposure.Value else None
             MaxSymbolConcentrationPercent = if maxSymbolConcentrationPercent.HasValue then Some maxSymbolConcentrationPercent.Value else None
             MaxOrderNotional = if maxOrderNotional.HasValue then Some maxOrderNotional.Value else None

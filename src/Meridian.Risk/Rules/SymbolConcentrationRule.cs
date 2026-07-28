@@ -1,6 +1,5 @@
 using System.Globalization;
 using Meridian.Execution;
-using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -49,14 +48,17 @@ public sealed class SymbolConcentrationRule : IRiskRule
         }
 
         var snapshot = _exposureProvider.GetSnapshot();
-        var symbolExposure = snapshot.GetSymbolExposure(request.Symbol).GrossExposure;
+        var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
         var orderNotional = OrderNotionalResolver.Resolve(request, snapshot);
+        var signedOrderNotional = OrderNotionalResolver.ResolveSigned(request, snapshot);
         var context = Interop.RiskInterop.CreatePortfolioContext(
             request,
             portfolioExposure: snapshot.GrossExposure,
-            symbolExposure: symbolExposure,
+            symbolExposure: symbolExposure.GrossExposure,
+            signedSymbolExposure: symbolExposure.NetNotional,
             portfolioValue: snapshot.PortfolioValue,
             orderNotional: orderNotional,
+            signedOrderNotional: signedOrderNotional,
             maxGrossExposure: default,
             maxSymbolConcentrationPercent: maxPercent,
             maxOrderNotional: default,
@@ -66,15 +68,19 @@ public sealed class SymbolConcentrationRule : IRiskRule
         if (!decision.Approved)
         {
             var reason = decision.Reasons.FirstOrDefault() ?? "Symbol concentration limit exceeded.";
-            _logger.LogWarning("Concentration rule rejected order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
+            _logger.LogWarning("Concentration rule rejected the order; the projected single-name share exceeds the configured cap");
             return Task.FromResult(RiskValidationResult.Rejected(reason));
         }
 
         // Observe band: approved, but flag concentrations at or above the warning fraction
         // of the cap so operators see pressure building before orders start bouncing.
+        // Direction-aware, mirroring the F# policy projection.
         if (snapshot.PortfolioValue > 0m)
         {
-            var projectedPercent = (symbolExposure + (orderNotional ?? 0m)) / snapshot.PortfolioValue * 100m;
+            var projectedExposure = signedOrderNotional is { } signedOrder
+                ? Math.Abs(symbolExposure.NetNotional + signedOrder)
+                : symbolExposure.GrossExposure + (orderNotional ?? 0m);
+            var projectedPercent = projectedExposure / snapshot.PortfolioValue * 100m;
             if (projectedPercent >= maxPercent.Value * ObserveBandFraction)
             {
                 var warning = string.Create(

@@ -12,8 +12,11 @@ namespace Meridian.Tests.Risk;
 /// </summary>
 public sealed class RiskEscalationQueueServiceTests
 {
-    private static RiskEscalationQueueService CreateQueue() =>
-        new(NullLogger<RiskEscalationQueueService>.Instance);
+    private static RiskEscalationQueueOptions CreateOptions() => new(
+        Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"));
+
+    private static RiskEscalationQueueService CreateQueue(RiskEscalationQueueOptions? options = null) =>
+        new(NullLogger<RiskEscalationQueueService>.Instance, options: options ?? CreateOptions());
 
     private static OrderRequest CreateOrder(decimal quantity = 100m, decimal? limitPrice = 250m) => new()
     {
@@ -111,5 +114,54 @@ public sealed class RiskEscalationQueueServiceTests
         queue.Park(CreateOrder(), "escalated");
 
         queue.TryConsumeApproval(CreateOrder()).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("stopPrice")]
+    [InlineData("timeInForce")]
+    [InlineData("fundAccountId")]
+    [InlineData("strategyId")]
+    public void Consume_WithVariedRoutingOrPayoffField_RefusesRelease(string variation)
+    {
+        var queue = CreateQueue();
+        var entry = queue.Park(CreateOrder(), "escalated");
+        queue.Approve(entry.EscalationId, actor: "risk-desk");
+
+        var tampered = variation switch
+        {
+            "stopPrice" => CreateOrder() with { StopPrice = 240m },
+            "timeInForce" => CreateOrder() with { TimeInForce = TimeInForce.GoodTilCancelled },
+            "fundAccountId" => CreateOrder() with { FundAccountId = Guid.NewGuid() },
+            _ => CreateOrder() with { StrategyId = "different-strategy" }
+        };
+
+        queue.TryConsumeApproval(WithApprovalToken(tampered, entry.EscalationId))
+            .Should().BeFalse("the approval binds to the entire executable order, not a partial fingerprint");
+        queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+    }
+
+    [Fact]
+    public void Queue_PersistsAcrossRestart_IncludingArmedApprovals()
+    {
+        var options = CreateOptions();
+        var first = CreateQueue(options);
+        var pending = first.Park(CreateOrder(quantity: 10m), "pending across restart", ruleName: "OrderNotional");
+        var approved = first.Park(CreateOrder(quantity: 20m), "approved across restart", ruleName: "OrderNotional");
+        first.Approve(approved.EscalationId, actor: "risk-desk", reason: "cleared");
+
+        // A new instance over the same snapshot path simulates a process restart.
+        var restarted = CreateQueue(options);
+
+        restarted.GetPending().Should().ContainSingle(entry => entry.EscalationId == pending.EscalationId);
+        restarted.TryGet(approved.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+
+        // The armed approval survives and still releases exactly once.
+        var resubmission = WithApprovalToken(CreateOrder(quantity: 20m), approved.EscalationId);
+        restarted.TryConsumeApproval(resubmission).Should().BeTrue();
+        restarted.TryConsumeApproval(resubmission).Should().BeFalse();
+
+        // The release is durable too.
+        var reloaded = CreateQueue(options);
+        reloaded.TryGet(approved.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
     }
 }

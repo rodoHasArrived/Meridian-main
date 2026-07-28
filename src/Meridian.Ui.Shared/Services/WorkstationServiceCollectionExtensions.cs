@@ -372,9 +372,11 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IAggregatePortfolioService>(),
                 sp.GetService<Meridian.Execution.Models.IPortfolioState>()));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
+        // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
             sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
-            sp.GetService<ExecutionAuditTrailService>()));
+            sp.GetService<ExecutionAuditTrailService>(),
+            sp.GetService<RiskEscalationQueueOptions>()));
         // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
         // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
         // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator

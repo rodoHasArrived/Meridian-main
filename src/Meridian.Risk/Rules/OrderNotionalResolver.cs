@@ -22,4 +22,25 @@ internal static class OrderNotionalResolver
 
         return referencePrice is { } price ? Math.Abs(request.Quantity) * price : null;
     }
+
+    /// <summary>
+    /// Signed order notional: positive for buys, negative for sells, so direction-aware
+    /// projections shrink when an order reduces the current position. Null when the order
+    /// side is unknown or no price reference exists.
+    /// </summary>
+    public static decimal? ResolveSigned(OrderRequest request, PortfolioExposureSnapshot snapshot)
+    {
+        var notional = Resolve(request, snapshot);
+        if (notional is not { } absolute)
+        {
+            return null;
+        }
+
+        return request.Side switch
+        {
+            OrderSide.Buy => absolute,
+            OrderSide.Sell => -absolute,
+            _ => null
+        };
+    }
 }

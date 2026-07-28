@@ -7,11 +7,13 @@ namespace Meridian.Risk;
 /// <param name="GrossExposure">Sum of absolute position market values for the symbol.</param>
 /// <param name="NetQuantity">Signed net quantity across all contributing runs.</param>
 /// <param name="ReferencePrice">Best-available per-share reference price (weighted average cost until live marks flow).</param>
+/// <param name="NetNotional">Signed net notional (negative when net short); zero when unknown.</param>
 public sealed record SymbolExposure(
     string Symbol,
     decimal GrossExposure,
     decimal NetQuantity,
-    decimal ReferencePrice);
+    decimal ReferencePrice,
+    decimal NetNotional = 0m);
 
 /// <summary>
 /// Point-in-time exposure snapshot of the aggregated portfolio, consumed by the

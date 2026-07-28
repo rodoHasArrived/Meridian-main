@@ -1,7 +1,10 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.Json;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Serialization;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution.Services;
@@ -34,14 +37,28 @@ public sealed record RiskEscalationEntry(
     string? ResolutionReason = null,
     DateTimeOffset? ResolvedAt = null);
 
+/// <summary>Persisted snapshot of the governed-approval queue.</summary>
+public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
+
+/// <summary>
+/// Location of the durable governed-approval queue snapshot.
+/// </summary>
+public sealed record RiskEscalationQueueOptions(string SnapshotPath)
+{
+    public static RiskEscalationQueueOptions Default { get; } = new(
+        Path.Combine(AppContext.BaseDirectory, "data", "execution", "risk-escalations", "escalations.json"));
+}
+
 /// <summary>
 /// Governed-approval queue for risk escalations: the enforced pre-trade validator parks
 /// escalated orders here instead of hard-rejecting them, operators approve or deny with an
 /// audited actor and reason, and an approval releases exactly one resubmission of the
 /// original order through the same risk gate. Metadata key
 /// <see cref="ApprovalMetadataKey"/> carries the one-shot approval token; consumption
-/// verifies the resubmitted order matches the parked fingerprint so an approval can never
-/// be replayed onto a different order.
+/// verifies the resubmitted order matches the full parked order fingerprint (every
+/// routing- and payoff-relevant field) so an approval can never release a different
+/// executable order than the risk desk reviewed. Queue transitions persist atomically so
+/// parked decisions and armed approvals survive process restarts.
 /// </summary>
 public sealed class RiskEscalationQueueService
 {
@@ -54,14 +71,18 @@ public sealed class RiskEscalationQueueService
     private readonly ConcurrentQueue<string> _entryOrder = new();
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<RiskEscalationQueueService> _logger;
+    private readonly RiskEscalationQueueOptions _options;
     private readonly Lock _resolveLock = new();
 
     public RiskEscalationQueueService(
         ILogger<RiskEscalationQueueService> logger,
-        ExecutionAuditTrailService? auditTrail = null)
+        ExecutionAuditTrailService? auditTrail = null,
+        RiskEscalationQueueOptions? options = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _auditTrail = auditTrail;
+        _options = options ?? RiskEscalationQueueOptions.Default;
+        LoadSnapshot();
     }
 
     /// <summary>
@@ -88,17 +109,20 @@ public sealed class RiskEscalationQueueService
             ParkedAt: DateTimeOffset.UtcNow,
             Status: RiskEscalationStatus.PendingApproval);
 
-        _entries[entry.EscalationId] = entry;
-        _entryOrder.Enqueue(entry.EscalationId);
-        TrimRetainedEntries();
+        lock (_resolveLock)
+        {
+            _entries[entry.EscalationId] = entry;
+            _entryOrder.Enqueue(entry.EscalationId);
+            TrimRetainedEntries();
+            PersistSnapshotLocked();
+        }
 
+        // Order details stay out of the log; the audit entry and the persisted queue
+        // snapshot retain the full context under governed storage.
         _logger.LogWarning(
-            "Order for {Symbol} ({Side} {Quantity}) parked for governed approval by rule {RuleName}: {Reason}",
-            LogSanitizer.Sanitize(request.Symbol),
-            request.Side,
-            request.Quantity,
-            ruleName ?? "unknown",
-            LogSanitizer.Sanitize(entry.Reason));
+            "Escalation {EscalationId} parked for governed approval by rule {RuleName}",
+            entry.EscalationId,
+            ruleName ?? "unknown");
 
         RecordAudit(
             action: "OrderParkedForApproval",
@@ -145,8 +169,10 @@ public sealed class RiskEscalationQueueService
     /// <summary>
     /// Consumes a one-shot governed approval carried on <paramref name="request"/> metadata.
     /// Returns <see langword="true"/> only when the token references an approved, unreleased
-    /// entry whose order fingerprint (symbol, side, type, quantity, limit price) matches the
-    /// resubmitted order; the entry then transitions to <see cref="RiskEscalationStatus.Released"/>.
+    /// entry whose full order fingerprint matches the resubmitted order; the entry then
+    /// transitions to <see cref="RiskEscalationStatus.Released"/>. Consumption is
+    /// independent of whether the current evaluation still escalates, so an armed approval
+    /// is always retired by the release it authorized.
     /// </summary>
     public bool TryConsumeApproval(OrderRequest request)
     {
@@ -170,9 +196,8 @@ public sealed class RiskEscalationQueueService
             if (!FingerprintMatches(entry.Request, request))
             {
                 _logger.LogWarning(
-                    "Governed approval {EscalationId} rejected: resubmitted order for {Symbol} does not match the parked order fingerprint",
-                    LogSanitizer.Sanitize(escalationId),
-                    LogSanitizer.Sanitize(request.Symbol));
+                    "Governed approval {EscalationId} rejected: the resubmitted order does not match the parked order fingerprint",
+                    entry.EscalationId);
                 return false;
             }
 
@@ -182,6 +207,7 @@ public sealed class RiskEscalationQueueService
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = released;
+            PersistSnapshotLocked();
 
             RecordAudit(
                 action: "ParkedOrderReleased",
@@ -218,15 +244,14 @@ public sealed class RiskEscalationQueueService
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = resolved;
+            PersistSnapshotLocked();
 
             var approved = status == RiskEscalationStatus.Approved;
             _logger.LogInformation(
-                "Risk escalation {EscalationId} for {Symbol} {Outcome} by {Actor}: {Reason}",
-                LogSanitizer.Sanitize(escalationId),
-                LogSanitizer.Sanitize(entry.Request.Symbol),
+                "Risk escalation {EscalationId} {Outcome} by {Actor}",
+                resolved.EscalationId,
                 approved ? "approved" : "denied",
-                LogSanitizer.Sanitize(actor),
-                LogSanitizer.Sanitize(reason ?? "no reason supplied"));
+                LogSanitizer.Sanitize(actor));
 
             RecordAudit(
                 action: approved ? "ParkedOrderApproved" : "ParkedOrderDenied",
@@ -240,12 +265,36 @@ public sealed class RiskEscalationQueueService
         }
     }
 
+    /// <summary>
+    /// Compares every routing- and payoff-relevant field of the parked order against the
+    /// resubmission, so an approval cannot release a stop, trailing, time-in-force,
+    /// account, strategy, option, or leg variation the risk desk never reviewed.
+    /// </summary>
     private static bool FingerprintMatches(OrderRequest parked, OrderRequest resubmitted) =>
         string.Equals(parked.Symbol, resubmitted.Symbol, StringComparison.OrdinalIgnoreCase) &&
         parked.Side == resubmitted.Side &&
         parked.Type == resubmitted.Type &&
         parked.Quantity == resubmitted.Quantity &&
-        parked.LimitPrice == resubmitted.LimitPrice;
+        parked.LimitPrice == resubmitted.LimitPrice &&
+        parked.StopPrice == resubmitted.StopPrice &&
+        parked.TrailPrice == resubmitted.TrailPrice &&
+        parked.TrailPercent == resubmitted.TrailPercent &&
+        parked.TimeInForce == resubmitted.TimeInForce &&
+        parked.FundAccountId == resubmitted.FundAccountId &&
+        string.Equals(parked.StrategyId, resubmitted.StrategyId, StringComparison.Ordinal) &&
+        parked.PositionIntent == resubmitted.PositionIntent &&
+        Equals(parked.OptionContract, resubmitted.OptionContract) &&
+        LegsMatch(parked.Legs, resubmitted.Legs);
+
+    private static bool LegsMatch(IReadOnlyList<OrderLeg>? parked, IReadOnlyList<OrderLeg>? resubmitted)
+    {
+        if (parked is null || parked.Count == 0)
+        {
+            return resubmitted is null || resubmitted.Count == 0;
+        }
+
+        return resubmitted is not null && parked.SequenceEqual(resubmitted);
+    }
 
     private void TrimRetainedEntries()
     {
@@ -261,6 +310,62 @@ public sealed class RiskEscalationQueueService
             }
 
             _entries.TryRemove(oldestId, out _);
+        }
+    }
+
+    private void PersistSnapshotLocked()
+    {
+        try
+        {
+            var snapshot = new RiskEscalationSnapshot(
+                _entries.Values.OrderBy(static entry => entry.ParkedAt).ToArray());
+            var payload = JsonSerializer.Serialize(snapshot, ExecutionJsonContext.Default.RiskEscalationSnapshot);
+            AtomicFileWriter.Write(_options.SnapshotPath, payload);
+        }
+        catch (Exception exception)
+        {
+            // The in-memory transition already happened and is audited; a persistence
+            // failure must not fail the pre-trade path or an operator decision.
+            _logger.LogError(
+                exception,
+                "Failed to persist risk escalation queue snapshot to {SnapshotPath}",
+                _options.SnapshotPath);
+        }
+    }
+
+    private void LoadSnapshot()
+    {
+        try
+        {
+            if (!File.Exists(_options.SnapshotPath))
+            {
+                return;
+            }
+
+            var payload = File.ReadAllText(_options.SnapshotPath);
+            var snapshot = JsonSerializer.Deserialize(payload, ExecutionJsonContext.Default.RiskEscalationSnapshot);
+            if (snapshot is null)
+            {
+                return;
+            }
+
+            foreach (var entry in snapshot.Entries.OrderBy(static entry => entry.ParkedAt))
+            {
+                if (string.IsNullOrWhiteSpace(entry.EscalationId) || entry.Request is null)
+                {
+                    continue;
+                }
+
+                _entries[entry.EscalationId] = entry;
+                _entryOrder.Enqueue(entry.EscalationId);
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Failed to load risk escalation queue snapshot from {SnapshotPath}; starting empty.",
+                _options.SnapshotPath);
         }
     }
 
@@ -283,7 +388,7 @@ public sealed class RiskEscalationQueueService
         }
 
         // Fire-and-forget with logging: audit durability must not block or fail the
-        // pre-trade path; the queue entry itself remains authoritative in-process.
+        // pre-trade path; the persisted queue snapshot remains authoritative in-process.
         _ = RecordAuditSafelyAsync(action, outcome, entry, message, metadata);
     }
 

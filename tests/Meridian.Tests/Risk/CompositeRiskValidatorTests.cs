@@ -144,7 +144,7 @@ public sealed class CompositeRiskValidatorTests
     [Fact]
     public async Task ValidateOrderAsync_EscalationWithQueue_ParksOrderForGovernedApproval()
     {
-        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var queue = CreateQueue();
         var validator = new CompositeRiskValidator(
             [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
             NullLogger<CompositeRiskValidator>.Instance,
@@ -161,7 +161,7 @@ public sealed class CompositeRiskValidatorTests
     [Fact]
     public async Task ValidateOrderAsync_EscalateSeverityRule_ParksEvenWithPlainRejection()
     {
-        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var queue = CreateQueue();
         var validator = new CompositeRiskValidator(
             [new StubRiskRule("desk-review", RiskValidationResult.Rejected("needs desk review"), severity: RiskRuleSeverity.Escalate)],
             NullLogger<CompositeRiskValidator>.Instance,
@@ -189,7 +189,7 @@ public sealed class CompositeRiskValidatorTests
     [Fact]
     public async Task ValidateOrderAsync_ApprovedEscalation_ReleasesOrderThroughRemainingRules()
     {
-        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var queue = CreateQueue();
         var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
         var downstream = new StubRiskRule("downstream", RiskValidationResult.Approved());
         var validator = new CompositeRiskValidator(
@@ -219,9 +219,70 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_ApprovalRetiredEvenWhenRuleNoLongerEscalates()
+    {
+        // Park under a tight threshold, approve, then relax the threshold so the rule
+        // approves outright: the armed token must still be retired by the release it
+        // authorized, never surviving for replay after thresholds tighten again.
+        var queue = CreateQueue();
+        var escalating = new ThresholdStubRule("order-notional");
+        var validator = new CompositeRiskValidator(
+            [escalating],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        parked.RequiresApproval.Should().BeTrue();
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+
+        escalating.Escalates = false;
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        };
+        var released = await validator.ValidateOrderAsync(resubmission);
+
+        released.IsApproved.Should().BeTrue();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Released,
+            "the token is consumed up front, independent of whether the evaluation still escalates");
+
+        // Tighten again: the retired token cannot bypass a later identical order.
+        escalating.Escalates = true;
+        var replay = await validator.ValidateOrderAsync(resubmission);
+        replay.RequiresApproval.Should().BeTrue("a released token never authorizes a second order");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationRetainsSubmittingActorForSegregation()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var order = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "trade-desk-1"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(order);
+
+        queue.TryGet(result.EscalationId!)!.Actor.Should().Be(
+            "trade-desk-1",
+            "the queue needs the initiator identity to refuse self-approval");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_ApprovedEscalation_DoesNotBypassLaterHardRules()
     {
-        var queue = new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance);
+        var queue = CreateQueue();
         var escalating = new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"));
         var hardStop = new StubRiskRule("position-limit", RiskValidationResult.Rejected("position limit exceeded"));
         var validator = new CompositeRiskValidator(
@@ -245,6 +306,11 @@ public sealed class CompositeRiskValidatorTests
         released.RejectReason.Should().Contain("position limit");
     }
 
+    private static RiskEscalationQueueService CreateQueue() => new(
+        NullLogger<RiskEscalationQueueService>.Instance,
+        options: new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+
     private static ExecutionOperatorControlService CreateOperatorControls() => new(
         new ExecutionOperatorControlOptions(
             Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"controls-{Guid.NewGuid():N}")),
@@ -257,6 +323,18 @@ public sealed class CompositeRiskValidatorTests
         Type = OrderType.Market,
         Quantity = 10m,
     };
+
+    private sealed class ThresholdStubRule(string ruleName) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public bool Escalates { get; set; } = true;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(Escalates
+                ? RiskValidationResult.Escalated("above governed band")
+                : RiskValidationResult.Approved());
+    }
 
     private sealed class StubRiskRule(
         string ruleName,

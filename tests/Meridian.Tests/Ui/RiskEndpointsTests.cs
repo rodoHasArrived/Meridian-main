@@ -111,7 +111,10 @@ public sealed class RiskEndpointsTests
                 NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
                 options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
             services.AddSingleton<RiskRuleRuntimeService>();
-            services.AddSingleton(new RiskEscalationQueueService(NullLogger<RiskEscalationQueueService>.Instance));
+            services.AddSingleton(new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"))));
             services.AddSingleton<Meridian.Risk.IPortfolioExposureProvider>(new StaticExposureProvider());
             services.AddSingleton<IRiskValidator>(sp =>
             {
@@ -167,10 +170,19 @@ public sealed class RiskEndpointsTests
         escalations.Should().ContainSingle(entry => entry.Status == "PendingApproval");
         var escalationId = escalations![0].EscalationId;
 
-        // Approve with release: the order goes back through the risk gate and routes.
-        var approveResponse = await client.PostAsync(
+        // Segregation of duties: the submitting operator cannot approve their own escalation.
+        var selfApprove = await client.PostAsync(
             $"/api/risk/escalations/{escalationId}/approve",
-            JsonContent(new { reason = "cleared with the desk" }));
+            JsonContent(new { reason = "self-serve" }));
+        selfApprove.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        // Approve with release as a distinct operator: the order goes back through the risk gate and routes.
+        var approveRequest = new HttpRequestMessage(HttpMethod.Post, $"/api/risk/escalations/{escalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "cleared with the desk" })
+        };
+        approveRequest.Headers.Add("X-Test-User", "risk-desk-supervisor");
+        var approveResponse = await client.SendAsync(approveRequest);
         approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var approval = JsonSerializer.Deserialize<RiskEscalationApprovalResponse>(
             await approveResponse.Content.ReadAsStringAsync(), JsonOptions());
@@ -178,7 +190,7 @@ public sealed class RiskEndpointsTests
         approval.ReleaseResult.Should().NotBeNull();
         approval.ReleaseResult!.Success.Should().BeTrue("the consumed approval releases the order past the escalation band");
 
-        // Denying an already-resolved escalation 404s.
+        // Denying an already-resolved escalation is refused (the queue only denies pending entries).
         var denyAfter = await client.PostAsync($"/api/risk/escalations/{escalationId}/deny", JsonContent(new { }));
         denyAfter.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -345,7 +357,11 @@ public sealed class RiskEndpointsTests
         var app = builder.Build();
         app.Use((context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "risk-operator";
+            var user = context.Request.Headers.TryGetValue("X-Test-User", out var configured) &&
+                !string.IsNullOrWhiteSpace(configured)
+                    ? configured.ToString()
+                    : "risk-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = user;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageOrders;
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "risk-test-company";
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "risk-test-tenant";

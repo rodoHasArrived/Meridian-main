@@ -438,7 +438,11 @@ public sealed class RiskRuleRuntimeService
         var snapshot = controls?.GetSnapshot();
         var portfolio = Resolve<IPortfolioState>();
 
+        // Utilization uses the same limit resolution as enforcement: a symbol-specific
+        // limit overrides the default for that symbol, and the meter reports the most
+        // constrained position rather than the largest raw quantity.
         var maxAbsoluteQuantity = 0m;
+        decimal? maxUtilization = null;
         if (portfolio is not null)
         {
             foreach (var position in portfolio.Positions.Values)
@@ -447,6 +451,16 @@ public sealed class RiskRuleRuntimeService
                 if (quantity > maxAbsoluteQuantity)
                 {
                     maxAbsoluteQuantity = quantity;
+                }
+
+                decimal? symbolLimit = snapshot is not null &&
+                    snapshot.SymbolPositionLimits.TryGetValue(position.Symbol, out var configured)
+                        ? configured
+                        : snapshot?.DefaultMaxPositionSize;
+                var utilizationForPosition = ComputeUtilization(quantity, symbolLimit);
+                if (utilizationForPosition is { } value && (maxUtilization is null || value > maxUtilization))
+                {
+                    maxUtilization = value;
                 }
             }
         }
@@ -477,7 +491,7 @@ public sealed class RiskRuleRuntimeService
             CurrentValue: maxAbsoluteQuantity.ToString("G29", CultureInfo.InvariantCulture),
             AsOf: asOf,
             RecentViolations: violations,
-            UtilizationPercent: ComputeUtilization(maxAbsoluteQuantity, threshold),
+            UtilizationPercent: maxUtilization ?? ComputeUtilization(maxAbsoluteQuantity, threshold),
             Severity: "Error");
     }
 
@@ -668,7 +682,11 @@ public sealed class RiskRuleRuntimeService
     {
         var maxNotional = MaxOrderNotional;
         var escalateAt = EscalateOrderNotional;
-        var pendingEscalations = Resolve<RiskEscalationQueueService>()?.GetPending() ?? [];
+        // The queue is shared by every escalate-capable rule; this guardrail reports only
+        // its own parked orders so host-contributed escalations are not misattributed.
+        var pendingEscalations = (Resolve<RiskEscalationQueueService>()?.GetPending() ?? [])
+            .Where(static entry => string.Equals(entry.RuleName, "OrderNotional", StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "notional");
         var configured = maxNotional.HasValue || escalateAt.HasValue;

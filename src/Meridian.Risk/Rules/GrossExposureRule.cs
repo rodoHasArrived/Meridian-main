@@ -1,5 +1,4 @@
 using Meridian.Execution;
-using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -45,12 +44,15 @@ public sealed class GrossExposureRule : IRiskRule
         }
 
         var snapshot = _exposureProvider.GetSnapshot();
+        var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
         var context = Interop.RiskInterop.CreatePortfolioContext(
             request,
             portfolioExposure: snapshot.GrossExposure,
-            symbolExposure: snapshot.GetSymbolExposure(request.Symbol).GrossExposure,
+            symbolExposure: symbolExposure.GrossExposure,
+            signedSymbolExposure: symbolExposure.NetNotional,
             portfolioValue: snapshot.PortfolioValue,
             orderNotional: OrderNotionalResolver.Resolve(request, snapshot),
+            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot),
             maxGrossExposure: maxGrossExposure,
             maxSymbolConcentrationPercent: default,
             maxOrderNotional: default,
@@ -60,7 +62,7 @@ public sealed class GrossExposureRule : IRiskRule
         if (!decision.Approved)
         {
             var reason = decision.Reasons.FirstOrDefault() ?? "Gross exposure limit exceeded.";
-            _logger.LogWarning("Gross exposure rule rejected order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
+            _logger.LogWarning("Gross exposure rule rejected the order; the projected book exceeds the configured ceiling");
             return Task.FromResult(RiskValidationResult.Rejected(reason));
         }
 

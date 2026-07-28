@@ -1,6 +1,5 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Logging;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
@@ -53,6 +52,17 @@ public sealed class CompositeRiskValidator : IRiskValidator
     {
         List<string>? warnings = null;
 
+        // Consume a carried governed-approval token up front, independent of whether the
+        // current evaluation still escalates: thresholds may have moved between parking
+        // and release, and an armed approval must always be retired by the release it
+        // authorized rather than surviving for replay against a later identical order.
+        var approvalReleased = _escalationQueue is not null && _escalationQueue.TryConsumeApproval(request);
+        if (approvalReleased)
+        {
+            _logger.LogInformation("Governed approval consumed; escalations are satisfied for this release");
+            (warnings ??= []).Add("Escalation released by governed approval.");
+        }
+
         foreach (var rule in _rules)
         {
             ct.ThrowIfCancellationRequested();
@@ -77,15 +87,13 @@ public sealed class CompositeRiskValidator : IRiskValidator
             // severity decides the outcome of the failure.
             if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
             {
-                // A resubmission carrying a valid one-shot governed approval passes this
-                // escalation; later rules still run so hard limits stay enforced.
-                if (_escalationQueue is not null && _escalationQueue.TryConsumeApproval(request))
+                // A release under a consumed approval passes escalations; later rules
+                // still run so hard limits stay enforced.
+                if (approvalReleased)
                 {
                     _logger.LogInformation(
-                        "Escalation from rule {RuleName} for {Symbol} released by governed approval",
-                        rule.RuleName,
-                        LogSanitizer.Sanitize(request.Symbol));
-                    (warnings ??= []).Add($"{rule.RuleName}: escalation released by governed approval.");
+                        "Escalation from rule {RuleName} released by governed approval",
+                        rule.RuleName);
                     continue;
                 }
 
@@ -96,31 +104,27 @@ public sealed class CompositeRiskValidator : IRiskValidator
             {
                 case RiskRuleSeverity.Info:
                 case RiskRuleSeverity.Warning:
+                    // Order details stay out of the log: the flag is carried on the result
+                    // and the OMS audit trail retains full context.
                     _logger.LogWarning(
-                        "Risk rule {RuleName} ({Severity}) flagged order for {Symbol} without blocking: {Reason}",
+                        "Risk rule {RuleName} ({Severity}) flagged the order without blocking",
                         rule.RuleName,
-                        rule.Severity,
-                        LogSanitizer.Sanitize(request.Symbol),
-                        LogSanitizer.Sanitize(reason));
+                        rule.Severity);
                     (warnings ??= []).Add($"{rule.RuleName}: {reason}");
                     continue;
 
                 case RiskRuleSeverity.Critical:
                     _logger.LogError(
-                        "Risk rule {RuleName} (Critical) rejected order for {Symbol}: {Reason}",
-                        rule.RuleName,
-                        LogSanitizer.Sanitize(request.Symbol),
-                        LogSanitizer.Sanitize(reason));
+                        "Risk rule {RuleName} (Critical) rejected the order and is tripping the circuit breaker",
+                        rule.RuleName);
                     await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
                     return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
 
                 default:
                     _logger.LogWarning(
-                        "Risk rule {RuleName} ({Severity}) rejected order for {Symbol}: {Reason}",
+                        "Risk rule {RuleName} ({Severity}) rejected the order",
                         rule.RuleName,
-                        rule.Severity,
-                        LogSanitizer.Sanitize(request.Symbol),
-                        LogSanitizer.Sanitize(reason));
+                        rule.Severity);
                     return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
             }
         }
@@ -138,24 +142,29 @@ public sealed class CompositeRiskValidator : IRiskValidator
         {
             // No governed approval queue in this composition: fail closed as a plain rejection.
             _logger.LogWarning(
-                "Risk rule {RuleName} escalated order for {Symbol} but no approval queue is configured; rejecting: {Reason}",
-                rule.RuleName,
-                LogSanitizer.Sanitize(request.Symbol),
-                LogSanitizer.Sanitize(reason));
+                "Risk rule {RuleName} escalated the order but no approval queue is configured; rejecting",
+                rule.RuleName);
             return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
         }
+
+        // Retain the trusted submitting actor (stamped into metadata by the execution
+        // endpoint) so segregation-of-duties checks can refuse self-approval later.
+        string? actor = null;
+        request.Metadata?.TryGetValue("actor", out actor);
+        string? correlationId = null;
+        request.Metadata?.TryGetValue("correlationId", out correlationId);
 
         var entry = _escalationQueue.Park(
             request,
             reason,
             ruleName: rule.RuleName,
-            runId: request.StrategyId);
+            actor: actor,
+            runId: request.StrategyId,
+            correlationId: correlationId);
         _logger.LogWarning(
-            "Risk rule {RuleName} parked order for {Symbol} for governed approval ({EscalationId}): {Reason}",
+            "Risk rule {RuleName} parked the order for governed approval ({EscalationId})",
             rule.RuleName,
-            LogSanitizer.Sanitize(request.Symbol),
-            entry.EscalationId,
-            LogSanitizer.Sanitize(reason));
+            entry.EscalationId);
         return WithWarnings(
             RiskValidationResult.Escalated(
                 $"Parked for governed approval ({entry.EscalationId}): {reason}",

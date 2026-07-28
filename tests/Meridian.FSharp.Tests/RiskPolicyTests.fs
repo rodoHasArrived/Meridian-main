@@ -91,17 +91,22 @@ let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoAppr
 
     Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
-let private createPortfolioContext order portfolioExposure symbolExposure portfolioValue orderNotional maxGross maxConcentration maxNotional escalateNotional =
+let private createPortfolioContextSigned order portfolioExposure symbolExposure signedSymbolExposure portfolioValue orderNotional signedOrderNotional maxGross maxConcentration maxNotional escalateNotional =
     RiskInterop.CreatePortfolioContext(
         order,
         portfolioExposure,
         symbolExposure,
+        signedSymbolExposure,
         portfolioValue,
         orderNotional,
+        signedOrderNotional,
         maxGross,
         maxConcentration,
         maxNotional,
         escalateNotional)
+
+let private createPortfolioContext order portfolioExposure symbolExposure portfolioValue orderNotional maxGross maxConcentration maxNotional escalateNotional =
+    createPortfolioContextSigned order portfolioExposure symbolExposure (Nullable()) portfolioValue orderNotional (Nullable()) maxGross maxConcentration maxNotional escalateNotional
 
 [<Fact>]
 let ``Gross exposure rejects projected breach of the ceiling`` () =
@@ -119,6 +124,23 @@ let ``Gross exposure approves when unconfigured`` () =
     result.Approved |> should equal true
 
 [<Fact>]
+let ``Gross exposure approves a de-risking sell near the ceiling`` () =
+    // 95k gross, all in this symbol long; selling 50k reduces projected gross to 45k.
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Sell 500m) (Nullable 95_000m) (Nullable 95_000m) (Nullable 95_000m) (Nullable()) (Nullable 50_000m) (Nullable -50_000m) (Nullable 100_000m) (Nullable()) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateGrossExposure(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Gross exposure handles an order crossing through zero`` () =
+    // Long 30k in symbol; selling 80k notional crosses to short 50k: projected gross
+    // = 60k existing-other + 50k = 110k > 100k ceiling.
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Sell 800m) (Nullable 90_000m) (Nullable 30_000m) (Nullable 30_000m) (Nullable()) (Nullable 80_000m) (Nullable -80_000m) (Nullable 100_000m) (Nullable()) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateGrossExposure(ctx)
+
+    result.Approved |> should equal false
+
+[<Fact>]
 let ``Symbol concentration rejects breach of the portfolio-value cap`` () =
     // 20k existing + 10k order = 30% of a 100k portfolio > 25% cap.
     let ctx = createPortfolioContext (createOrder OrderSide.Buy 100m) (Nullable 20_000m) (Nullable 20_000m) (Nullable 100_000m) (Nullable 10_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
@@ -133,6 +155,23 @@ let ``Symbol concentration approves without a positive portfolio value`` () =
     let result = RiskInterop.EvaluateSymbolConcentration(ctx)
 
     result.Approved |> should equal true
+
+[<Fact>]
+let ``Symbol concentration approves a reducing sell above the cap`` () =
+    // 30% long concentration; selling 5% of portfolio value projects 25% — not a breach
+    // of the 28% cap even though the position already exceeds it.
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Sell 50m) (Nullable 30_000m) (Nullable 30_000m) (Nullable 30_000m) (Nullable 100_000m) (Nullable 5_000m) (Nullable -5_000m) (Nullable()) (Nullable 28m) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateSymbolConcentration(ctx)
+
+    result.Approved |> should equal true
+
+[<Fact>]
+let ``Symbol concentration rejects a short crossing past the cap`` () =
+    // Net short 10k; selling another 20k notional projects |−30k| = 30% > 25% cap.
+    let ctx = createPortfolioContextSigned (createOrder OrderSide.Sell 200m) (Nullable 10_000m) (Nullable 10_000m) (Nullable -10_000m) (Nullable 100_000m) (Nullable 20_000m) (Nullable -20_000m) (Nullable()) (Nullable 25m) (Nullable()) (Nullable())
+    let result = RiskInterop.EvaluateSymbolConcentration(ctx)
+
+    result.Approved |> should equal false
 
 [<Fact>]
 let ``Order notional rejects above the hard ceiling`` () =

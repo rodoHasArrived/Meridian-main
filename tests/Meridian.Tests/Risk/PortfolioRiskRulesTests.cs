@@ -81,6 +81,35 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
+    public async Task GrossExposure_DeRiskingSellNearCeiling_Approves()
+    {
+        // Entire 95k book is this symbol long; selling 500 x 100 = 50k reduces the
+        // projection to 45k, well under the 100k ceiling.
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 95_000m, symbols: new SymbolExposure("AAPL", 95_000m, 950m, 100m, 95_000m)),
+            () => 100_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(quantity: 500m, limitPrice: 100m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeTrue("a de-risking order reduces projected gross exposure");
+    }
+
+    [Fact]
+    public async Task Concentration_ReducingSellAboveCap_Approves()
+    {
+        // 30% concentration already; selling 5% projects 25%, inside the 28% cap.
+        var rule = new SymbolConcentrationRule(
+            Provider(grossExposure: 30_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 30_000m, 300m, 100m, 30_000m)),
+            () => 28m,
+            NullLogger<SymbolConcentrationRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(quantity: 50m, limitPrice: 100m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeTrue("an order that reduces concentration must not be rejected by the cap");
+    }
+
+    [Fact]
     public void GrossExposure_DeclaresCriticalSeverity()
     {
         var rule = new GrossExposureRule(
@@ -97,7 +126,7 @@ public sealed class PortfolioRiskRulesTests
     public async Task Concentration_WithoutConfiguredCap_Approves()
     {
         var rule = new SymbolConcentrationRule(
-            Provider(grossExposure: 90_000m, symbols: new SymbolExposure("AAPL", 90_000m, 900m, 100m)),
+            Provider(grossExposure: 90_000m, symbols: new SymbolExposure("AAPL", 90_000m, 900m, 100m, 90_000m)),
             () => null,
             NullLogger<SymbolConcentrationRule>.Instance);
 
@@ -111,7 +140,7 @@ public sealed class PortfolioRiskRulesTests
     {
         // AAPL already 20% of a 100k portfolio; order adds 10k more → 30% > 25% cap.
         var rule = new SymbolConcentrationRule(
-            Provider(grossExposure: 20_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 20_000m, 200m, 100m)),
+            Provider(grossExposure: 20_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 20_000m, 200m, 100m, 20_000m)),
             () => 25m,
             NullLogger<SymbolConcentrationRule>.Instance);
 
@@ -126,7 +155,7 @@ public sealed class PortfolioRiskRulesTests
     {
         // Projected 21% of portfolio value ≥ 80% of the 25% cap → approved + warning flag.
         var rule = new SymbolConcentrationRule(
-            Provider(grossExposure: 20_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 20_000m, 200m, 100m)),
+            Provider(grossExposure: 20_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 20_000m, 200m, 100m, 20_000m)),
             () => 25m,
             NullLogger<SymbolConcentrationRule>.Instance);
 
@@ -140,7 +169,7 @@ public sealed class PortfolioRiskRulesTests
     public async Task Concentration_WellUnderCap_ApprovesCleanly()
     {
         var rule = new SymbolConcentrationRule(
-            Provider(grossExposure: 5_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 5_000m, 50m, 100m)),
+            Provider(grossExposure: 5_000m, portfolioValue: 100_000m, symbols: new SymbolExposure("AAPL", 5_000m, 50m, 100m, 5_000m)),
             () => 25m,
             NullLogger<SymbolConcentrationRule>.Instance);
 
@@ -230,7 +259,7 @@ public sealed class PortfolioRiskRulesTests
     public async Task OrderNotional_MarketOrderWithKnownSymbol_UsesReferencePrice()
     {
         var rule = new OrderNotionalRule(
-            Provider(symbols: new SymbolExposure("AAPL", 10_000m, 100m, 200m)),
+            Provider(symbols: new SymbolExposure("AAPL", 10_000m, 100m, 200m, 10_000m)),
             () => 10_000m,
             () => null,
             NullLogger<OrderNotionalRule>.Instance);

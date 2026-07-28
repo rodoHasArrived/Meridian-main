@@ -1,5 +1,4 @@
 using Meridian.Execution;
-using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -49,12 +48,15 @@ public sealed class OrderNotionalRule : IRiskRule
         }
 
         var snapshot = _exposureProvider.GetSnapshot();
+        var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
         var context = Interop.RiskInterop.CreatePortfolioContext(
             request,
             portfolioExposure: snapshot.GrossExposure,
-            symbolExposure: snapshot.GetSymbolExposure(request.Symbol).GrossExposure,
+            symbolExposure: symbolExposure.GrossExposure,
+            signedSymbolExposure: symbolExposure.NetNotional,
             portfolioValue: snapshot.PortfolioValue,
             orderNotional: OrderNotionalResolver.Resolve(request, snapshot),
+            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot),
             maxGrossExposure: default,
             maxSymbolConcentrationPercent: default,
             maxOrderNotional: maxNotional,
@@ -69,11 +71,11 @@ public sealed class OrderNotionalRule : IRiskRule
         var reason = decision.Reasons.FirstOrDefault() ?? "Order notional limit breached.";
         if (string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogWarning("Order notional rule escalated order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
+            _logger.LogWarning("Order notional rule escalated the order into the governed-approval band");
             return Task.FromResult(RiskValidationResult.Escalated(reason));
         }
 
-        _logger.LogWarning("Order notional rule rejected order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
+        _logger.LogWarning("Order notional rule rejected the order; the notional exceeds the configured ceiling");
         return Task.FromResult(RiskValidationResult.Rejected(reason));
     }
 }

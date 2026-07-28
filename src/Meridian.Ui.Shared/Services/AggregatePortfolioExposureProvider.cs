@@ -38,8 +38,20 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
 
         foreach (var position in positions)
         {
-            var symbolGross = (position.LongQuantity + position.ShortQuantity) * position.WeightedAverageCost;
-            var symbolNet = (position.LongQuantity - position.ShortQuantity) * position.WeightedAverageCost;
+            // Aggregate per contribution: the netted weighted-average cost is meaningless for
+            // offsetting long/short lots across runs (it can even go negative), so gross must
+            // sum each contribution's absolute quantity at its own positive cost basis.
+            var symbolGross = 0m;
+            var symbolNet = 0m;
+            var absoluteQuantity = 0m;
+            foreach (var contribution in position.Contributions)
+            {
+                var price = Math.Abs(contribution.CostBasis);
+                symbolGross += Math.Abs(contribution.Quantity) * price;
+                symbolNet += contribution.Quantity * price;
+                absoluteQuantity += Math.Abs(contribution.Quantity);
+            }
+
             grossExposure += symbolGross;
             netExposure += symbolNet;
 
@@ -47,7 +59,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 Symbol: position.Symbol,
                 GrossExposure: symbolGross,
                 NetQuantity: position.TotalQuantity,
-                ReferencePrice: position.WeightedAverageCost);
+                ReferencePrice: absoluteQuantity > 0m ? symbolGross / absoluteQuantity : 0m,
+                NetNotional: symbolNet);
         }
 
         var portfolioValue = _portfolioState?.PortfolioValue ?? 0m;
