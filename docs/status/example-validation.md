@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 956 |
-| Valid | 543 |
+| Total code blocks | 957 |
+| Valid | 544 |
 | Invalid | 0 |
 | Skipped | 413 |
 
@@ -24,7 +24,7 @@
 | `csharp` | 297 | 297 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
-| `json` | 62 | 62 | 0 | 0 |
+| `json` | 63 | 63 | 0 | 0 |
 | `jsonc` | 2 | 2 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
@@ -121,6 +121,7 @@ No invalid code examples found.
 | `docs/integrations/lean-integration.md` | 17 |
 | `docs/operators/provider-backfill-operations.md` | 1 |
 | `docs/plans/security-master-passport-workbench.md` | 4 |
+| `docs/product/functionality-deepening-brainstorm-2026-07.md` | 1 |
 | `docs/product/portfolio-cash-ladder-blueprint-2026-07.md` | 6 |
 | `docs/product/product-roadmap-priorities-2026-07.md` | 1 |
 | `docs/product/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |

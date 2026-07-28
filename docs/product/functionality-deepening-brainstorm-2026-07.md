@@ -513,3 +513,17 @@ exactly the proprietary training data a future agent needs, accumulated on the c
 infrastructure rather than a vendor's. Databento/Polygon have no answer to any of this layer;
 the front-to-back moat (collection → books → close) is defended precisely by the connective
 depth these ideas add.
+
+---
+
+## Appendix: Session Ledger Entry
+
+The brainstorm skill's session ledger lives at
+`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`, which sits outside the `PR1`
+docs phase scope enforced on this pull request by the roadmap-source-docs gate. To keep the
+dedup record without widening the phase, the session's ledger line is preserved here; append it
+to the ledger verbatim from a change that is not phase-constrained:
+
+```json
+{"session_date": "2026-07-28", "mode": "Open Exploration (deepening-constrained)", "themes": ["portfolio-aware risk engine (exposure aggregation, severity semantics, Escalate-to-approval routing, honest guardrail rail)", "unified alerting spine (SLO evaluation loop, dispatcher DI wiring, dual-stack merge, shared alert inbox)", "promotion contract monitor (wire dead PromotionCriteria knobs, live-vs-paper drift, auto-demotion records)", "reconciliation matching floor (best-match assignment, split matching, IAccountingCalendar implementation, FX contract unification)", "break intelligence (recurrence fingerprints, operator-decision match-suggestion learning, tolerance amendment proposals)", "approval matrix enforcement binding (route filter, governed policy self-changes, delegation and escalation timers)", "period evidence-completeness certificate (close data gate over gaps, statements, recon freshness, evidence linkage)", "statement coverage calendar with missing-statement chase", "closed-loop backfill (market-calendar sweeps, durable queue, post-remediation verification)", "honest marks (mark-source provenance, stale-mark flagging on position surfaces)", "order lifecycle state machine (legal transitions, event history, stale-state detection)"], "ideas_count": 11, "document_updated": "docs/product/functionality-deepening-brainstorm-2026-07.md", "notes": "Deepening-of-existing-functionality session grounded in a fresh 8-subsystem code-depth survey. Central finding: 'declared but dead' seams. All 11 ideas positioned to compose with (not duplicate) the W9 slate. Avoided all 15 prior-session theme sets plus data-provider-accounting brainstorm lanes, adversarial-review items, and cash-ladder blueprint. Platform bets: alerting spine and approval-matrix enforcement. Sequencing: truth quick wins -> spine -> floors -> loops -> break intelligence."}
+```
