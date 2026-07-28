@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Ledger;
 using Xunit;
@@ -28,10 +29,13 @@ public sealed class LedgerTaxCharacterTests
     [InlineData("2024-02-28", "2025-03-01", true)]
     public void Classify_AppliesMoreThanOneYearRule(string acquired, string sold, bool expectLongTerm)
     {
-        var character = TaxCharacterRule.Classify(DateOnly.Parse(acquired), DateOnly.Parse(sold));
+        var character = TaxCharacterRule.Classify(ParseDate(acquired), ParseDate(sold));
 
         character.Should().Be(expectLongTerm ? TaxCharacter.LongTerm : TaxCharacter.ShortTerm);
     }
+
+    private static DateOnly ParseDate(string value)
+        => DateOnly.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     [Fact]
     public void Projection_ReportsShortTermCharacterAndHoldingPeriodDays()
