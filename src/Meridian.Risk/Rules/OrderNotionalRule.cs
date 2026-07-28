@@ -1,4 +1,5 @@
 using Meridian.Execution;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -68,11 +69,11 @@ public sealed class OrderNotionalRule : IRiskRule
         var reason = decision.Reasons.FirstOrDefault() ?? "Order notional limit breached.";
         if (string.Equals(decision.DecisionKind, "escalate", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogWarning("Order notional rule escalated order for {Symbol}: {Reason}", request.Symbol, reason);
+            _logger.LogWarning("Order notional rule escalated order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
             return Task.FromResult(RiskValidationResult.Escalated(reason));
         }
 
-        _logger.LogWarning("Order notional rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+        _logger.LogWarning("Order notional rule rejected order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
         return Task.FromResult(RiskValidationResult.Rejected(reason));
     }
 }

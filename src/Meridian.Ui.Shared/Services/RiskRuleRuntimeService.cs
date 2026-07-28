@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Execution;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
@@ -321,7 +322,7 @@ public sealed class RiskRuleRuntimeService
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: gross exposure ceiling {MaxGrossExposure}",
                     normalizedRule,
-                    actor,
+                    LogSanitizer.Sanitize(actor),
                     maxGrossExposure?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;
             case "SymbolConcentration":
@@ -339,7 +340,7 @@ public sealed class RiskRuleRuntimeService
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: concentration cap {MaxSymbolConcentrationPercent}%",
                     normalizedRule,
-                    actor,
+                    LogSanitizer.Sanitize(actor),
                     maxConcentration?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;
             case "OrderNotional":
@@ -374,7 +375,7 @@ public sealed class RiskRuleRuntimeService
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: notional ceiling {MaxOrderNotional}, escalation band {EscalateOrderNotional}",
                     normalizedRule,
-                    actor,
+                    LogSanitizer.Sanitize(actor),
                     maxOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured",
                     escalateOrderNotional?.ToString("G29", CultureInfo.InvariantCulture) ?? "unconfigured");
                 break;

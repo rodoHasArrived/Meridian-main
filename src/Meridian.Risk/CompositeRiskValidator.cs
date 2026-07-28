@@ -1,5 +1,6 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
@@ -83,7 +84,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     _logger.LogInformation(
                         "Escalation from rule {RuleName} for {Symbol} released by governed approval",
                         rule.RuleName,
-                        request.Symbol);
+                        LogSanitizer.Sanitize(request.Symbol));
                     (warnings ??= []).Add($"{rule.RuleName}: escalation released by governed approval.");
                     continue;
                 }
@@ -99,8 +100,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         "Risk rule {RuleName} ({Severity}) flagged order for {Symbol} without blocking: {Reason}",
                         rule.RuleName,
                         rule.Severity,
-                        request.Symbol,
-                        reason);
+                        LogSanitizer.Sanitize(request.Symbol),
+                        LogSanitizer.Sanitize(reason));
                     (warnings ??= []).Add($"{rule.RuleName}: {reason}");
                     continue;
 
@@ -108,8 +109,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     _logger.LogError(
                         "Risk rule {RuleName} (Critical) rejected order for {Symbol}: {Reason}",
                         rule.RuleName,
-                        request.Symbol,
-                        reason);
+                        LogSanitizer.Sanitize(request.Symbol),
+                        LogSanitizer.Sanitize(reason));
                     await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
                     return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
 
@@ -118,8 +119,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         "Risk rule {RuleName} ({Severity}) rejected order for {Symbol}: {Reason}",
                         rule.RuleName,
                         rule.Severity,
-                        request.Symbol,
-                        reason);
+                        LogSanitizer.Sanitize(request.Symbol),
+                        LogSanitizer.Sanitize(reason));
                     return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
             }
         }
@@ -139,8 +140,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
             _logger.LogWarning(
                 "Risk rule {RuleName} escalated order for {Symbol} but no approval queue is configured; rejecting: {Reason}",
                 rule.RuleName,
-                request.Symbol,
-                reason);
+                LogSanitizer.Sanitize(request.Symbol),
+                LogSanitizer.Sanitize(reason));
             return WithWarnings(RiskValidationResult.Rejected(reason), warnings);
         }
 
@@ -152,9 +153,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
         _logger.LogWarning(
             "Risk rule {RuleName} parked order for {Symbol} for governed approval ({EscalationId}): {Reason}",
             rule.RuleName,
-            request.Symbol,
+            LogSanitizer.Sanitize(request.Symbol),
             entry.EscalationId,
-            reason);
+            LogSanitizer.Sanitize(reason));
         return WithWarnings(
             RiskValidationResult.Escalated(
                 $"Parked for governed approval ({entry.EscalationId}): {reason}",

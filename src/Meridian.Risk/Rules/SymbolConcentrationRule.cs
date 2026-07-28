@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Execution;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
@@ -65,7 +66,7 @@ public sealed class SymbolConcentrationRule : IRiskRule
         if (!decision.Approved)
         {
             var reason = decision.Reasons.FirstOrDefault() ?? "Symbol concentration limit exceeded.";
-            _logger.LogWarning("Concentration rule rejected order for {Symbol}: {Reason}", request.Symbol, reason);
+            _logger.LogWarning("Concentration rule rejected order for {Symbol}: {Reason}", LogSanitizer.Sanitize(request.Symbol), LogSanitizer.Sanitize(reason));
             return Task.FromResult(RiskValidationResult.Rejected(reason));
         }
 

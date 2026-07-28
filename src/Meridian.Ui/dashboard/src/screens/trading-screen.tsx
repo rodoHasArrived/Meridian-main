@@ -11,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -67,7 +67,7 @@ import {
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, RiskGuardrail, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -78,37 +78,6 @@ const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
   Healthy: "text-success",
   Observe: "text-warning",
   Constrained: "text-danger"
-};
-
-// Status job: guardrail state drives the meter fill; state text and the percent value
-// always accompany the color so identity is never color-alone.
-const guardrailBarTone: Record<RiskGuardrail["state"], string> = {
-  Healthy: "bg-success",
-  Observe: "bg-warning",
-  Constrained: "bg-danger"
-};
-
-const guardrailStateTextTone: Record<RiskGuardrail["state"], string> = {
-  Healthy: "text-success",
-  Observe: "text-warning",
-  Constrained: "text-danger"
-};
-
-const guardrailRuleLabel: Record<string, string> = {
-  PositionLimit: "Position limit",
-  DrawdownCircuitBreaker: "Drawdown circuit breaker",
-  OrderRateThrottle: "Order rate throttle",
-  GrossExposure: "Gross exposure ceiling",
-  SymbolConcentration: "Single-name concentration",
-  OrderNotional: "Per-order notional"
-};
-
-const guardrailSeverityLabel: Record<RiskGuardrail["severity"], string> = {
-  Info: "flags",
-  Warning: "flags",
-  Error: "rejects",
-  Escalate: "parks for approval",
-  Critical: "trips breaker"
 };
 
 const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], string> = {
@@ -730,51 +699,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <AlertTriangle className="h-4 w-4" />
                 Active guardrails
               </div>
-              {data.risk.guardrails?.length ? (
-                <ul className="space-y-3" aria-label="Guardrail utilization">
-                  {data.risk.guardrails.map((guardrail) => (
-                    <li key={guardrail.ruleName} className="text-sm">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                        <span className="font-medium text-foreground">
-                          {guardrailRuleLabel[guardrail.ruleName] ?? guardrail.ruleName}
-                          <span className="ml-2 text-xs font-normal text-muted-foreground">
-                            {guardrailSeverityLabel[guardrail.severity] ?? guardrail.severity}
-                          </span>
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {guardrail.currentValue}
-                          {" / "}
-                          {guardrail.threshold}
-                          {" · "}
-                          <span className={cn("font-medium", guardrailStateTextTone[guardrail.state])}>
-                            {guardrail.utilizationPercent != null
-                              ? `${guardrail.utilizationPercent.toFixed(0)}% · ${guardrail.state}`
-                              : guardrail.state}
-                          </span>
-                        </span>
-                      </div>
-                      {guardrail.utilizationPercent != null ? (
-                        <Progress
-                          className="mt-1.5"
-                          value={Math.min(100, guardrail.utilizationPercent)}
-                          aria-label={`${guardrailRuleLabel[guardrail.ruleName] ?? guardrail.ruleName} utilization`}
-                          indicatorClassName={guardrailBarTone[guardrail.state]}
-                        />
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : data.risk.activeGuardrails.length ? (
-                <ul className="list-disc space-y-1 pl-6 text-sm text-foreground">
-                  {data.risk.activeGuardrails.map((guardrail) => (
-                    <li key={guardrail}>{guardrail}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Risk rule registry is unavailable; no live guardrail telemetry.
-                </p>
-              )}
+              <GuardrailPanelBody
+                guardrails={data.risk.guardrails}
+                activeGuardrails={data.risk.activeGuardrails}
+              />
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
               <div className="mb-2 flex items-center justify-between gap-3">

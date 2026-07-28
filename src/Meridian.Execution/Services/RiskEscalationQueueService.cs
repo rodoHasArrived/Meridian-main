@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
@@ -93,11 +94,11 @@ public sealed class RiskEscalationQueueService
 
         _logger.LogWarning(
             "Order for {Symbol} ({Side} {Quantity}) parked for governed approval by rule {RuleName}: {Reason}",
-            request.Symbol,
+            LogSanitizer.Sanitize(request.Symbol),
             request.Side,
             request.Quantity,
             ruleName ?? "unknown",
-            entry.Reason);
+            LogSanitizer.Sanitize(entry.Reason));
 
         RecordAudit(
             action: "OrderParkedForApproval",
@@ -170,8 +171,8 @@ public sealed class RiskEscalationQueueService
             {
                 _logger.LogWarning(
                     "Governed approval {EscalationId} rejected: resubmitted order for {Symbol} does not match the parked order fingerprint",
-                    escalationId,
-                    request.Symbol);
+                    LogSanitizer.Sanitize(escalationId),
+                    LogSanitizer.Sanitize(request.Symbol));
                 return false;
             }
 
@@ -221,11 +222,11 @@ public sealed class RiskEscalationQueueService
             var approved = status == RiskEscalationStatus.Approved;
             _logger.LogInformation(
                 "Risk escalation {EscalationId} for {Symbol} {Outcome} by {Actor}: {Reason}",
-                escalationId,
-                entry.Request.Symbol,
+                LogSanitizer.Sanitize(escalationId),
+                LogSanitizer.Sanitize(entry.Request.Symbol),
                 approved ? "approved" : "denied",
-                actor,
-                reason ?? "no reason supplied");
+                LogSanitizer.Sanitize(actor),
+                LogSanitizer.Sanitize(reason ?? "no reason supplied"));
 
             RecordAudit(
                 action: approved ? "ParkedOrderApproved" : "ParkedOrderDenied",
