@@ -123,6 +123,92 @@ public sealed class ReconciliationMatchingFloorTests
     }
 
     [Fact]
+    public void Run_CashAcrossWeekendUnderDayWindow_MatchesOnBusinessDayBasis()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-t1-v1", 5m, null, TimeSpan.FromDays(1)));
+        var run = CreateRun([
+            // Friday 16:00 vs Monday 14:00 is ~70 wall-clock hours but one business day.
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash: [CreateCash("c1", 9000m, new DateTimeOffset(2026, 5, 29, 16, 0, 0, TimeSpan.Zero))]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash: [CreateCash("c2", 9000m, new DateTimeOffset(2026, 6, 1, 14, 0, 0, TimeSpan.Zero))])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        result.breaks.Should().BeEmpty("a one-day settlement rule must span an ordinary weekend");
+        var match = result.matches.Should().ContainSingle().Subject;
+        match.Classification.Should().Be(BreakClassification.MatchedWithinTolerance);
+        var evidence = result.evidence.Single(e => e.EvidenceId == match.EvidenceIds.Single());
+        evidence.Attributes["settlementWindowBasis"].Should().Be("business-day");
+        evidence.Attributes["businessDayDelta"].Should().Be("1");
+    }
+
+    [Fact]
+    public void Run_CashAcrossWeekendUnderIntradayWindow_StaysBroken()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-intraday-v1", 5m, null, TimeSpan.FromMinutes(5)));
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash: [CreateCash("c1", 9000m, new DateTimeOffset(2026, 5, 29, 16, 0, 0, TimeSpan.Zero))]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash: [CreateCash("c2", 9000m, new DateTimeOffset(2026, 6, 1, 14, 0, 0, TimeSpan.Zero))])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        result.matches.Should().BeEmpty("sub-day windows keep strict wall-clock semantics");
+        result.breaks.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Run_CashSplitAcrossWeekend_LegsAdmittedOnBusinessDayBasis()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-t1-v1", 0.01m, null, TimeSpan.FromDays(1)));
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash: [CreateCash("c1", 1000m, new DateTimeOffset(2026, 5, 29, 16, 0, 0, TimeSpan.Zero))]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash:
+            [
+                CreateCash("c2", 400m, new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero)),
+                CreateCash("c3", 600m, new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero))
+            ])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        result.breaks.Should().BeEmpty("Monday ledger postings settle a Friday wire under a one-day rule");
+        var match = result.matches.Should().ContainSingle().Subject;
+        match.RuleId.Should().Be("cash-split-v1");
+        match.CashEntryIds.Should().BeEquivalentTo(["c1", "c2", "c3"]);
+    }
+
+    [Fact]
+    public void Run_ExactCashAcrossThreeSnapshots_FormsSingleGroupAndFlagsExcess()
+    {
+        var engine = new ReconciliationMatchingEngine();
+        var profile = CashProfile(new CashToleranceRule("cash-abs-001-v1", 0.01m, null, TimeSpan.FromDays(1)));
+        var run = CreateRun([
+            CreateSnapshot("prime", ReconciliationSourceType.Prime, cash:
+            [
+                CreateCash("c1", 5000m, Thursday),
+                CreateCash("c1b", 5000m, Thursday.AddHours(1))
+            ]),
+            CreateSnapshot("custodian", ReconciliationSourceType.Custodian, cash: [CreateCash("c2", 5000m, Thursday.AddHours(2))]),
+            CreateSnapshot("admin", ReconciliationSourceType.Administrator, cash: [CreateCash("c3", 5000m, Thursday.AddHours(3))])
+        ]);
+
+        var result = engine.Run(run, profile);
+
+        var match = result.matches.Should().ContainSingle(m => m.Classification == BreakClassification.Matched).Subject;
+        match.CashEntryIds.Should().BeEquivalentTo(["c1", "c2", "c3"],
+            "an identical amount reported by three institutions is one cross-source group, not a pair plus a false break");
+        var evidence = result.evidence.Single(e => e.EvidenceId == match.EvidenceIds.Single());
+        evidence.Attributes["matchShape"].Should().Be("cross-source-group");
+        var breakRecord = result.breaks.Should().ContainSingle().Subject;
+        var breakEvidence = result.evidence.Single(e => e.EvidenceId == breakRecord.EvidenceIds.Single());
+        breakEvidence.Attributes["cashEntryId"].Should().Be("c1b", "the prime-side excess duplicate stays a break");
+    }
+
+    [Fact]
     public void Run_CashSplit_OneToMany_RecordsSplitShapeInEvidence()
     {
         var engine = new ReconciliationMatchingEngine();

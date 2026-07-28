@@ -13,7 +13,10 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// deterministic order (source type, then registration order) regardless of completion order, and
 /// a source that exhausts its attempts fails the run by rethrowing its final attempt's exception
 /// with the original type and stack intact — retry telemetry is carried in structured logs, not in
-/// wrapper exception types.
+/// wrapper exception types. Adapters are invoked behind the deadline fence (their synchronous
+/// prefixes cannot stall the run), cooperative timeouts retry, and a source that ignores
+/// cancellation past the grace period fails terminally rather than stacking further live captures
+/// outside the concurrency accounting.
 /// </summary>
 public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
 {
@@ -107,12 +110,14 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
             Task<DataSourceSnapshot>? captureTask = null;
             try
             {
-                captureTask = adapter.CaptureSnapshotAsync(request, attemptCts.Token);
-                // The linked token asks the adapter to stop cooperatively; WaitAsync enforces the
-                // deadline even when an adapter ignores its token or blocks in non-cancellable
-                // I/O, so a stuck source times the attempt out instead of hanging the run.
+                // Task.Run puts even a fully synchronous adapter prefix (a blocking vendor-SDK call
+                // before its first await) behind the deadline fence instead of letting it run
+                // inline where neither timeout nor cancellation could reach it. The linked token
+                // asks the adapter to stop cooperatively at PerSourceTimeout; WaitAsync enforces a
+                // hard deadline of timeout + grace for adapters that never observe their token.
+                captureTask = Task.Run(() => adapter.CaptureSnapshotAsync(request, attemptCts.Token), attemptCts.Token);
                 var snapshot = _options.PerSourceTimeout is { } deadline
-                    ? await captureTask.WaitAsync(deadline, ct).ConfigureAwait(false)
+                    ? await captureTask.WaitAsync(deadline + _options.CancellationGracePeriod, ct).ConfigureAwait(false)
                     : await captureTask.WaitAsync(ct).ConfigureAwait(false);
                 _log.LogInformation(
                     "Captured reconciliation snapshot from {SourceType} in {ElapsedMs}ms on attempt {Attempt}",
@@ -129,14 +134,24 @@ public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIng
             }
             catch (TimeoutException hardTimeout) when (_options.PerSourceTimeout is not null)
             {
-                // WaitAsync hit the hard deadline while the adapter kept running.
+                // The adapter blew through the cooperative timeout AND the grace period without
+                // observing its token: its capture is still live and cannot be stopped. Retrying
+                // would stack another concurrent request onto an unresponsive source outside the
+                // concurrency accounting, so a non-cooperative timeout is terminal for this run.
                 ObserveAbandonedCapture(captureTask);
-                lastFailure = ExceptionDispatchInfo.Capture(new TimeoutException(
-                    $"Reconciliation source {adapter.SourceType} exceeded the per-source capture timeout of {_options.PerSourceTimeout} on attempt {attempt}.",
-                    hardTimeout));
+                _log.LogError(
+                    "Reconciliation source {SourceType} ignored cancellation for {ElapsedMs}ms on attempt {Attempt}; failing the source without retry",
+                    adapter.SourceType,
+                    stopwatch.ElapsedMilliseconds,
+                    attempt);
+                throw new TimeoutException(
+                    $"Reconciliation source {adapter.SourceType} exceeded the per-source capture timeout of {_options.PerSourceTimeout} and did not honor cancellation within the {_options.CancellationGracePeriod} grace period on attempt {attempt}; treating the source as non-cooperative and not retrying.",
+                    hardTimeout);
             }
             catch (OperationCanceledException timedOut) when (attemptCts.IsCancellationRequested)
             {
+                // Cooperative timeout: the adapter observed its token and the attempt actually
+                // ended, so no capture is left running and a retry is safe.
                 lastFailure = ExceptionDispatchInfo.Capture(new TimeoutException(
                     $"Reconciliation source {adapter.SourceType} exceeded the per-source capture timeout of {_options.PerSourceTimeout} on attempt {attempt}.",
                     timedOut));

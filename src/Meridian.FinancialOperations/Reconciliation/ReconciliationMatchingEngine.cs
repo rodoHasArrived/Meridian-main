@@ -16,7 +16,10 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// <item>unmatched residuals are probed for bounded <b>one-to-many / many-to-one split groups</b>
 /// whose shape (anchor, legs, residual) is recorded in <see cref="MatchEvidence"/> attributes;</item>
 /// <item>cash timing consults the <see cref="IAccountingCalendar"/>: the exact stage requires the
-/// same accounting period and evidence carries business-day distance alongside wall-clock deltas;</item>
+/// same accounting period, settlement windows of a day or longer also admit counterparts within
+/// the window measured in business days (a Friday wire and its Monday posting are one business
+/// day apart, not three calendar days), and evidence carries business-day distance alongside
+/// wall-clock deltas;</item>
 /// <item>currencies must agree before amounts are compared, so fail-closed FX normalization (a line
 /// kept in its source currency because no rate was available) surfaces as a break instead of a
 /// cross-currency mismatch;</item>
@@ -36,6 +39,8 @@ public sealed class ReconciliationMatchingEngine
     private const string CashBreakRuleId = "true-break-v1";
 
     private const int MaxSplitLegs = 4;
+
+    private static readonly TimeSpan OneDay = TimeSpan.FromDays(1);
 
     // Beyond this many unmatched entries in one account bucket, the comment-containment probe of
     // the fuzzy stage is skipped (reference-equality probes still run): comment containment is the
@@ -478,7 +483,7 @@ public sealed class ReconciliationMatchingEngine
                 .ToArray();
             var consumed = new HashSet<string>(StringComparer.Ordinal);
 
-            MatchExactCashPairs(entries, consumed, accumulator);
+            MatchExactCash(entries, consumed, accumulator);
             MatchScoredCashPairs(entries, consumed, profile, accumulator);
             MatchCashSplits(entries, consumed, profile, accumulator);
             MatchFuzzyCashReferences(entries, consumed, accumulator);
@@ -486,21 +491,81 @@ public sealed class ReconciliationMatchingEngine
         }
     }
 
-    private void MatchExactCashPairs(SidedCash[] entries, HashSet<string> consumed, MatchAccumulator accumulator)
+    private static void MatchExactCash(SidedCash[] entries, HashSet<string> consumed, MatchAccumulator accumulator)
     {
         var candidates = new List<CashPairCandidate>();
-        // Entries are amount-sorted, so equal-amount runs are contiguous.
-        for (var i = 0; i < entries.Length; i++)
+        foreach (var amountGroup in entries
+            .GroupBy(static c => (c.Entry.AmountBase, c.Period))
+            .OrderBy(static g => g.Key.AmountBase)
+            .ThenBy(static g => g.Key.Period))
         {
-            for (var j = i + 1; j < entries.Length && entries[j].Entry.AmountBase == entries[i].Entry.AmountBase; j++)
+            var members = amountGroup.ToArray();
+            var snapshotCount = members.Select(static m => m.SnapshotId).Distinct(StringComparer.Ordinal).Count();
+            if (members.Length < 2 || snapshotCount < 2)
             {
-                var (left, right) = OrderCashPair(entries[i], entries[j]);
-                if (string.Equals(left.SnapshotId, right.SnapshotId, StringComparison.Ordinal) || left.Period != right.Period)
+                continue;
+            }
+
+            if (snapshotCount == 2)
+            {
+                for (var i = 0; i < members.Length; i++)
                 {
-                    continue;
+                    for (var j = i + 1; j < members.Length; j++)
+                    {
+                        var (left, right) = OrderCashPair(members[i], members[j]);
+                        if (string.Equals(left.SnapshotId, right.SnapshotId, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        candidates.Add(new CashPairCandidate(left, right, Rule: null, Score: 0m, AmountDelta: 0m, AllowedTolerance: 0m));
+                    }
                 }
 
-                candidates.Add(new CashPairCandidate(left, right, Rule: null, Score: 0m, AmountDelta: 0m, AllowedTolerance: 0m));
+                continue;
+            }
+
+            // Three or more institutions report the identical amount in the same period: balance
+            // the group one-row-per-snapshot per round, exactly like the exact-position stage, so
+            // a prime/custodian/administrator triple reconciles as one cross-source group instead
+            // of an arbitrary pair plus a false break. Reference-level disambiguation across 3+
+            // sources with repeated rows is casework, not floor pairing.
+            var queues = members
+                .GroupBy(static c => c.SnapshotId, StringComparer.Ordinal)
+                .Select(static g => new Queue<SidedCash>(g
+                    .OrderBy(static c => c.Entry.CashEntryId, StringComparer.Ordinal)))
+                .OrderBy(static q => q.Peek().SourceOrder)
+                .ToArray();
+            while (queues.Count(static q => q.Count > 0) >= 2)
+            {
+                var round = queues
+                    .Where(static q => q.Count > 0)
+                    .Select(static q => q.Dequeue())
+                    .OrderBy(static c => c.Entry.CashEntryId, StringComparer.Ordinal)
+                    .ToArray();
+                var roundIds = round.Select(static c => c.Entry.CashEntryId).ToArray();
+                var roundKeys = round.Select(static c => c.Key).ToArray();
+                var postedSpanMinutes =
+                    (round.Max(static c => c.Entry.PostedAtUtc) - round.Min(static c => c.Entry.PostedAtUtc)).TotalMinutes;
+                var roundEvidence = accumulator.AddEvidence(
+                    "Exact",
+                    ExactCashRuleId,
+                    "Cash amounts are equal within the same accounting period.",
+                    0m,
+                    roundKeys,
+                    new Dictionary<string, string>
+                    {
+                        ["matchShape"] = roundIds.Length == 2 ? "one-to-one" : "cross-source-group",
+                        ["accountingPeriod"] = amountGroup.Key.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        ["businessDayDelta"] = "0",
+                        ["postedSpanMinutes"] = postedSpanMinutes.ToString(CultureInfo.InvariantCulture),
+                        ["sources"] = string.Join(",", round.Select(static c => c.Source.ToString()).Distinct())
+                    });
+                accumulator.AddMatch(BreakClassification.Matched, "Exact", ExactCashRuleId, null, [], roundIds, roundKeys, roundEvidence);
+                foreach (var member in round)
+                {
+                    consumed.Add(member.Key);
+                }
             }
         }
 
@@ -576,7 +641,7 @@ public sealed class ReconciliationMatchingEngine
 
                 foreach (var rule in profile.CashRules)
                 {
-                    if (!rule.Allows(left.Entry.AmountBase, right.Entry.AmountBase, right.Entry.PostedAtUtc - left.Entry.PostedAtUtc, out var allowed))
+                    if (!TryAllowCashPair(rule, left, right, out var allowed, out var windowBasis))
                     {
                         continue;
                     }
@@ -585,10 +650,12 @@ public sealed class ReconciliationMatchingEngine
                     var deltaMinutes = Math.Abs((right.Entry.PostedAtUtc - left.Entry.PostedAtUtc).TotalMinutes);
                     var windowMinutes = Math.Abs(rule.SettlementDateTolerance.TotalMinutes);
                     var amountComponent = allowed == 0m ? 0m : amountDelta / allowed;
-                    var timeComponent = windowMinutes == 0d ? 0m : (decimal)(deltaMinutes / windowMinutes);
+                    // Business-day-admitted pairs exceed the wall-clock window by construction;
+                    // clamping keeps their timing penalty at the maximum instead of unbounded.
+                    var timeComponent = windowMinutes == 0d ? 0m : Math.Min(1m, (decimal)(deltaMinutes / windowMinutes));
                     var referenceBonus = HasReferenceAgreement(left.Entry, right.Entry) ? 0.2m : 0m;
                     var score = Math.Max(0m, (0.7m * amountComponent) + (0.3m * timeComponent) - referenceBonus);
-                    candidates.Add(new CashPairCandidate(left, right, rule, score, amountDelta, allowed));
+                    candidates.Add(new CashPairCandidate(left, right, rule, score, amountDelta, allowed, windowBasis));
                     break; // Profile order is rule precedence: the first admissible rule governs.
                 }
             }
@@ -617,6 +684,7 @@ public sealed class ReconciliationMatchingEngine
                 {
                     ["allowedTolerance"] = Invariant(pair.AllowedTolerance),
                     ["settlementDateDeltaMinutes"] = deltaMinutes.ToString(CultureInfo.InvariantCulture),
+                    ["settlementWindowBasis"] = pair.WindowBasis,
                     ["businessDayDelta"] = businessDayDelta.ToString(CultureInfo.InvariantCulture),
                     ["amountDeltaBase"] = Invariant(pair.AmountDelta),
                     ["score"] = Invariant(pair.Score),
@@ -697,7 +765,7 @@ public sealed class ReconciliationMatchingEngine
                         var legPool = entries
                             .Where(c => string.Equals(c.SnapshotId, legSnapshot.SnapshotId, StringComparison.Ordinal)
                                 && !consumed.Contains(c.Key)
-                                && (c.Entry.PostedAtUtc - anchor.Entry.PostedAtUtc).Duration() <= settlementWindow)
+                                && WithinSettlementWindow(settlementWindow, anchor, c))
                             .ToArray();
                         if (legPool.Length < 2)
                         {
@@ -871,6 +939,43 @@ public sealed class ReconciliationMatchingEngine
             : (second, first);
     }
 
+    /// <summary>
+    /// Admits a cash pair under a rule. The wall-clock settlement window applies first, keeping
+    /// minute precision for intraday windows; windows of a day or longer also admit counterparts
+    /// whose accounting periods sit within the window measured in business days, so a Friday wire
+    /// and its Monday posting reconcile under a one-day rule instead of failing a ~72-hour
+    /// wall-clock comparison.
+    /// </summary>
+    private bool TryAllowCashPair(CashToleranceRule rule, SidedCash left, SidedCash right, out decimal allowed, out string windowBasis)
+    {
+        var wallClockDelta = right.Entry.PostedAtUtc - left.Entry.PostedAtUtc;
+        if (rule.Allows(left.Entry.AmountBase, right.Entry.AmountBase, wallClockDelta, out allowed))
+        {
+            windowBasis = "wall-clock";
+            return true;
+        }
+
+        if (WithinBusinessDayWindow(rule.SettlementDateTolerance.Duration(), left, right)
+            && rule.Allows(left.Entry.AmountBase, right.Entry.AmountBase, TimeSpan.Zero, out allowed))
+        {
+            windowBasis = "business-day";
+            return true;
+        }
+
+        windowBasis = "wall-clock";
+        return false;
+    }
+
+    // Sub-day windows keep strict wall-clock semantics (intraday matching), so the default
+    // five-minute profile is unaffected by the business-day relaxation.
+    private bool WithinBusinessDayWindow(TimeSpan window, SidedCash left, SidedCash right) =>
+        window >= OneDay
+        && Math.Abs(_calendar.CountBusinessDaysBetween(left.Period, right.Period)) <= (int)window.TotalDays;
+
+    private bool WithinSettlementWindow(TimeSpan window, SidedCash anchor, SidedCash leg) =>
+        (leg.Entry.PostedAtUtc - anchor.Entry.PostedAtUtc).Duration() <= window
+        || WithinBusinessDayWindow(window, anchor, leg);
+
     private static bool HasReferenceAgreement(NormalizedCashEntry left, NormalizedCashEntry right) =>
         (!string.IsNullOrWhiteSpace(left.CounterpartyReference)
             && string.Equals(left.CounterpartyReference, right.CounterpartyReference, StringComparison.OrdinalIgnoreCase))
@@ -957,7 +1062,8 @@ public sealed class ReconciliationMatchingEngine
         CashToleranceRule? Rule,
         decimal Score,
         decimal AmountDelta,
-        decimal AllowedTolerance);
+        decimal AllowedTolerance,
+        string WindowBasis = "wall-clock");
 
     /// <summary>
     /// Collects matches, breaks, and evidence with content-derived identifiers: every artifact id is
