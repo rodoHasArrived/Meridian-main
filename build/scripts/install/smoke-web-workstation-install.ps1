@@ -27,7 +27,12 @@ param(
     [int]$Port = 0,
 
     [ValidateRange(10, 600)]
-    [int]$TimeoutSeconds = 90,
+    # First boot of the installed artifact self-extracts the compressed single-file host and
+    # runs first-run migrations before Kestrel binds; the 2026-07-28 run-11 lifecycle receipt
+    # showed a healthy dedicated database at 2s with startup legitimately still in progress
+    # when a 90s budget expired. Probes exit early on success, so a generous budget only
+    # costs time on real failures.
+    [int]$TimeoutSeconds = 300,
 
     [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
 

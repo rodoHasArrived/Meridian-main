@@ -160,6 +160,20 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fourth attempt
+  ([30343467051](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30343467051),
+  follow-up candidate `fdebfe711`): **the elevated-initdb ACE fix is proven** — the
+  dedicated PostgreSQL initialized, started on its manifest port in ~2s, served for the
+  whole session, and shut down cleanly (`postgresql.log` retained; receipt
+  `databaseOutcome: Succeeded`). The 90s `startupz` budget then expired while host startup
+  was legitimately still in progress (no host logs yet — the compressed single-file host
+  self-extracts and runs first migrations before Kestrel binds), and the receipt recorded
+  `SucceededWithWarnings: startup blocked by a requested stop`. The stop also exposed a
+  real supervisor exit defect: `Mutex.ReleaseMutex` throws `ApplicationException` from the
+  post-await finally (thread affinity), turning clean shutdown into an unhandled exception.
+  Fixed on the candidate: guarded release (process exit plus the existing
+  `AbandonedMutexException` ownership path make release semantically safe) and a 300s
+  first-boot probe budget (probes still exit early on success).
 - **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` third attempt
   ([30339833870](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339833870),
   merged content `7d6ccd1ff`): the bundle-carrying publish, the artifact-bundle install, and
