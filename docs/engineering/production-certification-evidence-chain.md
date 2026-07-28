@@ -160,6 +160,21 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` sixth attempt
+  ([30346070925](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30346070925),
+  follow-up candidate `33f08690e`): **the pipe-drain fix is proven — the Meridian host was
+  spawned for the first time in any hosted run**, and the supervisor fail-fasted in 16s
+  with a receipt naming the real defect: the host exited with code 1, and the host's own
+  log (also a first — `_logs/meridian-*.log` now exists in the artifact) shows
+  `LifecycleSupervisorBridgeHostedService` failing DI activation because it demanded
+  `Serilog.ILogger`, which the workstation graph does not register. The bridge only
+  registers when the supervisor pipe is present, which is why no dev run ever constructed
+  it. Fixed on the candidate by moving the bridge to the composition's
+  `ILogger<T>`/`LogWarning` idiom; a sweep confirmed it was the only DI-activated hosted
+  service with a bare Serilog dependency. Automated review also drove two budget-contract
+  fixes: the installed readiness ceiling now covers first boot (300s), and the smoke's
+  outer budget is derived from every configured deadline on the valid cold-start path
+  (initdb 60 + pg_ctl 65 + drain grace 5 + readiness 300 + launcher overhead 30 = 460).
 - **2026-07-28** — review follow-up on the follow-up candidate: with the pipe-drain fix in
   place, startup can now actually reach `WaitForReadinessAsync`, whose deadline comes from
   the installed manifest's `startupTimeoutSeconds = 60` — too tight for a first boot that

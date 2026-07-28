@@ -29,12 +29,15 @@ param(
     [ValidateRange(10, 600)]
     # The outer probe clock starts at supervisor launch, but the supervisor's readiness
     # window (installed manifest startupTimeoutSeconds = 300, covering single-file
-    # self-extraction plus first migrations) only starts after dedicated PostgreSQL
-    # initialization (databaseTimeoutSeconds = 60). The outer budget must therefore exceed
-    # readiness + database + launcher overhead — 300 + 60 + 30 — or the smoke can stop a
-    # host still inside its readiness contract. Probes exit early on success, so the
-    # budget only costs time on real failures.
-    [int]$TimeoutSeconds = 390,
+    # self-extraction plus first migrations) only starts after the dedicated-database
+    # phase, which itself carries sequential tool ceilings: initdb (databaseTimeoutSeconds
+    # = 60), pg_ctl start (databaseTimeoutSeconds + 5), and the bounded output-drain
+    # grace. The outer budget sums every configured deadline on the valid cold-start path
+    # so cleanup can never stop a supervisor still inside its own contracts:
+    # 60 (initdb) + 65 (pg_ctl start) + 5 (drain grace) + 300 (readiness) + 30 (launcher
+    # and install overhead) = 460. Probes exit early on success, so the budget only costs
+    # time on real failures.
+    [int]$TimeoutSeconds = 460,
 
     [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
 
