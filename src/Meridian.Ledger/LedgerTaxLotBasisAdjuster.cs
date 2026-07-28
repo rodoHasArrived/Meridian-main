@@ -37,6 +37,7 @@ public static class LedgerTaxLotBasisAdjuster
         {
             var quantity = lot.Quantity;
             var unitCost = lot.UnitCost;
+            var holdingPeriodStart = lot.HoldingPeriodStartDate;
 
             foreach (var adjustment in ordered)
             {
@@ -44,6 +45,16 @@ public static class LedgerTaxLotBasisAdjuster
                     continue;
 
                 (quantity, unitCost) = ApplyOne(adjustment, quantity, unitCost);
+
+                // A wash sale also carries the disallowed sale's holding period onto the
+                // replacement lot (IRC §1223(3)). Several deferrals can land on one lot, so the
+                // earliest carried start wins — a holding period only ever extends backward.
+                if (adjustment.Kind == LedgerTaxLotBasisAdjustmentKind.WashSale
+                    && adjustment.HoldingPeriodCarryDate is { } carryDate
+                    && carryDate < (holdingPeriodStart ?? lot.AcquiredDate))
+                {
+                    holdingPeriodStart = carryDate;
+                }
             }
 
             quantity = RoundQuantity(quantity);
@@ -55,7 +66,8 @@ public static class LedgerTaxLotBasisAdjuster
                 lot.AcquiredDate,
                 quantity,
                 RoundUnitCost(Math.Max(0m, unitCost)),
-                lot.SecurityId));
+                lot.SecurityId,
+                holdingPeriodStart));
         }
 
         return effective;
@@ -79,6 +91,14 @@ public static class LedgerTaxLotBasisAdjuster
 
             // Premium amortization (negative) / discount accretion (positive) moves basis toward par.
             LedgerTaxLotBasisAdjustmentKind.Amortization => (quantity, Math.Max(0m, unitCost + adjustment.Value)),
+
+            // A deferred wash-sale loss is a total amount capitalized into the replacement lot, so
+            // it is spread across the lot's quantity to reach a per-unit basis increase. A lot with
+            // no remaining quantity has nothing to capitalize into and is left alone (the
+            // zero-quantity guard in Apply drops it from the effective set anyway).
+            LedgerTaxLotBasisAdjustmentKind.WashSale => (
+                quantity,
+                quantity > 0m ? unitCost + (adjustment.Value / quantity) : unitCost),
 
             _ => throw new ArgumentOutOfRangeException(nameof(adjustment), adjustment.Kind, "Unsupported basis-adjustment kind."),
         };
