@@ -160,6 +160,13 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — review follow-up on the follow-up candidate: with the pipe-drain fix in
+  place, startup can now actually reach `WaitForReadinessAsync`, whose deadline comes from
+  the installed manifest's `startupTimeoutSeconds = 60` — too tight for a first boot that
+  self-extracts the compressed single-file host and runs first migrations, and the exact
+  wall a 300s outer probe cannot help with (flagged by automated review on PR #2540). The
+  installer-written lifecycle manifest now sets a 300s first-boot readiness ceiling; the
+  deadline remains hard and fail-closed.
 - **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fifth attempt
   ([30344404735](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30344404735),
   follow-up candidate `b6ff1da2b`): the supervisor exit crash is gone (empty stderr — the
