@@ -325,7 +325,8 @@ public sealed record LedgerAccountTaxLotPolicyRecord(
     WashSalePolicy? WashSalePolicy = null)
 {
     /// <summary>The configured wash-sale policy, or the disabled default.</summary>
-    public WashSalePolicy EffectiveWashSalePolicy => WashSalePolicy ?? Meridian.Ledger.WashSalePolicy.Disabled;
+    public WashSalePolicy EffectiveWashSalePolicy
+        => WashSalePolicy ?? global::Meridian.Ledger.WashSalePolicy.Disabled;
 }
 
 public sealed record LedgerTaxLotRecord(
