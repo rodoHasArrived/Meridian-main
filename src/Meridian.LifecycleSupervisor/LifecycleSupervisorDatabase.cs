@@ -350,7 +350,7 @@ internal sealed class LifecycleDatabaseController
         }
     }
 
-    private static async Task RunToolAsync(
+    internal static async Task RunToolAsync(
         string executable,
         IReadOnlyList<string> arguments,
         TimeSpan timeout,
@@ -385,11 +385,28 @@ internal sealed class LifecycleDatabaseController
             await TerminateToolProcessAsync(process).ConfigureAwait(false);
             throw;
         }
-        var output = await standardOutput.ConfigureAwait(false);
-        var error = await standardError.ConfigureAwait(false);
+        // pg_ctl start hands the redirected pipe write-handles to the postgres daemon it
+        // spawns, so a full drain of the tool's stdout/stderr blocks until the daemon
+        // exits — the 2026-07-28 hosted smoke receipts showed startup frozen here for the
+        // database's whole lifetime. The tool's own output is flushed before it exits;
+        // grace-bound the drain and fall back to whatever arrived. A failing tool has no
+        // surviving child, closes its pipes, and still delivers full diagnostics.
+        var output = await DrainWithGraceAsync(standardOutput).ConfigureAwait(false);
+        var error = await DrainWithGraceAsync(standardError).ConfigureAwait(false);
         if (process.ExitCode != 0)
             throw new InvalidOperationException(
                 $"{Path.GetFileName(executable)} failed with exit code {process.ExitCode}: {Sanitize(error, output)}");
+    }
+
+    private static async Task<string> DrainWithGraceAsync(Task<string> drain)
+    {
+        var completed = await Task.WhenAny(drain, Task.Delay(TimeSpan.FromSeconds(2))).ConfigureAwait(false);
+        if (completed == drain)
+            return await drain.ConfigureAwait(false);
+        _ = drain.ContinueWith(
+            static abandoned => _ = abandoned.Exception,
+            TaskContinuationOptions.OnlyOnFaulted);
+        return string.Empty;
     }
 
     private static async Task TerminateToolProcessAsync(Process process)

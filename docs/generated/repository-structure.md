@@ -7945,6 +7945,7 @@ Meridian-main
 │   │   └── WorkstationModeRunnerTests.cs
 │   ├── Meridian.LifecycleSupervisor.Tests
 │   │   ├── LifecycleDatabaseAclTests.cs
+│   │   ├── LifecycleDatabaseToolTests.cs
 │   │   ├── LifecycleStartupOutcomeTests.cs
 │   │   ├── LifecycleSupervisorConfigurationTests.cs
 │   │   ├── LifecycleSupervisorPipeTests.cs

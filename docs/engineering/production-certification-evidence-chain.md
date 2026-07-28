@@ -160,6 +160,19 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fifth attempt
+  ([30344404735](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30344404735),
+  follow-up candidate `b6ff1da2b`): the supervisor exit crash is gone (empty stderr — the
+  mutex guard held) and the database again ran perfectly for the whole session, but the
+  host never bound in 300s. Cross-referencing the receipt timing (blocked-at-stop at
+  probe-budget+3s in both run 11 and run 12) against the supervisor source pinned the real
+  defect: `RunToolAsync` bounds the tool's exit wait but then awaits a full stdout/stderr
+  drain — and `pg_ctl start` hands its redirected pipe write-handles to the `postgres.exe`
+  daemon it spawns, so the drain blocks for the database's entire lifetime. Startup froze
+  before the host was ever spawned, no deadline could fire, and only the stop request's
+  cancellation released the await. Fixed on the candidate with a grace-bounded drain
+  (failing tools have no surviving child, so their pipes close and full diagnostics still
+  arrive), plus a grandchild-holds-pipe regression test.
 - **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` fourth attempt
   ([30343467051](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30343467051),
   follow-up candidate `fdebfe711`): **the elevated-initdb ACE fix is proven** — the

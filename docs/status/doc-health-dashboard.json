@@ -1,6 +1,6 @@
 {
   "total_files": 637,
-  "total_lines": 115023,
+  "total_lines": 115037,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2197,7 +2197,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 251,
+      "line_count": 264,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2573,7 +2573,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9609,
+      "line_count": 9610,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
