@@ -27,12 +27,14 @@ param(
     [int]$Port = 0,
 
     [ValidateRange(10, 600)]
-    # First boot of the installed artifact self-extracts the compressed single-file host and
-    # runs first-run migrations before Kestrel binds; the 2026-07-28 run-11 lifecycle receipt
-    # showed a healthy dedicated database at 2s with startup legitimately still in progress
-    # when a 90s budget expired. Probes exit early on success, so a generous budget only
-    # costs time on real failures.
-    [int]$TimeoutSeconds = 300,
+    # The outer probe clock starts at supervisor launch, but the supervisor's readiness
+    # window (installed manifest startupTimeoutSeconds = 300, covering single-file
+    # self-extraction plus first migrations) only starts after dedicated PostgreSQL
+    # initialization (databaseTimeoutSeconds = 60). The outer budget must therefore exceed
+    # readiness + database + launcher overhead — 300 + 60 + 30 — or the smoke can stop a
+    # host still inside its readiness contract. Probes exit early on success, so the
+    # budget only costs time on real failures.
+    [int]$TimeoutSeconds = 390,
 
     [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
 
