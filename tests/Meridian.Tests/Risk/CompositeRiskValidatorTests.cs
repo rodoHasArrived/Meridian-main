@@ -280,6 +280,74 @@ public sealed class CompositeRiskValidatorTests
     }
 
     [Fact]
+    public async Task ValidateOrderAsync_EscalationRetainsTheExecutionRunId()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        // Live runs stamp their unique run id in metadata; StrategyId only names the
+        // reusable strategy definition shared by every run of it.
+        var order = CreateOrder() with
+        {
+            StrategyId = "mean-reversion",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-2026-07-28-a"
+            }
+        };
+        var result = await validator.ValidateOrderAsync(order);
+
+        queue.TryGet(result.EscalationId!)!.RunId.Should().Be(
+            "run-2026-07-28-a",
+            "queue audit correlation must identify the run, not the strategy definition");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_EscalationWithoutRunMetadata_FallsBackToStrategyId()
+    {
+        var queue = CreateQueue();
+        var validator = new CompositeRiskValidator(
+            [new StubRiskRule("order-notional", RiskValidationResult.Escalated("above governed band"))],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder() with { StrategyId = "manual-desk" });
+
+        queue.TryGet(result.EscalationId!)!.RunId.Should().Be("manual-desk");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_ConsumedApproval_IsReportedOnTheApprovedResult()
+    {
+        var queue = CreateQueue();
+        var escalating = new ThresholdStubRule("order-notional");
+        var validator = new CompositeRiskValidator(
+            [escalating],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        var parked = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parked.EscalationId!, actor: "risk-desk");
+        escalating.Escalates = false;
+
+        var released = await validator.ValidateOrderAsync(CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId!
+            }
+        });
+
+        released.IsApproved.Should().BeTrue();
+        released.ConsumedApprovalId.Should().Be(
+            parked.EscalationId,
+            "the OMS needs the consumed token to re-arm it if the gateway faults before routing");
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_ApprovalBypassesOnlyTheParkedRule()
     {
         // Token parked by rule A must not release an escalation from rule B.

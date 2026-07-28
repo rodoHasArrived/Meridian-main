@@ -29,6 +29,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ILiveOrderReadinessGate? _liveOrderReadinessGate;
     private readonly ExecutionAuditTrailService? _auditTrail;
+    private readonly RiskEscalationQueueService? _escalationQueue;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
@@ -70,7 +71,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         ILiveOrderReadinessGate? liveOrderReadinessGate = null,
         OrderManagementSystemOptions? options = null,
         ITradeEventPublisher? tradeEventPublisher = null,
-        ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null)
+        ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null,
+        RiskEscalationQueueService? escalationQueue = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -79,6 +81,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _operatorControls = operatorControls;
         _liveOrderReadinessGate = liveOrderReadinessGate;
         _auditTrail = auditTrail;
+        _escalationQueue = escalationQueue;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _brokerageConfiguration = brokerageConfiguration;
@@ -300,6 +303,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
         // Pre-trade risk check
         IReadOnlyList<string>? riskWarnings = null;
+        string? consumedApprovalId = null;
         if (_riskValidator is not null)
         {
             var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
@@ -337,6 +341,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null)
                     .ConfigureAwait(false);
             }
+
+            consumedApprovalId = riskResult.ConsumedApprovalId;
 
             // Non-blocking flags (warning-severity breaches, observe bands) must survive
             // an approved order: carry them on the result and retain them durably.
@@ -535,6 +541,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
+
+            // Nothing routed: a governed approval consumed by this validation must not
+            // stay retired because the gateway faulted. Re-arm it for retry.
+            if (consumedApprovalId is not null && _escalationQueue is not null &&
+                _escalationQueue.TryRestoreApproval(consumedApprovalId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed after a gateway submission failure",
+                    consumedApprovalId);
+            }
 
             var rejectedState = orderState with
             {

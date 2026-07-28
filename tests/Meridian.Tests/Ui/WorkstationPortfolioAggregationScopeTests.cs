@@ -100,6 +100,45 @@ public sealed class WorkstationPortfolioAggregationScopeTests
         filtered.Should().ContainSingle().Which.Contributions.Should().HaveCount(2);
     }
 
+    [Fact]
+    public void ExposureReport_WithOffsettingLotsAcrossRuns_ReportsPositiveGrossExposure()
+    {
+        // Long 100 @ $100 and short 90 @ $200 in one symbol. Netting first (as the
+        // aggregation service's signed weighted-average cost does) yields a negative
+        // per-share cost and nonsensical exposure; per-contribution valuation gives
+        // 10k + 18k = 28k gross and 10k - 18k = -8k net.
+        var positions = new[]
+        {
+            PositionWith(
+                Contribution("paper-run", quantity: 100m, costBasis: 100m),
+                Contribution("other-run", quantity: -90m, costBasis: 200m))
+        };
+
+        var report = WorkstationEndpoints.BuildExposureReport(positions);
+
+        report.GrossExposure.Should().Be(28_000m);
+        report.NetExposure.Should().Be(-8_000m);
+        report.Top5Concentrations.Should().ContainSingle().Which.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task ExposureReport_BuiltFromScopedPositions_ExcludesUnauthorizedFunds()
+    {
+        var positions = new[]
+        {
+            PositionWith(
+                Contribution(AllowedAccountId.ToString("D"), quantity: 100m, costBasis: 100m),
+                Contribution(DeniedAccountId.ToString("D"), quantity: 500m, costBasis: 100m))
+        };
+
+        var scoped = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
+            CreateContext(UserPermission.ViewTrades), positions);
+        var report = WorkstationEndpoints.BuildExposureReport(scoped);
+
+        report.GrossExposure.Should().Be(10_000m, "the denied fund's $50k must not appear in the summary");
+        report.NetExposure.Should().Be(10_000m);
+    }
+
     private sealed class ViewTradesScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
     {
         public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(

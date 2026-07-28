@@ -171,6 +171,77 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Consume_WithAlteredGatewayMetadata_RefusesRelease()
+    {
+        var queue = CreateQueue();
+        var parkedOrder = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "50000"
+            }
+        };
+        var entry = queue.Park(parkedOrder, "escalated");
+        queue.Approve(entry.EscalationId, actor: "risk-desk");
+
+        // Gateways size orders from metadata (notional, bracket legs, extended hours), so
+        // an altered bag is a materially different executable order.
+        var tampered = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "500000",
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
+            }
+        };
+        queue.TryConsumeApproval(tampered).Should().BeNull();
+
+        // Adding a key the desk never reviewed is refused too.
+        var withExtraKey = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "50000",
+                ["extended_hours"] = "true",
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
+            }
+        };
+        queue.TryConsumeApproval(withExtraKey).Should().BeNull();
+        queue.TryGet(entry.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+    }
+
+    [Fact]
+    public void Consume_WithReleaseKeysOnly_StillReleases()
+    {
+        var queue = CreateQueue();
+        var parkedOrder = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "50000",
+                ["actor"] = "trade-desk-1"
+            }
+        };
+        var entry = queue.Park(parkedOrder, "escalated");
+        queue.Approve(entry.EscalationId, actor: "risk-desk");
+
+        // The approve endpoint stamps the token, the approving actor, and a release
+        // correlation id; those keys are excluded from the fingerprint by design.
+        var release = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "50000",
+                ["actor"] = "risk-desk-supervisor",
+                ["correlationId"] = $"risk-escalation-{entry.EscalationId}",
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
+            }
+        };
+
+        queue.TryConsumeApproval(release).Should().NotBeNull();
+    }
+
+    [Fact]
     public void Trim_ContinuesPastProtectedEntries()
     {
         var options = new RiskEscalationQueueOptions(

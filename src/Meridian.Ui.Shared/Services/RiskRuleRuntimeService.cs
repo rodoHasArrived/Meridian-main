@@ -599,17 +599,21 @@ public sealed class RiskRuleRuntimeService
         var snapshot = Resolve<Meridian.Risk.IPortfolioExposureProvider>()?.GetSnapshot();
         var grossExposure = snapshot?.GrossExposure ?? 0m;
 
-        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "gross exposure");
+        var violations = DescribeViolations(violationEntries);
+        // Live state follows current exposure plus breaches inside the liveness window;
+        // older rejections stay as evidence without pinning the rule Constrained.
+        var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(grossExposure, maxGrossExposure);
         var breached = maxGrossExposure.HasValue && grossExposure > maxGrossExposure.Value;
-        var state = breached || violations.Count > 0
+        var state = breached || liveViolation
             ? "Constrained"
             : !maxGrossExposure.HasValue
                 ? "Observe"
                 : utilization >= 80m ? "Observe" : "Healthy";
         var summary = breached
             ? "Portfolio gross exposure has breached the configured ceiling; new orders are rejected and the circuit breaker trips."
-            : violations.Count > 0
+            : liveViolation
                 ? "Recent orders were rejected by the gross exposure ceiling."
                 : !maxGrossExposure.HasValue
                     ? "No gross exposure ceiling is configured; the rule approves all orders."
@@ -621,7 +625,7 @@ public sealed class RiskRuleRuntimeService
             RuleName: "GrossExposure",
             State: state,
             Summary: summary,
-            IsBreached: breached || violations.Count > 0,
+            IsBreached: breached || liveViolation,
             Threshold: maxGrossExposure.HasValue
                 ? maxGrossExposure.Value.ToString("G29", CultureInfo.InvariantCulture)
                 : "unconfigured",
@@ -654,17 +658,19 @@ public sealed class RiskRuleRuntimeService
             }
         }
 
-        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "concentration");
+        var violations = DescribeViolations(violationEntries);
+        var liveViolation = HasLiveViolation(violationEntries, asOf);
         var utilization = ComputeUtilization(topPercent, maxPercent);
         var breached = maxPercent.HasValue && topPercent > maxPercent.Value;
-        var state = breached || violations.Count > 0
+        var state = breached || liveViolation
             ? "Constrained"
             : !maxPercent.HasValue
                 ? "Observe"
                 : utilization >= 80m ? "Observe" : "Healthy";
         var summary = breached
             ? $"{topSymbol} concentration has breached the configured cap."
-            : violations.Count > 0
+            : liveViolation
                 ? "Recent orders were rejected by the concentration cap."
                 : !maxPercent.HasValue
                     ? "No concentration cap is configured; the rule approves all orders."
@@ -676,7 +682,7 @@ public sealed class RiskRuleRuntimeService
             RuleName: "SymbolConcentration",
             State: state,
             Summary: summary,
-            IsBreached: breached || violations.Count > 0,
+            IsBreached: breached || liveViolation,
             Threshold: maxPercent.HasValue ? $"{maxPercent.Value:F2}%" : "unconfigured",
             CurrentValue: snapshot is { PortfolioValue: > 0m } ? $"{topSymbol} {topPercent:F2}%" : "0.00%",
             AsOf: asOf,
@@ -697,9 +703,10 @@ public sealed class RiskRuleRuntimeService
             .Where(static entry => string.Equals(entry.RuleName, "OrderNotional", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        var violations = FindViolations(auditEntries, actionHint: "OrderRejected", textHint: "notional");
+        var violationEntries = FindViolationEntries(auditEntries, actionHint: "OrderRejected", textHint: "notional");
+        var violations = DescribeViolations(violationEntries);
         var configured = maxNotional.HasValue || escalateAt.HasValue;
-        var breached = violations.Count > 0;
+        var breached = HasLiveViolation(violationEntries, asOf);
         var state = breached
             ? "Constrained"
             : !configured
@@ -757,7 +764,16 @@ public sealed class RiskRuleRuntimeService
         return Math.Clamp(Math.Round(utilization, 2), 0m, 999.99m);
     }
 
-    private static List<string> FindViolations(
+    /// <summary>
+    /// How recent an audited breach must be to still describe the rule's live state. Older
+    /// breaches remain visible as evidence in <see cref="RiskRuleStatusDto.RecentViolations"/>
+    /// but no longer hold a guardrail Constrained: the audit window is bounded by entry
+    /// count, not age, so on a quiet installation one old rejection would otherwise pin the
+    /// rule (and the operator readiness gate that reads it) indefinitely.
+    /// </summary>
+    private static readonly TimeSpan ViolationLivenessWindow = TimeSpan.FromHours(1);
+
+    private static List<ExecutionAuditEntry> FindViolationEntries(
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         string actionHint,
         string textHint)
@@ -769,9 +785,22 @@ public sealed class RiskRuleRuntimeService
                  (entry.Reason?.Contains(textHint, StringComparison.OrdinalIgnoreCase) ?? false)))
             .OrderByDescending(static entry => entry.OccurredAt)
             .Take(5)
-            .Select(entry => entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.")
             .ToList();
     }
+
+    private static List<string> DescribeViolations(IEnumerable<ExecutionAuditEntry> entries) =>
+        entries
+            .Select(static entry => entry.Message ?? entry.Reason ?? $"{entry.Action} recorded at {entry.OccurredAt:O}.")
+            .ToList();
+
+    private static bool HasLiveViolation(IReadOnlyList<ExecutionAuditEntry> entries, DateTimeOffset asOf) =>
+        entries.Any(entry => asOf - entry.OccurredAt <= ViolationLivenessWindow);
+
+    private static List<string> FindViolations(
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        string actionHint,
+        string textHint) =>
+        DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint));
 
     private decimal GetMaxDrawdownPercent()
     {

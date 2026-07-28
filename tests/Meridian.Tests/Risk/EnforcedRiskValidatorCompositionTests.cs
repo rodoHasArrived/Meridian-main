@@ -172,6 +172,78 @@ public sealed class EnforcedRiskValidatorCompositionTests
     }
 
     [Fact]
+    public async Task GetAllStatusesAsync_StaleBreach_StopsConstrainingLiveState()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"risk-status-{Guid.NewGuid():N}");
+        await using var auditTrail = new Meridian.Execution.Services.ExecutionAuditTrailService(
+            new Meridian.Execution.Services.ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<Meridian.Execution.Services.ExecutionAuditTrailService>.Instance);
+
+        // A gross-exposure rejection from days ago: retained as evidence, but the audit
+        // window is bounded by entry count, not age, so it must not pin the guardrail
+        // Constrained forever on a quiet installation.
+        await auditTrail.RecordAsync(new Meridian.Execution.Services.ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: DateTimeOffset.UtcNow.AddDays(-3),
+            Actor: "trade-desk",
+            BrokerName: "paper",
+            OrderId: "OLD-1",
+            RunId: null,
+            Symbol: "AAPL",
+            CorrelationId: null,
+            Message: "Gross exposure limit: projected 150000.00 exceeds 100000.00 ceiling"));
+
+        var services = new Mock<IServiceProvider>();
+        services.Setup(s => s.GetService(typeof(Meridian.Execution.Services.ExecutionAuditTrailService)))
+            .Returns(auditTrail);
+        var runtime = CreateRuntime(services.Object);
+
+        var statuses = await runtime.GetAllStatusesAsync();
+        var gross = statuses.Single(status => status.RuleName == "GrossExposure");
+
+        gross.IsBreached.Should().BeFalse("a days-old rejection no longer describes live state");
+        gross.State.Should().NotBe("Constrained");
+        gross.RecentViolations.Should().ContainSingle(violation => violation.Contains("Gross exposure limit"),
+            "the breach is still retained as evidence");
+    }
+
+    [Fact]
+    public async Task GetAllStatusesAsync_RecentBreach_ConstrainsLiveState()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"risk-status-{Guid.NewGuid():N}");
+        await using var auditTrail = new Meridian.Execution.Services.ExecutionAuditTrailService(
+            new Meridian.Execution.Services.ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<Meridian.Execution.Services.ExecutionAuditTrailService>.Instance);
+
+        await auditTrail.RecordAsync(new Meridian.Execution.Services.ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+            Actor: "trade-desk",
+            BrokerName: "paper",
+            OrderId: "NEW-1",
+            RunId: null,
+            Symbol: "AAPL",
+            CorrelationId: null,
+            Message: "Gross exposure limit: projected 150000.00 exceeds 100000.00 ceiling"));
+
+        var services = new Mock<IServiceProvider>();
+        services.Setup(s => s.GetService(typeof(Meridian.Execution.Services.ExecutionAuditTrailService)))
+            .Returns(auditTrail);
+        var runtime = CreateRuntime(services.Object);
+
+        var gross = (await runtime.GetAllStatusesAsync()).Single(status => status.RuleName == "GrossExposure");
+
+        gross.IsBreached.Should().BeTrue("a breach inside the liveness window still describes live state");
+        gross.State.Should().Be("Constrained");
+    }
+
+    [Fact]
     public async Task UpdateConfigAsync_WhenSnapshotWriteFails_LeavesLiveThresholdsUnchanged()
     {
         // A file squatting on the snapshot's parent directory makes the durable write fail,

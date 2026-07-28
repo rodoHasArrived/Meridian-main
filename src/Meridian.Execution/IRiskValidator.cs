@@ -35,6 +35,13 @@ public sealed record RiskValidationResult
     /// </summary>
     public IReadOnlyList<string> Warnings { get; init; } = [];
 
+    /// <summary>
+    /// When the approval consumed a one-shot governed release token, its escalation id.
+    /// The OMS re-arms this approval if the gateway faults before the order routes, so a
+    /// transient submission failure never permanently retires an operator's decision.
+    /// </summary>
+    public string? ConsumedApprovalId { get; init; }
+
     public static RiskValidationResult Approved() => new() { IsApproved = true };
     public static RiskValidationResult Rejected(string reason) => new() { IsApproved = false, RejectReason = reason };
 

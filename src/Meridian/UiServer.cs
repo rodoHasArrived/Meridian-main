@@ -371,7 +371,8 @@ public sealed class UiServer : IAsyncDisposable
                     liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
                     options: sp.GetRequiredService<OrderManagementSystemOptions>(),
                     tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
+                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                    escalationQueue: sp.GetService<RiskEscalationQueueService>());
             });
             if (usesPaperGateway)
             {

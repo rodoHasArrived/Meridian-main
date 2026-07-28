@@ -348,6 +348,15 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     }
 
     /// <summary>
+    /// Metadata keys the release path itself stamps (or rewrites) on a resubmission and
+    /// which therefore cannot participate in the fingerprint: the approval token, the
+    /// approving actor, and the release correlation id. Every other metadata key must
+    /// match the parked order exactly.
+    /// </summary>
+    private static readonly HashSet<string> ReleaseMetadataKeys =
+        new(StringComparer.OrdinalIgnoreCase) { ApprovalMetadataKey, "actor", "correlationId" };
+
+    /// <summary>
     /// Compares every routing- and payoff-relevant field of the parked order against the
     /// resubmission, so an approval cannot release a stop, trailing, time-in-force,
     /// account, strategy, option, or leg variation the risk desk never reviewed.
@@ -366,7 +375,54 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         string.Equals(parked.StrategyId, resubmitted.StrategyId, StringComparison.Ordinal) &&
         parked.PositionIntent == resubmitted.PositionIntent &&
         Equals(parked.OptionContract, resubmitted.OptionContract) &&
-        LegsMatch(parked.Legs, resubmitted.Legs);
+        LegsMatch(parked.Legs, resubmitted.Legs) &&
+        MetadataMatches(parked.Metadata, resubmitted.Metadata);
+
+    /// <summary>
+    /// Compares order metadata outside the release keys. Gateways consume metadata for
+    /// notional sizing, bracket legs, extended-hours routing, and position effect, so an
+    /// unconstrained metadata bag would let an approval release a materially different
+    /// executable order. The comparison is default-deny: any added, removed, or altered
+    /// non-release key fails the fingerprint, without this queue needing to know which
+    /// keys a particular gateway happens to read.
+    /// </summary>
+    private static bool MetadataMatches(
+        IReadOnlyDictionary<string, string>? parked,
+        IReadOnlyDictionary<string, string>? resubmitted)
+    {
+        static IEnumerable<KeyValuePair<string, string>> Executable(IReadOnlyDictionary<string, string>? metadata) =>
+            metadata is null
+                ? []
+                : metadata.Where(static pair => !ReleaseMetadataKeys.Contains(pair.Key));
+
+        // Built key-by-key rather than via ToDictionary: a source bag with case-colliding
+        // keys must fail the fingerprint, never throw out of a security check.
+        var parkedKeys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in Executable(parked))
+        {
+            if (!parkedKeys.TryAdd(key, value))
+            {
+                return false;
+            }
+        }
+
+        var resubmittedPairs = Executable(resubmitted).ToArray();
+        if (parkedKeys.Count != resubmittedPairs.Length)
+        {
+            return false;
+        }
+
+        foreach (var (key, value) in resubmittedPairs)
+        {
+            if (!parkedKeys.TryGetValue(key, out var parkedValue) ||
+                !string.Equals(parkedValue, value, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static bool LegsMatch(IReadOnlyList<OrderLeg>? parked, IReadOnlyList<OrderLeg>? resubmitted)
     {

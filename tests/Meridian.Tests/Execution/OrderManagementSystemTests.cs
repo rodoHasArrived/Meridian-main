@@ -1287,6 +1287,62 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             "non-blocking flags accumulated before the rejection must survive on the result");
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGatewayFaults_ReArmsTheConsumedGovernedApproval()
+    {
+        // A validator that approves while reporting it consumed a one-shot approval.
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var parked = queue.Park(
+            new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 },
+            "above band");
+        queue.Approve(parked.EscalationId, actor: "risk-desk");
+        queue.TryConsumeApproval(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId
+            }
+        }).Should().NotBeNull();
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = parked.EscalationId });
+
+        // "paper" keeps the brokerage placement gate in simulated mode so the order
+        // reaches the gateway, where submission then faults.
+        var faultingGateway = Substitute.For<IExecutionGateway>();
+        faultingGateway.GatewayId.Returns("paper");
+        faultingGateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => throw new InvalidOperationException("gateway unreachable"));
+
+        using var oms = new OrderManagementSystem(
+            faultingGateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-FAULT"
+        });
+
+        result.Success.Should().BeFalse();
+        queue.TryGet(parked.EscalationId)!.Status.Should().Be(
+            RiskEscalationStatus.Approved,
+            "the gateway faulted before anything routed, so the operator's approval must be retryable");
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

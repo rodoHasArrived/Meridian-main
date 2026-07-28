@@ -331,7 +331,16 @@ internal sealed class LiveStrategyRunSession
             try
             {
                 var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
-                if (!result.Success)
+                if (result.RequiresApproval)
+                {
+                    // Parked for governed approval, not rejected: the order can still be
+                    // released later, and its execution report will carry this client
+                    // order id. Keep the mapping alive so the run receives the fill.
+                    _logger.LogInformation(
+                        "Run {RunId} order {ClientOrderId} for {Symbol} is parked for governed risk approval ({EscalationId})",
+                        _run.RunId, clientOrderId, order.Symbol, result.EscalationId ?? "unknown");
+                }
+                else if (!result.Success)
                 {
                     _logger.LogWarning(
                         "Run {RunId} order {ClientOrderId} for {Symbol} was rejected: {Reason}",

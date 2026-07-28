@@ -1,5 +1,6 @@
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Risk;
 using Meridian.Strategies.Services;
@@ -19,6 +20,9 @@ namespace Meridian.Ui.Shared.Services;
 /// (the host state is itself registered, so it is counted exactly once), falling back to
 /// the host <see cref="IPortfolioState"/> and finally to gross exposure so concentration
 /// percentages stay defined for thinner compositions.
+/// Accepted-but-unfilled orders reserve their remaining exposure in the snapshot, so a
+/// burst of working orders cannot each observe a flat book and collectively breach a
+/// ceiling that none of them breaches alone.
 /// </summary>
 public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvider
 {
@@ -27,19 +31,98 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly PortfolioRegistry? _registry;
     private readonly QuoteCollector? _quotes;
     private readonly TradeDataCollector? _trades;
+    private readonly Func<IOrderManager?>? _orderManagerAccessor;
 
     public AggregatePortfolioExposureProvider(
         IAggregatePortfolioService aggregatePortfolio,
         IPortfolioState? portfolioState = null,
         PortfolioRegistry? registry = null,
         QuoteCollector? quotes = null,
-        TradeDataCollector? trades = null)
+        TradeDataCollector? trades = null,
+        Func<IOrderManager?>? orderManagerAccessor = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
         _registry = registry;
         _quotes = quotes;
         _trades = trades;
+        // Resolved lazily: the OMS depends on the risk validator, which depends on this
+        // provider, so a direct constructor dependency would close a DI cycle.
+        _orderManagerAccessor = orderManagerAccessor;
+    }
+
+    /// <summary>
+    /// Folds accepted-but-unfilled order quantity into the exposure snapshot so working
+    /// orders reserve their projected exposure. Without this, two orders that each fit
+    /// under a ceiling can both pass while neither has filled, leaving their combined
+    /// notional executable. Only the unfilled remainder counts — the filled portion is
+    /// already carried by the positions above.
+    /// </summary>
+    private void ApplyWorkingOrderExposure(
+        Dictionary<string, SymbolExposure> symbolExposures,
+        ref decimal grossExposure,
+        ref decimal netExposure)
+    {
+        var orderManager = _orderManagerAccessor?.Invoke();
+        if (orderManager is null)
+        {
+            return;
+        }
+
+        foreach (var order in orderManager.GetOpenOrders())
+        {
+            var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
+            if (remaining <= 0m)
+            {
+                continue;
+            }
+
+            var existing = symbolExposures.TryGetValue(order.Symbol, out var tracked)
+                ? tracked
+                : null;
+            var price = order.LimitPrice ?? order.StopPrice ?? 0m;
+            if (price <= 0m)
+            {
+                price = WorkstationEndpoints.ResolveLiveMark(order.Symbol, _quotes, _trades) ?? 0m;
+            }
+
+            if (price <= 0m)
+            {
+                price = existing?.ReferencePrice ?? 0m;
+            }
+
+            if (price <= 0m)
+            {
+                // No price reference at all: the order cannot be measured, and guessing a
+                // price would be worse than under-reserving a market order in a never-held
+                // symbol (the per-order notional rule declines to guess for the same reason).
+                continue;
+            }
+
+            var workingNotional = remaining * price;
+            var signedNotional = order.Side switch
+            {
+                OrderSide.Buy => workingNotional,
+                OrderSide.Sell => -workingNotional,
+                _ => 0m
+            };
+            var signedQuantity = order.Side switch
+            {
+                OrderSide.Buy => remaining,
+                OrderSide.Sell => -remaining,
+                _ => 0m
+            };
+
+            grossExposure += workingNotional;
+            netExposure += signedNotional;
+
+            symbolExposures[order.Symbol] = new SymbolExposure(
+                Symbol: existing?.Symbol ?? order.Symbol,
+                GrossExposure: (existing?.GrossExposure ?? 0m) + workingNotional,
+                NetQuantity: (existing?.NetQuantity ?? 0m) + signedQuantity,
+                ReferencePrice: existing is { ReferencePrice: > 0m } ? existing.ReferencePrice : price,
+                NetNotional: (existing?.NetNotional ?? 0m) + signedNotional);
+        }
     }
 
     /// <inheritdoc />
@@ -82,6 +165,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                     : absoluteQuantity > 0m ? symbolGross / absoluteQuantity : 0m,
                 NetNotional: symbolNet);
         }
+
+        ApplyWorkingOrderExposure(symbolExposures, ref grossExposure, ref netExposure);
 
         // The concentration denominator must cover the same portfolios the positions came
         // from: sum value across the registry (deduplicated by instance — the host state is

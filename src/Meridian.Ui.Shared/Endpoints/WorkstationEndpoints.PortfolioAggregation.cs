@@ -36,14 +36,20 @@ public static partial class WorkstationEndpoints
         .Produces(503)
         .RequirePermission(UserPermission.ViewTrades);
 
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), (HttpContext context) =>
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), async (HttpContext context) =>
         {
             var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
             if (aggregator is null)
                 return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var report = aggregator.GetCrossStrategyExposure();
-            return Results.Json(report, jsonOptions);
+            // Built from the caller's authorized contributions rather than
+            // GetCrossStrategyExposure(): the summary must not span funds the caller
+            // cannot see, and per-contribution valuation is the only correct basis when
+            // runs hold opposing quantities of the same symbol (the netted signed
+            // weighted-average cost can go negative and produce nonsensical gross).
+            var scoped = await FilterToAuthorizedAccountsAsync(
+                context, aggregator.GetAggregatedPositions()).ConfigureAwait(false);
+            return Results.Json(BuildExposureReport(scoped), jsonOptions);
         })
         .WithName("GetPortfolioExposure")
         .Produces<CrossStrategyExposureReport>(200)
@@ -51,20 +57,77 @@ public static partial class WorkstationEndpoints
         .Produces(503)
         .RequirePermission(UserPermission.ViewTrades);
 
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), (string symbol, HttpContext context) =>
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), async (string symbol, HttpContext context) =>
         {
             var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
             if (aggregator is null)
                 return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var net = aggregator.GetNetPositionForSymbol(symbol);
-            return Results.Json(net, jsonOptions);
+            // Same scoping as the aggregate route: a per-symbol net/gross across every
+            // registered account would otherwise leak other funds' holdings exactly.
+            var scoped = await FilterToAuthorizedAccountsAsync(
+                context, aggregator.GetAggregatedPositions()).ConfigureAwait(false);
+            var contributions = scoped
+                .Where(position => string.Equals(position.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(static position => position.Contributions)
+                .ToArray();
+
+            return Results.Json(
+                new NetSymbolPosition(
+                    Symbol: symbol,
+                    NetQuantity: contributions.Sum(static c => c.Quantity),
+                    GrossQuantity: contributions.Sum(static c => Math.Abs(c.Quantity))),
+                jsonOptions);
         })
         .WithName("GetPortfolioSymbolExposure")
         .Produces<NetSymbolPosition>(200)
         .Produces(403)
         .Produces(503)
         .RequirePermission(UserPermission.ViewTrades);
+    }
+
+    /// <summary>
+    /// Computes gross/net exposure from individual run contributions valued at their own
+    /// positive cost basis. Netting first (as the aggregation service's weighted-average
+    /// cost does) is wrong whenever runs hold opposing quantities of a symbol: long 100 at
+    /// $100 against short 90 at $200 nets to a negative weighted cost and would report
+    /// negative gross exposure.
+    /// </summary>
+    internal static CrossStrategyExposureReport BuildExposureReport(IReadOnlyList<AggregatedPosition> positions)
+    {
+        var longExposure = 0m;
+        var shortExposure = 0m;
+        var symbolGross = new List<(string Symbol, decimal Gross)>(positions.Count);
+
+        foreach (var position in positions)
+        {
+            var gross = 0m;
+            foreach (var contribution in position.Contributions)
+            {
+                var value = Math.Abs(contribution.Quantity) * Math.Abs(contribution.CostBasis);
+                gross += value;
+                if (contribution.Quantity >= 0m)
+                {
+                    longExposure += value;
+                }
+                else
+                {
+                    shortExposure += value;
+                }
+            }
+
+            symbolGross.Add((position.Symbol, gross));
+        }
+
+        return new CrossStrategyExposureReport(
+            GrossExposure: longExposure + shortExposure,
+            NetExposure: longExposure - shortExposure,
+            Top5Concentrations: symbolGross
+                .OrderByDescending(static entry => entry.Gross)
+                .Take(5)
+                .Select(static entry => entry.Symbol)
+                .ToArray(),
+            AsOf: DateTimeOffset.UtcNow);
     }
 
     /// <summary>

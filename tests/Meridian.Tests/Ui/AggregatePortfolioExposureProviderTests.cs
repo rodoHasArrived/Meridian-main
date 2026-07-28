@@ -123,6 +123,78 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_ReservesExposureForWorkingOrders()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // An accepted-but-unfilled limit buy: 100 x $600 = $60k of working exposure that
+        // must be reserved, or a second identical order would also see a flat book.
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "working-1",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 100m,
+                LimitPrice = 600m,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+        var snapshot = provider.GetSnapshot();
+
+        snapshot.GrossExposure.Should().Be(60_000m, "working orders reserve their projected exposure");
+        snapshot.NetExposure.Should().Be(60_000m);
+        snapshot.GetSymbolExposure("AAPL").GrossExposure.Should().Be(60_000m);
+        snapshot.GetSymbolExposure("AAPL").ReferencePrice.Should().Be(600m);
+    }
+
+    [Fact]
+    public void GetSnapshot_WorkingOrder_ReservesOnlyTheUnfilledRemainder()
+    {
+        // The filled 40 shares are already carried by the position below; only the
+        // remaining 60 x $100 = $6k may be reserved again.
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            Position("AAPL", longQty: 40m, shortQty: 0m, weightedAverageCost: 100m)
+        ]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "working-2",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 100m,
+                FilledQuantity = 40m,
+                LimitPrice = 100m,
+                Status = Meridian.Execution.Sdk.OrderStatus.PartiallyFilled,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            10_000m,
+            "$4k filled position plus $6k unfilled remainder — the filled part is never double-counted");
+    }
+
+    [Fact]
     public void GetSnapshot_WithRegistry_SumsPortfolioValueAcrossRegisteredPortfolios()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

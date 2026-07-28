@@ -161,7 +161,12 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 }
             }
 
-            return WithWarnings(RiskValidationResult.Approved(), warnings);
+            var approved = WithWarnings(RiskValidationResult.Approved(), warnings);
+            // Surface the consumed approval on the approved result so the OMS can re-arm
+            // it if the gateway subsequently faults before the order routes.
+            return releasedEntry is null
+                ? approved
+                : approved with { ConsumedApprovalId = releasedEntry.EscalationId };
         }
         catch
         {
@@ -228,13 +233,17 @@ public sealed class CompositeRiskValidator : IRiskValidator
         request.Metadata?.TryGetValue("actor", out actor);
         string? correlationId = null;
         request.Metadata?.TryGetValue("correlationId", out correlationId);
+        // Live runs stamp their unique run id into metadata; StrategyId only names the
+        // reusable strategy definition, which would conflate every run of that strategy.
+        string? runId = null;
+        request.Metadata?.TryGetValue("runId", out runId);
 
         var entry = _escalationQueue.Park(
             request,
             reason,
             ruleName: rule.RuleName,
             actor: actor,
-            runId: request.StrategyId,
+            runId: string.IsNullOrWhiteSpace(runId) ? request.StrategyId : runId,
             correlationId: correlationId);
         _logger.LogWarning(
             "Risk rule {RuleName} parked the order for governed approval ({EscalationId})",

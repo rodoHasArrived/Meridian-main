@@ -43,7 +43,11 @@ let projectedSymbolAbsoluteExposure (ctx: RiskContext) : decimal =
     | _ -> currentGross + (ctx.OrderNotional |> Option.defaultValue 0m)
 
 /// Rejects an order whose notional would push the portfolio-wide gross exposure over the
-/// configured ceiling. Direction-aware: de-risking orders reduce the projection.
+/// configured ceiling. Direction-aware: de-risking orders reduce the projection, and an
+/// order that strictly reduces gross exposure is always permitted — when a market move or
+/// a tightened threshold leaves the book already above the ceiling, the desk must still
+/// be able to unwind incrementally rather than being locked out (and, at Critical
+/// severity, tripping the breaker on its own de-risking attempts).
 /// Missing exposure data or an unconfigured ceiling approves.
 let grossExposureLimit (ctx: RiskContext) : RiskDecision =
     match ctx.PortfolioExposure, ctx.MaxGrossExposure with
@@ -51,7 +55,7 @@ let grossExposureLimit (ctx: RiskContext) : RiskDecision =
         let currentSymbolAbs = ctx.SymbolExposure |> Option.defaultValue 0m
         let projectedSymbolAbs = projectedSymbolAbsoluteExposure ctx
         let projected = max 0m (grossExposure - currentSymbolAbs + projectedSymbolAbs)
-        if projected > maxGrossExposure then
+        if projected > maxGrossExposure && projected >= grossExposure then
             Reject (sprintf "Gross exposure limit: projected %.2f exceeds %.2f ceiling" (float projected) (float maxGrossExposure))
         else
             Approve
@@ -59,13 +63,16 @@ let grossExposureLimit (ctx: RiskContext) : RiskDecision =
 
 /// Rejects an order that would concentrate a single symbol beyond the configured
 /// percentage of portfolio value. Direction-aware: reducing orders lower the projected
-/// concentration. Requires a positive portfolio value to be meaningful.
+/// concentration, and an order that strictly reduces the symbol's exposure is always
+/// permitted so an oversized position can be unwound incrementally while still above the
+/// cap. Requires a positive portfolio value to be meaningful.
 let symbolConcentration (ctx: RiskContext) : RiskDecision =
     match ctx.PortfolioValue, ctx.MaxSymbolConcentrationPercent with
     | Some portfolioValue, Some maxPercent when portfolioValue > 0m && maxPercent > 0m ->
+        let currentSymbolAbs = ctx.SymbolExposure |> Option.defaultValue 0m
         let projected = projectedSymbolAbsoluteExposure ctx
         let projectedPercent = (projected / portfolioValue) * 100m
-        if projectedPercent > maxPercent then
+        if projectedPercent > maxPercent && projected >= currentSymbolAbs then
             Reject (sprintf "Concentration limit: %s at %.2f%% of portfolio value exceeds %.2f%% cap" ctx.Request.Symbol (float projectedPercent) (float maxPercent))
         else
             Approve

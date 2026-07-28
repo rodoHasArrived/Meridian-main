@@ -373,7 +373,11 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Execution.Models.IPortfolioState>(),
                 sp.GetService<PortfolioRegistry>(),
                 sp.GetService<Meridian.Domain.Collectors.QuoteCollector>(),
-                sp.GetService<Meridian.Domain.Collectors.TradeDataCollector>()));
+                sp.GetService<Meridian.Domain.Collectors.TradeDataCollector>(),
+                // Lazy accessor, not a constructor dependency: the OMS depends on the risk
+                // validator that consumes this provider, so resolving it eagerly would
+                // close a DI cycle. Working orders still reserve their exposure.
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
