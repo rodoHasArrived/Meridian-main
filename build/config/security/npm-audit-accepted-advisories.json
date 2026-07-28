@@ -1,0 +1,18 @@
+{
+  "schema": "meridian.npm-audit-accepted-advisories",
+  "version": "1.0.0",
+  "registry": "docs/security/known-vulnerabilities.md",
+  "policy": "Every entry must mirror an accepted-risk record in the registry above, and expires at review_by. Enforced by build/scripts/ci/validate-npm-audit.py in the Production Certification dependency-evidence job.",
+  "accepted": [
+    {
+      "id": "KV-2026-002",
+      "ghsa": "GHSA-qwww-vcr4-c8h2",
+      "package": "react-router",
+      "max_severity": "high",
+      "reason": "RSC/framework-mode CSRF bypass. The dashboard is a client-only Vite SPA with no React Router server runtime, so the vulnerable path is unreachable in the shipped artifact. No patched 7.x exists; the fix line is react-router 8.3.0 and npm's suggested downgrade would drop seven minors of fixes. Exit path: migrate the dashboard to react-router v8 or adopt a patched 7.x if one appears.",
+      "owner": "core-team",
+      "accepted_on": "2026-07-28",
+      "review_by": "2026-10-28"
+    }
+  ]
+}
