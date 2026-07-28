@@ -1910,7 +1910,10 @@ public static partial class LedgerEndpoints
     }
 
     private static IResult ServiceUnavailable()
-        => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+        => ServiceUnavailable("Ledger book service is not registered.");
+
+    private static IResult ServiceUnavailable(string detail)
+        => Results.Problem(detail, statusCode: StatusCodes.Status501NotImplemented);
 
 
     private static bool HasAccountingPackageTenantScope(WorkstationTenantContext tenantContext)
