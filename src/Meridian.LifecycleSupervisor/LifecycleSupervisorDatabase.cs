@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Meridian.Contracts.Lifecycle;
 
 namespace Meridian.LifecycleSupervisor;
@@ -109,6 +111,7 @@ internal sealed class LifecycleDatabaseController
         var initDb = LifecycleSupervisorPreflight.ResolveTool(binPath, "initdb.exe")
                      ?? throw new FileNotFoundException("initdb.exe was not found.");
         Directory.CreateDirectory(Path.GetDirectoryName(_dataDirectory)!);
+        GrantCurrentUserInheritableFullControl(Path.GetDirectoryName(_dataDirectory)!);
         _password = LoadOrCreateDatabasePassword();
 
         var adopted = TryReadOwnedIdentity(pgCtl);
@@ -395,6 +398,40 @@ internal sealed class LifecycleDatabaseController
             return;
         process.Kill(entireProcessTree: true);
         await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+    }
+
+    // On elevated Windows contexts (CI runners, admin-run installers) initdb.exe re-executes
+    // itself with a restricted token that drops the Administrators group, so a directory
+    // reachable only through group ACEs fails initdb's permission fixup with "could not
+    // change permissions ... Permission denied". An explicit current-user ACE survives token
+    // restriction, and inheritance covers the initializing directory, the renamed data
+    // directory, and the server log. Best-effort: when the grant cannot be applied, initdb's
+    // own diagnostic remains the authoritative failure.
+    internal static void GrantCurrentUserInheritableFullControl(string directory)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            if (identity.User is null)
+                return;
+            var info = new DirectoryInfo(directory);
+            var security = info.GetAccessControl();
+            security.AddAccessRule(new FileSystemAccessRule(
+                identity.User,
+                FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow));
+            info.SetAccessControl(security);
+        }
+        catch (Exception ex) when (ex is IOException
+                                       or UnauthorizedAccessException
+                                       or PlatformNotSupportedException
+                                       or IdentityNotMappedException)
+        {
+        }
     }
 
     private static string Sanitize(params string[] values)

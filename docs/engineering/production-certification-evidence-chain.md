@@ -160,6 +160,27 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` third attempt
+  ([30339833870](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339833870),
+  merged content `7d6ccd1ff`): the bundle-carrying publish, the artifact-bundle install, and
+  the supervisor launch all succeeded; the run reached the final `startupz` probe, which
+  refused for 90s. The preserved diagnostics (first run with failure-time artifact upload)
+  contain the lifecycle receipt that pins the cause: the supervisor session failed in 0.4s
+  because `initdb.exe` exited 1 — "could not change permissions of directory
+  `.../data.initializing-*`: Permission denied". On an elevated context (CI runner,
+  admin-run installer) initdb re-executes with a restricted token that drops the
+  Administrators group, so a directory reachable only through group ACEs fails its
+  permission fixup. Fixed in the post-merge follow-up candidate:
+  `LifecycleSupervisorDatabase` now grants an explicit inheritable current-user ACE on the
+  `postgresql` root before initdb (explicit user ACEs survive token restriction), with
+  focused ACL tests. Also the installed-startup defect class `PRD-000`'s clean
+  publish/start receipts exist to catch — the fix equally covers real elevated installs.
+- **2026-07-28** — `Production Certification` run #8
+  ([30339835410](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339835410),
+  merged content `7d6ccd1ff`): recovery drill green for the second consecutive run;
+  dependency evidence and documentation evidence green for the third consecutive run;
+  deterministic-integrations red only at the harness-debt test step with schema evidence
+  captured. The 3-of-4-green pattern is stable on the merged content.
 - **2026-07-28** — `Production Certification` run #7
   ([30339057032](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339057032),
   candidate `d10d5c003`): **first-ever green recovery drill** — encrypted backup, hash
