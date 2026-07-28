@@ -30,6 +30,16 @@ public interface IOrderManager
     /// <summary>Gets order state by ID.</summary>
     OrderState? GetOrder(string orderId);
 
+    /// <summary>
+    /// True when <paramref name="orderId"/> was parked for governed risk approval and that
+    /// approval ended without the order ever routing. A released order re-enters the report
+    /// stream under the same id, but a declined one produces no further report at all, so
+    /// callers holding per-order bookkeeping need this to retire it instead of waiting for
+    /// a terminal report that never arrives. Implementations without a governed approval
+    /// queue never park orders and report false.
+    /// </summary>
+    bool WasRiskApprovalDeclined(string orderId) => false;
+
     /// <summary>Cancels all open orders.</summary>
     Task CancelAllAsync(CancellationToken ct = default);
 

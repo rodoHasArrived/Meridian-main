@@ -134,10 +134,16 @@ public static partial class WorkstationEndpoints
     /// Filters per-run contributions to the caller's scoped account authority: fund-account
     /// contributions (Guid account ids) outside the caller's scoped trade-read grants are
     /// removed and the position aggregates recomputed from what survives, so one fund's
-    /// operator cannot read another fund's holdings or trade intentions. Run-local
-    /// (non-Guid) account ids belong to paper strategy runs, not funds, and stay visible
-    /// to any trade-read holder. <see cref="UserPermission.AdminMaintenance"/> sees the
-    /// full aggregation. One scope check per distinct account, not per contribution.
+    /// operator cannot read another fund's holdings or trade intentions.
+    /// <para>
+    /// Non-Guid account ids name a shared execution book rather than a fund, so they carry
+    /// no ownership of their own: in a fund-partitioned aggregation that book can hold any
+    /// fund's routed flow. They stay visible only to a caller already authorized for every
+    /// fund account present — who therefore learns nothing new from them — which keeps the
+    /// wholly run-local paper case visible while closing the shared-account read path for a
+    /// fund-scoped operator. <see cref="UserPermission.AdminMaintenance"/> sees the full
+    /// aggregation. One scope check per distinct account, not per contribution.
+    /// </para>
     /// </summary>
     internal static async Task<IReadOnlyList<AggregatedPosition>> FilterToAuthorizedAccountsAsync(
         HttpContext context,
@@ -149,6 +155,29 @@ public static partial class WorkstationEndpoints
         }
 
         var scopeCache = new Dictionary<Guid, bool>();
+        foreach (var position in positions)
+        {
+            foreach (var contribution in position.Contributions)
+            {
+                if (!Guid.TryParse(contribution.AccountId, out var fundAccountId) ||
+                    scopeCache.ContainsKey(fundAccountId))
+                {
+                    continue;
+                }
+
+                scopeCache[fundAccountId] = await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ViewTrades,
+                    AccessScopeKindDto.Account,
+                    fundAccountId,
+                    context.RequestAborted).ConfigureAwait(false);
+            }
+        }
+
+        // Vacuously true when no contribution is fund-keyed: the whole aggregation is
+        // run-local, so the shared book cannot be hiding a fund the caller may not read.
+        var sharedBookVisible = scopeCache.Values.All(static authorized => authorized);
+
         var filtered = new List<AggregatedPosition>(positions.Count);
         foreach (var position in positions)
         {
@@ -156,20 +185,9 @@ public static partial class WorkstationEndpoints
             var removedAny = false;
             foreach (var contribution in position.Contributions)
             {
-                var authorized = true;
-                if (Guid.TryParse(contribution.AccountId, out var fundAccountId))
-                {
-                    if (!scopeCache.TryGetValue(fundAccountId, out authorized))
-                    {
-                        authorized = await EndpointAuthorization.HasScopedPermissionAsync(
-                            context,
-                            UserPermission.ViewTrades,
-                            AccessScopeKindDto.Account,
-                            fundAccountId,
-                            context.RequestAborted).ConfigureAwait(false);
-                        scopeCache[fundAccountId] = authorized;
-                    }
-                }
+                var authorized = Guid.TryParse(contribution.AccountId, out var fundAccountId)
+                    ? scopeCache[fundAccountId]
+                    : sharedBookVisible;
 
                 if (authorized)
                 {

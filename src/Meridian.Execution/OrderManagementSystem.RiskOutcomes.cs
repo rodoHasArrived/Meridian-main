@@ -153,6 +153,29 @@ public sealed partial class OrderManagementSystem
         return reserving;
     }
 
+    /// <inheritdoc />
+    public bool WasRiskApprovalDeclined(string orderId)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
+        {
+            // Never parked, or the escalation's own release already reclaimed the id — in
+            // which case the order routed and the report stream owns it from here.
+            return false;
+        }
+
+        var entry = _escalationQueue?.TryGet(escalationId);
+        if (entry is not null && entry.Status is not RiskEscalationStatus.Denied)
+        {
+            return false;
+        }
+
+        // A denied escalation can never be released, so the reservation on this client
+        // order id is dead too; drop it here rather than waiting for the next placement
+        // to clear it lazily.
+        _parkedOrderIds.TryRemove(orderId, out _);
+        return true;
+    }
+
     /// <summary>
     /// Cancels an order awaiting governed approval: the escalation is withdrawn so no
     /// operator can later execute an order the submitter cancelled, and the cancellation
@@ -297,6 +320,87 @@ public sealed partial class OrderManagementSystem
         var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
         sanitized.Remove(RiskEscalationQueueService.EvaluationOnlyMetadataKey);
         return request with { Metadata = sanitized };
+    }
+
+    /// <summary>
+    /// Outcome of revalidating a risk-increasing amendment: either a <paramref name="Refusal"/>
+    /// to hand back to the caller, or the speculative <paramref name="Reservation"/> that
+    /// publishes the amended size to concurrent placements while the amendment routes.
+    /// </summary>
+    private readonly record struct AmendmentGateResult(
+        OrderState? Reservation,
+        string? Refusal,
+        IReadOnlyList<string>? Warnings);
+
+    /// <summary>
+    /// Revalidates a risk-increasing amendment and reserves the amended exposure under the
+    /// same pre-trade gate a placement uses, so a concurrent order cannot size itself against
+    /// the smaller pre-amendment order.
+    /// </summary>
+    private async Task<AmendmentGateResult> ReserveAmendedExposureAsync(
+        string orderId,
+        OrderState state,
+        OrderModification modification,
+        CancellationToken ct)
+    {
+        var amendmentProbe = BuildAmendmentProbe(state, modification);
+        IReadOnlyList<string>? warnings = null;
+        string? consumedApprovalId = null;
+
+        await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_riskValidator is not null)
+            {
+                var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
+                warnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null;
+                consumedApprovalId = amendedRisk.ConsumedApprovalId;
+
+                if (!amendedRisk.IsApproved)
+                {
+                    // An amendment is never parked: the original order stays live and the
+                    // caller is told the increase was refused. Any approval token consumed
+                    // by this evaluation is re-armed because nothing changed.
+                    RestoreConsumedApprovals(consumedApprovalId, "an amendment refused by risk validation");
+                    var refusal = amendedRisk.RequiresApproval
+                        ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
+                        : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
+                    return new AmendmentGateResult(null, refusal, warnings);
+                }
+            }
+
+            // Reserve the amended size before releasing the gate so a concurrent
+            // placement measures against the larger order, then route the amendment.
+            var reservation = state with
+            {
+                Quantity = modification.NewQuantity ?? state.Quantity,
+                LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+                StopPrice = modification.NewStopPrice ?? state.StopPrice,
+                RoutedNotional = null,
+                LastUpdatedAt = DateTimeOffset.UtcNow
+            };
+            if (_orders.TryUpdate(orderId, reservation, state))
+            {
+                return new AmendmentGateResult(reservation, null, warnings);
+            }
+        }
+        finally
+        {
+            _preTradeReservationGate.Release();
+        }
+
+        // The order moved underneath the gate, so the amended exposure was never published.
+        // Routing the amendment anyway would raise the broker-side size while every
+        // concurrent placement still measured the smaller order, so refuse it instead.
+        RestoreConsumedApprovals(consumedApprovalId, "an amendment whose exposure could not be reserved");
+        _logger.LogWarning(
+            "Order {OrderId} amendment was not applied: the order changed while its amended exposure was being reserved",
+            LogSanitizer.Sanitize(orderId));
+
+        return new AmendmentGateResult(
+            null,
+            "Modification not applied: the order changed while its amended exposure was being reserved.",
+            warnings);
     }
 
     /// <summary>

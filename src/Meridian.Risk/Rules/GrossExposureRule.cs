@@ -55,8 +55,8 @@ public sealed class GrossExposureRule : IRiskRule
             // attribution yields null, and the policy falls back to the additive worst case.
             signedSymbolExposure: symbolExposure.ResolveSignedExposureFor(request.FundAccountId),
             portfolioValue: snapshot.PortfolioValue,
-            orderNotional: OrderNotionalResolver.Resolve(request, snapshot, _exposureProvider.TryGetReferencePrice),
-            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot, _exposureProvider.TryGetReferencePrice),
+            orderNotional: OrderNotionalResolver.ResolveIncremental(request, snapshot, _exposureProvider.TryGetReferencePrice),
+            signedOrderNotional: OrderNotionalResolver.ResolveIncrementalSigned(request, snapshot, _exposureProvider.TryGetReferencePrice),
             maxGrossExposure: maxGrossExposure,
             maxSymbolConcentrationPercent: default,
             maxOrderNotional: default,

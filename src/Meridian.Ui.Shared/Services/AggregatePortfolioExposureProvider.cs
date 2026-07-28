@@ -141,9 +141,13 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 OrderSide.Sell => -1m,
                 _ => 0m
             };
-            // An unscoped working order lands in its own bucket, which correctly forces the
-            // additive worst case for multi-account symbols.
-            var key = (order.Symbol, order.FundAccountId?.ToString("D") ?? "unscoped");
+            // Bucket under the account that actually holds this symbol's book. FundAccountId
+            // is an accounting scope, while positions are keyed by execution account
+            // ("default" for the paper portfolio), so bucketing a fund-scoped close under
+            // its GUID would create an empty bucket and reserve the close as new exposure —
+            // reporting $200k for a $100k long being closed. Same rule as the projection:
+            // a single, non-fund-keyed contributing account is the whole book.
+            var key = (order.Symbol, ResolveExposureAccountKey(existing, order.FundAccountId));
             var bucket = buckets.GetValueOrDefault(key) ?? new WorkingOrderBucket();
             bucket.SignedNotional += direction * workingNotional;
             bucket.SignedQuantity += direction * Math.Max(0m, remaining);
@@ -197,6 +201,33 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 NetNotional: (existing?.NetNotional ?? 0m) + bucket.SignedNotional,
                 AccountNetNotional: accountNet);
         }
+    }
+
+    /// <summary>
+    /// Resolves the exposure-book key for a working order: its fund account when that
+    /// account already holds exposure, the single contributing execution account when the
+    /// mapping is unambiguous (that account is the whole book), otherwise the fund id (or
+    /// "unscoped"), which correctly forces the additive worst case.
+    /// </summary>
+    private static string ResolveExposureAccountKey(SymbolExposure? existing, Guid? fundAccountId)
+    {
+        var fundKey = fundAccountId?.ToString("D");
+        var accounts = existing?.AccountNetNotional;
+        if (fundKey is not null && accounts is not null && accounts.ContainsKey(fundKey))
+        {
+            return fundKey;
+        }
+
+        if (accounts is { Count: 1 })
+        {
+            var onlyAccount = accounts.Keys.First();
+            if (!Guid.TryParse(onlyAccount, out _))
+            {
+                return onlyAccount;
+            }
+        }
+
+        return fundKey ?? "unscoped";
     }
 
     /// <summary>Working-order exposure accumulated for one symbol and account.</summary>
@@ -274,13 +305,13 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         var portfolioValue = 0m;
         if (_registry is not null)
         {
+            // Sum SIGNED values: positions from a loss-impaired portfolio still enter the
+            // numerator, so excluding its negative NAV inflates the denominator. A +$100k
+            // and a -$90k portfolio have $10k of aggregate NAV, not $100k, and treating
+            // them as $100k would permit roughly ten times the configured concentration.
             foreach (var portfolio in _registry.GetAll().Values.Distinct<IMultiAccountPortfolioState>(ReferenceEqualityComparer.Instance))
             {
-                var value = portfolio.PortfolioValue;
-                if (value > 0m)
-                {
-                    portfolioValue += value;
-                }
+                portfolioValue += portfolio.PortfolioValue;
             }
         }
 

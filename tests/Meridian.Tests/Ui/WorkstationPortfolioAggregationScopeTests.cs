@@ -59,18 +59,57 @@ public sealed class WorkstationPortfolioAggregationScopeTests
             PositionWith(
                 Contribution(AllowedAccountId.ToString("D"), quantity: 100m),
                 Contribution(DeniedAccountId.ToString("D"), quantity: 500m),
-                Contribution("paper-run", quantity: 10m))
+                Contribution("default", quantity: 10m))
         };
 
         var filtered = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
             CreateContext(UserPermission.ViewTrades), positions);
 
         var position = filtered.Should().ContainSingle().Subject;
-        position.Contributions.Should().HaveCount(2, "the denied fund's contribution is removed");
-        position.Contributions.Should().NotContain(c => c.AccountId == DeniedAccountId.ToString("D"));
-        position.TotalQuantity.Should().Be(110m, "aggregates are recomputed so totals never leak the filtered fund's size");
-        position.LongQuantity.Should().Be(110m);
-        position.TotalUnrealisedPnl.Should().Be(110m);
+        position.Contributions.Should().ContainSingle("the denied fund is removed, and the shared execution book "
+            + "it could have routed through is not readable by a caller scoped to one fund");
+        position.Contributions.Should().OnlyContain(c => c.AccountId == AllowedAccountId.ToString("D"));
+        position.TotalQuantity.Should().Be(100m, "aggregates are recomputed so totals never leak the filtered fund's size");
+        position.LongQuantity.Should().Be(100m);
+        position.TotalUnrealisedPnl.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task Filter_KeepsSharedExecutionBook_WhenEveryFundPresentIsAuthorized()
+    {
+        // Nothing in this aggregation is hidden from the caller, so the shared book cannot
+        // be carrying a fund they may not read: it stays visible.
+        var positions = new[]
+        {
+            PositionWith(
+                Contribution(AllowedAccountId.ToString("D"), quantity: 100m),
+                Contribution("default", quantity: 10m))
+        };
+
+        var filtered = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
+            CreateContext(UserPermission.ViewTrades), positions);
+
+        var position = filtered.Should().ContainSingle().Subject;
+        position.Contributions.Should().HaveCount(2);
+        position.TotalQuantity.Should().Be(110m);
+    }
+
+    [Fact]
+    public async Task Filter_KeepsRunLocalPositions_WhenNoContributionIsFundKeyed()
+    {
+        // A wholly paper/run-local aggregation partitions no funds at all, so filtering it
+        // would hide the caller's own runs from them for no security gain.
+        var positions = new[]
+        {
+            PositionWith(
+                Contribution("paper-run", quantity: 100m),
+                Contribution("other-run", quantity: 10m))
+        };
+
+        var filtered = await WorkstationEndpoints.FilterToAuthorizedAccountsAsync(
+            CreateContext(UserPermission.ViewTrades), positions);
+
+        filtered.Should().ContainSingle().Which.Contributions.Should().HaveCount(2);
     }
 
     [Fact]

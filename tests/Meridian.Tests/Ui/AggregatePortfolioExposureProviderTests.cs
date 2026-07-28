@@ -502,6 +502,84 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_WithRegistry_SumsPortfolioValueSigned()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // A run carrying negative net asset value reduces what the book is actually worth.
+        // Skipping it would inflate the concentration denominator and quietly loosen every
+        // percentage-of-portfolio limit at exactly the moment the book is impaired.
+        var host = new Mock<IMultiAccountPortfolioState>();
+        host.SetupGet(p => p.PortfolioValue).Returns(100_000m);
+        var impairedRun = new Mock<IMultiAccountPortfolioState>();
+        impairedRun.SetupGet(p => p.PortfolioValue).Returns(-30_000m);
+
+        var registry = new Meridian.Execution.Services.PortfolioRegistry();
+        registry.Register("workstation-paper", host.Object);
+        registry.Register("impaired-run", impairedRun.Object);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            portfolioState: host.Object,
+            registry: registry);
+
+        provider.GetSnapshot().PortfolioValue.Should().Be(
+            70_000m,
+            "a negative-NAV portfolio subtracts from the denominator rather than being ignored");
+    }
+
+    [Fact]
+    public void GetSnapshot_FundScopedWorkingOrder_NetsAgainstTheSharedExecutionBook()
+    {
+        // Fills route through the shared "default" execution account, so a fund-scoped
+        // close has no book of its own to net against. Bucketing it under its fund id
+        // would reserve the whole sell as new exposure on top of the long it retires.
+        var fundAccountId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL",
+                TotalQuantity: 100m,
+                LongQuantity: 100m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 100m,
+                TotalUnrealisedPnl: 0m,
+                Contributions:
+                [
+                    new RunPositionContribution("run-0", "default", 100m, 100m, 0m)
+                ])
+        ]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "close-1",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Sell,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 100m,
+                LimitPrice = 100m,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                FundAccountId = fundAccountId,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+        var snapshot = provider.GetSnapshot();
+
+        snapshot.GetSymbolExposure("AAPL").GrossExposure.Should().Be(
+            10_000m,
+            "the working sell can only flatten the long it is closing, never double it");
+    }
+
+    [Fact]
     public void GetSnapshot_WithEmptyRegistry_FallsBackToHostPortfolioValue()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

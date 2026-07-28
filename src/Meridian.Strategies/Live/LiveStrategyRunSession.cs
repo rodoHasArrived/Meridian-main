@@ -35,6 +35,7 @@ internal sealed class LiveStrategyRunSession
     private readonly CancellationTokenSource _stopRequested = new();
     private readonly Dictionary<string, Order> _ordersByClientId = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, string> _clientIdsByOrderId = new();
+    private readonly HashSet<string> _parkedClientOrderIds = new(StringComparer.Ordinal);
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
@@ -303,6 +304,8 @@ internal sealed class LiveStrategyRunSession
 
     private async Task RouteQueuedOrdersAsync(CancellationToken ct)
     {
+        RetireDeclinedEscalations();
+
         foreach (var cancelledOrderId in _context.DrainPendingCancellations())
         {
             if (!_clientIdsByOrderId.TryGetValue(cancelledOrderId, out var clientOrderId))
@@ -335,7 +338,10 @@ internal sealed class LiveStrategyRunSession
                 {
                     // Parked for governed approval, not rejected: the order can still be
                     // released later, and its execution report will carry this client
-                    // order id. Keep the mapping alive so the run receives the fill.
+                    // order id. Keep the mapping alive so the run receives the fill, and
+                    // remember the park so a decline — which produces no report at all —
+                    // still retires it.
+                    _parkedClientOrderIds.Add(clientOrderId);
                     _logger.LogInformation(
                         "Run {RunId} order {ClientOrderId} for {Symbol} is parked for governed risk approval ({EscalationId})",
                         _run.RunId, clientOrderId, order.Symbol, result.EscalationId ?? "unknown");
@@ -426,6 +432,41 @@ internal sealed class LiveStrategyRunSession
     {
         _ordersByClientId.Remove(clientOrderId);
         _clientIdsByOrderId.Remove(orderId);
+        _parkedClientOrderIds.Remove(clientOrderId);
+    }
+
+    /// <summary>
+    /// Drops bookkeeping for parked orders whose governed approval was declined. Only a
+    /// released escalation re-enters the report stream; a declined one is terminal and
+    /// silent, so without this the run would hold its order mapping for the whole session.
+    /// </summary>
+    private void RetireDeclinedEscalations()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            if (!_orderManager.WasRiskApprovalDeclined(clientOrderId))
+            {
+                continue;
+            }
+
+            _logger.LogInformation(
+                "Run {RunId} order {ClientOrderId} was declined for governed risk approval; retiring its tracking.",
+                _run.RunId, clientOrderId);
+
+            if (_ordersByClientId.TryGetValue(clientOrderId, out var order))
+            {
+                ForgetOrder(clientOrderId, order.OrderId);
+            }
+            else
+            {
+                _parkedClientOrderIds.Remove(clientOrderId);
+            }
+        }
     }
 
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()

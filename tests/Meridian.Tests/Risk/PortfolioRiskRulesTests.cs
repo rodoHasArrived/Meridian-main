@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Risk;
 using Meridian.Risk.Rules;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -268,6 +269,57 @@ public sealed class PortfolioRiskRulesTests
         var result = await rule.EvaluateAsync(CreateOrder(quantity: 100m));
 
         result.IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task OrderNotional_AmendmentProbe_MeasuresTheWholeAmendedOrder()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // Amending 100 → 600 shares at $100 carries a $50k increment for the portfolio
+        // rules, but the per-order ceiling governs the order that ends up working at the
+        // broker: $60k, over the ceiling. Measuring the increment would let a capped order
+        // be walked past the limit one amendment at a time.
+        var probe = CreateOrder(quantity: 600m, limitPrice: 100m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.IncrementalNotionalMetadataKey] = "50000"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(probe);
+
+        result.IsApproved.Should().BeFalse("the per-order limit governs the full amended order");
+        result.RejectReason.Should().Contain("Order notional limit");
+    }
+
+    [Fact]
+    public async Task GrossExposure_AmendmentProbe_MeasuresOnlyTheIncrement()
+    {
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 95_000m),
+            () => 100_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        // The original $50k is already inside the reported gross, so only the $4k increase
+        // is new exposure: 95k + 4k = 99k, inside the ceiling. Charging the full $60k order
+        // would double-count the working order the snapshot already reserves.
+        var probe = CreateOrder(quantity: 600m, limitPrice: 100m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.IncrementalNotionalMetadataKey] = "4000"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(probe);
+
+        result.IsApproved.Should().BeTrue("a portfolio rule charges the amendment's increment, not the whole order");
     }
 
     [Fact]

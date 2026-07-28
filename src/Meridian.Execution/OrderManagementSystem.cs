@@ -720,71 +720,34 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // it upward. Validation and the amended reservation run under the same gate as a
         // placement so a concurrent order cannot slip past the increased exposure.
         OrderState? speculativeReservation = null;
+        IReadOnlyList<string>? amendmentWarnings = null;
         if (IsRiskIncreasing(state, modification))
         {
-            var amendmentProbe = BuildAmendmentProbe(state, modification);
-            await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
-            try
+            var gate = await ReserveAmendedExposureAsync(orderId, state, modification, ct).ConfigureAwait(false);
+            amendmentWarnings = gate.Warnings;
+            if (gate.Refusal is not null)
             {
-                if (_riskValidator is not null)
+                await RecordOrderLifecycleAuditAsync(
+                    action: "OrderModifyRejected",
+                    outcome: "Rejected",
+                    orderId: orderId,
+                    state: state,
+                    report: null,
+                    message: gate.Refusal,
+                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings),
+                    ct: ct).ConfigureAwait(false);
+
+                return new OrderResult
                 {
-                    var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
-                    if (!amendedRisk.IsApproved)
-                    {
-                        // An amendment is never parked: the original order stays live and
-                        // the caller is told the increase was refused. Any approval token
-                        // consumed by this evaluation is re-armed because nothing changed.
-                        if (amendedRisk.ConsumedApprovalId is not null && _escalationQueue is not null)
-                        {
-                            foreach (var escalationId in RiskEscalationQueueService.SplitTokens(amendedRisk.ConsumedApprovalId))
-                            {
-                                _escalationQueue.TryRestoreApproval(escalationId);
-                            }
-                        }
-
-                        var refusal = amendedRisk.RequiresApproval
-                            ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
-                            : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
-                        await RecordOrderLifecycleAuditAsync(
-                            action: "OrderModifyRejected",
-                            outcome: "Rejected",
-                            orderId: orderId,
-                            state: state,
-                            report: null,
-                            message: refusal,
-                            metadata: BuildOrderModificationAuditMetadata(modification, state, report: null),
-                            ct: ct).ConfigureAwait(false);
-
-                        return new OrderResult
-                        {
-                            Success = false,
-                            OrderId = orderId,
-                            OrderState = state,
-                            ErrorMessage = refusal,
-                            RiskWarnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null
-                        };
-                    }
-                }
-
-                // Reserve the amended size before releasing the gate so a concurrent
-                // placement measures against the larger order, then route the amendment.
-                speculativeReservation = state with
-                {
-                    Quantity = modification.NewQuantity ?? state.Quantity,
-                    LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
-                    StopPrice = modification.NewStopPrice ?? state.StopPrice,
-                    RoutedNotional = null,
-                    LastUpdatedAt = DateTimeOffset.UtcNow
+                    Success = false,
+                    OrderId = orderId,
+                    OrderState = state,
+                    ErrorMessage = gate.Refusal,
+                    RiskWarnings = amendmentWarnings
                 };
-                if (!_orders.TryUpdate(orderId, speculativeReservation, state))
-                {
-                    speculativeReservation = null;
-                }
             }
-            finally
-            {
-                _preTradeReservationGate.Release();
-            }
+
+            speculativeReservation = gate.Reservation;
         }
 
         ExecutionReport report;
@@ -814,7 +777,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 state: state,
                 report: report,
                 message: report.RejectReason ?? "Modify request rejected",
-                metadata: BuildOrderModificationAuditMetadata(modification, state, report),
+                metadata: BuildOrderModificationAuditMetadata(modification, state, report, amendmentWarnings),
                 ct: ct).ConfigureAwait(false);
 
             return new OrderResult
@@ -841,10 +804,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             state: updated,
             report: report,
             message: report.RejectReason,
-            metadata: BuildOrderModificationAuditMetadata(modification, updated, report),
+            metadata: BuildOrderModificationAuditMetadata(modification, updated, report, amendmentWarnings),
             ct: ct).ConfigureAwait(false);
 
-        return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
+        // Warnings raised while approving the amendment describe the exposure the caller
+        // now holds, so they travel with the accepted result — not only with a refusal.
+        return new OrderResult
+        {
+            Success = true,
+            OrderId = orderId,
+            OrderState = updated,
+            RiskWarnings = amendmentWarnings
+        };
     }
 
     /// <inheritdoc />
@@ -1823,7 +1794,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private static IReadOnlyDictionary<string, string> BuildOrderModificationAuditMetadata(
         OrderModification modification,
         OrderState state,
-        ExecutionReport report)
+        ExecutionReport? report,
+        IReadOnlyList<string>? riskWarnings = null)
     {
         var metadata = new Dictionary<string, string>(
             BuildOrderLifecycleAuditMetadata(state, report) ?? new Dictionary<string, string>(),
@@ -1833,6 +1805,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         metadata["newLimitPrice"] = modification.NewLimitPrice?.ToString("G29") ?? string.Empty;
         metadata["newStopPrice"] = modification.NewStopPrice?.ToString("G29") ?? string.Empty;
         metadata["newTrail"] = modification.NewTrail?.ToString("G29") ?? string.Empty;
+
+        if (riskWarnings is { Count: > 0 })
+        {
+            metadata["riskWarnings"] = string.Join("; ", riskWarnings);
+        }
 
         return metadata;
     }

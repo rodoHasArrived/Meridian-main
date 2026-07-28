@@ -732,13 +732,15 @@ public sealed class RiskRuleRuntimeService
                     ? $"{pendingEscalations.Count} order(s) are parked awaiting governed approval."
                     : "Per-order notional limits are configured and no recent breaches were detected.";
 
+        // Only the count, never the parked orders' details: this status is served by the
+        // rules endpoint, which has no order-management permission or fund-scope check.
+        // Symbol, side, and size belong to the escalation-list endpoint, which filters by
+        // the caller's authorized accounts.
         var recentViolations = violations.Count > 0
             ? violations
-            : pendingEscalations
-                .Take(5)
-                .Select(static entry =>
-                    $"Parked for approval: {entry.Request.Symbol} {entry.Request.Side} {entry.Request.Quantity} — {entry.Reason}")
-                .ToList();
+            : pendingEscalations.Count > 0
+                ? [$"{pendingEscalations.Count} order(s) parked awaiting governed approval."]
+                : new List<string>();
 
         var threshold = (maxNotional, escalateAt) switch
         {

@@ -49,8 +49,8 @@ public sealed class SymbolConcentrationRule : IRiskRule
 
         var snapshot = _exposureProvider.GetSnapshot();
         var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
-        var orderNotional = OrderNotionalResolver.Resolve(request, snapshot, _exposureProvider.TryGetReferencePrice);
-        var signedOrderNotional = OrderNotionalResolver.ResolveSigned(request, snapshot, _exposureProvider.TryGetReferencePrice);
+        var orderNotional = OrderNotionalResolver.ResolveIncremental(request, snapshot, _exposureProvider.TryGetReferencePrice);
+        var signedOrderNotional = OrderNotionalResolver.ResolveIncrementalSigned(request, snapshot, _exposureProvider.TryGetReferencePrice);
         // See GrossExposureRule: the projection is only direction-aware when the order's
         // own account contribution is known.
         var signedSymbolExposure = symbolExposure.ResolveSignedExposureFor(request.FundAccountId);

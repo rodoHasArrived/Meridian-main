@@ -11,6 +11,51 @@ namespace Meridian.Risk.Rules;
 /// </summary>
 internal static class OrderNotionalResolver
 {
+    /// <summary>
+    /// Incremental exposure an amendment adds, when the caller is a portfolio-level rule.
+    /// The snapshot already reserves the working order at its current size, so gross and
+    /// concentration must measure only the delta. The PER-ORDER notional rule must not use
+    /// this: the broker receives the whole amended order, so a $90k order amended to $150k
+    /// is a $150k order against the ceiling even though it adds only $60k to the book.
+    /// </summary>
+    public static decimal? ResolveIncremental(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup = null)
+    {
+        if (request.Metadata is not null &&
+            request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationQueueService.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
+            decimal.TryParse(incrementalRaw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var incremental) &&
+            incremental >= 0m)
+        {
+            return incremental;
+        }
+
+        return Resolve(request, snapshot, referencePriceLookup);
+    }
+
+    /// <summary>
+    /// Signed form of <see cref="ResolveIncremental"/>.
+    /// </summary>
+    public static decimal? ResolveIncrementalSigned(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup = null)
+    {
+        var notional = ResolveIncremental(request, snapshot, referencePriceLookup);
+        if (notional is not { } absolute)
+        {
+            return null;
+        }
+
+        return request.Side switch
+        {
+            OrderSide.Buy => absolute,
+            OrderSide.Sell => -absolute,
+            _ => null
+        };
+    }
+
     public static decimal? Resolve(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
@@ -25,17 +70,6 @@ internal static class OrderNotionalResolver
         if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
         {
             return null;
-        }
-
-        // An amendment probe measures only the exposure it adds: the snapshot already
-        // reserves the working order at its current size, so the full amended value would
-        // double-count. Quantity stays the full amended quantity for position limits.
-        if (request.Metadata is not null &&
-            request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationQueueService.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
-            decimal.TryParse(incrementalRaw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var incremental) &&
-            incremental >= 0m)
-        {
-            return incremental;
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")

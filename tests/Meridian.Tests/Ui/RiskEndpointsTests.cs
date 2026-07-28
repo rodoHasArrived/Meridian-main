@@ -165,6 +165,17 @@ public sealed class RiskEndpointsTests
         parkedResult.RequiresApproval.Should().BeTrue("a parked escalation is a typed outcome, not a plain rejection");
         parkedResult.EscalationId.Should().NotBeNullOrWhiteSpace();
 
+        // The unscoped rules endpoint reports that orders are parked, never which ones: it
+        // runs no fund-scope or order-management permission check, so symbol, side, and
+        // size stay behind /api/risk/escalations.
+        var parkedRules = JsonSerializer.Deserialize<RiskRuleStatusDto[]>(
+            await (await client.GetAsync("/api/risk/rules")).Content.ReadAsStringAsync(), JsonOptions());
+        var notionalStatus = parkedRules!.Single(rule => rule.RuleName == "OrderNotional");
+        notionalStatus.RecentViolations.Should().ContainSingle()
+            .Which.Should().Contain("1 order(s) parked");
+        string.Join(" ", notionalStatus.RecentViolations).Should().NotContain("AAPL")
+            .And.NotContain("200", "the parked order's size is not readable from an unscoped surface");
+
         var escalationsResponse = await client.GetAsync("/api/risk/escalations");
         escalationsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var escalations = JsonSerializer.Deserialize<RiskEscalationDto[]>(

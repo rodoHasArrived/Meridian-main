@@ -1377,6 +1377,79 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task ModifyOrderAsync_ApprovedAmendment_CarriesRiskWarningsToTheCaller()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-WARN"
+        });
+        placed.Success.Should().BeTrue();
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.ApprovedWithWarnings("GrossExposure at 82% of limit"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 100m });
+
+        modified.Success.Should().BeTrue();
+        modified.RiskWarnings.Should().ContainSingle()
+            .Which.Should().Contain("82%", "warnings describe the exposure the caller now holds, not only refusals");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_WhenTheOrderChangesUnderTheGate_RefusesInsteadOfRoutingUnreserved()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-RACE"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Mutate the tracked order from inside the amendment's own validation, exactly as a
+        // concurrent lifecycle event would: the state the reservation is written against is
+        // stale by the time it is installed, so the amended size can never be published.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                await oms.CancelOrderAsync(placed.OrderId);
+                return RiskValidationResult.Approved();
+            });
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 500m });
+
+        modified.Success.Should().BeFalse("the larger size was never published to concurrent placements");
+        modified.ErrorMessage.Should().Contain("being reserved")
+            .And.Contain("changed", "the caller is told the amendment lost a race, not that risk refused it");
+        oms.GetOrder(placed.OrderId)!.Quantity.Should().Be(10m, "the unreserved amendment never took effect");
+    }
+
+    [Fact]
     public async Task ModifyOrderAsync_RiskReducingAmendment_SkipsRevalidation()
     {
         var riskValidator = Substitute.For<IRiskValidator>();
@@ -1488,6 +1561,106 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         queue.TryGet(result.EscalationId!)!.Request.ClientOrderId.Should().Be(
             result.OrderId,
             "releasing the retained request must route under the id the submitter already knows");
+    }
+
+    [Fact]
+    public async Task WasRiskApprovalDeclined_TracksTheParkedOrderUntilTheEscalationResolves()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-DECLINE"
+        });
+
+        parkedResult.RequiresApproval.Should().BeTrue();
+        oms.WasRiskApprovalDeclined(parkedResult.OrderId).Should().BeFalse(
+            "an approval still pending may yet release the order, so its tracking must survive");
+
+        queue.Deny(parkedResult.EscalationId!, actor: "risk-officer", reason: "Breaches the fund mandate.");
+
+        oms.WasRiskApprovalDeclined(parkedResult.OrderId).Should().BeTrue(
+            "a declined escalation never routes, so no execution report will ever retire the order");
+        oms.WasRiskApprovalDeclined("CLIENT-NEVER-PARKED").Should().BeFalse(
+            "an order that was never parked has nothing to retire");
+    }
+
+    [Fact]
+    public async Task WasRiskApprovalDeclined_AfterTheApprovedOrderRoutes_IsFalse()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-RELEASE"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        var parkOnFirstCall = true;
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (!parkOnFirstCall)
+                {
+                    return RiskValidationResult.Approved();
+                }
+
+                parkOnFirstCall = false;
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(order);
+        parkedResult.RequiresApproval.Should().BeTrue();
+
+        // The release re-places under the same client order id, so the report stream owns
+        // the order from here — the run's mapping must stay alive to receive the fill.
+        var released = await oms.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedResult.EscalationId!
+            }
+        });
+
+        released.Success.Should().BeTrue();
+        oms.WasRiskApprovalDeclined(order.ClientOrderId!).Should().BeFalse(
+            "the order routed, so nothing about it was declined");
     }
 
     // ---- Stubs ----
