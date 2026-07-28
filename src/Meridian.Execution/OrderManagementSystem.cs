@@ -38,6 +38,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
+    // Serializes pre-trade risk validation with the registration that reserves the order's
+    // exposure. Without it, concurrent submissions each evaluate against the same
+    // pre-order book and can collectively breach a ceiling none of them breaches alone.
+    private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
     private readonly CancellationTokenSource _reportPumpCts = new();
     private readonly Task _reportPumpTask;
     private readonly ITradeEventPublisher? _tradeEventPublisher;
@@ -301,109 +305,127 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             }
         }
 
-        // Pre-trade risk check
         IReadOnlyList<string>? riskWarnings = null;
         string? consumedApprovalId = null;
-        if (_riskValidator is not null)
+        OrderState orderState;
+
+        // Pre-trade risk check. Validation and the registration that reserves this order's
+        // exposure happen under one gate so a concurrent order cannot slip through against
+        // the same pre-order snapshot.
+        await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
-            if (!riskResult.IsApproved)
+            if (_riskValidator is not null)
             {
-                // A parked escalation is not a rejection: the order awaits a governed
-                // approval decision, and the result says so in a typed way instead of
-                // hiding the queue entry inside a rejection string.
-                if (riskResult.RequiresApproval)
+                var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
+                if (!riskResult.IsApproved)
                 {
-                    return await ParkOrderForApprovalAsync(
+                    // A parked escalation is not a rejection: the order awaits a governed
+                    // approval decision, and the result says so in a typed way instead of
+                    // hiding the queue entry inside a rejection string.
+                    if (riskResult.RequiresApproval)
+                    {
+                        return await ParkOrderForApprovalAsync(
+                            orderId,
+                            safeRequest,
+                            actor,
+                            brokerName,
+                            runId,
+                            correlationId,
+                            riskResult,
+                            sessionId,
+                            ct).ConfigureAwait(false);
+                    }
+
+                    return await RejectOrderAsync(
                         orderId,
                         safeRequest,
                         actor,
                         brokerName,
                         runId,
                         correlationId,
-                        riskResult,
+                        riskResult.RejectReason,
                         sessionId,
-                        ct).ConfigureAwait(false);
+                        ct,
+                        rejectionSource: "risk validator",
+                        metadata: BuildRiskWarningsAuditMetadata(riskResult.Warnings),
+                        riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null)
+                        .ConfigureAwait(false);
                 }
 
-                return await RejectOrderAsync(
-                    orderId,
-                    safeRequest,
-                    actor,
-                    brokerName,
-                    runId,
-                    correlationId,
-                    riskResult.RejectReason,
-                    sessionId,
-                    ct,
-                    rejectionSource: "risk validator",
-                    metadata: BuildRiskWarningsAuditMetadata(riskResult.Warnings),
-                    riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null)
-                    .ConfigureAwait(false);
+                consumedApprovalId = riskResult.ConsumedApprovalId;
+
+                // Non-blocking flags (warning-severity breaches, observe bands) must survive
+                // an approved order: carry them on the result and retain them durably.
+                if (riskResult.Warnings.Count > 0)
+                {
+                    riskWarnings = riskResult.Warnings;
+                    await RecordRiskWarningsAsync(
+                        orderId,
+                        safeRequest,
+                        actor,
+                        brokerName,
+                        runId,
+                        correlationId,
+                        riskWarnings,
+                        ct).ConfigureAwait(false);
+                }
             }
 
-            consumedApprovalId = riskResult.ConsumedApprovalId;
-
-            // Non-blocking flags (warning-severity breaches, observe bands) must survive
-            // an approved order: carry them on the result and retain them durably.
-            if (riskResult.Warnings.Count > 0)
+            orderState = new OrderState
             {
-                riskWarnings = riskResult.Warnings;
-                await RecordRiskWarningsAsync(
+                OrderId = orderId,
+                Symbol = safeRequest.Symbol,
+                Side = safeRequest.Side,
+                Type = safeRequest.Type,
+                Quantity = safeRequest.Quantity,
+                LimitPrice = safeRequest.LimitPrice,
+                StopPrice = safeRequest.StopPrice,
+                Status = OrderStatus.PendingNew,
+                CreatedAt = DateTimeOffset.UtcNow,
+                StrategyId = safeRequest.StrategyId,
+                FundAccountId = safeRequest.FundAccountId,
+                // Broker-native notional orders route dollars and discard quantity; the
+                // exposure reserve for this working order must value what actually routes.
+                RoutedNotional = BrokerNotionalMetadata.TryRead(safeRequest.Metadata, safeRequest.Quantity)
+            };
+
+            if (!TryRegisterOrder(orderId, orderState))
+            {
+                // Lost a race with a concurrent submission that claimed the same client order id
+                // after the guard above ran; the winner's state must survive untouched.
+                return await RejectDuplicateClientOrderIdAsync(
                     orderId,
                     safeRequest,
                     actor,
                     brokerName,
                     runId,
                     correlationId,
-                    riskWarnings,
                     ct).ConfigureAwait(false);
             }
-        }
 
-        var orderState = new OrderState
-        {
-            OrderId = orderId,
-            Symbol = safeRequest.Symbol,
-            Side = safeRequest.Side,
-            Type = safeRequest.Type,
-            Quantity = safeRequest.Quantity,
-            LimitPrice = safeRequest.LimitPrice,
-            StopPrice = safeRequest.StopPrice,
-            Status = OrderStatus.PendingNew,
-            CreatedAt = DateTimeOffset.UtcNow,
-            StrategyId = safeRequest.StrategyId
-        };
+            if (safeRequest.FundAccountId is { } fundAccountId)
+            {
+                _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
+            }
+            else
+            {
+                // A terminal client-order id may be reused. Do not let the prior order's
+                // accounting scope leak into fills for an unscoped replacement order.
+                _orderFinancialAccountIds.TryRemove(orderId, out _);
+            }
 
-        if (!TryRegisterOrder(orderId, orderState))
-        {
-            // Lost a race with a concurrent submission that claimed the same client order id
-            // after the guard above ran; the winner's state must survive untouched.
-            return await RejectDuplicateClientOrderIdAsync(
-                orderId,
-                safeRequest,
-                actor,
-                brokerName,
-                runId,
-                correlationId,
-                ct).ConfigureAwait(false);
+            TrimRetainedOrdersIfNeeded();
+            if (!string.IsNullOrWhiteSpace(sessionId))
+            {
+                _orderSessionIds[orderId] = sessionId;
+            }
         }
-
-        if (safeRequest.FundAccountId is { } fundAccountId)
+        finally
         {
-            _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
-        }
-        else
-        {
-            // A terminal client-order id may be reused. Do not let the prior order's
-            // accounting scope leak into fills for an unscoped replacement order.
-            _orderFinancialAccountIds.TryRemove(orderId, out _);
-        }
-
-        TrimRetainedOrdersIfNeeded();
-        if (!string.IsNullOrWhiteSpace(sessionId))
-        {
-            _orderSessionIds[orderId] = sessionId;
+            // The order is registered (or the submission has already returned), so its
+            // exposure is now visible to the next validation.
+            _preTradeReservationGate.Release();
         }
 
         try

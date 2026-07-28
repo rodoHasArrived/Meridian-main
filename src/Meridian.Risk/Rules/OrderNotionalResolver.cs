@@ -11,7 +11,10 @@ namespace Meridian.Risk.Rules;
 /// </summary>
 internal static class OrderNotionalResolver
 {
-    public static decimal? Resolve(OrderRequest request, PortfolioExposureSnapshot snapshot)
+    public static decimal? Resolve(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup = null)
     {
         // Multi-leg and option orders are out of this resolver's measurement scope: the
         // top-level price is only the net debit/credit of the combination, so treating it
@@ -26,7 +29,7 @@ internal static class OrderNotionalResolver
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
         // routes the metadata dollars, not quantity x price — value exactly what routes.
-        if (TryReadBrokerNotional(request) is { } brokerNotional)
+        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
         {
             return brokerNotional;
         }
@@ -38,36 +41,16 @@ internal static class OrderNotionalResolver
             referencePrice = symbolPrice > 0m ? symbolPrice : null;
         }
 
+        if (referencePrice is null or <= 0m)
+        {
+            // The portfolio is flat in this symbol, but the feed may still price it — and
+            // the gateway certainly will. Measuring at the live mark beats approving an
+            // unmeasured market order in a symbol the book has simply never held.
+            var livePrice = referencePriceLookup?.Invoke(request.Symbol);
+            referencePrice = livePrice > 0m ? livePrice : null;
+        }
+
         return referencePrice is { } price ? Math.Abs(request.Quantity) * price : null;
-    }
-
-    private static decimal? TryReadBrokerNotional(OrderRequest request)
-    {
-        if (request.Metadata is null)
-        {
-            return null;
-        }
-
-        foreach (var key in (ReadOnlySpan<string>)["notional", "alpaca:notional"])
-        {
-            if (!request.Metadata.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
-            {
-                continue;
-            }
-
-            if (decimal.TryParse(raw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value) && value > 0m)
-            {
-                return value;
-            }
-
-            // The gateway also accepts a boolean flag meaning "quantity is dollars".
-            if (bool.TryParse(raw, out var isNotional) && isNotional)
-            {
-                return Math.Abs(request.Quantity);
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -75,9 +58,12 @@ internal static class OrderNotionalResolver
     /// projections shrink when an order reduces the current position. Null when the order
     /// side is unknown or no price reference exists.
     /// </summary>
-    public static decimal? ResolveSigned(OrderRequest request, PortfolioExposureSnapshot snapshot)
+    public static decimal? ResolveSigned(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup = null)
     {
-        var notional = Resolve(request, snapshot);
+        var notional = Resolve(request, snapshot, referencePriceLookup);
         if (notional is not { } absolute)
         {
             return null;

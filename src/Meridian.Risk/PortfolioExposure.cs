@@ -8,12 +8,40 @@ namespace Meridian.Risk;
 /// <param name="NetQuantity">Signed net quantity across all contributing runs.</param>
 /// <param name="ReferencePrice">Best-available per-share reference price (weighted average cost until live marks flow).</param>
 /// <param name="NetNotional">Signed net notional (negative when net short); zero when unknown.</param>
+/// <param name="AccountNetNotional">
+/// Signed net notional per contributing account/run key. Direction-aware projections need
+/// to know which contribution an order actually changes: with a long book in one account
+/// and a short book in another, the aggregate net says nothing about whether a given
+/// order increases or decreases exposure. Empty when attribution is unavailable.
+/// </param>
 public sealed record SymbolExposure(
     string Symbol,
     decimal GrossExposure,
     decimal NetQuantity,
     decimal ReferencePrice,
-    decimal NetNotional = 0m);
+    decimal NetNotional = 0m,
+    IReadOnlyDictionary<string, decimal>? AccountNetNotional = null)
+{
+    /// <summary>
+    /// Signed exposure the order's own account carries, for direction-aware projection.
+    /// A single contributing account means the aggregate net is that account's net, so the
+    /// projection is exact. With several contributing accounts the order's own account must
+    /// be identified; when it cannot be, this returns <see langword="null"/> and callers
+    /// fall back to the additive worst case rather than assuming a netting that may be wrong.
+    /// </summary>
+    public decimal? ResolveSignedExposureFor(Guid? fundAccountId)
+    {
+        if (AccountNetNotional is not { Count: > 1 })
+        {
+            return NetNotional;
+        }
+
+        return fundAccountId is { } accountId &&
+            AccountNetNotional.TryGetValue(accountId.ToString("D"), out var accountNet)
+                ? accountNet
+                : null;
+    }
+}
 
 /// <summary>
 /// Point-in-time exposure snapshot of the aggregated portfolio, consumed by the
@@ -55,4 +83,13 @@ public interface IPortfolioExposureProvider
 {
     /// <summary>Builds a point-in-time exposure snapshot of the aggregated portfolio.</summary>
     PortfolioExposureSnapshot GetSnapshot();
+
+    /// <summary>
+    /// Best-available reference price for <paramref name="symbol"/> even when the portfolio
+    /// is flat in it — a live quote mid or last trade. Without this, a market order in a
+    /// never-held symbol resolves to no measurable notional and every notional-based rule
+    /// approves it unmeasured, while the gateway can still price and execute it.
+    /// Implementations without a market-data feed return <see langword="null"/>.
+    /// </summary>
+    decimal? TryGetReferencePrice(string symbol) => null;
 }

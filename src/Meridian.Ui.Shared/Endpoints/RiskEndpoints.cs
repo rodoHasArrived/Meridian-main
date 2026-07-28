@@ -250,9 +250,22 @@ public static class RiskEndpoints
             if (request?.Release != false &&
                 context.RequestServices.GetService<IOrderManager>() is { } oms)
             {
+                // Carry every approval this order has already been granted, not just the
+                // newest: an order breaching several escalation-capable rules needs all of
+                // its tokens present at once, or each release satisfies one rule while
+                // re-parking another and the order can never route.
+                var carriedTokens = new List<string>();
+                if (approved.Request.Metadata is not null &&
+                    approved.Request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var existingTokens))
+                {
+                    carriedTokens.AddRange(RiskEscalationQueueService.SplitTokens(existingTokens));
+                }
+
+                carriedTokens.Add(approved.EscalationId);
+
                 var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    [RiskEscalationQueueService.ApprovalMetadataKey] = approved.EscalationId,
+                    [RiskEscalationQueueService.ApprovalMetadataKey] = RiskEscalationQueueService.JoinTokens(carriedTokens),
                     ["actor"] = actor,
                     ["correlationId"] = $"risk-escalation-{approved.EscalationId}"
                 };

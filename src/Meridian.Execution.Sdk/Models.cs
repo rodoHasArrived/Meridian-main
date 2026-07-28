@@ -207,6 +207,16 @@ public sealed record OrderState
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset? LastUpdatedAt { get; init; }
     public string? StrategyId { get; init; }
+
+    /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
+    public Guid? FundAccountId { get; init; }
+
+    /// <summary>
+    /// Broker-native routed notional when the order is sized in dollars rather than
+    /// quantity (see <see cref="BrokerNotionalMetadata"/>). Exposure reserves for working
+    /// orders must value these at the routed dollars, not quantity x price.
+    /// </summary>
+    public decimal? RoutedNotional { get; init; }
 }
 
 /// <summary>Current position state for a symbol.</summary>

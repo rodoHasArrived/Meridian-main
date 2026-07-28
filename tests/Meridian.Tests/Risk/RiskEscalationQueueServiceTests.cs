@@ -242,6 +242,36 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Consume_WithSeveralTokens_ReleasesEveryGrantedApproval()
+    {
+        var queue = CreateQueue();
+        var first = queue.Park(CreateOrder(), "rule A band", ruleName: "OrderNotional");
+        var second = queue.Park(CreateOrder(), "rule B review", ruleName: "DeskReview");
+        queue.Approve(first.EscalationId, actor: "risk-desk");
+        queue.Approve(second.EscalationId, actor: "risk-desk");
+
+        // An order breaching two escalation-capable rules carries one token per decision;
+        // both must be honored in a single evaluation or the order can never route.
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] =
+                    RiskEscalationQueueService.JoinTokens([first.EscalationId, second.EscalationId])
+            }
+        };
+
+        var released = queue.TryConsumeApprovals(resubmission);
+
+        released.Select(entry => entry.EscalationId).Should().BeEquivalentTo([first.EscalationId, second.EscalationId]);
+        queue.TryGet(first.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+        queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+
+        // Still one-shot: replaying the same token set releases nothing.
+        queue.TryConsumeApprovals(resubmission).Should().BeEmpty();
+    }
+
+    [Fact]
     public void Trim_ContinuesPastProtectedEntries()
     {
         var options = new RiskEscalationQueueOptions(

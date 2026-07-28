@@ -49,10 +49,14 @@ public sealed class GrossExposureRule : IRiskRule
             request,
             portfolioExposure: snapshot.GrossExposure,
             symbolExposure: symbolExposure.GrossExposure,
-            signedSymbolExposure: symbolExposure.NetNotional,
+            // Direction-aware projection needs the order's OWN account exposure: with a
+            // long book in one account and a short book in another, the aggregate net
+            // cannot say whether this order increases or decreases risk. Unresolvable
+            // attribution yields null, and the policy falls back to the additive worst case.
+            signedSymbolExposure: symbolExposure.ResolveSignedExposureFor(request.FundAccountId),
             portfolioValue: snapshot.PortfolioValue,
-            orderNotional: OrderNotionalResolver.Resolve(request, snapshot),
-            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot),
+            orderNotional: OrderNotionalResolver.Resolve(request, snapshot, _exposureProvider.TryGetReferencePrice),
+            signedOrderNotional: OrderNotionalResolver.ResolveSigned(request, snapshot, _exposureProvider.TryGetReferencePrice),
             maxGrossExposure: maxGrossExposure,
             maxSymbolConcentrationPercent: default,
             maxOrderNotional: default,

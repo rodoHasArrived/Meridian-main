@@ -450,8 +450,14 @@ public sealed class RiskRuleRuntimeService
         // Utilization uses the same limit resolution as enforcement: a symbol-specific
         // limit overrides the default for that symbol, and the meter reports the most
         // constrained position rather than the largest raw quantity.
+        // The reported measurement must be one consistent tuple: the symbol driving the
+        // utilization bar, its own quantity, and the limit actually resolved for it.
+        // Mixing the largest raw position with the default limit and another symbol's
+        // utilization renders a bar that contradicts the numbers beside it.
         var maxAbsoluteQuantity = 0m;
         decimal? maxUtilization = null;
+        decimal? constrainedQuantity = null;
+        decimal? constrainedLimit = null;
         if (portfolio is not null)
         {
             foreach (var position in portfolio.Positions.Values)
@@ -470,10 +476,16 @@ public sealed class RiskRuleRuntimeService
                 if (utilizationForPosition is { } value && (maxUtilization is null || value > maxUtilization))
                 {
                     maxUtilization = value;
+                    constrainedQuantity = quantity;
+                    constrainedLimit = symbolLimit;
                 }
             }
         }
-        var threshold = snapshot?.DefaultMaxPositionSize;
+
+        // Fall back to the default limit and the largest raw position only when no
+        // position produced a measurable utilization.
+        var threshold = constrainedLimit ?? snapshot?.DefaultMaxPositionSize;
+        var currentQuantity = constrainedQuantity ?? maxAbsoluteQuantity;
 
         var violations = FindViolations(
             auditEntries,
@@ -497,10 +509,10 @@ public sealed class RiskRuleRuntimeService
             Threshold: threshold.HasValue
                 ? threshold.Value.ToString("G29", CultureInfo.InvariantCulture)
                 : "unlimited",
-            CurrentValue: maxAbsoluteQuantity.ToString("G29", CultureInfo.InvariantCulture),
+            CurrentValue: currentQuantity.ToString("G29", CultureInfo.InvariantCulture),
             AsOf: asOf,
             RecentViolations: violations,
-            UtilizationPercent: maxUtilization ?? ComputeUtilization(maxAbsoluteQuantity, threshold),
+            UtilizationPercent: maxUtilization ?? ComputeUtilization(currentQuantity, threshold),
             Severity: "Error");
     }
 

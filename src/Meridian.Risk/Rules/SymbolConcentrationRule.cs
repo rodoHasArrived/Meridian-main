@@ -49,13 +49,16 @@ public sealed class SymbolConcentrationRule : IRiskRule
 
         var snapshot = _exposureProvider.GetSnapshot();
         var symbolExposure = snapshot.GetSymbolExposure(request.Symbol);
-        var orderNotional = OrderNotionalResolver.Resolve(request, snapshot);
-        var signedOrderNotional = OrderNotionalResolver.ResolveSigned(request, snapshot);
+        var orderNotional = OrderNotionalResolver.Resolve(request, snapshot, _exposureProvider.TryGetReferencePrice);
+        var signedOrderNotional = OrderNotionalResolver.ResolveSigned(request, snapshot, _exposureProvider.TryGetReferencePrice);
+        // See GrossExposureRule: the projection is only direction-aware when the order's
+        // own account contribution is known.
+        var signedSymbolExposure = symbolExposure.ResolveSignedExposureFor(request.FundAccountId);
         var context = Interop.RiskInterop.CreatePortfolioContext(
             request,
             portfolioExposure: snapshot.GrossExposure,
             symbolExposure: symbolExposure.GrossExposure,
-            signedSymbolExposure: symbolExposure.NetNotional,
+            signedSymbolExposure: signedSymbolExposure,
             portfolioValue: snapshot.PortfolioValue,
             orderNotional: orderNotional,
             signedOrderNotional: signedOrderNotional,
@@ -77,13 +80,15 @@ public sealed class SymbolConcentrationRule : IRiskRule
         // Direction-aware and gross-preserving, mirroring the F# policy projection.
         if (snapshot.PortfolioValue > 0m)
         {
-            var projectedExposure = signedOrderNotional is { } signedOrder
-                ? Math.Max(
+            var projectedExposure = (signedOrderNotional, signedSymbolExposure) switch
+            {
+                ({ } signedOrder, { } signedSymbol) => Math.Max(
                     0m,
                     symbolExposure.GrossExposure
-                        - Math.Abs(symbolExposure.NetNotional)
-                        + Math.Abs(symbolExposure.NetNotional + signedOrder))
-                : symbolExposure.GrossExposure + (orderNotional ?? 0m);
+                        - Math.Abs(signedSymbol)
+                        + Math.Abs(signedSymbol + signedOrder)),
+                _ => symbolExposure.GrossExposure + (orderNotional ?? 0m)
+            };
             var projectedPercent = projectedExposure / snapshot.PortfolioValue * 100m;
             if (projectedPercent >= maxPercent.Value * ObserveBandFraction)
             {

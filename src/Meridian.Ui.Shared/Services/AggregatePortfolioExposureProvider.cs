@@ -91,15 +91,28 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 price = existing?.ReferencePrice ?? 0m;
             }
 
-            if (price <= 0m)
+            decimal workingNotional;
+            if (order.RoutedNotional is { } routedNotional && routedNotional > 0m)
+            {
+                // Broker-native notional sizing: the gateway routes dollars and discards
+                // quantity, so quantity x price would reserve a fraction of what is live.
+                // Scale by the unfilled fraction so partial fills do not double-count.
+                var totalQuantity = Math.Abs(order.Quantity);
+                workingNotional = totalQuantity > 0m
+                    ? routedNotional * (remaining / totalQuantity)
+                    : routedNotional;
+            }
+            else if (price > 0m)
+            {
+                workingNotional = remaining * price;
+            }
+            else
             {
                 // No price reference at all: the order cannot be measured, and guessing a
                 // price would be worse than under-reserving a market order in a never-held
                 // symbol (the per-order notional rule declines to guess for the same reason).
                 continue;
             }
-
-            var workingNotional = remaining * price;
             var signedNotional = order.Side switch
             {
                 OrderSide.Buy => workingNotional,
@@ -116,13 +129,30 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             grossExposure += workingNotional;
             netExposure += signedNotional;
 
+            // Attribute the reserve to the order's own accounting scope so direction-aware
+            // projections stay exact; an unscoped working order lands in its own bucket,
+            // which correctly forces the additive worst case for multi-account symbols.
+            var accountKey = order.FundAccountId?.ToString("D") ?? "unscoped";
+            var accountNet = existing?.AccountNetNotional is { } trackedAccounts
+                ? new Dictionary<string, decimal>(trackedAccounts, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            accountNet[accountKey] = accountNet.GetValueOrDefault(accountKey) + signedNotional;
+
             symbolExposures[order.Symbol] = new SymbolExposure(
                 Symbol: existing?.Symbol ?? order.Symbol,
                 GrossExposure: (existing?.GrossExposure ?? 0m) + workingNotional,
                 NetQuantity: (existing?.NetQuantity ?? 0m) + signedQuantity,
                 ReferencePrice: existing is { ReferencePrice: > 0m } ? existing.ReferencePrice : price,
-                NetNotional: (existing?.NetNotional ?? 0m) + signedNotional);
+                NetNotional: (existing?.NetNotional ?? 0m) + signedNotional,
+                AccountNetNotional: accountNet);
         }
+    }
+
+    /// <inheritdoc />
+    public decimal? TryGetReferencePrice(string symbol)
+    {
+        var mark = WorkstationEndpoints.ResolveLiveMark(symbol, _quotes, _trades);
+        return mark > 0m ? mark : null;
     }
 
     /// <inheritdoc />
@@ -145,12 +175,18 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             var symbolGross = 0m;
             var symbolNet = 0m;
             var absoluteQuantity = 0m;
+            // Per-account signed exposure: direction-aware projections must know which
+            // contribution an order changes, since offsetting books across accounts make
+            // the aggregate net useless for deciding whether an order adds or reduces risk.
+            var accountNet = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
             foreach (var contribution in position.Contributions)
             {
                 var price = liveMark is { } mark && mark > 0m ? mark : Math.Abs(contribution.CostBasis);
                 symbolGross += Math.Abs(contribution.Quantity) * price;
                 symbolNet += contribution.Quantity * price;
                 absoluteQuantity += Math.Abs(contribution.Quantity);
+                accountNet[contribution.AccountId] =
+                    accountNet.GetValueOrDefault(contribution.AccountId) + (contribution.Quantity * price);
             }
 
             grossExposure += symbolGross;
@@ -163,7 +199,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 ReferencePrice: liveMark is { } markPrice && markPrice > 0m
                     ? markPrice
                     : absoluteQuantity > 0m ? symbolGross / absoluteQuantity : 0m,
-                NetNotional: symbolNet);
+                NetNotional: symbolNet,
+                AccountNetNotional: accountNet);
         }
 
         ApplyWorkingOrderExposure(symbolExposures, ref grossExposure, ref netExposure);

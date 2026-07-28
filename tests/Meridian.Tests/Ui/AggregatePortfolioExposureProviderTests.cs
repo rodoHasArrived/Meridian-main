@@ -195,6 +195,74 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_WorkingOrder_ReservesBrokerNativeRoutedNotional()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // Alpaca-style notional sizing: the gateway routes $500k and discards quantity,
+        // so reserving quantity x price would hold back roughly one share.
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "notional-1",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                RoutedNotional = 500_000m,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            500_000m,
+            "the reserve must match the dollars the gateway actually routes");
+    }
+
+    [Fact]
+    public void GetSnapshot_AttributesExposurePerAccount()
+    {
+        // Offsetting books across two accounts: the aggregate net says nothing about
+        // whether an order in one of them adds or reduces risk, so the projection needs
+        // per-account attribution.
+        var longAccount = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var shortAccount = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL",
+                TotalQuantity: 100m,
+                LongQuantity: 1_000m,
+                ShortQuantity: 900m,
+                WeightedAverageCost: 100m,
+                TotalUnrealisedPnl: 0m,
+                Contributions:
+                [
+                    new RunPositionContribution("run-a", longAccount.ToString("D"), 1_000m, 100m, 0m),
+                    new RunPositionContribution("run-b", shortAccount.ToString("D"), -900m, 100m, 0m)
+                ])
+        ]);
+
+        var exposure = new AggregatePortfolioExposureProvider(aggregate.Object)
+            .GetSnapshot()
+            .GetSymbolExposure("AAPL");
+
+        exposure.ResolveSignedExposureFor(longAccount).Should().Be(100_000m);
+        exposure.ResolveSignedExposureFor(shortAccount).Should().Be(-90_000m);
+        exposure.ResolveSignedExposureFor(null).Should().BeNull(
+            "with several contributing accounts an unattributed order must fall back to the additive worst case");
+    }
+
+    [Fact]
     public void GetSnapshot_WithRegistry_SumsPortfolioValueAcrossRegisteredPortfolios()
     {
         var aggregate = new Mock<IAggregatePortfolioService>();

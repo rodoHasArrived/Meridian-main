@@ -76,13 +76,17 @@ public sealed class CompositeRiskValidator : IRiskValidator
         // authorized rather than surviving for replay against a later identical order.
         // The consumed entry's rule identity scopes the bypass, and a rejection later in
         // this evaluation re-arms the approval because no order routed.
-        var releasedEntry = _escalationQueue?.TryConsumeApproval(request);
-        if (releasedEntry is not null)
+        var releasedEntries = _escalationQueue?.TryConsumeApprovals(request) ?? [];
+        foreach (var released in releasedEntries)
         {
             _logger.LogInformation(
                 "Governed approval {EscalationId} consumed for the escalation parked by rule {RuleName}",
-                releasedEntry.EscalationId,
-                releasedEntry.RuleName ?? "unknown");
+                released.EscalationId,
+                released.RuleName ?? "unknown");
+        }
+
+        if (releasedEntries.Count > 0)
+        {
             (warnings ??= []).Add("Escalation released by governed approval.");
         }
 
@@ -113,9 +117,10 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 if (result.RequiresApproval || rule.Severity == RiskRuleSeverity.Escalate)
                 {
                     // A consumed approval satisfies only the escalation it was parked for;
-                    // any other escalate-capable rule still parks its own approval.
-                    if (releasedEntry is not null &&
-                        string.Equals(releasedEntry.RuleName, rule.RuleName, StringComparison.Ordinal))
+                    // any other escalate-capable rule still parks its own approval. An
+                    // order breaching several such rules carries one token per decision.
+                    if (releasedEntries.Any(entry =>
+                            string.Equals(entry.RuleName, rule.RuleName, StringComparison.Ordinal)))
                     {
                         _logger.LogInformation(
                             "Escalation from rule {RuleName} released by governed approval",
@@ -125,7 +130,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
                     return RestoreOnFailure(
                         Escalate(rule, request, reason, warnings),
-                        releasedEntry);
+                        releasedEntries);
                 }
 
                 switch (rule.Severity)
@@ -148,7 +153,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                         await TripCircuitBreakerAsync(rule, reason, ct).ConfigureAwait(false);
                         return RestoreOnFailure(
                             WithWarnings(RiskValidationResult.Rejected(reason), warnings),
-                            releasedEntry);
+                            releasedEntries);
 
                     default:
                         _logger.LogWarning(
@@ -157,23 +162,27 @@ public sealed class CompositeRiskValidator : IRiskValidator
                             rule.Severity);
                         return RestoreOnFailure(
                             WithWarnings(RiskValidationResult.Rejected(reason), warnings),
-                            releasedEntry);
+                            releasedEntries);
                 }
             }
 
             var approved = WithWarnings(RiskValidationResult.Approved(), warnings);
-            // Surface the consumed approval on the approved result so the OMS can re-arm
-            // it if the gateway subsequently faults before the order routes.
-            return releasedEntry is null
+            // Surface the consumed approvals on the approved result so the OMS can re-arm
+            // them if the gateway subsequently faults before the order routes.
+            return releasedEntries.Count == 0
                 ? approved
-                : approved with { ConsumedApprovalId = releasedEntry.EscalationId };
+                : approved with
+                {
+                    ConsumedApprovalId = RiskEscalationQueueService.JoinTokens(
+                        releasedEntries.Select(static entry => entry.EscalationId))
+                };
         }
         catch
         {
             // Cancellation or a faulting rule exits validation without routing anything,
             // so the consumed approval must not stay retired: re-arm it for retry, then
             // let the exception continue unwinding.
-            RestoreOnFault(releasedEntry);
+            RestoreOnFault(releasedEntries);
             throw;
         }
     }
@@ -183,14 +192,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// a faulting rule): the release routed nothing, so the operator's decision must not
     /// be lost to the fault.
     /// </summary>
-    private void RestoreOnFault(RiskEscalationEntry? releasedEntry)
+    private void RestoreOnFault(IReadOnlyList<RiskEscalationEntry> releasedEntries)
     {
-        if (releasedEntry is not null && _escalationQueue is not null &&
-            _escalationQueue.TryRestoreApproval(releasedEntry.EscalationId))
+        if (_escalationQueue is null)
         {
-            _logger.LogInformation(
-                "Governed approval {EscalationId} re-armed: validation exited before routing",
-                releasedEntry.EscalationId);
+            return;
+        }
+
+        foreach (var released in releasedEntries)
+        {
+            if (_escalationQueue.TryRestoreApproval(released.EscalationId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed: validation exited before routing",
+                    released.EscalationId);
+            }
         }
     }
 
@@ -199,14 +215,23 @@ public sealed class CompositeRiskValidator : IRiskValidator
     /// release routed nothing, so the operator's decision stays retryable once the
     /// blocking condition clears. A successful evaluation keeps the token retired.
     /// </summary>
-    private RiskValidationResult RestoreOnFailure(RiskValidationResult result, RiskEscalationEntry? releasedEntry)
+    private RiskValidationResult RestoreOnFailure(
+        RiskValidationResult result,
+        IReadOnlyList<RiskEscalationEntry> releasedEntries)
     {
-        if (releasedEntry is not null && !result.IsApproved && _escalationQueue is not null &&
-            _escalationQueue.TryRestoreApproval(releasedEntry.EscalationId))
+        if (result.IsApproved || _escalationQueue is null)
         {
-            _logger.LogInformation(
-                "Governed approval {EscalationId} re-armed: the release was blocked before routing",
-                releasedEntry.EscalationId);
+            return result;
+        }
+
+        foreach (var released in releasedEntries)
+        {
+            if (_escalationQueue.TryRestoreApproval(released.EscalationId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed: the release was blocked before routing",
+                    released.EscalationId);
+            }
         }
 
         return result;
@@ -270,20 +295,21 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 return;
             }
 
+            // The halt is a system-wide promise, not part of this client's request: a
+            // caller disconnecting mid-persist must never silently drop it, so the trip
+            // runs on its own token.
             await _operatorControls.SetCircuitBreakerAsync(
                 isOpen: true,
                 reason: $"Tripped by critical risk rule '{rule.RuleName}': {reason}",
                 changedBy: $"risk-engine/{rule.RuleName}",
-                ct: ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+                ct: CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
             // The order rejection stands regardless, and the halt promise must too: latch
-            // fail-closed so every subsequent order is rejected until the trip lands.
+            // fail-closed so every subsequent order is rejected until the trip lands. This
+            // covers cancellation as well — the latch is recorded before the exception
+            // propagates, so an interrupted trip still halts routing.
             _breakerTripReason = $"Tripped by critical risk rule '{rule.RuleName}': {reason}";
             _breakerTripPending = true;
             _logger.LogError(
@@ -313,13 +339,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 isOpen: true,
                 reason: _breakerTripReason,
                 changedBy: "risk-engine/fail-closed-retry",
-                ct: ct).ConfigureAwait(false);
+                ct: CancellationToken.None).ConfigureAwait(false);
             _breakerTripPending = false;
             _logger.LogInformation("Pending critical circuit-breaker trip applied; fail-closed latch released");
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception exception)
         {

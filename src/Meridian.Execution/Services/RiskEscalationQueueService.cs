@@ -62,8 +62,14 @@ public sealed record RiskEscalationQueueOptions(string SnapshotPath, int MaxReta
 /// </summary>
 public sealed class RiskEscalationQueueService : IAsyncDisposable
 {
-    /// <summary>Order-metadata key carrying the escalation id of a governed approval.</summary>
+    /// <summary>Order-metadata key carrying the escalation id(s) of granted governed approvals.</summary>
     public const string ApprovalMetadataKey = "riskEscalationId";
+
+    /// <summary>
+    /// Separator for the approval token set. An order breaching several escalation-capable
+    /// rules carries one token per granted decision.
+    /// </summary>
+    public const string TokenSeparator = ",";
 
     private readonly ConcurrentDictionary<string, RiskEscalationEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _entryOrder = new();
@@ -194,14 +200,52 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     public RiskEscalationEntry? TryConsumeApproval(OrderRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
+        return TryConsumeApprovals(request).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Consumes every governed approval carried on <paramref name="request"/> metadata. An
+    /// order that breaches several escalation-capable rules accumulates one token per
+    /// granted decision (the token value is a delimited set), and all of them must be
+    /// honored in a single evaluation — otherwise each release satisfies one rule while
+    /// re-parking another and the order can never route despite every decision being
+    /// granted. Each token is still one-shot and fingerprint-bound individually.
+    /// </summary>
+    public IReadOnlyList<RiskEscalationEntry> TryConsumeApprovals(OrderRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
 
         if (request.Metadata is null ||
-            !request.Metadata.TryGetValue(ApprovalMetadataKey, out var escalationId) ||
-            string.IsNullOrWhiteSpace(escalationId))
+            !request.Metadata.TryGetValue(ApprovalMetadataKey, out var tokenValue) ||
+            string.IsNullOrWhiteSpace(tokenValue))
         {
-            return null;
+            return [];
         }
 
+        var released = new List<RiskEscalationEntry>();
+        foreach (var escalationId in SplitTokens(tokenValue))
+        {
+            if (TryConsumeSingleApproval(request, escalationId) is { } entry)
+            {
+                released.Add(entry);
+            }
+        }
+
+        return released;
+    }
+
+    /// <summary>Splits a governed-approval token value into its individual escalation ids.</summary>
+    public static IReadOnlyList<string> SplitTokens(string? tokenValue) =>
+        string.IsNullOrWhiteSpace(tokenValue)
+            ? []
+            : tokenValue.Split(TokenSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>Joins escalation ids into a single governed-approval token value.</summary>
+    public static string JoinTokens(IEnumerable<string> escalationIds) =>
+        string.Join(TokenSeparator, escalationIds.Distinct(StringComparer.OrdinalIgnoreCase));
+
+    private RiskEscalationEntry? TryConsumeSingleApproval(OrderRequest request, string escalationId)
+    {
         lock (_resolveLock)
         {
             if (!_entries.TryGetValue(escalationId, out var entry) ||

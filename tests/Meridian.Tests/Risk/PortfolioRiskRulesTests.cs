@@ -335,8 +335,31 @@ public sealed class PortfolioRiskRulesTests
         result.IsApproved.Should().BeFalse();
     }
 
-    private sealed class StubExposureProvider(PortfolioExposureSnapshot snapshot) : IPortfolioExposureProvider
+    [Fact]
+    public async Task OrderNotional_MarketOrderInNeverHeldSymbol_MeasuresAtTheLiveMark()
+    {
+        // The book is flat in ZZZZ, but the feed prices it and the gateway will execute
+        // it — measuring at the live mark beats approving it unmeasured.
+        var rule = new OrderNotionalRule(
+            new StubExposureProvider(
+                Provider().GetSnapshot(),
+                referencePrices: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["ZZZZ"] = 250m }),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(symbol: "ZZZZ", quantity: 100m));
+
+        result.IsApproved.Should().BeFalse("100 x the 250 live mark is 25k, over the 10k ceiling");
+    }
+
+    private sealed class StubExposureProvider(
+        PortfolioExposureSnapshot snapshot,
+        IReadOnlyDictionary<string, decimal>? referencePrices = null) : IPortfolioExposureProvider
     {
         public PortfolioExposureSnapshot GetSnapshot() => snapshot;
+
+        public decimal? TryGetReferencePrice(string symbol) =>
+            referencePrices is not null && referencePrices.TryGetValue(symbol, out var price) ? price : null;
     }
 }

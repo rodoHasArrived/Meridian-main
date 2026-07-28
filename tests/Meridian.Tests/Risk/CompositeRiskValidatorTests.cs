@@ -513,6 +513,69 @@ public sealed class CompositeRiskValidatorTests
         }
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_OrderBreachingTwoEscalationRules_RoutesOnceBothAreApproved()
+    {
+        var queue = CreateQueue();
+        var ruleA = new StubRiskRule("order-notional", RiskValidationResult.Escalated("band A"));
+        var ruleB = new StubRiskRule("desk-review", RiskValidationResult.Escalated("band B"));
+        var validator = new CompositeRiskValidator(
+            [ruleA, ruleB],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+
+        // Rule A parks first; approving it and resubmitting parks rule B.
+        var parkedA = await validator.ValidateOrderAsync(CreateOrder());
+        queue.Approve(parkedA.EscalationId!, actor: "risk-desk");
+
+        var withA = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedA.EscalationId!
+            }
+        };
+        var parkedB = await validator.ValidateOrderAsync(withA);
+        parkedB.RequiresApproval.Should().BeTrue();
+        queue.Approve(parkedB.EscalationId!, actor: "risk-desk");
+
+        // Carrying BOTH decisions releases the order instead of alternating forever.
+        var withBoth = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] =
+                    RiskEscalationQueueService.JoinTokens([parkedA.EscalationId!, parkedB.EscalationId!])
+            }
+        };
+        var released = await validator.ValidateOrderAsync(withBoth);
+
+        released.IsApproved.Should().BeTrue("every escalation on the unchanged order has been approved");
+        released.ConsumedApprovalId.Should().Contain(parkedA.EscalationId!).And.Contain(parkedB.EscalationId!);
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_CancelledDuringCriticalTrip_StillTripsTheBreaker()
+    {
+        var controls = CreateOperatorControls();
+        // The caller disconnects while the critical rule is being evaluated, i.e. exactly
+        // when the trip is about to persist. The halt is a system-wide promise, not part
+        // of that client's request, so it must still land.
+        using var caller = new CancellationTokenSource();
+        var critical = new CancellingCriticalRule("gross-exposure", caller);
+        var validator = new CompositeRiskValidator(
+            [critical],
+            NullLogger<CompositeRiskValidator>.Instance,
+            operatorControls: controls);
+
+        var result = await validator.ValidateOrderAsync(CreateOrder(), caller.Token);
+
+        result.IsApproved.Should().BeFalse();
+        controls.GetSnapshot().CircuitBreaker.IsOpen.Should().BeTrue(
+            "a cancelled request must not drop a critical circuit-breaker trip");
+        controls.GetSnapshot().CircuitBreaker.Reason.Should().Contain("gross-exposure");
+    }
+
     private static RiskEscalationQueueService CreateQueue() => new(
         NullLogger<RiskEscalationQueueService>.Instance,
         options: new RiskEscalationQueueOptions(
@@ -530,6 +593,23 @@ public sealed class CompositeRiskValidatorTests
         Type = OrderType.Market,
         Quantity = 10m,
     };
+
+    /// <summary>
+    /// A Critical rule that cancels the caller's token as it evaluates, standing in for a
+    /// client disconnecting exactly while the breaker trip is being persisted.
+    /// </summary>
+    private sealed class CancellingCriticalRule(string ruleName, CancellationTokenSource caller) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public RiskRuleSeverity Severity => RiskRuleSeverity.Critical;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            caller.Cancel();
+            return Task.FromResult(RiskValidationResult.Rejected("book over ceiling"));
+        }
+    }
 
     private sealed class FaultingRule(string ruleName) : IRiskRule
     {
