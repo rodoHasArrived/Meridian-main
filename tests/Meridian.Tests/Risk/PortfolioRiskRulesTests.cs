@@ -391,6 +391,55 @@ public sealed class PortfolioRiskRulesTests
         result.IsApproved.Should().BeFalse("400 x the 150 limit is 60k, over the 50k ceiling");
     }
 
+    [Fact]
+    public async Task OrderNotional_RestingBuyLimitBelowTheMark_ValuesAtTheLimit()
+    {
+        // A buy limit caps the price paid, so a 1,000-share buy limited at $1 can never
+        // cost more than $1k even with the symbol marked at $100. Valuing it at the mark
+        // would reject a harmless resting order — and at Critical severity, halt on it.
+        var rule = new OrderNotionalRule(
+            new StubExposureProvider(
+                Provider().GetSnapshot(),
+                referencePrices: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = 100m }),
+            () => 10_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(quantity: 1_000m, limitPrice: 1m));
+
+        result.IsApproved.Should().BeTrue("a buy limit is an upper bound on the execution price");
+    }
+
+    [Fact]
+    public async Task GrossExposure_OrderFromAnEmptyAccount_UsesTheAdditiveWorstCase()
+    {
+        // One account is long $100k; the order sells $20k from a different, flat account.
+        // Treating the other account's long as the order's own position would project
+        // $80k gross instead of the real $120k across both accounts.
+        var exposure = new SymbolExposure(
+            "AAPL",
+            GrossExposure: 100_000m,
+            NetQuantity: 1_000m,
+            ReferencePrice: 100m,
+            NetNotional: 100_000m,
+            AccountNetNotional: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["11111111-1111-1111-1111-111111111111"] = 100_000m
+            });
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 100_000m, portfolioValue: 500_000m, symbols: exposure),
+            () => 110_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        var order = CreateOrder(quantity: 200m, limitPrice: 100m, side: OrderSide.Sell) with
+        {
+            FundAccountId = Guid.Parse("22222222-2222-2222-2222-222222222222")
+        };
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse("the order adds exposure in its own account rather than reducing another's");
+    }
+
     private sealed class StubExposureProvider(
         PortfolioExposureSnapshot snapshot,
         IReadOnlyDictionary<string, decimal>? referencePrices = null) : IPortfolioExposureProvider

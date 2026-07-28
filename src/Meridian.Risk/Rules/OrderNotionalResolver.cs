@@ -27,6 +27,17 @@ internal static class OrderNotionalResolver
             return null;
         }
 
+        // An amendment probe measures only the exposure it adds: the snapshot already
+        // reserves the working order at its current size, so the full amended value would
+        // double-count. Quantity stays the full amended quantity for position limits.
+        if (request.Metadata is not null &&
+            request.Metadata.TryGetValue(Meridian.Execution.Services.RiskEscalationQueueService.IncrementalNotionalMetadataKey, out var incrementalRaw) &&
+            decimal.TryParse(incrementalRaw, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var incremental) &&
+            incremental >= 0m)
+        {
+            return incremental;
+        }
+
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
         // routes the metadata dollars, not quantity x price — value exactly what routes.
         if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
@@ -52,13 +63,15 @@ internal static class OrderNotionalResolver
             // execute it — that beats approving a market order unmeasured.
             referencePrice = marketPrice;
         }
-        else if (marketPrice is { } mark && mark > 0m)
+        else if (marketPrice is { } mark && mark > 0m && request.Side == OrderSide.Sell)
         {
-            // A limit price is not a bound on execution value. A marketable order executes
-            // at the market, so a sell limit far below the market (or a buy limit far
-            // above it) would otherwise measure a fraction of what actually routes — a
-            // 10,000-share sale limited at $1 in a $100 symbol routes ~$1m, not $10k.
-            // Value conservatively at whichever side is larger.
+            // A sell limit is a floor, not a ceiling: a marketable sell executes at the
+            // market, so a 10,000-share sale limited at $1 in a $100 symbol routes ~$1m,
+            // not $10k. Value it at whichever side is larger.
+            // A BUY limit is the opposite — it caps the price paid — so a resting buy
+            // limit below the market is valued at its own limit. Valuing it at the mark
+            // would measure $100k for a 1,000-share order limited at $1 and could reject
+            // (and, at Critical severity, halt on) a harmless resting order.
             referencePrice = Math.Max(referencePrice.Value, mark);
         }
 

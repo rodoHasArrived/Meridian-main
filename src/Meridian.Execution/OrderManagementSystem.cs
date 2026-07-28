@@ -42,6 +42,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
+    // Client order ids held by orders parked for governed approval, mapped to the
+    // escalation that owns them. The tracked state is terminal, so without this the id
+    // would be reclaimable while the approval is still live.
+    private readonly ConcurrentDictionary<string, string> _parkedOrderIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _reportPumpCts = new();
     private readonly Task _reportPumpTask;
     private readonly ITradeEventPublisher? _tradeEventPublisher;
@@ -171,6 +175,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // order id was still null would route under a second, unrelated id that the
         // submitter, audits, and cancellation lookups would never see.
         request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
+        // The evaluation-only flag suppresses queue creation and belongs to the internal
+        // amendment probe alone. A caller that set it on a real submission would get a
+        // parked response carrying no escalation id — one no operator could ever resolve.
+        request = StripEvaluationOnlyFlag(request);
         var brokerName = _gateway.GatewayId;
 
         // Extract metadata fields for audit correlation
@@ -197,8 +205,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         // replayed or colliding id would overwrite the tracked state (fills, status history)
         // of the order already working under that id.
         if (request.ClientOrderId is not null
-            && _orders.TryGetValue(orderId, out var existingOrder)
-            && !IsTerminalStatus(existingOrder.Status))
+            && ((_orders.TryGetValue(orderId, out var existingOrder) && !IsTerminalStatus(existingOrder.Status))
+                || IsReservedByLiveEscalation(orderId, request)))
         {
             return await RejectDuplicateClientOrderIdAsync(
                 orderId,
@@ -518,6 +526,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 }
             }
 
+            if (report.OrderStatus is OrderStatus.Rejected)
+            {
+                // The broker refused it: nothing routed, so consumed approvals must be
+                // retryable once the broker-side condition clears. This mirrors the
+                // exception path below — a normal rejected report is just as final.
+                RestoreConsumedApprovals(consumedApprovalId, "a gateway rejection");
+            }
+
             return new OrderResult
             {
                 Success = report.OrderStatus is not OrderStatus.Rejected,
@@ -569,21 +585,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
 
-            // Nothing routed: governed approvals consumed by this validation must not stay
-            // retired because the gateway faulted. The consumed value is a token set (an
-            // order can carry one approval per escalation-capable rule), so re-arm each.
-            if (consumedApprovalId is not null && _escalationQueue is not null)
-            {
-                foreach (var escalationId in RiskEscalationQueueService.SplitTokens(consumedApprovalId))
-                {
-                    if (_escalationQueue.TryRestoreApproval(escalationId))
-                    {
-                        _logger.LogInformation(
-                            "Governed approval {EscalationId} re-armed after a gateway submission failure",
-                            escalationId);
-                    }
-                }
-            }
+            RestoreConsumedApprovals(consumedApprovalId, "a gateway submission failure");
 
             var rejectedState = orderState with
             {

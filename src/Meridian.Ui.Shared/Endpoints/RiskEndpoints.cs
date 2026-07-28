@@ -263,6 +263,15 @@ public static class RiskEndpoints
             if (request?.Release != false &&
                 context.RequestServices.GetService<IOrderManager>() is { } oms)
             {
+                // Claim the release atomically. Two concurrent approve calls on the same
+                // approved entry would otherwise both submit the retained order; the first
+                // can fill and free its client order id before the second reaches the OMS,
+                // letting the second park a fresh escalation for an order already executed.
+                if (!queue.TryBeginRelease(approved.EscalationId))
+                {
+                    return Results.Conflict(new { error = "A release for this escalation is already in flight." });
+                }
+
                 // Carry every approval this order has already been granted, not just the
                 // newest: an order breaching several escalation-capable rules needs all of
                 // its tokens present at once, or each release satisfies one rule while
@@ -291,7 +300,16 @@ public static class RiskEndpoints
                 }
 
                 var releaseRequest = approved.Request with { Metadata = metadata };
-                releaseResult = await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false);
+                try
+                {
+                    releaseResult = await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false);
+                }
+                finally
+                {
+                    // Consumption already cleared the claim on a successful release; this
+                    // only matters when the release never reached that point.
+                    queue.EndRelease(approved.EscalationId);
+                }
             }
 
             var latest = queue.TryGet(escalationId) ?? approved;

@@ -69,6 +69,12 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             return;
         }
 
+        // Working orders are aggregated per (symbol, account) BEFORE being reserved.
+        // Reserving them one at a time compares each against a running account total while
+        // the symbol's gross still reflects only positions, so a $100k long with two
+        // working $80k sells would reserve 0 for the first and $40k for the second and
+        // report $140k — more than any possible fill subset can reach.
+        var buckets = new Dictionary<(string Symbol, string Account), WorkingOrderBucket>();
         foreach (var order in orderManager.GetExposureReservingOrders())
         {
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
@@ -80,9 +86,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 continue;
             }
 
-            var existing = symbolExposures.TryGetValue(order.Symbol, out var tracked)
-                ? tracked
-                : null;
+            var existing = symbolExposures.GetValueOrDefault(order.Symbol);
             var price = order.LimitPrice ?? order.StopPrice ?? 0m;
             if (price <= 0m)
             {
@@ -123,52 +127,61 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 // symbol (the per-order notional rule declines to guess for the same reason).
                 continue;
             }
-            var signedNotional = order.Side switch
+
+            var direction = order.Side switch
             {
-                OrderSide.Buy => workingNotional,
-                OrderSide.Sell => -workingNotional,
+                OrderSide.Buy => 1m,
+                OrderSide.Sell => -1m,
                 _ => 0m
             };
-            var remainingQuantity = Math.Max(0m, remaining);
-            var signedQuantity = order.Side switch
-            {
-                OrderSide.Buy => remainingQuantity,
-                OrderSide.Sell => -remainingQuantity,
-                _ => 0m
-            };
+            // An unscoped working order lands in its own bucket, which correctly forces the
+            // additive worst case for multi-account symbols.
+            var key = (order.Symbol, order.FundAccountId?.ToString("D") ?? "unscoped");
+            var bucket = buckets.GetValueOrDefault(key) ?? new WorkingOrderBucket();
+            bucket.SignedNotional += direction * workingNotional;
+            bucket.SignedQuantity += direction * Math.Max(0m, remaining);
+            bucket.GrossNotional += workingNotional;
+            bucket.ReferencePrice = bucket.ReferencePrice > 0m ? bucket.ReferencePrice : price;
+            buckets[key] = bucket;
+        }
 
-            netExposure += signedNotional;
-
-            // Attribute the reserve to the order's own accounting scope so direction-aware
-            // projections stay exact; an unscoped working order lands in its own bucket,
-            // which correctly forces the additive worst case for multi-account symbols.
-            var accountKey = order.FundAccountId?.ToString("D") ?? "unscoped";
+        foreach (var ((symbol, accountKey), bucket) in buckets)
+        {
+            var existing = symbolExposures.GetValueOrDefault(symbol);
             var accountNet = existing?.AccountNetNotional is { } trackedAccounts
                 ? new Dictionary<string, decimal>(trackedAccounts, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
             var accountBefore = accountNet.GetValueOrDefault(accountKey);
-            var accountAfter = accountBefore + signedNotional;
+            var accountAfter = accountBefore + bucket.SignedNotional;
             accountNet[accountKey] = accountAfter;
 
-            // A working order that reduces its account's position does not add exposure —
-            // it retires some. Reserving its full notional on top of the position would
-            // report a $100k long with a working $50k sell as $150k gross and could trip
-            // the Critical gross-exposure breaker on an unrelated order. Reserve the
-            // larger of the current and projected exposure for this account, so fill
-            // uncertainty stays conservative without inventing exposure that cannot exist.
+            // Orders that reduce their account's position add no gross exposure — they
+            // retire some. Reserve only the growth in the account's absolute exposure,
+            // capped by the notional actually working, so fill uncertainty stays
+            // conservative without inventing exposure no fill subset could produce.
             var accountGrossDelta = Math.Max(0m, Math.Abs(accountAfter) - Math.Abs(accountBefore));
-            var reservedGross = Math.Min(workingNotional, accountGrossDelta);
+            var reservedGross = Math.Min(bucket.GrossNotional, accountGrossDelta);
 
             grossExposure += reservedGross;
+            netExposure += bucket.SignedNotional;
 
-            symbolExposures[order.Symbol] = new SymbolExposure(
-                Symbol: existing?.Symbol ?? order.Symbol,
+            symbolExposures[symbol] = new SymbolExposure(
+                Symbol: existing?.Symbol ?? symbol,
                 GrossExposure: (existing?.GrossExposure ?? 0m) + reservedGross,
-                NetQuantity: (existing?.NetQuantity ?? 0m) + signedQuantity,
-                ReferencePrice: existing is { ReferencePrice: > 0m } ? existing.ReferencePrice : price,
-                NetNotional: (existing?.NetNotional ?? 0m) + signedNotional,
+                NetQuantity: (existing?.NetQuantity ?? 0m) + bucket.SignedQuantity,
+                ReferencePrice: existing is { ReferencePrice: > 0m } ? existing.ReferencePrice : bucket.ReferencePrice,
+                NetNotional: (existing?.NetNotional ?? 0m) + bucket.SignedNotional,
                 AccountNetNotional: accountNet);
         }
+    }
+
+    /// <summary>Working-order exposure accumulated for one symbol and account.</summary>
+    private sealed class WorkingOrderBucket
+    {
+        public decimal SignedNotional { get; set; }
+        public decimal SignedQuantity { get; set; }
+        public decimal GrossNotional { get; set; }
+        public decimal ReferencePrice { get; set; }
     }
 
     /// <inheritdoc />

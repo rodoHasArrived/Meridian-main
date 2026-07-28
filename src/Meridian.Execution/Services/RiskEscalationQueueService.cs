@@ -35,7 +35,13 @@ public sealed record RiskEscalationEntry(
     RiskEscalationStatus Status,
     string? ResolvedBy = null,
     string? ResolutionReason = null,
-    DateTimeOffset? ResolvedAt = null);
+    DateTimeOffset? ResolvedAt = null,
+    // Release is a distinct act from approval: overwriting the approver's identity and
+    // timestamp when the order is later released would claim the approver performed the
+    // release and lose when the decision was actually made.
+    string? ReleasedBy = null,
+    DateTimeOffset? ReleasedAt = null,
+    bool ReleaseInFlight = false);
 
 /// <summary>Persisted snapshot of the governed-approval queue.</summary>
 public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
@@ -70,6 +76,14 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// rules carries one token per granted decision.
     /// </summary>
     public const string TokenSeparator = ",";
+
+    /// <summary>
+    /// Order-metadata key carrying the incremental notional an amendment adds. Quantity
+    /// stays the full amended quantity so position limits evaluate the real post-amendment
+    /// position, while notional-based rules measure only the exposure being added (the
+    /// snapshot already reserves the working order at its current size).
+    /// </summary>
+    public const string IncrementalNotionalMetadataKey = "riskIncrementalNotional";
 
     /// <summary>
     /// Order-metadata flag marking a probe evaluation: the rules should decide, but an
@@ -113,7 +127,11 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
         var entry = new RiskEscalationEntry(
             EscalationId: Guid.NewGuid().ToString("N"),
-            Request: request,
+            // Freeze the request: Metadata and Legs are read-only interfaces, not immutable
+            // values, so retaining the caller's references would let an in-process caller
+            // mutate the parked order after approval and have the release fingerprint —
+            // which compares against these same objects — accept the altered order.
+            Request: FreezeRequest(request),
             Reason: string.IsNullOrWhiteSpace(reason) ? "Escalated for governed approval." : reason,
             RuleName: ruleName,
             Actor: actor,
@@ -156,6 +174,57 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             message: $"Order parked for governed approval: {entry.Reason}");
 
         return entry;
+    }
+
+    /// <summary>
+    /// Deep-copies the mutable collections on an order request so the retained escalation
+    /// cannot be altered after the risk desk reviewed it.
+    /// </summary>
+    private static OrderRequest FreezeRequest(OrderRequest request) => request with
+    {
+        Metadata = request.Metadata is null
+            ? null
+            : new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase),
+        Legs = request.Legs is null ? null : request.Legs.ToArray()
+    };
+
+    /// <summary>
+    /// Atomically claims an approved entry for release. Two concurrent approve requests on
+    /// the same entry would otherwise both submit the retained order; the first can fill
+    /// and free its client order id before the second reaches the OMS, letting the second
+    /// park a fresh escalation for an order that already executed. Returns false when the
+    /// entry is not approved or a release is already in flight.
+    /// </summary>
+    public bool TryBeginRelease(string escalationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+
+        lock (_resolveLock)
+        {
+            if (!_entries.TryGetValue(escalationId, out var entry) ||
+                entry.Status != RiskEscalationStatus.Approved ||
+                entry.ReleaseInFlight)
+            {
+                return false;
+            }
+
+            _entries[escalationId] = entry with { ReleaseInFlight = true };
+            return true;
+        }
+    }
+
+    /// <summary>Clears a release claim that did not result in a released order.</summary>
+    public void EndRelease(string escalationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+
+        lock (_resolveLock)
+        {
+            if (_entries.TryGetValue(escalationId, out var entry) && entry.ReleaseInFlight)
+            {
+                _entries[escalationId] = entry with { ReleaseInFlight = false };
+            }
+        }
     }
 
     /// <summary>Returns entries awaiting approval, oldest first.</summary>
@@ -282,10 +351,14 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 return null;
             }
 
+            string? releaseActor = null;
+            request.Metadata?.TryGetValue("actor", out releaseActor);
             var released = entry with
             {
                 Status = RiskEscalationStatus.Released,
-                ResolvedAt = DateTimeOffset.UtcNow
+                ReleaseInFlight = false,
+                ReleasedBy = string.IsNullOrWhiteSpace(releaseActor) ? entry.ResolvedBy : releaseActor,
+                ReleasedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = released;
             if (!TryPersistSnapshotLocked())
@@ -301,7 +374,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 action: "ParkedOrderReleased",
                 outcome: "Released",
                 entry: released,
-                message: $"Governed approval consumed; order released to the risk gate by {released.ResolvedBy ?? "operator"}.");
+                message: $"Governed approval by {released.ResolvedBy ?? "operator"} consumed; order released to the risk gate by {released.ReleasedBy ?? "operator"}.");
 
             return released;
         }
@@ -642,7 +715,10 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 Outcome: outcome,
                 OccurredAt: DateTimeOffset.UtcNow,
                 Actor: entry.ResolvedBy ?? entry.Actor,
-                OrderId: null,
+                // Correlate the governed decision with the order it authorized: without
+                // this, an audit search keyed by the executed order id finds the
+                // submission and parking entries but none of the approval lifecycle.
+                OrderId: entry.Request.ClientOrderId,
                 RunId: entry.RunId,
                 Symbol: entry.Request.Symbol,
                 CorrelationId: entry.CorrelationId,

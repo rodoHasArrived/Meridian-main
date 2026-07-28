@@ -31,15 +31,21 @@ public sealed record SymbolExposure(
     /// </summary>
     public decimal? ResolveSignedExposureFor(Guid? fundAccountId)
     {
-        if (AccountNetNotional is not { Count: > 1 })
+        if (fundAccountId is { } accountId)
         {
-            return NetNotional;
+            // The order names its account: use that account's own exposure, or fall back
+            // to the additive worst case when the account holds nothing here. Returning
+            // the aggregate would treat an order from an empty account as if it reduced
+            // another account's position — a $20k sell from a flat account against a
+            // $100k long elsewhere would project $80k gross instead of $120k.
+            return AccountNetNotional is not null &&
+                AccountNetNotional.TryGetValue(accountId.ToString("D"), out var accountNet)
+                    ? accountNet
+                    : null;
         }
 
-        return fundAccountId is { } accountId &&
-            AccountNetNotional.TryGetValue(accountId.ToString("D"), out var accountNet)
-                ? accountNet
-                : null;
+        // Unscoped order: the aggregate is exact only when a single account contributes.
+        return AccountNetNotional is not { Count: > 1 } ? NetNotional : null;
     }
 }
 

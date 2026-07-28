@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
@@ -31,6 +32,15 @@ public sealed partial class OrderManagementSystem
         CancellationToken ct)
     {
         var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+
+        // The tracked state is terminal (nothing is working at the broker), but the client
+        // order id must not be reclaimable while the approval is live: another submission
+        // could take the id and later collide with the released order. Reserve it against
+        // the escalation so only that escalation's own release can reuse it.
+        if (riskResult.EscalationId is { } escalationId)
+        {
+            _parkedOrderIds[orderId] = escalationId;
+        }
         if (_orders.TryAdd(orderId, parkedState))
         {
             TrimRetainedOrdersIfNeeded();
@@ -144,6 +154,81 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
+    /// True when <paramref name="orderId"/> is reserved by a live escalation that
+    /// <paramref name="request"/> is not the authorized release for. The release carries the
+    /// escalation's approval token; anything else must not reclaim the id. A reservation
+    /// whose escalation is no longer actionable (denied, or already released) is cleared.
+    /// </summary>
+    private bool IsReservedByLiveEscalation(string orderId, OrderRequest request)
+    {
+        if (!_parkedOrderIds.TryGetValue(orderId, out var escalationId))
+        {
+            return false;
+        }
+
+        var entry = _escalationQueue?.TryGet(escalationId);
+        if (entry is null ||
+            entry.Status is RiskEscalationStatus.Denied or RiskEscalationStatus.Released)
+        {
+            _parkedOrderIds.TryRemove(orderId, out _);
+            return false;
+        }
+
+        if (request.Metadata is not null &&
+            request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) &&
+            RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase))
+        {
+            // This is the escalation's own release: it may reclaim the id.
+            _parkedOrderIds.TryRemove(orderId, out _);
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Re-arms every governed approval consumed by a validation whose order never routed.
+    /// The consumed value is a token set — an order can carry one approval per
+    /// escalation-capable rule — so each id is restored individually.
+    /// </summary>
+    private void RestoreConsumedApprovals(string? consumedApprovalId, string cause)
+    {
+        if (consumedApprovalId is null || _escalationQueue is null)
+        {
+            return;
+        }
+
+        foreach (var escalationId in RiskEscalationQueueService.SplitTokens(consumedApprovalId))
+        {
+            if (_escalationQueue.TryRestoreApproval(escalationId))
+            {
+                _logger.LogInformation(
+                    "Governed approval {EscalationId} re-armed after {Cause}",
+                    escalationId,
+                    cause);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes the internal evaluation-only probe flag from a caller-supplied request. The
+    /// flag suppresses governed-approval parking, so honoring it from arbitrary order
+    /// metadata would let a caller obtain a parked outcome with no queue entry behind it.
+    /// </summary>
+    private static OrderRequest StripEvaluationOnlyFlag(OrderRequest request)
+    {
+        if (request.Metadata is null ||
+            !request.Metadata.ContainsKey(RiskEscalationQueueService.EvaluationOnlyMetadataKey))
+        {
+            return request;
+        }
+
+        var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
+        sanitized.Remove(RiskEscalationQueueService.EvaluationOnlyMetadataKey);
+        return request with { Metadata = sanitized };
+    }
+
+    /// <summary>
     /// Undoes the speculative amended reservation when the gateway never accepted the
     /// modification, so the tracked order and every exposure snapshot fall back to the
     /// size the broker actually holds.
@@ -250,18 +335,12 @@ public sealed partial class OrderManagementSystem
             return amended with { Metadata = probeMetadata };
         }
 
-        var incrementalValue = proposed - current;
-        var probePrice = amended.LimitPrice ?? amended.StopPrice ?? 0m;
-        if (probePrice <= 0m)
-        {
-            return amended with { Metadata = probeMetadata };
-        }
-
-        return amended with
-        {
-            Quantity = incrementalValue / probePrice,
-            Metadata = probeMetadata
-        };
+        // Quantity stays the FULL amended quantity so the position-limit rule projects the
+        // real post-amendment position; only the notional-based rules read the incremental
+        // value, because the snapshot already reserves the working order's current size.
+        probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
+            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
+        return amended with { Metadata = probeMetadata };
     }
 
     private static IReadOnlyDictionary<string, string>? BuildRiskWarningsAuditMetadata(

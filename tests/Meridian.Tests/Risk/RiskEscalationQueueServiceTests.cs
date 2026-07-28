@@ -264,6 +264,68 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Park_FreezesTheRetainedRequest()
+    {
+        var queue = CreateQueue();
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["notional"] = "50000" };
+        var order = CreateOrder() with { Metadata = metadata };
+        var entry = queue.Park(order, "escalated");
+        queue.Approve(entry.EscalationId, actor: "risk-desk");
+
+        // Mutating the caller's dictionary after parking must not change what the desk
+        // approved — otherwise the fingerprint would compare the altered order to itself.
+        metadata["notional"] = "500000";
+
+        var replay = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "500000",
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
+            }
+        };
+        queue.TryConsumeApproval(replay).Should().BeNull("the retained order was frozen at parking time");
+    }
+
+    [Fact]
+    public void Release_RecordsItsOwnActorWithoutOverwritingTheApprover()
+    {
+        var queue = CreateQueue();
+        var entry = queue.Park(CreateOrder(), "escalated");
+        queue.Approve(entry.EscalationId, actor: "alice", reason: "cleared");
+
+        var release = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId,
+                ["actor"] = "bob"
+            }
+        };
+        queue.TryConsumeApproval(release).Should().NotBeNull();
+
+        var released = queue.TryGet(entry.EscalationId)!;
+        released.ResolvedBy.Should().Be("alice", "the approver's identity is evidence and must survive the release");
+        released.ReleasedBy.Should().Be("bob");
+        released.ReleasedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void TryBeginRelease_ClaimsAnApprovedEntryExactlyOnce()
+    {
+        var queue = CreateQueue();
+        var entry = queue.Park(CreateOrder(), "escalated");
+        queue.Approve(entry.EscalationId, actor: "risk-desk");
+
+        queue.TryBeginRelease(entry.EscalationId).Should().BeTrue();
+        queue.TryBeginRelease(entry.EscalationId).Should().BeFalse(
+            "a second concurrent release must not submit the same retained order");
+
+        queue.EndRelease(entry.EscalationId);
+        queue.TryBeginRelease(entry.EscalationId).Should().BeTrue("a cleared claim is retryable");
+    }
+
+    [Fact]
     public void Consume_WithSeveralTokens_ReleasesEveryGrantedApproval()
     {
         var queue = CreateQueue();

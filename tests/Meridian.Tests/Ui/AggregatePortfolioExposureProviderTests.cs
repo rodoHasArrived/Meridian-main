@@ -354,6 +354,51 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_SeveralWorkingOrdersInOneAccount_ReserveTogether()
+    {
+        // A $100k long with two working $80k sells: no fill subset can exceed $100k gross,
+        // so reserving them one at a time (0 for the first, $40k for the second) would
+        // report $140k and could trip the Critical gross ceiling.
+        var account = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns(
+        [
+            new AggregatedPosition(
+                Symbol: "AAPL",
+                TotalQuantity: 1_000m,
+                LongQuantity: 1_000m,
+                ShortQuantity: 0m,
+                WeightedAverageCost: 100m,
+                TotalUnrealisedPnl: 0m,
+                Contributions: [new RunPositionContribution("run-a", account.ToString("D"), 1_000m, 100m, 0m)])
+        ]);
+
+        Meridian.Execution.Sdk.OrderState Sell(string id) => new()
+        {
+            OrderId = id,
+            Symbol = "AAPL",
+            Side = Meridian.Execution.Sdk.OrderSide.Sell,
+            Type = Meridian.Execution.Sdk.OrderType.Limit,
+            Quantity = 800m,
+            LimitPrice = 100m,
+            FundAccountId = account,
+            Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns([Sell("sell-1"), Sell("sell-2")]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            100_000m,
+            "same-account working orders are combined before their reserve is measured");
+    }
+
+    [Fact]
     public void GetSnapshot_AttributesExposurePerAccount()
     {
         // Offsetting books across two accounts: the aggregate net says nothing about
