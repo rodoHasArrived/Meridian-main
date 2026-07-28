@@ -1026,7 +1026,11 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </CardContent>
           )}
           {!orderTicket.open && (
-            <OrderStatusBanner successText={orderTicket.successText} parkedText={orderTicket.parkedText} />
+            <OrderStatusBanner
+              successText={orderTicket.successText}
+              parkedText={orderTicket.parkedText}
+              riskWarnings={orderTicket.riskWarnings}
+            />
           )}
           <CardContent className="space-y-3">
             <DenseDataTable

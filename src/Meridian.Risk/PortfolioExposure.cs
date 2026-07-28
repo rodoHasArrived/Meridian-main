@@ -1,3 +1,5 @@
+using Meridian.Execution.Sdk;
+
 namespace Meridian.Risk;
 
 /// <summary>
@@ -116,4 +118,14 @@ public interface IPortfolioExposureProvider
     /// Implementations without a market-data feed return <see langword="null"/>.
     /// </summary>
     decimal? TryGetReferencePrice(string symbol) => null;
+
+    /// <summary>
+    /// Reference price for valuing an order about to route on <paramref name="side"/>. A
+    /// midpoint is the right mark for a position already held, but it is not what an
+    /// order pays: with a bid of $1 and an ask of $100, a market buy valued at the $50.50
+    /// mid measures roughly half of what it will actually route. Implementations that can
+    /// see the touch return the executable side of the book; the default falls back to the
+    /// symbol mark.
+    /// </summary>
+    decimal? TryGetExecutablePrice(string symbol, OrderSide side) => TryGetReferencePrice(symbol);
 }

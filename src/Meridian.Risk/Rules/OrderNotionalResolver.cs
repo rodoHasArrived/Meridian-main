@@ -56,6 +56,31 @@ internal static class OrderNotionalResolver
         };
     }
 
+    /// <summary>
+    /// Why an order could not be valued, or <see langword="null"/> when it can be. Callers
+    /// with a configured ceiling must refuse what they cannot measure — an unmeasured order
+    /// consumes no limit and routes at whatever the market gives it.
+    /// </summary>
+    public static string? DescribeUnmeasurable(
+        OrderRequest request,
+        PortfolioExposureSnapshot snapshot,
+        Func<string, decimal?>? referencePriceLookup = null)
+    {
+        if (request.Legs is { Count: > 0 } || request.OptionContract is not null)
+        {
+            return "Derivative and multi-leg orders cannot be valued by the portfolio risk rails, "
+                + "which measure per-share notional without contract multipliers or per-leg pricing.";
+        }
+
+        if (Resolve(request, snapshot, referencePriceLookup) is null)
+        {
+            return "No current price is available for this order, so its notional cannot be measured "
+                + "against the configured limits.";
+        }
+
+        return null;
+    }
+
     public static decimal? Resolve(
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,

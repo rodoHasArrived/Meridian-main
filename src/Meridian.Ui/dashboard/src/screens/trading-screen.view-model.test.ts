@@ -1492,6 +1492,39 @@ describe("trading order ticket view model", () => {
     expect(result.current.statusAnnouncement).toContain("parked for governed risk approval");
   });
 
+  it("keeps non-blocking risk warnings visible on an approved order", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: true,
+        orderId: "ord-90",
+        reason: null,
+        riskWarnings: ["SymbolConcentration is approaching its cap (21% of 25%)."]
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    // The order routed, so this is a success — but the warning describes exposure the
+    // operator now holds and must not be swallowed by an unqualified success banner.
+    expect(result.current.phase).toBe("submitted");
+    expect(result.current.riskWarnings).toHaveLength(1);
+    expect(result.current.riskWarnings[0]).toContain("approaching its cap");
+    expect(result.current.statusAnnouncement).toContain("1 risk warning");
+  });
+
   it("still reports an ordinary refusal as an error", async () => {
     const services: OrderTicketServices = {
       submitOrder: vi.fn().mockResolvedValue({

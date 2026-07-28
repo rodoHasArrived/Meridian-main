@@ -196,6 +196,11 @@ public sealed class ExecutionOperatorControlService
             shouldPersist: null,
             ct).ConfigureAwait(false);
 
+        // Immediately after the snapshot commit and before the audit write: an audit
+        // failure or a cancelled request must not leave a superseded marker on disk, or
+        // the next restart would reopen the breaker an operator just durably closed.
+        ClearPendingTripMarker();
+
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
             NormalizeActor(changedBy),
@@ -208,11 +213,6 @@ public sealed class ExecutionOperatorControlService
             null,
             null,
             ct).ConfigureAwait(false);
-
-        // The snapshot now carries an explicit decision, so any marker from an earlier
-        // failed trip is superseded — including an operator deliberately closing the
-        // breaker, which must not be undone by the next restart.
-        ClearPendingTripMarker();
 
         return snapshot;
     }

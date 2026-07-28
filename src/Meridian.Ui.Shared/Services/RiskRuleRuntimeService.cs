@@ -981,6 +981,17 @@ public sealed class RiskRuleRuntimeService
                 ?? throw new InvalidOperationException(
                     "The risk rule snapshot contains no configuration.");
 
+            // Required-field integrity check. The optional rails are legitimately null when
+            // an operator has not set them, so they cannot distinguish "unconfigured" from
+            // "truncated". These two always carry a value in a snapshot this service wrote,
+            // so their absence means the file is not a complete snapshot — and normalizing
+            // an incomplete one would quietly disable every rail it happened to omit.
+            if (snapshot.MaxDrawdownPercent <= 0m || snapshot.MaxOrdersPerMinute <= 0)
+            {
+                throw new InvalidOperationException(
+                    "The risk rule snapshot is missing required fields and is not a complete configuration.");
+            }
+
             lock (_gate)
             {
                 _maxDrawdownPercent = snapshot.MaxDrawdownPercent > 0m ? snapshot.MaxDrawdownPercent : DefaultDrawdownPercent;

@@ -49,7 +49,19 @@ public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> E
 /// <summary>
 /// Location of the durable governed-approval queue snapshot.
 /// </summary>
-public sealed record RiskEscalationQueueOptions(string SnapshotPath, int MaxRetainedEntries = 500)
+/// <param name="SnapshotPath">Durable queue snapshot location.</param>
+/// <param name="MaxRetainedEntries">Cap on retained entries; only RESOLVED entries are ever trimmed.</param>
+/// <param name="MaxUnresolvedEntries">
+/// Cap on entries still awaiting a decision. Unresolved entries are never trimmed — an
+/// escalation an operator has not acted on must not silently disappear — so without this
+/// bound a strategy that keeps entering the escalation band grows the queue, its snapshot,
+/// and the pre-trade latency of every subsequent park without limit. New parks are refused
+/// at the cap, which the enforced validator turns into a plain rejection.
+/// </param>
+public sealed record RiskEscalationQueueOptions(
+    string SnapshotPath,
+    int MaxRetainedEntries = 500,
+    int MaxUnresolvedEntries = 250)
 {
     public static RiskEscalationQueueOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "risk-escalations", "escalations.json"));
@@ -142,6 +154,21 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
         lock (_resolveLock)
         {
+            // Backpressure, not silent loss: refusing the park is a rejection the submitter
+            // sees, while trimming an unresolved entry would delete a governed decision an
+            // operator can still act on.
+            var unresolved = _entries.Values.Count(static existing =>
+                existing.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved);
+            if (_options.MaxUnresolvedEntries > 0 && unresolved >= _options.MaxUnresolvedEntries)
+            {
+                _logger.LogError(
+                    "Governed approval queue is full at {Unresolved} unresolved escalation(s); refusing to park another order",
+                    unresolved);
+                throw new InvalidOperationException(
+                    $"The governed approval queue already holds {unresolved} unresolved escalation(s); "
+                    + "the order was not parked. Resolve pending approvals before submitting more.");
+            }
+
             _entries[entry.EscalationId] = entry;
             _entryOrder.Enqueue(entry.EscalationId);
             TrimRetainedEntries();
@@ -700,7 +727,13 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         {
             if (string.IsNullOrWhiteSpace(entry.EscalationId) || entry.Request is null)
             {
-                continue;
+                // Syntactically valid JSON can still deserialize an entry with its fields
+                // omitted. Skipping one would delete a governed order — possibly a pending
+                // approval and its client-order-id reservation — from a queue that reported
+                // startup as clean, so a partial entry is snapshot corruption like any other.
+                throw new InvalidOperationException(
+                    $"The risk escalation queue snapshot at '{_options.SnapshotPath}' contains an entry with no "
+                    + "escalation id or order; refusing to start with a partial governed-approval queue.");
             }
 
             // A release claim belongs to the process that took it. Any snapshot written

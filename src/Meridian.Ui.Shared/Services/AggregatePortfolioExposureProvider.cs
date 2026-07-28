@@ -76,7 +76,16 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     /// <see langword="null"/> when no source is current, so the caller falls back to the
     /// order's own price or to cost basis rather than trusting a stale one.
     /// </summary>
-    private decimal? ResolveMark(string symbol)
+    private decimal? ResolveMark(string symbol) => ResolveMark(symbol, side: null);
+
+    /// <inheritdoc />
+    public decimal? TryGetExecutablePrice(string symbol, OrderSide side)
+    {
+        var executable = ResolveMark(symbol, side);
+        return executable > 0m ? executable : null;
+    }
+
+    private decimal? ResolveMark(string symbol, OrderSide? side)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
@@ -95,6 +104,21 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             bbo.Timestamp >= earliest &&
             bbo.Timestamp <= latest)
         {
+            // Valuing an ORDER uses the touch it will actually cross — a buy pays the ask,
+            // a sell receives the bid. The midpoint is the right mark for a position
+            // already held, but for an order it understates a wide book badly: bid $1 /
+            // ask $100 values a market buy at $50.50 against limits it routes $100 into.
+            var touch = side switch
+            {
+                OrderSide.Buy when bbo.AskPrice > 0m => bbo.AskPrice,
+                OrderSide.Sell when bbo.BidPrice > 0m => bbo.BidPrice,
+                _ => (decimal?)null
+            };
+            if (touch is { } executable)
+            {
+                return executable;
+            }
+
             if (bbo.MidPrice is { } mid && mid > 0m)
             {
                 return mid;

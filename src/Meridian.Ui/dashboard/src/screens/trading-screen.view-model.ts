@@ -3204,6 +3204,8 @@ export interface OrderTicketState {
   orderId: string | null;
   /** Governed-approval queue entry holding a parked order, when phase is "parked". */
   escalationId: string | null;
+  /** Non-blocking risk warnings the rails raised for the last submitted order. */
+  riskWarnings: string[];
   /** Operator-facing text for a parked order; null in every other phase. */
   parkedText: string | null;
   errorText: string | null;
@@ -3238,6 +3240,7 @@ export interface BuildOrderTicketStateOptions {
   orderId: string | null;
   errorText: string | null;
   escalationId?: string | null;
+  riskWarnings?: string[];
   acknowledged?: boolean;
 }
 
@@ -3270,14 +3273,15 @@ export function useOrderTicketViewModel({
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<OrderTicketPhase>("idle");
   const [escalationId, setEscalationId] = useState<string | null>(null);
+  const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const submittingRef = useRef(false);
 
   const state = useMemo(
-    () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, acknowledged }),
-    [acknowledged, errorText, escalationId, form, open, orderId, phase]
+    () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
+    [acknowledged, errorText, escalationId, form, open, orderId, phase, riskWarnings]
   );
 
   const preview = useMemo(
@@ -3356,6 +3360,7 @@ export function useOrderTicketViewModel({
     setPhase("submitting");
     setOrderId(null);
     setEscalationId(null);
+    setRiskWarnings([]);
     setErrorText(null);
 
     try {
@@ -3364,6 +3369,9 @@ export function useOrderTicketViewModel({
         setPhase("submitted");
         setOrderId(result.orderId);
         setEscalationId(null);
+        // Non-blocking warnings the rails raised while approving describe exposure the
+        // operator now holds. An unqualified success banner would drop them.
+        setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
         setAcknowledged(false);
@@ -3379,6 +3387,7 @@ export function useOrderTicketViewModel({
         setPhase("parked");
         setOrderId(result.orderId);
         setEscalationId(result.escalationId ?? null);
+        setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
         setAcknowledged(false);
@@ -3417,6 +3426,7 @@ export function buildOrderTicketState({
   orderId,
   errorText,
   escalationId = null,
+  riskWarnings = [],
   acknowledged = false
 }: BuildOrderTicketStateOptions): OrderTicketState {
   const validationError = validateOrderTicketForm(form);
@@ -3440,6 +3450,7 @@ export function buildOrderTicketState({
     phase,
     orderId,
     escalationId,
+    riskWarnings,
     parkedText,
     errorText,
     validationError,
@@ -3463,7 +3474,7 @@ export function buildOrderTicketState({
     acknowledgement,
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,
-    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId })
+    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId, riskWarnings })
   };
 }
 

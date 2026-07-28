@@ -83,12 +83,14 @@ export function buildOrderTicketStatusAnnouncement({
   phase,
   errorText,
   orderId,
-  escalationId
+  escalationId,
+  riskWarnings = []
 }: {
   phase: OrderTicketPhase;
   errorText: string | null;
   orderId: string | null;
   escalationId?: string | null;
+  riskWarnings?: string[];
 }): string {
   if (phase === "submitting") {
     return "Submitting order request.";
@@ -103,7 +105,12 @@ export function buildOrderTicketStatusAnnouncement({
   }
 
   if (phase === "submitted") {
-    return `Order submitted${orderId ? ` with id ${orderId}` : ""}.`;
+    // The order routed, but a warning the rails raised describes exposure the operator now
+    // holds — it belongs in the announcement, not only in the visible banner.
+    const warningText = riskWarnings.length > 0
+      ? ` ${riskWarnings.length} risk warning${riskWarnings.length === 1 ? "" : "s"}: ${riskWarnings.join(" ")}`
+      : "";
+    return `Order submitted${orderId ? ` with id ${orderId}` : ""}.${warningText}`;
   }
 
   return "";

@@ -493,6 +493,43 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Park_AtTheUnresolvedCapacityLimit_IsRefused()
+    {
+        var options = CreateOptions() with { MaxUnresolvedEntries = 2 };
+        var queue = CreateQueue(options);
+
+        queue.Park(CreateOrder(quantity: 1m), "first", ruleName: "OrderNotional");
+        var second = queue.Park(CreateOrder(quantity: 2m), "second", ruleName: "OrderNotional");
+
+        // Unresolved entries are never trimmed, so without backpressure the queue, its
+        // snapshot, and every subsequent park's latency would grow without bound.
+        var overflow = () => queue.Park(CreateOrder(quantity: 3m), "third", ruleName: "OrderNotional");
+        overflow.Should().Throw<InvalidOperationException>().WithMessage("*unresolved escalation*");
+
+        // Resolving one frees a slot; nothing actionable was dropped to make room.
+        queue.Deny(second.EscalationId, actor: "risk-desk", reason: "not today");
+        queue.Park(CreateOrder(quantity: 3m), "third", ruleName: "OrderNotional").Should().NotBeNull();
+        queue.GetPending().Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void Restart_FromASnapshotWithAPartialEntry_FailsClosed()
+    {
+        var options = CreateOptions();
+        var first = CreateQueue(options);
+        first.Park(CreateOrder(), "must not vanish", ruleName: "OrderNotional");
+
+        // Syntactically valid JSON whose entry lost its fields. Skipping it would delete a
+        // governed order — and its client-order-id reservation — from a queue that then
+        // reported startup as clean.
+        File.WriteAllText(options.SnapshotPath, """{"Entries":[{"Reason":"orphaned"}]}""");
+
+        var start = () => CreateQueue(options);
+
+        start.Should().Throw<InvalidOperationException>().WithMessage("*partial governed-approval queue*");
+    }
+
+    [Fact]
     public void Withdraw_ResolvesAnApprovedEntryThatWasNeverReleased()
     {
         var queue = CreateQueue();

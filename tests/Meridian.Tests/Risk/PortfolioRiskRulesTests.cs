@@ -358,7 +358,7 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
-    public async Task OrderNotional_MarketOrderWithNoPriceReference_Approves()
+    public async Task OrderNotional_MarketOrderWithNoPriceReference_Rejects()
     {
         var rule = new OrderNotionalRule(
             Provider(),
@@ -366,10 +366,74 @@ public sealed class PortfolioRiskRulesTests
             () => 1_000m,
             NullLogger<OrderNotionalRule>.Instance);
 
-        // Never-held symbol, no limit price: the rule never guesses a price.
+        // Never-held symbol, no limit price, no feed: the rule cannot value the order. It
+        // still routes at whatever the market gives it, so approving it unmeasured would
+        // hand a configured ceiling an order that consumes none of it.
+        var result = await rule.EvaluateAsync(CreateOrder(symbol: "ZZZZ", quantity: 1_000m));
+
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("No current price");
+    }
+
+    [Fact]
+    public async Task OrderNotional_MarketOrderWithNoPriceReference_ApprovesWhenNoLimitIsConfigured()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => null,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        // Fail-closed applies to a ceiling that exists. With none configured the rule has
+        // nothing to enforce and must not start refusing orders it never gated before.
         var result = await rule.EvaluateAsync(CreateOrder(symbol: "ZZZZ", quantity: 1_000m));
 
         result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GrossExposure_OptionOrder_RejectsRatherThanApprovingUnmeasured()
+    {
+        var rule = new GrossExposureRule(
+            Provider(grossExposure: 1_000m),
+            () => 100_000m,
+            NullLogger<GrossExposureRule>.Instance);
+
+        // Per-leg premium and contract multipliers are the deferred derivatives lane, so
+        // this resolver cannot value the order — but the gateway routes it regardless.
+        var order = CreateOrder(quantity: 100m, limitPrice: 5m) with
+        {
+            OptionContract = new OptionContractIdentity
+            {
+                UnderlyingSymbol = "AAPL",
+                ExpirationDate = new DateOnly(2026, 12, 18),
+                StrikePrice = 250m,
+                Right = "C",
+                Multiplier = "100"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("Derivative");
+    }
+
+    [Fact]
+    public async Task OrderNotional_MarketBuy_IsValuedAtTheAskNotTheMidpoint()
+    {
+        // A wide book: bid $1, ask $100. The midpoint would measure a 1,000-share buy at
+        // $50,500 — under the ceiling — while it routes near $100,000.
+        var provider = new TouchQuotingProvider(bid: 1m, ask: 100m);
+        var rule = new OrderNotionalRule(
+            provider,
+            () => 60_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(symbol: "WIDE", quantity: 1_000m));
+
+        result.IsApproved.Should().BeFalse("a market buy pays the ask, not the midpoint");
     }
 
     [Theory]
@@ -556,6 +620,17 @@ public sealed class PortfolioRiskRulesTests
         var result = await rule.EvaluateAsync(order);
 
         result.IsApproved.Should().BeTrue("closing a position must not be measured as adding to it");
+    }
+
+    /// <summary>Provider exposing a wide two-sided book, so touch vs midpoint is visible.</summary>
+    private sealed class TouchQuotingProvider(decimal bid, decimal ask) : IPortfolioExposureProvider
+    {
+        public PortfolioExposureSnapshot GetSnapshot() => PortfolioExposureSnapshot.Empty;
+
+        public decimal? TryGetReferencePrice(string symbol) => (bid + ask) / 2m;
+
+        public decimal? TryGetExecutablePrice(string symbol, OrderSide side) =>
+            side == OrderSide.Buy ? ask : bid;
     }
 
     private sealed class StubExposureProvider(
