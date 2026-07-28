@@ -69,6 +69,16 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
+      # newer postgres:17 service, which would void the schema evidence capture.
+      - name: Install PostgreSQL 17 client tools to match the service major
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
       - name: Restore deterministic integration projects
         run: |
           dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj
@@ -147,6 +157,11 @@ jobs:
           cache: npm
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Restore packages
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
@@ -161,12 +176,22 @@ jobs:
             throw "Vulnerable NuGet packages were reported."
           }
 
-      - name: Fail on high-severity npm dependencies
+      # `npm audit` exits non-zero whenever any advisory exists, including advisories the
+      # security register has formally risk-accepted (docs/security/known-vulnerabilities.md).
+      # The gate decision belongs to validate-npm-audit.py, which fails closed on every
+      # high/critical advisory that lacks an unexpired acceptance entry — and on a missing
+      # or error-shaped audit report, so `|| true` cannot hide a failed scan.
+      - name: Fail on unaccepted high-severity npm advisories
         working-directory: src/Meridian.Ui/dashboard
         run: |
           npm ci
           mkdir -p ../../../artifacts/security
-          npm audit --audit-level=high --json > ../../../artifacts/security/npm-audit.json
+          npm audit --json > ../../../artifacts/security/npm-audit.json || true
+          python ../../../build/scripts/ci/validate-npm-audit.py \
+            --audit-json ../../../artifacts/security/npm-audit.json \
+            --accepted ../../../build/config/security/npm-audit-accepted-advisories.json \
+            --fail-level high \
+            --output ../../../artifacts/security/npm-audit-gate.json
 
       - name: Upload dependency evidence
         if: always()
@@ -205,6 +230,16 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+
+      # The runner image ships PostgreSQL 16 client tools; pg_dump refuses to dump the
+      # newer postgres:17 service, so the drill's backup stage fails at preflight.
+      - name: Install PostgreSQL 17 client tools to match the service major
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
 
       - name: Seed source and clean recovery targets
         run: |
