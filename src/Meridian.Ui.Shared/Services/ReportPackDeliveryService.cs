@@ -1,7 +1,8 @@
 using System.Globalization;
-using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -18,6 +19,10 @@ public sealed record ReportPackDeliveryArtifactContent(
     string ContentType,
     byte[] Content);
 
+/// <summary>
+/// Compatibility-only snapshot seam. Production composition does not register this store;
+/// canonical delivery authority is <see cref="IReportingDeliveryStore"/>.
+/// </summary>
 public interface IReportPackDeliveryRecordStore
 {
     IReadOnlyList<ReportPackDeliveryAttemptDto> Load();
@@ -27,6 +32,7 @@ public interface IReportPackDeliveryRecordStore
 
 public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecordStore
 {
+    private const int CurrentSnapshotSchemaVersion = 2;
     private readonly ReportPackDeliveryStoreOptions _options;
     private readonly ILogger<FileReportPackDeliveryRecordStore> _logger;
     private readonly object _gate = new();
@@ -57,9 +63,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
 
             try
             {
-                var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)?.Attempts
-                    ?? throw new JsonException("Report-pack delivery snapshot deserialized to null.");
+                return ReadSnapshot().Attempts;
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
@@ -74,17 +78,574 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
         ArgumentNullException.ThrowIfNull(attempts);
         lock (_gate)
         {
-            var snapshot = new ReportPackDeliverySnapshot(
-                attempts
-                    .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
-                    .ThenBy(static attempt => attempt.ReportId)
-                    .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
-                    .ToArray());
-            AtomicFileWriter.Write(_options.SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions));
+            if (!File.Exists(_options.SnapshotPath))
+            {
+                if (BuildKnownArtifacts(attempts).Count > 0)
+                {
+                    throw new InvalidOperationException(
+                        "Metadata-only report-pack delivery persistence cannot introduce package artifact paths without exact retained bytes.");
+                }
+
+                WriteLegacySnapshot(attempts, []);
+                return;
+            }
+
+            var snapshot = ReadSnapshot();
+            var priorPaths = BuildKnownArtifacts(snapshot.Attempts).Keys
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var candidatePaths = BuildKnownArtifacts(attempts).Keys
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var introducedPaths = candidatePaths
+                .Where(path => !priorPaths.Contains(path))
+                .ToArray();
+            if (introducedPaths.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    "Metadata-only report-pack delivery persistence cannot introduce package artifact paths without exact retained bytes.");
+            }
+
+            var removedPaths = priorPaths
+                .Where(path => !candidatePaths.Contains(path))
+                .ToArray();
+            if (removedPaths.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    "Metadata-only report-pack delivery persistence cannot remove retained package artifact paths.");
+            }
+
+            if (snapshot.SchemaVersion == CurrentSnapshotSchemaVersion)
+            {
+                WriteCurrentSnapshot(
+                    attempts,
+                    snapshot.ArtifactContents ?? [],
+                    snapshot.LegacyArtifactPaths ?? []);
+                return;
+            }
+
+            WriteLegacySnapshot(attempts, snapshot.ArtifactContents ?? []);
         }
     }
 
-    private sealed record ReportPackDeliverySnapshot(IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
+    internal bool TryLoadArtifact(string retainedPath, out byte[] content)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(retainedPath);
+        lock (_gate)
+        {
+            if (!File.Exists(_options.SnapshotPath))
+            {
+                content = [];
+                return false;
+            }
+
+            try
+            {
+                var snapshot = ReadSnapshot();
+                var artifact = (snapshot.ArtifactContents ?? [])
+                    .FirstOrDefault(item =>
+                        item is not null
+                        && string.Equals(item.RetainedPath, retainedPath, StringComparison.OrdinalIgnoreCase));
+                if (artifact is null)
+                {
+                    content = [];
+                    return false;
+                }
+
+                if (snapshot.SchemaVersion is null
+                    && !string.IsNullOrWhiteSpace(artifact.ContentBase64))
+                {
+                    content = Convert.FromBase64String(artifact.ContentBase64);
+                    return true;
+                }
+
+                if (!TryResolveBlobPath(artifact, out var blobPath))
+                {
+                    content = [];
+                    return false;
+                }
+
+                content = File.ReadAllBytes(blobPath);
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or FormatException or UnauthorizedAccessException)
+            {
+                _logger.LogCritical(
+                    ex,
+                    "Retained report-pack delivery artifact at {RetainedPath} in snapshot {SnapshotPath} is unreadable; delivery is blocked until the state is recovered.",
+                    retainedPath,
+                    _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
+            }
+        }
+    }
+
+    internal void Save(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
+        IReadOnlyDictionary<string, byte[]> artifactContents)
+    {
+        ArgumentNullException.ThrowIfNull(attempts);
+        ArgumentNullException.ThrowIfNull(artifactContents);
+        lock (_gate)
+        {
+            var priorSnapshot = File.Exists(_options.SnapshotPath)
+                ? ReadSnapshot()
+                : null;
+            var knownPriorArtifacts = priorSnapshot is null
+                ? new Dictionary<string, ReportPackDeliveryArtifactDto>(StringComparer.OrdinalIgnoreCase)
+                : BuildKnownArtifacts(priorSnapshot.Attempts);
+            var retainedContents =
+                new Dictionary<string, ReportPackDeliveryArtifactSnapshot>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in priorSnapshot?.ArtifactContents ?? [])
+            {
+                if (item is null
+                    || !knownPriorArtifacts.TryGetValue(item.RetainedPath, out var expectedArtifact))
+                {
+                    throw new JsonException(
+                        "Legacy report-pack delivery snapshot contains a null, blank, or unknown retained artifact path.");
+                }
+
+                var mapping = IsUsableBlobMapping(item, expectedArtifact)
+                    ? item
+                    : priorSnapshot?.SchemaVersion is null
+                        ? TryMigrateLegacyContent(item, expectedArtifact)
+                        : null;
+                if (mapping is null)
+                {
+                    throw new JsonException(
+                        $"Legacy report-pack delivery content for '{item.RetainedPath}' failed exact byte-size or SHA-256 verification.");
+                }
+
+                if (!retainedContents.TryAdd(mapping.RetainedPath, mapping))
+                {
+                    throw new JsonException(
+                        $"Legacy report-pack delivery snapshot contains duplicate retained path '{mapping.RetainedPath}'.");
+                }
+            }
+
+            foreach (var (retainedPath, bytes) in artifactContents)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(retainedPath);
+                ArgumentNullException.ThrowIfNull(bytes);
+                retainedContents[retainedPath] = RetainArtifactBlob(retainedPath, bytes);
+            }
+
+            var legacyPaths = priorSnapshot switch
+            {
+                null => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                { SchemaVersion: CurrentSnapshotSchemaVersion } =>
+                    (priorSnapshot.LegacyArtifactPaths ?? [])
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase),
+                _ => DeriveLegacyArtifactPaths(priorSnapshot!, retainedContents.Keys)
+            };
+            var knownPaths = BuildKnownArtifacts(attempts).Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var activeContents = retainedContents.Values
+                .Where(item => knownPaths.Contains(item.RetainedPath))
+                .OrderBy(static item => item.RetainedPath, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var activeLegacyPaths = legacyPaths
+                .Where(knownPaths.Contains)
+                .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            WriteCurrentSnapshot(attempts, activeContents, activeLegacyPaths);
+        }
+    }
+
+    private ReportPackDeliverySnapshot ReadSnapshot()
+    {
+        var json = File.ReadAllText(_options.SnapshotPath);
+        var snapshot = JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)
+            ?? throw new JsonException("Report-pack delivery snapshot deserialized to null.");
+        if (snapshot.Attempts is null
+            || snapshot.Attempts.Any(static attempt => attempt is null))
+        {
+            throw new JsonException("Report-pack delivery snapshot attempts contain a null value.");
+        }
+
+        if (snapshot.SchemaVersion is not null
+            && snapshot.SchemaVersion != CurrentSnapshotSchemaVersion)
+        {
+            throw new JsonException(
+                $"Report-pack delivery snapshot schema version {snapshot.SchemaVersion} is unsupported; "
+                + $"expected {CurrentSnapshotSchemaVersion} or an unversioned legacy snapshot.");
+        }
+
+        if (snapshot.SchemaVersion == CurrentSnapshotSchemaVersion)
+        {
+            ValidateCurrentSnapshot(snapshot);
+        }
+        else
+        {
+            ValidateLegacySnapshotContent(snapshot);
+        }
+
+        return snapshot;
+    }
+
+    private void WriteLegacySnapshot(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
+        IReadOnlyList<ReportPackDeliveryArtifactSnapshot> artifactContents)
+    {
+        var snapshot = new ReportPackDeliverySnapshot(
+            OrderAttempts(attempts),
+            artifactContents);
+        ValidateLegacySnapshotContent(snapshot);
+        AtomicFileWriter.Write(_options.SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions));
+    }
+
+    private void WriteCurrentSnapshot(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
+        IReadOnlyList<ReportPackDeliveryArtifactSnapshot> artifactContents,
+        IReadOnlyList<string> legacyArtifactPaths)
+    {
+        var snapshot = new ReportPackDeliverySnapshot(
+            OrderAttempts(attempts),
+            artifactContents,
+            legacyArtifactPaths,
+            CurrentSnapshotSchemaVersion);
+        if (!HasValidCurrentCoverage(snapshot))
+        {
+            throw new JsonException(
+                $"Report-pack delivery snapshot schema version {CurrentSnapshotSchemaVersion} cannot be written because "
+                + "its retained paths are not covered exactly once by an immutable blob mapping or the legacy allowlist.");
+        }
+
+        AtomicFileWriter.Write(_options.SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions));
+    }
+
+    private static IReadOnlyList<ReportPackDeliveryAttemptDto> OrderAttempts(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts) =>
+        attempts
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .ThenBy(static attempt => attempt.ReportId)
+            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private void ValidateCurrentSnapshot(ReportPackDeliverySnapshot snapshot)
+    {
+        if (snapshot.ArtifactContents is null || snapshot.LegacyArtifactPaths is null)
+        {
+            throw new JsonException(
+                $"Report-pack delivery snapshot schema version {CurrentSnapshotSchemaVersion} requires immutable artifact blob mappings "
+                + "and an explicit legacy artifact path allowlist.");
+        }
+
+        if (!HasValidCurrentCoverage(snapshot))
+        {
+            throw new JsonException(
+                $"Report-pack delivery snapshot schema version {CurrentSnapshotSchemaVersion} is missing, duplicates, "
+                + "or contains malformed retained artifact coverage for one or more delivery retained paths.");
+        }
+    }
+
+    private void ValidateLegacySnapshotContent(ReportPackDeliverySnapshot snapshot)
+    {
+        if (snapshot.ArtifactContents is null or { Count: 0 })
+        {
+            return;
+        }
+
+        var knownArtifacts = BuildKnownArtifacts(snapshot.Attempts);
+        var retainedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in snapshot.ArtifactContents)
+        {
+            if (item is null
+                || string.IsNullOrWhiteSpace(item.RetainedPath)
+                || !retainedPaths.Add(item.RetainedPath)
+                || !knownArtifacts.TryGetValue(item.RetainedPath, out var expectedArtifact)
+                || !IsAuthenticLegacyContent(item, expectedArtifact))
+            {
+                throw new JsonException(
+                    "Unversioned report-pack delivery snapshot contains malformed, duplicate, unknown, or mismatched retained artifact content.");
+            }
+        }
+    }
+
+    private bool IsAuthenticLegacyContent(
+        ReportPackDeliveryArtifactSnapshot item,
+        ReportPackDeliveryArtifactDto expectedArtifact)
+    {
+        if (item.ContentBase64 is null)
+        {
+            return IsUsableBlobMapping(item, expectedArtifact);
+        }
+
+        if (item.BlobName is not null
+            || item.ChecksumSha256 is not null
+            || item.ByteSize is not null)
+        {
+            return false;
+        }
+
+        byte[] content;
+        try
+        {
+            content = Convert.FromBase64String(item.ContentBase64);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        return content.LongLength == expectedArtifact.ByteSize
+            && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool HasValidCurrentCoverage(ReportPackDeliverySnapshot snapshot)
+    {
+        var knownArtifacts = BuildKnownArtifacts(snapshot.Attempts);
+        var contentPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var artifact in snapshot.ArtifactContents ?? [])
+        {
+            if (artifact is null
+                || string.IsNullOrWhiteSpace(artifact.RetainedPath)
+                || !contentPaths.Add(artifact.RetainedPath)
+                || !knownArtifacts.TryGetValue(artifact.RetainedPath, out var expectedArtifact)
+                || !IsUsableBlobMapping(artifact, expectedArtifact))
+            {
+                return false;
+            }
+        }
+
+        var legacyPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var legacyPath in snapshot.LegacyArtifactPaths ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(legacyPath)
+                || !legacyPaths.Add(legacyPath)
+                || contentPaths.Contains(legacyPath))
+            {
+                return false;
+            }
+        }
+
+        var representedPaths = new HashSet<string>(contentPaths, StringComparer.OrdinalIgnoreCase);
+        representedPaths.UnionWith(legacyPaths);
+        return representedPaths.SetEquals(knownArtifacts.Keys);
+    }
+
+    private static HashSet<string> DeriveLegacyArtifactPaths(
+        ReportPackDeliverySnapshot legacySnapshot,
+        IEnumerable<string> retainedPaths)
+    {
+        var knownArtifacts = BuildKnownArtifacts(legacySnapshot.Attempts);
+        var contentPaths = retainedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var legacyPaths = knownArtifacts.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        legacyPaths.ExceptWith(contentPaths);
+        return legacyPaths;
+    }
+
+    private static Dictionary<string, ReportPackDeliveryArtifactDto> BuildKnownArtifacts(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+    {
+        var knownArtifacts = new Dictionary<string, ReportPackDeliveryArtifactDto>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attempt in attempts)
+        {
+            var package = attempt.Package;
+            if (package is null)
+            {
+                continue;
+            }
+
+            foreach (var artifact in package.Artifacts ?? [])
+            {
+                if (artifact is null
+                    || string.IsNullOrWhiteSpace(artifact.RetainedPath)
+                    || !knownArtifacts.TryAdd(artifact.RetainedPath, artifact))
+                {
+                    throw new JsonException(
+                        "Report-pack delivery snapshot contains a missing or duplicate artifact retained path.");
+                }
+            }
+        }
+
+        return knownArtifacts;
+    }
+
+    private ReportPackDeliveryArtifactSnapshot RetainArtifactBlob(
+        string retainedPath,
+        byte[] content)
+    {
+        if (content.Length == 0)
+        {
+            throw new InvalidDataException(
+                $"Delivery artifact '{retainedPath}' cannot retain an empty blob.");
+        }
+
+        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var blobName = $"{checksum}.blob";
+        var blobPath = Path.Combine(GetBlobDirectory(), blobName);
+        if (File.Exists(blobPath))
+        {
+            EnsureExistingBlobMatches(blobPath, content.LongLength, checksum);
+        }
+        else
+        {
+            WriteBlobAtomically(blobPath, content);
+            EnsureExistingBlobMatches(blobPath, content.LongLength, checksum);
+        }
+
+        return new ReportPackDeliveryArtifactSnapshot(
+            retainedPath,
+            blobName,
+            checksum,
+            content.LongLength);
+    }
+
+    private static void WriteBlobAtomically(string blobPath, byte[] content)
+    {
+        var directory = Path.GetDirectoryName(blobPath)
+            ?? throw new InvalidOperationException("Artifact blob path must include a directory.");
+        Directory.CreateDirectory(directory);
+        var tempPath = Path.Combine(
+            directory,
+            $".{Path.GetFileName(blobPath)}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            using (var stream = new FileStream(
+                tempPath,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 65536,
+                FileOptions.WriteThrough))
+            {
+                stream.Write(content);
+                stream.Flush(flushToDisk: true);
+            }
+
+            try
+            {
+                File.Move(tempPath, blobPath);
+            }
+            catch (IOException) when (File.Exists(blobPath))
+            {
+                // A concurrent writer retained the same checksum-addressed blob.
+                // The caller verifies its exact length and SHA-256 before publishing metadata.
+            }
+
+            AtomicFileWriter
+                .SyncDirectoryAsync(directory, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    private ReportPackDeliveryArtifactSnapshot? TryMigrateLegacyContent(
+        ReportPackDeliveryArtifactSnapshot legacyContent,
+        ReportPackDeliveryArtifactDto expectedArtifact)
+    {
+        if (string.IsNullOrWhiteSpace(legacyContent.ContentBase64))
+        {
+            return null;
+        }
+
+        byte[] content;
+        try
+        {
+            content = Convert.FromBase64String(legacyContent.ContentBase64);
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+
+        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        return content.LongLength == expectedArtifact.ByteSize
+            && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase)
+                ? RetainArtifactBlob(legacyContent.RetainedPath, content)
+                : null;
+    }
+
+    private bool IsUsableBlobMapping(
+        ReportPackDeliveryArtifactSnapshot mapping,
+        ReportPackDeliveryArtifactDto expectedArtifact)
+    {
+        if (mapping.ContentBase64 is not null
+            || !TryResolveBlobPath(mapping, out var blobPath)
+            || !string.Equals(
+                mapping.ChecksumSha256,
+                expectedArtifact.ChecksumSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || mapping.ByteSize != expectedArtifact.ByteSize)
+        {
+            return false;
+        }
+
+        return File.Exists(blobPath)
+            && new FileInfo(blobPath).Length == mapping.ByteSize;
+    }
+
+    private bool TryResolveBlobPath(
+        ReportPackDeliveryArtifactSnapshot mapping,
+        out string blobPath)
+    {
+        if (!IsCanonicalChecksum(mapping.ChecksumSha256)
+            || !string.Equals(
+                mapping.BlobName,
+                $"{mapping.ChecksumSha256}.blob",
+                StringComparison.Ordinal))
+        {
+            blobPath = string.Empty;
+            return false;
+        }
+
+        blobPath = Path.Combine(GetBlobDirectory(), mapping.BlobName!);
+        return true;
+    }
+
+    private string GetBlobDirectory() => $"{Path.GetFullPath(_options.SnapshotPath)}.artifacts";
+
+    private static bool IsCanonicalChecksum(string? checksum) =>
+        checksum is { Length: 64 }
+        && checksum.All(static value =>
+            value is >= '0' and <= '9'
+            || value is >= 'a' and <= 'f');
+
+    private static void EnsureExistingBlobMatches(
+        string blobPath,
+        long expectedLength,
+        string expectedChecksum)
+    {
+        var fileInfo = new FileInfo(blobPath);
+        if (fileInfo.Length != expectedLength)
+        {
+            throw new InvalidDataException(
+                $"Retained report-pack artifact blob '{blobPath}' has an unexpected byte size.");
+        }
+
+        using var stream = File.OpenRead(blobPath);
+        var actualChecksum = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+        if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"Retained report-pack artifact blob '{blobPath}' failed SHA-256 verification.");
+        }
+    }
+
+    private sealed record ReportPackDeliverySnapshot(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts,
+        IReadOnlyList<ReportPackDeliveryArtifactSnapshot>? ArtifactContents = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        IReadOnlyList<string>? LegacyArtifactPaths = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        int? SchemaVersion = null);
+
+    private sealed record ReportPackDeliveryArtifactSnapshot(
+        string RetainedPath,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        string? BlobName = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        string? ChecksumSha256 = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        long? ByteSize = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        string? ContentBase64 = null);
 }
 
 public sealed partial class ReportPackDeliveryService
@@ -92,6 +653,7 @@ public sealed partial class ReportPackDeliveryService
     private static readonly TimeSpan PackageAccessWindow = TimeSpan.FromDays(14);
     private readonly ReportPackWorkflowService _workflowService;
     private readonly IReportPackDeliveryRecordStore? _store;
+    private readonly FileReportPackDeliveryRecordStore? _artifactContentStore;
     private readonly List<ReportPackDeliveryAttemptDto> _attempts;
     private readonly object _gate = new();
 
@@ -101,6 +663,7 @@ public sealed partial class ReportPackDeliveryService
     {
         _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         _store = store;
+        _artifactContentStore = store as FileReportPackDeliveryRecordStore;
         _attempts = _store?.Load().ToList() ?? [];
     }
 
@@ -175,10 +738,32 @@ public sealed partial class ReportPackDeliveryService
             throw new KeyNotFoundException("delivery artifact not found");
         }
 
+        byte[] content;
+        if (!TryGetRetainedArtifactContent(artifact.RetainedPath, out content))
+        {
+            content = BuildDeliveryArtifactContent(package, artifact);
+            try
+            {
+                EnsureArtifactIntegrity(artifact, content);
+            }
+            catch (InvalidDataException ex) when (artifact.Format == GovernanceReportArtifactFormatDto.Xlsx)
+            {
+                throw new InvalidDataException(
+                    $"Legacy delivery artifact '{artifact.ArtifactName}' does not retain its original XLSX bytes "
+                    + "and cannot be reproduced with the recorded size and SHA-256 checksum. "
+                    + "Invalidate this package and re-deliver it before download.",
+                    ex);
+            }
+        }
+        else
+        {
+            EnsureArtifactIntegrity(artifact, content);
+        }
+
         return new ReportPackDeliveryArtifactContent(
             artifact.ArtifactName,
             artifact.ContentType,
-            BuildDeliveryArtifactContent(package, artifact));
+            content);
     }
 
     public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor)
@@ -262,7 +847,8 @@ public sealed partial class ReportPackDeliveryService
                     && string.Equals(attempt.DistributionId, normalizedDistributionId, StringComparison.OrdinalIgnoreCase))) + 1;
             var attemptId = Guid.NewGuid();
             var reference = BuildReportingRunDeliveryReference(manifest, normalizedDistributionId);
-            var package = BuildDeliveryPackage(manifest, policy, reportId, attemptId, attemptNumber, target.Formats, target.DeliveryMode);
+            var packageBuild = BuildDeliveryPackage(manifest, policy, reportId, attemptId, attemptNumber, target.Formats, target.DeliveryMode);
+            var package = packageBuild.Package;
             var packageEvidenceLinks = BuildArtifactEvidenceLinks(package.Artifacts, "reporting-run-delivery");
             var attempt = new ReportPackDeliveryAttemptDto(
                 attemptId,
@@ -280,8 +866,10 @@ public sealed partial class ReportPackDeliveryService
                 FailureReason: null,
                 EvidenceLinks: packageEvidenceLinks,
                 Package: package);
+            PersistCandidateAttempts(
+                _attempts.Append(attempt).ToArray(),
+                packageBuild.Artifacts);
             _attempts.Add(attempt);
-            _store?.Save(_attempts);
             return attempt;
         }
     }
@@ -354,9 +942,10 @@ public sealed partial class ReportPackDeliveryService
                 ? $"delivery:{normalizedDistributionId}:{reportId:N}:{attemptNumber}"
                 : deliveryReference.Trim();
             var requestEvidenceLinks = NormalizeEvidenceLinks(evidenceLinks);
-            var package = state == ReportPackDeliveryStateDto.Delivered
+            var packageBuild = state == ReportPackDeliveryStateDto.Delivered
                 ? BuildDeliveryPackage(record, policy, attemptId, attemptNumber, formats, deliveryMode, requestEvidenceLinks)
                 : null;
+            var package = packageBuild?.Package;
             var packageEvidenceLinks = package is null
                 ? []
                 : BuildArtifactEvidenceLinks(package.Artifacts, "report-pack-delivery");
@@ -376,8 +965,10 @@ public sealed partial class ReportPackDeliveryService
                 NormalizeNullable(failureReason),
                 NormalizeEvidenceLinks(requestEvidenceLinks.Concat(packageEvidenceLinks).ToArray()),
                 package);
+            PersistCandidateAttempts(
+                _attempts.Append(attempt).ToArray(),
+                packageBuild?.Artifacts ?? []);
             _attempts.Add(attempt);
-            _store?.Save(_attempts);
             return attempt;
         }
     }
@@ -392,7 +983,48 @@ public sealed partial class ReportPackDeliveryService
     private static string? NormalizeNullable(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
+    private void PersistCandidateAttempts(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> candidateAttempts,
+        IReadOnlyList<DeliveryArtifactBuild> artifacts)
+    {
+        if (_artifactContentStore is not null)
+        {
+            var artifactContents = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+            foreach (var artifactBuild in artifacts)
+            {
+                EnsureArtifactIntegrity(artifactBuild.Artifact, artifactBuild.Content);
+                artifactContents.Add(
+                    artifactBuild.Artifact.RetainedPath,
+                    artifactBuild.Content);
+            }
+
+            _artifactContentStore.Save(candidateAttempts, artifactContents);
+            return;
+        }
+
+        _store?.Save(candidateAttempts);
+    }
+
+    private bool TryGetRetainedArtifactContent(string retainedPath, out byte[] content)
+    {
+        if (_artifactContentStore is null)
+        {
+            content = [];
+            return false;
+        }
+
+        return _artifactContentStore.TryLoadArtifact(retainedPath, out content);
+    }
+
+    private sealed record DeliveryArtifactBuild(
+        ReportPackDeliveryArtifactDto Artifact,
+        byte[] Content);
+
+    private sealed record DeliveryPackageBuild(
+        ReportPackDeliveryPackageDto Package,
+        IReadOnlyList<DeliveryArtifactBuild> Artifacts);
+
+    private static DeliveryPackageBuild BuildDeliveryPackage(
         ReportPackWorkflowRecordDto record,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
         Guid attemptId,
@@ -408,9 +1040,10 @@ public sealed partial class ReportPackDeliveryService
         var token = BuildSecureToken(record.ReportId, policy.DistributionId, attemptId);
         var createdAtUtc = DateTimeOffset.UtcNow;
         var accessExpiresAtUtc = BuildAccessExpiry(createdAtUtc);
-        var artifacts = formats
+        var artifactBuilds = formats
             .Select(format => BuildArtifact(record, policy, packageId, attemptId, token, format))
             .ToArray();
+        var artifacts = artifactBuilds.Select(static build => build.Artifact).ToArray();
         var artifactEvidenceLinks = BuildArtifactEvidenceLinks(artifacts, "report-pack-delivery");
         var deliveryEvidencePacket = BuildDeliveryEvidencePacket(
             record,
@@ -438,7 +1071,7 @@ public sealed partial class ReportPackDeliveryService
         };
         var portalRoute = $"/reporting/report-packs/{record.ReportId:D}/packages/{packageId}";
 
-        return new ReportPackDeliveryPackageDto(
+        var package = new ReportPackDeliveryPackageDto(
             packageId,
             record.ReportId,
             policy.DistributionId,
@@ -473,9 +1106,10 @@ public sealed partial class ReportPackDeliveryService
             AccessExpiresAtUtc: accessExpiresAtUtc,
             AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts),
             Notifications: BuildDeliveryNotifications(mode, policy, packageId, secureLink, portalRoute, createdAtUtc, accessExpiresAtUtc));
+        return new DeliveryPackageBuild(package, artifactBuilds);
     }
 
-    private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
+    private static DeliveryPackageBuild BuildDeliveryPackage(
         ReportingOutputManifest manifest,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
         Guid reportId,
@@ -491,9 +1125,10 @@ public sealed partial class ReportPackDeliveryService
         var token = BuildSecureToken(reportId, policy.DistributionId, attemptId);
         var createdAtUtc = DateTimeOffset.UtcNow;
         var accessExpiresAtUtc = BuildAccessExpiry(createdAtUtc);
-        var artifacts = formats
+        var artifactBuilds = formats
             .Select(format => BuildArtifact(manifest, policy, reportId, packageId, attemptId, token, format))
             .ToArray();
+        var artifacts = artifactBuilds.Select(static build => build.Artifact).ToArray();
         var artifactEvidenceLinks = BuildArtifactEvidenceLinks(artifacts, "reporting-run-delivery");
         var deliveryEvidencePacket = BuildReportingRunDeliveryEvidencePacket(
             manifest,
@@ -520,7 +1155,7 @@ public sealed partial class ReportPackDeliveryService
         };
         var portalRoute = $"/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/packages/{packageId}";
 
-        return new ReportPackDeliveryPackageDto(
+        var package = new ReportPackDeliveryPackageDto(
             packageId,
             reportId,
             policy.DistributionId,
@@ -560,6 +1195,7 @@ public sealed partial class ReportPackDeliveryService
             ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
             ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
             ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
+        return new DeliveryPackageBuild(package, artifactBuilds);
     }
 
     private static DateTimeOffset BuildAccessExpiry(DateTimeOffset createdAtUtc) =>
@@ -898,7 +1534,7 @@ public sealed partial class ReportPackDeliveryService
             .Select((item, index) => $"{record.ReportId:N}:{index + 1}:{item.Action}:{item.At.UtcDateTime:yyyyMMddHHmmssfff}")
             .ToArray();
 
-    private static ReportPackDeliveryArtifactDto BuildArtifact(
+    private static DeliveryArtifactBuild BuildArtifact(
         ReportPackWorkflowRecordDto record,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
         string packageId,
@@ -940,19 +1576,21 @@ public sealed partial class ReportPackDeliveryService
             versionStamp);
         var byteSize = content.LongLength;
         var checksum = ComputeSha256Hex(content);
-        return new ReportPackDeliveryArtifactDto(
-            format,
-            artifactName,
-            contentType,
-            retainedPath,
-            byteSize,
-            evidenceId,
-            checksum,
-            versionStamp,
-            downloadRoute);
+        return new DeliveryArtifactBuild(
+            new ReportPackDeliveryArtifactDto(
+                format,
+                artifactName,
+                contentType,
+                retainedPath,
+                byteSize,
+                evidenceId,
+                checksum,
+                versionStamp,
+                downloadRoute),
+            content);
     }
 
-    private static ReportPackDeliveryArtifactDto BuildArtifact(
+    private static DeliveryArtifactBuild BuildArtifact(
         ReportingOutputManifest manifest,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
         Guid reportId,
@@ -980,16 +1618,18 @@ public sealed partial class ReportPackDeliveryService
             versionStamp);
         var byteSize = content.LongLength;
         var checksum = ComputeSha256Hex(content);
-        return new ReportPackDeliveryArtifactDto(
-            format,
-            artifactName,
-            contentType,
-            retainedPath,
-            byteSize,
-            evidenceId,
-            checksum,
-            versionStamp,
-            downloadRoute);
+        return new DeliveryArtifactBuild(
+            new ReportPackDeliveryArtifactDto(
+                format,
+                artifactName,
+                contentType,
+                retainedPath,
+                byteSize,
+                evidenceId,
+                checksum,
+                versionStamp,
+                downloadRoute),
+            content);
     }
 
     private static string BuildIntegritySummary(
@@ -1226,6 +1866,20 @@ public sealed partial class ReportPackDeliveryService
                 artifact.RetainedPath,
                 package.BrandingTheme,
                 artifact.VersionStamp);
+
+    private static void EnsureArtifactIntegrity(
+        ReportPackDeliveryArtifactDto artifact,
+        byte[] content)
+    {
+        var checksum = ComputeSha256Hex(content);
+        if (content.LongLength != artifact.ByteSize
+            || !string.Equals(checksum, artifact.ChecksumSha256?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Delivery artifact '{artifact.ArtifactName}' failed retained integrity verification; "
+                + "regenerated bytes do not match the retained byte size and SHA-256 checksum.");
+        }
+    }
 
     private static byte[] BuildDeliveryArtifactContent(
         string packageId,
@@ -1625,7 +2279,12 @@ public sealed partial class ReportPackDeliveryService
         new("attemptCount", manifest.AttemptCount.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         new("sectionCount", (manifest.Sections.IsDefault ? 0 : manifest.Sections.Length).ToString(System.Globalization.CultureInfo.InvariantCulture)),
         new("lineageLinkedSections", CountLineageLinkedSections(manifest.Sections).ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("sourceArtifacts", string.Join(";", manifest.Artifacts.IsDefault ? [] : manifest.Artifacts)),
+        // Neutralize each artifact name individually: spreadsheet tools configured with a
+        // semicolon list separator can split this cell, promoting a mid-list value to cell start.
+        new("sourceArtifacts", string.Join(
+            ";",
+            (manifest.Artifacts.IsDefault ? [] : manifest.Artifacts.AsEnumerable())
+                .Select(SpreadsheetFormulaGuard.Neutralize))),
         new("distributionId", distributionId),
         new("artifactName", artifactName),
         new("format", format.ToString()),
@@ -2298,19 +2957,7 @@ public sealed partial class ReportPackDeliveryService
     }
 
     private static string EscapeCsvValue(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
-        // Delivered report packs are opened directly in spreadsheet tools by recipients, so
-        // formula-looking cells must be neutralized before quoting.
-        var neutralized = SpreadsheetFormulaGuard.Neutralize(value);
-        return neutralized.IndexOfAny([',', '"', '\r', '\n']) >= 0
-            ? $"\"{neutralized.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
-            : neutralized;
-    }
+        => Meridian.Storage.Export.SpreadsheetFormulaGuard.EscapeCsvCell(value);
 
     private static byte[] BuildDeliveryArtifactHtml(
         IReadOnlyList<KeyValuePair<string, string>> rows,
