@@ -46,7 +46,7 @@ jobs:
   scope-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -58,7 +58,7 @@ jobs:
 
       - name: Checkout trusted phase gate script
         if: ${{ github.event_name != 'push' && github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha || github.sha }}
           path: .trusted-base
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: scope-gate
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 1
