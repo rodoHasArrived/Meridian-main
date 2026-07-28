@@ -1,11 +1,11 @@
 {
-  "total_files": 636,
-  "total_lines": 114721,
+  "total_files": 637,
+  "total_lines": 115242,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 216,
-  "average_lines": 180.4,
+  "average_lines": 180.9,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2565,7 +2565,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9603,
+      "line_count": 9604,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2884,6 +2884,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/functionality-deepening-brainstorm-2026-07.md",
+      "line_count": 515,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/high-value-code-brainstorm-2026-07.md",
       "line_count": 380,
       "has_heading": true,
@@ -2925,7 +2933,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 254,
+      "line_count": 259,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
