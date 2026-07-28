@@ -228,6 +228,42 @@ public sealed class AggregatePortfolioExposureProviderTests
     }
 
     [Fact]
+    public void GetSnapshot_NotionalOrderPartialFill_RetiresReserveByFilledDollars()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // A $500k dollar-sized order submitted with a placeholder quantity of 1 receives a
+        // one-share partial fill at $100. Retiring by quantity would drop the entire
+        // reserve while $499,900 is still working at the broker.
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetOpenOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "notional-partial",
+                Symbol = "AAPL",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                FilledQuantity = 1m,
+                AverageFillPrice = 100m,
+                RoutedNotional = 500_000m,
+                Status = Meridian.Execution.Sdk.OrderStatus.PartiallyFilled,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        provider.GetSnapshot().GrossExposure.Should().Be(
+            499_900m,
+            "the reserve retires by filled dollars, not by a placeholder share count");
+    }
+
+    [Fact]
     public void GetSnapshot_AttributesExposurePerAccount()
     {
         // Offsetting books across two accounts: the aggregate net says nothing about

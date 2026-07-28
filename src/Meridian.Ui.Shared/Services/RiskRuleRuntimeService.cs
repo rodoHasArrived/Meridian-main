@@ -153,7 +153,7 @@ public sealed class RiskRuleRuntimeService
         }
 
         var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
-        var drawdownPercent = (totalPnl / portfolioValue) * 100m;
+        var drawdownPercent = ComputeDrawdownPercent(portfolioValue, totalPnl);
         var maxDrawdownPercent = GetMaxDrawdownPercent();
 
         if (drawdownPercent <= -maxDrawdownPercent)
@@ -526,7 +526,7 @@ public sealed class RiskRuleRuntimeService
         var portfolioValue = portfolio?.PortfolioValue ?? 0m;
         var totalPnl = (portfolio?.RealisedPnl ?? 0m) + (portfolio?.UnrealisedPnl ?? 0m);
         var drawdownPercent = portfolioValue > 0m
-            ? (totalPnl / portfolioValue) * 100m
+            ? ComputeDrawdownPercent(portfolioValue, totalPnl)
             : 0m;
 
         var breached = drawdownPercent <= -maxDrawdownPercent;
@@ -758,7 +758,10 @@ public sealed class RiskRuleRuntimeService
             AsOf: asOf,
             RecentViolations: recentViolations,
             UtilizationPercent: null,
-            Severity: "Escalate");
+            // The outcome this rule can actually produce: a ceiling alone can only reject,
+            // and advertising "parks for approval" would label a guardrail with a
+            // behaviour no order can reach.
+            Severity: escalateAt.HasValue ? "Escalate" : "Error");
     }
 
     /// <summary>
@@ -813,6 +816,21 @@ public sealed class RiskRuleRuntimeService
         string actionHint,
         string textHint) =>
         DescribeViolations(FindViolationEntries(auditEntries, actionHint, textHint));
+
+    /// <summary>
+    /// Drawdown as a percentage of the capital the P&amp;L was earned on, i.e. the starting
+    /// value (current value minus cumulative P&amp;L) — not the current value. Dividing by
+    /// the already-reduced current value overstates the loss: a fall from 100k to 95.24k
+    /// is a 4.76% drawdown, but measured against the current value it reads as 5.0% and
+    /// would breach a 5% limit that has not actually been hit. That matters more now that
+    /// this guardrail trips the global circuit breaker. Shared by the enforced rule and
+    /// the dashboard status so the two can never disagree.
+    /// </summary>
+    private static decimal ComputeDrawdownPercent(decimal portfolioValue, decimal totalPnl)
+    {
+        var baseline = portfolioValue - totalPnl;
+        return baseline > 0m ? (totalPnl / baseline) * 100m : 0m;
+    }
 
     private decimal GetMaxDrawdownPercent()
     {

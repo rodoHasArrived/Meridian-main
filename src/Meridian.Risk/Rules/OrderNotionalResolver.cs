@@ -35,22 +35,34 @@ internal static class OrderNotionalResolver
         }
 
         var referencePrice = request.LimitPrice ?? request.StopPrice;
-        if (referencePrice is null or <= 0m)
+
+        // The market reference: the live mark when the feed has one, else the symbol's
+        // exposure reference price.
+        var marketPrice = referencePriceLookup?.Invoke(request.Symbol);
+        if (marketPrice is null or <= 0m)
         {
             var symbolPrice = snapshot.GetSymbolExposure(request.Symbol).ReferencePrice;
-            referencePrice = symbolPrice > 0m ? symbolPrice : null;
+            marketPrice = symbolPrice > 0m ? symbolPrice : null;
         }
 
         if (referencePrice is null or <= 0m)
         {
-            // The portfolio is flat in this symbol, but the feed may still price it — and
-            // the gateway certainly will. Measuring at the live mark beats approving an
-            // unmeasured market order in a symbol the book has simply never held.
-            var livePrice = referencePriceLookup?.Invoke(request.Symbol);
-            referencePrice = livePrice > 0m ? livePrice : null;
+            // No caller price: measure at the market. The portfolio may be flat in this
+            // symbol, but the feed can still price it and the gateway will certainly
+            // execute it — that beats approving a market order unmeasured.
+            referencePrice = marketPrice;
+        }
+        else if (marketPrice is { } mark && mark > 0m)
+        {
+            // A limit price is not a bound on execution value. A marketable order executes
+            // at the market, so a sell limit far below the market (or a buy limit far
+            // above it) would otherwise measure a fraction of what actually routes — a
+            // 10,000-share sale limited at $1 in a $100 symbol routes ~$1m, not $10k.
+            // Value conservatively at whichever side is larger.
+            referencePrice = Math.Max(referencePrice.Value, mark);
         }
 
-        return referencePrice is { } price ? Math.Abs(request.Quantity) * price : null;
+        return referencePrice is { } price and > 0m ? Math.Abs(request.Quantity) * price : null;
     }
 
     /// <summary>

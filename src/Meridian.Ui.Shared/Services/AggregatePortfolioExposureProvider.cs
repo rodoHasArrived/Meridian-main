@@ -72,7 +72,10 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         foreach (var order in orderManager.GetOpenOrders())
         {
             var remaining = Math.Abs(order.Quantity) - Math.Abs(order.FilledQuantity);
-            if (remaining <= 0m)
+            // Dollar-sized orders retire their reserve by filled notional below; their
+            // placeholder quantity says nothing about how much is still working.
+            var isNotionalSized = order.RoutedNotional is > 0m;
+            if (remaining <= 0m && !isNotionalSized)
             {
                 continue;
             }
@@ -95,12 +98,19 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             if (order.RoutedNotional is { } routedNotional && routedNotional > 0m)
             {
                 // Broker-native notional sizing: the gateway routes dollars and discards
-                // quantity, so quantity x price would reserve a fraction of what is live.
-                // Scale by the unfilled fraction so partial fills do not double-count.
-                var totalQuantity = Math.Abs(order.Quantity);
-                workingNotional = totalQuantity > 0m
-                    ? routedNotional * (remaining / totalQuantity)
-                    : routedNotional;
+                // quantity, so the submitted quantity is a placeholder and the filled
+                // fraction cannot be derived from it. Retire the reserve by filled DOLLARS
+                // (filled shares at their average fill price) instead, or a one-share
+                // partial fill against a placeholder quantity of 1 would release the whole
+                // reserve while most of the broker order is still working.
+                var filledNotional = order.AverageFillPrice is { } averageFill && averageFill > 0m
+                    ? Math.Abs(order.FilledQuantity) * averageFill
+                    : 0m;
+                workingNotional = Math.Max(0m, routedNotional - filledNotional);
+                if (workingNotional <= 0m)
+                {
+                    continue;
+                }
             }
             else if (price > 0m)
             {
@@ -119,10 +129,11 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
                 OrderSide.Sell => -workingNotional,
                 _ => 0m
             };
+            var remainingQuantity = Math.Max(0m, remaining);
             var signedQuantity = order.Side switch
             {
-                OrderSide.Buy => remaining,
-                OrderSide.Sell => -remaining,
+                OrderSide.Buy => remainingQuantity,
+                OrderSide.Sell => -remainingQuantity,
                 _ => 0m
             };
 

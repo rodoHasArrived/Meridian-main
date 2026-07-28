@@ -353,6 +353,44 @@ public sealed class PortfolioRiskRulesTests
         result.IsApproved.Should().BeFalse("100 x the 250 live mark is 25k, over the 10k ceiling");
     }
 
+    [Fact]
+    public async Task OrderNotional_MarketableSellLimit_ValuesAtTheLiveMark()
+    {
+        // A sell limit far below the market is immediately executable AT the market: a
+        // 10,000-share sale limited at $1 while the symbol trades at $100 routes ~$1m,
+        // not $10k, so the limit price is not a bound on execution value.
+        var rule = new OrderNotionalRule(
+            new StubExposureProvider(
+                Provider().GetSnapshot(),
+                referencePrices: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = 100m }),
+            () => 500_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            CreateOrder(quantity: 10_000m, limitPrice: 1m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeFalse("the executable value is 10,000 x the 100 market, not the 1 limit");
+    }
+
+    [Fact]
+    public async Task OrderNotional_NonMarketableBuyLimit_ValuesAtTheHigherLimit()
+    {
+        // The conservative side works both ways: a buy limit above the market can fill up
+        // to the limit, so the larger of the two prices is the honest measurement.
+        var rule = new OrderNotionalRule(
+            new StubExposureProvider(
+                Provider().GetSnapshot(),
+                referencePrices: new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = 100m }),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(CreateOrder(quantity: 400m, limitPrice: 150m));
+
+        result.IsApproved.Should().BeFalse("400 x the 150 limit is 60k, over the 50k ceiling");
+    }
+
     private sealed class StubExposureProvider(
         PortfolioExposureSnapshot snapshot,
         IReadOnlyDictionary<string, decimal>? referencePrices = null) : IPortfolioExposureProvider

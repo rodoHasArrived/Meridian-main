@@ -564,14 +564,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
 
-            // Nothing routed: a governed approval consumed by this validation must not
-            // stay retired because the gateway faulted. Re-arm it for retry.
-            if (consumedApprovalId is not null && _escalationQueue is not null &&
-                _escalationQueue.TryRestoreApproval(consumedApprovalId))
+            // Nothing routed: governed approvals consumed by this validation must not stay
+            // retired because the gateway faulted. The consumed value is a token set (an
+            // order can carry one approval per escalation-capable rule), so re-arm each.
+            if (consumedApprovalId is not null && _escalationQueue is not null)
             {
-                _logger.LogInformation(
-                    "Governed approval {EscalationId} re-armed after a gateway submission failure",
-                    consumedApprovalId);
+                foreach (var escalationId in RiskEscalationQueueService.SplitTokens(consumedApprovalId))
+                {
+                    if (_escalationQueue.TryRestoreApproval(escalationId))
+                    {
+                        _logger.LogInformation(
+                            "Governed approval {EscalationId} re-armed after a gateway submission failure",
+                            escalationId);
+                    }
+                }
             }
 
             var rejectedState = orderState with
@@ -693,6 +699,76 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 ct: ct).ConfigureAwait(false);
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
+        }
+
+        // A modification that raises quantity or price is a new risk decision: without this
+        // the portfolio-aware rails could be bypassed by placing a small order and amending
+        // it upward. Validation and the amended reservation run under the same gate as a
+        // placement so a concurrent order cannot slip past the increased exposure.
+        if (IsRiskIncreasing(state, modification))
+        {
+            var amended = BuildAmendedRequest(state, modification);
+            await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                if (_riskValidator is not null)
+                {
+                    var amendedRisk = await _riskValidator.ValidateOrderAsync(amended, ct).ConfigureAwait(false);
+                    if (!amendedRisk.IsApproved)
+                    {
+                        // An amendment is never parked: the original order stays live and
+                        // the caller is told the increase was refused. Any approval token
+                        // consumed by this evaluation is re-armed because nothing changed.
+                        if (amendedRisk.ConsumedApprovalId is not null && _escalationQueue is not null)
+                        {
+                            foreach (var escalationId in RiskEscalationQueueService.SplitTokens(amendedRisk.ConsumedApprovalId))
+                            {
+                                _escalationQueue.TryRestoreApproval(escalationId);
+                            }
+                        }
+
+                        var refusal = amendedRisk.RequiresApproval
+                            ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
+                            : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
+                        await RecordOrderLifecycleAuditAsync(
+                            action: "OrderModifyRejected",
+                            outcome: "Rejected",
+                            orderId: orderId,
+                            state: state,
+                            report: null,
+                            message: refusal,
+                            metadata: BuildOrderModificationAuditMetadata(modification, state, report: null),
+                            ct: ct).ConfigureAwait(false);
+
+                        return new OrderResult
+                        {
+                            Success = false,
+                            OrderId = orderId,
+                            OrderState = state,
+                            ErrorMessage = refusal,
+                            RiskWarnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null
+                        };
+                    }
+                }
+
+                // Reserve the amended size before releasing the gate so a concurrent
+                // placement measures against the larger order, then route the amendment.
+                _orders.TryUpdate(
+                    orderId,
+                    state with
+                    {
+                        Quantity = modification.NewQuantity ?? state.Quantity,
+                        LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+                        StopPrice = modification.NewStopPrice ?? state.StopPrice,
+                        RoutedNotional = null,
+                        LastUpdatedAt = DateTimeOffset.UtcNow
+                    },
+                    state);
+            }
+            finally
+            {
+                _preTradeReservationGate.Release();
+            }
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);

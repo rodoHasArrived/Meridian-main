@@ -1343,6 +1343,114 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             "the gateway faulted before anything routed, so the operator's approval must be retryable");
     }
 
+    [Fact]
+    public async Task ModifyOrderAsync_RiskIncreasingAmendment_IsRevalidated()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND"
+        });
+        placed.Success.Should().BeTrue();
+
+        // The rails now refuse the larger order: amending up must not bypass them.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Order notional limit exceeded"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 10_000m });
+
+        modified.Success.Should().BeFalse("a risk-increasing amendment is a new risk decision");
+        modified.ErrorMessage.Should().Contain("Order notional limit");
+        oms.GetOrder(placed.OrderId)!.Quantity.Should().Be(10m, "the refused amendment leaves the original order intact");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_RiskReducingAmendment_SkipsRevalidation()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 100m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-REDUCE"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Even with the rails now refusing everything, shrinking the order still works:
+        // reducing exposure is never gated.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("would reject anything"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 10m });
+
+        modified.Success.Should().BeTrue("a risk-reducing amendment does not need re-approval");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGatewayFaults_ReArmsEveryConsumedApproval()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 };
+        var first = queue.Park(order, "rule A", ruleName: "OrderNotional");
+        var second = queue.Park(order, "rule B", ruleName: "DeskReview");
+        queue.Approve(first.EscalationId, actor: "risk-desk");
+        queue.Approve(second.EscalationId, actor: "risk-desk");
+        var tokens = RiskEscalationQueueService.JoinTokens([first.EscalationId, second.EscalationId]);
+        queue.TryConsumeApprovals(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = tokens
+            }
+        }).Should().HaveCount(2);
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = tokens });
+
+        var faultingGateway = Substitute.For<IExecutionGateway>();
+        faultingGateway.GatewayId.Returns("paper");
+        faultingGateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => throw new InvalidOperationException("gateway unreachable"));
+
+        using var oms = new OrderManagementSystem(
+            faultingGateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-MULTI-FAULT" });
+
+        // Both decisions must be retryable — the joined token set is not a single id.
+        queue.TryGet(first.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+        queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Approved);
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate

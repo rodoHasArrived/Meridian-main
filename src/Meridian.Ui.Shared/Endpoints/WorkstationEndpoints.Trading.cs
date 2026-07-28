@@ -158,6 +158,18 @@ public static partial class WorkstationEndpoints
             guardrails = runtimeRisk.Guardrails;
         }
 
+        // The guardrail meters measure the same snapshot the pre-trade rules enforce
+        // against, which reserves accepted-but-unfilled orders. Displaying filled-only
+        // exposure beside them would show, say, $100k gross next to a gross guardrail
+        // reading $160k and Constrained — so the headline figures come from that snapshot
+        // whenever it is available, and fall back to filled positions when it is not.
+        if (context.RequestServices.GetService<Meridian.Risk.IPortfolioExposureProvider>() is { } exposureProvider)
+        {
+            var exposureSnapshot = exposureProvider.GetSnapshot();
+            grossExposure = exposureSnapshot.GrossExposure;
+            netExposureValue = exposureSnapshot.NetExposure;
+        }
+
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
             ? FormatPercent(totalPnl / portfolio.PortfolioValue)
             : "—";

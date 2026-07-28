@@ -35,7 +35,22 @@ public sealed partial class OrderManagementSystem
             TrimRetainedOrdersIfNeeded();
         }
 
-        await RecordSessionOrderUpdateAsync(sessionId, parkedState, ct).ConfigureAwait(false);
+        // The escalation is already committed to the governed queue and an operator can
+        // act on it, so post-park bookkeeping must never turn that committed outcome into
+        // a failed submission — the submitter would then never learn the order is parked
+        // while the queue entry stays releasable. Session persistence and the audit append
+        // are best-effort here; both failures are logged, not propagated.
+        try
+        {
+            await RecordSessionOrderUpdateAsync(sessionId, parkedState, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Order {OrderId} parked for approval, but its paper-session update could not be recorded",
+                LogSanitizer.Sanitize(orderId));
+        }
 
         _logger.LogWarning(
             "Order {OrderId} parked for governed risk approval ({EscalationId})",
@@ -50,22 +65,32 @@ public sealed partial class OrderManagementSystem
             };
             AppendRiskWarningsMetadata(metadata, riskResult.Warnings);
 
-            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                AuditId: Guid.NewGuid().ToString("N"),
-                Category: "Risk",
-                Action: "OrderParkedForApproval",
-                Outcome: "Parked",
-                OccurredAt: DateTimeOffset.UtcNow,
-                Actor: actor,
-                BrokerName: brokerName,
-                OrderId: orderId,
-                RunId: runId,
-                Symbol: request.Symbol,
-                CorrelationId: correlationId,
-                Message: riskResult.RejectReason,
-                Reason: "RISK_ESCALATION_PARKED",
-                Scope: BuildOrderAuditScope(request, runId),
-                Metadata: metadata), ct).ConfigureAwait(false);
+            try
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Risk",
+                    Action: "OrderParkedForApproval",
+                    Outcome: "Parked",
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    BrokerName: brokerName,
+                    OrderId: orderId,
+                    RunId: runId,
+                    Symbol: request.Symbol,
+                    CorrelationId: correlationId,
+                    Message: riskResult.RejectReason,
+                    Reason: "RISK_ESCALATION_PARKED",
+                    Scope: BuildOrderAuditScope(request, runId),
+                    Metadata: metadata), CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(
+                    exception,
+                    "Order {OrderId} parked for approval, but the parking audit entry could not be recorded",
+                    LogSanitizer.Sanitize(orderId));
+            }
         }
 
         return new OrderResult
@@ -79,6 +104,49 @@ public sealed partial class OrderManagementSystem
             RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null
         };
     }
+
+    /// <summary>
+    /// True when a modification could increase the order's economic exposure: a larger
+    /// quantity, or a price move that makes the order more likely to execute (a higher buy
+    /// limit, a lower sell limit) and therefore raises the reserved notional.
+    /// </summary>
+    private static bool IsRiskIncreasing(OrderState state, OrderModification modification)
+    {
+        if (modification.NewQuantity is { } newQuantity && Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+        {
+            return true;
+        }
+
+        if (modification.NewLimitPrice is { } newLimit && state.LimitPrice is { } currentLimit)
+        {
+            // A buy limit raised, or a sell limit lowered, both increase executable value
+            // relative to the order the risk gate originally approved.
+            if (state.Side == OrderSide.Buy ? newLimit > currentLimit : newLimit < currentLimit)
+            {
+                return true;
+            }
+        }
+
+        return modification.NewStopPrice is { } newStop && state.StopPrice is { } currentStop &&
+            (state.Side == OrderSide.Buy ? newStop > currentStop : newStop < currentStop);
+    }
+
+    /// <summary>
+    /// Reconstructs the order the gateway would hold after <paramref name="modification"/>,
+    /// so the pre-trade rules evaluate the proposed order rather than the original.
+    /// </summary>
+    private static OrderRequest BuildAmendedRequest(OrderState state, OrderModification modification) => new()
+    {
+        Symbol = state.Symbol,
+        Side = state.Side,
+        Type = state.Type,
+        Quantity = modification.NewQuantity ?? state.Quantity,
+        LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
+        StopPrice = modification.NewStopPrice ?? state.StopPrice,
+        ClientOrderId = state.OrderId,
+        StrategyId = state.StrategyId,
+        FundAccountId = state.FundAccountId
+    };
 
     private static IReadOnlyDictionary<string, string>? BuildRiskWarningsAuditMetadata(
         IReadOnlyList<string> warnings)

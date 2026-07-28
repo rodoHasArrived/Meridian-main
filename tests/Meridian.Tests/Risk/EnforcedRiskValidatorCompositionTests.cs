@@ -33,6 +33,9 @@ public sealed class EnforcedRiskValidatorCompositionTests
         portfolio.SetupGet(p => p.PortfolioValue).Returns(portfolioValue);
         portfolio.SetupGet(p => p.RealisedPnl).Returns(realisedPnl);
         portfolio.SetupGet(p => p.UnrealisedPnl).Returns(unrealisedPnl);
+        // Status builders read the position book; an unstubbed member would return null.
+        portfolio.SetupGet(p => p.Positions).Returns(
+            new Dictionary<string, Meridian.Execution.Sdk.IPosition>(StringComparer.OrdinalIgnoreCase));
 
         var services = new Mock<IServiceProvider>();
         services.Setup(s => s.GetService(typeof(IPortfolioState))).Returns(portfolio.Object);
@@ -169,6 +172,55 @@ public sealed class EnforcedRiskValidatorCompositionTests
 
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("host rule rejected");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_DrawdownJustInsideTheLimit_DoesNotTripTheBreaker()
+    {
+        // 100k of capital down to ~95.24k is a 4.76% drawdown. Dividing the loss by the
+        // already-reduced current value reads 5.0% and would breach the default 5% limit —
+        // and now trip the global circuit breaker — on a loss that never reached it.
+        var runtime = CreateRuntime(ServicesWithPortfolio(95_238m, -4_762m, 0m));
+        var validator = CreateEnforcedValidator(runtime);
+
+        var result = await validator.ValidateOrderAsync(CreateBuyOrder());
+
+        result.IsApproved.Should().BeTrue("the true drawdown from starting capital is under the limit");
+    }
+
+    [Fact]
+    public async Task ValidateOrderAsync_DrawdownBeyondTheLimit_StillRejects()
+    {
+        // 100k down to 94k is a genuine 6% drawdown.
+        var runtime = CreateRuntime(ServicesWithPortfolio(94_000m, -6_000m, 0m));
+        var validator = CreateEnforcedValidator(runtime);
+
+        var result = await validator.ValidateOrderAsync(CreateBuyOrder());
+
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("Drawdown circuit breaker");
+    }
+
+    [Fact]
+    public async Task GetAllStatusesAsync_OrderNotionalWithoutEscalationBand_ReportsErrorSeverity()
+    {
+        var runtime = CreateRuntime(ServicesWithPortfolio(100_000m, 0m, 0m));
+        await runtime.UpdateConfigAsync(
+            "OrderNotional",
+            new RiskRuleConfigUpdateRequest(MaxOrderNotional: 250_000m),
+            actor: "risk-desk");
+
+        var status = (await runtime.GetAllStatusesAsync()).Single(s => s.RuleName == "OrderNotional");
+
+        status.Severity.Should().Be("Error", "a ceiling-only configuration can only reject, never park");
+
+        // Configuring the band restores the escalation outcome.
+        await runtime.UpdateConfigAsync(
+            "OrderNotional",
+            new RiskRuleConfigUpdateRequest(EscalateOrderNotional: 50_000m),
+            actor: "risk-desk");
+        (await runtime.GetAllStatusesAsync()).Single(s => s.RuleName == "OrderNotional")
+            .Severity.Should().Be("Escalate");
     }
 
     [Fact]
