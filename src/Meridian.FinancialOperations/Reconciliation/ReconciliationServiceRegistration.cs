@@ -19,6 +19,10 @@ public static class ReconciliationServiceRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.TryAddSingleton<IAccountingCalendar>(sp =>
+            FileAccountingCalendar.Load(
+                sp.GetRequiredService<StorageOptions>().RootPath,
+                sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
@@ -37,6 +41,8 @@ public static class ReconciliationServiceRegistration
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
 
+        services.TryAddSingleton<IAccountingCalendar>(sp =>
+            FileAccountingCalendar.Load(dataRoot, sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
@@ -68,6 +74,9 @@ public static class ReconciliationServiceRegistration
         // its own implementations before calling AddStatementReconciliationServices, or via Replace.
         services.TryAddSingleton<IInternalReconciliationPopulationProvider>(EmptyInternalReconciliationPopulationProvider.Instance);
         services.TryAddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        // Safety net for hosts that bypass the dataRoot-aware overloads: a weekends-only calendar.
+        // The overloads above register the operator-maintained file calendar first, so it wins here.
+        services.TryAddSingleton<IAccountingCalendar>(BusinessDayAccountingCalendar.Default);
         // Knows only the built-in default profile; a deployment registers a provider carrying its
         // operator profiles (first-wins/Replace) so non-default runs are matched with the selected
         // profile's thresholds instead of silently falling back to the defaults.
