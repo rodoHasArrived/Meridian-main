@@ -18,7 +18,7 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 | Row | Evidence gate (tracker) | Automation state | Hosted evidence to date | Remaining human action |
 | --- | --- | --- | --- | --- |
 | `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | None — both ADRs remain **Proposed** | **Sign-off decision** (see [PRD-000 approval package](#prd-000-adr-019adr-020-approval-package)) |
-| `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets | No green `web-workstation`/`win-x64` run exists; the only green runs (#6, #7 on 2026-07-15) published `collector`/`win-x64` | Re-dispatch on the frozen release commit once one exists; keep the run link here |
+| `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. The first hosted attempts proved the publish contract was broken on a clean checkout — the gitignored workstation bundle never reached the artifact; `publish.ps1` now builds, includes, and verifies `wwwroot/workstation` in the output and the installer accepts the artifact's own bundle | No green `web-workstation`/`win-x64` run exists yet; the only green runs (#6, #7 on 2026-07-15) published `collector`/`win-x64` | Re-dispatch on the frozen release commit once one exists; keep the run link here |
 | `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | None — no release tag has run the hardened workflow | **Provision secrets + ARM64 runner, then tag** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated `production-recovery-drill-*` artifact on the release commit plus operator replay/reconciliation review | `invoke-production-recovery.ps1` drill is exercised by the `Production Certification` recovery job; the connection-string parsing defect that failed every earlier drill was fixed in `ff620a73e` (after run #4) | Failed drill artifacts only (runs #1–#4 predate the fix) | **Operator review** of the first green drill receipt (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | Workflow runs deterministic PostgreSQL integrations with Cobertura coverage, zero-skip TRX gate, schema evidence, NuGet/npm scans; npm advisories now gate through the reviewed acceptance register | 4 runs, all failed (see [hosted-run diagnosis](#hosted-run-diagnosis-production-certification-run-4-2026-07-27)) | **Required-check activation** after first green run (see [PRD-016 activation](#prd-016-required-check-activation)); the deterministic-integrations job additionally blocks on the [PostgreSQL harness-debt lanes](production-readiness-audit-2026-07-27.md) |
@@ -160,6 +160,24 @@ bash scripts/ci.sh --lane verify-docs
 
 Append-only; newest first. Every entry names the commit, the run or decision, and the outcome.
 
+- **2026-07-28** — `Production Certification` run #7
+  ([30339057032](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339057032),
+  candidate `d10d5c003`): **first-ever green recovery drill** — encrypted backup, hash
+  verification, clean restore, restored business/file-state verification, and the dated
+  `production-recovery-drill-30339057032` receipt all completed. Dependency evidence and
+  documentation evidence green again; only deterministic-integrations remains red on the
+  known harness debt, and its schema-evidence capture now succeeds. 3 of 4 certification
+  jobs green on the candidate.
+- **2026-07-28** — `Publish Smoke` `web-workstation`/`win-x64` second attempt
+  ([30339059109](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30339059109),
+  candidate `d10d5c003`): the PostgreSQL-discovery fix held and the run advanced to
+  installed startup, which exposed the core `PRD-013` gap — the workstation bundle is
+  gitignored vite output that neither MSBuild nor `publish.ps1` carried into the published
+  artifact, so a clean-checkout artifact cannot serve `/workstation/` and the installer's
+  repo-bundle assert fails. Fixed on the candidate: `publish.ps1` now builds the dashboard
+  when the bundle is absent and always includes and verifies `wwwroot/workstation` in the
+  web-workstation output; the installer prefers the published artifact's own bundle when
+  the repo tree is absent; the smoke workflow ships its `install.log`/receipts on failure.
 - **2026-07-28** — `Production Certification` run #6
   ([30338821749](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30338821749),
   candidate `ab2a2e936`): with matching client tools the drill's encrypted backup, hash
